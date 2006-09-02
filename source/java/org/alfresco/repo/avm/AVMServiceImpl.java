@@ -29,6 +29,16 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMExistsException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.AVMWrongTypeException;
+import org.alfresco.service.cmr.avm.LayeringDescriptor;
+import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;

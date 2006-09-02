@@ -23,7 +23,7 @@ import org.alfresco.service.namespace.QName;
  * Interface to Aspect names on AVM nodes.
  * @author britt
  */
-interface AVMAspectName
+public interface AVMAspectName
 {
     /**
      * Set the node that has the Aspect. 

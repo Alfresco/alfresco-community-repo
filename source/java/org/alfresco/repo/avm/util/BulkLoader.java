@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.alfresco.repo.avm.AVMException;
-import org.alfresco.repo.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMService;
 
 /**
  * This takes a filesystem directory path and a repository path and name

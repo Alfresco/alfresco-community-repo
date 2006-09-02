@@ -15,43 +15,42 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.avm;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Thrown when an object of the wrong type is looked up.
+ * Class for generic AVM Exceptions.
  * @author britt
  */
-public class AVMWrongTypeException extends AVMException
+public class AVMException extends AlfrescoRuntimeException
 {
-    private static final long serialVersionUID = -8799318236851345536L;
+    private static final long serialVersionUID = -4894449240293309025L;
 
     /**
      * @param msgId
      */
-    public AVMWrongTypeException(String msgId)
+    public AVMException(String msgId)
     {
         super(msgId);
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param msgId
      * @param msgParams
      */
-    public AVMWrongTypeException(String msgId, Object[] msgParams)
+    public AVMException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param msgId
      * @param cause
      */
-    public AVMWrongTypeException(String msgId, Throwable cause)
+    public AVMException(String msgId, Throwable cause)
     {
         super(msgId, cause);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -59,10 +58,8 @@ public class AVMWrongTypeException extends AVMException
      * @param msgParams
      * @param cause
      */
-    public AVMWrongTypeException(String msgId, Object[] msgParams,
-            Throwable cause)
+    public AVMException(String msgId, Object[] msgParams, Throwable cause)
     {
         super(msgId, msgParams, cause);
-        // TODO Auto-generated constructor stub
     }
 }

@@ -15,9 +15,11 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.avm;
 
 import java.io.Serializable;
+
+import org.alfresco.repo.avm.AVMNodeType;
 
 /**
  * This class describes an AVM node object.  

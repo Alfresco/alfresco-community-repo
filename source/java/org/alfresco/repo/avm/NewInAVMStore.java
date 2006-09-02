@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * Eensy-weensy interface for tracking nodes that are new in a store. 
  * @author britt
  */
-interface NewInAVMStore
+public interface NewInAVMStore
 {
     /**
      * Get the AVMStore part.

@@ -28,6 +28,12 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.LayeringDescriptor;
+import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 

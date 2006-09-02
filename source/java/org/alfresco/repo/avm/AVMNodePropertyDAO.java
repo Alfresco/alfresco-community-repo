@@ -25,7 +25,7 @@ import org.alfresco.service.namespace.QName;
  * DAO for AVMNodeProperty.
  * @author britt
  */
-interface AVMNodePropertyDAO
+public interface AVMNodePropertyDAO
 {
     /**
      * Save the given AVMNodeProperty.

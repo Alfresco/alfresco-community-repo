@@ -20,13 +20,14 @@ import java.util.Map;
 
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.namespace.QName;
 
 /**
  * The Interface for versionable objects.
  * @author britt
  */
-interface AVMNode
+public interface AVMNode
 {
     /**
      * Set the ancestor of this node.

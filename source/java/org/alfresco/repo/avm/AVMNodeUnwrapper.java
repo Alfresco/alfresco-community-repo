@@ -25,7 +25,7 @@ import org.hibernate.proxy.HibernateProxy;
  * types are fundamentally broken.
  * @author britt
  */
-class AVMNodeUnwrapper
+public class AVMNodeUnwrapper
 {
     public static AVMNode Unwrap(AVMNode node)
     {

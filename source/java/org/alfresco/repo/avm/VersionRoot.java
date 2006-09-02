@@ -20,7 +20,7 @@ package org.alfresco.repo.avm;
  * Represents a single version root.
  * @author britt
  */
-interface VersionRoot
+public interface VersionRoot
 {
     /**
      * @return the createDate

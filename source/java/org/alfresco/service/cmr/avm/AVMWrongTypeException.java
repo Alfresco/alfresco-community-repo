@@ -15,20 +15,21 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.avm;
+
 
 /**
- * This is thrown when bad or illegal arguments are passed.
+ * Thrown when an object of the wrong type is looked up.
  * @author britt
  */
-public class AVMBadArgumentException extends AVMException
+public class AVMWrongTypeException extends AVMException
 {
-    private static final long serialVersionUID = -3651428546518806565L;
+    private static final long serialVersionUID = -8799318236851345536L;
 
     /**
      * @param msgId
      */
-    public AVMBadArgumentException(String msgId)
+    public AVMWrongTypeException(String msgId)
     {
         super(msgId);
         // TODO Auto-generated constructor stub
@@ -38,7 +39,7 @@ public class AVMBadArgumentException extends AVMException
      * @param msgId
      * @param msgParams
      */
-    public AVMBadArgumentException(String msgId, Object[] msgParams)
+    public AVMWrongTypeException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
         // TODO Auto-generated constructor stub
@@ -48,7 +49,7 @@ public class AVMBadArgumentException extends AVMException
      * @param msgId
      * @param cause
      */
-    public AVMBadArgumentException(String msgId, Throwable cause)
+    public AVMWrongTypeException(String msgId, Throwable cause)
     {
         super(msgId, cause);
         // TODO Auto-generated constructor stub
@@ -59,7 +60,7 @@ public class AVMBadArgumentException extends AVMException
      * @param msgParams
      * @param cause
      */
-    public AVMBadArgumentException(String msgId, Object[] msgParams,
+    public AVMWrongTypeException(String msgId, Object[] msgParams,
             Throwable cause)
     {
         super(msgId, msgParams, cause);

@@ -23,7 +23,7 @@ import java.util.List;
  * DAO for DeletedChildren.
  * @author britt
  */
-interface DeletedChildDAO
+public interface DeletedChildDAO
 {
     /**
      * Save an unsaved DeletedChild.

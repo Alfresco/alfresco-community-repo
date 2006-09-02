@@ -15,7 +15,8 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.avm;
+
 
 /**
  * This is thrown when a node exists and shouldn't.

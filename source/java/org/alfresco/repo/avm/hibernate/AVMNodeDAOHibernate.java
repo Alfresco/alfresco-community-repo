@@ -15,10 +15,16 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.repo.avm.hibernate;
 
 import java.util.List;
 
+import org.alfresco.repo.avm.AVMNode;
+import org.alfresco.repo.avm.AVMNodeDAO;
+import org.alfresco.repo.avm.AVMNodeImpl;
+import org.alfresco.repo.avm.AVMNodeUnwrapper;
+import org.alfresco.repo.avm.AVMStore;
+import org.alfresco.repo.avm.DirectoryNode;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 

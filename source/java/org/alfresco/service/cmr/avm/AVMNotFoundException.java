@@ -15,22 +15,25 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.avm;
+
 
 /**
- * This is thrown when a cycle is detected during lookup.
+ * This is the exception thrown when a node is not found.
  * @author britt
  */
-public class AVMCycleException extends AVMException
+public class AVMNotFoundException extends AVMException
 {
-    private static final long serialVersionUID = -7390775107865356648L;
+    private static final long serialVersionUID = -8131080195448129281L;
 
     /**
      * @param msgId
+     * @param msgParams
+     * @param cause
      */
-    public AVMCycleException(String msgId)
+    public AVMNotFoundException(String msgId, Object[] msgParams, Throwable cause)
     {
-        super(msgId);
+        super(msgId, msgParams, cause);
         // TODO Auto-generated constructor stub
     }
 
@@ -38,7 +41,7 @@ public class AVMCycleException extends AVMException
      * @param msgId
      * @param msgParams
      */
-    public AVMCycleException(String msgId, Object[] msgParams)
+    public AVMNotFoundException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
         // TODO Auto-generated constructor stub
@@ -48,7 +51,7 @@ public class AVMCycleException extends AVMException
      * @param msgId
      * @param cause
      */
-    public AVMCycleException(String msgId, Throwable cause)
+    public AVMNotFoundException(String msgId, Throwable cause)
     {
         super(msgId, cause);
         // TODO Auto-generated constructor stub
@@ -56,12 +59,10 @@ public class AVMCycleException extends AVMException
 
     /**
      * @param msgId
-     * @param msgParams
-     * @param cause
      */
-    public AVMCycleException(String msgId, Object[] msgParams, Throwable cause)
+    public AVMNotFoundException(String msgId)
     {
-        super(msgId, msgParams, cause);
+        super(msgId);
         // TODO Auto-generated constructor stub
     }
 }

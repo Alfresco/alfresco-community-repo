@@ -23,7 +23,7 @@ import java.util.List;
  * DAO for MergeLinks.
  * @author britt
  */
-interface MergeLinkDAO
+public interface MergeLinkDAO
 {
     /**
      * Save an unsaved MergeLink.

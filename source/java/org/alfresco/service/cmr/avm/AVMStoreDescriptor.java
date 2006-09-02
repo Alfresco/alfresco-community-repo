@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.avm;
 
 import java.io.Serializable;
 import java.util.Date;

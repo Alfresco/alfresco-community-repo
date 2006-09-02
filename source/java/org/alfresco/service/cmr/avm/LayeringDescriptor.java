@@ -15,9 +15,10 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.avm;
 
 import java.io.Serializable;
+
 
 /**
  * A value class containing information about the layering state of a looked up

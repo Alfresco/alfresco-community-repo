@@ -17,6 +17,7 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.log4j.Logger;

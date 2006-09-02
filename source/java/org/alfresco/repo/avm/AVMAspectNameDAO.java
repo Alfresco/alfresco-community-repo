@@ -25,7 +25,7 @@ import org.alfresco.service.namespace.QName;
  * DAO for AVMAspectNames.
  * @author britt
  */
-interface AVMAspectNameDAO
+public interface AVMAspectNameDAO
 {
     /**
      * Persist an aspect name.

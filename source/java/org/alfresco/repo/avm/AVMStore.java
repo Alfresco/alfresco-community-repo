@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.namespace.QName;
 
@@ -33,7 +36,7 @@ import org.alfresco.service.namespace.QName;
  * and layering operations.
  * @author britt
  */
-interface AVMStore
+public interface AVMStore
 {
     /**
      * This returns the next version in this store that will be snapshotted.

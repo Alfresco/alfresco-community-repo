@@ -21,7 +21,7 @@ package org.alfresco.repo.avm;
  * This is the interface for the merged from - to relationship.
  * @author britt
  */
-interface MergeLink
+public interface MergeLink
 {
     /**
      * Set the from part.

@@ -24,6 +24,11 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMCycleException;
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+
 /**
  * A layered directory node.  A layered directory node points at
  * an underlying directory, which may or may not exist.  The visible

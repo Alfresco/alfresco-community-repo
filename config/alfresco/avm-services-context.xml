@@ -30,73 +30,73 @@
 	
 	<!-- Issuers are not actual entities. More like pseudo entities. -->
 	
-	<bean id="issuerDAO" class="org.alfresco.repo.avm.IssuerDAOHibernate">
+	<bean id="issuerDAO" class="org.alfresco.repo.avm.hibernate.IssuerDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 	
-	<bean id="avmNodeDAO" class="org.alfresco.repo.avm.AVMNodeDAOHibernate">
+	<bean id="avmNodeDAO" class="org.alfresco.repo.avm.hibernate.AVMNodeDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 	
-	<bean id="avmStoreDAO" class="org.alfresco.repo.avm.AVMStoreDAOHibernate">
+	<bean id="avmStoreDAO" class="org.alfresco.repo.avm.hibernate.AVMStoreDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 
-	<bean id="versionRootDAO" class="org.alfresco.repo.avm.VersionRootDAOHibernate">
+	<bean id="versionRootDAO" class="org.alfresco.repo.avm.hibernate.VersionRootDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 	
-	<bean id="childEntryDAO" class="org.alfresco.repo.avm.ChildEntryDAOHibernate">
+	<bean id="childEntryDAO" class="org.alfresco.repo.avm.hibernate.ChildEntryDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 	
-	<bean id="historyLinkDAO" class="org.alfresco.repo.avm.HistoryLinkDAOHibernate">
+	<bean id="historyLinkDAO" class="org.alfresco.repo.avm.hibernate.HistoryLinkDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 
-	<bean id="mergeLinkDAO" class="org.alfresco.repo.avm.MergeLinkDAOHibernate">
+	<bean id="mergeLinkDAO" class="org.alfresco.repo.avm.hibernate.MergeLinkDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 
-	<bean id="deletedChildDAO" class="org.alfresco.repo.avm.DeletedChildDAOHibernate">
+	<bean id="deletedChildDAO" class="org.alfresco.repo.avm.hibernate.DeletedChildDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 	
-	<bean id="newInAVMStoreDAO" class="org.alfresco.repo.avm.NewInAVMStoreDAOHibernate">
+	<bean id="newInAVMStoreDAO" class="org.alfresco.repo.avm.hibernate.NewInAVMStoreDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 	
-	<bean id="avmNodePropertyDAO" class="org.alfresco.repo.avm.AVMNodePropertyDAOHibernate">
+	<bean id="avmNodePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMNodePropertyDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 	
-	<bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.AVMStorePropertyDAOHibernate">
+	<bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMStorePropertyDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 	
-	<bean id="avmAspectNameDAO" class="org.alfresco.repo.avm.AVMAspectNameDAOHibernate">
+	<bean id="avmAspectNameDAO" class="org.alfresco.repo.avm.hibernate.AVMAspectNameDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
@@ -165,7 +165,7 @@
 	
 	<!-- The Retrying Transaction Helper. -->
 	<bean id="retryingTransaction" 
-		  class="org.alfresco.repo.avm.HibernateRetryingTransactionHelper">
+		  class="org.alfresco.repo.avm.hibernate.HibernateRetryingTransactionHelper">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>

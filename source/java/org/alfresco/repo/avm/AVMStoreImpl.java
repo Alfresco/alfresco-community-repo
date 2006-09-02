@@ -31,6 +31,14 @@ import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMExistsException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.AVMWrongTypeException;
+import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -46,7 +54,7 @@ import org.alfresco.service.namespace.QName;
  * operation.
  * @author britt
  */
-class AVMStoreImpl implements AVMStore, Serializable
+public class AVMStoreImpl implements AVMStore, Serializable
 {
     static final long serialVersionUID = -1485972568675732904L;
 

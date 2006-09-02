@@ -28,6 +28,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.alfresco.service.cmr.avm.AVMCycleException;
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMExistsException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMWrongTypeException;
+
 /**
  * This is a Runnable which randomly performs operations on an AVM Repository.
  * It's purpose is to act as a single thread in a multithreaded stress tester.

@@ -15,9 +15,11 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.repo.avm.hibernate;
 
 
+import org.alfresco.repo.avm.IssuerDAO;
+import org.alfresco.service.cmr.avm.AVMException;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**

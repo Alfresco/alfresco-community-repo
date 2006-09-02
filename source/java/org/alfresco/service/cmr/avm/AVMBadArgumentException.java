@@ -15,42 +15,44 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.avm;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Class for generic AVM Exceptions.
+ * This is thrown when bad or illegal arguments are passed.
  * @author britt
  */
-public class AVMException extends AlfrescoRuntimeException
+public class AVMBadArgumentException extends AVMException
 {
-    private static final long serialVersionUID = -4894449240293309025L;
+    private static final long serialVersionUID = -3651428546518806565L;
 
     /**
      * @param msgId
      */
-    public AVMException(String msgId)
+    public AVMBadArgumentException(String msgId)
     {
         super(msgId);
+        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param msgId
      * @param msgParams
      */
-    public AVMException(String msgId, Object[] msgParams)
+    public AVMBadArgumentException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
+        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param msgId
      * @param cause
      */
-    public AVMException(String msgId, Throwable cause)
+    public AVMBadArgumentException(String msgId, Throwable cause)
     {
         super(msgId, cause);
+        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -58,8 +60,10 @@ public class AVMException extends AlfrescoRuntimeException
      * @param msgParams
      * @param cause
      */
-    public AVMException(String msgId, Object[] msgParams, Throwable cause)
+    public AVMBadArgumentException(String msgId, Object[] msgParams,
+            Throwable cause)
     {
         super(msgId, msgParams, cause);
+        // TODO Auto-generated constructor stub
     }
 }

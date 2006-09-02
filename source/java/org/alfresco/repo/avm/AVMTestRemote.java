@@ -19,6 +19,8 @@ package org.alfresco.repo.avm;
 
 import java.util.List;
 
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;

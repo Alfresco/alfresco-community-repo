@@ -1,4 +1,4 @@
-package org.alfresco.repo.avm;
+package org.alfresco.repo.avm.hibernate;
 
 /*
  * Copyright (C) 2006 Alfresco, Inc.
@@ -19,6 +19,10 @@ package org.alfresco.repo.avm;
 
 import java.util.Random;
 
+import org.alfresco.repo.avm.RetryingTransactionCallback;
+import org.alfresco.repo.avm.RetryingTransactionHelper;
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.DeadlockLoserDataAccessException;

@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+
 /**
  * A plain directory.  No monkey tricks except for possiblyCopy.
  * @author britt

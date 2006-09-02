@@ -26,6 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+
 
 /**
  * This is another tester designed to emulate more typical use patterns.

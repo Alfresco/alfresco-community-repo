@@ -23,7 +23,7 @@ import java.util.List;
  * DAO for history links.
  * @author britt
  */
-interface HistoryLinkDAO
+public interface HistoryLinkDAO
 {
     /**
      * Save and unsaved HistoryLink.

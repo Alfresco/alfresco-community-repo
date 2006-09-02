@@ -20,11 +20,10 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  * 
  * @author gavinc
  */
-public class DialogManager
+public final class DialogManager
 {
-   protected IDialogBean currentDialog;
-   protected DialogConfig currentDialogConfig;
-   protected Map<String, String> currentDialogParams;
+   private DialogState currentDialogState;
+   private Map<String, String> paramsToApply;
    
    /**
     * Action handler used to setup parameters for the dialog being launched
@@ -38,7 +37,7 @@ public class DialogManager
       if (component instanceof UIActionLink)
       {
          // store the parameters
-         this.currentDialogParams = ((UIActionLink)component).getParameterMap();
+         this.paramsToApply = ((UIActionLink)component).getParameterMap();
       }
    }
    
@@ -49,22 +48,48 @@ public class DialogManager
     */
    public void setCurrentDialog(DialogConfig config)
    {
-      this.currentDialogConfig = config;
-      
-      String beanName = this.currentDialogConfig.getManagedBean();
-      this.currentDialog = (IDialogBean)FacesHelper.getManagedBean(
+      String beanName = config.getManagedBean();
+      IDialogBean dialog = (IDialogBean)FacesHelper.getManagedBean(
             FacesContext.getCurrentInstance(), beanName);
       
-      if (this.currentDialog == null)
+      if (dialog == null)
       {
          throw new AlfrescoRuntimeException("Failed to find managed bean '" + beanName + "'");
       }
       
       // initialise the managed bean
-      this.currentDialog.init(this.currentDialogParams);
+      dialog.init(this.paramsToApply);
       
       // reset the current parameters so subsequent dialogs don't get them
-      this.currentDialogParams = null;
+      this.paramsToApply = null;
+      
+      // create the DialogState object
+      this.currentDialogState = new DialogState(config, dialog);
+   }
+   
+   /**
+    * Returns the state of the currently active dialog
+    * 
+    * @return Current dialog's state
+    */
+   public DialogState getState()
+   {
+      return this.currentDialogState;
+   }
+   
+   /**
+    * Restores the dialog represented by the given DialogState object.
+    * NOTE: The dialog's restored() method is also called during this
+    * method.
+    * 
+    * @param state The DialogState for the dialog to restore
+    */
+   public void restoreState(DialogState state)
+   {
+      this.currentDialogState = state;
+      
+      // retrieve the dialog and call it's restored() method
+      this.currentDialogState.getDialog().restored();
    }
    
    /**
@@ -74,7 +99,7 @@ public class DialogManager
     */
    public DialogConfig getCurrentDialog()
    {
-      return this.currentDialogConfig;
+      return this.currentDialogState.getConfig();
    }
    
    /**
@@ -84,7 +109,7 @@ public class DialogManager
     */
    public IDialogBean getBean()
    {
-      return this.currentDialog;
+      return this.currentDialogState.getDialog();
    }
    
    /**
@@ -94,7 +119,7 @@ public class DialogManager
     */
    public String getIcon()
    {
-      return this.currentDialogConfig.getIcon();
+      return this.currentDialogState.getConfig().getIcon();
    }
    
    /**
@@ -105,7 +130,7 @@ public class DialogManager
    public String getErrorMessage()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), 
-            this.currentDialogConfig.getErrorMessageId());
+            this.currentDialogState.getConfig().getErrorMessageId());
    }
    
    /**
@@ -115,15 +140,23 @@ public class DialogManager
     */
    public String getTitle()
    {
-      String title = this.currentDialogConfig.getTitleId();
+      // try and get the title directly from the dialog
+      String title = this.currentDialogState.getDialog().getTitle();
       
-      if (title != null)
+      if (title == null)
       {
-         title = Application.getMessage(FacesContext.getCurrentInstance(), title);
-      }
-      else
-      {
-         title = this.currentDialogConfig.getTitle();
+         // try and get the title via a message bundle key
+         title = this.currentDialogState.getConfig().getTitleId();
+         
+         if (title != null)
+         {
+            title = Application.getMessage(FacesContext.getCurrentInstance(), title);
+         }
+         else
+         {
+            // try and get the title from the configuration
+            title = this.currentDialogState.getConfig().getTitle();
+         }
       }
       
       return title;
@@ -136,15 +169,23 @@ public class DialogManager
     */
    public String getDescription()
    {
-      String desc = this.currentDialogConfig.getDescriptionId();
+      // try and get the description directly from the dialog
+      String desc = this.currentDialogState.getDialog().getDescription();
       
-      if (desc != null)
+      if (desc == null)
       {
-         desc = Application.getMessage(FacesContext.getCurrentInstance(), desc);
-      }
-      else
-      {
-         desc = this.currentDialogConfig.getDescription();
+         // try and get the description via a message bundle key
+         desc = this.currentDialogState.getConfig().getDescriptionId();
+         
+         if (desc != null)
+         {
+            desc = Application.getMessage(FacesContext.getCurrentInstance(), desc);
+         }
+         else
+         {
+            // try and get the description from the configuration
+            desc = this.currentDialogState.getConfig().getDescription();
+         }
       }
       
       return desc;
@@ -158,7 +199,7 @@ public class DialogManager
     */
    public String getActions()
    {
-      return this.currentDialogConfig.getActionsConfigId();
+      return this.currentDialogState.getConfig().getActionsConfigId();
    }
    
    /**
@@ -168,7 +209,7 @@ public class DialogManager
     */
    public String getPage()
    {
-      return this.currentDialogConfig.getPage();
+      return this.currentDialogState.getConfig().getPage();
    }
    
    /**
@@ -178,7 +219,7 @@ public class DialogManager
     */
    public boolean isOKButtonVisible()
    {
-      return this.currentDialogConfig.isOKButtonVisible();
+      return this.currentDialogState.getConfig().isOKButtonVisible();
    }
    
    /**
@@ -191,10 +232,10 @@ public class DialogManager
       List<DialogButtonConfig> buttons = null;
       
       // get a list of buttons to display from the configuration
-      List<DialogButtonConfig> cfgButtons = this.currentDialogConfig.getButtons();
+      List<DialogButtonConfig> cfgButtons = this.currentDialogState.getConfig().getButtons();
       
       // get a list of buttons added dynamically by the dialog
-      List<DialogButtonConfig> dynButtons = this.currentDialog.getAdditionalButtons();
+      List<DialogButtonConfig> dynButtons = this.currentDialogState.getDialog().getAdditionalButtons();
 
       if (cfgButtons != null && dynButtons != null)
       {
@@ -223,7 +264,7 @@ public class DialogManager
     */
    public String getCancelButtonLabel()
    {
-      return this.currentDialog.getCancelButtonLabel();
+      return this.currentDialogState.getDialog().getCancelButtonLabel();
    }
    
    /**
@@ -233,7 +274,7 @@ public class DialogManager
     */
    public String getFinishButtonLabel()
    {
-      return this.currentDialog.getFinishButtonLabel();
+      return this.currentDialogState.getDialog().getFinishButtonLabel();
    }
    
    /**
@@ -243,7 +284,7 @@ public class DialogManager
     */
    public boolean getFinishButtonDisabled()
    {
-      return this.currentDialog.getFinishButtonDisabled();
+      return this.currentDialogState.getDialog().getFinishButtonDisabled();
    }
    
    /**
@@ -253,7 +294,7 @@ public class DialogManager
     */
    public String finish()
    {
-      return this.currentDialog.finish();
+      return this.currentDialogState.getDialog().finish();
    }
    
    /**
@@ -263,6 +304,6 @@ public class DialogManager
     */
    public String cancel()
    {
-      return this.currentDialog.cancel();
+      return this.currentDialogState.getDialog().cancel();
    }
 }

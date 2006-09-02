@@ -6,7 +6,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.repo.action.executer.ScriptActionExecutor;
+import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -25,7 +25,7 @@ public class ScriptHandler extends BaseActionHandler
    
    public String getJSPPath()
    {
-      return getJSPPath(ScriptActionExecutor.NAME);
+      return getJSPPath(ScriptActionExecuter.NAME);
    }
 
    public void prepareForSave(Map<String, Serializable> actionProps,
@@ -34,13 +34,13 @@ public class ScriptHandler extends BaseActionHandler
       // add the selected script noderef to the action properties
       String id = (String)actionProps.get(PROP_SCRIPT);
       NodeRef scriptRef = new NodeRef(Repository.getStoreRef(), id);
-      repoProps.put(ScriptActionExecutor.PARAM_SCRIPTREF, scriptRef);
+      repoProps.put(ScriptActionExecuter.PARAM_SCRIPTREF, scriptRef);
    }
 
    public void prepareForEdit(Map<String, Serializable> actionProps,
          Map<String, Serializable> repoProps)
    {
-      NodeRef scriptRef = (NodeRef)repoProps.get(ScriptActionExecutor.PARAM_SCRIPTREF);
+      NodeRef scriptRef = (NodeRef)repoProps.get(ScriptActionExecuter.PARAM_SCRIPTREF);
       actionProps.put(PROP_SCRIPT, scriptRef.getId());
    }
 

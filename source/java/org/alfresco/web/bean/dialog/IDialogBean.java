@@ -20,6 +20,11 @@ public interface IDialogBean
    public void init(Map<String, String> parameters);
    
    /**
+    * Called when the dialog is restored after a nested dialog is closed
+    */
+   public void restored();
+   
+   /**
     * Method handler called when the cancel button of the dialog is pressed
     * 
     * @return The outcome to return
@@ -60,4 +65,22 @@ public interface IDialogBean
     * @return true if the button should be disabled
     */
    public boolean getFinishButtonDisabled();
+   
+   /**
+    * Returns the title to be used for the dialog
+    * <p>If this returns null the DialogManager will
+    * lookup the title via the dialog configuration</p>
+    * 
+    * @return The title or null if the title is to be acquired via configuration
+    */
+   public String getTitle();
+   
+   /**
+    * Returns the description to be used for the dialog
+    * <p>If this returns null the DialogManager will
+    * lookup the description via the dialog configuration</p>
+    * 
+    * @return The title or null if the title is to be acquired via configuration
+    */
+   public String getDescription();
 }

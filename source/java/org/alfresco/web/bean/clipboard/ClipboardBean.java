@@ -34,8 +34,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -182,12 +180,8 @@ public class ClipboardBean
     */
    private void performPasteItems(int index, int action)
    {
-      UserTransaction tx = null;
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
          if (index == -1)
          {
             // paste all
@@ -219,16 +213,11 @@ public class ClipboardBean
             }
          }
          
-         // commit the transaction
-         tx.commit();
-         
          // refresh UI on success
          UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
       }
       catch (Throwable err)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          Utils.addErrorMessage(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_PASTE) + err.getMessage(), err);
       }
@@ -241,7 +230,7 @@ public class ClipboardBean
     * @param action     the clipboard action to perform (see UIClipboardShelfItem)
     */
    private void performClipboardOperation(ClipboardItem item, int action)
-      throws FileExistsException, FileNotFoundException
+      throws Throwable
    {
       NodeRef destRef = new NodeRef(Repository.getStoreRef(), this.navigator.getCurrentNodeId());
       
@@ -267,8 +256,12 @@ public class ClipboardBean
       boolean operationComplete = false;
       while (operationComplete == false)
       {
+         UserTransaction tx = null;
          try
          {
+            // attempt each copy/paste in its own transaction
+            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+            tx.begin();
             if (item.Mode == ClipboardStatus.COPY)
             {
                if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
@@ -399,10 +392,25 @@ public class ClipboardBean
                 throw fileExistsErr;
             }
          }
-         if (operationComplete == false)
+         catch (Throwable e)
          {
-             String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
-             name = copyOf + ' ' + name;
+            // some other type of exception occured - rollback and exit
+            throw e;
+         }
+         finally
+         {
+            // rollback if the operation didn't complete
+            if (operationComplete == false)
+            {
+               try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+               String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
+               name = copyOf + ' ' + name;
+            }
+            else
+            {
+               // commit the transaction
+               tx.commit();
+            }
          }
       }
    }

@@ -100,9 +100,9 @@
                            <img src="<%=request.getContextPath()%>/images/logo/alfresco3d.jpg" width=520 height=168>
                         </div>
                         <div style="padding:4px">
-                           <a href="http://www.alfresco.org/" class="title" target="new">http://www.alfresco.org</a>
+                           <a href="http://www.alfresco.com/" class="title" target="new">http://www.alfresco.com</a>
                            <p>
-                           Alfresco Software Inc. &#169; 2005-2006 All rights reserved. <a href="http://www.alfresco.org/legalandlicense.html" target="new">Legal and License</a>
+                           Alfresco Software Inc. &#169; 2005-2006 All rights reserved. <a href="http://www.alfresco.com/legal/" target="new">Legal and License</a>
                         </div>
                         
                         <div style="padding:4px" class="mainSubTitle">

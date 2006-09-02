@@ -59,6 +59,11 @@ public abstract class BaseDialogBean implements IDialogBean
       this.isFinished = false;
    }
    
+   public void restored()
+   {
+      // do nothing by default, subclasses can override if necessary
+   }
+   
    public String cancel()
    {
       return getDefaultCancelOutcome();
@@ -124,6 +129,16 @@ public abstract class BaseDialogBean implements IDialogBean
    public boolean getFinishButtonDisabled()
    {
       return true;
+   }
+
+   public String getTitle()
+   {
+      return null;
+   }
+   
+   public String getDescription()
+   {
+      return null;
    }
 
    /**

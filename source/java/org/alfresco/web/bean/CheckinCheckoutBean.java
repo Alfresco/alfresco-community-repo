@@ -40,13 +40,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.templating.OutputUtil;
-import org.alfresco.web.templating.TemplatingService;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
@@ -376,8 +375,8 @@ public class CheckinCheckoutBean
     */
    private Node setupContentDocument(String id)
    {
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Setup for action, setting current document to: " + id);
+      if (logger.isDebugEnabled())
+         logger.debug("Setup for action, setting current document to: " + id);
 
       Node node = null;
       
@@ -427,14 +426,14 @@ public class CheckinCheckoutBean
             tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
             tx.begin();
             
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("Trying to checkout content node Id: " + node.getId());
+            if (logger.isDebugEnabled())
+               logger.debug("Trying to checkout content node Id: " + node.getId());
             
             // checkout the node content to create a working copy
-            if (LOGGER.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-               LOGGER.debug("Checkout copy location: " + getCopyLocation());
-               LOGGER.debug("Selected Space Id: " + this.selectedSpaceId);
+               logger.debug("Checkout copy location: " + getCopyLocation());
+               logger.debug("Selected Space Id: " + this.selectedSpaceId);
             }
             NodeRef workingCopyRef;
             if (getCopyLocation().equals(COPYLOCATION_OTHER) && this.selectedSpaceId != null)
@@ -478,7 +477,7 @@ public class CheckinCheckoutBean
       }
       else
       {
-         LOGGER.warn("WARNING: checkoutFile called without a current Document!");
+         logger.warn("WARNING: checkoutFile called without a current Document!");
       }
       
       return outcome;
@@ -494,16 +493,22 @@ public class CheckinCheckoutBean
       Node node = getWorkingDocument();
       if (node != null)
       {
+         // reset the underlying node
+         if (this.browseBean.getDocument() != null)
+         {
+            this.browseBean.getDocument().reset();
+         }
+         
          // clean up and clear action context
          clearUpload();
          setDocument(null);
          setWorkingDocument(null);
-         
-         outcome = "browse";
+
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
       }
       else
       {
-         LOGGER.warn("WARNING: checkoutFileOK called without a current WorkingDocument!");
+         logger.warn("WARNING: checkoutFileOK called without a current WorkingDocument!");
       }
       
       return outcome;
@@ -524,11 +529,11 @@ public class CheckinCheckoutBean
          setDocument(null);
          setWorkingDocument(null);
          
-         outcome = "browse";
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
       }
       else
       {
-         LOGGER.warn("WARNING: editFileOK called without a current Document!");
+         logger.warn("WARNING: editFileOK called without a current Document!");
       }
       
       return outcome;
@@ -567,17 +572,12 @@ public class CheckinCheckoutBean
                    MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
                {
                   // make content available to the editing screen
-		   String contentString = reader.getContentString();
-		   setDocumentContent(contentString); 
-		   setEditorOutput(contentString);
-		   
-		   // navigate to appropriate screen
-		   FacesContext fc = FacesContext.getCurrentInstance();
-		   this.navigator.setupDispatchContext(node);
-		   String s = (MimetypeMap.MIMETYPE_XML.equals(mimetype)
-			       ? "editXmlInline"
-			       : "editTextInline");
-		   fc.getApplication().getNavigationHandler().handleNavigation(fc, null, s);
+                  setEditorOutput(reader.getContentString());
+                  
+                  // navigate to appropriate screen
+                  FacesContext fc = FacesContext.getCurrentInstance();
+                  this.navigator.setupDispatchContext(node);
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editTextInline");
                }
                else
                {
@@ -588,7 +588,7 @@ public class CheckinCheckoutBean
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();
                   this.navigator.setupDispatchContext(node);
-                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editHtmlInline");
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editHtmlInline");
                }
             }
          }
@@ -598,7 +598,7 @@ public class CheckinCheckoutBean
             // normal downloadable document
             FacesContext fc = FacesContext.getCurrentInstance();
             this.navigator.setupDispatchContext(node);
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "editFile");
+            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editFile");
          }
       }
    }
@@ -620,31 +620,23 @@ public class CheckinCheckoutBean
             tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
             tx.begin();
             
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("Trying to update content node Id: " + node.getId());
+            if (logger.isDebugEnabled())
+               logger.debug("Trying to update content node Id: " + node.getId());
             
             // get an updating writer that we can use to modify the content on the current node
             ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
             writer.putContent(this.editorOutput);
-          
+            
             // commit the transaction
             tx.commit();
-
-	    if (nodeService.getProperty(node.getNodeRef(),
-					TemplatingService.TT_QNAME) != null)
-	    {
-		OutputUtil.regenerate(node.getNodeRef(),
-				      this.contentService,
-				      this.nodeService);
-	    }
             
             // clean up and clear action context
             clearUpload();
             setDocument(null);
             setDocumentContent(null);
             setEditorOutput(null);
-            
-            outcome = "browse";
+
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable err)
          {
@@ -656,7 +648,7 @@ public class CheckinCheckoutBean
       }
       else
       {
-         LOGGER.warn("WARNING: editInlineOK called without a current Document!");
+         logger.warn("WARNING: editInlineOK called without a current Document!");
       }
       
       return outcome;
@@ -679,7 +671,7 @@ public class CheckinCheckoutBean
             
             clearUpload();
             
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable err)
          {
@@ -689,7 +681,7 @@ public class CheckinCheckoutBean
       }
       else
       {
-         LOGGER.warn("WARNING: undoCheckout called without a current WorkingDocument!");
+         logger.warn("WARNING: undoCheckout called without a current WorkingDocument!");
       }
       
       return outcome;
@@ -726,10 +718,10 @@ public class CheckinCheckoutBean
             {
                throw new IllegalStateException("Node supplied for undo checkout has neither Working Copy or Locked aspect!");
             }
-            
+         
             clearUpload();
             
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
          }
          catch (Throwable err)
          {
@@ -738,7 +730,7 @@ public class CheckinCheckoutBean
       }
       else
       {
-         LOGGER.warn("WARNING: undoCheckout called without a current WorkingDocument!");
+         logger.warn("WARNING: undoCheckout called without a current WorkingDocument!");
       }
       
       return outcome;
@@ -763,8 +755,8 @@ public class CheckinCheckoutBean
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("Trying to checkin content node Id: " + node.getId());
+            if (logger.isDebugEnabled())
+               logger.debug("Trying to checkin content node Id: " + node.getId());
             
             // we can either checkin the content from the current working copy node
             // which would have been previously updated by the user
@@ -816,7 +808,8 @@ public class CheckinCheckoutBean
             setDocument(null);
             clearUpload();
             
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+                      AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
          }
          catch (Throwable err)
          {
@@ -828,7 +821,7 @@ public class CheckinCheckoutBean
       }
       else
       {
-         LOGGER.warn("WARNING: checkinFileOK called without a current Document!");
+         logger.warn("WARNING: checkinFileOK called without a current Document!");
       }
       
       return outcome;
@@ -853,8 +846,8 @@ public class CheckinCheckoutBean
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("Trying to update content node Id: " + node.getId());
+            if (logger.isDebugEnabled())
+               logger.debug("Trying to update content node Id: " + node.getId());
             
             // get an updating writer that we can use to modify the content on the current node
             ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
@@ -872,7 +865,7 @@ public class CheckinCheckoutBean
             setDocument(null);
             clearUpload();
             
-            outcome = "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable err)
          {
@@ -884,7 +877,7 @@ public class CheckinCheckoutBean
       }
       else
       {
-         LOGGER.warn("WARNING: updateFileOK called without a current Document!");
+         logger.warn("WARNING: updateFileOK called without a current Document!");
       }
       
       return outcome;
@@ -898,7 +891,7 @@ public class CheckinCheckoutBean
       // reset the state
       clearUpload();
       
-      return "browse";
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
    
    /**
@@ -929,7 +922,7 @@ public class CheckinCheckoutBean
    // ------------------------------------------------------------------------------
    // Private data
    
-   private static final Log LOGGER = LogFactory.getLog(CheckinCheckoutBean.class);
+   private static Log logger = LogFactory.getLog(CheckinCheckoutBean.class);
    
    /** I18N messages */
    private static final String MSG_ERROR_CHECKIN = "error_checkin";

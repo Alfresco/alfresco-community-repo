@@ -31,6 +31,10 @@
          <property-name>browseBean</property-name>
          <value>#{BrowseBean}</value>
       </managed-property>
+      <managed-property>
+         <property-name>userPreferencesBean</property-name>
+         <value>#{UserPreferencesBean}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -59,6 +63,10 @@
       <managed-property>
          <property-name>ruleService</property-name>
          <value>#{RuleService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>userPreferencesBean</property-name>
+         <value>#{UserPreferencesBean}</value>
       </managed-property>
    </managed-bean>
    
@@ -539,6 +547,56 @@
       </description>
       <managed-bean-name>SetContentPropertiesDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.content.SetContentPropertiesDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Set Content Properties Dialog
+      </description>
+      <managed-bean-name>SetContentPropertiesDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.content.SetContentPropertiesDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the View Content Properties Dialog
+      </description>
+      <managed-bean-name>ViewContentPropertiesDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.content.ViewContentPropertiesDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1387,10 +1445,6 @@
          <value>#{FileFolderService}</value>
       </managed-property>
       <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>
@@ -1551,8 +1605,8 @@
          <value>#{ContentService}</value>
       </managed-property>
       <managed-property>
-         <property-name>dictionaryService</property-name>
-         <value>#{DictionaryService}</value>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
       </managed-property>
    </managed-bean>
    
@@ -1658,8 +1712,45 @@
          <value>#{BrowseBean}</value>
       </managed-property>
       <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Delete Post Dialog
+      </description>
+      <managed-bean-name>DeletePostDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.forums.DeletePostDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
       </managed-property>
       <managed-property>
          <property-name>namespaceService</property-name>
@@ -1765,10 +1856,51 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Manage WorkItem Dialog
+         The bean that backs up the Manage Task Dialog
       </description>
-      <managed-bean-name>ManageWorkItemDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.workflow.ManageWorkItemDialog</managed-bean-class>
+      <managed-bean-name>ManageTaskDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.workflow.ManageTaskDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>namespaceService</property-name>
+         <value>#{NamespaceService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the View Completed Task Dialog
+      </description>
+      <managed-bean-name>ViewCompletedTaskDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.workflow.ViewCompletedTaskDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1829,8 +1961,8 @@
          <value>#{BrowseBean}</value>
       </managed-property>
       <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
       </managed-property>
       <managed-property>
          <property-name>namespaceService</property-name>
@@ -1885,10 +2017,10 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Reassign Work Item Dialog
+         The bean that backs up the Reassign Task Dialog
       </description>
-      <managed-bean-name>ReassignWorkItemDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.workflow.ReassignWorkItemDialog</managed-bean-class>
+      <managed-bean-name>ReassignTaskDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.workflow.ReassignTaskDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1976,27 +2108,25 @@
    </managed-bean>
    
    <managed-bean>
-		<description>Bean that manages the Dashboard framework</description>
-		<managed-bean-name>DashboardManager</managed-bean-name>
-		<managed-bean-class>org.alfresco.web.bean.dashboard.DashboardManager</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	
-	<managed-bean>
       <description>
-         The bean that backs up the Dashboard Config Wizard
+         The bean that backs up the Getting Started Dashlet page
       </description>
-      <managed-bean-name>DashboardWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.dashboard.DashboardWizard</managed-bean-class>
+      <managed-bean-name>GettingStartedBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.dashboard.GettingStartedBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
+         <property-name>navigationBean</property-name>
+         <value>#{NavigationBean}</value>
       </managed-property>
-      <managed-property>
-         <property-name>dashboardManager</property-name>
-         <value>#{DashboardManager}</value>
-      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the User Preferences page
+      </description>
+      <managed-bean-name>UserPreferencesBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.UserPreferencesBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
    
    
@@ -2144,17 +2274,44 @@
       <managed-bean-class>org.alfresco.web.bean.generator.SeparatorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-	
-	<managed-bean>
+   
+   <managed-bean>
       <description>
-         Bean that generates a header separator component
+         Bean that generates a label separator component
+      </description>
+      <managed-bean-name>LabelSeparatorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.LabelSeparatorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that generates a label separator component rendered as a heading
       </description>
       <managed-bean-name>HeaderSeparatorGenerator</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.generator.HeaderSeparatorGenerator</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.generator.LabelSeparatorGenerator</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>styleClass</property-name>
+         <value>wizardSectionHeading mainSubTitle</value>
+      </managed-property>
    </managed-bean>
    
-   
+   <!--
+   <managed-bean>
+      <description>
+         Bean that generates a HTML separator component
+      </description>
+      <managed-bean-name>MyCustomSeparatorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.HtmlSeparatorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>html</property-name>
+         <value><![CDATA[This is <i>my</i> custom header]]></value>
+      </managed-property>
+   </managed-bean>
+   -->
+    
    <!-- ==================== AJAX BEANS ==================== -->
    
    <managed-bean>
@@ -2172,34 +2329,6 @@
          <property-name>contentService</property-name>
          <value>#{ContentService}</value>
       </managed-property>
-   </managed-bean>
-   
-   <!-- ==================== AJAX BEANS ==================== -->
-   
-   <managed-bean>
-      <description>
-         Bean that returns information on a node
-      </description>
-      <managed-bean-name>NodeInfoBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.ajax.NodeInfoBean</managed-bean-class>
-      <managed-bean-scope>request</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>contentService</property-name>
-         <value>#{ContentService}</value>
-      </managed-property>
-   </managed-bean>
-
-   <managed-bean>
-      <description>
-         Bean that returns information on a node
-      </description>
-      <managed-bean-name>XFormsBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.ajax.XFormsBean</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
    
 </faces-config>

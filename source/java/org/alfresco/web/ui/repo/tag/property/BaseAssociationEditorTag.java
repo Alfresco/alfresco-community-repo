@@ -34,6 +34,7 @@ public abstract class BaseAssociationEditorTag extends BaseComponentTag
    private String selectedItemsMsg;
    private String noSelectedItemsMsg;
    private String disabled;
+   private String value;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getRendererType()
@@ -56,7 +57,16 @@ public abstract class BaseAssociationEditorTag extends BaseComponentTag
       setStringProperty(component, "selectItemsMsg", this.selectItemsMsg);
       setStringProperty(component, "selectedItemsMsg", this.selectedItemsMsg);
       setStringProperty(component, "noSelectedItemsMsg", this.noSelectedItemsMsg);
+      setStringProperty(component, "value", this.value);
       setBooleanProperty(component, "disabled", this.disabled);
+   }
+   
+   /**
+    * @param value The value to set.
+    */
+   public void setValue(String value)
+   {
+      this.value = value;
    }
    
    /**
@@ -140,6 +150,7 @@ public abstract class BaseAssociationEditorTag extends BaseComponentTag
       this.selectedItemsMsg = null;
       this.noSelectedItemsMsg = null;
       this.disabled = null;
+      this.value = null;
 
       super.release();
    }

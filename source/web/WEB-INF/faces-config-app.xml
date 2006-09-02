@@ -6,7 +6,7 @@
    <!-- ==================== APPLICATION ==================== -->
    <application>
       <navigation-handler>org.alfresco.web.app.AlfrescoNavigationHandler</navigation-handler>
-      <variable-resolver>org.springframework.web.jsf.DelegatingVariableResolver</variable-resolver>
+      <variable-resolver>org.alfresco.web.app.AlfrescoVariableResolver</variable-resolver>
       <locale-config>
          <default-locale>en</default-locale>
       </locale-config>

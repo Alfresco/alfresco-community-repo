@@ -528,3 +528,14 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-style: solid;
    border-color: #AAAAAA;
 }
+
+.workflowSummary
+{
+   margin-left: 6px;
+}
+
+.workflowSummary td
+{
+   padding-right: 9px;
+   padding-top: 4px;
+}

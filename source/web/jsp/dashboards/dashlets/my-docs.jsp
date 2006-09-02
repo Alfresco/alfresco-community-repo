@@ -14,9 +14,7 @@
   language governing permissions and limitations under the
   License.
 --%>
-<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
-<%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
-<%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
+<%-- Note that this template is loaded from the classpath --%>
 <r:template template="/alfresco/templates/my_docs.ftl" />

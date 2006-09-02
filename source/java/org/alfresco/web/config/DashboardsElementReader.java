@@ -37,6 +37,7 @@ public class DashboardsElementReader implements ConfigElementReader
    public static final String ELEMENT_LAYOUT = "layout";
    public static final String ELEMENT_DASHLETS = "dashlets";
    public static final String ELEMENT_DASHLET = "dashlet";
+   public static final String ELEMENT_GUESTCONFIG = "allow-guest-config";
    public static final String ATTR_ID = "id";
    public static final String ATTR_COLUMNS = "columns";
    public static final String ATTR_COLUMNLENGTH = "column-length";
@@ -84,6 +85,13 @@ public class DashboardsElementReader implements ConfigElementReader
                DashletDefinition dashletDef = parseDashletDefinition(dashletsItr.next());
                configElement.addDashletDefinition(dashletDef);
             }
+         }
+         
+         Element guestConfigElement = element.element(ELEMENT_GUESTCONFIG);
+         if (guestConfigElement != null)
+         {
+            boolean allow = Boolean.parseBoolean(guestConfigElement.getTextTrim());
+            configElement.setAllowGuestConfig(allow);
          }
       }
       

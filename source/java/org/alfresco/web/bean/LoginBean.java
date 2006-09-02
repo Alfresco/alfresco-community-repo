@@ -91,11 +91,19 @@ public class LoginBean
    }
    
    /**
-    * @param navigator The NavigationBean to set.
+    * @param navigator     The NavigationBean to set.
     */
    public void setNavigator(NavigationBean navigator)
    {
       this.navigator = navigator;
+   }
+   
+   /**
+    * @param preferences   The UserPreferencesBean to set
+    */
+   public void setUserPreferencesBean(UserPreferencesBean preferences)
+   {
+      this.preferences = preferences;
    }
    
    /**
@@ -329,7 +337,7 @@ public class LoginBean
             else
             {
                // special case to handle jump to My Alfresco page initially
-               String location = Application.getClientConfig(FacesContext.getCurrentInstance()).getInitialLocation();
+               String location = this.preferences.getStartLocation();
                if (NavigationBean.LOCATION_MYALFRESCO.equals(location))
                {
                   return "myalfresco";
@@ -451,4 +459,7 @@ public class LoginBean
    
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
+   
+   /** The user preferences bean reference */
+   protected UserPreferencesBean preferences;
 }

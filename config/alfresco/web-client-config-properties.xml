@@ -172,7 +172,9 @@
       </property-sheet>
    </config>
    
+   <!-- ********************************** -->
    <!-- Configuration for discussion types -->
+   <!-- ********************************** -->
    
    <config evaluator="node-type" condition="fm:forums">
       <property-sheet>
@@ -204,6 +206,79 @@
          <!-- hide the description and title properties -->
          <show-property name="description" show-in-view-mode="false" show-in-edit-mode="false" />
          <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
+   <!-- ******************************** -->
+   <!-- Configuration for workflow types -->
+   <!-- ******************************** -->
+   
+   <!-- Generic workflow task -->
+   
+   <config evaluator="node-type" condition="bpm:workflowTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:status" />
+         <show-property name="bpm:dueDate" />
+         <show-property name="bpm:priority" />
+      </property-sheet>
+   </config>
+   
+   <!-- Review and Approve workflow tasks -->
+   
+   <config evaluator="node-type" condition="wf:reviewTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:status" />
+         <show-property name="bpm:dueDate" />
+         <show-property name="bpm:priority" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wf:submitReviewTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wf:reviewPriority" />
+         <show-property name="wf:reviewDueDate" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="wf:reviewer" />
+      </property-sheet>
+   </config>
+   
+   <!-- Ad hoc workflow tasks -->
+
+   <config evaluator="node-type" condition="wf:submitAdhocTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wf:adhocDescription" component-generator="TextAreaGenerator" />
+         <show-property name="wf:adhocPriority" />
+         <show-property name="wf:adhocDueDate" />
+         <show-property name="wf:notifyMe" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="wf:assignee" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wf:adhocTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="wf:adhocDescription" ignore-if-missing="false" component-generator="TextAreaGenerator" />
+         <show-property name="bpm:status" />
+         <show-property name="bpm:dueDate" />
+         <show-property name="bpm:priority" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wf:completedAdhocTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="wf:adhocDescription" component-generator="TextAreaGenerator" />
+         <show-property name="bpm:dueDate" />
+         <show-property name="bpm:priority" />
       </property-sheet>
    </config>
    

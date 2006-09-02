@@ -94,24 +94,14 @@
 
    <!--  -->
    <!-- JBPM START -->
+   <!-- Used by the JPBM console for monitoring in-flight workflows -->
    <!-- TODO: Remove this block - just a temporary placement for testing -->
    <!--  -->
    
    <filter>
-      <filter-name>LogFilter</filter-name>
-      <filter-class>org.jbpm.webapp.filter.LogFilter</filter-class>
-   </filter>
-   <filter>
       <filter-name>JbpmContextFilter</filter-name>
       <filter-class>org.jbpm.webapp.filter.JbpmContextFilter</filter-class>
-<!--   <filter-class>org.jbpm.webapp.filter.JbpmContextFilter</filter-class> -->
    </filter>
-<!-- 
-   <filter>
-      <filter-name>JbpmAuthenticationFilter</filter-name>
-      <filter-class>org.jbpm.webapp.filter.AuthenticationFilter</filter-class>
-   </filter>
--->
 
    <!--  -->
    <!-- JBPM END -->
@@ -138,31 +128,14 @@
    
   <!--  -->
    <!-- JBPM START -->
+   <!-- Used by the JPBM console for monitoring in-flight workflows -->
    <!-- TODO: Remove this block - just a temporary placement for testing -->
    <!--  -->
 
    <filter-mapping>
-      <filter-name>LogFilter</filter-name>
-      <url-pattern>/faces/jbpm/*</url-pattern>
-   </filter-mapping>
-   <filter-mapping>
       <filter-name>JbpmContextFilter</filter-name>
       <url-pattern>/faces/jbpm/*</url-pattern>
    </filter-mapping>
-   <filter-mapping>
-      <filter-name>JbpmContextFilter</filter-name>
-      <url-pattern>/processimage</url-pattern>
-   </filter-mapping>
-   <filter-mapping>
-      <filter-name>JbpmContextFilter</filter-name>
-      <url-pattern>/faces/jsp/dashboards/*</url-pattern>
-   </filter-mapping>
-<!-- 
-   <filter-mapping>
-      <filter-name>JbpmAuthenticationFilter</filter-name>
-      <url-pattern>/faces/jbpm/*</url-pattern>
-   </filter-mapping>   
--->
 
    <!--  -->
    <!-- JBPM END -->
@@ -241,30 +214,6 @@
       <servlet-name>JBPMDeployProcessServlet</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
    </servlet>
-      
-      
-   <!--  -->
-   <!-- JBPM START -->
-   <!-- TODO: Remove this block - just a temporary placement for testing -->
-   <!--  -->
-
-<!-- 
-   <servlet>
-      <servlet-name>JbpmThreadsServlet</servlet-name>
-      <servlet-class>org.jbpm.web.JbpmThreadsServlet</servlet-class>
-      <load-on-startup>1</load-on-startup>
-   </servlet>
--->
-
-   <!-- jBPM FileServlet -->
-   <servlet>
-      <servlet-name>ProcessImageServlet</servlet-name>
-      <servlet-class>org.jbpm.webapp.servlet.ProcessImageServlet</servlet-class>
-   </servlet>
-
-   <!--  -->
-   <!-- JBPM END -->
-   <!--  -->
             
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
@@ -315,28 +264,6 @@
       <servlet-name>JBPMDeployProcessServlet</servlet-name>
       <url-pattern>/jbpm/deployprocess</url-pattern>
    </servlet-mapping>
-
-   <!--  -->
-   <!-- JBPM START -->
-   <!-- TODO: Remove this block - just a temporary placement for testing -->
-   <!--  -->
-   
-<!-- 
-   <servlet-mapping>
-      <servlet-name>JbpmThreadsServlet</servlet-name>
-      <url-pattern>/threads</url-pattern>
-   </servlet-mapping> 
--->
-   
-   <!-- jBPM FileServlet -->
-   <servlet-mapping>
-      <servlet-name>ProcessImageServlet</servlet-name>
-      <url-pattern>/processimage</url-pattern>
-   </servlet-mapping>
-
-   <!--  -->
-   <!-- JBPM END -->
-   <!--  -->
 
    <session-config>
       <session-timeout>60</session-timeout>

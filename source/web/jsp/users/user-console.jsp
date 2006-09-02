@@ -134,14 +134,25 @@
                               </a:panel>
                               <div style="padding:4px"></div>
                               
-                              <h:panelGroup id="pref-panel-facets">
+                              <%--<h:panelGroup id="pref-panel-facets">
                                  <f:facet name="title">
                                     <a:actionLink  value="#{msg.modify}" action="" showLink="false" image="/images/icons/Change_details.gif" rendered="#{NavigationBean.isGuest == false}" />
                                  </f:facet>
-                              </h:panelGroup>
-                              <a:panel label="#{msg.general_pref}" id="pref-panel" facetsId="pref-panel-facets"
+                              </h:panelGroup>--%>
+                              <a:panel label="#{msg.general_pref}" id="pref-panel" rendered="#{NavigationBean.isGuest == false}"
                                        border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
-                                 <table width=100% cellspacing=2 cellpadding=2 border=0>
+                                 <table cellspacing=2 cellpadding=2 border=0>
+                                    <tr>
+                                       <td>
+                                          <h:outputText value="#{msg.start_location}" />:&nbsp;
+                                       </td>
+                                       <td>
+                                          <%-- Start Location drop-down selector --%>
+                                          <h:selectOneMenu id="start-location" value="#{UserPreferencesBean.startLocation}" onchange="document.forms['user-console'].submit(); return true;">
+                                             <f:selectItems value="#{UserPreferencesBean.startLocations}" />
+                                          </h:selectOneMenu>
+                                       </td>
+                                    </tr>
                                  </table>
                               </a:panel>
                            </td>

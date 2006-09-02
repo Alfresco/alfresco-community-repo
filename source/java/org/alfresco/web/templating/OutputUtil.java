@@ -40,6 +40,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.avm.AVMExistsException;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ContentReader;

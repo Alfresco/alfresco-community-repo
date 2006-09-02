@@ -1006,7 +1006,7 @@
 
     <!-- The AVMService -->
     
-    <bean id="AVMService" class="org.alfresco.repo.avm.AVMServiceImpl">
+    <bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl">
 	    <property name="retryingTransaction">
 	    	<ref bean="retryingTransaction"/>
 	    </property>
@@ -1014,6 +1014,29 @@
 	    	<ref bean="avmRepository"/>
 	    </property>
 	</bean>
+	
+	<bean id="AVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="proxyInterfaces">
+			<value>org.alfresco.service.cmr.avm.AVMService</value>
+		</property>
+		<property name="target">
+			<ref bean="avmService"/>
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<idref local="AVMService_descriptor"/>
+			</list>
+		</property>
+	</bean>
+
+    <bean id="AVMService_descriptor" parent="AlfrescoServiceDescriptor">
+        <property name="interface">
+            <value>org.alfresco.service.cmr.avm.AVMService</value>
+        </property>
+        <property name="description">
+            <value>AVM Service</value>
+        </property>
+    </bean>
     
     <!-- Workflow Service -->
     

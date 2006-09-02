@@ -25,6 +25,7 @@ import java.util.Map;
 import org.alfresco.service.ServiceDescriptor;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -321,5 +322,14 @@ public class ServiceDescriptorRegistry
     public WorkflowService getWorkflowService()
     {
         return (WorkflowService)getService(WORKFLOW_SERVICE);
+    }
+    
+    /**
+     * Get the AVMService.
+     * @return The AVMService or null if there is none.
+     */
+    public AVMService getAVMService()
+    {
+        return (AVMService)getService(AVM_SERVICE);
     }
 }

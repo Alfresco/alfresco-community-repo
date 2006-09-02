@@ -26,6 +26,7 @@ import org.alfresco.service.license.LicenseDescriptor;
  * @author David Caruana
  *
  */
+// This is not a public service in the normal sense
 public interface DescriptorService
 {
     /**

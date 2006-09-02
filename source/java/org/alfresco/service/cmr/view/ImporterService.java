@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.view;
 import java.io.Reader;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 
 
 /**
@@ -27,6 +28,7 @@ import org.alfresco.service.Auditable;
  * @author David Caruana
  *
  */
+@PublicService
 public interface ImporterService
 {
 

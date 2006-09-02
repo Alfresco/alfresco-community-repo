@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -38,6 +39,7 @@ import org.alfresco.service.namespace.QName;
  * @author Andy hind
  * 
  */
+@PublicService
 public interface SearchService
 {
     public static final String LANGUAGE_LUCENE = "lucene";

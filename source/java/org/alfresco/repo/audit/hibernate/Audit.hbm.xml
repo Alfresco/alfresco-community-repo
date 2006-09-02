@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    '-//Hibernate/Hibernate Mapping DTD 3.0//EN' 
+    'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
+
+<!-- Hibernate mapping for storing audit information -->
+<!--                                                 -->
+<!-- This generates a simple star schema for audit   -->
+<!-- breakdown and roll up.                          -->
+<!--                                                 -->
+
+<hibernate-mapping>
+    
+    <!-- The fact -->
+    
+    <class name="org.alfresco.repo.audit.hibernate.AuditFactImpl" proxy="org.alfresco.repo.audit.hibernate.AuditFact" table="alf_audit_fact" dynamic-update="false" dynamic-insert="false"
+        select-before-update="false" lazy="true" optimistic-lock="version">
+        
+        <!-- An auto-generated id -->
+        <id name="id" column="id" type="long">
+            <generator class="native"/>
+        </id>
+        
+        <!-- Fact properties -->
+        
+        <property name="userId" column="user_id" type="string" length="255" not-null="true" index="adt_user_idx"/>
+        <property name="date" column="timestamp" type="timestamp" not-null="true"/>
+        <property name="transactionId" column="transaction_id" type="string" length="56" not-null="true"/>
+        <property name="sessionId" column="session_id" type="string" length="56" not-null="false"/>
+        <property name="storeProtocol" column="store_protocol" type="string" length="50" not-null="false" index="adt_store_idx"/>
+        <property name="storeId" column="store_id" type="string" length="100" not-null="false" index="adt_store_idx"/>
+        <property name="nodeUUID" column="node_uuid" type="string" length="36" not-null="false" index="adt_store_idx"/>
+        <property name="path" column="path" type="string" length="512" not-null="false"/>
+        <property name="filtered" column="filtered" type="boolean" not-null="true"/>
+        <property name="returnValue" column="return_val" type="string" length="1024" not-null="false"/>
+        <property name="arg1" column="arg_1" type="string" length="1024" not-null="false"/>
+        <property name="arg2" column="arg_2" type="string" length="1024" not-null="false"/>
+        <property name="arg3" column="arg_3" type="string" length="1024" not-null="false"/>
+        <property name="arg4" column="arg_4" type="string" length="1024" not-null="false"/>
+        <property name="arg5" column="arg_5" type="string" length="1024" not-null="false"/>
+        <property name="fail" column="fail" type="boolean" not-null="true"/>
+        <!-- TODO: Check the URL length ...-->
+        <property name="serialisedURL" column="serialized_url" type="string" length="1024" not-null="false"/>
+        <property name="exception" column="exception" type="string" length="1024" not-null="false"/>
+        <property name="hostInetAddress" column="host_address" type="string" length="1024" not-null="false"/>
+        <property name="clientInetAddress" column="client_address" type="string" length="1024" not-null="false"/>
+        <property name="message" column="message" type="string" length="1024" not-null="false"/>
+        
+        <!-- Links to dimensions -->
+        
+        <many-to-one name="auditDate" class="org.alfresco.repo.audit.hibernate.AuditDateImpl" not-null="true" lazy="proxy" column="audit_date_id" cascade="none" optimistic-lock="true" fetch="join"/>
+        <many-to-one name="auditConfig" class="org.alfresco.repo.audit.hibernate.AuditConfigImpl" not-null="true" lazy="proxy" column="audit_conf_id" cascade="none" optimistic-lock="true" fetch="join"/>
+        <many-to-one name="auditSource" class="org.alfresco.repo.audit.hibernate.AuditSourceImpl" not-null="true" lazy="proxy" column="audit_source_id" cascade="none" optimistic-lock="true" fetch="join"/>
+        
+    </class>
+    
+    <!-- The audit date dimension -->
+    
+    <class name="org.alfresco.repo.audit.hibernate.AuditDateImpl" proxy="org.alfresco.repo.audit.hibernate.AuditDate" table="alf_audit_date" dynamic-update="false" dynamic-insert="false"
+        select-before-update="false" lazy="true" optimistic-lock="version">
+        
+        <!-- An auto-generated id -->
+        <id name="id" column="id" type="long">
+            <generator class="native"/>
+        </id>
+        
+        <!-- Date is used as the key for look up -->
+       
+        <property name="date" column="date" type="date"                    index="adt_date_idx" not-null="true"/>
+        <property name="dayOfYear" column="day_of_year" type="integer"     index="adt_doy_idx"  not-null="true"/>
+        <property name="dayOfMonth" column="day_of_month" type="integer"   index="adt_dom_idx"  not-null="true"/>
+        <property name="dayOfWeek" column="day_of_week" type="integer"     index="adt_dow_idx"  not-null="true"/>
+        <property name="weekOfYear" column="week_of_year" type="integer"   index="adt_woy_idx"  not-null="true"/>
+        <property name="weekOfMonth" column="week_of_month" type="integer" index="adt_wom_idx"  not-null="true"/>
+        <property name="month" column="month" type="integer"               index="adt_m_idx"    not-null="true"/>
+        <property name="quarter" column="quarter" type="integer"           index="adt_q_idx"    not-null="true"/>
+        <property name="halfYear" column="halfYear" type="integer"         index="adt_hy_idx"   not-null="true"/>
+        <property name="year" column="year" type="integer"                 index="adt_y_idx"    not-null="true"/>        
+        
+    </class>
+    
+    <!-- The audit configuration dimension -->
+    
+    <class name="org.alfresco.repo.audit.hibernate.AuditConfigImpl" proxy="org.alfresco.repo.audit.hibernate.AuditConfig" table="alf_audit_config" dynamic-update="false" dynamic-insert="false"
+        select-before-update="false" lazy="true" optimistic-lock="version">
+        
+        <!-- Max id is used to find the latest audit configuration -->
+        
+        <!-- An auto-generated id -->
+        <id name="id" column="id" type="long">
+            <generator class="native"/>
+        </id>
+        
+        <property name="configURL" column="config_url" type="string" length="256"  not-null="true"/>
+       
+    </class>
+    
+     <!-- The audit source dimension -->
+    
+    <class name="org.alfresco.repo.audit.hibernate.AuditSourceImpl" proxy="org.alfresco.repo.audit.hibernate.AuditSource" table="alf_audit_source" dynamic-update="false" dynamic-insert="false"
+        select-before-update="false" lazy="true" optimistic-lock="version">
+        
+        <!-- An auto-generated id -->
+        <id name="id" column="id" type="long">
+            <generator class="native"/>
+        </id>
+        
+        <!-- The app_source_idx index is used to find the app source -->
+        <!-- The look up is always the tripple, the service and method or just the method may be null -->
+        
+        <property name="application" column="application" type="string" length="256" not-null="true" index="app_source_idx"/>
+        <property name="service" column="service" type="string" length="256" not-null="false" index="app_source_idx"/>
+        <property name="method" column="method" type="string" length="256" not-null="false" index="app_source_idx"/>
+        
+    </class>
+    
+    <query name="audit.GetLatestAuditDate">
+        select
+            audit_date
+        from
+            org.alfresco.repo.audit.hibernate.AuditDateImpl as audit_date
+        where
+            audit_date.id = (select max(audit_date_2.id) from  org.alfresco.repo.audit.hibernate.AuditDateImpl as audit_date_2)
+    </query>
+    
+    <query name="audit.GetLatestAuditConfig">
+        select
+            audit_config
+        from
+            org.alfresco.repo.audit.hibernate.AuditConfigImpl as audit_config
+        where
+            audit_config.id = (select max(audit_config_2.id) from org.alfresco.repo.audit.hibernate.AuditConfigImpl as audit_config_2)
+    </query>
+    
+    <query name="audit.GetAuditSourceByApplication">
+        select 
+            audit_store
+        from
+            org.alfresco.repo.audit.hibernate.AuditSourceImpl as audit_store
+        where
+            audit_store.application = :application and
+            audit_store.service is null and
+            audit_store.method is null 
+    </query>
+    
+    <query name="audit.GetAuditSourceByApplicationServiceMethod">
+        select 
+            audit_store
+        from
+            org.alfresco.repo.audit.hibernate.AuditSourceImpl as audit_store
+        where
+            audit_store.application = :application and
+            audit_store.service = :service and
+            audit_store.method = :method
+    </query>
+    
+</hibernate-mapping>

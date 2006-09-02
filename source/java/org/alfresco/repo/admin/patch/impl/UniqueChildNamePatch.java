@@ -216,6 +216,9 @@ public class UniqueChildNamePatch extends AbstractPatch
                             writeLine("     Replaced with:  " + usedChildName);
                         }
                     }
+                    // clear the session to preserve memory
+                    getSession().flush();
+                    getSession().clear();
                 }
             }
             

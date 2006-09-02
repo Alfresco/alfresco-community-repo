@@ -46,6 +46,10 @@ public class Repository extends Tool
                 context.setHelp(true);
                 break;
             }
+            else if (args[i].equals("-verbose"))
+            {
+                context.setVerbose(true);
+            }
             else if (args[i].equals("-user"))
             {
                 i++;

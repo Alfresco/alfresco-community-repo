@@ -307,23 +307,6 @@ public class IntegrityTest extends TestCase
         logger.error("Method commented out: testRemoveSourcesOfMandatoryAssocs");
     }
     
-    public void testDuplicateTargetAssocs() throws Exception
-    {
-        NodeRef parent = createNode("source", TEST_TYPE_WITH_CHILD_ASSOCS, null);
-        NodeRef child1 = createNode("child1", TEST_TYPE_WITHOUT_ANYTHING, null);
-        NodeRef child2 = createNode("child2", TEST_TYPE_WITHOUT_ANYTHING, null);
-        NodeRef child3 = createNode("child3", TEST_TYPE_WITHOUT_ANYTHING, null);
-        
-        // satisfy the one-to-one
-        nodeService.addChild(parent, child3, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "mandatoryChild"));
-        
-        // create the non-duplicate assocs
-        nodeService.addChild(parent, child1, TEST_ASSOC_CHILD_ZEROMANY_ZEROMANY, QName.createQName(NAMESPACE, "dupli_cate"));
-        nodeService.addChild(parent, child2, TEST_ASSOC_CHILD_ZEROMANY_ZEROMANY, QName.createQName(NAMESPACE, "dupli_cate"));
-        
-        checkIntegrityExpectFailure("Failed to detect duplicate association names", 1);
-    }
-
     public void testCreateSourceOfAssocsWithMandatoryTargetsPresent() throws Exception
     {
         NodeRef source = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);

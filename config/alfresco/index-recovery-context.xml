@@ -22,17 +22,11 @@
       <property name="nodeService">
           <ref bean="nodeService" />
       </property>
-      <property name="stores">
-        <list>
-            <value>workspace://SpacesStore</value>
-            <value>workspace://lightWeightVersionStore</value>
-            <value>user://alfrescoUserStore</value>
-        </list>
-      </property>
    </bean>
    
    <!-- full node index recovery -->
    <bean id="indexRecoveryComponent" class="org.alfresco.repo.node.index.FullIndexRecoveryComponent" parent="indexRecoveryComponentBase">
+      <!-- Properties controlling full index rebuilding / tracking -->
       <property name="executeFullRecovery">
           <value>false</value>                 <!-- enable this to start the full index recovery -->
       </property>
@@ -46,5 +40,44 @@
           <value>NORMAL</value>                 <!-- normal L2 cache usage (database is changed by this server only) -->
       </property>
    </bean>
+
+   <!-- attempt to reindex content that was missing before -->
+   <!--
+   <bean id="missingContentReindexComponent" class="org.alfresco.repo.node.index.MissingContentReindexComponent" parent="indexRecoveryComponentBase">
+      <property name="runContinuously">
+          <value>false</value>
+      </property>
+      <property name="waitTime">
+          <value>300000</value>
+      </property>
+   </bean>
+
+    <bean id="missingContentReindexTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean id="IndexRecoveryJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="missingContentReindexComponent">
+                            <ref bean="missingContentReindexComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="startDelay">
+            <value>60000</value>
+        </property>
+        <property name="repeatCount">
+            <value>0</value>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+    </bean>
+   -->
+
 
 </beans>

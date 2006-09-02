@@ -2,6 +2,7 @@
 # Sample database connection properties
 #
 
+#db.schema.update=true
 #db.username=alfresco
 #db.password=alfresco
 #db.pool.initial=10

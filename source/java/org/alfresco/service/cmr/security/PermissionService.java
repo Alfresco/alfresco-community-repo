@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.security;
 import java.util.Set;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -29,6 +30,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Andy Hind
  */
+@PublicService
 public interface PermissionService
 {
     public static final String ROLE_PREFIX = "ROLE_";

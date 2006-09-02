@@ -18,12 +18,15 @@ package org.alfresco.service.cmr.admin;
 
 import java.util.List;
 
+import org.alfresco.service.PublicService;
+
 /**
  * General administration tasks and system information.
  * 
  * @since 1.2
  * @author Derek Hulley
  */
+@PublicService
 public interface AdminService
 {
 //    public List<PatchInfo> getPatches();

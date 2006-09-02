@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.model;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -32,6 +33,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
+@PublicService
 public interface FileFolderService
 {
     /**

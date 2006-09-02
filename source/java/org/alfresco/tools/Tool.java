@@ -183,6 +183,7 @@ public abstract class Tool
      */
     public final void start(String[] args)
     {
+        long startTime = System.nanoTime();
     	int status = -1;
     	
         try
@@ -202,7 +203,11 @@ public abstract class Tool
                 logInfo(getToolName());
                 initialiseRepository();
                 login();
+                long loginTime = System.nanoTime();
+                logInfo("Time to login "+((loginTime - startTime)/1000000000f)+" seconds");
                 status = execute();
+                long executeTime = System.nanoTime();
+                logInfo("Time to execute "+((executeTime - loginTime)/1000000000f)+" seconds");
                 logInfo(getToolName() + " successfully completed.");
             }
         }

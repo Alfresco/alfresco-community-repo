@@ -149,7 +149,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         else
         {
             return new NodeRef.Status(
-                    nodeStatus.getChangeTxnId(),
+                    nodeStatus.getTransaction().getChangeTxnId(),
                     nodeStatus.isDeleted());
         }
     }
@@ -1440,11 +1440,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // update old status
             NodeStatus oldNodeStatus = nodeDaoService.getNodeStatus(oldNodeRef, true);
             oldNodeStatus.setNode(null);
-            oldNodeStatus.setChangeTxnId(txnId);
+            oldNodeStatus.getTransaction().setChangeTxnId(txnId);
             // create the new status
             NodeStatus newNodeStatus = nodeDaoService.getNodeStatus(newNodeRef, true);
             newNodeStatus.setNode(nodeToMove);
-            newNodeStatus.setChangeTxnId(txnId);
+            newNodeStatus.getTransaction().setChangeTxnId(txnId);
         }
     }
     

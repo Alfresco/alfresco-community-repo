@@ -526,6 +526,9 @@
             <property name="cm:hits">
                <type>d:int</type>
             </property>
+            <property name="cm:counter">
+               <type>d:int</type>
+            </property>
          </properties>
       </aspect>
    

@@ -52,6 +52,7 @@ import org.alfresco.service.transaction.TransactionService;
  * 
  * @author David Caruana
  */
+@PublicService
 public interface ServiceRegistry
 {
     // Service Bean Names

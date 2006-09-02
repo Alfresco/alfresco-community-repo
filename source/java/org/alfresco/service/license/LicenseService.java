@@ -17,6 +17,7 @@
 package org.alfresco.service.license;
 
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.PublicService;
 
 
 /**
@@ -24,6 +25,7 @@ import org.alfresco.service.NotAuditable;
  * 
  * @author davidc
  */
+@PublicService
 public interface LicenseService
 {
 

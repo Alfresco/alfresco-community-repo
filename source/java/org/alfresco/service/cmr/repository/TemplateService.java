@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.repository;
 import java.io.Writer;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 
 /**
  * Template Service.
@@ -34,6 +35,7 @@ import org.alfresco.service.Auditable;
  * 
  * @author Kevin Roast
  */
+@PublicService
 public interface TemplateService
 {
     /**

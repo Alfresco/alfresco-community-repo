@@ -123,7 +123,7 @@ public class FullIndexRecoveryComponentTest extends TestCase
         String txnId = TransactionUtil.executeInNonPropagatingUserTransaction(txnService, dropNodeIndexWork);
         
         indexRecoverer.setExecuteFullRecovery(true);
-        indexRecoverer.setStores(storeRefStrings);
+//        indexRecoverer.setStores(storeRefStrings);
         // reindex
         indexRecoverer.reindex();
 

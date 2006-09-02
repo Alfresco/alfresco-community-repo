@@ -355,7 +355,7 @@
         </property>
     </bean>
     
-    <bean id="script" class="org.alfresco.repo.action.executer.ScriptActionExecutor" parent="action-executer">
+    <bean id="script" class="org.alfresco.repo.action.executer.ScriptActionExecuter" parent="action-executer">
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>
@@ -363,10 +363,16 @@
             <ref bean="personService" />
         </property>
         <property name="storeUrl">
-           <value>${spaces.store}</value>
+            <value>${spaces.store}</value>
         </property>
         <property name="companyHomePath">
-           <value>/${spaces.company_home.childname}</value>
+            <value>/${spaces.company_home.childname}</value>
+        </property>
+    </bean>
+    
+    <bean id="counter" class="org.alfresco.repo.action.executer.CounterIncrementActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="nodeService" />  <!-- runtime nodeService -->
         </property>
     </bean>
     

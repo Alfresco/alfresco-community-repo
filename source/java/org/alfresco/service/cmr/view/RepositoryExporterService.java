@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.view;
 import java.io.File;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
@@ -28,6 +29,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * 
  * @author davidc
  */
+@PublicService
 public interface RepositoryExporterService
 {
 

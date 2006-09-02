@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!-- Base audit service - non TX -->
+    
+    <bean id="auditService" class="org.alfresco.repo.audit.AuditServiceImpl">
+        <property name="auditComponent">
+            <ref bean="auditComponent"/>
+        </property>
+    </bean>
+    
+    
+    <!-- Audit component -->
+    
+    <bean id="auditComponent" class="org.alfresco.repo.audit.AuditComponentImpl">
+        <property name="publicServiceIdentifier">
+            <ref bean="publicServiceIdentifier"/>
+        </property>
+        <property name="auditDAO">
+            <ref bean="auditDao"/>
+        </property>
+         <property name="auditFailedDAO">
+            <ref bean="auditFailedDao"/>
+        </property>
+        <property name="auditConfiguration">
+            <ref bean="auditConfiguration"/>
+        </property>
+        <property name="auditModel">
+            <ref bean="auditModel"/>
+        </property>
+    </bean>
+    
+    <!-- Public service idntifier -->
+    
+    <bean id="publicServiceIdentifier" class="org.alfresco.repo.audit.PublicServiceIdentifierImpl"/>
+    
+    <!-- The configuration of the audit model -->
+    
+    <bean id="auditConfiguration" class="org.alfresco.repo.audit.AuditConfigurationImpl">
+        <property name="config">
+            <value>alfresco/auditConfig.xml</value>
+        </property>
+    </bean>
+    
+    <!-- The content store in which to store audit information -->
+    
+    <bean id="auditFileContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+        <constructor-arg>
+            <value>${dir.auditcontentstore}</value>
+        </constructor-arg>
+    </bean>
+    
+    <!-- The audit model -->
+    
+    <bean id="auditModel" class="org.alfresco.repo.audit.model.AuditEntry">
+        <property name="auditConfiguration">
+            <ref bean="auditConfiguration"/>
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService"/>
+        </property>
+         <property name="publicServiceIdentifier">
+            <ref bean="publicServiceIdentifier"/>
+        </property>
+    </bean>
+    
+    <!-- The audit DAO wapped to use another TX so we can log exceptions -->
+    
+    <bean id='auditFailedDao' class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.audit.AuditDAO</value>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="target">
+            <ref bean="auditDao" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}, PROPAGATION_REQUIRES_NEW</prop>
+            </props>
+        </property>
+    </bean>
+</beans>

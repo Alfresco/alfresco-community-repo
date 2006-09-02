@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.dictionary;
 import java.util.Collection;
 
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.namespace.QName;
 
 
@@ -35,6 +36,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author David Caruana
  */
+@PublicService
 public interface DictionaryService
 {
 

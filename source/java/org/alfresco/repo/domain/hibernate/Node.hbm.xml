@@ -113,6 +113,16 @@
          <key-property name="identifier" length="100" />
          <key-property name="guid" length="36" />
       </composite-id>
+      <!-- forward assoc to transaction -->
+      <many-to-one
+            name="transaction"
+            class="org.alfresco.repo.domain.hibernate.TransactionImpl"
+            column="transaction_id"
+            lazy="proxy"
+            fetch="select"
+            unique="false"
+            not-null="true"
+            cascade="none" />
       <!-- forward assoc to node (optional) -->
       <many-to-one
             name="node"
@@ -122,7 +132,6 @@
             fetch="join"
             unique="false"
             not-null="false" />
-      <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" index="CHANGE_TXN_ID"/>
    </class>
    
    <class
@@ -137,33 +146,31 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
-      <natural-id mutable="true">
-         <!-- forward assoc to parent node -->
-         <many-to-one 
-               name="parent"
-               class="org.alfresco.repo.domain.hibernate.NodeImpl"
-               lazy="proxy"
-               fetch="select"
-               optimistic-lock="true"
-               not-null="true"
-               unique-key="UIDX_CHILD_NAME" >
-            <column name="parent_node_id" />
-         </many-to-one>
-         <!-- forward assoc to child node -->
-         <many-to-one
-               name="child" 
-               lazy="proxy"
-               fetch="select"
-               class="org.alfresco.repo.domain.hibernate.NodeImpl"
-               optimistic-lock="true"
-               not-null="true" >
-            <column name="child_node_id" />
-         </many-to-one>
-         <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" unique-key="UIDX_CHILD_NAME" />
-      </natural-id>
+      <!-- forward assoc to parent node -->
+      <many-to-one 
+            name="parent"
+            class="org.alfresco.repo.domain.hibernate.NodeImpl"
+            lazy="proxy"
+            fetch="select"
+            optimistic-lock="true"
+            not-null="true"
+            unique-key="UIDX_CHILD_NAME" >
+         <column name="parent_node_id" />
+      </many-to-one>
+      <!-- forward assoc to child node -->
+      <many-to-one
+            name="child" 
+            lazy="proxy"
+            fetch="select"
+            class="org.alfresco.repo.domain.hibernate.NodeImpl"
+            optimistic-lock="true"
+            not-null="true" >
+         <column name="child_node_id" />
+      </many-to-one>
+      <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" unique-key="UIDX_CHILD_NAME" />
+      <property name="qname" column="qname" type="QName" length="255" not-null="true" />
       <property name="childNodeName" column="child_node_name" type="string" length="50" not-null="true" unique-key="UIDX_CHILD_NAME" />
       <property name="childNodeNameCrc" column="child_node_name_crc" type="long" not-null="true" unique-key="UIDX_CHILD_NAME" />
-      <property name="qname" column="qname" type="QName" length="255" not-null="true" />
       <property name="isPrimary" column="is_primary" />
       <property name="index" column="assoc_index" />
    </class>
@@ -309,25 +316,26 @@
    
    <query name="node.GetNextChangeTxnIds">
       select distinct
-         status.changeTxnId
+         transaction.changeTxnId
       from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         org.alfresco.repo.domain.hibernate.TransactionImpl as transaction
       where
-         status.changeTxnId > :currentTxnId
+         transaction.changeTxnId > :currentTxnId
       order by
-         status.changeTxnId
+         transaction.changeTxnId
    </query>
 
    <query name="node.GetChangedNodeStatusesCount">
       select
-         count(status.changeTxnId)
+         count(transaction.changeTxnId)
       from
          org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         join status.transaction as transaction
       where
          status.key.protocol = :storeProtocol and
          status.key.identifier = :storeIdentifier and
          status.node.id is not null and
-         status.changeTxnId = :changeTxnId
+         transaction.changeTxnId = :changeTxnId
    </query>
 
    <query name="node.GetChangedNodeStatuses">
@@ -335,11 +343,12 @@
          status
       from
          org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         join status.transaction as transaction
       where
          status.key.protocol = :storeProtocol and
          status.key.identifier = :storeIdentifier and
          status.node.id is not null and
-         status.changeTxnId = :changeTxnId
+         transaction.changeTxnId = :changeTxnId
    </query>
 
    <query name="node.GetDeletedNodeStatuses">
@@ -347,11 +356,12 @@
          status
       from
          org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         join status.transaction as transaction
       where
          status.key.protocol = :storeProtocol and
          status.key.identifier = :storeIdentifier and
          status.node.id is null and
-         status.changeTxnId = :changeTxnId
+         transaction.changeTxnId = :changeTxnId
    </query>
 
    <query name="node.GetContentDataStrings">

@@ -62,13 +62,13 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  *       database is static then the L2 cache usage can be set to use
  *       the <code>NORMAL</code> mode.  <code>REFRESH</code> should be
  *       used where the server will still be accessed from some clients
- *       despite the database changing.
+ *       despite the database changing.  <code>NORMAL</code> can be used
+ *       in the case of the caches being clustered, i.e. the caches will
+ *       not be out of date w.r.t. the database.
  *   </li>
  *   <li>
- *       This process should not run continuously on a live
- *       server as it would be performing unecessary work.
- *       If it was left running, however, it would not
- *       lead to data corruption or such-like.  Use the
+ *       This process should only be used continuously where the index
+ *       transactions are following the database transactions.  Use the
  *       {@link #setRunContinuously(boolean) runContinuously} property
  *       to change this behaviour.
  *   </li>
@@ -91,7 +91,7 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
     private static boolean started = false;
     /** The current transaction ID being processed */
     private static String currentTxnId = START_TXN_ID;
-    /** kept to notify the thread that it should quite */
+    /** kept to notify the thread that it should quit */
     private boolean killThread = false;
     
     /** provides transactions to atomically index each missed transaction */
@@ -104,8 +104,6 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
     private SearchService searcher;
     /** the component giving direct access to <b>node</b> instances */
     private NodeService nodeService;
-    /** the stores to reindex */
-    private List<StoreRef> storeRefs;
     /** set this to run the index recovery component */
     private boolean executeFullRecovery;
     /** set this on to keep checking for new transactions and never stop */
@@ -125,8 +123,6 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
 
     public FullIndexRecoveryComponent()
     {
-        this.storeRefs = new ArrayList<StoreRef>(2);
-        
         this.killThread = false;
         this.executeFullRecovery = false;
         this.runContinuously = false;
@@ -193,21 +189,6 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
         this.nodeService = nodeService;
     }
     
-    /**
-     * Set the stores that need reindexing
-     * 
-     * @param storeRefStrings a list of strings representing store references
-     */
-    public void setStores(List<String> storeRefStrings)
-    {
-        storeRefs.clear();
-        for (String storeRefStr : storeRefStrings)
-        {
-            StoreRef storeRef = new StoreRef(storeRefStr);
-            storeRefs.add(storeRef);
-        }
-    }
-
     /**
      * Set this to <code>true</code> to initiate the full index recovery.
      * <p>
@@ -299,6 +280,7 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
         {
             public Object doWork()
             {
+                List<StoreRef> storeRefs = nodeService.getStores();
                 // reindex each store
                 for (StoreRef storeRef : storeRefs)
                 {
@@ -352,8 +334,7 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
             if (logger.isDebugEnabled())
             {
                 logger.debug("Full index recovery thread started: \n" +
-                        "   continuous: " + runContinuously + "\n" +
-                        "   stores: " + storeRefs);
+                        "   continuous: " + runContinuously);
             }
         }
     }
@@ -377,8 +358,8 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
                     // reindex nodes
                     List<String> txnsIndexed = FullIndexRecoveryComponent.this.reindexNodes();
                     // reindex missing content
-                    @SuppressWarnings("unused")
-                    int missingContentCount = FullIndexRecoveryComponent.this.reindexMissingContent();
+//                    @SuppressWarnings("unused")
+//                    int missingContentCount = FullIndexRecoveryComponent.this.reindexMissingContent();
                     // check if the process should terminate
                     if (txnsIndexed.size() == 0 && !runContinuously)
                     {
@@ -417,73 +398,6 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
         }
     }
 
-    /**
-     * @return Returns the number of documents reindexed
-     */
-    private int reindexMissingContent()
-    {
-        int count = 0;
-        for (StoreRef storeRef : storeRefs)
-        {
-            count += reindexMissingContent(storeRef);
-        }
-        return count;
-    }
-    
-    /**
-     * @param storeRef the store to check for missing content
-     * @return Returns the number of documents reindexed
-     */
-    private int reindexMissingContent(StoreRef storeRef)
-    {
-        SearchParameters sp = new SearchParameters();
-        sp.addStore(storeRef);
-
-        // search for it in the index
-        String query = "TEXT:" + LuceneIndexerImpl.NOT_INDEXED_CONTENT_MISSING;
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery(query);
-        ResultSet results = null;
-        try
-        {
-            results = searcher.query(sp);
-            
-            int count = 0;
-            // loop over the results and get the details of the nodes that have missing content
-            List<ChildAssociationRef> assocRefs = results.getChildAssocRefs();
-            for (ChildAssociationRef assocRef : assocRefs)
-            {
-                final NodeRef childNodeRef = assocRef.getChildRef();
-                // prompt for a reindex - it might fail again, but we just keep plugging away
-                TransactionWork<Object> reindexWork = new TransactionWork<Object>()
-                {
-                    public Object doWork()
-                    {
-                        indexer.updateNode(childNodeRef);
-                        return null;
-                    }
-                };
-                TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, reindexWork);
-                count++;
-            }
-            // done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Reindexed missing content: \n" +
-                        "   store: " + storeRef + "\n" +
-                        "   node count: " + count);
-            }
-            return count;
-        }
-        finally
-        {
-            if (results != null)
-            {
-                results.close();
-            }
-        }
-    }
-    
     /**
      * @return Returns the transaction ID just reindexed, i.e. where some work was performed
      */
@@ -572,16 +486,16 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
             getSession().setCacheMode(l2CacheMode);
             
             // reindex each store
-            for (StoreRef storeRef : storeRefs)
-            {
-                if (!nodeService.exists(storeRef))
-                {
-                    // the store is not present
-                    continue;
-                }
-                // reindex for store
-                reindexNodes(storeRef, changeTxnId);
-            }
+//            for (StoreRef storeRef : storeRefs)
+//            {
+//                if (!nodeService.exists(storeRef))
+//                {
+//                    // the store is not present
+//                    continue;
+//                }
+//                // reindex for store
+//                reindexNodes(storeRef, changeTxnId);
+//            }
             // done
             return null;
         }
@@ -675,10 +589,10 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
     };
 
     /**
-     * Retrieve all transaction IDs that are greater than the given transaction ID.
+     * Retrieve next 50 transaction IDs that are greater than the given transaction ID.
      * 
      * @param currentTxnId the transaction ID that must be less than all returned results
-     * @return Returns an ordered list of transaction IDs 
+     * @return Returns an ordered list of the next 50 transaction IDs 
      */
     @SuppressWarnings("unchecked")
     public List<String> getNextChangeTxnIds(final String currentTxnId)
@@ -689,6 +603,7 @@ public class FullIndexRecoveryComponent extends HibernateDaoSupport implements I
             {
                 Query query = session.getNamedQuery(QUERY_GET_NEXT_CHANGE_TXN_IDS);
                 query.setString("currentTxnId", currentTxnId)
+                     .setMaxResults(50)
                      .setReadOnly(true);
                 return query.list();
             }

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.PublicService;
 
 
 /**
@@ -29,6 +30,7 @@ import org.alfresco.service.NotAuditable;
  * @author Derek Hulley
  *
  */
+@PublicService
 public interface MimetypeService
 {
     /**

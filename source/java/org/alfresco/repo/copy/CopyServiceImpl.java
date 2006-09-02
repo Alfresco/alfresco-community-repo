@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -31,6 +32,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -398,6 +400,23 @@ public class CopyServiceImpl implements CopyService
             if (aspectProps != null)
             {
                 properties.putAll(aspectProps);
+            }
+        }
+        
+        // if the parent node is the same, then remove the name property - it will have to
+        // be changed by the client code
+        AssociationDefinition assocDef = dictionaryService.getAssociation(destinationAssocTypeQName);
+        if (!assocDef.isChild())
+        {
+            throw new AlfrescoRuntimeException("Association is not a child association: " + destinationAssocTypeQName);
+        }
+        else
+        {
+            ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
+            if (!childAssocDef.getDuplicateChildNamesAllowed())
+            {
+                // duplicate children are not allowed.
+                properties.remove(ContentModel.PROP_NAME);
             }
         }
         

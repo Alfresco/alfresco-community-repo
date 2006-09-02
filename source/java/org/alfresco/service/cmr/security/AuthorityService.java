@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.security;
 import java.util.Set;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 
 /**
  * The service that encapsulates authorities granted to users.
@@ -34,6 +35,7 @@ import org.alfresco.service.Auditable;
  * 
  * @author Andy Hind
  */
+@PublicService
 public interface AuthorityService
 {
     /**

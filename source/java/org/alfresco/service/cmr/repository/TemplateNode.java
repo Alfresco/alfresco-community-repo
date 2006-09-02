@@ -671,8 +671,7 @@ public final class TemplateNode implements Serializable
         if (this.services.getNodeService().exists(nodeRef))
         {
             return "Node Type: " + getType() + 
-                   "\nNode Properties: " + this.getProperties().toString() + 
-                   "\nNode Aspects: " + this.getAspects().toString();
+                   "\tNode Ref: " + this.nodeRef.toString();
         }
         else
         {

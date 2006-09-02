@@ -17,6 +17,7 @@
 package org.alfresco.service.namespace;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 
 
 
@@ -28,6 +29,7 @@ import org.alfresco.service.Auditable;
  * 
  * @author David Caruana
  */
+@PublicService
 public interface NamespaceService extends NamespacePrefixResolver
 {
     /** Default Namespace URI */

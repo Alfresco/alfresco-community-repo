@@ -19,6 +19,7 @@ package org.alfresco.service.cmr.repository;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -29,6 +30,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
+@PublicService
 public interface CopyService
 {
     /**

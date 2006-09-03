@@ -17,6 +17,9 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.service.transaction.TransactionService;
+
 /**
  * This is a helper class that knows how to issue identifiers.
  * @author britt
@@ -34,9 +37,9 @@ public class Issuer
     private String fName;
     
     /**
-     * The transactional wrapper.
+     * The transaction service.
      */
-    private RetryingTransactionHelper fTransaction;
+    private TransactionService fTransactionService;
     
     /**
      * Default constructor.
@@ -54,38 +57,33 @@ public class Issuer
         fName = name;
     }
     
-    /**
-     * Set the transactional wrapper.
-     * @param retryingTransaction The transactional wrapper.
-     */
-    public void setRetryingTransaction(RetryingTransactionHelper retryingTransaction)
+    public void setTransactionService(TransactionService transactionService)
     {
-        fTransaction = retryingTransaction;
+        fTransactionService = transactionService;
     }
-    
+
     /**
      * After the database is up, get our value.
      */
     public void init()
     {
-        class TxnCallback implements RetryingTransactionCallback 
+        class TxnWork implements TransactionUtil.TransactionWork<Long>
         {
-            public Long value;
-            
-            public void perform()
+            public Long doWork() throws Exception
             {
-                value = AVMContext.fgInstance.fIssuerDAO.getIssuerValue(fName);
+                return AVMContext.fgInstance.fIssuerDAO.getIssuerValue(fName);
             }
-        };
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        if (doit.value == null)
+        }
+        Long result = TransactionUtil.executeInUserTransaction(fTransactionService,
+                                                               new TxnWork(),
+                                                               true);
+        if (result == null)
         {
             fNext = 0L;
         }
         else
         {
-            fNext = doit.value + 1;
+            fNext = result + 1L;
         }
     }
     

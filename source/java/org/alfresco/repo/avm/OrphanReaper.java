@@ -20,6 +20,8 @@ package org.alfresco.repo.avm;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -31,10 +33,11 @@ import org.apache.commons.logging.LogFactory;
 public class OrphanReaper implements Runnable
 {
     private Log fgLogger = LogFactory.getLog(OrphanReaper.class);
+
     /**
-     * The HibernateTxn instance.
+     * The Transaction Service
      */
-    private RetryingTransactionHelper fTransaction;
+    private TransactionService fTransactionService;
     
     /**
      * Inactive base sleep interval.
@@ -119,13 +122,9 @@ public class OrphanReaper implements Runnable
         fBatchSize = size;
     }
 
-    /**
-     * Set the Hibernate Transaction Wrapper.
-     * @param transaction
-     */
-    public void setRetryingTransaction(RetryingTransactionHelper transaction)
+    public void setTransactionService(TransactionService transactionService)
     {
-        fTransaction = transaction;
+        fTransactionService = transactionService;
     }
     
     /**
@@ -213,9 +212,10 @@ public class OrphanReaper implements Runnable
      */
     public void doBatch()
     {
-        class TxnCallback implements RetryingTransactionCallback
+        class TxnWork implements TransactionUtil.TransactionWork<Object>
         {
-            public void perform()
+            public Object doWork()
+                throws Exception
             {
                 if (fPurgeQueue == null)
                 {
@@ -223,7 +223,7 @@ public class OrphanReaper implements Runnable
                     if (nodes.size() == 0)
                     {
                         fActive = false;
-                        return;
+                        return null;
                     }
                     fPurgeQueue = new LinkedList<Long>();
                     for (AVMNode node : nodes)
@@ -237,7 +237,7 @@ public class OrphanReaper implements Runnable
                     if (fPurgeQueue.size() == 0)
                     {
                         fPurgeQueue = null;
-                        return;
+                        return null;
                     }
                     AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(fPurgeQueue.removeFirst());
                     // Save away the ancestor and merged from fields from this node.
@@ -303,12 +303,13 @@ public class OrphanReaper implements Runnable
                         AVMContext.fgInstance.fAVMNodeDAO.delete(node);
                     }
                 }
+                return null;
             }
         }
         try
         {
-            TxnCallback doit = new TxnCallback();
-            fTransaction.perform(doit, true);
+            TransactionUtil.executeInUserTransaction(fTransactionService, 
+                                                     new TxnWork());
         }
         catch (Exception e)
         {

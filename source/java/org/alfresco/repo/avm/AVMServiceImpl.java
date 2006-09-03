@@ -53,11 +53,6 @@ public class AVMServiceImpl implements AVMService
     private static Logger fgLogger = Logger.getLogger(AVMServiceImpl.class);
     
     /**
-     * The RetryingTransaction.
-     */
-    private RetryingTransactionHelper fTransaction;
-    
-    /**
      * The AVMRepository for each service thread.
      */
     private AVMRepository fAVMRepository;
@@ -67,15 +62,6 @@ public class AVMServiceImpl implements AVMService
      */
     public AVMServiceImpl()
     {
-    }
-    
-    /**
-     * Set the Retrying Transaction wrapper.
-     * @param txn
-     */
-    public void setRetryingTransaction(RetryingTransactionHelper txn)
-    {
-        fTransaction = txn;
     }
     
     /**
@@ -94,47 +80,25 @@ public class AVMServiceImpl implements AVMService
      * @return An InputStream
      * @throws AVMNotFoundException When the path is invalid.
      */
-    public InputStream getFileInputStream(final int version, final String path)
+    public InputStream getFileInputStream(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public InputStream in = null;
-            
-            public void perform()
-            {
-                in = fAVMRepository.getInputStream(version, path);
-            }
-        };
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.in;
+        return fAVMRepository.getInputStream(version, path);
     }
 
     /**
      * Get an output stream to a file. Triggers versioning.
      */
-    public OutputStream getFileOutputStream(final String path)
+    public OutputStream getFileOutputStream(String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public OutputStream out = null;
-            
-            public void perform()
-            {
-                out = fAVMRepository.getOutputStream(path);
-            }
-        };
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
-        return doit.out;
+        return fAVMRepository.getOutputStream(path);
     }
 
     /**
@@ -142,24 +106,13 @@ public class AVMServiceImpl implements AVMService
      * @param version The version id to lookup.
      * @param path The path to lookup.
      */
-    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(final int version, final String path)
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public SortedMap<String, AVMNodeDescriptor> listing;
-            
-            public void perform()
-            {
-                listing = fAVMRepository.getListing(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.listing;
+        return fAVMRepository.getListing(version, path);
     }
 
     /**
@@ -174,24 +127,13 @@ public class AVMServiceImpl implements AVMService
      * elements.
      */
     public SortedMap<String, AVMNodeDescriptor> 
-        getDirectoryListingDirect(final int version, final String path)
+        getDirectoryListingDirect(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public SortedMap<String, AVMNodeDescriptor> listing;
-            
-            public void perform()
-            {
-                listing = fAVMRepository.getListingDirect(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.listing;
+        return fAVMRepository.getListingDirect(version, path);
     }
 
     /**
@@ -199,24 +141,13 @@ public class AVMServiceImpl implements AVMService
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(final AVMNodeDescriptor dir)
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir)
     {
         if (dir == null)
         {
             throw new AVMBadArgumentException("Null descriptor.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public SortedMap<String, AVMNodeDescriptor> listing;
-            
-            public void perform()
-            {
-                listing = fAVMRepository.getListing(dir);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.listing;
+        return fAVMRepository.getListing(dir);
     }
 
     /**
@@ -228,24 +159,13 @@ public class AVMServiceImpl implements AVMService
      * @throws AVMWrongTypeException If <code>path</code> contains any elements
      * that are not directories.
      */
-    public List<String> getDeleted(final int version, final String path)
+    public List<String> getDeleted(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public List<String> listing;
-            
-            public void perform()
-            {
-                listing = fAVMRepository.getDeleted(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.listing;
+        return fAVMRepository.getDeleted(version, path);
     }
 
     /**
@@ -254,24 +174,13 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the file.
      * @return An output stream to the file.
      */
-    public OutputStream createFile(final String path, final String name)
+    public OutputStream createFile(String path, String name)
     {
         if (path == null || name == null || !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public OutputStream out;
-            
-            public void perform()
-            {
-                out = fAVMRepository.createFile(path, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
-        return doit.out;
+        return fAVMRepository.createFile(path, name);
     }
 
     /**
@@ -281,14 +190,14 @@ public class AVMServiceImpl implements AVMService
      * @param name The name to give the file.
      * @param in An InputStream containing data for file.
      */
-    public void createFile(final String path, final String name, InputStream in)
+    public void createFile(String path, String name, InputStream in)
     {
         if (path == null || name == null || in == null || !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
         // Save the contents to temp space.
-        final File temp;
+        File temp;
         try
         {
             temp = TempFileProvider.createTempFile("alf", "tmp");
@@ -306,17 +215,9 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMException("I/O Error.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.createFile(path, name, temp);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
         try
         {
-            fTransaction.perform(doit, true);
+            fAVMRepository.createFile(path, name, temp);
         }
         finally
         {
@@ -329,21 +230,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the containing directory.
      * @param name The name of the new directory.
      */
-    public void createDirectory(final String path, final String name)
+    public void createDirectory(String path, String name)
     {
         if (path == null || name == null || !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.createDirectory(path, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.createDirectory(path, name);
     }
 
     /**
@@ -352,22 +245,14 @@ public class AVMServiceImpl implements AVMService
      * @param parent The path to the parent directory.
      * @param name The name to give the new file.
      */
-    public void createLayeredFile(final String srcPath, final String parent, final String name)
+    public void createLayeredFile(String srcPath, String parent, String name)
     {
         if (srcPath == null || parent == null || name == null || 
             !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.createLayeredFile(srcPath, parent, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.createLayeredFile(srcPath, parent, name);
     }
 
     /**
@@ -376,43 +261,27 @@ public class AVMServiceImpl implements AVMService
      * @param parent The path to the parent directory.
      * @param name The name for the new directory.
      */
-    public void createLayeredDirectory(final String srcPath, final String parent, final String name)
+    public void createLayeredDirectory(String srcPath, String parent, String name)
     {
         if (srcPath == null || parent == null || name == null ||
             !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.createLayeredDirectory(srcPath, parent, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.createLayeredDirectory(srcPath, parent, name);
     }
 
     /**
      * Create an AVMStore with the given name.  It must not exist.
      * @param name The name to give the AVMStore.   
      */
-    public void createAVMStore(final String name)
+    public void createAVMStore(String name)
     {
         if (name == null || !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Bad Name.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.createAVMStore(name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.createAVMStore(name);
     }
 
     /**
@@ -422,23 +291,15 @@ public class AVMServiceImpl implements AVMService
      * @param dstPath The path to the destination containing directory.
      * @param name The name of the new branch.
      */
-    public void createBranch(final int version, final String srcPath, final String dstPath,
-            final String name)
+    public void createBranch(int version, String srcPath, String dstPath,
+            String name)
     {
         if (srcPath == null || dstPath == null || name == null ||
             !FileNameValidator.IsValid(name))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.createBranch(version, srcPath, dstPath, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.createBranch(version, srcPath, dstPath, name);
     }
 
     /**
@@ -447,21 +308,13 @@ public class AVMServiceImpl implements AVMService
      * @param parent The path to the parent.
      * @param name The name of the node to remove.
      */
-    public void removeNode(final String parent, final String name)
+    public void removeNode(String parent, String name)
     {
         if (parent == null || name == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.remove(parent, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.remove(parent, name);
     }
 
     /**
@@ -471,23 +324,15 @@ public class AVMServiceImpl implements AVMService
      * @param dstParent The path to the destination parent.
      * @param dstName The name to give the renamed node.
      */
-    public void rename(final String srcParent, final String srcName, final String dstParent,
-            final String dstName)
+    public void rename(String srcParent, String srcName, String dstParent,
+            String dstName)
     {
         if (srcParent == null || srcName == null || dstParent == null || dstName == null ||
             !FileNameValidator.IsValid(dstName))
         {
             throw new AVMBadArgumentException("Illegal argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.rename(srcParent, srcName, dstParent, dstName);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.rename(srcParent, srcName, dstParent, dstName);
     }
 
     /**
@@ -495,21 +340,13 @@ public class AVMServiceImpl implements AVMService
      * @param dirPath The path to the layered directory.
      * @param name The name to uncover.
      */
-    public void uncover(final String dirPath, final String name)
+    public void uncover(String dirPath, String name)
     {
         if (dirPath == null || name == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.uncover(dirPath, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.uncover(dirPath, name);
     }
 
     /**
@@ -517,24 +354,13 @@ public class AVMServiceImpl implements AVMService
      * @param repName The name of the AVMStore.
      * @return The Latest Version ID.
      */
-    public int getLatestVersionID(final String repName)
+    public int getLatestVersionID(String repName)
     {
         if (repName == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public int latestVersionID;
-            
-            public void perform()
-            {
-                latestVersionID = fAVMRepository.getLatestVersionID(repName);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.latestVersionID;
+        return fAVMRepository.getLatestVersionID(repName);
     }
 
     /**
@@ -542,24 +368,13 @@ public class AVMServiceImpl implements AVMService
      * @param stores A List of AVMStore names.
      * @return A List of the new version ids.
      */
-    public List<Integer> createSnapshot(final List<String> stores)
+    public List<Integer> createSnapshot(List<String> stores)
     {
         if (stores == null)
         {
             throw new AVMBadArgumentException("Stores is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public List<Integer> versionIDs;
-            
-            public void perform()
-            {
-                versionIDs = fAVMRepository.createSnapshot(stores);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
-        return doit.versionIDs;
+        return fAVMRepository.createSnapshot(stores);
     }
 
     /**
@@ -567,24 +382,13 @@ public class AVMServiceImpl implements AVMService
      * @param store The name of the AVMStore.
      * @return The id of the new version.
      */
-    public int createSnapshot(final String store)
+    public int createSnapshot(String store)
     {
         if (store == null)
         {
             throw new AVMBadArgumentException("Store is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public int versionID;
-            
-            public void perform()
-            {
-                versionID = fAVMRepository.createSnapshot(store);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
-        return doit.versionID;
+        return fAVMRepository.createSnapshot(store);
     }
 
     /**
@@ -593,25 +397,14 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to look up.
      * @return A Descriptor.
      */
-    public AVMNodeDescriptor lookup(final int version, final String path)
+    public AVMNodeDescriptor lookup(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public AVMNodeDescriptor descriptor;
-            
-            public void perform()
-            {
-                Lookup lookup = fAVMRepository.lookup(version, path);
-                descriptor = lookup.getCurrentNode().getDescriptor(lookup);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.descriptor;
+        Lookup lookup = fAVMRepository.lookup(version, path);
+        return lookup.getCurrentNode().getDescriptor(lookup);
     }
 
     /**
@@ -620,24 +413,13 @@ public class AVMServiceImpl implements AVMService
      * @param name The name to lookup.
      * @return The node descriptor of the child.
      */
-    public AVMNodeDescriptor lookup(final AVMNodeDescriptor dir, final String name)
+    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name)
     {
         if (dir == null || name == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public AVMNodeDescriptor child;
-            
-            public void perform()
-            {
-                child = fAVMRepository.lookup(dir, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.child;
+        return fAVMRepository.lookup(dir, name);
     }
 
     /**
@@ -645,21 +427,13 @@ public class AVMServiceImpl implements AVMService
      * is only referenced in that AVMStore.
      * @param name The name of the AVMStore to purge.
      */
-    public void purgeAVMStore(final String name)
+    public void purgeAVMStore(String name)
     {
         if (name == null)
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.purgeAVMStore(name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.purgeAVMStore(name);
     }
 
     /**
@@ -667,21 +441,13 @@ public class AVMServiceImpl implements AVMService
      * @param version The id of the version to purge.
      * @param name The name of the repository.
      */
-    public void purgeVersion(final int version, final String name)
+    public void purgeVersion(int version, String name)
     {
         if (name == null)
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.purgeVersion(name, version);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.purgeVersion(name, version);
     }
 
     /**
@@ -690,24 +456,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to lookup.
      * @return The indirection path (target) of the layered node.
      */
-    public String getIndirectionPath(final int version, final String path)
+    public String getIndirectionPath(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public String indirectionPath;
-            
-            public void perform()
-            {
-                indirectionPath = fAVMRepository.getIndirectionPath(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.indirectionPath;
+        return fAVMRepository.getIndirectionPath(version, path);
     }
 
     /**
@@ -715,24 +470,13 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the AVMStore.
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(final String name)
+    public List<VersionDescriptor> getAVMStoreVersions(String name)
     {
         if (name == null)
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public List<VersionDescriptor> versions;
-            
-            public void perform()
-            {
-                versions = fAVMRepository.getAVMStoreVersions(name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.versions;
+        return fAVMRepository.getAVMStoreVersions(name);
     }
 
     /**
@@ -743,66 +487,39 @@ public class AVMServiceImpl implements AVMService
      * @param to The latest versions to return.
      * @return The Set of matching version IDs.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(final String name, final Date from, final Date to)
+    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to)
     {
         if (name == null || (from == null && to == null))
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public List<VersionDescriptor> versions;
-            
-            public void perform()
-            {
-                versions = fAVMRepository.getAVMStoreVersions(name, from, to);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.versions;
+        return fAVMRepository.getAVMStoreVersions(name, from, to);
     }
 
     /**
      * Change what a layered directory points to.
      * @param path The path to the layered directory.
      */
-    public void retargetLayeredDirectory(final String path, final String target)
+    public void retargetLayeredDirectory(String path, String target)
     {
         if (path == null || target == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.retargetLayeredDirectory(path, target);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.retargetLayeredDirectory(path, target);
     }
 
     /**
      * Make the indicated directory a primary indirection.
      * @param path The absolute path.
      */
-    public void makePrimary(final String path)
+    public void makePrimary(String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.makePrimary(path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.makePrimary(path);
     }
 
     /**
@@ -811,18 +528,7 @@ public class AVMServiceImpl implements AVMService
      */
     public List<AVMStoreDescriptor> getAVMStores()
     {
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public List<AVMStoreDescriptor> reps;
-            
-            public void perform()
-            {
-                reps = fAVMRepository.getAVMStores();
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.reps;
+        return fAVMRepository.getAVMStores();
     }
 
     /**
@@ -830,20 +536,13 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the AVMStore to get.
      * @return The AVMStore.
      */
-    public AVMStoreDescriptor getAVMStore(final String name)
+    public AVMStoreDescriptor getAVMStore(String name)
     {
-        class TxnCallback implements RetryingTransactionCallback
+        if (name == null)
         {
-            public AVMStoreDescriptor desc;
-            
-            public void perform()
-            {
-                desc = fAVMRepository.getAVMStore(name);
-            }
+            throw new AVMBadArgumentException("Null Store Name.");
         }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.desc;
+        return fAVMRepository.getAVMStore(name);
     }
 
     /**
@@ -852,24 +551,13 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the AVMStore.
      * @return The root descriptor.
      */
-    public AVMNodeDescriptor getAVMStoreRoot(final int version, final String name)
+    public AVMNodeDescriptor getAVMStoreRoot(int version, String name)
     {
         if (name == null)
         {
             throw new AVMBadArgumentException("Name is null.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public AVMNodeDescriptor root;
-            
-            public void perform()
-            {
-                root = fAVMRepository.getAVMStoreRoot(version, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.root;
+        return fAVMRepository.getAVMStoreRoot(version, name);
     }
 
     /**
@@ -878,24 +566,13 @@ public class AVMServiceImpl implements AVMService
      * @param count The number of ancestors to fallow back. -1 means all.
      * @return A List of ancestors most recent first.
      */
-    public List<AVMNodeDescriptor> getHistory(final AVMNodeDescriptor desc, final int count)
+    public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count)
     {
         if (desc == null)
         {
             throw new AVMBadArgumentException("Null descriptor.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public List<AVMNodeDescriptor> history;
-            
-            public void perform()
-            {
-                history = fAVMRepository.getHistory(desc, count);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.history;
+        return fAVMRepository.getHistory(desc, count);
     }
 
     /**
@@ -904,21 +581,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the layered directory.
      * @param opacity True is opaque false is not.
      */
-    public void setOpacity(final String path, final boolean opacity)
+    public void setOpacity(String path, boolean opacity)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.setOpacity(path, opacity);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.setOpacity(path, opacity);
     }
 
     /**
@@ -927,24 +596,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The full AVM path.
      * @return A LayeringDescriptor.
      */
-    public LayeringDescriptor getLayeringInfo(final int version, final String path)
+    public LayeringDescriptor getLayeringInfo(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path: " + path);
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public LayeringDescriptor descriptor;
-            
-            public void perform()
-            {
-                descriptor = fAVMRepository.getLayeringInfo(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.descriptor;
+        return fAVMRepository.getLayeringInfo(version, path);
     }
 
     /**
@@ -957,47 +615,29 @@ public class AVMServiceImpl implements AVMService
      * ancestor of left.  Any other non null return is the common ancestor and
      * indicates that left and right are in conflict.
      */
-    public AVMNodeDescriptor getCommonAncestor(final AVMNodeDescriptor left,
-                                               final AVMNodeDescriptor right)
+    public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
+                                               AVMNodeDescriptor right)
     {
         if (left == null || right == null)
         {
             throw new AVMBadArgumentException("Null node descriptor.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public AVMNodeDescriptor ancestor;
-            
-            public void perform()
-            {
-                ancestor = fAVMRepository.getCommonAncestor(left, right);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.ancestor;
+        return fAVMRepository.getCommonAncestor(left, right);
     }
+
     /**
      * Set a property on a node.
      * @param path The path to the node to set the property on. 
      * @param name The QName of the property.
      * @param value The property to set.
      */
-    public void setNodeProperty(final String path, final QName name, final PropertyValue value)
+    public void setNodeProperty(String path, QName name, PropertyValue value)
     {
         if (path == null || name == null || value == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.setNodeProperty(path, name, value);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.setNodeProperty(path, name, value);
     }
 
     /**
@@ -1005,21 +645,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @param properties The Map of properties to set.
      */
-    public void setNodeProperties(final String path, final Map<QName, PropertyValue> properties)
+    public void setNodeProperties(String path, Map<QName, PropertyValue> properties)
     {
         if (path == null || properties == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.setNodeProperties(path, properties);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.setNodeProperties(path, properties);
     }
 
     /**
@@ -1029,24 +661,13 @@ public class AVMServiceImpl implements AVMService
      * @param name The QName.
      * @return The PropertyValue or null if it doesn't exist.
      */
-    public PropertyValue getNodeProperty(final int version, final String path, final QName name)
+    public PropertyValue getNodeProperty(int version, String path, QName name)
     {
         if (path == null || name == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public PropertyValue value;
-            
-            public void perform()
-            {
-                value = fAVMRepository.getNodeProperty(version, path, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.value;
+        return fAVMRepository.getNodeProperty(version, path, name);
     }
     
     /**
@@ -1055,24 +676,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @return A List of AVMNodeProperties.
      */
-    public Map<QName, PropertyValue> getNodeProperties(final int version, final String path)
+    public Map<QName, PropertyValue> getNodeProperties(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public Map<QName, PropertyValue> properties;
-            
-            public void perform()
-            {
-                properties = fAVMRepository.getNodeProperties(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.properties;
+        return fAVMRepository.getNodeProperties(version, path);
     }
 
     /**
@@ -1080,42 +690,26 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @param name The QName of the property to delete.
      */
-    public void deleteNodeProperty(final String path, final QName name)
+    public void deleteNodeProperty(String path, QName name)
     {
         if (path == null || name == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.deleteNodeProperty(path, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.deleteNodeProperty(path, name);
     }
 
     /**
      * Delete all the properties attached to an AVM node.
      * @param path The path to the node.
      */
-    public void deleteNodeProperties(final String path)
+    public void deleteNodeProperties(String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.deleteNodeProperties(path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.deleteNodeProperties(path);
     }
 
     /**
@@ -1124,21 +718,13 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the property.
      * @param value The value of the property.
      */
-    public void setStoreProperty(final String store, final QName name, final PropertyValue value)
+    public void setStoreProperty(String store, QName name, PropertyValue value)
     {
         if (store == null || name == null || value == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.setStoreProperty(store, name, value);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.setStoreProperty(store, name, value);
     }
     
     /**
@@ -1146,21 +732,13 @@ public class AVMServiceImpl implements AVMService
      * @param store The name of the store.
      * @param props A Map of the properties to set.
      */
-    public void setStoreProperties(final String store, final Map<QName, PropertyValue> props)
+    public void setStoreProperties(String store, Map<QName, PropertyValue> props)
     {
         if (store == null || props == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.setStoreProperties(store, props);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.setStoreProperties(store, props);
     }
     
     /**
@@ -1169,24 +747,13 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the property.
      * @return A PropertyValue or null if non-existent.
      */
-    public PropertyValue getStoreProperty(final String store, final QName name)
+    public PropertyValue getStoreProperty(String store, QName name)
     {
         if (store == null || name == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public PropertyValue value;
-            
-            public void perform()
-            {
-                value = fAVMRepository.getStoreProperty(store, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.value;
+        return fAVMRepository.getStoreProperty(store, name);
     }
     
     /**
@@ -1194,24 +761,13 @@ public class AVMServiceImpl implements AVMService
      * @param store The name of the store.
      * @return A Map of the stores properties.
      */
-    public Map<QName, PropertyValue> getStoreProperties(final String store)
+    public Map<QName, PropertyValue> getStoreProperties(String store)
     {
         if (store == null)
         {
             throw new AVMBadArgumentException("Null store name.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public Map<QName, PropertyValue> props;
-            
-            public void perform()
-            {
-                props = fAVMRepository.getStoreProperties(store);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.props;
+        return fAVMRepository.getStoreProperties(store);
     }
     
     /**
@@ -1219,21 +775,13 @@ public class AVMServiceImpl implements AVMService
      * @param store The name of the store.
      * @param name The name of the property to delete.
      */
-    public void deleteStoreProperty(final String store, final QName name)
+    public void deleteStoreProperty(String store, QName name)
     {
         if (store == null || name == null)
         {
             throw new AVMBadArgumentException("Invalid null argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.deleteStoreProperty(store, name);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.deleteStoreProperty(store, name);
     }
     
     /**
@@ -1242,24 +790,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @return The ContentData object.
      */
-    public ContentData getContentDataForRead(final int version, final String path)
+    public ContentData getContentDataForRead(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null Path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public ContentData content;
-            
-            public void perform()
-            {
-                content = fAVMRepository.getContentDataForRead(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.content;
+        return fAVMRepository.getContentDataForRead(version, path);
     }
     
     /**
@@ -1267,24 +804,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @return The ContentData object.
      */
-    public ContentData getContentDataForWrite(final String path)
+    public ContentData getContentDataForWrite(String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null Path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public ContentData content;
-            
-            public void perform()
-            {
-                content = fAVMRepository.getContentDataForWrite(path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
-        return doit.content;
+        return fAVMRepository.getContentDataForWrite(path);
     }
 
     /**
@@ -1295,21 +821,13 @@ public class AVMServiceImpl implements AVMService
      * @throws AVMWrongTypeException If <code>path</code> does not point
      * to a file.
      */
-    public void setContentData(final String path, final ContentData data)
+    public void setContentData(String path, ContentData data)
     {
         if (path == null || data == null)
         {
             throw new AVMBadArgumentException("Null Path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.setContentData(path, data);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.setContentData(path, data);
     }
 
     /**
@@ -1319,21 +837,13 @@ public class AVMServiceImpl implements AVMService
      * @throws AVMNotFoundException If <code>path</code> does not exist.
      * @throws AVMExistsException If the aspect already exists.
      */
-    public void addAspect(final String path, final QName aspectName)
+    public void addAspect(String path, QName aspectName)
     {
         if (path == null || aspectName == null)
         {
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.addAspect(path, aspectName);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.addAspect(path, aspectName);
     }
     
     /**
@@ -1342,24 +852,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @return A List of the QNames of the aspects.
      */
-    public List<QName> getAspects(final int version, final String path)
+    public List<QName> getAspects(int version, String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public List<QName> aspects;
-            
-            public void perform()
-            {
-                aspects = fAVMRepository.getAspects(version, path);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.aspects;
+        return fAVMRepository.getAspects(version, path);
     }
 
     /**
@@ -1367,21 +866,13 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the node.
      * @param aspectName The name of the aspect.
      */
-    public void removeAspect(final String path, final QName aspectName)
+    public void removeAspect(String path, QName aspectName)
     {
         if (path == null || aspectName == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public void perform()
-            {
-                fAVMRepository.removeAspect(path, aspectName);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, true);
+        fAVMRepository.removeAspect(path, aspectName);
     }
     
     /**
@@ -1391,23 +882,12 @@ public class AVMServiceImpl implements AVMService
      * @param aspectName The aspect name to check.
      * @return Whether the given node has the given aspect.
      */
-    public boolean hasAspect(final int version, final String path, final QName aspectName)
+    public boolean hasAspect(int version, String path, QName aspectName)
     {
         if (path == null || aspectName == null)
         {
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
-        class TxnCallback implements RetryingTransactionCallback
-        {
-            public boolean has;
-            
-            public void perform()
-            {
-                has = fAVMRepository.hasAspect(version, path, aspectName);
-            }
-        }
-        TxnCallback doit = new TxnCallback();
-        fTransaction.perform(doit, false);
-        return doit.has;
+        return fAVMRepository.hasAspect(version, path, aspectName);
     }
 }

@@ -31,6 +31,8 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.hibernate.HibernateException;
+import org.springframework.dao.ConcurrencyFailureException;
 
 
 /**
@@ -222,6 +224,7 @@ class AVMCrawler implements Runnable
         }
         catch (Exception e)
         {
+            e.printStackTrace(System.err);
             if (e instanceof AVMException)
             {
                 return;
@@ -230,7 +233,14 @@ class AVMCrawler implements Runnable
             {
                 return;
             }
-            e.printStackTrace(System.err);
+            if (e instanceof ConcurrencyFailureException)
+            {
+                return;
+            }
+            if (e instanceof HibernateException)
+            {
+                return;
+            }
             throw new AVMException("Failure", e);
         }
     }

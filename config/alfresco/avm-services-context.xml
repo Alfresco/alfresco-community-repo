@@ -7,22 +7,22 @@
 	<!-- ID Issuers. -->
 	
 	<bean id="nodeIssuer" class="org.alfresco.repo.avm.Issuer"
-		depends-on="retryingTransaction,avmContext" init-method="init">
+		depends-on="avmContext" init-method="init">
 		<property name="name">
 			<value>node</value>
 		</property>
-		<property name="retryingTransaction">
-			<ref bean="retryingTransaction"/>
+		<property name="transactionService">
+			<ref bean="transactionComponent"/>
 		</property>
 	</bean>
 
 	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer"
-		depends-on="retryingTransaction,avmContext" init-method="init">
+		depends-on="avmContext" init-method="init">
 		<property name="name">
 			<value>layer</value>
 		</property>
-		<property name="retryingTransaction">
-			<ref bean="retryingTransaction"/>
+		<property name="transactionService">
+			<ref bean="transactionComponent"/>
 		</property>
 	</bean>
 
@@ -141,45 +141,6 @@
 		</property>
 	</bean>
 	
-	<!-- A read only DefaultTransactionDefinition -->
-	<bean id="readTransactionDefinition" 
-		class="org.springframework.transaction.support.DefaultTransactionDefinition">
-		<property name="propagationBehaviorName">
-			<value>PROPAGATION_REQUIRED</value>
-		</property>
-		<property name="readOnly">
-			<value>true</value>
-		</property>
-	</bean>
-
-	<!-- A write DefaultTransactionDefinition -->
-	<bean id="writeTransactionDefinition" 
-		class="org.springframework.transaction.support.DefaultTransactionDefinition">
-		<property name="propagationBehaviorName">
-			<value>PROPAGATION_REQUIRED</value>
-		</property>
-		<property name="readOnly">
-			<value>false</value>
-		</property>
-	</bean>
-	
-	<!-- The Retrying Transaction Helper. -->
-	<bean id="retryingTransaction" 
-		  class="org.alfresco.repo.avm.hibernate.HibernateRetryingTransactionHelper">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-		<property name="transactionManager">
-			<ref bean="transactionManager"/>
-		</property>
-		<property name="readTransactionDefinition">
-			<ref bean="readTransactionDefinition"/>
-		</property>
-		<property name="writeTransactionDefinition">
-			<ref bean="writeTransactionDefinition"/>
-		</property>
-	</bean>
-
 	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
 		init-method="init" destroy-method="shutDown" depends-on="AVMService">
 		<property name="inactiveBaseSleep">
@@ -194,8 +155,8 @@
 		<property name="maxQueueLength">
 			<value>1000</value>
 		</property>
-		<property name="retryingTransaction">
-			<ref bean="retryingTransaction"/>
+		<property name="transactionService">
+			<ref bean="transactionComponent"/>
 		</property>
 	</bean>
 

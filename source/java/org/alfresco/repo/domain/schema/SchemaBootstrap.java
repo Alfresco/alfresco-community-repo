@@ -20,8 +20,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.sql.Connection;
@@ -47,8 +47,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Bootstraps the schema and schema update.  The schema is considered missing if the applied patch table
@@ -316,7 +318,8 @@ public class SchemaBootstrap implements ApplicationListener
             // perform a full update using Hibernate-generated statements
             File tempFile = TempFileProvider.createTempFile("AlfrescoSchemaCreate", ".sql");
             dumpSchemaCreate(cfg, tempFile);
-            executeScriptFile(cfg, connection, tempFile);
+            FileInputStream tempInputStream = new FileInputStream(tempFile);
+            executeScriptFile(cfg, connection, tempInputStream, tempFile.getPath());
             // execute post-create scripts (not patches)
             for (String scriptUrl : this.postCreateScriptUrls)
             {
@@ -357,7 +360,8 @@ public class SchemaBootstrap implements ApplicationListener
             // execute if there were changes raised by Hibernate
             if (tempFile != null)
             {
-                executeScriptFile(cfg, connection, tempFile);
+                InputStream tempInputStream = new FileInputStream(tempFile);
+                executeScriptFile(cfg, connection, tempInputStream, tempFile.getPath());
             }
         }
     }
@@ -406,14 +410,14 @@ public class SchemaBootstrap implements ApplicationListener
     private void executeScriptUrl(Configuration cfg, Connection connection, String scriptUrl) throws Exception
     {
         Dialect dialect = Dialect.getDialect(cfg.getProperties());
-        File scriptFile = getScriptFile(dialect.getClass(), scriptUrl);
+        InputStream scriptInputStream = getScriptInputStream(dialect.getClass(), scriptUrl);
         // check that it exists
-        if (scriptFile == null)
+        if (scriptInputStream == null)
         {
             throw AlfrescoRuntimeException.create(ERR_SCRIPT_NOT_FOUND, scriptUrl);
         }
         // now execute it
-        executeScriptFile(cfg, connection, scriptFile);
+        executeScriptFile(cfg, connection, scriptInputStream, scriptUrl);
     }
     
     /**
@@ -421,45 +425,46 @@ public class SchemaBootstrap implements ApplicationListener
      * it.  If not found, the dialect hierarchy will be walked until a compatible script is
      * found.  This makes it possible to have scripts that are generic to all dialects.
      * 
-     * @return Returns the file if found, otherwise null
+     * @return Returns an input stream onto the script, otherwise null
      */
-    private File getScriptFile(Class dialectClazz, String scriptUrl) throws Exception
+    private InputStream getScriptInputStream(Class dialectClazz, String scriptUrl) throws Exception
     {
         // replace the dialect placeholder
         String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_SCRIPT_DIALECT, dialectClazz.getName());
         // get a handle on the resource
-        try
+        ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
+        Resource resource = rpr.getResource(dialectScriptUrl);
+        if (!resource.exists())
         {
-            File scriptFile = ResourceUtils.getFile(dialectScriptUrl);
-            if (scriptFile.exists())
+            // it wasn't found.  Get the superclass of the dialect and try again
+            Class superClazz = dialectClazz.getSuperclass();
+            if (Dialect.class.isAssignableFrom(superClazz))
             {
-                // found a compatible dialect version
-                return scriptFile;
+                // we still have a Dialect - try again
+                return getScriptInputStream(superClazz, scriptUrl);
             }
-        }
-        catch (FileNotFoundException e)
-        {
-            // doesn't exist
-        }
-        // it wasn't found.  Get the superclass of the dialect and try again
-        Class superClazz = dialectClazz.getSuperclass();
-        if (Dialect.class.isAssignableFrom(superClazz))
-        {
-            // we still have a Dialect - try again
-            return getScriptFile(superClazz, scriptUrl);
+            else
+            {
+                // we have exhausted all options
+                return null;
+            }
         }
         else
         {
-            // we have exhausted all options
-            return null;
+            // we have a handle to it
+            return resource.getInputStream();
         }
     }
     
-    private void executeScriptFile(Configuration cfg, Connection connection, File scriptFile) throws Exception
+    private void executeScriptFile(
+            Configuration cfg,
+            Connection connection,
+            InputStream scriptInputStream,
+            String scriptUrl) throws Exception
     {
-        logger.info(I18NUtil.getMessage(MSG_EXECUTING_SCRIPT, scriptFile));
+        logger.info(I18NUtil.getMessage(MSG_EXECUTING_SCRIPT, scriptUrl));
         
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(scriptFile), "UTF8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(scriptInputStream, "UTF8"));
         try
         {
             int line = 0;
@@ -486,7 +491,7 @@ public class SchemaBootstrap implements ApplicationListener
                     if (sb.length() > 0)
                     {
                         // we have an unterminated statement
-                        throw AlfrescoRuntimeException.create(ERR_STATEMENT_TERMINATOR, (line - 1), scriptFile);
+                        throw AlfrescoRuntimeException.create(ERR_STATEMENT_TERMINATOR, (line - 1), scriptUrl);
                     }
                     // there has not been anything to execute - it's just a comment line
                     continue;
@@ -524,6 +529,7 @@ public class SchemaBootstrap implements ApplicationListener
         finally
         {
             try { reader.close(); } catch (Throwable e) {}
+            try { scriptInputStream.close(); } catch (Throwable e) {}
         }
     }
 }

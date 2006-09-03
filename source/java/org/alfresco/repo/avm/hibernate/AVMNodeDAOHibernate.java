@@ -147,6 +147,19 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     }
 
     /**
+     * Get all AVMNodes that are new in the given store.
+     * @param store The given store.
+     * @return A List of AVMNodes.
+     */
+    @SuppressWarnings("unchecked")
+    public List<AVMNode> getNewInStore(AVMStore store)
+    {
+        Query query = getSession().getNamedQuery("AVMNode.GetNewInStore");
+        query.setEntity("store", store);
+        return (List<AVMNode>)query.list();
+    }
+    
+    /**
      * Inappropriate hack to get Hibernate to play nice.
      */
     public void flush()

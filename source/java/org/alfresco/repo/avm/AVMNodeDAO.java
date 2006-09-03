@@ -83,6 +83,13 @@ public interface AVMNodeDAO
     public List<String> getContentUrls();
     
     /**
+     * Get all the nodes that are new in the given store.
+     * @param store The store to query.
+     * @return A List of AVMNodes.
+     */
+    public List<AVMNode> getNewInStore(AVMStore store);
+    
+    /**
      * Inappropriate hack to get Hibernate to play nice.
      */
     public void flush();

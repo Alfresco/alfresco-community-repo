@@ -71,11 +71,6 @@ public class AVMContext implements ApplicationContextAware
     public DeletedChildDAO fDeletedChildDAO;
 
     /**
-     * The NewInAVMStoreDAO
-     */
-    public NewInAVMStoreDAO fNewInAVMStoreDAO;
-    
-    /**
      * The AVMNodePropertyDAO
      */
     public AVMNodePropertyDAO fAVMNodePropertyDAO;
@@ -194,14 +189,6 @@ public class AVMContext implements ApplicationContextAware
     public void setIssuerDAO(IssuerDAO issuerDAO)
     {
         fIssuerDAO = issuerDAO;
-    }
-    
-    /**
-     * @param newInAVMStoreDAO The DAO to set.
-     */
-    public void setNewInAVMStoreDAO(NewInAVMStoreDAO newInAVMStoreDAO)
-    {
-        fNewInAVMStoreDAO = newInAVMStoreDAO;
     }
     
     public void setAvmNodePropertyDAO(AVMNodePropertyDAO avmNodePropertyDAO)

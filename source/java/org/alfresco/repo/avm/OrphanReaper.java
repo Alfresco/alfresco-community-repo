@@ -275,11 +275,6 @@ public class OrphanReaper implements Runnable
                         link.getMto().setMergedFrom(ancestor);
                         AVMContext.fgInstance.fMergeLinkDAO.delete(link);
                     }
-                    NewInAVMStore newInRep = AVMContext.fgInstance.fNewInAVMStoreDAO.getByNode(node);
-                    if (newInRep != null)
-                    {
-                        AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newInRep);
-                    }
                     // Get rid of all properties belonging to this node.
                     AVMContext.fgInstance.fAVMNodePropertyDAO.deleteAll(node);
                     // Get rid of all aspects belonging to this node.

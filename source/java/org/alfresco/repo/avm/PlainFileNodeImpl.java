@@ -73,7 +73,6 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         // AVMContext.fgInstance.fAVMNodeDAO.flush();
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**
@@ -90,7 +89,6 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         setContentData(other.getContentData(null));
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
         copyProperties(other);
     }
 
@@ -112,7 +110,6 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         this.setProperties(props);
-        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**

@@ -143,10 +143,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMExistsException("Already snapshotted.");
         }
         // Clear out the new nodes.
-        List<NewInAVMStore> newInRep = AVMContext.fgInstance.fNewInAVMStoreDAO.getByAVMStore(this);
-        for (NewInAVMStore newGuy : newInRep)
+        List<AVMNode> newInRep = AVMContext.fgInstance.fAVMNodeDAO.getNewInStore(this);
+        for (AVMNode newGuy : newInRep)
         {
-            AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newGuy);
+            newGuy.setStoreNew(null);
         }
         // Make up a new version record.
         VersionRoot versionRoot = new VersionRootImpl(this,

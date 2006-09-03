@@ -78,12 +78,6 @@
 		</property>
 	</bean>
 	
-	<bean id="newInAVMStoreDAO" class="org.alfresco.repo.avm.hibernate.NewInAVMStoreDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-	
 	<bean id="avmNodePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMNodePropertyDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
@@ -126,9 +120,6 @@
 		</property>
 		<property name="deletedChildDAO">
 			<ref bean="deletedChildDAO"/>
-		</property>
-		<property name="newInAVMStoreDAO">
-			<ref bean="newInAVMStoreDAO"/>
 		</property>
 		<property name="avmNodePropertyDAO">
 			<ref bean="avmNodePropertyDAO"/>

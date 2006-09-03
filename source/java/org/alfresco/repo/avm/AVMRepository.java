@@ -186,8 +186,7 @@ public class AVMRepository
         @SuppressWarnings("unused") 
         AVMStore rep = new AVMStoreImpl(this, name);
         // Special handling for AVMStore creation.
-        NewInAVMStore newInRep = AVMContext.fgInstance.fNewInAVMStoreDAO.getByNode(rep.getRoot());
-        AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newInRep);
+        rep.getRoot().setStoreNew(null);
     }
 
     /**
@@ -449,10 +448,10 @@ public class AVMRepository
             node.setIsRoot(false);
             vrDAO.delete(vr);
         }
-        List<NewInAVMStore> newGuys = AVMContext.fgInstance.fNewInAVMStoreDAO.getByAVMStore(store);
-        for (NewInAVMStore newGuy : newGuys)
+        List<AVMNode> newGuys = AVMContext.fgInstance.fAVMNodeDAO.getNewInStore(store);
+        for (AVMNode newGuy : newGuys)
         {
-            AVMContext.fgInstance.fNewInAVMStoreDAO.delete(newGuy);
+            newGuy.setStoreNew(null);
         }
         AVMContext.fgInstance.fAVMStorePropertyDAO.delete(store);
         AVMContext.fgInstance.fAVMStoreDAO.delete(store);

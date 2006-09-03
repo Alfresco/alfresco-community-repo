@@ -41,6 +41,7 @@
 			<property name="accessDate" type="long" not-null="true"/>
 		</component>
 		<property name="isRoot" column="is_root" type="boolean"/>
+		<many-to-one name="storeNew" class="AVMStoreImpl" column="store_new_id"/>
 		<!-- ACL -->
 		<many-to-one name="acl" column="acl_id" 
 			class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
@@ -161,14 +162,6 @@
 			<key-many-to-one name="mto" class="AVMNodeImpl" column="mto"/>
 		</composite-id>
 	</class>
-	<class name="NewInAVMStoreImpl" proxy="NewInAVMStore" table="new_in_avm_store_nodes">
-		<cache usage="read-write"/>
-		<id name="id" column="id" type="long">
-			<generator class="native"/>
-		</id>
-		<many-to-one name="avmStore" class="AVMStoreImpl" column="avm_store_id"/>
-		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
-	</class>
 	<class name="AVMNodePropertyImpl" proxy="AVMNodeProperty" table="avm_node_properties">
 		<id name="id" column="id" type="long">
 			<generator class="native"/>
@@ -240,10 +233,10 @@
     	where ce.parent = :parent
     ]]>
     </query>
-    <query name="AVMNode.ByNewInAVMStore">
+    <query name="AVMNode.GetNewInStore">
     <![CDATA[
-    	from NewInAVMStoreImpl nie
-    	where nie.avmStore = :store
+		from AVMNodeImpl an
+		where an.storeNew = :store
     ]]>
     </query>
     <query name="AVMNode.GetDescendents">

@@ -185,4 +185,16 @@ public interface AVMNode
      * @return The ACL on this node.
      */
     public DbAccessControlList getAcl();
+    
+    /**
+     * Set the store that we are new in.
+     * @param store The store we are new in.
+     */
+    public void setStoreNew(AVMStore store);
+    
+    /**
+     * Get the possibly null store that we're new in.
+     * @return The store that we're new in.
+     */
+    public AVMStore getStoreNew();
 }

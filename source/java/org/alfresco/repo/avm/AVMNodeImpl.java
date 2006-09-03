@@ -63,6 +63,11 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     private DbAccessControlList fACL;
     
     /**
+     * The Store that we're new in.
+     */
+    private AVMStore fStoreNew;
+    
+    /**
      * Default constructor.
      */
     protected AVMNodeImpl()
@@ -93,6 +98,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
                                                    time,
                                                    time,
                                                    time);
+        fStoreNew = store;
     }
     
     /**
@@ -234,7 +240,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public boolean getIsNew()
     {
-        return AVMContext.fgInstance.fNewInAVMStoreDAO.getByNode(this) != null;
+        return fStoreNew != null;
     }
  
     /**
@@ -400,5 +406,23 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     public DbAccessControlList getAcl()
     {
         return fACL;
+    }
+    
+    /**
+     * Set the store we are new in.
+     * @param store The store we are new in.
+     */
+    public void setStoreNew(AVMStore store)
+    {
+        fStoreNew = store;
+    }
+    
+    /**
+     * Get the possibly null store we are new in.
+     * @return The store we are new in.
+     */
+    public AVMStore getStoreNew()
+    {
+        return fStoreNew;
     }
 }

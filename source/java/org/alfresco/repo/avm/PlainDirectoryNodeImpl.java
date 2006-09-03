@@ -44,7 +44,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         super(store.getAVMRepository().issueID(), store);
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**
@@ -73,7 +72,6 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             AVMContext.fgInstance.fChildEntryDAO.save(newChild);
         }
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
         copyProperties(other);
     }
 

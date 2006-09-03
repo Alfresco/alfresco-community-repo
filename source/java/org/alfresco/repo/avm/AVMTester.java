@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -35,6 +36,9 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.hibernate.HibernateException;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * This is a Runnable which randomly performs operations on an AVM Repository.
@@ -266,16 +270,9 @@ class AVMTester implements Runnable
             out.close();
             addFile(appendPath(path, name));
         }
-        catch (AVMException ae)
+        catch (Exception e)
         {
-            if (ae instanceof AVMExistsException ||
-                ae instanceof AVMNotFoundException ||
-                ae instanceof AVMWrongTypeException ||
-                ae instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw ae;
+            handleException(e);
         }
     }
     
@@ -289,16 +286,9 @@ class AVMTester implements Runnable
             fService.createDirectory(path, name);
             addDirectory(appendPath(path, name));
         }
-        catch (AVMException ae)
+        catch (Exception e)
         {
-            if (ae instanceof AVMExistsException ||
-                ae instanceof AVMNotFoundException ||
-                ae instanceof AVMWrongTypeException ||
-                ae instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw ae;
+            handleException(e);
         }
     }
     
@@ -333,16 +323,9 @@ class AVMTester implements Runnable
                 addFile(appendPath(dstPath, name));
             }
         }
-        catch (AVMException ae)
+        catch (Exception e)
         {
-            if (ae instanceof AVMExistsException ||
-                ae instanceof AVMNotFoundException ||
-                ae instanceof AVMWrongTypeException ||
-                ae instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw ae;
+            handleException(e);
         }
     }      
     
@@ -357,16 +340,9 @@ class AVMTester implements Runnable
             fService.createLayeredDirectory(target, path, name);
             addDirectory(appendPath(path, name));
         }
-        catch (AVMException ae)
+        catch (Exception e)
         {
-            if (ae instanceof AVMExistsException ||
-                ae instanceof AVMNotFoundException ||
-                ae instanceof AVMWrongTypeException ||
-                ae instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw ae;
+            handleException(e);
         }
     }
     
@@ -381,16 +357,9 @@ class AVMTester implements Runnable
             fService.createLayeredFile(target, path, name);
             addFile(appendPath(path, name));
         }
-        catch (AVMException ae)
+        catch (Exception e)
         {
-            if (ae instanceof AVMExistsException ||
-                ae instanceof AVMNotFoundException ||
-                ae instanceof AVMWrongTypeException ||
-                ae instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw ae;
+            handleException(e);
         }
     }
     
@@ -410,15 +379,9 @@ class AVMTester implements Runnable
             fService.removeNode(path, name);
             removePath(target);
         }
-        catch (AVMException e)
+        catch (Exception e)
         {
-            if (e instanceof AVMNotFoundException ||
-                e instanceof AVMWrongTypeException ||
-                e instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw e;
+            handleException(e);
         }
     }
     
@@ -433,15 +396,9 @@ class AVMTester implements Runnable
             out.println("I am " + path);
             out.close();
         }
-        catch (AVMException e)
+        catch (Exception e)
         {
-            if (e instanceof AVMNotFoundException ||
-                e instanceof AVMWrongTypeException ||
-                e instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw e;
+            handleException(e);
         }
     }
     
@@ -457,19 +414,9 @@ class AVMTester implements Runnable
             System.out.println(line);
             reader.close();
         }
-        catch (AVMException e)
+        catch (Exception e)
         {
-            if (e instanceof AVMNotFoundException ||
-                e instanceof AVMWrongTypeException ||
-                e instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw e;
-        }
-        catch (IOException e)
-        {
-            throw new AVMException("I/O Error.", e);
+            handleException(e);
         }
     }       
     
@@ -521,15 +468,9 @@ class AVMTester implements Runnable
                 }
             }
         }
-        catch (AVMException e)
+        catch (Exception e)
         {
-            if (e instanceof AVMNotFoundException ||
-                e instanceof AVMWrongTypeException ||
-                e instanceof AVMCycleException)
-            {
-                return;
-            }
-            throw e;
+            handleException(e);
         }
     }
 
@@ -540,9 +481,9 @@ class AVMTester implements Runnable
         {
             fService.createSnapshot("main");
         }
-        catch (AVMExistsException aee)
+        catch (Exception e)
         {
-            // Do nothing. It's OK.
+            handleException(e);
         }
     }
     
@@ -627,5 +568,19 @@ class AVMTester implements Runnable
     public static synchronized int GetCount()
     {
         return fgOpCount;
+    }
+    
+    private void handleException(Exception e)
+    {
+        e.printStackTrace(System.err);
+        if (e instanceof AVMException ||
+            e instanceof AlfrescoRuntimeException ||
+            e instanceof ConcurrencyFailureException ||
+            e instanceof HibernateException ||
+            e instanceof InvalidNodeRefException)
+        {
+            return;
+        }
+        throw new AVMException("Naughty Exception.", e);
     }
 }

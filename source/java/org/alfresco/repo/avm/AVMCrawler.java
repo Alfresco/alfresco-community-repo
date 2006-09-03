@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.hibernate.HibernateException;
 import org.springframework.dao.ConcurrencyFailureException;
 
@@ -238,6 +239,10 @@ class AVMCrawler implements Runnable
                 return;
             }
             if (e instanceof HibernateException)
+            {
+                return;
+            }
+            if (e instanceof InvalidNodeRefException)
             {
                 return;
             }

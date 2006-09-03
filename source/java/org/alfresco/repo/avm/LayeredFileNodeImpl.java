@@ -53,7 +53,6 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         fIndirection = other.getIndirection();
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
         copyProperties(other);
     }
 
@@ -68,7 +67,6 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         fIndirection = indirection;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fNewInAVMStoreDAO.save(new NewInAVMStoreImpl(store, this));
     }
     
     /**

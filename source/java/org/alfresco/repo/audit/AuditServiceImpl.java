@@ -16,8 +16,12 @@
  */
 package org.alfresco.repo.audit;
 
+import java.util.List;
+
 import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -66,23 +70,41 @@ public class AuditServiceImpl implements AuditService
 
     public static void main(String[] args) throws Exception
     {
+
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         AuditService as = (AuditService) ctx.getBean("AuditService");
 
         TransactionService txs = (TransactionService) ctx.getBean("transactionComponent");
         UserTransaction tx = txs.getUserTransaction();
         tx.begin();
-        as.audit("AuditedApp", "First");
-        as.audit("AuditedApp", "Second", new NodeRef(new StoreRef("test", "audit"), "id"));
-        as.audit("AuditedApp", "Third", new Object[]{"one", "two", "three"});
-        as.audit("AuditedApp", "Fourth", new NodeRef(new StoreRef("test", "audit"), "id"),  new Object[]{"one", "two", "three"});
-        
-        as.audit("UnAuditedApp", "First");
-        as.audit("UnAuditedApp", "Second", new NodeRef(new StoreRef("test", "audit"), "id"));
-        as.audit("UnAuditedApp", "Third", new Object[]{"one", "two", "three"});
-        as.audit("UnAuditedApp", "Fourth", new NodeRef(new StoreRef("test", "audit"), "id"),  new Object[]{"one", "two", "three"});
 
+        AuthenticationUtil.setSystemUserAsCurrentUser();
+        try
+        {
+
+            as.audit("AuditedApp", "First");
+            as.audit("AuditedApp", "Second", new NodeRef(new StoreRef("test", "audit"), "id"));
+            as.audit("AuditedApp", "Third", new Object[] { "one", "two", "three" });
+            as.audit("AuditedApp", "Fourth", new NodeRef(new StoreRef("test", "audit"), "id"), new Object[] { "one",
+                    "two", "three" });
+
+            as.audit("UnAuditedApp", "First");
+            as.audit("UnAuditedApp", "Second", new NodeRef(new StoreRef("test", "audit"), "id"));
+            as.audit("UnAuditedApp", "Third", new Object[] { "one", "two", "three" });
+            as.audit("UnAuditedApp", "Fourth", new NodeRef(new StoreRef("test", "audit"), "id"), new Object[] { "one",
+                    "two", "three" });
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
         tx.commit();
 
+    }
+
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -181,7 +181,7 @@ public class AuditComponentImpl implements AuditComponent
      */
     public Object auditImpl(MethodInvocation mi) throws Throwable
     {
-        AuditInfo auditInfo = new AuditInfo(auditConfiguration);
+        AuditState auditInfo = new AuditState(auditConfiguration);
         // RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
         AuditMode auditMode = AuditMode.UNSET;
         try
@@ -221,7 +221,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param t
      * @return
      */
-    private AuditMode onError(AuditMode auditMode, AuditInfo auditInfo, MethodInvocation mi, Throwable t)
+    private AuditMode onError(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi, Throwable t)
     {
         if ((auditMode == AuditMode.ALL) || (auditMode == AuditMode.FAIL))
         {
@@ -241,7 +241,8 @@ public class AuditComponentImpl implements AuditComponent
      * @param returnObject
      * @return
      */
-    private AuditMode postInvocation(AuditMode auditMode, AuditInfo auditInfo, MethodInvocation mi, Object returnObject)
+    private AuditMode postInvocation(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi,
+            Object returnObject)
     {
         if (returnObject == null)
         {
@@ -255,6 +256,18 @@ public class AuditComponentImpl implements AuditComponent
         {
             auditInfo.setReturnObject(returnObject.toString());
         }
+
+        Auditable auditable = mi.getMethod().getAnnotation(Auditable.class);
+        if (auditable.key() == Auditable.Key.RETURN)
+        {
+            if ((returnObject != null) && (returnObject instanceof NodeRef))
+            {
+                NodeRef key = (NodeRef) returnObject;
+                auditInfo.setKeyStore(key.getStoreRef());
+                auditInfo.setKeyGUID(key.getId());
+            }
+        }
+
         return auditMode;
     }
 
@@ -266,7 +279,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param mi
      * @return
      */
-    private AuditMode beforeInvocation(AuditMode auditMode, AuditInfo auditInfo, MethodInvocation mi)
+    private AuditMode beforeInvocation(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi)
     {
         AuditMode effectiveAuditMode = auditModel.beforeExecution(auditMode, mi);
 
@@ -283,10 +296,51 @@ public class AuditComponentImpl implements AuditComponent
             auditInfo.setFail(false);
             auditInfo.setFiltered(false);
             auditInfo.setHostAddress(auditHost);
-            auditInfo.setKeyGUID(null);
+            Auditable auditable = mi.getMethod().getAnnotation(Auditable.class);
+            Object key = null;
+            switch (auditable.key())
+            {
+            case ARG_0:
+                key = mi.getArguments()[0];
+                break;
+            case ARG_1:
+                key = mi.getArguments()[1];
+                break;
+            case ARG_2:
+                key = mi.getArguments()[2];
+                break;
+            case ARG_3:
+                key = mi.getArguments()[3];
+                break;
+            case ARG_4:
+                key = mi.getArguments()[4];
+                break;
+            case ARG_5:
+                key = mi.getArguments()[5];
+                break;
+            case ARG_6:
+                key = mi.getArguments()[6];
+                break;
+            case ARG_7:
+                key = mi.getArguments()[7];
+                break;
+            case ARG_8:
+                key = mi.getArguments()[8];
+                break;
+            case ARG_9:
+                key = mi.getArguments()[9];
+                break;
+            case NO_KEY:
+            default:
+                break;
+            }
+            if ((key != null) && (key instanceof NodeRef))
+            {
+                auditInfo.setKeyStore(((NodeRef) key).getStoreRef());
+                auditInfo.setKeyGUID(((NodeRef) key).getId());
+            }
             auditInfo.setKeyPropertiesAfter(null);
             auditInfo.setKeyPropertiesBefore(null);
-            auditInfo.setKeyStore(null);
             auditInfo.setMessage(null);
             if (mi.getArguments() != null)
             {
@@ -322,9 +376,9 @@ public class AuditComponentImpl implements AuditComponent
     /**
      * A simple audit entry Currently we ignore filtering here.
      */
-    public void audit(String source, String description, NodeRef key, Object... args) 
+    public void audit(String source, String description, NodeRef key, Object... args)
     {
-        AuditInfo auditInfo = new AuditInfo(auditConfiguration);
+        AuditState auditInfo = new AuditState(auditConfiguration);
         // RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
         AuditMode auditMode = AuditMode.UNSET;
         try
@@ -353,18 +407,18 @@ public class AuditComponentImpl implements AuditComponent
         }
     }
 
-    private AuditMode onApplicationAudit(AuditMode auditMode, AuditInfo auditInfo, String source, String description,
-            NodeRef key, Object... args)
+    private AuditMode onApplicationAudit(AuditMode auditMode, AuditState auditInfo, String source,
+            String description, NodeRef key, Object... args)
     {
         AuditMode effectiveAuditMode = auditModel.beforeExecution(auditMode, source, description, key, args);
 
         if (auditMode != AuditMode.NONE)
         {
-            if(source.equals(SYSTEM_APPLICATION))
+            if (source.equals(SYSTEM_APPLICATION))
             {
-                throw new AuditException("Application audit can not use the reserved identifier "+SYSTEM_APPLICATION);
+                throw new AuditException("Application audit can not use the reserved identifier " + SYSTEM_APPLICATION);
             }
-            
+
             auditInfo.setAuditApplication(source);
             auditInfo.setAuditConfiguration(auditConfiguration);
             auditInfo.setAuditMethod(null);
@@ -374,10 +428,13 @@ public class AuditComponentImpl implements AuditComponent
             auditInfo.setFail(false);
             auditInfo.setFiltered(false);
             auditInfo.setHostAddress(auditHost);
-            auditInfo.setKeyGUID(null);
+            if (key != null)
+            {
+                auditInfo.setKeyStore(key.getStoreRef());
+                auditInfo.setKeyGUID(key.getId());
+            }
             auditInfo.setKeyPropertiesAfter(null);
             auditInfo.setKeyPropertiesBefore(null);
-            auditInfo.setKeyStore(null);
             auditInfo.setMessage(description);
             if (args != null)
             {
@@ -409,9 +466,9 @@ public class AuditComponentImpl implements AuditComponent
 
         return effectiveAuditMode;
     }
-    
-    private AuditMode onError(AuditMode auditMode, AuditInfo auditInfo, Throwable t, String source, String description,
-            NodeRef key, Object... args)
+
+    private AuditMode onError(AuditMode auditMode, AuditState auditInfo, Throwable t, String source,
+            String description, NodeRef key, Object... args)
     {
         if ((auditMode == AuditMode.ALL) || (auditMode == AuditMode.FAIL))
         {

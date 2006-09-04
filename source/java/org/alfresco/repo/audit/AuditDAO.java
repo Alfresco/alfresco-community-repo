@@ -28,5 +28,5 @@ public interface AuditDAO
      * 
      * @param auditInfo
      */
-    public void audit(AuditInfo auditInfo);
+    public void audit(AuditState auditInfo);
 }

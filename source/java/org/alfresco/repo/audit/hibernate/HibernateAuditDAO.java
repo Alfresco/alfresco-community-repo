@@ -28,7 +28,7 @@ import java.util.HashMap;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.AuditConfiguration;
 import org.alfresco.repo.audit.AuditDAO;
-import org.alfresco.repo.audit.AuditInfo;
+import org.alfresco.repo.audit.AuditState;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
@@ -92,7 +92,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         this.contentStore = contentStore;
     }
 
-    public void audit(AuditInfo auditInfo)
+    public void audit(AuditState auditInfo)
     {
         // Find/Build the configuraton entry
         AuditConfigImpl auditConfig = getAuditConfig(auditInfo);
@@ -170,7 +170,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
     }
 
-    private AuditSourceImpl getAuditSource(AuditInfo auditInfo)
+    private AuditSourceImpl getAuditSource(AuditState auditInfo)
     {
         AuditSourceImpl auditSourceImpl;
         
@@ -218,7 +218,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         return auditSourceImpl;
     }
 
-    private AuditDateImpl getAuditDate(AuditInfo auditInfo)
+    private AuditDateImpl getAuditDate(AuditState auditInfo)
     {
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTime(auditInfo.getDate());
@@ -265,7 +265,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         return auditDate;
     }
 
-    private AuditConfigImpl getAuditConfig(AuditInfo auditInfo)
+    private AuditConfigImpl getAuditConfig(AuditState auditInfo)
     {
         AuditConfigImpl auditConfig;
         if ((auditConfiguration.get() == null) || (auditConfiguration.get() != auditInfo.getAuditConfiguration()))
@@ -323,7 +323,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         return auditConfig;
     }
 
-    private AuditConfigImpl createNewAuditConfigImpl(AuditInfo auditInfo)
+    private AuditConfigImpl createNewAuditConfigImpl(AuditState auditInfo)
     {
         AuditConfigImpl auditConfig = new AuditConfigImpl();
         InputStream is = new BufferedInputStream(auditInfo.getAuditConfiguration().getInputStream());

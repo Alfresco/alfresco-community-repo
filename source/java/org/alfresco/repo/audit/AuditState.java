@@ -35,9 +35,9 @@ import org.apache.log4j.Logger;
  * 
  * @author Andy Hind
  */
-public class AuditInfo
+public class AuditState
 {
-    private static Logger s_logger = Logger.getLogger(AuditInfo.class);
+    private static Logger s_logger = Logger.getLogger(AuditState.class);
     
     /**
      * The user identifier for the person who caused this audit entry
@@ -161,7 +161,7 @@ public class AuditInfo
         }
     }
     
-    public AuditInfo(AuditConfiguration auditConfiguration)
+    public AuditState(AuditConfiguration auditConfiguration)
     {
         super();
         // Add default information

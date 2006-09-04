@@ -109,9 +109,9 @@
         <!-- The app_source_idx index is used to find the app source -->
         <!-- The look up is always the tripple, the service and method or just the method may be null -->
         
-        <property name="application" column="application" type="string" length="255" not-null="true" index="app_source_idx"/>
-        <property name="service" column="service" type="string" length="255" not-null="false" index="app_source_idx"/>
-        <property name="method" column="method" type="string" length="255" not-null="false" index="app_source_idx"/>
+        <property name="application" column="application" type="string" length="255" not-null="true" index="app_source_app_idx"/>
+        <property name="service" column="service" type="string" length="255" not-null="false" index="app_source_ser_idx"/>
+        <property name="method" column="method" type="string" length="255" not-null="false" index="app_source_met_idx"/>
         
     </class>
     

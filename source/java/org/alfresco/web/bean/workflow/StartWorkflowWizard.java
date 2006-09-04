@@ -448,6 +448,17 @@ public class StartWorkflowWizard extends BaseWizardBean
    }
    
    /**
+    * Determines whether there are any workflows to start
+    * @return
+    */
+   public boolean getHasStartableWorkflows()
+   {
+      // get the list of startable workflow, this will intialise the list if necessary
+      List<SelectItem> workflows = getStartableWorkflows();
+      return (workflows.size() > 0);
+   }
+   
+   /**
     * Returns a list of workflows that can be started.
     * 
     * @return List of SelectItem objects representing the workflows

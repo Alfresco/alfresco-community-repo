@@ -529,6 +529,13 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-color: #AAAAAA;
 }
 
+.workflowSelection
+{
+	border: 1px solid #676767; 
+	background-color: #efefef; 
+	padding: 6px 12px 12px 6px;
+}
+
 .workflowSummary
 {
    margin-left: 6px;

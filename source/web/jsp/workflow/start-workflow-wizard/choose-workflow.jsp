@@ -19,10 +19,29 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<h:panelGrid columns="1" style="border: 1px solid #676767; background-color: #efefef; padding: 6px 12px 12px 6px;">
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+
+<h:panelGroup rendered="#{WizardManager.bean.hasStartableWorkflows == false}">
+   <f:verbatim>
+      <%PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc");%>
+      <table><tr><td>
+   </f:verbatim>
+   <h:graphicImage url="/images/icons/info_icon.gif" />
+   <f:verbatim>
+      </td><td>
+   </f:verbatim>
+   <h:outputText value="#{msg.start_workflow_no_workflows}" />
+   <f:verbatim>
+      </td></tr></table>
+      <%PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner");%>
+   </f:verbatim>
+</h:panelGroup>
+
+<h:panelGrid columns="1" styleClass="workflowSelection" rendered="#{WizardManager.bean.hasStartableWorkflows}">
    <h:outputText value="#{msg.available_workflows}:"/>
    <h:selectOneRadio id="selected-workflow" value="#{WizardManager.bean.selectedWorkflow}" 
                      layout="pageDirection">
       <f:selectItems value="#{WizardManager.bean.startableWorkflows}" />
    </h:selectOneRadio>
 </h:panelGrid>
+

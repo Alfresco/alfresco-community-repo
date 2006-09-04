@@ -5,6 +5,7 @@
          <action id="start_workflow">
             <label-id>start_workflow</label-id>
             <image>/images/icons/new_workflow.gif</image>
+            <evaluator>org.alfresco.web.action.evaluator.StartWorkflowEvaluator</evaluator>
             <action>wizard:startWorkflow</action>
             <action-listener>#{WizardManager.setupParameters}</action-listener>
             <params>

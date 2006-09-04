@@ -23,6 +23,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
@@ -53,6 +54,10 @@ public class VersionCounterServiceTest extends TestCase
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         counter = (VersionCounterService) ctx.getBean("versionCounterService");
+        
+        // authenticate
+        AuthenticationComponent auth = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        auth.setSystemUserAsCurrentUser();
         
         storeRef1 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test1_" + System.currentTimeMillis());
         storeRef2 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test2_" + System.currentTimeMillis());

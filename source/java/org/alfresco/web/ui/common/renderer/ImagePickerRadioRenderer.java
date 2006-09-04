@@ -25,6 +25,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
+import javax.faces.el.PropertyNotFoundException;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
@@ -162,34 +163,46 @@ public class ImagePickerRadioRenderer extends BaseRenderer
       }
       else
       {
-         // get the child components
-         for (Iterator i = imagePicker.getChildren().iterator(); i.hasNext(); /**/)
+         try
          {
-            UIComponent child = (UIComponent)i.next();
-            if (child instanceof UIListItems)
+            // get the child components
+            for (Iterator i = imagePicker.getChildren().iterator(); i.hasNext(); /**/)
             {
-               // get the value of the list items component and iterate
-               // through it's collection
-               Object listItems = ((UIListItems)child).getValue();
-               if (listItems instanceof Collection)
+               UIComponent child = (UIComponent)i.next();
+               if (child instanceof UIListItems)
                {
-                  Iterator iter = ((Collection)listItems).iterator();
-                  while (iter.hasNext())
+                  // get the value of the list items component and iterate
+                  // through it's collection
+                  Object listItems = ((UIListItems)child).getValue();
+                  if (listItems instanceof Collection)
                   {
-                     UIListItem item = (UIListItem)iter.next();
-                     if (item.isRendered())
+                     Iterator iter = ((Collection)listItems).iterator();
+                     while (iter.hasNext())
                      {
-                        renderItem(context, out, imagePicker, item, onclick);
+                        UIListItem item = (UIListItem)iter.next();
+                        if (item.isRendered())
+                        {
+                           renderItem(context, out, imagePicker, item, onclick);
+                        }
                      }
                   }
                }
+               else if (child instanceof UIListItem && child.isRendered() == true)
+               {
+                  // found a valid UIListItem child to render
+                  UIListItem item = (UIListItem)child;
+                  renderItem(context, out, imagePicker, item, onclick);
+               }
             }
-            else if (child instanceof UIListItem && child.isRendered() == true)
-            {
-               // found a valid UIListItem child to render
-               UIListItem item = (UIListItem)child;
-               renderItem(context, out, imagePicker, item, onclick);
-            }
+         }
+         catch (PropertyNotFoundException pnfe)
+         {
+            // handle the scenario where the bean does not have the 
+            // method specified in the value binding expression
+            if (logger.isWarnEnabled())
+               logger.warn("Failed to retrieve icons: " + pnfe.toString());
+            
+            out.write(Application.getMessage(context, "no_icons_found"));
          }
       }
       

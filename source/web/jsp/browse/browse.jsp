@@ -202,6 +202,21 @@
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width=4 height=9></td>
                </tr>
                
+               <%-- Custom Template View --%>
+               <a:panel id="custom-wrapper-panel" rendered="#{NavigationBean.currentNodeHasTemplate}">
+               <tr valign=top>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
+                  <td style="padding:4px">
+                     <a:panel id="custom-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
+                              label="#{msg.custom_view}" progressive="true"
+                              expanded='#{BrowseBean.panels["custom-panel"]}' expandedActionListener="#{BrowseBean.expandPanel}">
+                        <r:template id="template" template="#{NavigationBean.currentNodeTemplate}" model="#{NavigationBean.templateModel}" />
+                     </a:panel>
+                  </td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
+               </tr>
+               </a:panel>
+               
                <%-- Details - Spaces --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
@@ -218,7 +233,8 @@
                         </f:facet>
                      </h:panelGroup>
                      <a:panel id="spaces-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
-                              label="#{msg.browse_spaces}" progressive="true" facetsId="spaces-panel-facets">
+                              label="#{msg.browse_spaces}" progressive="true" facetsId="spaces-panel-facets"
+                              expanded='#{BrowseBean.panels["spaces-panel"]}' expandedActionListener="#{BrowseBean.expandPanel}">
                      
                      <%-- Spaces List --%>
                      <a:richList id="spacesList" binding="#{BrowseBean.spacesRichList}" viewMode="#{BrowseBean.browseViewMode}" pageSize="#{BrowseBean.pageSizeSpaces}"
@@ -354,7 +370,8 @@
                         </f:facet>
                      </h:panelGroup>
                      <a:panel id="content-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
-                           label="#{msg.browse_content}" progressive="true" facetsId="content-panel-facets">
+                           label="#{msg.browse_content}" progressive="true" facetsId="content-panel-facets"
+                           expanded='#{BrowseBean.panels["content-panel"]}' expandedActionListener="#{BrowseBean.expandPanel}">
                      
                      <%-- Content list --%>
                      <a:richList id="contentRichList" binding="#{BrowseBean.contentRichList}" viewMode="#{BrowseBean.browseViewMode}" pageSize="#{BrowseBean.pageSizeContent}"

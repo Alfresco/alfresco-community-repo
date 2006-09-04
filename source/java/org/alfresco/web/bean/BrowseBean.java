@@ -19,6 +19,7 @@ package org.alfresco.web.bean;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIBreadcrumb;
 import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.UIStatusMessage;
+import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 import org.alfresco.web.ui.repo.component.UINodeDescendants;
@@ -237,6 +239,22 @@ public class BrowseBean implements IContextListener
    {
       return Application.getClientConfig(FacesContext.getCurrentInstance()).
             getSearchMinimum();
+   }
+   
+   /**
+    * @return Returns the panels expanded state map.
+    */
+   public Map<String, Boolean> getPanels()
+   {
+      return this.panels;
+   }
+
+   /**
+    * @param panels The panels expanded state map.
+    */
+   public void setPanels(Map<String, Boolean> panels)
+   {
+      this.panels = panels;
    }
    
    /**
@@ -1394,6 +1412,18 @@ public class BrowseBean implements IContextListener
       this.externalForceRefresh = true;
    }
    
+   /**
+    * Save the state of the panel that was expanded/collapsed
+    */
+   public void expandPanel(ActionEvent event)
+   {
+      if (event instanceof ExpandedEvent)
+      {
+         String id = event.getComponent().getId();
+         this.panels.put(id, ((ExpandedEvent)event).State);
+      }
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Private helpers
@@ -1672,7 +1702,10 @@ public class BrowseBean implements IContextListener
    protected ViewsConfigElement viewsConfig = null;
    
    /** Listeners for Node events */
-   private Set<NodeEventListener> nodeEventListeners = null;
+   protected Set<NodeEventListener> nodeEventListeners = null;
+   
+   /** Collapsable Panel state */
+   private Map<String, Boolean> panels = new HashMap<String, Boolean>(4, 1.0f);
    
    /** Component references */
    protected UIRichList spacesRichList;
@@ -1680,14 +1713,14 @@ public class BrowseBean implements IContextListener
    private UIStatusMessage statusMessage;
    
    /** Transient lists of container and content nodes for display */
-   private List<Node> containerNodes = null;
-   private List<Node> contentNodes = null;
+   protected List<Node> containerNodes = null;
+   protected List<Node> contentNodes = null;
    
    /** The current space and it's properties - if any */
-   private Node actionSpace;
+   protected Node actionSpace;
    
    /** The current document */
-   private Node document;
+   protected Node document;
    
    /** Special message to display when user deleting certain folders e.g. Company Home */
    private String deleteMessage;

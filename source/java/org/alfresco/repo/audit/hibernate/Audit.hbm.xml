@@ -155,4 +155,18 @@
             audit_store.method = :method
     </query>
     
+    <query name="audit.GetAuditTrailForNode">
+        select 
+            audit_fact
+        from 
+            org.alfresco.repo.audit.hibernate.AuditFactImpl as audit_fact
+        where
+            audit_fact.storeProtocol = :protocol and
+            audit_fact.storeId = :store_id and
+            audit_fact.nodeUUID = :node_id
+        order by
+            audit_fact.date asc
+    </query>
+    
+    
 </hibernate-mapping>

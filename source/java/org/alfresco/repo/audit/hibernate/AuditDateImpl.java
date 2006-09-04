@@ -280,10 +280,10 @@ public class AuditDateImpl implements AuditDate
     /**
      * Helper method to get the latest audit date
      */
-    public static AuditDateImpl getLatestDate(Session session)
+    public static AuditDate getLatestDate(Session session)
     {
         Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_LAST_AUDIT_DATE);
-        return (AuditDateImpl) query.uniqueResult();
+        return (AuditDate) query.uniqueResult();
     }
     
 }

@@ -16,6 +16,9 @@
  */
 package org.alfresco.repo.audit;
 
+import java.util.List;
+
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
 
@@ -47,6 +50,14 @@ public interface AuditComponent
      *            an arbitrary list of parameters
      */
     public void audit(String source, String description, NodeRef key, Object... args);
+    
+    /**
+     * Get the audit trail for a node.
+     * 
+     * @param nodeRef
+     * @return
+     */
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
 
 
 }

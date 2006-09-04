@@ -34,6 +34,7 @@ import org.alfresco.repo.template.NodeSearchResultsMap;
 import org.alfresco.repo.template.SavedSearchResultsMap;
 import org.alfresco.repo.template.XPathResultsMap;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -659,6 +660,14 @@ public final class TemplateNode implements Serializable
         return new NodeSearchResultsMap(this, this.services);
     }
     
+    
+    // Audit API
+    
+    
+    public List<AuditInfo> getAuditTrail()
+    {
+        return this.services.getAuditService().getAuditTrail(this.nodeRef);
+    }
     
     // ------------------------------------------------------------------------------
     // Misc helpers 

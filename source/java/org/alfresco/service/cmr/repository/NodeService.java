@@ -54,7 +54,7 @@ public interface NodeService
      * @return Returns a reference to the store
      * @throws StoreExistsException
      */
-    @Auditable(parameters = {"protocol", "identifier"})
+    @Auditable(key = Auditable.Key.RETURN, parameters = {"protocol", "identifier"})
     public StoreRef createStore(String protocol, String identifier) throws StoreExistsException;
     
     /**

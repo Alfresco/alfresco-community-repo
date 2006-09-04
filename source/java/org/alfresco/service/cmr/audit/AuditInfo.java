@@ -57,7 +57,7 @@ public interface AuditInfo
      * 
      * @return - the client address - may be null.
      */
-    public InetAddress getClientAddress();
+    public String getClientAddress();
 
     /**
      * The timestamp for the audit entry.
@@ -85,7 +85,7 @@ public interface AuditInfo
      * 
      * @return
      */
-    public InetAddress getHostAddress();
+    public String getHostAddress();
 
     /**
      * Get the ID of the key node.

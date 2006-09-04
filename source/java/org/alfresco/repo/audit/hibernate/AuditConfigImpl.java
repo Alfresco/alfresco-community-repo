@@ -87,10 +87,10 @@ public class AuditConfigImpl implements AuditConfig, InitializingBean
     /**
      * Helper method to get the latest audit config
      */
-    public static AuditConfigImpl getLatestConfig(Session session)
+    public static AuditConfig getLatestConfig(Session session)
     {
         Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_LAST_AUDIT_CONFIG);
-        return (AuditConfigImpl) query.uniqueResult();
+        return (AuditConfig) query.uniqueResult();
     }
 
     @Override

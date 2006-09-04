@@ -20,21 +20,28 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.AuditConfiguration;
 import org.alfresco.repo.audit.AuditDAO;
+import org.alfresco.repo.audit.AuditException;
 import org.alfresco.repo.audit.AuditState;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalDao;
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
@@ -62,6 +69,14 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
     public static final String QUERY_AUDIT_APP_SOURCE_SER = "service";
 
     public static final String QUERY_AUDIT_APP_SOURCE_MET = "method";
+
+    public static final String QUERY_AUDIT_TRAIL = "audit.GetAuditTrailForNode";
+    
+    public static final String QUERY_AUDIT_PROTOCOL = "protocol";
+    
+    public static final String QUERY_AUDIT_STORE_ID = "store_id";
+    
+    public static final String QUERY_AUDIT_NODE_ID = "node_id";
 
     /** a uuid identifying this unique instance */
     private String uuid;
@@ -94,14 +109,34 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
 
     public void audit(AuditState auditInfo)
     {
+        if(AuthenticationUtil.getCurrentUserName() == null)
+        {
+            AuthenticationUtil.setSystemUserAsCurrentUser();
+            try
+            {
+                audit0(auditInfo);
+            }
+            finally
+            {
+                AuthenticationUtil.clearCurrentSecurityContext(); 
+            }
+        }
+        else
+        {
+            audit0(auditInfo);
+        }
+    }
+    
+    private void audit0(AuditState auditInfo)
+    {
         // Find/Build the configuraton entry
-        AuditConfigImpl auditConfig = getAuditConfig(auditInfo);
+        AuditConfig auditConfig = getAuditConfig(auditInfo);
 
         // Find/Build any dates
-        AuditDateImpl auditDate = getAuditDate(auditInfo);
+        AuditDate auditDate = getAuditDate(auditInfo);
 
         // Find/Build the source
-        AuditSourceImpl auditSource = getAuditSource(auditInfo);
+        AuditSource auditSource = getAuditSource(auditInfo);
 
         // Build the new audit fact information
         AuditFactImpl auditFact = new AuditFactImpl();
@@ -170,9 +205,9 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
     }
 
-    private AuditSourceImpl getAuditSource(AuditState auditInfo)
+    private AuditSource getAuditSource(AuditState auditInfo)
     {
-        AuditSourceImpl auditSourceImpl;
+        AuditSource auditSourceImpl;
         
         SourceKey sourceKey = new SourceKey(auditInfo.getAuditApplication(), auditInfo.getAuditService(), auditInfo.getAuditMethod());
         if(sourceIds.get() == null)
@@ -182,7 +217,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         Long id = sourceIds.get().get(sourceKey);
         if(id != null)
         {
-            auditSourceImpl = (AuditSourceImpl) getSession().get(AuditSourceImpl.class, id.longValue());
+            auditSourceImpl = (AuditSource) getSession().get(AuditSourceImpl.class, id.longValue());
             if(auditSourceImpl != null)
             {
                 return auditSourceImpl;
@@ -218,7 +253,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         return auditSourceImpl;
     }
 
-    private AuditDateImpl getAuditDate(AuditState auditInfo)
+    private AuditDate getAuditDate(AuditState auditInfo)
     {
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTime(auditInfo.getDate());
@@ -228,7 +263,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         cal.set(Calendar.HOUR_OF_DAY, 0);
         Date required = cal.getTime();
 
-        AuditDateImpl auditDate;
+        AuditDate auditDate;
         if (auditDateImplId.get() == null)
         {
             auditDate = AuditDateImpl.getLatestDate(getSession());
@@ -242,7 +277,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
         else
         {
-            auditDate = (AuditDateImpl) getSession().get(AuditDateImpl.class, auditDateImplId.get().longValue());
+            auditDate = (AuditDate) getSession().get(AuditDateImpl.class, auditDateImplId.get().longValue());
             if ((auditDate == null) || (!required.equals(auditDate.getDate())))
             {
                 auditDate = AuditDateImpl.getLatestDate(getSession());
@@ -265,9 +300,9 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         return auditDate;
     }
 
-    private AuditConfigImpl getAuditConfig(AuditState auditInfo)
+    private AuditConfig getAuditConfig(AuditState auditInfo)
     {
-        AuditConfigImpl auditConfig;
+        AuditConfig auditConfig;
         if ((auditConfiguration.get() == null) || (auditConfiguration.get() != auditInfo.getAuditConfiguration()))
         {
             auditConfig = AuditConfigImpl.getLatestConfig(getSession());
@@ -313,7 +348,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
         else
         {
-            auditConfig = (AuditConfigImpl) getSession()
+            auditConfig = (AuditConfig) getSession()
                     .get(AuditConfigImpl.class, auditConfigImplId.get().longValue());
             if (auditConfig == null)
             {
@@ -436,4 +471,23 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
             return hash;
         }
     }
+
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
+    {
+        if(nodeRef == null)
+        {
+            return Collections.<AuditInfo>emptyList();
+        }
+        List<? extends AuditFact> internalTrail = AuditFactImpl.getAuditTrail(getSession(), nodeRef);
+        
+        ArrayList<AuditInfo> answer = new ArrayList<AuditInfo>(internalTrail.size());
+        for(AuditFact auditFact : internalTrail)
+        {
+            AuditInfo info = new AuditInfoImpl(auditFact);
+            answer.add(info);
+        }
+        return answer;
+    }
+    
+    
 }

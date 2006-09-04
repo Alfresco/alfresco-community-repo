@@ -21,12 +21,15 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -241,8 +244,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param returnObject
      * @return
      */
-    private AuditMode postInvocation(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi,
-            Object returnObject)
+    private AuditMode postInvocation(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi, Object returnObject)
     {
         if (returnObject == null)
         {
@@ -260,12 +262,27 @@ public class AuditComponentImpl implements AuditComponent
         Auditable auditable = mi.getMethod().getAnnotation(Auditable.class);
         if (auditable.key() == Auditable.Key.RETURN)
         {
-            if ((returnObject != null) && (returnObject instanceof NodeRef))
+            if (returnObject != null)
             {
-                NodeRef key = (NodeRef) returnObject;
-                auditInfo.setKeyStore(key.getStoreRef());
-                auditInfo.setKeyGUID(key.getId());
+                if (returnObject instanceof NodeRef)
+                {
+                    NodeRef key = (NodeRef) returnObject;
+                    auditInfo.setKeyStore(key.getStoreRef());
+                    auditInfo.setKeyGUID(key.getId());
+                }
+                else if (returnObject instanceof StoreRef)
+                {
+                    auditInfo.setKeyStore((StoreRef)returnObject);
+                }
             }
+        }
+
+        // If the user name is not set, try and set it after the method call.
+        // This covers authentication when the user is only known after the call.
+
+        if (auditInfo.getUserIdentifier() == null)
+        {
+            auditInfo.setUserIdentifier(AuthenticationUtil.getCurrentUserName());
         }
 
         return auditMode;
@@ -334,10 +351,17 @@ public class AuditComponentImpl implements AuditComponent
             default:
                 break;
             }
-            if ((key != null) && (key instanceof NodeRef))
+            if (key != null)
             {
-                auditInfo.setKeyStore(((NodeRef) key).getStoreRef());
-                auditInfo.setKeyGUID(((NodeRef) key).getId());
+                if (key instanceof NodeRef)
+                {
+                    auditInfo.setKeyStore(((NodeRef) key).getStoreRef());
+                    auditInfo.setKeyGUID(((NodeRef) key).getId());
+                }
+                else if (key instanceof StoreRef)
+                {
+                    auditInfo.setKeyStore((StoreRef) key);
+                }
             }
             auditInfo.setKeyPropertiesAfter(null);
             auditInfo.setKeyPropertiesBefore(null);
@@ -347,17 +371,25 @@ public class AuditComponentImpl implements AuditComponent
                 Serializable[] serArgs = new Serializable[mi.getArguments().length];
                 for (int i = 0; i < mi.getArguments().length; i++)
                 {
-                    if (mi.getArguments()[i] == null)
+                    if ((auditable.recordable() == null)
+                            || (auditable.recordable().length <= i) || auditable.recordable()[i])
                     {
-                        serArgs[i] = null;
-                    }
-                    else if (mi.getArguments()[i] instanceof Serializable)
-                    {
-                        serArgs[i] = (Serializable) mi.getArguments()[i];
+                        if (mi.getArguments()[i] == null)
+                        {
+                            serArgs[i] = null;
+                        }
+                        else if (mi.getArguments()[i] instanceof Serializable)
+                        {
+                            serArgs[i] = (Serializable) mi.getArguments()[i];
+                        }
+                        else
+                        {
+                            serArgs[i] = mi.getArguments()[i].toString();
+                        }
                     }
                     else
                     {
-                        serArgs[i] = mi.getArguments()[i].toString();
+                        serArgs[i] = "********";
                     }
                 }
                 auditInfo.setMethodArguments(serArgs);
@@ -407,8 +439,13 @@ public class AuditComponentImpl implements AuditComponent
         }
     }
 
-    private AuditMode onApplicationAudit(AuditMode auditMode, AuditState auditInfo, String source,
-            String description, NodeRef key, Object... args)
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
+    {
+        return auditDAO.getAuditTrail(nodeRef);
+    }
+
+    private AuditMode onApplicationAudit(AuditMode auditMode, AuditState auditInfo, String source, String description,
+            NodeRef key, Object... args)
     {
         AuditMode effectiveAuditMode = auditModel.beforeExecution(auditMode, source, description, key, args);
 

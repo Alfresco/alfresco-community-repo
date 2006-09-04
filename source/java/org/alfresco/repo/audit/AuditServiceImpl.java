@@ -68,6 +68,11 @@ public class AuditServiceImpl implements AuditService
         auditComponent.audit(source, description, key, args);
     }
 
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
+    {
+        return  auditComponent.getAuditTrail(nodeRef);
+    }
+    
     public static void main(String[] args) throws Exception
     {
 
@@ -82,17 +87,25 @@ public class AuditServiceImpl implements AuditService
         try
         {
 
+            NodeRef nodeRef = new NodeRef(new StoreRef("test", "audit"), "id");
             as.audit("AuditedApp", "First");
-            as.audit("AuditedApp", "Second", new NodeRef(new StoreRef("test", "audit"), "id"));
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("AuditedApp", "Second", nodeRef);
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
             as.audit("AuditedApp", "Third", new Object[] { "one", "two", "three" });
-            as.audit("AuditedApp", "Fourth", new NodeRef(new StoreRef("test", "audit"), "id"), new Object[] { "one",
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("AuditedApp", "Fourth",nodeRef, new Object[] { "one",
                     "two", "three" });
-
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
             as.audit("UnAuditedApp", "First");
-            as.audit("UnAuditedApp", "Second", new NodeRef(new StoreRef("test", "audit"), "id"));
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("UnAuditedApp", "Second", nodeRef);
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
             as.audit("UnAuditedApp", "Third", new Object[] { "one", "two", "three" });
-            as.audit("UnAuditedApp", "Fourth", new NodeRef(new StoreRef("test", "audit"), "id"), new Object[] { "one",
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("UnAuditedApp", "Fourth", nodeRef, new Object[] { "one",
                     "two", "three" });
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
         }
         finally
         {
@@ -100,11 +113,5 @@ public class AuditServiceImpl implements AuditService
         }
         tx.commit();
 
-    }
-
-    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
-    {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

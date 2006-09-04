@@ -17,6 +17,11 @@
 package org.alfresco.repo.audit.hibernate;
 
 import java.util.Date;
+import java.util.List;
+
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * An Audit fact Rely on standard equals and hash code as they should all be unique.
@@ -575,4 +580,16 @@ public class AuditFactImpl implements AuditFact
         this.userId = userId;
     }
 
+    /**
+     * Helper method to get all the audit entries for a node.
+     */
+    @SuppressWarnings("unchecked")
+    public static List<AuditFact> getAuditTrail(Session session, NodeRef nodeRef)
+    {
+        Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_AUDIT_TRAIL);
+        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_PROTOCOL, nodeRef.getStoreRef().getProtocol());
+        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_STORE_ID, nodeRef.getStoreRef().getIdentifier());
+        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_NODE_ID, nodeRef.getId());
+        return (List<AuditFact>) query.list();
+    }
 }

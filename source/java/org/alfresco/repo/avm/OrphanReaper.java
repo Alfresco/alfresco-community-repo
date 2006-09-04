@@ -22,8 +22,7 @@ import java.util.List;
 
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 /**
  * This is the background thread for reaping no longer referenced nodes
@@ -32,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class OrphanReaper implements Runnable
 {
-    private Log fgLogger = LogFactory.getLog(OrphanReaper.class);
+    private Logger fgLogger = Logger.getLogger(OrphanReaper.class);
 
     /**
      * The Transaction Service
@@ -122,6 +121,10 @@ public class OrphanReaper implements Runnable
         fBatchSize = size;
     }
 
+    /**
+     * Set the transaction service.
+     * @param transactionService The service.
+     */
     public void setTransactionService(TransactionService transactionService)
     {
         fTransactionService = transactionService;
@@ -290,13 +293,17 @@ public class OrphanReaper implements Runnable
                             // More special work for layered directories.
                             AVMContext.fgInstance.fDeletedChildDAO.deleteByParent(node);
                         } 
-                        AVMContext.fgInstance.fAVMNodeDAO.delete(node);
                     }
-                    // TODO Need to properly clean up deleted files.
-                    else
+                    else if (node.getType() == AVMNodeType.PLAIN_FILE)
                     {
-                        AVMContext.fgInstance.fAVMNodeDAO.delete(node);
+                        PlainFileNode file = (PlainFileNode)node;
+                        String url = file.getContentData(null).getContentUrl();
+                        if (url != null)
+                        {
+                            AVMContext.fgInstance.getContentStore().delete(url);
+                        }
                     }
+                    AVMContext.fgInstance.fAVMNodeDAO.delete(node);
                 }
                 return null;
             }

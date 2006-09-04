@@ -316,18 +316,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException(path + " has no content.");
         }
         return reader.getContentInputStream();
-        /*
-        Lookup lPath = lookup(version, path, false);
-        AVMNode node = lPath.getCurrentNode();
-        if (node.getType() != AVMNodeType.PLAIN_FILE &&
-            node.getType() != AVMNodeType.LAYERED_FILE)
-        {
-            throw new AVMExistsException("Not a file: " + path + " r " + version);
-        }
-        FileNode file = (FileNode)node;
-        FileContent content = file.getContentForRead();
-        return content.getInputStream();
-        */
     }
 
     /**
@@ -352,9 +340,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, fName + ":" + path);
         ContentWriter writer = 
             AVMContext.fgInstance.getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        // TODO This can't perform very well. What this gets down to
-        // is that integration with ContentService is awkward.
-        // setContentData(path, writer.getContentData());
         return writer;
     }
     

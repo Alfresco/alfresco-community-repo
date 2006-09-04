@@ -111,6 +111,7 @@ public interface WorkflowService
      * @param workflowName  workflow name e.g. jbpm://review
      * @return  the deployed workflow definition
      */
+    @Auditable(parameters = {"workflowName"})
     public WorkflowDefinition getDefinitionByName(String workflowName);
 
     

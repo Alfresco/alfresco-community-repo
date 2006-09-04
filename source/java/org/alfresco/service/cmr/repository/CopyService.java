@@ -59,6 +59,11 @@ public interface CopyService
      * not copied.
      * <p>
      * Source association are not copied.
+     * <p>
+     * <b>NOTE:</b> The top-level node has it's <b>cm:name</b> property removed for
+     *              associations that do not allow duplicately named children in order
+     *              to prevent any chance of a duplicate name clash.  Reassign the
+     *              <b>cm:name</b> property and catch the {@link DuplicateChildNodeNameException}.
      * 
      * @param sourceNodeRef             the node reference used as the source of the copy
      * @param destinationParent  		the intended parent of the new node

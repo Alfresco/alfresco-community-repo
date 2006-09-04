@@ -193,17 +193,17 @@ public class CopyServiceImpl implements CopyService
      */
     public NodeRef copy(
             NodeRef sourceNodeRef,
-            NodeRef destinationParent, 
+            NodeRef destinationParentRef, 
             QName destinationAssocTypeQName,
             QName destinationQName, 
             boolean copyChildren)
     {
 		// Check that all the passed values are not null
         ParameterCheck.mandatory("Source Node", sourceNodeRef);
-        ParameterCheck.mandatory("Destination Parent", destinationParent);
+        ParameterCheck.mandatory("Destination Parent", destinationParentRef);
         ParameterCheck.mandatory("Destination Association Name", destinationQName);
 
-        if (sourceNodeRef.getStoreRef().equals(destinationParent.getStoreRef()) == false)
+        if (sourceNodeRef.getStoreRef().equals(destinationParentRef.getStoreRef()) == false)
         {
             // TODO We need to create a new node in the other store with the same id as the source
 
@@ -211,9 +211,19 @@ public class CopyServiceImpl implements CopyService
             throw new UnsupportedOperationException("Copying nodes across stores is not currently supported.");
         }
 
+        // Get the original parent reference
+        NodeRef sourceParentRef = nodeService.getPrimaryParent(sourceNodeRef).getParentRef();
         // Recursively copy node
         Map<NodeRef, NodeRef> copiedChildren = new HashMap<NodeRef, NodeRef>();
-        NodeRef copy = recursiveCopy(sourceNodeRef, destinationParent, destinationAssocTypeQName, destinationQName, copyChildren, copiedChildren);
+        NodeRef copy = recursiveCopy(
+                sourceNodeRef,
+                sourceParentRef,
+                destinationParentRef,
+                destinationAssocTypeQName,
+                destinationQName,
+                copyChildren,
+                true,                                   // top-level copy drops the name, if the parent is different
+                copiedChildren);
         
         // Foreach of the newly created copies call the copy complete policy
         for (Map.Entry<NodeRef, NodeRef> entry : copiedChildren.entrySet())
@@ -360,20 +370,16 @@ public class CopyServiceImpl implements CopyService
 	/**
      * Recursive copy algorithm
      * 
-     * @param sourceNodeRef
-     * @param destinationParent
-     * @param destinationAssocTypeQName
-     * @param destinationQName
-     * @param copyChildren
-     * @param copiedChildren
-     * @return
+     * @param dropName      drop the name property when associations don't allow duplicately named children
      */
     private NodeRef recursiveCopy(
               NodeRef sourceNodeRef,
-              NodeRef destinationParent, 
+              NodeRef sourceParentRef,
+              NodeRef destinationParentRef, 
               QName destinationAssocTypeQName,
               QName destinationQName, 
               boolean copyChildren,
+              boolean dropName,
               Map<NodeRef, NodeRef> copiedChildren)
     {
         // Extract Type Definition
@@ -385,7 +391,7 @@ public class CopyServiceImpl implements CopyService
         }
         
         // Establish the scope of the copy
-		PolicyScope copyDetails = getCopyDetails(sourceNodeRef, destinationParent.getStoreRef(), true);
+		PolicyScope copyDetails = getCopyDetails(sourceNodeRef, destinationParentRef.getStoreRef(), true);
 		
         // Create collection of properties for type and mandatory aspects
         Map<QName, Serializable> typeProps = copyDetails.getProperties(); 
@@ -403,8 +409,8 @@ public class CopyServiceImpl implements CopyService
             }
         }
         
-        // if the parent node is the same, then remove the name property - it will have to
-        // be changed by the client code
+        // Drop the name property, if required.  This prevents duplicate names and leaves it up to the client
+        // to assign a new name.
         AssociationDefinition assocDef = dictionaryService.getAssociation(destinationAssocTypeQName);
         if (!assocDef.isChild())
         {
@@ -413,7 +419,7 @@ public class CopyServiceImpl implements CopyService
         else
         {
             ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
-            if (!childAssocDef.getDuplicateChildNamesAllowed())
+            if (dropName && !childAssocDef.getDuplicateChildNamesAllowed())
             {
                 // duplicate children are not allowed.
                 properties.remove(ContentModel.PROP_NAME);
@@ -422,14 +428,14 @@ public class CopyServiceImpl implements CopyService
         
 		// Create the new node
         ChildAssociationRef destinationChildAssocRef = this.nodeService.createNode(
-                destinationParent, 
+                destinationParentRef, 
                 destinationAssocTypeQName,
                 destinationQName,
                 sourceTypeRef,
                 properties);
         NodeRef destinationNodeRef = destinationChildAssocRef.getChildRef();
         copiedChildren.put(sourceNodeRef, destinationNodeRef);
-		
+        
         // Prevent any rules being fired on the new destination node
         this.ruleService.disableRules(destinationNodeRef);
         try
@@ -736,9 +742,9 @@ public class CopyServiceImpl implements CopyService
 	 */
 	private void copyChildAssociations(
 			QName classRef, 
-			NodeRef destinationNodeRef, 
+			NodeRef destinationNodeRef,
 			PolicyScope copyDetails, 
-			boolean copyChildren, 
+			boolean copyChildren,
 			Map<NodeRef, NodeRef> copiedChildren)
 	{
 		List<ChildAssociationRef> childAssocs = copyDetails.getChildAssociations(classRef);
@@ -756,11 +762,13 @@ public class CopyServiceImpl implements CopyService
                         {
     						// Copy the child
     						recursiveCopy(
-                                    childAssoc.getChildRef(), 
+                                    childAssoc.getChildRef(),
+                                    childAssoc.getParentRef(),
     								destinationNodeRef, 
                                     childAssoc.getTypeQName(), 
                                     childAssoc.getQName(),
     								copyChildren,
+                                    false,                      // the target and source parents can't be the same
                                     copiedChildren);
                         }
 					}
@@ -784,11 +792,13 @@ public class CopyServiceImpl implements CopyService
                         {
 							// Always recursivly copy configuration folders
 							recursiveCopy(
-	                                childRef, 
+	                                childRef,
+                                    childAssoc.getParentRef(),
 									destinationNodeRef, 
 	                                childAssoc.getTypeQName(), 
 	                                childAssoc.getQName(),
 									true,
+                                    false,                      // the target and source parents can't be the same
 									copiedChildren);
                         }
 					}

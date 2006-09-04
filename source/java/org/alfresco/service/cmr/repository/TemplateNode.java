@@ -495,7 +495,7 @@ public final class TemplateNode implements Serializable
     }
     
     /**
-     * @return Display path to this node
+     * @return Display path to this node - the path built of 'cm:name' attribute values.
      */
     public String getDisplayPath()
     {
@@ -512,6 +512,14 @@ public final class TemplateNode implements Serializable
         }
         
         return displayPath;
+    }
+    
+    /**
+     * @return QName path to this node. This can be used for Lucene PATH: style queries
+     */
+    public String getQnamePath()
+    {
+        return this.services.getNodeService().getPath(this.nodeRef).toPrefixString(this.services.getNamespaceService());
     }
     
     /**

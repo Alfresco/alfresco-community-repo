@@ -251,8 +251,8 @@ public class HibernateNodeTest extends BaseSpringTest
         assoc1.setQname(QName.createQName(null, "number1"));
         assoc1.setChildNodeName("number1");
         assoc1.setChildNodeNameCrc(1);
-        assoc1.buildAssociation(containerNode, contentNode);
         getSession().save(assoc1);
+        assoc1.buildAssociation(containerNode, contentNode);
 
         // make another association between the same two parent and child nodes
         ChildAssoc assoc2 = new ChildAssocImpl();
@@ -261,8 +261,8 @@ public class HibernateNodeTest extends BaseSpringTest
         assoc2.setQname(QName.createQName(null, "number2"));
         assoc2.setChildNodeName("number2");
         assoc2.setChildNodeNameCrc(2);
-        assoc2.buildAssociation(containerNode, contentNode);
         getSession().save(assoc2);
+        assoc2.buildAssociation(containerNode, contentNode);
         
         assertFalse("Hashcode incorrent", assoc2.hashCode() == 0);
         assertNotSame("Assoc equals failure", assoc1, assoc2);

@@ -80,6 +80,7 @@ import org.springframework.util.Assert;
 public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 {
     private static Log logger = LogFactory.getLog(DbNodeServiceImpl.class);
+    private static Log loggerPaths = LogFactory.getLog(DbNodeServiceImpl.class.getName() + ".paths");
     
     private DictionaryService dictionaryService;
     private NodeDaoService nodeDaoService;
@@ -1361,6 +1362,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // done
+        if (loggerPaths.isDebugEnabled())
+        {
+            StringBuilder sb = new StringBuilder(256);
+            if (primaryOnly)
+            {
+                sb.append("Primary paths");
+            }
+            else
+            {
+                sb.append("Paths");
+            }
+            sb.append(" for node ").append(nodeRef);
+            for (Path path : paths)
+            {
+                sb.append("\n").append("   ").append(path);
+            }
+            loggerPaths.debug(sb);
+        }
         return paths;
     }
     

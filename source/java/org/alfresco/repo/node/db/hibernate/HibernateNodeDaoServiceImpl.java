@@ -20,7 +20,9 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -55,6 +57,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectDeletedException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -81,6 +85,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_SOURCE_ASSOCS = "node.GetSourceAssocs";
     private static final String QUERY_GET_CONTENT_DATA_STRINGS = "node.GetContentDataStrings";
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
+    
+    private static Log logger = LogFactory.getLog(HibernateNodeDaoServiceImpl.class);
     
     /** a uuid identifying this unique instance */
     private final String uuid;
@@ -416,21 +422,46 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      */
     public void deleteNode(Node node, boolean cascade)
     {
+        Set<Long> deletedChildAssocIds = new HashSet<Long>(10);
+        deleteNodeInternal(node, cascade, deletedChildAssocIds);
+    }
+
+    /**
+     * 
+     * @param node
+     * @param cascade true to cascade delete
+     * @param deletedChildAssocIds previously deleted child associations
+     */
+    private void deleteNodeInternal(Node node, boolean cascade, Set<Long> deletedChildAssocIds)
+    {
         // delete all parent assocs
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Deleting parent assocs of node " + node.getId());
+        }
+        
         Collection<ChildAssoc> parentAssocs = node.getParentAssocs();
         parentAssocs = new ArrayList<ChildAssoc>(parentAssocs);
         for (ChildAssoc assoc : parentAssocs)
         {
-            deleteChildAssoc(assoc, false);  // we don't cascade upwards
+            deleteChildAssocInternal(assoc, false, deletedChildAssocIds);  // we don't cascade upwards
         }
         // delete all child assocs
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Deleting child assocs of node " + node.getId());
+        }
         Collection<ChildAssoc> childAssocs = getChildAssocs(node);
         childAssocs = new ArrayList<ChildAssoc>(childAssocs);
         for (ChildAssoc assoc : childAssocs)
         {
-            deleteChildAssoc(assoc, cascade);   // potentially cascade downwards
+            deleteChildAssocInternal(assoc, cascade, deletedChildAssocIds);   // potentially cascade downwards
         }
         // delete all node associations to and from
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Deleting source and target assocs of node " + node.getId());
+        }
         List<NodeAssoc> nodeAssocs = getNodeAssocsToAndFrom(node);
         for (NodeAssoc assoc : nodeAssocs)
         {
@@ -501,9 +532,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         assoc.setChildNodeNameCrc(-1L);         // random names compete only with each other
         assoc.setQname(qname);
         assoc.setIsPrimary(isPrimary);
-        assoc.buildAssociation(parentNode, childNode);
         // persist it, catching the duplicate child name
         getHibernateTemplate().save(assoc);
+        // maintain inverse sets
+        assoc.buildAssociation(parentNode, childNode);
         // done
         return assoc;
     }
@@ -565,13 +597,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             Integer count = (Integer) getHibernateTemplate().execute(callback);
             // refresh the entity directly
-            getHibernateTemplate().refresh(childAssoc);
             if (count.intValue() == 0)
             {
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("ChildAssoc not updated: " + childAssoc.getId());
                 }
+            }
+            else
+            {
+                getHibernateTemplate().refresh(childAssoc);
             }
         }
         catch (DataIntegrityViolationException e)
@@ -690,21 +725,53 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
     
     /**
-     * Manually enforces cascade deletions down primary associations
+     * Public level entry-point.
      */
     public void deleteChildAssoc(ChildAssoc assoc, boolean cascade)
     {
+        Set<Long> deletedChildAssocIds = new HashSet<Long>(10);
+        deleteChildAssocInternal(assoc, cascade, deletedChildAssocIds);
+    }
+
+    /**
+     * Cascade deletion of child associations, recording the IDs of deleted assocs.
+     * 
+     * @param assoc the association to delete
+     * @param cascade true to cascade to the child node of the association
+     * @param deletedChildAssocIds already-deleted associations
+     */
+    private void deleteChildAssocInternal(ChildAssoc assoc, boolean cascade, Set<Long> deletedChildAssocIds)
+    {
+        Long childAssocId = assoc.getId();
+        if (deletedChildAssocIds.contains(childAssocId))
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Ignoring parent-child association " + assoc.getId());
+            }
+            return;
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Deleting parent-child association " + assoc.getId() +
+                    (cascade ? " with" : " without") + " cascade:" +
+                    assoc.getParent().getId() + " -> " + assoc.getChild().getId());
+        }
+
         Node childNode = assoc.getChild();
         
         // maintain inverse association sets
         assoc.removeAssociation();
         // remove instance
         getHibernateTemplate().delete(assoc);
+        deletedChildAssocIds.add(childAssocId);         // ensure that we don't attempt to delete it twice
         
         if (cascade && assoc.getIsPrimary())   // the assoc is primary
         {
             // delete the child node
-            deleteNode(childNode, cascade);
+            deleteNodeInternal(childNode, cascade, deletedChildAssocIds);
             /*
              * The child node deletion will cascade delete all assocs to
              * and from it, but we have safely removed this one, so no

@@ -60,6 +60,9 @@
          </action>
          
          <action id="edit_content_properties">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
             <label-id>edit_properties</label-id>
             <image>/images/icons/Change_details.gif</image>
             <action>dialog:editContentProperties</action>

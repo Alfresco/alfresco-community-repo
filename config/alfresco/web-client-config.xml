@@ -162,6 +162,13 @@
          </folder-types>
          <!-- custom properties to be shown in the More Options panel -->
          <custom-properties>
+            <meta-data aspect="rma:filePlan" property="rma:recordCategoryName" />
+            <meta-data aspect="rma:filePlan" property="rma:recordCategoryIdentifier" />
+            <meta-data aspect="rma:record" property="rma:recordIdentifier" />
+            <meta-data aspect="rma:record" property="rma:orginator" />
+            <meta-data aspect="rma:record" property="rma:orginatingOrganization" />
+            <meta-data aspect="rma:record" property="rma:dateReceived" />
+            <meta-data aspect="rma:record" property="rma:supplementalMarkingList" />
          </custom-properties>
       </advanced-search>
    </config>
@@ -255,6 +262,13 @@
          <aspect name="translatable"/>
          <aspect name="localizable"/>
          <aspect name="emailed"/>
+         <aspect name="rma:record"/>
+         <aspect name="rma:filePlan"/>
+         <aspect name="rma:cutoffable"/>
+         <aspect name="rma:holdable"/>
+         <aspect name="rma:transferable"/>
+         <aspect name="rma:accessionable"/>
+         <aspect name="rma:destroyable"/>
       </aspects>
       <!-- List of aspects to only show in the add features action -->
       <aspects-add>
@@ -265,7 +279,7 @@
       <!-- List of aspects to only show in the has aspect condition -->
       <aspects-test>
       </aspects-test>
-      
+
       <!-- The list of transformers to show in the transform actions -->
       <transformers>
          <transformer name="application/vnd.oasis.opendocument.text"/>
@@ -288,7 +302,7 @@
          <transformer name="image/jpeg"/>
          <transformer name="image/png"/>
       </image-transformers>
-      
+
       <!-- The classes used to handle actions -->
       <action-handlers>
          <handler name="add-features" class="org.alfresco.web.bean.actions.handlers.AddFeaturesHandler" />
@@ -306,7 +320,7 @@
          <handler name="transform" class="org.alfresco.web.bean.actions.handlers.TransformHandler" />
          <handler name="transform-image" class="org.alfresco.web.bean.actions.handlers.TransformImageHandler" />
       </action-handlers>
-      
+
       <!-- The classes used to handle conditions -->
       <condition-handlers>
          <handler name="compare-mime-type" class="org.alfresco.web.bean.rules.handlers.CompareMimeTypeHandler" />
@@ -316,10 +330,10 @@
          <handler name="is-subtype" class="org.alfresco.web.bean.rules.handlers.IsSubTypeHandler" />
       </condition-handlers>
    </config>
-   
+
    <!-- This config sections below hold all the icons choices -->
    <!-- displayed to users when creating various types of spaces -->
-   <!-- in the client. --> 
+   <!-- in the client. -->
 
    <!-- NOTE: The conditions below are all string based and -->
    <!-- will therefore not be found when using Node based -->
@@ -341,13 +355,13 @@
          <icon name="forums" path="/images/icons/forums.gif" />
       </icons>
    </config>
-   
+
    <config evaluator="string-compare" condition="fm:forum icons">
       <icons>
          <icon name="forum" path="/images/icons/forum.gif" />
       </icons>
    </config>
-   
+
    <config evaluator="string-compare" condition="fm:topic icons">
       <icons>
          <icon name="topic" path="/images/icons/topic.gif" />
@@ -355,5 +369,5 @@
          <icon name="topic_question" path="/images/icons/topic_question.gif" />
       </icons>
    </config>
-      
+
 </alfresco-config>

@@ -30,115 +30,155 @@
     <cache 
         name="org.hibernate.cache.StandardQueryCache" 
         maxElementsInMemory="50" 
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 0.4MB memory required -->
     <cache 
         name="org.hibernate.cache.UpdateTimestampsCache" 
         maxElementsInMemory="2000"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl" 
         maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 0.1 MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.QNameEntityImpl" 
         maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeStatusImpl" 
         maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 15MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.aspects" 
         maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 10MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.properties" 
         maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 10MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.parentAssocs" 
         maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 250MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.ChildAssocImpl" 
         maxElementsInMemory="200000"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- general use node associations are not common  -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeAssocImpl" 
         maxElementsInMemory="1000" 
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- low numbers of objects expected -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.StoreImpl" 
         maxElementsInMemory="100" 
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- version counters -->
     <!-- approx 0.4MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.VersionCountImpl" 
         maxElementsInMemory="100" 
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 0.1MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.AppliedPatchImpl" 
         maxElementsInMemory="100"
-        timeToLiveSeconds="60" 
+        timeToLiveSeconds="300" 
+        overflowToDisk="false"
         />
     <!-- Permission related caches -->
     <!-- approx 1MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl" 
         maxElementsInMemory="1000"        
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 1MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl.entries" 
         maxElementsInMemory="1000"        
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 5MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl" 
         maxElementsInMemory="5000"        
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 1MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.DbPermissionImpl" 
         maxElementsInMemory="500"          
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- approx 10MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl" 
         maxElementsInMemory="10000"        
+        eternal="true"
+        overflowToDisk="false"
         />
      <!-- approx 5MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl.externalKeys" 
         maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false"
         />
     <!-- Audit caches -->
       <cache 
         name="org.alfresco.repo.audit.hibernate.AuditConfigImpl" 
         maxElementsInMemory="2"
-        eternal="true" 
-        overflowToDisk="false"/>
+        eternal="true"
+        overflowToDisk="false"
+        />
      <cache 
         name="org.alfresco.repo.audit.hibernate.AuditDateImpl" 
         maxElementsInMemory="2"
-        eternal="true" 
-        overflowToDisk="false"/>
+        eternal="true"
+        overflowToDisk="false"
+        />
      <cache 
         name="org.alfresco.repo.audit.hibernate.AuditSourceImpl" 
         maxElementsInMemory="2000"
-        eternal="true" 
-        overflowToDisk="false"/>
+        eternal="true"
+        overflowToDisk="false"
+        />
     
 </ehcache>

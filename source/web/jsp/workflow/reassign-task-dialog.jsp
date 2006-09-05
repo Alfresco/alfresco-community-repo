@@ -23,7 +23,7 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<h:outputText value="#{msg.reassign_select_user}<br/><br/>" escape="false" />
+<h:outputText id="txt" value="#{msg.reassign_select_user}<br/><br/>" escape="false" />
 
 <a:genericPicker id="user-picker" showAddButton="false" filters="#{DialogManager.bean.filters}" 
                  queryCallback="#{DialogManager.bean.pickerCallback}" multiSelect="false" />

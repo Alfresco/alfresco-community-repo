@@ -30,6 +30,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -1105,5 +1106,29 @@ public class AVMStoreImpl implements AVMStore, Serializable
         Lookup lPath = lookup(version, path, false);
         AVMNode node = lPath.getCurrentNode();
         return AVMContext.fgInstance.fAVMAspectNameDAO.exists(node, aspectName);
+    }
+    
+    /**
+     * Set the ACL on a node.
+     * @param path The path to the node.
+     * @param acl The ACL to set.
+     */
+    public void setACL(String path, DbAccessControlList acl)
+    {
+        Lookup lPath = lookup(-1, path, true);
+        AVMNode node = lPath.getCurrentNode();
+        node.setAcl(acl);
+    }
+    
+    /**
+     * Get the ACL on a node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return The ACL.
+     */
+    public DbAccessControlList getACL(int version, String path)
+    {
+        Lookup lPath = lookup(version, path, false);
+        return lPath.getCurrentNode().getAcl();
     }
 }

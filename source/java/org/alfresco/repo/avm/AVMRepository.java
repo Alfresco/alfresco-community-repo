@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -1138,5 +1139,32 @@ public class AVMRepository
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);
         return store.hasAspect(version, pathParts[1], aspectName);
+    }
+    
+    /**
+     * Set the ACL on a node.
+     * @param path The path to the node.
+     * @param acl The ACL to set.
+     */
+    public void setACL(String path, DbAccessControlList acl)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        store.setACL(pathParts[1], acl);
+    }
+    
+    /**
+     * Get the ACL on a node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return The ACL.
+     */
+    public DbAccessControlList getACL(int version, String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        return store.getACL(version, pathParts[1]);
     }
 }

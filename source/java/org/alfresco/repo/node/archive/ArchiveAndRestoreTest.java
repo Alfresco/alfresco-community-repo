@@ -120,7 +120,7 @@ public class ArchiveAndRestoreTest extends TestCase
             // Create the work store
             workStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
             workStoreRootNodeRef = nodeService.getRootNode(workStoreRef);
-            archiveStoreRef = nodeService.createStore("archive", getName() + System.currentTimeMillis());
+            archiveStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "archive" + getName() + System.currentTimeMillis());
             archiveStoreRootNodeRef = nodeService.getRootNode(archiveStoreRef);
             
             // Map the work store to the archive store.  This will already be wired into the NodeService.

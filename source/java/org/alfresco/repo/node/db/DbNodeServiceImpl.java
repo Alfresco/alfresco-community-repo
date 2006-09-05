@@ -33,6 +33,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMContext;
 import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeStatus;
@@ -1794,7 +1795,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * 
      * @param assocTypeQName the type of the child association
      * @param childNode the child node being added.  The name will be extracted from it, if necessary.
-     * @return Returns the value to be put on the child association for uniqueness, or null if
      */
     private void setChildUniqueName(Node childNode)
     {
@@ -1839,5 +1839,27 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     "Unique name set for all " + parentAssocs.size() + " parent associations: \n" +
                     "   name: " + useName);
         }
+    }
+    
+    /**
+     * Set the ACL on a node.
+     * @param nodeRef The reference to the node.
+     * @param acl The ACL to set.
+     */
+    public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
+    {
+        Node node = getNodeNotNull(nodeRef);
+        node.setAccessControlList(acl);
+    }
+    
+    /**
+     * Get the ACL on a node.
+     * @param nodeRef The reference to the node.
+     * @return The ACL.
+     */
+    public DbAccessControlList getAccessControlList(NodeRef nodeRef)
+    {
+        Node node = getNodeNotNull(nodeRef);
+        return node.getAccessControlList();
     }
 }

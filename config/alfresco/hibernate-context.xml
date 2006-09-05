@@ -206,8 +206,12 @@
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
-      <property name="nodeDaoService">
-         <ref bean="nodeDaoService" />
+      <property name="protocolToNodeService">
+         <map>
+            <entry key="workspace"><ref bean="dbNodeService"></ref></entry>
+            <entry key="versionStore"><ref bean="versionNodeService"></ref></entry>
+            <entry key="avm"><ref bean="avmNodeService"/></entry>
+         </map>
       </property>
    </bean>
 	

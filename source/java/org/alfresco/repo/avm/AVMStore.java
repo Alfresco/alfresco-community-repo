@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -383,4 +384,19 @@ public interface AVMStore
      * @return Whether the node has the aspect.
      */
     public boolean hasAspect(int version, String path, QName aspectName);
+    
+    /**
+     * Set the ACL on a node.
+     * @param path The path to the node.
+     * @param acl The ACL to set.
+     */
+    public void setACL(String path, DbAccessControlList acl);
+    
+    /**
+     * Get the ACL on a node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return The ACL.
+     */
+    public DbAccessControlList getACL(int version, String path);
 }

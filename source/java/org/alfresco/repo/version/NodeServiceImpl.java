@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
@@ -555,5 +556,25 @@ public class NodeServiceImpl implements NodeService, VersionModel
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef targetParentNodeRef, QName assocTypeQName, QName assocQName)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+    
+    /**
+     * Set the access control list on a node. Defer to DbNodeService.
+     * @param nodeRef The reference to the node.
+     * @param acl The list to set.
+     */
+    public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
+    {
+        dbNodeService.setAccessControlList(nodeRef, acl);
+    }
+    
+    /**
+     * Get the access control list on a node. Defer to DbNodeService.
+     * @param nodeRef The reference to the node.
+     * @return The list.
+     */
+    public DbAccessControlList getAccessControlList(NodeRef nodeRef)
+    {
+        return dbNodeService.getAccessControlList(nodeRef);
     }
 }

@@ -111,6 +111,10 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
 
     public void audit(AuditState auditInfo)
     {
+        if(auditInfo.getUserIdentifier() == null)
+        {
+            auditInfo.setUserIdentifier(AuthenticationUtil.getSystemUserName());
+        }
         if(AuthenticationUtil.getCurrentUserName() == null)
         {
             AuthenticationUtil.setSystemUserAsCurrentUser();

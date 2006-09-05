@@ -213,6 +213,9 @@
             <entry key="avm"><ref bean="avmNodeService"/></entry>
          </map>
       </property>
+      <property name="defaultNodeService">
+ 		 <ref bean="dbNodeService"/>
+ 	  </property>
    </bean>
 	
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">

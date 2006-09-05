@@ -73,6 +73,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         }
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         copyProperties(other);
+        copyAspects(other);
     }
 
     /**

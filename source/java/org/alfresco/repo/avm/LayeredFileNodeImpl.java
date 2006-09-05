@@ -54,6 +54,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         copyProperties(other);
+        copyAspects(other);
     }
 
     /**
@@ -83,10 +84,12 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         {
             throw new AVMException("Unbacked layered file node.");
         }
+        // TODO This doesn't look quite right.
         PlainFileNodeImpl newMe = new PlainFileNodeImpl(lPath.getAVMStore(),
                                                         getBasicAttributes(),
                                                         getContentData(lPath),
-                                                        getProperties());
+                                                        indirect.getProperties(),
+                                                        AVMContext.fgInstance.fAVMAspectNameDAO.get(indirect));
         newMe.setAncestor(this);
         return newMe;
     }

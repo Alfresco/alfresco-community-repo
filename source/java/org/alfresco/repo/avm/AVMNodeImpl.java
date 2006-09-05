@@ -311,6 +311,24 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     }
     
     /**
+     * Copy all aspects from another node.
+     * @param other The other node.
+     */
+    protected void copyAspects(AVMNode other)
+    {
+        List<AVMAspectName> aspects =
+            AVMContext.fgInstance.fAVMAspectNameDAO.get(other);
+        for (AVMAspectName name : aspects)
+        {
+            AVMAspectName newName = 
+                new AVMAspectNameImpl();
+            newName.setName(name.getName());
+            newName.setNode(this);
+            AVMContext.fgInstance.fAVMAspectNameDAO.save(newName);
+        }
+    }
+    
+    /**
      * Set a property on a node. Overwrite it if it exists.
      * @param name The name of the property.
      * @param value The value to set.

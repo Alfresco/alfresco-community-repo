@@ -2220,7 +2220,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUTHOR));
             fService.removeAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
             fService.createSnapshot("main");
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
             assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
+            assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE));
         }
         catch (Exception e)
         {

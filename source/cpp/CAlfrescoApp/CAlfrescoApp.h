@@ -30,14 +30,14 @@
 
 using namespace Alfresco;
 
-// CCAlfrescoAppApp:
+// CAlfrescoApp:
 // See CAlfrescoApp.cpp for the implementation of this class
 //
 
-class CCAlfrescoAppApp : public CWinApp
+class CAlfrescoApp : public CWinApp
 {
 public:
-	CCAlfrescoAppApp();
+	CAlfrescoApp();
 
 // Overrides
 	public:
@@ -59,6 +59,11 @@ private:
 	// Run the action
 
 	bool runAction( AlfrescoInterface& alfresco, StringList& pathList, AlfrescoActionInfo& actionInfo);
+
+	// Post-process actions, command line launch and browse to URL
+
+	bool doCommandLine( AlfrescoInterface& alfresco, const String& cmdLine);
+	bool doURL( AlfrescoInterface& alfresco, const String&  url);
 };
 
-extern CCAlfrescoAppApp theApp;
+extern CAlfrescoApp theApp;

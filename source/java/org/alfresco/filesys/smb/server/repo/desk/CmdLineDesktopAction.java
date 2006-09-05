@@ -47,6 +47,6 @@ public class CmdLineDesktopAction extends DesktopAction {
 
 		// Return a URL in the status message
 		
-		return new DesktopResponse(StsCommandLine, "C:\\Windows\\notepad.exe"); 
+		return new DesktopResponse(StsCommandLine, "%SystemRoot%\\notepad.exe"); 
 	}
 }

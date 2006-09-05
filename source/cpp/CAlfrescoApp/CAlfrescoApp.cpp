@@ -37,14 +37,14 @@ using namespace Alfresco;
 
 // CCAlfrescoAppApp
 
-BEGIN_MESSAGE_MAP(CCAlfrescoAppApp, CWinApp)
+BEGIN_MESSAGE_MAP(CAlfrescoApp, CWinApp)
 	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
-// CCAlfrescoAppApp construction
+// CCAlfrescoApp construction
 
-CCAlfrescoAppApp::CCAlfrescoAppApp()
+CAlfrescoApp::CAlfrescoApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
@@ -53,12 +53,12 @@ CCAlfrescoAppApp::CCAlfrescoAppApp()
 
 // The one and only CCAlfrescoAppApp object
 
-CCAlfrescoAppApp theApp;
+CAlfrescoApp theApp;
 
 
 // CCAlfrescoAppApp initialization
 
-BOOL CCAlfrescoAppApp::InitInstance()
+BOOL CAlfrescoApp::InitInstance()
 {
 	// InitCommonControls() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
@@ -181,8 +181,8 @@ BOOL CCAlfrescoAppApp::InitInstance()
  * @param params DesktopParams&
  * @return bool
  */
-bool CCAlfrescoAppApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringList& paths, AlfrescoActionInfo& actionInfo,
-											   DesktopParams& params) {
+bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringList& paths, AlfrescoActionInfo& actionInfo,
+										    DesktopParams& params) {
 
 	// If there are no paths then just return a success
 
@@ -401,7 +401,7 @@ bool CCAlfrescoAppApp::buildDesktopParameters( AlfrescoInterface& alfresco, Stri
  * @param aborted bool&
  * @return bool
  */
-bool CCAlfrescoAppApp::copyFilesUsingShell(const String& fromFileFolder, const String& toFolder, bool& aborted) {
+bool CAlfrescoApp::copyFilesUsingShell(const String& fromFileFolder, const String& toFolder, bool& aborted) {
 
 	// Build the from/to paths, must be double null terminated
 
@@ -456,7 +456,7 @@ bool CCAlfrescoAppApp::copyFilesUsingShell(const String& fromFileFolder, const S
  * @param actionInfo AlfrescoActionInfo&
  * @return bool
  */
-bool CCAlfrescoAppApp::runAction( AlfrescoInterface& alfresco, StringList& pathList, AlfrescoActionInfo& actionInfo) {
+bool CAlfrescoApp::runAction( AlfrescoInterface& alfresco, StringList& pathList, AlfrescoActionInfo& actionInfo) {
 
 	// Build the desktop action parameter list, perform any file copying of local files
 
@@ -484,24 +484,9 @@ bool CCAlfrescoAppApp::runAction( AlfrescoInterface& alfresco, StringList& pathL
 
 			if ( response.getStatus() == StsCommandLine) {
 
-				// Initialize the startup information
-
-				STARTUPINFO startupInfo;
-				memset(&startupInfo, 0, sizeof(STARTUPINFO));
-
 				// Launch a process using the command line
 
-				PROCESS_INFORMATION processInfo;
-				memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
-
-				if ( CreateProcess( response.getStatusMessage().data(), NULL, NULL, NULL, true, 0, NULL, NULL,
-						&startupInfo, &processInfo) == false) {
-					CString msg;
-					msg.FormatMessage( L"Failed to launch command line\n\n%1\n\nError %2!d!", response.getStatusMessage().data(), GetLastError());
-					AfxMessageBox( msg, MB_OK | MB_ICONERROR);
-				}
-				else
-					sts = true;
+				sts = doCommandLine( alfresco, response.getStatusMessage());
 			}
 
 			// Check if a web browser should be launched with a URL
@@ -510,14 +495,7 @@ bool CCAlfrescoAppApp::runAction( AlfrescoInterface& alfresco, StringList& pathL
 
 				// Use the Windows shell to open the URL
 
-				HINSTANCE shellSts = ShellExecute( NULL, NULL, response.getStatusMessage().data(), NULL, NULL, SW_SHOWNORMAL);
-				if (( int) shellSts < 32) {
-					CString msg;
-					msg.FormatMessage( L"Failed to launch URL\n\n%1", response.getStatusMessage().data());
-					AfxMessageBox( msg, MB_OK | MB_ICONERROR);
-				}
-				else
-					sts = true;
+				sts = doURL( alfresco, response.getStatusMessage());
 			}
 
 			// Error status
@@ -569,6 +547,171 @@ bool CCAlfrescoAppApp::runAction( AlfrescoInterface& alfresco, StringList& pathL
 	}
 
 	// Return the action status
+
+	return sts;
+}
+
+/**
+ * Launch a command line
+ *
+ * @param alfresco AlfrescoInterface&
+ * @param cmdStr const String&
+ * @return bool
+ */
+bool CAlfrescoApp::doCommandLine( AlfrescoInterface& alfresco, const String& cmdStr) {
+
+	// Check if the command line contains any environment variables/tokens
+
+	String cmdLine = cmdStr;
+	int pos = cmdLine.indexOf( L'%');
+
+	if ( pos != -1) {
+
+		// Command line contains environment variables or other tokens that must be replaced
+
+		String newCmdLine = L"";
+		if (pos > 0)
+			newCmdLine = cmdLine.substring( 0, pos);
+
+		wchar_t envBuf[256];
+		size_t envLen;
+
+		while ( pos != -1) {
+
+			// Find the end of the current token
+
+			int endPos = cmdLine.indexOf ( L'%', pos + 1);
+
+			if ( endPos == -1) {
+				CString msg;
+				msg.FormatMessage( L"Bad token in command line\n\n%1", cmdLine.data());
+				AfxMessageBox( msg, MB_OK | MB_ICONERROR);
+
+				return false;
+			}
+
+			// Extract the token
+
+			String token = cmdLine.substring( pos + 1, endPos);
+
+			// Replace the token with an environment variable value or other values
+
+			if ( token.equals( L"AlfrescoDir")) {
+
+				// Use the local path to the Alfresco folder that the application is running from
+
+				newCmdLine.append( alfresco.getUNCPath());
+			}
+			else {
+
+				// Find the environment variable value
+
+				envLen = sizeof( envBuf)/sizeof(wchar_t);
+				const wchar_t* pEnvName = token.data();
+
+				if ( _wgetenv_s( &envLen, envBuf, envLen, pEnvName) == 0) {
+
+					// Append the environment variable value
+
+					newCmdLine.append( envBuf);
+				}
+				else {
+
+					// Error converting the environment variable
+
+					CString msg;
+					msg.FormatMessage( L"Failed to convert environment variable\n\n%1\n\n%2", token.data(), cmdLine.data());
+					AfxMessageBox( msg, MB_OK | MB_ICONERROR);
+
+					return false;
+				}
+			}
+
+			// Update the token search position
+
+			pos = endPos + 1;
+
+			if (( unsigned int) pos < cmdStr.length()) {
+
+				// Search for the next token
+
+				pos = cmdLine.indexOf( L'%', pos);
+			}
+			else {
+
+				// End of string, finish the token search
+
+				pos = -1;
+			}
+
+			// Append the normal string between tokens
+
+			if ( pos > (endPos + 1)) {
+
+				// Get the between token sting
+
+				String filler = cmdLine.substring( endPos + 1, pos);
+				newCmdLine.append( filler);
+			}
+			else if ( pos == -1) {
+
+				// Append the remaining string
+
+				String filler = cmdLine.substring( endPos + 1);
+				newCmdLine.append( filler);
+			}
+		}
+
+		// Update the command line
+
+		cmdLine = newCmdLine;
+	}
+
+	// Initialize the startup information
+
+	STARTUPINFO startupInfo;
+	memset(&startupInfo, 0, sizeof(STARTUPINFO));
+
+	// Launch a process using the command line
+
+	PROCESS_INFORMATION processInfo;
+	memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
+
+	bool sts = false;
+
+	if ( CreateProcess( NULL, (LPWSTR) cmdLine.data(), NULL, NULL, true, 0, NULL, NULL,
+			&startupInfo, &processInfo) == false) {
+		CString msg;
+		msg.FormatMessage( L"Failed to launch command line\n\n%1\n\nError %2!d!", cmdLine.data(), GetLastError());
+		AfxMessageBox( msg, MB_OK | MB_ICONERROR);
+	}
+	else
+		sts = true;
+
+	return sts;
+}
+
+/**
+ * Browse to a URL
+ *
+ * @param alfresco AlfrescoInterface&
+ * @param url const String&
+ * @return bool
+ */
+bool CAlfrescoApp::doURL( AlfrescoInterface& alfresco, const String& url) {
+
+	// Use the Windows shell to open the URL
+
+	bool sts = false;
+
+	HINSTANCE shellSts = ShellExecute( NULL, NULL, url.data(), NULL, NULL, SW_SHOWNORMAL);
+	if (( int) shellSts < 32) {
+		CString msg;
+		msg.FormatMessage( L"Failed to launch URL\n\n%1", url.data());
+		AfxMessageBox( msg, MB_OK | MB_ICONERROR);
+	}
+	else
+		sts = true;
 
 	return sts;
 }

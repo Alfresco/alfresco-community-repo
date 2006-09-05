@@ -676,7 +676,8 @@ void String::append ( const char* str) {
  * @param str const wchar_t*
  */
 void String::append (const wchar_t* str) {
-	m_string += str;
+	while ( *str != 0)
+		m_string += *str++;
 }
 
 /**

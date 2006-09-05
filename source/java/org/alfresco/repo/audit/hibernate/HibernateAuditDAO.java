@@ -77,6 +77,8 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
     public static final String QUERY_AUDIT_STORE_ID = "store_id";
     
     public static final String QUERY_AUDIT_NODE_ID = "node_id";
+    
+    public static final String QUERY_AUDIT_NODE_REF = "nodeRef";
 
     /** a uuid identifying this unique instance */
     private String uuid;

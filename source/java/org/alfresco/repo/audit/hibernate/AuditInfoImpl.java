@@ -86,7 +86,14 @@ public class AuditInfoImpl implements AuditInfo
         this.keyGUID = auditFact.getNodeUUID();
         this.keyPropertiesAfter = null;
         this.keyPropertiesBefore = null;
-        this.keyStore = new StoreRef(auditFact.getStoreProtocol(), auditFact.getStoreId());
+        if((auditFact.getStoreProtocol() != null) && (auditFact.getStoreId() != null))
+        {
+            this.keyStore = new StoreRef(auditFact.getStoreProtocol(), auditFact.getStoreId());
+        }
+        else
+        {
+            this.keyStore = null;
+        }
         this.message = auditFact.getMessage();
         this.methodArguments = null;
         this.methodArgumentsAsStrings = new String[5];

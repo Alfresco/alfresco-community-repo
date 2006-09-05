@@ -590,6 +590,7 @@ public class AuditFactImpl implements AuditFact
         query.setParameter(HibernateAuditDAO.QUERY_AUDIT_PROTOCOL, nodeRef.getStoreRef().getProtocol());
         query.setParameter(HibernateAuditDAO.QUERY_AUDIT_STORE_ID, nodeRef.getStoreRef().getIdentifier());
         query.setParameter(HibernateAuditDAO.QUERY_AUDIT_NODE_ID, nodeRef.getId());
+        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_NODE_REF, "%"+nodeRef.toString()+"%");
         return (List<AuditFact>) query.list();
     }
 }

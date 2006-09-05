@@ -197,22 +197,22 @@ public class AuditServiceTest extends BaseSpringTest
                     ContentModel.TYPE_PERSON, container, props).getChildRef();
             assertEquals(start + (1 * increment), auditService.getAuditTrail(typesNodeRef).size());
             List<AuditInfo> list = auditService.getAuditTrail(typesNodeRef);
-            assertEquals(0, auditService.getAuditTrail(created).size());
-
-            // Update
-
-            serviceRegistry.getNodeService().setProperty(created, ContentModel.PROP_FIRSTNAME, "New First Name");
             assertEquals((1 * increment), auditService.getAuditTrail(created).size());
 
             // Update
 
-            serviceRegistry.getNodeService().setProperty(created, ContentModel.PROP_FIRSTNAME, "Next First Name");
+            serviceRegistry.getNodeService().setProperty(created, ContentModel.PROP_FIRSTNAME, "New First Name");
             assertEquals((2 * increment), auditService.getAuditTrail(created).size());
+
+            // Update
+
+            serviceRegistry.getNodeService().setProperty(created, ContentModel.PROP_FIRSTNAME, "Next First Name");
+            assertEquals((3 * increment), auditService.getAuditTrail(created).size());
 
             // Delete
 
             serviceRegistry.getNodeService().deleteNode(created);
-            assertEquals((3 * increment), auditService.getAuditTrail(created).size());
+            assertEquals((4 * increment), auditService.getAuditTrail(created).size());
 
             list = auditService.getAuditTrail(created);
             assertNotNull(list);

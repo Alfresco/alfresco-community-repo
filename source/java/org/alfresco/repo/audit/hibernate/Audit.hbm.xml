@@ -161,9 +161,21 @@
         from 
             org.alfresco.repo.audit.hibernate.AuditFactImpl as audit_fact
         where
-            audit_fact.storeProtocol = :protocol and
-            audit_fact.storeId = :store_id and
-            audit_fact.nodeUUID = :node_id
+            (audit_fact.storeProtocol = :protocol and
+             audit_fact.storeId = :store_id and
+             audit_fact.nodeUUID = :node_id)
+            or
+            arg1 like :nodeRef
+            or
+            arg2 like :nodeRef
+            or
+            arg3 like :nodeRef
+            or
+            arg4 like :nodeRef
+            or
+            arg5 like :nodeRef
+            or
+            returnValue like :nodeRef
         order by
             audit_fact.date asc
     </query>

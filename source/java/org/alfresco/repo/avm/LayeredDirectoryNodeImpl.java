@@ -115,6 +115,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
+        copyACLs(other);
     }
     
     /**
@@ -149,6 +150,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
+        copyACLs(other);
     }
 
     /**
@@ -173,6 +175,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         copyProperties(dir);
         copyAspects(dir);
+        copyACLs(dir);
     }   
     
     /**

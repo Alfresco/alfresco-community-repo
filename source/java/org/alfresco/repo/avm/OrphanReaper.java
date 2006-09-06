@@ -20,9 +20,12 @@ package org.alfresco.repo.avm;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.log4j.Logger;
+import org.hibernate.SessionFactory;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
  * This is the background thread for reaping no longer referenced nodes
@@ -37,6 +40,11 @@ public class OrphanReaper implements Runnable
      * The Transaction Service
      */
     private TransactionService fTransactionService;
+    
+    /**
+     * The Session Factory
+     */
+    private SessionFactory fSessionFactory;
     
     /**
      * Inactive base sleep interval.
@@ -128,6 +136,15 @@ public class OrphanReaper implements Runnable
     public void setTransactionService(TransactionService transactionService)
     {
         fTransactionService = transactionService;
+    }
+    
+    /**
+     * Set the hibernate session factory. (For Spring.)
+     * @param sessionFactory
+     */
+    public void setSessionFactory(SessionFactory sessionFactory)
+    {
+        fSessionFactory = sessionFactory;
     }
     
     /**
@@ -282,6 +299,14 @@ public class OrphanReaper implements Runnable
                     AVMContext.fgInstance.fAVMNodePropertyDAO.deleteAll(node);
                     // Get rid of all aspects belonging to this node.
                     AVMContext.fgInstance.fAVMAspectNameDAO.delete(node);
+                    // Get rid of ACL.
+                    DbAccessControlList acl = node.getAcl();
+                    node.setAcl(null);
+                    if (acl != null)
+                    {
+                        acl.deleteEntries();
+                        (new HibernateTemplate(fSessionFactory)).delete(acl);
+                    }
                     // Extra work for directories.
                     if (node.getType() == AVMNodeType.PLAIN_DIRECTORY ||
                         node.getType() == AVMNodeType.LAYERED_DIRECTORY)

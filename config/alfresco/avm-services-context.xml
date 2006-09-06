@@ -149,6 +149,9 @@
 		<property name="transactionService">
 			<ref bean="transactionComponent"/>
 		</property>
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
 	</bean>
 
 	<bean id="avmRepository" class="org.alfresco.repo.avm.AVMRepository">

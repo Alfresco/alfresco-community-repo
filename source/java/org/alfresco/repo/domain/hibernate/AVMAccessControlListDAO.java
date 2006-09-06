@@ -78,7 +78,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
     public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
     {
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[1];
+        int version = (Integer)avmVersionPath[0];
         if (version >= 0)
         {
             throw new InvalidNodeRefException("Read Only Node.", nodeRef);

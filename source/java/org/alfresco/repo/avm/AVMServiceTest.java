@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
@@ -36,6 +37,8 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -2248,6 +2251,36 @@ public class AVMServiceTest extends AVMServiceTestBase
             {
                 // Do nothing.
             }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test ACLs.
+     */
+    public void testACLs()
+    {
+        try
+        {
+            setupBasicTree();
+            PermissionService perm = (PermissionService)fContext.getBean("PermissionService");
+            perm.setPermission(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"), 
+                               PermissionService.ADMINISTRATOR_AUTHORITY,
+                               PermissionService.ALL_PERMISSIONS,
+                               true);
+            fService.createSnapshot("main");
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            Set<AccessPermission> perms = 
+                perm.getPermissions(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"));
+            for (AccessPermission permission : perms)
+            {
+                System.out.println(permission);
+            }
+            assertTrue(perms.size() > 0);
         }
         catch (Exception e)
         {

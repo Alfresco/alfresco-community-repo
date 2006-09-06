@@ -231,4 +231,20 @@ public class DbAccessControlListImpl extends LifecycleAdapter
         // done
         return accessControlEntry;
     }
+    
+    /**
+     * Make a copy of this ACL.
+     * @return The copy.
+     */
+    public DbAccessControlList getCopy()
+    {
+        DbAccessControlList newAcl =
+            new DbAccessControlListImpl();
+        getSession().save(newAcl);
+        for (DbAccessControlEntry entry : entries)
+        {
+            newAcl.newEntry(entry.getPermission(), entry.getAuthority(), entry.isAllowed());
+        }
+        return newAcl;
+    }
 }

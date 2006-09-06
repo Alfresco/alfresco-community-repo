@@ -74,4 +74,10 @@ public interface DbAccessControlList
      * @return Returns the new entry
      */
     public DbAccessControlEntryImpl newEntry(DbPermission permission, DbAuthority authority, boolean allowed);
+    
+    /**
+     * Make a copy of this ACL (persistently)
+     * @return The copy.
+     */
+    public DbAccessControlList getCopy();
 }

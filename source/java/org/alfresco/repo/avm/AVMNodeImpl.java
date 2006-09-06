@@ -21,9 +21,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -325,6 +328,15 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
             newName.setName(name.getName());
             newName.setNode(this);
             AVMContext.fgInstance.fAVMAspectNameDAO.save(newName);
+        }
+    }
+    
+    protected void copyACLs(AVMNode other)
+    {
+        DbAccessControlList acl = other.getAcl();
+        if (acl != null)
+        {
+            setAcl(acl.getCopy());
         }
     }
     

@@ -55,6 +55,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         AVMContext.fgInstance.fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
+        copyACLs(other);
     }
 
     /**
@@ -89,7 +90,8 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                                         getBasicAttributes(),
                                                         getContentData(lPath),
                                                         indirect.getProperties(),
-                                                        AVMContext.fgInstance.fAVMAspectNameDAO.get(indirect));
+                                                        AVMContext.fgInstance.fAVMAspectNameDAO.get(indirect),
+                                                        indirect.getAcl());
         newMe.setAncestor(this);
         return newMe;
     }

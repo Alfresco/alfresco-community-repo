@@ -77,12 +77,6 @@ public class NodeAccessControlListDAO extends HibernateDaoSupport implements Acc
         {
             throw new InvalidNodeRefException(nodeRef);
         }
-        DbAccessControlList oldAcl = node.getAccessControlList();
-        if (oldAcl != null)
-        {
-            node.setAccessControlList(null);
-            this.getHibernateTemplate().delete(oldAcl);
-        }
         node.setAccessControlList(acl);
     }
 }

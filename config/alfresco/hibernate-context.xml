@@ -206,17 +206,31 @@
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
-      <property name="protocolToNodeService">
+      <property name="protocolToACLDAO">
          <map>
-            <entry key="workspace"><ref bean="dbNodeService"></ref></entry>
-            <entry key="versionStore"><ref bean="versionNodeService"></ref></entry>
-            <entry key="avm"><ref bean="avmNodeService"/></entry>
+            <entry key="workspace"><ref bean="nodeACLDAO"></ref></entry>
+            <entry key="avm"><ref bean="avmACLDAO"/></entry>
          </map>
       </property>
-      <property name="defaultNodeService">
- 		 <ref bean="dbNodeService"/>
+      <property name="defaultACLDAO">
+ 		 <ref bean="nodeACLDAO"/>
  	  </property>
    </bean>
+   
+	<bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.NodeAccessControlListDAO">
+		<property name="nodeDaoService">
+			<ref bean="nodeDaoService"/>
+		</property>
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmACLDAO" class="org.alfresco.repo.domain.hibernate.AVMAccessControlListDAO">
+		<property name="avmRepository">
+			<ref bean="avmRepository"/>
+		</property>
+	</bean>
 	
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">
       <property name="sessionFactory">

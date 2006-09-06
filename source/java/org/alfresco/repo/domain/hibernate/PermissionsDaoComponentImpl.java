@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.DbAuthority;
@@ -35,6 +36,7 @@ import org.alfresco.repo.security.permissions.impl.SimpleNodePermissionEntry;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.transaction.TransactionalDao;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -60,9 +62,9 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     public static final String QUERY_GET_AC_ENTRIES_FOR_AUTHORITY = "permission.GetAccessControlEntriesForAuthority";
     public static final String QUERY_GET_AC_ENTRIES_FOR_PERMISSION = "permission.GetAccessControlEntriesForPermission";
     
-    private Map<String, NodeService> protocolToNodeService;
+    private Map<String, AccessControlListDAO> fProtocolToACLDAO;
     
-    private NodeService defaultNodeService;
+    private AccessControlListDAO fDefaultACLDAO;
     
     /** a uuid identifying this unique instance */
     private String uuid;
@@ -128,14 +130,14 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         getSession().flush();
     }
         
-    public void setProtocolToNodeService(Map<String, NodeService> map)
+    public void setProtocolToACLDAO(Map<String, AccessControlListDAO> map)
     {
-        protocolToNodeService = map;
+        fProtocolToACLDAO = map;
     }
     
-    public void setDefaultNodeService(NodeService defaultNodeService)
+    public void setDefaultACLDAO(AccessControlListDAO defaultACLDAO)
     {
-        this.defaultNodeService = defaultNodeService;
+        fDefaultACLDAO = defaultACLDAO;
     }
     
     public NodePermissionEntry getPermissions(NodeRef nodeRef)
@@ -144,13 +146,15 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         // Null objects are not cached in hibernate
         // If the object does not exist it will repeatedly query to check its
         // non existence.
-
         NodePermissionEntry npe = null;
         DbAccessControlList acl = null;
-        if (nodeExists(nodeRef))
+        try
         {
-            // get the persisted version
             acl = getAccessControlList(nodeRef, false);
+        }
+        catch (InvalidNodeRefException e)
+        {
+            // Do nothing.
         }
         if (acl == null)
         {
@@ -186,7 +190,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     private DbAccessControlList getAccessControlList(NodeRef nodeRef, boolean create)
     {
         DbAccessControlList acl = 
-            getNodeService(nodeRef).getAccessControlList(nodeRef);
+            getACLDAO(nodeRef).getAccessControlList(nodeRef);
         if (acl == null && create)
         {
             acl = createAccessControlList(nodeRef);
@@ -212,7 +216,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         getHibernateTemplate().save(acl);
         
         // maintain inverse
-        getNodeService(nodeRef).setAccessControlList(nodeRef, acl);
+        getACLDAO(nodeRef).setAccessControlList(nodeRef, acl);
         
         // done
         if (logger.isDebugEnabled())
@@ -226,15 +230,19 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     public void deletePermissions(NodeRef nodeRef)
     {
-        if (!nodeExists(nodeRef))
+        DbAccessControlList acl = null;
+        try
+        {
+            acl = getAccessControlList(nodeRef, false);
+        }
+        catch (InvalidNodeRefException e)
         {
             return;
         }
-        DbAccessControlList acl = getAccessControlList(nodeRef, false);
         if (acl != null)
         {
             // maintain referencial integrity
-            getNodeService(nodeRef).setAccessControlList(nodeRef, null);
+            getACLDAO(nodeRef).setAccessControlList(nodeRef, null);
             // delete the access control list - it will cascade to the entries
             getHibernateTemplate().delete(acl);
         }
@@ -264,12 +272,15 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
 
     public void deletePermissions(final NodeRef nodeRef, final String authority)
     {
-        if (!nodeExists(nodeRef))
+        DbAccessControlList acl = null;
+        try
+        {
+            acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
+        }
+        catch (InvalidNodeRefException e)
         {
             return;
         }
-        DbAccessControlList acl = 
-            getNodeService(nodeRef).getAccessControlList(nodeRef);
         int deletedCount = 0;
         if (acl != null)
         {
@@ -291,12 +302,15 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
      */
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference permission)
     {
-        if (!nodeExists(nodeRef))
+        DbAccessControlList acl = null;
+        try
+        {
+            acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
+        }
+        catch (InvalidNodeRefException e)
         {
             return;
         }
-        DbAccessControlList acl = 
-            getNodeService(nodeRef).getAccessControlList(nodeRef);
         int deletedCount = 0;
         if (acl != null)
         {
@@ -431,7 +445,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         if (acl != null)
         {
             // maintain referencial integrity
-            getNodeService(nodeRef).setAccessControlList(nodeRef, null);
+            getACLDAO(nodeRef).setAccessControlList(nodeRef, null);
             // drop the list
             getHibernateTemplate().delete(acl);
         }
@@ -477,12 +491,15 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
-        if (!nodeExists(nodeRef))
+        DbAccessControlList acl = null;
+        try
+        {
+            acl = getAccessControlList(nodeRef, false);
+        }
+        catch (InvalidNodeRefException e)
         {
             return INHERIT_PERMISSIONS_DEFAULT;
         }
-
-        DbAccessControlList acl = getAccessControlList(nodeRef, false);
         if (acl == null)
         {
             return true;
@@ -499,7 +516,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     private SimpleNodePermissionEntry createSimpleNodePermissionEntry(NodeRef nodeRef)
     {
         DbAccessControlList acl = 
-            getNodeService(nodeRef).getAccessControlList(nodeRef);
+            getACLDAO(nodeRef).getAccessControlList(nodeRef);
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
@@ -568,26 +585,16 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     }
     
     /**
-     * Helper to check node existence.
-     * @param nodeRef The node ref to check.
-     * @return Whether the node exists.
-     */
-    private boolean nodeExists(NodeRef nodeRef)
-    {
-        return getNodeService(nodeRef).exists(nodeRef);
-    }
-    
-    /**
      * Helper to choose appropriate NodeService for the given NodeRef
      * @param nodeRef The NodeRef to dispatch from.
      * @return The appropriate NodeService.
      */
-    private NodeService getNodeService(NodeRef nodeRef)
+    private AccessControlListDAO getACLDAO(NodeRef nodeRef)
     {
-        NodeService ret = protocolToNodeService.get(nodeRef.getStoreRef().getProtocol());
+        AccessControlListDAO ret = fProtocolToACLDAO.get(nodeRef.getStoreRef().getProtocol());
         if (ret == null)
         {
-            return defaultNodeService;
+            return fDefaultACLDAO;
         }
         return ret;
     }

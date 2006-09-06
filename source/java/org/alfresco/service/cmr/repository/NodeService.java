@@ -561,20 +561,4 @@ public interface NodeService
             NodeRef destinationParentNodeRef,
             QName assocTypeQName,
             QName assocQName);
-    
-    /**
-     * Get the access control list associated with a Node.
-     * @param nodeRef The reference to the Node.
-     * @return The access control list.
-     */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
-    public DbAccessControlList getAccessControlList(NodeRef nodeRef);
-    
-    /**
-     * Set the access control list on a node.
-     * @param nodeRef The node reference.
-     * @param acl The list to set.
-     */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "acl"})
-    public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl);
 }

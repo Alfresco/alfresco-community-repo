@@ -891,33 +891,4 @@ public class AVMServiceImpl implements AVMService
         }
         return fAVMRepository.hasAspect(version, path, aspectName);
     }
-    
-    /**
-     * Set ACL on a node.
-     * @param path The path to the node.
-     * @param acl The ACL to set.
-     */
-    public void setACL(String path, DbAccessControlList acl)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Null path.");
-        }
-        fAVMRepository.setACL(path, acl);
-    }
-    
-    /**
-     * Get the ACL on a node.
-     * @param version The version to look under.
-     * @param path The path to the node.
-     * @return The ACL.
-     */
-    public DbAccessControlList getACL(int version, String path)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Null path.");
-        }
-        return fAVMRepository.getACL(version, path);
-    }
 }

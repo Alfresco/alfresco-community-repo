@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -1427,47 +1426,5 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             QName assocQName)
     {
         throw new UnsupportedOperationException("AVM does not support this operation.");
-    }
-    
-    /**
-     * Set the ACL on a node.
-     * @param nodeRef The reference to the node.
-     * @param acl The list to set.
-     */
-    public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
-    {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
-        if (version >= 0)
-        {
-            throw new InvalidNodeRefException("Read Only Node.", nodeRef);
-        }
-        try
-        {
-            fAVMService.setACL((String)avmVersionPath[1], acl);
-        }
-        catch (AVMNotFoundException e)
-        {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
-        }
-    }
-    
-    /**
-     * Get the ACL on a node.
-     * @param nodeRef The reference to the node.
-     * @return The ACL.
-     */
-    public DbAccessControlList getAccessControlList(NodeRef nodeRef)
-    {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        try
-        {
-            return fAVMService.getACL((Integer)avmVersionPath[0],
-                                      (String)avmVersionPath[1]);
-        }
-        catch (AVMNotFoundException e)
-        {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
-        }
     }
 }

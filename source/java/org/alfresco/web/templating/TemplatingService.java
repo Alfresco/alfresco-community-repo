@@ -64,6 +64,7 @@ public final class TemplatingService
 	
 	/** indicates whether or not the configuration file has been loaded */
 	public static boolean loaded = false;
+	private static NodeRef configFileNodeRef = null;
 
 	/**
 	 * locate the configuration file.  currently it is stored as 
@@ -74,40 +75,36 @@ public final class TemplatingService
 	 */
 	private static NodeRef getConfigFile()
 	{
-	    final TemplatingService ts = TemplatingService.INSTANCE;
-	    LOGGER.debug("loading config file");
-	    // get the template from the special Email Templates folder
-	    FacesContext fc = FacesContext.getCurrentInstance();
-	    String xpath = (Application.getRootPath(fc) + "/" + 
-			    Application.getGlossaryFolderName(fc));
-	    NodeRef rootNodeRef = ts.nodeService.getRootNode(Repository.getStoreRef());
-	    List<NodeRef> results = ts.searchService.selectNodes(rootNodeRef, xpath, null, ts.namespaceService, false);
-	    if (results.size() != 1)
-		throw new RuntimeException("expected one result for " + xpath);
-	    NodeRef dataDictionaryNodeRef =  results.get(0);
-	    LOGGER.debug("loaded data dictionary " + dataDictionaryNodeRef);
-	    NodeRef configFileNodeRef = null;
-	    try
+	    if (configFileNodeRef == null)
 	    {
-		configFileNodeRef = ts.fileFolderService.create(dataDictionaryNodeRef,
-								"templating_configuration.xml",
-								ContentModel.TYPE_CONTENT).getNodeRef();
-	    }
-	    catch (FileExistsException fee)
-	    {
-		List<FileInfo> l = ts.fileFolderService.search(dataDictionaryNodeRef,
-							       "templating_configuration.xml",
-							       true,
-							       false,
-							       false);
-		if (l.size() != 1)
+		final TemplatingService ts = TemplatingService.INSTANCE;
+		LOGGER.debug("loading config file");
+		// get the template from the special Email Templates folder
+		FacesContext fc = FacesContext.getCurrentInstance();
+		String xpath = (Application.getRootPath(fc) + "/" + 
+				Application.getGlossaryFolderName(fc));
+		NodeRef rootNodeRef = ts.nodeService.getRootNode(Repository.getStoreRef());
+		List<NodeRef> results = ts.searchService.selectNodes(rootNodeRef, xpath, null, ts.namespaceService, false);
+		if (results.size() != 1)
+		    throw new RuntimeException("expected one result for " + xpath);
+		NodeRef dataDictionaryNodeRef =  results.get(0);
+		LOGGER.debug("loaded data dictionary " + dataDictionaryNodeRef);
+		try
 		{
-		    throw new RuntimeException("expected one templating_configuration.xml in " + dataDictionaryNodeRef);
+		    Configuration.configFileNodeRef = 
+			ts.fileFolderService.create(dataDictionaryNodeRef,
+						    "templating_configuration.xml",
+						    ContentModel.TYPE_CONTENT).getNodeRef();
 		}
-		configFileNodeRef= l.get(0).getNodeRef();
+		catch (FileExistsException fee)
+		{
+		    Configuration.configFileNodeRef = 
+			ts.fileFolderService.searchSimple(dataDictionaryNodeRef, "templating_configuration.xml");
+		}
+		LOGGER.debug("loaded config file " + configFileNodeRef);
+		assert Configuration.configFileNodeRef != null : "unable to load templating_configuration.xml";
 	    }
-	    LOGGER.debug("loaded config file " + configFileNodeRef);
-	    return configFileNodeRef;
+	    return Configuration.configFileNodeRef;
 	}
 
 	/**
@@ -119,30 +116,36 @@ public final class TemplatingService
 	    final TemplatingService ts = TemplatingService.INSTANCE;
 	    final NodeRef configFileNodeRef = getConfigFile();
 	    FacesContext fc = FacesContext.getCurrentInstance();
-	    final InputStream contentIn = 
-		ts.contentService.getReader(configFileNodeRef, 
-					    ContentModel.TYPE_CONTENT).getContentInputStream();
-	    final ObjectInputStream in = new ObjectInputStream(contentIn);
-	    try
+	    final ContentReader contentReader = ts.contentService.getReader(configFileNodeRef, 
+									    ContentModel.TYPE_CONTENT);
+	    if (contentReader == null)
+		LOGGER.debug("templating_config.xml is empty");
+	    else
 	    {
-		while (true)
-		{
-		    try
+		LOGGER.debug("parsing templating_config.xml");
+		final InputStream contentIn = contentReader.getContentInputStream();
+		final ObjectInputStream in = new ObjectInputStream(contentIn);
+		try
+	        {
+		    while (true)
 		    {
-			final TemplateType tt = (TemplateType)in.readObject();
-			TemplatingService.INSTANCE.registerTemplateType(tt);
+			try
+			{
+			    final TemplateType tt = (TemplateType)in.readObject();
+			    TemplatingService.INSTANCE.registerTemplateType(tt);
+			}
+			catch (EOFException eof)
+			{
+			    break;
+			}
+			
 		    }
-		    catch (EOFException eof)
-		    {
-			break;
-		    }
-
+		    in.close();
 		}
-		in.close();
-	    }
-	    catch (ClassNotFoundException cnfe)
-	    {
-		TemplatingService.LOGGER.error(cnfe);
+		catch (ClassNotFoundException cnfe)
+		{
+		    TemplatingService.LOGGER.error(cnfe);
+		}
 	    }
 	    loaded = true;
 	}

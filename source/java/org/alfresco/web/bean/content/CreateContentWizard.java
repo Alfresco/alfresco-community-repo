@@ -1,6 +1,23 @@
+/*
+ * Copyright (C) 2005 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
 package org.alfresco.web.bean.content;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -18,8 +35,16 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
+import org.alfresco.web.templating.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import java.io.OutputStreamWriter;
+import org.alfresco.web.app.servlet.FacesHelper;
 
 /**
  * Bean implementation for the "Create Content Wizard" dialog
@@ -28,12 +53,14 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateContentWizard extends BaseContentWizard
 {
-   protected String content = null;
-   
-   protected List<SelectItem> createMimeTypes;
-   
-   private static Log logger = LogFactory.getLog(CreateContentWizard.class);
-   
+    protected String content = null;
+    protected String templateTypeName;
+    protected List<SelectItem> createMimeTypes;
+    
+    private static final Log LOGGER = 
+	LogFactory.getLog(CreateContentWizard.class);
+
+
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -41,10 +68,28 @@ public class CreateContentWizard extends BaseContentWizard
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
-      saveContent(null, this.content);
-      
-      // return the default outcome
-      return outcome;
+       LOGGER.debug("saving file content to " + this.fileName);
+       saveContent(null, this.content);
+       if (this.templateTypeName != null)
+       {
+	   LOGGER.debug("generating template output for " + this.templateTypeName);
+	   this.nodeService.setProperty(this.createdNode, 
+					TemplatingService.TT_QNAME, 
+					this.templateTypeName);
+	   TemplatingService ts = TemplatingService.getInstance();
+	   TemplateType tt = this.getTemplateType();
+	   OutputUtil.generate(this.createdNode,
+			       ts.parseXML(this.content),
+			       tt,
+			       this.fileName,
+			       this.getContainerNodeRef(),
+			       this.fileFolderService,
+			       this.contentService,
+			       this.nodeService);
+       }
+
+       // return the default outcome
+       return outcome;
    }
    
    @Override
@@ -54,6 +99,7 @@ public class CreateContentWizard extends BaseContentWizard
       
       this.content = null;
       this.inlineEdit = true;
+      this.templateTypeName = null;
       this.mimeType = MimetypeMap.MIMETYPE_HTML;
    }
    
@@ -116,6 +162,20 @@ public class CreateContentWizard extends BaseContentWizard
    {
       this.content = content;
    }
+
+    public List<SelectItem> getCreateTemplateTypes()
+    {
+	Collection<TemplateType> ttl = TemplatingService.getInstance().getTemplateTypes();
+	List<SelectItem> sil = new ArrayList<SelectItem>(ttl.size());
+	for (TemplateType tt : ttl)
+	{
+	    sil.add(new SelectItem(tt.getName(), tt.getName()));
+	}
+	
+	QuickSort sorter = new QuickSort(sil, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+	sorter.sort();
+	return sil;
+    }
    
    /**
     * @return Returns a list of mime types to allow the user to select from
@@ -153,17 +213,36 @@ public class CreateContentWizard extends BaseContentWizard
             }
             else
             {
-               logger.warn("Could not find 'create-mime-types' configuration element");
+               LOGGER.warn("Could not find 'create-mime-types' configuration element");
             }
          }
          else
          {
-            logger.warn("Could not find 'Content Wizards' configuration section");
+            LOGGER.warn("Could not find 'Content Wizards' configuration section");
          }
          
       }
       
       return this.createMimeTypes;
+   }
+
+   public String getTemplateTypeName()
+   {
+      return this.templateTypeName;
+   }
+
+    public TemplateType getTemplateType()
+    {
+	final TemplatingService ts = TemplatingService.getInstance();
+	return ts.getTemplateType(this.getTemplateTypeName());
+    }
+
+   /**
+    * @param templateType Sets the currently selected template type
+    */
+   public void setTemplateTypeName(final String templateTypeName)
+   {
+      this.templateTypeName = templateTypeName;
    }
    
    /**

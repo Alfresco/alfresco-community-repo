@@ -2330,5 +2330,14 @@
          <value>#{ContentService}</value>
       </managed-property>
    </managed-bean>
+
+   <managed-bean>
+      <description>
+         Bean that returns information on a node
+      </description>
+      <managed-bean-name>XFormsBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.XFormsBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+   </managed-bean>
    
 </faces-config>

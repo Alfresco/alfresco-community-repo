@@ -175,6 +175,7 @@ public class OutputUtil
 	    // set the mimetype and encoding
 	    writer.setMimetype("text/html");
 	    writer.setEncoding("UTF-8");
+	    // put a loop to generate all output methods
 	    TemplateOutputMethod tom = tt.getOutputMethods().get(0);
 	    OutputStreamWriter out = 
 		new OutputStreamWriter(writer.getContentOutputStream());

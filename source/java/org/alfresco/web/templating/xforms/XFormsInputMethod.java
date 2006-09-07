@@ -79,7 +79,8 @@ public class XFormsInputMethod
 
 	// a script with config information and globals.
 	Element e = result.createElement("script");
-	e.appendChild(result.createTextNode("djConfig = { isDebug: false };\n" +
+	e.appendChild(result.createTextNode("djConfig = { isDebug: " + LOGGER.isDebugEnabled() +
+					    " };\n" +
 					    "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
 	div.appendChild(e);
 

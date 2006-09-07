@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -2281,6 +2282,27 @@ public class AVMServiceTest extends AVMServiceTestBase
                 System.out.println(permission);
             }
             assertTrue(perms.size() > 0);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test FileFolderService with AVM.
+     */
+    public void testFileFolderService()
+    {
+        try
+        {
+            setupBasicTree();
+            FileFolderService ffs = (FileFolderService)fContext.getBean("FileFolderService");
+            assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c"), 
+                       "banana", ContentModel.TYPE_CONTENT) != null);
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
         }
         catch (Exception e)
         {

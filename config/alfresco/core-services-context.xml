@@ -161,6 +161,9 @@
                 <entry key="versionStore">
                     <ref bean="luceneIndexerAndSearcherFactory"></ref>
                 </entry>
+                <entry key="avm">
+                    <ref bean="luceneIndexerAndSearcherFactory"></ref>
+                </entry>
             </map>
         </property>
     </bean>
@@ -178,6 +181,9 @@
                     <ref bean="luceneCategoryService"></ref>
                 </entry>
                 <entry key="versionStore">
+                    <ref bean="luceneCategoryService"></ref>
+                </entry>
+                <entry key="avm">
                     <ref bean="luceneCategoryService"></ref>
                 </entry>
             </map>

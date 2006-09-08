@@ -280,7 +280,7 @@ public class AVMContext implements ApplicationContextAware
     {
         if (fNodeService == null)
         {
-            fNodeService = (NodeService)fAppContext.getBean("NodeService");
+            fNodeService = (NodeService)fAppContext.getBean("nodeService");
         }
         return fNodeService;
     }

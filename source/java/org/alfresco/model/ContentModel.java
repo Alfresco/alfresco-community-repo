@@ -97,7 +97,7 @@ public interface ContentModel
     // content type and aspect constants
     static final QName TYPE_CONTENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "content");
     static final QName PROP_CONTENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "content");
-    static final QName PROP_READONLY = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "readonly");
+    static final QName TYPE_AVM_CONTENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmcontent");
     
     // title aspect
     static final QName ASPECT_TITLED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "titled");
@@ -115,7 +115,7 @@ public interface ContentModel
     // author aspect
     static final QName ASPECT_AUTHOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "author");
     static final QName PROP_AUTHOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "author");
-    
+   
     // categories
     static final QName TYPE_CATEGORYROOT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "category_root");  
     static final QName ASPECT_CLASSIFIABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "classifiable");
@@ -143,6 +143,7 @@ public interface ContentModel
     static final QName TYPE_FOLDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "folder");
     /** child association type supported by {@link #TYPE_FOLDER} */
     static final QName ASSOC_CONTAINS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "contains");
+    static final QName TYPE_AVM_FOLDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmfolder");
     
     // person
     static final QName TYPE_PERSON = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "person");

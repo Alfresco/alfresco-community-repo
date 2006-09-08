@@ -68,7 +68,7 @@
 			<ref bean="dictionaryService"/>
 		</property>
 		<property name="avmService">
-			<ref bean="AVMService"/>
+			<ref bean="avmService"/>
 		</property>
 		<property name="policyComponent">
 			<ref bean="policyComponent"/>

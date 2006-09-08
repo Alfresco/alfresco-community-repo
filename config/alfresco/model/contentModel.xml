@@ -79,6 +79,11 @@
          </properties>
       </type>
       
+      <type name="cm:avmcontent">
+      	<title>AVM Content</title>
+      	<parent>cm:content</parent>
+      </type>
+      
       <type name="cm:dictionaryModel">
          <title>Dictionary Model</title>
          <parent>cm:content</parent>
@@ -136,6 +141,11 @@
       <type name="cm:systemfolder">
          <title>System Folder</title>
          <parent>cm:folder</parent>
+      </type>
+      
+      <type name="cm:avmfolder">
+      	<title>AVM Folder</title>
+      	<parent>cm:folder</parent>
       </type>
       
       <type name="cm:person">

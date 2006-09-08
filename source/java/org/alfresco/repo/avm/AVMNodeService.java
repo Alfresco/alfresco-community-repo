@@ -268,11 +268,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // Do the creates for supported types, or error out.
         try
         {
-            if (nodeTypeQName.equals(ContentModel.TYPE_FOLDER))
+            if (nodeTypeQName.equals(ContentModel.TYPE_AVM_FOLDER))
             {
                 fAVMService.createDirectory(avmPath, nodeName);
             }
-            else if (nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
+            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_CONTENT))
             {
                 fAVMService.createFile(avmPath, nodeName);
             }
@@ -450,11 +450,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                                                         (String)avmVersionPath[1]);
             if (desc.isDirectory())
             {
-                return ContentModel.TYPE_FOLDER;
+                return ContentModel.TYPE_AVM_FOLDER;
             }
             else
             {
-                return ContentModel.TYPE_CONTENT;
+                return ContentModel.TYPE_AVM_CONTENT;
             }
         }
         catch (AVMNotFoundException e)
@@ -1153,6 +1153,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException
     {
+        
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         int version = (Integer)avmVersionPath[0];
         String path = (String)avmVersionPath[1];

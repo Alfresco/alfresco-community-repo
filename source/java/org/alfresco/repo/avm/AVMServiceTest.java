@@ -2300,7 +2300,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             FileFolderService ffs = (FileFolderService)fContext.getBean("FileFolderService");
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c"), 
-                       "banana", ContentModel.TYPE_CONTENT) != null);
+                       "banana", ContentModel.TYPE_AVM_CONTENT) != null);
             fService.createSnapshot("main");
             System.out.println(recursiveList("main", -1, true));
         }

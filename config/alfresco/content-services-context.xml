@@ -70,7 +70,7 @@
           <ref bean="policyComponent" />
       </property>
       <property name="avmService">
-          <ref bean="AVMService"/>
+          <ref bean="avmService"/>
       </property>
       <property name="imageMagickContentTransformer">
          <ref bean="transformer.ImageMagick" />

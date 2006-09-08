@@ -289,7 +289,7 @@ public class AVMContext implements ApplicationContextAware
     {
         if (fAuthenticationComponent == null)
         {
-            fAuthenticationComponent = (AuthenticationComponent)fAppContext.getBean("authenticationComponent");
+            fAuthenticationComponent = (AuthenticationComponent)fAppContext.getBean("authenticationComponentImpl");
         }
         return fAuthenticationComponent;
     }

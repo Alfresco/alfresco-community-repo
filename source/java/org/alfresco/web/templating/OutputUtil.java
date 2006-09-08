@@ -49,8 +49,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import java.io.OutputStreamWriter;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.*;
 import org.w3c.dom.Document;
 import org.alfresco.repo.avm.*;
 
@@ -63,11 +62,22 @@ public class OutputUtil
 {
     private static final Log LOGGER = LogFactory.getLog(OutputUtil.class);
     private static final String PARENT_AVM_PATH = 
-	"repo-1:/repo-1/alice/appBase/avm_webapps/ROOT/home-insurance";
+	"repo-1:/repo-1/alice/appBase/avm_webapps/ROOT";
 
     private static String stripExtension(String s)
     {
 	return s.replaceAll("(.+)\\..*", "$1");
+    }
+
+    private static String getAVMParentPath(NodeRef nodeRef,
+					   NodeService nodeService)
+	throws Exception
+    {
+	ChildAssociationRef caf = nodeService.getPrimaryParent(nodeRef);
+	final String parentName = (String)
+	    nodeService.getProperty(caf.getParentRef(), ContentModel.PROP_NAME);
+	LOGGER.debug("computed avm path " + PARENT_AVM_PATH + "/" + parentName);
+	return PARENT_AVM_PATH + "/" + parentName;
     }
 
     public static void generate(NodeRef createdNode,
@@ -119,13 +129,14 @@ public class OutputUtil
 	    }
 
 	    AVMService avmService = AVMContext.fgInstance.getAVMService();
+	    final String parentAVMPath = getAVMParentPath(createdNode, nodeService);
 	    try 
 	    {
-		out =  new OutputStreamWriter(avmService.createFile(PARENT_AVM_PATH, fileName));
+		out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, fileName));
 	    }
 	    catch (AVMExistsException e)
 	    {
-		out = new OutputStreamWriter(avmService.getFileOutputStream(PARENT_AVM_PATH + "/" + fileName));
+		out = new OutputStreamWriter(avmService.getFileOutputStream(parentAVMPath + "/" + fileName));
 	    }
 	    LOGGER.debug("generating " + fileName + " to avm");
 	    tom.generate(xml, tt, out);
@@ -138,7 +149,6 @@ public class OutputUtil
 	    throw e;
 	}
     }
-
 
     public static void regenerate(final NodeRef nodeRef, 
 				  final ContentService contentService,
@@ -185,14 +195,14 @@ public class OutputUtil
 	    LOGGER.debug("generated " + fileName + " using " + tom);
 
 	    AVMService avmService = AVMContext.fgInstance.getAVMService();
-
+	    final String parentAVMPath = getAVMParentPath(nodeRef, nodeService);
 	    try 
 	    {
-		out =  new OutputStreamWriter(avmService.createFile(PARENT_AVM_PATH, generatedFileName));
+		out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, generatedFileName));
 	    }
 	    catch (AVMExistsException e)
 	    {
-		out = new OutputStreamWriter(avmService.getFileOutputStream(PARENT_AVM_PATH + "/" + generatedFileName));
+		out = new OutputStreamWriter(avmService.getFileOutputStream(parentAVMPath + "/" + generatedFileName));
 	    }
 	    LOGGER.debug("generating " + generatedFileName + " to avm");
 	    tom.generate(xml, tt, out);

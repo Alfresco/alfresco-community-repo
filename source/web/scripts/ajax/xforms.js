@@ -352,6 +352,64 @@ dojo.declare("alfresco.xforms.CheckBox",
 	       }
 	     });
 
+dojo.declare("alfresco.xforms.Group",
+	     alfresco.xforms.Widget,
+	     {
+	     initializer: function(xform, node) 
+	       {
+		 this.inherited("initializer", [ xform, node ]);
+	       },
+	     appendHTML: function(attach_point)
+	       {
+		 var n = attach_point;
+		 if (attach_point.nodeName.toLowerCase() == "table")
+		 {
+		   var tr = document.createElement("tr");
+		   var td = document.createElement("td");
+		   td.setAttribute("colspan", "3");
+		   tr.appendChild(td);
+		   attach_point.appendChild(tr);
+		   n = td;
+		 }
+		 var table = document.createElement("table");
+		 table.setAttribute("style", "width:100%; border: 0px solid blue;");
+		 n.appendChild(table);
+		 return table;
+	       }
+	     });
+
+dojo.declare("alfresco.xforms.Submit",
+	     alfresco.xforms.Widget,
+	     {
+	     initializer: function(xform, node) 
+	       {
+		 this.inherited("initializer", [ xform, node ]);
+	       },
+	     appendHTML: function(attach_point)
+	       {
+		 var row = document.createElement("tr");
+		 attach_point.appendChild(row);
+		 var cell = document.createElement("td");
+		 cell.setAttribute("colspan", "3");
+		 row.appendChild(cell);
+		 var nodeRef = document.createElement("div");
+		 cell.appendChild(nodeRef);
+		 var w = dojo.widget.createWidget("Button", 
+						  {
+						  widgetId: this.id,
+						  caption: "submit" 
+						  }, 
+						  nodeRef);
+		 w.hide();
+		 document.submitTrigger = w;
+		 document.submitTrigger.done = false;
+		 w.onClick = function()
+		   {
+		     fireAction(w.widgetId);
+		   };
+	       }
+	     });
+
 dojo.declare("alfresco.xforms.XForm",
 	     null,
 	     {
@@ -428,7 +486,7 @@ function xforms_init()
 				  : 'null'));
     }
     
-    load_body(xform, xform.getBody(), [ document.getElementById("alf-ui") ]);
+    load_body(xform, xform.getBody(), document.getElementById("alf-ui"));
   },
   error: function(type, e)
   {
@@ -438,7 +496,7 @@ function xforms_init()
   dojo.io.bind(req);
 }
 
-function load_body(xform, currentNode, ui_element_stack)
+function load_body(xform, currentNode, domNode)
 {
   dojo.lang.forEach(currentNode.childNodes, function(o)
   {
@@ -446,27 +504,12 @@ function load_body(xform, currentNode, ui_element_stack)
     switch (o.nodeName.toLowerCase())
     {
     case "xforms:group":
-      if (ui_element_stack[ui_element_stack.length - 1].nodeName.toLowerCase() == "table")
-      {
-	var tr = document.createElement("tr");
-	var td = document.createElement("td");
-	td.setAttribute("colspan", "3");
-	tr.appendChild(td);
-	ui_element_stack[ui_element_stack.length - 1].appendChild(tr);
-	ui_element_stack.push(td);
-      }
-      var table = document.createElement("table");
-      table.setAttribute("style", "width:100%; border: 0px solid blue;");
-      ui_element_stack[ui_element_stack.length - 1].appendChild(table);
-      ui_element_stack.push(table);
-      load_body(xform, o, ui_element_stack);
-      ui_element_stack.pop();
-      if (ui_element_stack[ui_element_stack.length - 1].nodeName.toLowerCase() == "td")
-	ui_element_stack.pop();
+      var w = new alfresco.xforms.Group(xform, o);
+      load_body(xform, o, w.appendHTML(domNode));
       break;
     case "xforms:textarea":
       var w = new alfresco.xforms.TextArea(xform, o);
-      w.appendHTML(ui_element_stack[ui_element_stack.length - 1]);
+      w.appendHTML(domNode);
       break;
     case "xforms:input":
       var type = xform.getType(o);
@@ -485,42 +528,24 @@ function load_body(xform, currentNode, ui_element_stack)
       default:
 	var w = new alfresco.xforms.TextField(xform, o);
       }
-      w.appendHTML(ui_element_stack[ui_element_stack.length - 1]);
+      w.appendHTML(domNode);
       break;
     case "xforms:select1":
       var w = (xform.getType(o) == "boolean"
 	       ? new alfresco.xforms.CheckBox(xform, o)
 	       : new alfresco.xforms.Select1(xform, o));
-      w.appendHTML(ui_element_stack[ui_element_stack.length - 1]);
+      w.appendHTML(domNode);
       break;
     case "xforms:submit":
-      var id = o.getAttribute("id");
-      var row = document.createElement("tr");
-      ui_element_stack[ui_element_stack.length - 1].appendChild(row);
-      var cell = document.createElement("td");
-      cell.setAttribute("colspan", "3");
-      row.appendChild(cell);
-      var nodeRef = document.createElement("div");
-      cell.appendChild(nodeRef);
-      var w = dojo.widget.createWidget("Button", 
-				       {
-				       widgetId: id,
-				       caption: "submit" 
-				       }, 
-				       nodeRef);
-      w.hide();
-      document.submitTrigger = w;
-      document.submitTrigger.done = false;
-      w.onClick = function()
-      {
-	fireAction(w.widgetId);
-      };
+      var w = new alfresco.xforms.Submit(xform, o);
+      w.appendHTML(domNode);
       break;
     case "xforms:repeat":
-      dojo.debug("repeat unimplemented");
+      var w = new alfresco.xforms.Group(xform, o);
+      load_body(xform, o, w.appendHTML(domNode));
       break;
     default:
-      load_body(xform, o, ui_element_stack);
+      load_body(xform, o, domNode);
     }
   });
 }

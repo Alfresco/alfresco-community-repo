@@ -268,11 +268,13 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // Do the creates for supported types, or error out.
         try
         {
-            if (nodeTypeQName.equals(ContentModel.TYPE_AVM_FOLDER))
+            if (nodeTypeQName.equals(ContentModel.TYPE_AVM_FOLDER) ||
+                nodeTypeQName.equals(ContentModel.TYPE_FOLDER))
             {
                 fAVMService.createDirectory(avmPath, nodeName);
             }
-            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_CONTENT))
+            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_CONTENT)
+                     ||nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
             {
                 fAVMService.createFile(avmPath, nodeName);
             }
@@ -838,6 +840,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         result.put(ContentModel.PROP_MODIFIED, new Date(desc.getModDate()));
         result.put(ContentModel.PROP_MODIFIER, desc.getLastModifier());
         result.put(ContentModel.PROP_OWNER, desc.getOwner());
+        result.put(ContentModel.PROP_NAME, desc.getName());
         if (desc.isFile())
         {
             try
@@ -942,6 +945,10 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             return desc.getOwner();
         }
+        else if (qName.equals(ContentModel.PROP_NAME))
+        {
+            return desc.getName();
+        }
         else
         {
             fgLogger.error("Invalid Built In Property: " + qName);
@@ -979,7 +986,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 // For AVM nodes is in place.
                 if (isBuiltInProperty(qName))
                 {
-                    continue;
+                    if (qName.equals(ContentModel.PROP_CONTENT))
+                    {
+                        fAVMService.setContentData((String)avmVersionPath[1], 
+                                (ContentData)properties.get(qName));
+                    }
                 }
                 values.put(qName, new PropertyValue(null, properties.get(qName)));
             }
@@ -1000,7 +1011,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         ContentModel.PROP_MODIFIED,
         ContentModel.PROP_MODIFIER,
         ContentModel.PROP_OWNER,
-        ContentModel.PROP_CONTENT
+        ContentModel.PROP_CONTENT,
+        ContentModel.PROP_NAME
     };
     
     /**

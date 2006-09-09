@@ -240,7 +240,7 @@ public class AVMContext implements ApplicationContextAware
     {
         if (fAVMService == null)
         {
-            fAVMService = (AVMService)fAppContext.getBean("AVMService");
+            fAVMService = (AVMService)fAppContext.getBean("avmService");
         }
         return fAVMService;
     }

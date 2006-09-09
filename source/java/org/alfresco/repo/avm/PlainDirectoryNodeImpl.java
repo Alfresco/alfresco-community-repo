@@ -215,6 +215,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         else
         {
             ChildEntry entry = new ChildEntryImpl(name, this, node);
+            AVMContext.fgInstance.fAVMNodeDAO.flush();
             AVMContext.fgInstance.fChildEntryDAO.save(entry);
         }
     }

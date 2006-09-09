@@ -85,7 +85,7 @@ public class OutputUtil
 	}
 	catch (AVMNotFoundException notFound)
 	{
-	    avmService.createDirectory(PARENT_AVM_PATH, parentName);
+	    //	    avmService.createDirectory(PARENT_AVM_PATH, parentName);
 	    return PARENT_AVM_PATH;
 	}
     }
@@ -103,16 +103,16 @@ public class OutputUtil
 	try 
 	{
 	    // get the node ref of the node that will contain the content
-	    fileName = stripExtension(fileName) + ".html";
+	    String generatedFileName = stripExtension(fileName) + ".shtml";
 	    FileInfo fileInfo = 
 		fileFolderService.create(containerNodeRef,
-					 fileName,
+					 generatedFileName,
 					 ContentModel.TYPE_CONTENT);
 	    NodeRef fileNodeRef = fileInfo.getNodeRef();
 	
 	    if (LOGGER.isDebugEnabled())
 		LOGGER.debug("Created file node for file: " + 
-			     fileName);
+			     generatedFileName);
 	
 	    // get a writer for the content and put the file
 	    ContentWriter writer = contentService.getWriter(fileNodeRef, 
@@ -129,7 +129,7 @@ public class OutputUtil
 				    TemplatingService.TT_QNAME,
 				    tt.getName());
 
-	    LOGGER.debug("generated " + fileName + " using " + tom);
+	    LOGGER.debug("generated " + generatedFileName + " using " + tom);
 
 	    if (createdNode != null)
 	    {
@@ -142,14 +142,38 @@ public class OutputUtil
 	    final String parentAVMPath = getAVMParentPath(createdNode, nodeService);
 	    try 
 	    {
+		out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, generatedFileName));
+	    }
+	    catch (AVMExistsException e)
+	    {
+		out = new OutputStreamWriter(avmService.getFileOutputStream(parentAVMPath + "/" + generatedFileName));
+	    }
+	    LOGGER.debug("generating " + generatedFileName + " to avm");
+	    tom.generate(xml, tt, out);
+	    out.close();
+	    try 
+	    {
+		out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, generatedFileName));
+	    }
+	    catch (AVMExistsException e)
+	    {
+		out = new OutputStreamWriter(avmService.getFileOutputStream(parentAVMPath + "/" + generatedFileName));
+	    }
+	    LOGGER.debug("generating " + generatedFileName + " to avm");
+	    tom.generate(xml, tt, out);
+	    out.close();
+
+	    try 
+	    {
 		out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, fileName));
 	    }
 	    catch (AVMExistsException e)
 	    {
 		out = new OutputStreamWriter(avmService.getFileOutputStream(parentAVMPath + "/" + fileName));
 	    }
-	    LOGGER.debug("generating " + fileName + " to avm");
-	    tom.generate(xml, tt, out);
+	    LOGGER.debug("writing xml " + fileName + " to avm");
+	    final TemplatingService ts = TemplatingService.getInstance();
+	    ts.writeXML(xml, out);
 	    out.close();
 	}
 	catch (Exception e)
@@ -216,6 +240,18 @@ public class OutputUtil
 	    }
 	    LOGGER.debug("generating " + generatedFileName + " to avm");
 	    tom.generate(xml, tt, out);
+	    out.close();
+
+	    try 
+	    {
+		out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, fileName));
+	    }
+	    catch (AVMExistsException e)
+	    {
+		out = new OutputStreamWriter(avmService.getFileOutputStream(parentAVMPath + "/" + fileName));
+	    }
+	    LOGGER.debug("writing xml " + fileName + " to avm");
+	    ts.writeXML(xml, out);
 	    out.close();
 	}
 	catch (Exception e)

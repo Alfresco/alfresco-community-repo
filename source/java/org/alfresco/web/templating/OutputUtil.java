@@ -40,8 +40,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.avm.AVMExistsException;
-import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.*;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -77,7 +76,18 @@ public class OutputUtil
 	final String parentName = (String)
 	    nodeService.getProperty(caf.getParentRef(), ContentModel.PROP_NAME);
 	LOGGER.debug("computed avm path " + PARENT_AVM_PATH + "/" + parentName);
-	return PARENT_AVM_PATH + "/" + parentName;
+	final String result = PARENT_AVM_PATH + "/" + parentName;
+	AVMService avmService = AVMContext.fgInstance.getAVMService();
+	try
+	{
+	    avmService.lookup(-1, result);
+	    return result;
+	}
+	catch (AVMNotFoundException notFound)
+	{
+	    avmService.createDirectory(PARENT_AVM_PATH, parentName);
+	    return PARENT_AVM_PATH;
+	}
     }
 
     public static void generate(NodeRef createdNode,

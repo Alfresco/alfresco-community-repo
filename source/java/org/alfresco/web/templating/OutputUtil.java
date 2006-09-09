@@ -77,7 +77,7 @@ public class OutputUtil
 	    nodeService.getProperty(caf.getParentRef(), ContentModel.PROP_NAME);
 	LOGGER.debug("computed avm path " + PARENT_AVM_PATH + "/" + parentName);
 	final String result = PARENT_AVM_PATH + "/" + parentName;
-	AVMService avmService = AVMContext.fgInstance.getAVMService();
+	AVMService avmService = (AVMService)AVMContext.fgInstance.fAppContext.getBean("avmService");
 	try
 	{
 	    avmService.lookup(-1, result);
@@ -138,7 +138,7 @@ public class OutputUtil
 					fileNodeRef.toString());
 	    }
 
-	    AVMService avmService = AVMContext.fgInstance.getAVMService();
+	    AVMService avmService = (AVMService)AVMContext.fgInstance.fAppContext.getBean("avmService");
 	    final String parentAVMPath = getAVMParentPath(createdNode, nodeService);
 	    try 
 	    {
@@ -204,7 +204,7 @@ public class OutputUtil
 
 	    LOGGER.debug("generated " + fileName + " using " + tom);
 
-	    AVMService avmService = AVMContext.fgInstance.getAVMService();
+	    AVMService avmService = (AVMService)AVMContext.fgInstance.fAppContext.getBean("avmService");
 	    final String parentAVMPath = getAVMParentPath(nodeRef, nodeService);
 	    try 
 	    {

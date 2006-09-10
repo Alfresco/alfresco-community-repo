@@ -45,6 +45,12 @@
 		<!-- ACL -->
 		<many-to-one name="acl" column="acl_id" 
 			class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
+		<!-- Deleted nodes -->
+		<subclass name="DeletedNodeImpl"
+			  proxy="DeletedNode"
+			  lazy="true"
+			  discriminator-value="deletednode">
+		</subclass>
 		<!-- Directories, two flavors. -->
 		<subclass name="DirectoryNodeImpl" 
 		          proxy="DirectoryNode" 
@@ -140,15 +146,6 @@
 		<many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl" not-null="true"/>
 		<many-to-one name="child" column="child_id" class="AVMNodeImpl"
 			not-null="true"/>
-	</class>
-	<class table="avm_deleted_children" name="DeletedChildImpl" proxy="DeletedChild">
-	    <cache usage="read-write"/>
-	    <id name="id" column="id" type="long">
-	    	<generator class="native"/>
-	    </id>
-		<property name="name" column="name" type="string" index="deleted_child_name_index"/>
-		<many-to-one name="parent" class="LayeredDirectoryNodeImpl"
-				column="parent_id"/>
 	</class>
 	<class name="HistoryLinkImpl" proxy="HistoryLink" table="avm_history_links">
 		<composite-id>
@@ -278,26 +275,6 @@
     	from VersionRootImpl v
     	where
     		v.avmStore = :store and v.versionID = :version
-    ]]>
-    </query>
-    <query name="DeletedChild.ByNameParent">
-    <![CDATA[
-    	from DeletedChildImpl dc
-    	where
-    		dc.parent = :parent and dc.name = :name
-    ]]>
-    </query>
-    <query name="DeletedChild.ByParent">
-    <![CDATA[
-        from DeletedChildImpl dc
-        where 
-        	dc.parent = :parent
-    ]]>
-    </query>
-    <query name="DeletedChild.DeleteByParent">
-    <![CDATA[
-    	delete DeletedChildImpl dc
-    	where dc.parent = :parent
     ]]>
     </query>
     <query name="FindOrphans">

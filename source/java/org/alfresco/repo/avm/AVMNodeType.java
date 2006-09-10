@@ -27,4 +27,5 @@ public interface AVMNodeType
     public static final int LAYERED_FILE = 1;
     public static final int PLAIN_DIRECTORY = 2;
     public static final int LAYERED_DIRECTORY = 3;
+    public static final int DELETED_NODE = 4;
 }

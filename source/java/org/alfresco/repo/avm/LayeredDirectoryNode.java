@@ -1,7 +1,5 @@
 package org.alfresco.repo.avm;
 
-import java.util.List;
-
 /**
  * Interface for Layered Directories.
  * @author britt
@@ -71,12 +69,6 @@ public interface LayeredDirectoryNode extends DirectoryNode, Layered
      * Get the indirection by another name.
      */
     public String getUnderlying();
-    
-    /**
-     * Get all deleted children for this directory.
-     * @return All deleted children.
-     */
-    public List<DeletedChild> getDeleted();
     
     /**
      * Set the opacity of this.

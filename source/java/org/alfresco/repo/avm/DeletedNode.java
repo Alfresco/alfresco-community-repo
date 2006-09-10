@@ -18,20 +18,9 @@
 package org.alfresco.repo.avm;
 
 /**
- * Interface to a deleted directory entry in a layered directory.
+ * Represents a node that has been deleted.
  * @author britt
  */
-public interface DeletedChild
+public interface DeletedNode extends AVMNode
 {
-    /**
-     * Get the name of the deleted child.
-     * @return The name.
-     */
-    public String getName();
-    
-    /**
-     * Get the parent of this deleted child
-     * @return The parent.
-     */
-    public LayeredDirectoryNode getParent();
 }

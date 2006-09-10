@@ -313,11 +313,6 @@ public class OrphanReaper implements Runnable
                     {
                         // First get rid of all child entries for the node.
                         AVMContext.fgInstance.fChildEntryDAO.deleteByParent(node);
-                        if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
-                        {
-                            // More special work for layered directories.
-                            AVMContext.fgInstance.fDeletedChildDAO.deleteByParent(node);
-                        } 
                     }
                     else if (node.getType() == AVMNodeType.PLAIN_FILE)
                     {

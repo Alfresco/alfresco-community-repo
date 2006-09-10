@@ -66,11 +66,6 @@ public class AVMContext implements ApplicationContextAware
     public MergeLinkDAO fMergeLinkDAO;
     
     /**
-     * The DeletedChildDAO.
-     */
-    public DeletedChildDAO fDeletedChildDAO;
-
-    /**
      * The AVMNodePropertyDAO
      */
     public AVMNodePropertyDAO fAVMNodePropertyDAO;
@@ -141,14 +136,6 @@ public class AVMContext implements ApplicationContextAware
     public void setChildEntryDAO(ChildEntryDAO childEntryDAO)
     {
         fChildEntryDAO = childEntryDAO;
-    }
-
-    /**
-     * @param deletedChildDAO the fDeletedChildDAO to set
-     */
-    public void setDeletedChildDAO(DeletedChildDAO deletedChildDAO)
-    {
-        fDeletedChildDAO = deletedChildDAO;
     }
 
     /**

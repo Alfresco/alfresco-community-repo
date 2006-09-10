@@ -32,8 +32,11 @@ import java.util.TreeMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
@@ -41,6 +44,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Big test of AVM behavior.
@@ -2303,6 +2307,90 @@ public class AVMServiceTest extends AVMServiceTestBase
                        "banana", ContentModel.TYPE_AVM_CONTENT) != null);
             fService.createSnapshot("main");
             System.out.println(recursiveList("main", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test overwriting without snapshots in between.
+     */
+    public void testOverwrite()
+    {
+        try
+        {
+            setupBasicTree();
+            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            {
+                public Object doWork() throws Exception
+                {
+                    AVMService service = (AVMService)fContext.getBean("avmService");
+                    service.createLayeredDirectory("main:/a", "main:/", "layer");
+                    // Modify something in an ordinary directory 3 times.
+                    service.getFileOutputStream("main:/a/b/c/foo").close();
+                    service.getFileOutputStream("main:/a/b/c/foo").close();
+                    service.getFileOutputStream("main:/a/b/c/foo").close();
+                    service.createFile("main:/a/b/c", "pint").close();
+                    service.createFile("main:/a/b/c", "quart").close();
+                    // Modify another file in the same directory.
+                    service.getFileOutputStream("main:/a/b/c/bar").close();
+                    service.getFileOutputStream("main:/a/b/c/bar").close();
+                    service.lookup(-1, "main:/a/b/c");
+                    service.createFile("main:/a/b/c", "figment").close();
+                    // Repeat in a layer.
+                    service.getFileOutputStream("main:/layer/b/c/foo").close();
+                    service.getFileOutputStream("main:/layer/b/c/foo").close();
+                    service.getFileOutputStream("main:/layer/b/c/foo").close();
+                    service.createFile("main:/layer/b/c", "gallon").close();
+                    service.createFile("main:/layer/b/c", "dram").close();
+                    service.getFileOutputStream("main:/layer/b/c/bar").close();
+                    service.getFileOutputStream("main:/layer/b/c/bar").close();
+                    try
+                    {
+                        service.lookup(-1, "main:/a/b/c/froo");
+                    }
+                    catch (AVMException ae)
+                    {
+                        // Do nothing.
+                    }
+                    service.createDirectory("main:/a/b/c", "froo");
+                    service.createFile("main:/a/b/c/froo", "franistan").close();
+                    try
+                    {
+                        service.lookup(-1, "main:/layer/b/c/groo");
+                    }
+                    catch (AVMException ae)
+                    {
+                        // Do nothing.
+                    }
+                    service.createDirectory("main:/layer/b/c", "groo");
+                    service.createFile("main:/layer/b/c/groo", "granistan").close();  
+                    return null;
+                }
+            }
+            TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
+                                                     new TxnWork());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test creating a file over a ghost.
+     */
+    public void testCreateOverDeleted()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.removeNode("main:/a/b/c", "foo");
+            fService.createFile("main:/a/b/c", "foo").close();
         }
         catch (Exception e)
         {

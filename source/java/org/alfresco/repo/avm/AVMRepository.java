@@ -369,7 +369,7 @@ public class AVMRepository
         {
             dstNode = new PlainFileNodeImpl((PlainFileNode)srcNode, dstRepo);
         }
-        srcDir.removeChild(srcName);
+        srcDir.removeChild(sPath, srcName);
         srcDir.updateModTime();
         dstNode.setVersionID(dstRepo.getNextVersionID());
         dstDir.putChild(dstName, dstNode);

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.avm.AVMRepository;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMException;

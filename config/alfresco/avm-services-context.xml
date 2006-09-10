@@ -72,12 +72,6 @@
 		</property>
 	</bean>
 
-	<bean id="deletedChildDAO" class="org.alfresco.repo.avm.hibernate.DeletedChildDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-	
 	<bean id="avmNodePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMNodePropertyDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
@@ -117,9 +111,6 @@
 		</property>
 		<property name="mergeLinkDAO">
 			<ref bean="mergeLinkDAO"/>
-		</property>
-		<property name="deletedChildDAO">
-			<ref bean="deletedChildDAO"/>
 		</property>
 		<property name="avmNodePropertyDAO">
 			<ref bean="avmNodePropertyDAO"/>

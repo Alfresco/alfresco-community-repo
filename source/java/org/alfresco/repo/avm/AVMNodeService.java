@@ -567,7 +567,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         for (AspectDefinition def : defaultAspectDefs)
         {
             invokeBeforeAddAspect(nodeRef, def.getName());
-            fAVMService.addAspect(path, def.getName());
+            addAspect(nodeRef, def.getName(), Collections.<QName, Serializable>emptyMap());
             addDefaultPropertyValues(def, properties);
             invokeOnAddAspect(nodeRef, def.getName());
             // recurse
@@ -659,7 +659,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
     }
 
-    private static QName [] fgBuiltinAspects = new QName[] { ContentModel.ASPECT_AUDITABLE, 
+    private static QName [] fgBuiltinAspects = new QName[] { ContentModel.ASPECT_AUDITABLE,
                                                              ContentModel.ASPECT_REFERENCEABLE };
     
     private boolean isBuiltinAspect(QName aspectQName)
@@ -841,6 +841,10 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         result.put(ContentModel.PROP_MODIFIER, desc.getLastModifier());
         result.put(ContentModel.PROP_OWNER, desc.getOwner());
         result.put(ContentModel.PROP_NAME, desc.getName());
+        result.put(ContentModel.PROP_NODE_UUID, "UNKNOWN");
+        result.put(ContentModel.PROP_NODE_DBID, new Long(desc.getId()));
+        result.put(ContentModel.PROP_STORE_PROTOCOL, "avm");
+        result.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
         if (desc.isFile())
         {
             try
@@ -949,6 +953,22 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             return desc.getName();
         }
+        else if (qName.equals(ContentModel.PROP_NODE_UUID))
+        {
+            return "UNKNOWN";
+        }
+        else if (qName.equals(ContentModel.PROP_NODE_DBID))
+        {
+            return new Long(desc.getId());
+        }
+        else if (qName.equals(ContentModel.PROP_STORE_PROTOCOL))
+        {
+            return "avm";
+        }
+        else if (qName.equals(ContentModel.PROP_STORE_IDENTIFIER))
+        {
+            return nodeRef.getStoreRef().getIdentifier();
+        }
         else
         {
             fgLogger.error("Invalid Built In Property: " + qName);
@@ -1012,7 +1032,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         ContentModel.PROP_MODIFIER,
         ContentModel.PROP_OWNER,
         ContentModel.PROP_CONTENT,
-        ContentModel.PROP_NAME
+        ContentModel.PROP_NAME,
+        ContentModel.PROP_NODE_UUID,
+        ContentModel.PROP_NODE_DBID,
+        ContentModel.PROP_STORE_PROTOCOL,
+        ContentModel.PROP_STORE_IDENTIFIER
     };
     
     /**

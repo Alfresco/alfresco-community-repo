@@ -61,9 +61,10 @@ public interface DirectoryNode extends AVMNode
 
     /**
      * Remove a child directly.  No copy is possible.
+     * @param lPath The lookup through which this node was reached.
      * @param name The name of the child to remove.
      */
-    public void removeChild(String name);
+    public void removeChild(Lookup lPath, String name);
 
     /**
      * Get a directory listing.

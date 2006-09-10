@@ -21,12 +21,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
 import org.alfresco.service.namespace.QName;
 
 /**

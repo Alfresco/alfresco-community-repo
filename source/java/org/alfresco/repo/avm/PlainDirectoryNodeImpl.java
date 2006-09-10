@@ -99,6 +99,10 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
+            if (child.getChild().getType() == AVMNodeType.DELETED_NODE)
+            {
+                continue;
+            }
             result.put(child.getName(), child.getChild());
         }
         return result;
@@ -129,6 +133,10 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
+            if (child.getChild().getType() == AVMNodeType.DELETED_NODE)
+            {
+                continue;
+            }
             result.put(child.getName(), 
                        child.getChild().getDescriptor(dir.getPath(), child.getName(), dir.getIndirection()));
         }
@@ -155,13 +163,13 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     @SuppressWarnings("unchecked")
     public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write)
     {
-        // We're doing the hand unrolling of the proxy because
-        // Hibernate/CGLIB proxies are broken.
         ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
-        if (entry == null)
+        if (entry == null || entry.getChild().getType() == AVMNodeType.DELETED_NODE)
         {
             return null;
         }
+        // We're doing the hand unrolling of the proxy because
+        // Hibernate/CGLIB proxies are broken.
         return AVMNodeUnwrapper.Unwrap(entry.getChild());
     }
 
@@ -178,7 +186,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             throw new AVMBadArgumentException("Path is null.");
         }
         ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
-        if (entry == null)
+        if (entry == null || entry.getChild().getType() == AVMNodeType.DELETED_NODE)
         {
             return null;
         }
@@ -187,15 +195,27 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
 
     /**
      * Remove a child, no copying.
+     * @param lPath The path by which this was found.
      * @param name The name of the child to remove.
      */
     @SuppressWarnings("unchecked")
-    public void removeChild(String name)
+    public void removeChild(Lookup lPath, String name)
     {
         ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry != null)
         {
+            AVMNode child = entry.getChild();
+            if (child.getType() == AVMNodeType.DELETED_NODE)
+            {
+                return;
+            }
+            AVMNode ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
+                     lPath.getAVMStore());
             AVMContext.fgInstance.fChildEntryDAO.delete(entry);
+            AVMContext.fgInstance.fAVMNodeDAO.save(ghost);
+            AVMContext.fgInstance.fAVMNodeDAO.flush();
+            ghost.setAncestor(child);
+            putChild(name, ghost);
         }
     }
 

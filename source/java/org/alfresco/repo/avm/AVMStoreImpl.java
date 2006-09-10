@@ -446,7 +446,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMNotFoundException("Does not exist: " + name);
         }
-        dir.removeChild(name);
+        dir.removeChild(lPath, name);
         dir.updateModTime();
     }
 

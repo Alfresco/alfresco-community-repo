@@ -18,7 +18,6 @@
 package org.alfresco.repo.avm;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -29,13 +28,9 @@ import java.util.Random;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
-import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.hibernate.HibernateException;
 import org.springframework.dao.ConcurrencyFailureException;

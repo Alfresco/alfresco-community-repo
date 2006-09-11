@@ -97,18 +97,18 @@
             <cm:title>${spaces.guest_home.name}</cm:title>
             <cm:description>${spaces.guest_home.description}</cm:description>
          </cm:folder>
-         <cm:folder view:childName="app:WCM">
-         	<view:acl view:inherit="false">
-         		<view:ace view:access="ALLOWED">
-         			<view:authority>GROUP_EVERYONE</view:authority>
-         			<view:permission>Consumer</view:permission>
-         		</view:ace>
-         	</view:acl>
-         	<app:uifacets/>
-         	<cm:name>WCM</cm:name>
-         	<app:icon>space-icon-default</app:icon>
-         	<cm:title>WCM</cm:title>
-         	<cm:description>Web Content Management Spaces</cm:description>
+         <cm:folder view:childName="${spaces.wcm.childname}">
+            <view:acl view:inherit="false">
+               <view:ace view:access="ALLOWED">
+                  <view:authority>GROUP_EVERYONE</view:authority>
+                  <view:permission>Consumer</view:permission>
+               </view:ace>
+            </view:acl>
+            <app:uifacets/>
+            <cm:name>${spaces.wcm.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.wcm.name}</cm:title>
+            <cm:description>${spaces.wcm.description}</cm:description>
          </cm:folder>
       </cm:contains>
    </cm:folder>

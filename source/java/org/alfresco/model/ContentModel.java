@@ -231,7 +231,11 @@ public interface ContentModel
     static final QName ASPECT_FEEDSOURCE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "feedsource");
     static final QName PROP_FEEDTEMPLATE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "template");
     
-
+    // AVM web folder
+    static final QName TYPE_AVMWEBFOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webfolder");
+    static final QName PROP_AVMSTORE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "avmstore");
+    
+    
     //
     // User Model Definitions
     //

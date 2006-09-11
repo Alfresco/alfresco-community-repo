@@ -49,6 +49,74 @@
          <title>Folder Link Object</title>
          <parent>cm:link</parent>
       </type>
+      
+      <type name="app:webfolder">
+         <title>AVM Website Folder</title>
+         <parent>cm:avmfolder</parent>
+         <properties>
+            <!-- root name of the avm staging store for this web folder -->
+            <property name="app:avmstore">
+               <type>d:text</type>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="app:formtriples">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>app:formtriple</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="app:webuser">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>app:webuser</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
+      
+      <type name="app:formtriple">
+         <title>Website Form Triple</title>
+         <parent>cm:cmobject</parent>
+         <properties>
+            <property name="app:form">
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="app:workflow">
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="app:script">
+               <type>d:noderef</type>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="app:webuser">
+         <title>Website User Information</title>
+         <parent>cm:cmobject</parent>
+         <properties>
+            <property name="app:username">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="app:role">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </type>
 
 	</types>
 

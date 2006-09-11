@@ -49,7 +49,8 @@ public interface DirectoryNode extends AVMNode
      * @param version The version to look under.
      * @param write Whether this is occuring in a write context.
      */
-    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write);
+    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write, 
+                               boolean includeDeleted);
     
     /**
      * Lookup a child node using an AVMNodeDescriptor as context.
@@ -57,7 +58,7 @@ public interface DirectoryNode extends AVMNode
      * @param name The name of the child to lookup.
      * @return The descriptor for the looked up child.
      */
-    public AVMNodeDescriptor lookupChild(AVMNodeDescriptor mine, String name);
+    public AVMNodeDescriptor lookupChild(AVMNodeDescriptor mine, String name, boolean includeDeleted);
 
     /**
      * Remove a child directly.  No copy is possible.
@@ -71,21 +72,22 @@ public interface DirectoryNode extends AVMNode
      * @param lPath The lookup context.
      * @return A SortedMap of names to DirectoryEntries.
      */
-    public Map<String, AVMNode> getListing(Lookup lPath);
+    public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted);
     
     /**
      * Get a listing of the nodes directly contained by a directory.
      * @param lPath The Lookup to this directory.
      * @return A Map of names to nodes.
      */
-    public Map<String, AVMNode> getListingDirect(Lookup lPath);
+    public Map<String, AVMNode> getListingDirect(Lookup lPath, boolean includeDeleted);
 
     /**
      * Get a listing from a directory specified by an AVMNodeDescriptor.
      * @param dir The directory to list.
      * @return A Map of names to node descriptors
      */
-    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir);
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, 
+                                                           boolean includeDeleted);
 
     /**
      * Get the names of nodes deleted in this directory.

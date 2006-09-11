@@ -284,7 +284,15 @@ public class AVMNodeDescriptor implements Serializable
         return (fType == AVMNodeType.LAYERED_DIRECTORY );
     }
 
-
+    /**
+     * Is this a deleted node.
+     * @return Whether this node is a deleted node.
+     */
+    public boolean isDeleted()
+    {
+        return fType == AVMNodeType.DELETED_NODE;
+    }
+    
     /**
      * Get the user who last modified this node.
      * @return Who last modified this node.
@@ -399,6 +407,8 @@ public class AVMNodeDescriptor implements Serializable
                 return "[LF:" + fID + ":" + fIndirection + "]";
             case AVMNodeType.LAYERED_DIRECTORY :
                 return "[LD:" + fID + ":" + fIndirection + "]";
+            case AVMNodeType.DELETED_NODE :
+                return "[DN:" + fID + "]";
             default :
                 throw new AVMException("Internal Error.");
         }

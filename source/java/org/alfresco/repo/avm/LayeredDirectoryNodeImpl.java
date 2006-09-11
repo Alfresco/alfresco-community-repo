@@ -304,7 +304,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @return A Map from names to nodes. This is a sorted Map.
      */
     @SuppressWarnings("unchecked")
-    public Map<String, AVMNode> getListing(Lookup lPath)
+    public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted)
     {
         // Get the base listing from the thing we indirect to.
         Map<String, AVMNode> listing = null;
@@ -318,7 +318,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-                listing = dir.getListing(lookup);
+                listing = dir.getListing(lookup, includeDeleted);
             }
             catch (AVMException re)
             {
@@ -332,7 +332,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         for (ChildEntry entry : AVMContext.fgInstance.fChildEntryDAO.getByParent(this))
         {
-            if (entry.getChild().getType() == AVMNodeType.DELETED_NODE)
+            if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 listing.remove(entry.getName());
             }
@@ -349,12 +349,12 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param lPath The Lookup to this directory.
      * @return A Map of names to nodes.
      */
-    public Map<String, AVMNode> getListingDirect(Lookup lPath)
+    public Map<String, AVMNode> getListingDirect(Lookup lPath, boolean includeDeleted)
     {
         Map<String, AVMNode> listing = new HashMap<String, AVMNode>();
         for (ChildEntry entry : AVMContext.fgInstance.fChildEntryDAO.getByParent(this))
         {
-            if (entry.getChild().getType() != AVMNodeType.DELETED_NODE)
+            if (includeDeleted || entry.getChild().getType() != AVMNodeType.DELETED_NODE)
             {
                 listing.put(entry.getName(), entry.getChild());
             }
@@ -365,9 +365,11 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     /**
      * Get a listing from a directory node descriptor.
      * @param dir The directory node descriptor.
+     * @param includeDeleted Should DeletedNodes be shown.
      * @return A Map of names to node descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, 
+                                                           boolean includeDeleted)
     {
         if (dir.getPath() == null || dir.getIndirection() == null)
         {
@@ -381,7 +383,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, dir.getIndirection());
                 DirectoryNode dirNode = (DirectoryNode)lookup.getCurrentNode();
-                Map<String, AVMNode> listing = dirNode.getListing(lookup);
+                Map<String, AVMNode> listing = dirNode.getListing(lookup, includeDeleted);
                 for (String name : listing.keySet())
                 {
                     baseListing.put(name,
@@ -400,7 +402,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
-            if (child.getChild().getType() == AVMNodeType.DELETED_NODE)
+            if (!includeDeleted && child.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 baseListing.remove(child.getName());
             }
@@ -442,12 +444,13 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @return The child or null if not found.
      */
     @SuppressWarnings("unchecked")
-    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write)
+    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write,
+                               boolean includeDeleted)
     {
         ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry != null)
         {
-            if (entry.getChild().getType() == AVMNodeType.DELETED_NODE)
+            if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 return null;
             }
@@ -463,7 +466,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            AVMNode retVal = dir.lookupChild(lookup, name, -1, false);
+            AVMNode retVal = dir.lookupChild(lookup, name, -1, false, includeDeleted);
             lPath.setFinalStore(lookup.getFinalStore());
             return retVal;
         }
@@ -483,7 +486,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param name The name to lookup,
      * @return The node descriptor.
      */
-    public AVMNodeDescriptor lookupChild(AVMNodeDescriptor mine, String name)
+    public AVMNodeDescriptor lookupChild(AVMNodeDescriptor mine, String name, boolean includeDeleted)
     {
         if (mine.getPath() == null || mine.getIndirection() == null)
         {
@@ -492,7 +495,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
         if (entry != null)
         {
-            if (entry.getChild().getType() == AVMNodeType.DELETED_NODE)
+            if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 return null;
             }
@@ -509,7 +512,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, mine.getIndirection());
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            AVMNode child = dir.lookupChild(lookup, name, -1, false);
+            AVMNode child = dir.lookupChild(lookup, name, -1, false, includeDeleted);
             if (child == null)
             {
                 return null;
@@ -547,7 +550,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         else
         {
-            child = lookupChild(lPath, name, -1, false);
+            child = lookupChild(lPath, name, -1, false, false);
         }
         AVMNode ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
                 lPath.getAVMStore());

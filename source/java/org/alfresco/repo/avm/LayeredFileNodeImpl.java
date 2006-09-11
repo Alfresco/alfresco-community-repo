@@ -78,7 +78,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     public AVMNode copy(Lookup lPath)
     {
         // LayeredFileNodes are always copied.
-        Lookup lookup = AVMRepository.GetInstance().lookup(-1, fIndirection);
+        Lookup lookup = AVMRepository.GetInstance().lookup(-1, fIndirection, false);
         AVMNode indirect = lookup.getCurrentNode();
         if (indirect.getType() != AVMNodeType.LAYERED_FILE &&
             indirect.getType() != AVMNodeType.PLAIN_FILE)
@@ -249,7 +249,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public ContentData getContentData(Lookup lPath)
     {
-        Lookup lookup = lPath.getAVMStore().getAVMRepository().lookup(-1, getIndirection());
+        Lookup lookup = lPath.getAVMStore().getAVMRepository().lookup(-1, getIndirection(), false);
         AVMNode node = lookup.getCurrentNode();
         if (!(node instanceof FileNode))
         {

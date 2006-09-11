@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.namespace.QName;
@@ -70,6 +69,21 @@ public interface AVMService
      * at a directory.
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path);
+
+    /**
+     * Get a listing of a Folder by name, with the option of seeing
+     * Deleted Nodes.
+     * @param version The version id to look in.
+     * @param path The simple absolute path to the file node.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return A Map of names to descriptors.
+     * @throws AVMNotFoundException If <code>path</code> is not found.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * component that is not a directory, or if <code>path</code> is not pointing
+     * at a directory.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path,
+                                                                    boolean includeDeleted);
     
     /**
      * Get the listing of nodes contained directly in a directory. This is the
@@ -84,6 +98,22 @@ public interface AVMService
      */
     public SortedMap<String, AVMNodeDescriptor> 
         getDirectoryListingDirect(int version, String path);
+    
+    /**
+     * Get the listing of nodes contained directly in a directory. This is the
+     * same as getDirectoryListing for PlainDirectories, but returns only those that
+     * are directly contained in a layered directory. This has the option of
+     * seeing Deleted Nodes.
+     * @param version The version to look up.
+     * @param path The full path to get listing for.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return A Map of names to descriptors.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains any non-directory
+     * elements.
+     */
+    public SortedMap<String, AVMNodeDescriptor>
+        getDirectoryListingDirect(int version, String path, boolean includeDeleted);
 
     /**
      * Get a directory listing from a node descriptor.
@@ -94,6 +124,18 @@ public interface AVMService
      * a directory.
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir);
+    
+    /**
+     * Get a directory listing from a node descriptor, with the option of
+     * seeing deleted nodes.
+     * @param dir The directory node descriptor.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return A Map of names to node descriptors.
+     * @throws AVMNotFoundException If the descriptor is stale.
+     * @throws AVMWrongTypeException If the descriptor does not point at a directory.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir,
+                                                                    boolean includeDeleted); 
     
     /**
      * Get the names of nodes that have been deleted in a directory.
@@ -319,6 +361,20 @@ public interface AVMService
     public AVMNodeDescriptor lookup(int version, String path);
     
     /**
+     * Lookup a node by version ids and path, with the option of 
+     * seeing Deleted Nodes.
+     * @param version The version id to look under.
+     * @param path The simple absolute path to the parent directory.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return An AVMNodeDescriptor.
+     * @throws AVMNotFoundException If <code>path</code> does not exist or
+     * if <code>version</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal 
+     * element that is not a directory.
+     */
+    public AVMNodeDescriptor lookup(int version, String path, boolean includeDeleted);
+    
+    /**
      * Lookup a node from a directory node.
      * @param dir The descriptor for the directory node.
      * @param name The name to lookup.
@@ -328,6 +384,19 @@ public interface AVMService
      * @throws AVMWrongTypeException If <code>dir</code> does not refer to a directory.
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name);
+    
+    /**
+     * Lookup a node from a directory node, with the option of seeing 
+     * Deleted Nodes.
+     * @param dir The descriptor for the directory node.
+     * @param name The name to lookup.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return The descriptor for the child.
+     * @throws AVMNotFoundException If <code>name</code> does not exist or
+     * if <code>dir</code> is dangling.
+     * @throws AVMWrongTypeException If <code>dir</code> does not refer to a directory.
+     */
+    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted);
     
     /**
      * Get the indirection path for a layered file or directory.

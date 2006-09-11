@@ -133,14 +133,14 @@ public class AVMServiceTestBase extends TestCase
         }
         builder.append(path.substring(path.lastIndexOf('/') + 1));
         builder.append(' ');
-        AVMNodeDescriptor desc = fService.lookup(version, path);
+        AVMNodeDescriptor desc = fService.lookup(version, path, true);
         builder.append(desc.toString());
         builder.append('\n');
         if (desc.getType() == AVMNodeType.PLAIN_DIRECTORY ||
             (desc.getType() == AVMNodeType.LAYERED_DIRECTORY && followLinks))
         {
             String basename = path.endsWith("/") ? path : path + "/";
-            Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(version, path);
+            Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(version, path, true);
             for (String name : listing.keySet())
             {
                 builder.append(recursiveList(basename + name, version, indent + 2, followLinks));

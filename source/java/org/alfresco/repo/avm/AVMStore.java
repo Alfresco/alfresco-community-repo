@@ -111,17 +111,21 @@ public interface AVMStore
      * Get a listing of the designated directory.
      * @param version The version to look under.
      * @param path The path to the directory.
+     * @param includeDeleted Whether to see Deleted nodes.
      * @return A listing.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path);
+    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path, 
+                                                           boolean includeDeleted);
     
     /**
      * Get the list of nodes directly contained in a directory.
      * @param version The version to look under.
      * @param path The path to the directory.
+     * @param includeDeleted Whether to see Deleted nodes.
      * @return A Map of names to descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListingDirect(int version, String path);
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(int version, String path,
+                                                                 boolean includeDeleted);
 
     /**
      * Get the names of the deleted nodes in a directory.
@@ -182,9 +186,10 @@ public interface AVMStore
      * @param version The version to look under.
      * @param path The path to the node.
      * @param write Whether this is in a write context.
+     * @param includeDeleted Whether to see Deleted nodes.
      * @return A Lookup object.
      */
-    public Lookup lookup(int version, String path, boolean write);
+    public Lookup lookup(int version, String path, boolean write, boolean includeDeleted);
 
     /**
      * Lookup a directory.

@@ -108,11 +108,29 @@ public class AVMServiceImpl implements AVMService
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path)
     {
+        return getDirectoryListing(version, path, false);
+    }
+
+    /**
+     * Get a listing of a Folder by name, with the option of seeing
+     * Deleted Nodes.
+     * @param version The version id to look in.
+     * @param path The simple absolute path to the file node.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return A Map of names to descriptors.
+     * @throws AVMNotFoundException If <code>path</code> is not found.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal
+     * component that is not a directory, or if <code>path</code> is not pointing
+     * at a directory.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(int version, String path,
+                                                                    boolean includeDeleted)
+    {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        return fAVMRepository.getListing(version, path);
+        return fAVMRepository.getListing(version, path, includeDeleted);        
     }
 
     /**
@@ -129,13 +147,31 @@ public class AVMServiceImpl implements AVMService
     public SortedMap<String, AVMNodeDescriptor> 
         getDirectoryListingDirect(int version, String path)
     {
+        return getDirectoryListingDirect(version, path, false);
+    }
+    
+    /**
+     * Get the listing of nodes contained directly in a directory. This is the
+     * same as getDirectoryListing for PlainDirectories, but returns only those that
+     * are directly contained in a layered directory. This has the option of
+     * seeing Deleted Nodes.
+     * @param version The version to look up.
+     * @param path The full path to get listing for.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return A Map of names to descriptors.
+     * @throws AVMNotFoundException If <code>path</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains any non-directory
+     * elements.
+     */
+    public SortedMap<String, AVMNodeDescriptor>
+        getDirectoryListingDirect(int version, String path, boolean includeDeleted)
+    {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        return fAVMRepository.getListingDirect(version, path);
+        return fAVMRepository.getListingDirect(version, path, includeDeleted);
     }
-
     /**
      * Get a directory listing from a node descriptor.
      * @param dir The directory node descriptor.
@@ -143,11 +179,26 @@ public class AVMServiceImpl implements AVMService
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir)
     {
+        return getDirectoryListing(dir, false);
+    }
+
+    /**
+     * Get a directory listing from a node descriptor, with the option of
+     * seeing deleted nodes.
+     * @param dir The directory node descriptor.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return A Map of names to node descriptors.
+     * @throws AVMNotFoundException If the descriptor is stale.
+     * @throws AVMWrongTypeException If the descriptor does not point at a directory.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir,
+                                                                    boolean includeDeleted)
+    {
         if (dir == null)
         {
             throw new AVMBadArgumentException("Null descriptor.");
         }
-        return fAVMRepository.getListing(dir);
+        return fAVMRepository.getListing(dir, includeDeleted);        
     }
 
     /**
@@ -399,11 +450,28 @@ public class AVMServiceImpl implements AVMService
      */
     public AVMNodeDescriptor lookup(int version, String path)
     {
+        return lookup(version, path, false);
+    }
+
+    /**
+     * Lookup a node by version ids and path, with the option of 
+     * seeing Deleted Nodes.
+     * @param version The version id to look under.
+     * @param path The simple absolute path to the parent directory.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return An AVMNodeDescriptor.
+     * @throws AVMNotFoundException If <code>path</code> does not exist or
+     * if <code>version</code> does not exist.
+     * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal 
+     * element that is not a directory.
+     */
+    public AVMNodeDescriptor lookup(int version, String path, boolean includeDeleted)
+    {
         if (path == null)
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        Lookup lookup = fAVMRepository.lookup(version, path);
+        Lookup lookup = fAVMRepository.lookup(version, path, includeDeleted);
         return lookup.getCurrentNode().getDescriptor(lookup);
     }
 
@@ -415,13 +483,29 @@ public class AVMServiceImpl implements AVMService
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name)
     {
+        return lookup(dir, name, false);
+    }
+    
+    /**
+     * Lookup a node from a directory node, with the option of seeing 
+     * Deleted Nodes.
+     * @param dir The descriptor for the directory node.
+     * @param name The name to lookup.
+     * @param includeDeleted Whether to see Deleted Nodes.
+     * @return The descriptor for the child.
+     * @throws AVMNotFoundException If <code>name</code> does not exist or
+     * if <code>dir</code> is dangling.
+     * @throws AVMWrongTypeException If <code>dir</code> does not refer to a directory.
+     */
+    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted)
+    {
         if (dir == null || name == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        return fAVMRepository.lookup(dir, name);
+        return fAVMRepository.lookup(dir, name, includeDeleted);        
     }
-
+    
     /**
      * Purge an AVMStore.  Permanently delete everything that 
      * is only referenced in that AVMStore.

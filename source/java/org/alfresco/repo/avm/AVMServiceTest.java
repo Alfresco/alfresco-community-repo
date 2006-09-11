@@ -2398,4 +2398,57 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
+    
+    /**
+     * Test lookup and listing of deleted files.
+     */
+    public void testDeleted()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            // Delete something in regular directory.
+            fService.removeNode("main:/a/b/c", "foo");
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/b/c/foo", true);
+            assertTrue(desc.isDeleted());
+            Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/a/b/c", true);
+            assertEquals(2, listing.size());
+            assertTrue(listing.get("foo").isDeleted());
+            AVMNodeDescriptor dir = fService.lookup(-1, "main:/a/b/c", true);
+            desc = fService.lookup(dir, "foo", true);
+            assertTrue(desc.isDeleted());
+            listing = fService.getDirectoryListing(dir, true);
+            assertEquals(2, listing.size());
+            assertTrue(listing.get("foo").isDeleted());
+            desc = fService.lookup(-1, "main:/layer/b/c/foo", true);
+            assertTrue(desc.isDeleted());
+            listing = fService.getDirectoryListing(-1, "main:/layer/b/c", true);
+            assertEquals(2, listing.size());
+            assertTrue(listing.get("foo").isDeleted());
+            dir = fService.lookup(-1, "main:/layer/b/c", true);
+            listing = fService.getDirectoryListing(dir, true);
+            assertEquals(2, listing.size());
+            assertTrue(listing.get("foo").isDeleted());
+            // Delete something in a layer.
+            fService.removeNode("main:/layer/b/c", "bar");
+            desc = fService.lookup(-1, "main:/layer/b/c/bar", true);
+            assertTrue(desc.isDeleted());
+            listing = fService.getDirectoryListing(-1, "main:/layer/b/c", true);
+            assertEquals(2, listing.size());
+            assertTrue(listing.get("foo").isDeleted());
+            assertTrue(listing.get("bar").isDeleted());
+            listing = fService.getDirectoryListingDirect(-1, "main:/layer/b/c", true);
+            assertEquals(1, listing.size());
+            assertTrue(listing.get("bar").isDeleted());
+            dir = fService.lookup(-1, "main:/layer/b/c", true);
+            desc = fService.lookup(dir, "bar", true);
+            assertTrue(desc.isDeleted());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
 }

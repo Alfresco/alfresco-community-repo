@@ -93,13 +93,13 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @return The listing.
      */
     @SuppressWarnings("unchecked")
-    public Map<String, AVMNode> getListing(Lookup lPath)
+    public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted)
     {
         Map<String, AVMNode> result = new HashMap<String, AVMNode>();
         List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
-            if (child.getChild().getType() == AVMNodeType.DELETED_NODE)
+            if (!includeDeleted && child.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 continue;
             }
@@ -113,9 +113,9 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param lPath The Lookup to this directory.
      * @return A Map of names to nodes.
      */
-    public Map<String, AVMNode> getListingDirect(Lookup lPath)
+    public Map<String, AVMNode> getListingDirect(Lookup lPath, boolean includeDeleted)
     {
-        return getListing(lPath);
+        return getListing(lPath, includeDeleted);
     }
 
     /**
@@ -123,7 +123,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, boolean includeDeleted)
     {
         if (dir.getPath() == null)
         {
@@ -133,7 +133,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
-            if (child.getChild().getType() == AVMNodeType.DELETED_NODE)
+            if (!includeDeleted && child.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 continue;
             }
@@ -161,10 +161,12 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @return The child or null.
      */
     @SuppressWarnings("unchecked")
-    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write)
+    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write,
+                               boolean includeDeleted)
     {
         ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
-        if (entry == null || entry.getChild().getType() == AVMNodeType.DELETED_NODE)
+        if (entry == null || 
+            (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE))
         {
             return null;
         }
@@ -179,14 +181,15 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * @param name The name of the child to lookup.
      * @return A node descriptor for the child.
      */
-    public AVMNodeDescriptor lookupChild(AVMNodeDescriptor mine, String name)
+    public AVMNodeDescriptor lookupChild(AVMNodeDescriptor mine, String name, boolean includeDeleted)
     {
         if (mine.getPath() == null)
         {
             throw new AVMBadArgumentException("Path is null.");
         }
         ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
-        if (entry == null || entry.getChild().getType() == AVMNodeType.DELETED_NODE)
+        if (entry == null || 
+            (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE))
         {
             return null;
         }

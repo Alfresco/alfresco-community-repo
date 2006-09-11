@@ -207,7 +207,7 @@ public class AVMRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(srcPath);
         AVMStore srcRepo = getAVMStoreByName(pathParts[0]);
-        Lookup sPath = srcRepo.lookup(version, pathParts[1], false);
+        Lookup sPath = srcRepo.lookup(version, pathParts[1], false, false);
         // Lookup the destination directory.
         fLookupCount.set(1);
         pathParts = SplitPath(dstPath);
@@ -276,7 +276,7 @@ public class AVMRepository
         AVMStore srcRepo = getAVMStoreByName(pathParts[0]);
         Lookup sPath = srcRepo.lookupDirectory(-1, pathParts[1], true);
         DirectoryNode srcDir = (DirectoryNode)sPath.getCurrentNode();
-        AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1, true);
+        AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1, true, false);
         if (srcNode == null)
         {
             throw new AVMNotFoundException("Not found: " + srcName);
@@ -286,7 +286,7 @@ public class AVMRepository
         AVMStore dstRepo = getAVMStoreByName(pathParts[0]);
         Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
         DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
-        AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1, true);
+        AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1, true, false);
         if (dstNode != null)
         {
             throw new AVMExistsException("Node exists: " + dstName);
@@ -487,14 +487,16 @@ public class AVMRepository
      * Get a listing of a directory.
      * @param version The version to look under.
      * @param path The path to the directory.
+     * @param includeDeleted Whether to see DeletedNodes.
      * @return A List of FolderEntries.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path)
+    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path,
+                                                           boolean includeDeleted)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);
-        return store.getListing(version, pathParts[1]);
+        return store.getListing(version, pathParts[1], includeDeleted);
     }
 
     /**
@@ -503,12 +505,13 @@ public class AVMRepository
      * @param path The path to the directory to list.
      * @return A Map of names to descriptors.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListingDirect(int version, String path)
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(int version, String path,
+                                                                 boolean includeDeleted)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);
-        return store.getListingDirect(version, pathParts[1]);
+        return store.getListingDirect(version, pathParts[1], includeDeleted);
     }
     
     /**
@@ -516,7 +519,7 @@ public class AVMRepository
      * @param dir The directory node descriptor.
      * @return A SortedMap listing.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir)
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, boolean includeDeleted)
     {
         fLookupCount.set(1);
         AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
@@ -526,7 +529,7 @@ public class AVMRepository
             throw new AVMWrongTypeException("Not a directory.");
         }
         DirectoryNode dirNode = (DirectoryNode)node;
-        return dirNode.getListing(dir);
+        return dirNode.getListing(dir, includeDeleted);
     }
     
     /**
@@ -674,9 +677,10 @@ public class AVMRepository
      * Lookup a node.
      * @param version The version to look under.
      * @param path The path to lookup.
+     * @param includeDeleted Whether to see DeletedNodes.
      * @return A lookup object.
      */
-    public Lookup lookup(int version, String path)
+    public Lookup lookup(int version, String path, boolean includeDeleted)
     {
         Integer count = fLookupCount.get();
         try
@@ -695,7 +699,7 @@ public class AVMRepository
             }
             String [] pathParts = SplitPath(path);
             AVMStore store = getAVMStoreByName(pathParts[0]);
-            Lookup result = store.lookup(version, pathParts[1], false);
+            Lookup result = store.lookup(version, pathParts[1], false, includeDeleted);
             return result;
         }
         finally
@@ -713,7 +717,7 @@ public class AVMRepository
      * @param name The name of the child to lookup.
      * @return The child's descriptor.
      */
-    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name)
+    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted)
     {
         fLookupCount.set(0);
         AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
@@ -727,7 +731,7 @@ public class AVMRepository
             throw new AVMWrongTypeException("Not a directory.");
         }
         DirectoryNode dirNode = (DirectoryNode)node;
-        return dirNode.lookupChild(dir, name);
+        return dirNode.lookupChild(dir, name, includeDeleted);
     }
     
     /**
@@ -741,7 +745,7 @@ public class AVMRepository
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);
-        Lookup lookup = store.lookup(version, pathParts[1], false);
+        Lookup lookup = store.lookup(version, pathParts[1], false, false);
         return new LayeringDescriptor(!lookup.getDirectlyContained(),
                                       lookup.getAVMStore().getDescriptor(),
                                       lookup.getFinalStore().getDescriptor());

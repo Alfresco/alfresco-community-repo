@@ -16,41 +16,24 @@
  */
 package org.alfresco.web.templating;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-
-import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.model.SelectItem;
-
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.data.IDataContainer;
-import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.templating.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.io.OutputStreamWriter;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.avm.*;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import java.io.OutputStreamWriter;
-import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.repo.avm.AVMContext;
+import org.alfresco.service.cmr.avm.AVMExistsException;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
-import org.alfresco.repo.avm.*;
 
 /**
  * temporary home of generate and regenerate functionality until i figure

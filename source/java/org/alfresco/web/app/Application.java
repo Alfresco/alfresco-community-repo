@@ -75,6 +75,7 @@ public class Application
    private static String savedSearchesFolderName;
    private static String scriptsFolderName;
    private static String guestHomeFolderName;
+   private static String websitesFolderName;
    
    /**
     * Private constructor to prevent instantiation of this class 
@@ -439,6 +440,22 @@ public class Application
    public static String getGuestHomeFolderName(FacesContext context)
    {
       return getGuestHomeFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the Websites folder name
+    */
+   public static String getWebsitesFolderName(ServletContext context)
+   {
+      return getWebsitesFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the Websites folder name
+    */
+   public static String getWebsitesFolderName(FacesContext context)
+   {
+      return getWebsitesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
@@ -827,7 +844,7 @@ public class Application
    }
    
    /**
-    * Returns the Guest Home folder name name
+    * Returns the Guest Home folder name
     * 
     * @param context The spring context
     * @return The Guest Home folder name
@@ -845,9 +862,27 @@ public class Application
    }
    
    /**
+    * Returns the Websites folder name
+    * 
+    * @param context The Spring context
+    * @return The Websites folder name
+    */
+   private static String getWebsitesFolderName(WebApplicationContext context)
+   {
+      if (websitesFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         websitesFolderName = configuration.getProperty("spaces.wcm.childname");
+      }
+      
+      return websitesFolderName;
+   }
+   
+   /**
     * Retrieves the configured error page for the application
     * 
-    * @param context The Spring contexr
+    * @param context The Spring context
     * @return The configured error page or null if the configuration is missing
     */
    private static String getErrorPage(WebApplicationContext context)

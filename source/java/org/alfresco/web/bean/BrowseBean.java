@@ -1560,7 +1560,7 @@ public class BrowseBean implements IContextListener
    /**
     * Perform navigation to the browse screen if it is not already the current View
     */
-   private void navigateBrowseScreen()
+   public void navigateBrowseScreen()
    {
       String outcome = null;
       

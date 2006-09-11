@@ -334,12 +334,12 @@ public abstract class BaseContentWizard extends BaseWizardBean
    protected void saveContent(File fileContent, String strContent) throws Exception
    {
       // get the node ref of the node that will contain the content
-      NodeRef containerNodeRef = this.getContainerNodeRef();
+      NodeRef containerNodeRef = getContainerNodeRef();
       
-      FileInfo fileInfo = 
-	  this.fileFolderService.create(containerNodeRef,
-					this.fileName,
-					Repository.resolveToQName(this.objectType));
+      FileInfo fileInfo = this.fileFolderService.create(
+            containerNodeRef,
+            this.fileName,
+            Repository.resolveToQName(this.objectType));
       NodeRef fileNodeRef = fileInfo.getNodeRef();
       
       // set the author aspect

@@ -5,6 +5,24 @@
       
       <wizards>
       	
+      	<!-- Definition of a create website wizard -->
+      	<wizard name="createWebsite" managed-bean="CreateWebsiteWizard"
+                 title-id="create_website_title" description-id="create_website_desc"
+                 icon="/images/icons/create_website_large.gif">
+            <step name="details" title-id="website_details" description-id="create_website_step1_desc">
+               <page path="/jsp/wcm/create-website-wizard/details.jsp"
+                     title-id="create_website_step1_title"
+                     description-id="create_website_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="create_website_finish_instruction" />
+            </step>
+         </wizard>
+         
       	<!-- Definition of an advanced space wizard  -->
          <wizard name="createSpace" managed-bean="CreateSpaceWizard"
                  title-id="create_space_title" description-id="create_space_desc"

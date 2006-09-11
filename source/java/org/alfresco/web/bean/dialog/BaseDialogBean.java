@@ -278,13 +278,12 @@ public abstract class BaseDialogBean implements IDialogBean
             FacesContext.getCurrentInstance(), getErrorMessageId()), 
             exception.getMessage());
    }
-
-    protected NodeRef getContainerNodeRef()
-    {
+   
+   protected NodeRef getContainerNodeRef()
+   {
       String nodeId = this.navigator.getCurrentNodeId();
       return (nodeId == null
-	      ? this.nodeService.getRootNode(Repository.getStoreRef())
-	      :  new NodeRef(Repository.getStoreRef(), nodeId));
-    }
-
+              ? this.nodeService.getRootNode(Repository.getStoreRef())
+              :  new NodeRef(Repository.getStoreRef(), nodeId));
+   }
 }

@@ -841,6 +841,36 @@ public class AVMServiceImpl implements AVMService
     }
     
     /**
+     * Queries a given store for properties with keys that match a given pattern. 
+     * @param store The name of the store.
+     * @param keyPattern The sql 'like' pattern, inserted into a QName.
+     * @return A Map of the matching key value pairs.
+     */
+    public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern)
+    {
+        if (store == null || keyPattern == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        return fAVMRepository.queryStorePropertyKey(store, keyPattern);
+    }
+
+    /**
+     * Queries all AVM stores for properties with keys that matcha given pattern. 
+     * @param keyPattern The sql 'like' pattern, inserted into a QName.
+     * @return A List of Pairs of Store name, Map.Entry.
+     */
+    public Map<String, Map<QName, PropertyValue>>
+        queryStoresPropertyKeys(QName keyPattern)
+    {
+        if (keyPattern == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        return fAVMRepository.queryStoresPropertyKeys(keyPattern);
+    }
+
+    /**
      * Get all the properties associated with a store.
      * @param store The name of the store.
      * @return A Map of the stores properties.

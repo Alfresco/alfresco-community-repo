@@ -584,6 +584,23 @@ public interface AVMService
      * does not exist.
      */
     public Map<QName, PropertyValue> getStoreProperties(String store);
+
+    /**
+     * Queries a given store for properties with keys that match a given pattern. 
+     * @param store The name of the store.
+     * @param keyPattern The sql 'like' pattern, inserted into a QName.
+     * @return A Map of the matching key value pairs.
+     */
+    public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern);
+    
+    /**
+     * Queries all AVM stores for properties with keys that matcha given pattern. 
+     * @param keyPattern The sql 'like' pattern, inserted into a QName.
+     * @return A Map of store names to Maps of property key value pairs that match
+     * the pattern.
+     */
+    public Map<String, Map<QName, PropertyValue>>
+        queryStoresPropertyKeys(QName keyPattern);
     
     /**
      * Delete a property on a store by name.

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -963,6 +964,51 @@ public class AVMRepository
     public PropertyValue getStoreProperty(String store, QName name)
     {
         return getAVMStoreByName(store).getProperty(name);
+    }
+    
+    /**
+     * Queries a given store for properties with keys that match a given pattern. 
+     * @param store The name of the store.
+     * @param keyPattern The sql 'like' pattern, inserted into a QName.
+     * @return A Map of the matching key value pairs.
+     */
+    public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern)
+    {
+        List<AVMStoreProperty> matches =
+            AVMContext.fgInstance.fAVMStorePropertyDAO.queryByKeyPattern(getAVMStoreByName(store),
+                                                                         keyPattern);
+        Map<QName, PropertyValue> results = new HashMap<QName, PropertyValue>();
+        for (AVMStoreProperty prop : matches)
+        {
+            results.put(prop.getName(), prop.getValue());
+        }
+        return results;
+    }
+
+    /**
+     * Queries all AVM stores for properties with keys that matcha given pattern. 
+     * @param keyPattern The sql 'like' pattern, inserted into a QName.
+     * @return A List of Pairs of Store name, Map.Entry.
+     */
+    public Map<String, Map<QName, PropertyValue>>
+        queryStoresPropertyKeys(QName keyPattern)
+    {
+        List<AVMStoreProperty> matches = 
+            AVMContext.fgInstance.fAVMStorePropertyDAO.queryByKeyPattern(keyPattern);
+        Map<String, Map<QName, PropertyValue>> results = 
+            new HashMap<String, Map<QName, PropertyValue>>();
+        for (AVMStoreProperty prop : matches)
+        {
+            String storeName = prop.getStore().getName();
+            Map<QName, PropertyValue> pairs = null;
+            if ((pairs = results.get(storeName)) == null) 
+            {
+                pairs = new HashMap<QName, PropertyValue>();
+                results.put(storeName, pairs);
+            }
+            pairs.put(prop.getName(), prop.getValue());
+        }
+        return results;
     }
     
     /**

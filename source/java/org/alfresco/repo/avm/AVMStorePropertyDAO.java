@@ -47,6 +47,21 @@ public interface AVMStorePropertyDAO
      * @return A List of properties associated with the store.
      */
     public List<AVMStoreProperty> get(AVMStore store);
+
+    /**
+     * Query store properties by key pattern.
+     * @param store The store.
+     * @param keyPattern An sql 'like' pattern wrapped up in a QName
+     * @return A List of matching AVMStoreProperties.
+     */
+    public List<AVMStoreProperty> queryByKeyPattern(AVMStore store, QName keyPattern);
+
+    /**
+     * Query all stores' properties by key pattern.
+     * @param keyPattern The sql 'like' pattern wrapped up in a QName
+     * @return A List of match AVMStoreProperties.
+     */
+    public List<AVMStoreProperty> queryByKeyPattern(QName keyPattern);
     
     /**
      * Update a modified property.

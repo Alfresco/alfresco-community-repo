@@ -2477,4 +2477,38 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
+    
+    /**
+     * Test Store property querying.
+     */
+    public void testStorePropertyQuerying()
+    {
+        try
+        {
+            fService.setStoreProperty("main", QName.createQName(null, ".dns.alice--preview"), 
+                                      new PropertyValue(null, "alice-preview"));
+            fService.setStoreProperty("main", QName.createQName("", ".other.property"),
+                                      new PropertyValue(null, "other value"));
+            Map<QName, PropertyValue> result = 
+                fService.queryStorePropertyKey("main", QName.createQName("", ".dns.%"));
+            assertEquals(1, result.size());
+            fService.createAVMStore("second");
+            fService.setStoreProperty("second", QName.createQName("", ".dns.alice"),
+                                      new PropertyValue(null, "alice-space"));
+            Map<String, Map<QName, PropertyValue>> matches =
+                fService.queryStoresPropertyKeys(QName.createQName("", ".dns.%"));
+            assertEquals(2, matches.size());
+            assertEquals(1, matches.get("main").size());
+            assertEquals(1, matches.get("second").size());
+            assertEquals("alice-preview", matches.get("main").get(QName.createQName(null,
+                                                                  ".dns.alice--preview")).getStringValue());
+            assertEquals("alice-space", matches.get("second").get(QName.createQName(null, ".dns.alice")).
+                                                                  getStringValue());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
 }

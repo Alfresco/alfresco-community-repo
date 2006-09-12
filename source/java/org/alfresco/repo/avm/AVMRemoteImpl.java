@@ -848,6 +848,27 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
     }
     
     /**
+     * Query a store for keys that match a pattern.
+     * @param store The store name.
+     * @param keyPattern The sql 'like' pattern.
+     * @return A Map of keys to values.
+     */
+    public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern)
+    {
+        return fAVMService.queryStorePropertyKey(store, keyPattern);
+    }
+    
+    /**
+     * Query all stores for keys that match a pattern.
+     * @param keyPattern The sql 'like' pattern.
+     * @return A Map of store names to Maps of matching keys to values.
+     */
+    public Map<String, Map<QName, PropertyValue>> queryStoresPropertyKey(QName keyPattern)
+    {
+        return fAVMService.queryStoresPropertyKeys(keyPattern);
+    }
+
+    /**
      * Get all the properties on a store.
      * @param store The name of the store.
      * @return A Map of QNames to PropertyValues.

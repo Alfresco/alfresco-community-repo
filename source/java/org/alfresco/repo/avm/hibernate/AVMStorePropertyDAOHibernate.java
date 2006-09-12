@@ -69,7 +69,41 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
         query.setEntity("store", store);
         return (List<AVMStoreProperty>)query.list();
     }
-    
+
+    /**
+     * Query store properties by key pattern.
+     * @param store The store.
+     * @param keyPattern An sql 'like' pattern wrapped up in a QName
+     * @return A List of matching AVMStoreProperties.
+     */
+    @SuppressWarnings("unchecked")
+    public List<AVMStoreProperty> queryByKeyPattern(AVMStore store, QName keyPattern)
+    {
+        Query query =
+            getSession().createQuery(
+                "from AVMStorePropertyImpl asp " +
+                "where asp.store = :store and asp.name like :name");
+        query.setEntity("store", store);
+        query.setParameter("name", keyPattern);
+        return (List<AVMStoreProperty>)query.list();
+    }
+
+    /**
+     * Query all stores' properties by key pattern.
+     * @param keyPattern The sql 'like' pattern wrapped up in a QName
+     * @return A List of match AVMStoreProperties.
+     */
+    @SuppressWarnings("unchecked")
+    public List<AVMStoreProperty> queryByKeyPattern(QName keyPattern)
+    {
+        Query query =
+            getSession().createQuery(
+                "from AVMStorePropertyImpl asp " +
+                "where asp.name like :name");
+        query.setParameter("name", keyPattern);
+        return (List<AVMStoreProperty>)query.list();
+    }
+
     /**
      * Update a modified property.
      * @param prop The AVMStoreProperty to update.

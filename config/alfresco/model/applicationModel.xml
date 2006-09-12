@@ -54,7 +54,7 @@
          <title>AVM Website Folder</title>
          <parent>cm:avmfolder</parent>
          <properties>
-            <!-- root name of the avm staging store for this web folder -->
+            <!-- root name of the avm staging stores for this web folder -->
             <property name="app:avmstore">
                <type>d:text</type>
             </property>

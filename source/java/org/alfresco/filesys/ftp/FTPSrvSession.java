@@ -1320,11 +1320,10 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
                 // Output the file information to the client
 
-                StringBuffer str = new StringBuffer(256);
+                StringBuilder str = new StringBuilder(256);
 
                 for (FileInfo finfo : files)
                 {
-
                     // Build the output record
 
                     str.setLength(0);

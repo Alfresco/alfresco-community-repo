@@ -1,4 +1,5 @@
 <view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0"
            xmlns:cm="http://www.alfresco.org/model/content/1.0">
 
 	<cm:category_root view:childName="cm:categoryRoot">
@@ -1096,10 +1097,106 @@
 						</cm:subcategories>
 					</cm:category>
 				</cm:subcategories>
+
+
 			    </cm:category>
+
+<cm:category><cm:name>Records Categories</cm:name><sys:node-uuid>rm:recordCategory-root</sys:node-uuid><cm:subcategories>
+
+   <cm:category><cm:name>Review Period</cm:name><sys:node-uuid>rm:reviewPeriod-root</sys:node-uuid><cm:subcategories>
+
+         <cm:category><cm:name>None</cm:name><sys:node-uuid>rm:reviewPeriod-0</sys:node-uuid></cm:category>
+         <cm:category><cm:name>TBD</cm:name><sys:node-uuid>rm:reviewPeriod-1</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Annually</cm:name><sys:node-uuid>rm:reviewPeriod-2</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Calendar Year End</cm:name><sys:node-uuid>rm:reviewPeriod-3</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Fiscal Year End</cm:name><sys:node-uuid>rm:reviewPeriod-4</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Semi-Annually</cm:name><sys:node-uuid>rm:reviewPeriod-5</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Quarterly</cm:name><sys:node-uuid>rm:reviewPeriod-6</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Monthly</cm:name><sys:node-uuid>rm:reviewPeriod-7</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Weekly</cm:name><sys:node-uuid>rm:reviewPeriod-8</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Daily</cm:name><sys:node-uuid>rm:reviewPeriod-9</sys:node-uuid></cm:category>
+
+      </cm:subcategories></cm:category>
+
+   <cm:category><cm:name>Media Types</cm:name><sys:node-uuid>rm:mediaTypes-root</sys:node-uuid><cm:subcategories>
+
+         <cm:category><cm:name>TBD</cm:name><sys:node-uuid>rm:mediaTypes-0</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Electronic</cm:name><sys:node-uuid>rm:mediaTypes-1</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Paper</cm:name><sys:node-uuid>rm:mediaTypes-2</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Microform</cm:name><sys:node-uuid>rm:mediaTypes-3</sys:node-uuid></cm:category>
+         <cm:category><cm:name>Portable</cm:name><sys:node-uuid>rm:mediaTypes-4</sys:node-uuid></cm:category>
+
+      </cm:subcategories></cm:category>
+
+   <cm:category><cm:name>Markings</cm:name><sys:node-uuid>rm:markings-root</sys:node-uuid><cm:subcategories>
+
+         <cm:category><cm:name>NONE</cm:name><sys:node-uuid>rm:markings-0</sys:node-uuid></cm:category>
+
+         <cm:category><cm:name>Classifications</cm:name><sys:node-uuid>rm:markings-1</sys:node-uuid><cm:subcategories>
+
+               <cm:category><cm:name>UNCLASSIFIED</cm:name><sys:node-uuid>rm:markings-1-1</sys:node-uuid></cm:category>
+               <cm:category><cm:name>RESTRICTED</cm:name><sys:node-uuid>rm:markings-1-2</sys:node-uuid></cm:category>
+               <cm:category><cm:name>CONFIDENTIAL</cm:name><sys:node-uuid>rm:markings-1-3</sys:node-uuid></cm:category>
+               <cm:category><cm:name>SECRET</cm:name><sys:node-uuid>rm:markings-1-4</sys:node-uuid></cm:category>
+               <cm:category><cm:name>TOP SECRET</cm:name><sys:node-uuid>rm:markings-1-5</sys:node-uuid></cm:category>
+
+            </cm:subcategories></cm:category>
+
+         <cm:category><cm:name>Handling</cm:name><sys:node-uuid>rm:markings-2</sys:node-uuid><cm:subcategories>
+
+               <cm:category><cm:name>COMSEC</cm:name><sys:node-uuid>rm:markings-2-1</sys:node-uuid></cm:category>
+               <cm:category><cm:name>RD</cm:name><sys:node-uuid>rm:markings-2-2</sys:node-uuid></cm:category>
+               <cm:category><cm:name>FRD</cm:name><sys:node-uuid>rm:markings-2-3</sys:node-uuid></cm:category>
+               <cm:category><cm:name>SPECAT-A SIOP-ESI</cm:name><sys:node-uuid>rm:markings-2-4</sys:node-uuid></cm:category>
+               <cm:category><cm:name>SPECAT-B</cm:name><sys:node-uuid>rm:markings-2-5</sys:node-uuid></cm:category>
+               <cm:category><cm:name>US-UK EYES ONLY</cm:name><sys:node-uuid>rm:markings-2-6</sys:node-uuid></cm:category>
+               <cm:category><cm:name>ATOMAL</cm:name><sys:node-uuid>rm:markings-2-7</sys:node-uuid></cm:category>
+               <cm:category><cm:name>EXCLUSIVE</cm:name><sys:node-uuid>rm:markings-2-8</sys:node-uuid></cm:category>
+               <cm:category><cm:name>CRYPTO</cm:name><sys:node-uuid>rm:markings-2-9</sys:node-uuid></cm:category>
+               <cm:category><cm:name>TRC</cm:name><sys:node-uuid>rm:markings-2-10</sys:node-uuid></cm:category>
+               <cm:category><cm:name>FOR OFFICIAL USE ONLY</cm:name><sys:node-uuid>rm:markings-2-11</sys:node-uuid></cm:category>
+               <cm:category><cm:name>SBU</cm:name><sys:node-uuid>rm:markings-2-12</sys:node-uuid></cm:category>
+               <cm:category><cm:name>DEA SENSITIVE</cm:name><sys:node-uuid>rm:markings-2-13</sys:node-uuid></cm:category>
+               <cm:category><cm:name>DOD UCNI</cm:name><sys:node-uuid>rm:markings-2-14</sys:node-uuid></cm:category>
+               <cm:category><cm:name>EXDIS</cm:name><sys:node-uuid>rm:markings-2-15</sys:node-uuid></cm:category>
+               <cm:category><cm:name>LIMDIS</cm:name><sys:node-uuid>rm:markings-2-16</sys:node-uuid></cm:category>
+               <cm:category><cm:name>NODIS</cm:name><sys:node-uuid>rm:markings-2-17</sys:node-uuid></cm:category>
+               <cm:category><cm:name>SOSUS</cm:name><sys:node-uuid>rm:markings-2-18</sys:node-uuid></cm:category>
+               <cm:category><cm:name>EYES ONLY</cm:name><sys:node-uuid>rm:markings-2-19</sys:node-uuid></cm:category>
+
+            </cm:subcategories></cm:category>
+
+         <cm:category><cm:name>Dissemination</cm:name><sys:node-uuid>rm:markings-3</sys:node-uuid><cm:subcategories>
+
+               <cm:category><cm:name>ORCON</cm:name><sys:node-uuid>rm:markings-3-1</sys:node-uuid></cm:category>
+               <cm:category><cm:name>PROPIN</cm:name><sys:node-uuid>rm:markings-3-2</sys:node-uuid></cm:category>
+               <cm:category><cm:name>NOFORN</cm:name><sys:node-uuid>rm:markings-3-3</sys:node-uuid></cm:category>
+               <cm:category><cm:name>NOCONTRACT</cm:name><sys:node-uuid>rm:markings-3-34</sys:node-uuid></cm:category>
+               <cm:category><cm:name>FOUO</cm:name><sys:node-uuid>rm:markings-3-5</sys:node-uuid></cm:category>
+               <cm:category><cm:name>RELTO</cm:name><sys:node-uuid>rm:markings-3-6</sys:node-uuid></cm:category>
+               <cm:category><cm:name>EYES ONLY</cm:name><sys:node-uuid>rm:markings-3-7</sys:node-uuid></cm:category>
+
+            </cm:subcategories></cm:category>
+
+         <cm:category><cm:name>Reason</cm:name><sys:node-uuid>rm:markings-4</sys:node-uuid><cm:subcategories>
+
+               <cm:category><cm:name>CLASS</cm:name><sys:node-uuid>rm:markings-4-1</sys:node-uuid></cm:category>
+               <cm:category><cm:name>RSN</cm:name><sys:node-uuid>rm:markings-4-2</sys:node-uuid></cm:category>
+               <cm:category><cm:name>DERV</cm:name><sys:node-uuid>rm:markings-4-3</sys:node-uuid></cm:category>
+               <cm:category><cm:name>DNG</cm:name><sys:node-uuid>rm:markings-4-4</sys:node-uuid></cm:category>
+               <cm:category><cm:name>DECL</cm:name><sys:node-uuid>rm:markings-4-5</sys:node-uuid></cm:category>
+
+            </cm:subcategories></cm:category>
+
+      </cm:subcategories></cm:category>
+
+</cm:subcategories></cm:category>
+
+
                 </cm:subcategories>
              </cm:category>
 		</cm:categories>
 	</cm:category_root>
 
 </view:view>
+

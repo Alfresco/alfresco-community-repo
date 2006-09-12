@@ -218,9 +218,9 @@
    </bean>
    
 	<bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.NodeAccessControlListDAO">
-		<property name="nodeDaoService">
-			<ref bean="nodeDaoService"/>
-		</property>
+      <property name="nodeDaoService">
+         <ref bean="nodeDaoService" />
+      </property>
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
@@ -230,7 +230,7 @@
 		<property name="avmRepository">
 			<ref bean="avmRepository"/>
 		</property>
-	</bean>
+   </bean>
 	
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">
       <property name="sessionFactory">

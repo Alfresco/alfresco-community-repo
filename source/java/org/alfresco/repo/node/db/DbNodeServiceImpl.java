@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -80,7 +81,9 @@ import org.springframework.util.Assert;
 public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 {
     private static Log logger = LogFactory.getLog(DbNodeServiceImpl.class);
+    private static Log loggerPaths = LogFactory.getLog(DbNodeServiceImpl.class.getName() + ".paths");
     
+    private DictionaryService dictionaryService;
     private NodeDaoService nodeDaoService;
     private StoreArchiveMap storeArchiveMap;
     private NodeService avmNodeService;
@@ -88,6 +91,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public DbNodeServiceImpl()
     {
         storeArchiveMap = new StoreArchiveMap();        // in case it is not set
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     public void setNodeDaoService(NodeDaoService nodeDaoService)
@@ -288,6 +296,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // create the node instance
         Node childNode = nodeDaoService.newNode(store, newId, nodeTypeQName);
         
+        // get the parent node
+        Node parentNode = getNodeNotNull(parentRef);
+        
         // Set the default property values
         addDefaultPropertyValues(nodeTypeDef, properties);
         
@@ -302,9 +313,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             propertiesAfter = setPropertiesImpl(childNode, properties);
         }        
 
-        // get the parent node
-        Node parentNode = getNodeNotNull(parentRef);
-        
         // create the association
         ChildAssoc childAssoc = nodeDaoService.newChildAssoc(
                 parentNode,
@@ -352,7 +360,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             addDefaultAspects(defaultAspectDef, node, properties);
         }
     }
-    
     
     /**
      * Drops the old primary association and creates a new one
@@ -711,7 +718,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
         Node parentNode = getNodeNotNull(parentRef);
-        
         Node childNode = getNodeNotNull(childRef);
         Long childNodeId = childNode.getId();
         
@@ -1318,6 +1324,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // done
+        if (loggerPaths.isDebugEnabled())
+        {
+            StringBuilder sb = new StringBuilder(256);
+            if (primaryOnly)
+            {
+                sb.append("Primary paths");
+            }
+            else
+            {
+                sb.append("Paths");
+            }
+            sb.append(" for node ").append(nodeRef);
+            for (Path path : paths)
+            {
+                sb.append("\n").append("   ").append(path);
+            }
+            loggerPaths.debug(sb);
+        }
         return paths;
     }
     

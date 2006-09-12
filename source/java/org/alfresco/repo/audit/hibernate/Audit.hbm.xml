@@ -109,9 +109,9 @@
         <!-- The app_source_idx index is used to find the app source -->
         <!-- The look up is always the tripple, the service and method or just the method may be null -->
         
-        <property name="application" column="application" type="string" length="256" not-null="true" index="app_source_idx"/>
-        <property name="service" column="service" type="string" length="256" not-null="false" index="app_source_idx"/>
-        <property name="method" column="method" type="string" length="256" not-null="false" index="app_source_idx"/>
+        <property name="application" column="application" type="string" length="255" not-null="true" index="app_source_app_idx"/>
+        <property name="service" column="service" type="string" length="255" not-null="false" index="app_source_ser_idx"/>
+        <property name="method" column="method" type="string" length="255" not-null="false" index="app_source_met_idx"/>
         
     </class>
     
@@ -154,5 +154,31 @@
             audit_store.service = :service and
             audit_store.method = :method
     </query>
+    
+    <query name="audit.GetAuditTrailForNode">
+        select 
+            audit_fact
+        from 
+            org.alfresco.repo.audit.hibernate.AuditFactImpl as audit_fact
+        where
+            (audit_fact.storeProtocol = :protocol and
+             audit_fact.storeId = :store_id and
+             audit_fact.nodeUUID = :node_id)
+            or
+            arg1 like :nodeRef
+            or
+            arg2 like :nodeRef
+            or
+            arg3 like :nodeRef
+            or
+            arg4 like :nodeRef
+            or
+            arg5 like :nodeRef
+            or
+            returnValue like :nodeRef
+        order by
+            audit_fact.date asc
+    </query>
+    
     
 </hibernate-mapping>

@@ -113,6 +113,11 @@ public class CheckInOutDesktopAction extends DesktopAction {
                 }
                 catch (Exception ex)
                 {
+                	// Dump the error
+                	
+                	if ( logger.isErrorEnabled())
+                		logger.error("Desktop action error", ex);
+                	
                     // Return an error status and message
                     
                 	response.setStatus(StsError, "Checkin failed for " + target.getTarget() + ", " + ex.getMessage());
@@ -122,6 +127,19 @@ public class CheckInOutDesktopAction extends DesktopAction {
             {
                 try
                 {
+                	// Check if the file is locked
+                	
+                	if ( getNodeService().hasAspect( target.getNode(), ContentModel.ASPECT_LOCKABLE)) {
+                	
+                		// Get the lock type
+                		
+                		String lockTypeStr = (String) getNodeService().getProperty( target.getNode(), ContentModel.PROP_LOCK_TYPE);
+                		if ( lockTypeStr != null) {
+                			response.setStatus(StsError, "Checkout failed, file is locked");
+                			return response;
+                		}
+                	}
+                	
                     // Check out the file
                     
                     NodeRef workingCopyNode = getCheckInOutService().checkout( target.getNode());
@@ -149,6 +167,11 @@ public class CheckInOutDesktopAction extends DesktopAction {
                 }
                 catch (Exception ex)
                 {
+                	// Dump the error
+                	
+                	if ( logger.isErrorEnabled())
+                		logger.error("Desktop action error", ex);
+                	
                     // Return an error status and message
 
                 	response.setStatus(StsError, "Failed to checkout " + target.getTarget() + ", " + ex.getMessage());

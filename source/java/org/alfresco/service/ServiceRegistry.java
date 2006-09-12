@@ -19,6 +19,7 @@ package org.alfresco.service;
 import java.util.Collection;
 
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -85,6 +86,7 @@ public interface ServiceRegistry
     static final QName FILE_FOLDER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FileFolderService");
     static final QName SCRIPT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ScriptService");
     static final QName WORKFLOW_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WorkflowService");
+    static final QName AUDIT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AuditService");
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
     
     /**
@@ -267,8 +269,14 @@ public interface ServiceRegistry
     WorkflowService getWorkflowService();
     
     /**
+     * @return the audit service (or null if one is not provided)
+     */
+    @NotAuditable
+    AuditService getAuditService();
+
+    /**
      * Get the AVMService.
-     * @return The AVM service (or null if one is not provided);
+     * @return The AVM service (or null if one is not provided);    
      */
     @NotAuditable
     AVMService getAVMService();

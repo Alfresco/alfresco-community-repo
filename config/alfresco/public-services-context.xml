@@ -1003,7 +1003,7 @@
             <value>FileFolderService Service</value>
         </property>
     </bean>
-
+    
     <!-- The AVMService -->
     
     <bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl">

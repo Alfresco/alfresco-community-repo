@@ -77,7 +77,7 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
     {
         // Execute the action
         ActionImpl action = new ActionImpl(null, GUID.generate(), StartWorkflowActionExecuter.NAME, null);
-        action.setParameterValue(StartWorkflowActionExecuter.PARAM_WORKFLOW_NAME, "jbpm://wf:review");
+        action.setParameterValue(StartWorkflowActionExecuter.PARAM_WORKFLOW_NAME, "jbpm$wf:review");
         action.setParameterValue(WorkflowModel.PROP_REVIEW_DUE_DATE.toPrefixString(namespaceService), new Date());
         NodeRef reviewer = personService.getPerson("admin");
         action.setParameterValue(WorkflowModel.ASSOC_REVIEWER.toPrefixString(namespaceService), reviewer);

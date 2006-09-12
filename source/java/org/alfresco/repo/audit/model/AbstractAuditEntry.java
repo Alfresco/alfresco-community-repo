@@ -117,7 +117,7 @@ public abstract class AbstractAuditEntry
         return auditMode;
     }
 
-    /* package */TrueFalseUnset getEnabled()
+    public TrueFalseUnset getEnabled()
     {
         return enabled;
     }

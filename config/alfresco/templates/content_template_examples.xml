@@ -126,4 +126,18 @@
     </view:properties>
     <view:associations></view:associations>
   </cm:content>
+  <cm:content xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="cm:records_report.ftl">
+    <view:aspects>
+      <cm:titled></cm:titled>
+      <app:inlineeditable></app:inlineeditable>
+    </view:aspects>
+    <view:properties>
+      <app:editInline>true</app:editInline>
+      <cm:description>Displays the current state of records in a file plan space or a space containing a file plan.</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/templates/content/examples/records_report.ftl|mimetype=text/plain|size=6134|encoding=UTF-8</cm:content>
+      <cm:title>records_report.ftl</cm:title>
+      <cm:name>records_report.ftl</cm:name>
+    </view:properties>
+    <view:associations></view:associations>
+  </cm:content>
 </view:view>

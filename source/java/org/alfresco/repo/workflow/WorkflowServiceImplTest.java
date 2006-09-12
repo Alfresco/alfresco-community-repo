@@ -18,6 +18,7 @@ package org.alfresco.repo.workflow;
 
 import java.util.List;
 
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -42,6 +43,10 @@ public class WorkflowServiceImplTest extends BaseSpringTest
     {
         workflowService = (WorkflowService)applicationContext.getBean(ServiceRegistry.WORKFLOW_SERVICE.getLocalName());
         nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
+        
+        // authenticate
+        AuthenticationComponent auth = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        auth.setSystemUserAsCurrentUser();
     }
 
     public void testGetWorkflowDefinitions()

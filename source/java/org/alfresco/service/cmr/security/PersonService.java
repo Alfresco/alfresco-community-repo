@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -171,7 +172,7 @@ public interface PersonService
      * @param caseSensitiveUserName
      * @return
      */
-
+    @NotAuditable
     public String getUserIdentifier(String caseSensitiveUserName);
 
 }

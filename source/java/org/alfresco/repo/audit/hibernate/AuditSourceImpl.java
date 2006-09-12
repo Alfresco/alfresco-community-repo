@@ -87,21 +87,21 @@ public class AuditSourceImpl implements AuditSource
         this.service = service;
     }
 
-    public static AuditSourceImpl getApplicationSource(Session session, String application)
+    public static AuditSource getApplicationSource(Session session, String application)
     {
         Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE);
         query.setParameter(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE_APP, application);
-        return (AuditSourceImpl) query.uniqueResult();
+        return (AuditSource) query.uniqueResult();
     }
 
-    public static AuditSourceImpl getApplicationSource(Session session, String application, String service,
+    public static AuditSource getApplicationSource(Session session, String application, String service,
             String method)
     {
         Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_AUDIT_METHOD_SOURCE);
         query.setParameter(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE_APP, application);
         query.setParameter(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE_SER, service);
         query.setParameter(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE_MET, method);
-        return (AuditSourceImpl) query.uniqueResult();
+        return (AuditSource) query.uniqueResult();
     }
 
     @Override

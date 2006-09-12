@@ -26,4 +26,10 @@ public interface AuditSource
 
     public String getService();
 
+    void setApplication(String auditApplication);
+
+    void setService(String auditService);
+
+    void setMethod(String auditMethod);
+
 }

@@ -343,6 +343,7 @@ public class RoutingContentService implements ContentService
         {
             contentValue = nodeService.getProperty(nodeRef, propertyQName);
         }
+
         // set extra data on the reader if the property is pre-existing
         if (contentValue != null && contentValue instanceof ContentData)
         {

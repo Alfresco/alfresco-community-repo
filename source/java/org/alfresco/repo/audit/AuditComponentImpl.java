@@ -21,12 +21,15 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -181,7 +184,7 @@ public class AuditComponentImpl implements AuditComponent
      */
     public Object auditImpl(MethodInvocation mi) throws Throwable
     {
-        AuditInfo auditInfo = new AuditInfo(auditConfiguration);
+        AuditState auditInfo = new AuditState(auditConfiguration);
         // RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
         AuditMode auditMode = AuditMode.UNSET;
         try
@@ -221,7 +224,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param t
      * @return
      */
-    private AuditMode onError(AuditMode auditMode, AuditInfo auditInfo, MethodInvocation mi, Throwable t)
+    private AuditMode onError(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi, Throwable t)
     {
         if ((auditMode == AuditMode.ALL) || (auditMode == AuditMode.FAIL))
         {
@@ -241,7 +244,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param returnObject
      * @return
      */
-    private AuditMode postInvocation(AuditMode auditMode, AuditInfo auditInfo, MethodInvocation mi, Object returnObject)
+    private AuditMode postInvocation(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi, Object returnObject)
     {
         if (returnObject == null)
         {
@@ -255,6 +258,33 @@ public class AuditComponentImpl implements AuditComponent
         {
             auditInfo.setReturnObject(returnObject.toString());
         }
+
+        Auditable auditable = mi.getMethod().getAnnotation(Auditable.class);
+        if (auditable.key() == Auditable.Key.RETURN)
+        {
+            if (returnObject != null)
+            {
+                if (returnObject instanceof NodeRef)
+                {
+                    NodeRef key = (NodeRef) returnObject;
+                    auditInfo.setKeyStore(key.getStoreRef());
+                    auditInfo.setKeyGUID(key.getId());
+                }
+                else if (returnObject instanceof StoreRef)
+                {
+                    auditInfo.setKeyStore((StoreRef)returnObject);
+                }
+            }
+        }
+
+        // If the user name is not set, try and set it after the method call.
+        // This covers authentication when the user is only known after the call.
+
+        if (auditInfo.getUserIdentifier() == null)
+        {
+            auditInfo.setUserIdentifier(AuthenticationUtil.getCurrentUserName());
+        }
+
         return auditMode;
     }
 
@@ -266,7 +296,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param mi
      * @return
      */
-    private AuditMode beforeInvocation(AuditMode auditMode, AuditInfo auditInfo, MethodInvocation mi)
+    private AuditMode beforeInvocation(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi)
     {
         AuditMode effectiveAuditMode = auditModel.beforeExecution(auditMode, mi);
 
@@ -283,27 +313,83 @@ public class AuditComponentImpl implements AuditComponent
             auditInfo.setFail(false);
             auditInfo.setFiltered(false);
             auditInfo.setHostAddress(auditHost);
-            auditInfo.setKeyGUID(null);
+            Auditable auditable = mi.getMethod().getAnnotation(Auditable.class);
+            Object key = null;
+            switch (auditable.key())
+            {
+            case ARG_0:
+                key = mi.getArguments()[0];
+                break;
+            case ARG_1:
+                key = mi.getArguments()[1];
+                break;
+            case ARG_2:
+                key = mi.getArguments()[2];
+                break;
+            case ARG_3:
+                key = mi.getArguments()[3];
+                break;
+            case ARG_4:
+                key = mi.getArguments()[4];
+                break;
+            case ARG_5:
+                key = mi.getArguments()[5];
+                break;
+            case ARG_6:
+                key = mi.getArguments()[6];
+                break;
+            case ARG_7:
+                key = mi.getArguments()[7];
+                break;
+            case ARG_8:
+                key = mi.getArguments()[8];
+                break;
+            case ARG_9:
+                key = mi.getArguments()[9];
+                break;
+            case NO_KEY:
+            default:
+                break;
+            }
+            if (key != null)
+            {
+                if (key instanceof NodeRef)
+                {
+                    auditInfo.setKeyStore(((NodeRef) key).getStoreRef());
+                    auditInfo.setKeyGUID(((NodeRef) key).getId());
+                }
+                else if (key instanceof StoreRef)
+                {
+                    auditInfo.setKeyStore((StoreRef) key);
+                }
+            }
             auditInfo.setKeyPropertiesAfter(null);
             auditInfo.setKeyPropertiesBefore(null);
-            auditInfo.setKeyStore(null);
             auditInfo.setMessage(null);
             if (mi.getArguments() != null)
             {
                 Serializable[] serArgs = new Serializable[mi.getArguments().length];
                 for (int i = 0; i < mi.getArguments().length; i++)
                 {
-                    if (mi.getArguments()[i] == null)
+                    if ((auditable.recordable() == null)
+                            || (auditable.recordable().length <= i) || auditable.recordable()[i])
                     {
-                        serArgs[i] = null;
-                    }
-                    else if (mi.getArguments()[i] instanceof Serializable)
-                    {
-                        serArgs[i] = (Serializable) mi.getArguments()[i];
+                        if (mi.getArguments()[i] == null)
+                        {
+                            serArgs[i] = null;
+                        }
+                        else if (mi.getArguments()[i] instanceof Serializable)
+                        {
+                            serArgs[i] = (Serializable) mi.getArguments()[i];
+                        }
+                        else
+                        {
+                            serArgs[i] = mi.getArguments()[i].toString();
+                        }
                     }
                     else
                     {
-                        serArgs[i] = mi.getArguments()[i].toString();
+                        serArgs[i] = "********";
                     }
                 }
                 auditInfo.setMethodArguments(serArgs);
@@ -322,9 +408,9 @@ public class AuditComponentImpl implements AuditComponent
     /**
      * A simple audit entry Currently we ignore filtering here.
      */
-    public void audit(String source, String description, NodeRef key, Object... args) 
+    public void audit(String source, String description, NodeRef key, Object... args)
     {
-        AuditInfo auditInfo = new AuditInfo(auditConfiguration);
+        AuditState auditInfo = new AuditState(auditConfiguration);
         // RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
         AuditMode auditMode = AuditMode.UNSET;
         try
@@ -353,18 +439,23 @@ public class AuditComponentImpl implements AuditComponent
         }
     }
 
-    private AuditMode onApplicationAudit(AuditMode auditMode, AuditInfo auditInfo, String source, String description,
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
+    {
+        return auditDAO.getAuditTrail(nodeRef);
+    }
+
+    private AuditMode onApplicationAudit(AuditMode auditMode, AuditState auditInfo, String source, String description,
             NodeRef key, Object... args)
     {
         AuditMode effectiveAuditMode = auditModel.beforeExecution(auditMode, source, description, key, args);
 
         if (auditMode != AuditMode.NONE)
         {
-            if(source.equals(SYSTEM_APPLICATION))
+            if (source.equals(SYSTEM_APPLICATION))
             {
-                throw new AuditException("Application audit can not use the reserved identifier "+SYSTEM_APPLICATION);
+                throw new AuditException("Application audit can not use the reserved identifier " + SYSTEM_APPLICATION);
             }
-            
+
             auditInfo.setAuditApplication(source);
             auditInfo.setAuditConfiguration(auditConfiguration);
             auditInfo.setAuditMethod(null);
@@ -374,10 +465,13 @@ public class AuditComponentImpl implements AuditComponent
             auditInfo.setFail(false);
             auditInfo.setFiltered(false);
             auditInfo.setHostAddress(auditHost);
-            auditInfo.setKeyGUID(null);
+            if (key != null)
+            {
+                auditInfo.setKeyStore(key.getStoreRef());
+                auditInfo.setKeyGUID(key.getId());
+            }
             auditInfo.setKeyPropertiesAfter(null);
             auditInfo.setKeyPropertiesBefore(null);
-            auditInfo.setKeyStore(null);
             auditInfo.setMessage(description);
             if (args != null)
             {
@@ -409,9 +503,9 @@ public class AuditComponentImpl implements AuditComponent
 
         return effectiveAuditMode;
     }
-    
-    private AuditMode onError(AuditMode auditMode, AuditInfo auditInfo, Throwable t, String source, String description,
-            NodeRef key, Object... args)
+
+    private AuditMode onError(AuditMode auditMode, AuditState auditInfo, Throwable t, String source,
+            String description, NodeRef key, Object... args)
     {
         if ((auditMode == AuditMode.ALL) || (auditMode == AuditMode.FAIL))
         {

@@ -180,7 +180,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
                 // using the session that has already been setup.
 
                 AuthenticateSession authSess = passDetails.getAuthenticateSession();
-                authSess.doSessionSetup(client.getUserName(), client.getANSIPassword(), client.getPassword());
+                authSess.doSessionSetup(client.getDomain(), client.getUserName(), null, client.getANSIPassword(), client.getPassword());
 
                 // Check if the user has been logged on as a guest
 

@@ -16,8 +16,12 @@
  */
 package org.alfresco.repo.audit;
 
+import java.util.List;
+
 import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -64,24 +68,49 @@ public class AuditServiceImpl implements AuditService
         auditComponent.audit(source, description, key, args);
     }
 
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
+    {
+        return  auditComponent.getAuditTrail(nodeRef);
+    }
+    
     public static void main(String[] args) throws Exception
     {
+
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         AuditService as = (AuditService) ctx.getBean("AuditService");
 
         TransactionService txs = (TransactionService) ctx.getBean("transactionComponent");
         UserTransaction tx = txs.getUserTransaction();
         tx.begin();
-        as.audit("AuditedApp", "First");
-        as.audit("AuditedApp", "Second", new NodeRef(new StoreRef("test", "audit"), "id"));
-        as.audit("AuditedApp", "Third", new Object[]{"one", "two", "three"});
-        as.audit("AuditedApp", "Fourth", new NodeRef(new StoreRef("test", "audit"), "id"),  new Object[]{"one", "two", "three"});
-        
-        as.audit("UnAuditedApp", "First");
-        as.audit("UnAuditedApp", "Second", new NodeRef(new StoreRef("test", "audit"), "id"));
-        as.audit("UnAuditedApp", "Third", new Object[]{"one", "two", "three"});
-        as.audit("UnAuditedApp", "Fourth", new NodeRef(new StoreRef("test", "audit"), "id"),  new Object[]{"one", "two", "three"});
 
+        AuthenticationUtil.setSystemUserAsCurrentUser();
+        try
+        {
+
+            NodeRef nodeRef = new NodeRef(new StoreRef("test", "audit"), "id");
+            as.audit("AuditedApp", "First");
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("AuditedApp", "Second", nodeRef);
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("AuditedApp", "Third", new Object[] { "one", "two", "three" });
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("AuditedApp", "Fourth",nodeRef, new Object[] { "one",
+                    "two", "three" });
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("UnAuditedApp", "First");
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("UnAuditedApp", "Second", nodeRef);
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("UnAuditedApp", "Third", new Object[] { "one", "two", "three" });
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+            as.audit("UnAuditedApp", "Fourth", nodeRef, new Object[] { "one",
+                    "two", "three" });
+            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
         tx.commit();
 
     }

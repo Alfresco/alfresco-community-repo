@@ -64,7 +64,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     private Map<String, AccessControlListDAO> fProtocolToACLDAO;
     
     private AccessControlListDAO fDefaultACLDAO;
-    
+
     /** a uuid identifying this unique instance */
     private String uuid;
 
@@ -138,7 +138,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
     {
         fDefaultACLDAO = defaultACLDAO;
     }
-    
+
     public NodePermissionEntry getPermissions(NodeRef nodeRef)
     {
         // Create the object if it is not found.
@@ -233,7 +233,7 @@ public class PermissionsDaoComponentImpl extends HibernateDaoSupport implements 
         try
         {
             acl = getAccessControlList(nodeRef, false);
-        }
+    }
         catch (InvalidNodeRefException e)
         {
             return;

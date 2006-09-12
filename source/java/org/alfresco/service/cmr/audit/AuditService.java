@@ -16,6 +16,9 @@
  */
 package org.alfresco.service.cmr.audit;
 
+import java.util.List;
+
+import org.alfresco.repo.audit.AuditState;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -81,5 +84,14 @@ public interface AuditService
      */
     @NotAuditable
     public void audit(String source, String description, NodeRef key, Object... args);
-
+    
+    
+    /**
+     * Get the audit trail for a node ref.
+     * 
+     * @param nodeRef - the node ref for which to get the audit trail.
+     * @return - tha audit trail 
+     */
+    @NotAuditable
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
 }

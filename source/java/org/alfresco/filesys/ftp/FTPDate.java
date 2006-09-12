@@ -41,10 +41,10 @@ public class FTPDate
      * Pack a date string in Unix format The format is 'Mmm dd hh:mm' if the file is less than six
      * months old, else the format is 'Mmm dd yyyy'.
      * 
-     * @param buf StringBuffer
+     * @param buf StringBuilder
      * @param dt Date
      */
-    public final static void packUnixDate(StringBuffer buf, Date dt)
+    public final static void packUnixDate(StringBuilder buf, Date dt)
     {
 
         // Check if the date is valid

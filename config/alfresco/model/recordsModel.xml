@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Records Management Model -->
+
+<!-- Note: the rma: namespace is defined further on in the document -->
+<model name="rma:recordsmanagement" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->   
+   <description>Records Management Model</description>
+   <author>John Newton</author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </imports>
+
+   <!-- Records Management Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/record/1.0" prefix="rma"/>
+   </namespaces>
+   
+   <aspects>
+      
+      <!-- Definition of new Content Aspect: Record User-Specified Data -->
+      <!-- Please extend this for new records metadata -->
+      <aspect name="rma:userSpecifiedData">
+         <title>RM: User Specified Data</title>
+         <properties>
+            <property name="rma:privacyActSystem">
+               <title>Privacy Act System</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+
+      <!-- Definition of new Content Aspect: FilePlan -->
+      <aspect name="rma:filePlan">
+         <title>RM: File Plan</title>
+         <properties>
+            <property name="rma:recordCategoryIdentifier">
+               <title>Record Category Identifier</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:dispositionAuthority">
+               <title>Disposition Authority</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:permanentRecordIndicator">
+               <title>Permanent Record Indicator</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:dispositionInstructions">
+               <title>Disposition Instructions</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:containsRecordFolders">
+               <title>Contains Records Folders</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:recordFolders">
+               <title>Name of Folders</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+           <property name="rma:defaultMediaType">
+               <title>Default Media Format</title>
+               <type>d:category</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:defaultMarkingList">
+               <title>Default Marking List</title>
+               <type>d:category</type>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>true</multiple>
+            </property>
+            <property name="rma:defaultOriginatingOrganization">
+               <title>Default Originating Org</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+
+            <!-- Vital Record Lifecycle State -->
+            <property name="rma:vitalRecordIndicator">
+               <title>Vital Record Indicator</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:vitalRecordReviewPeriod">
+               <title>Vital Record Review Period</title>
+               <type>d:category</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+
+            <!-- Cut-off Lifecycle State -->
+            <property name="rma:processCutoff">
+               <title>Process Cutoff</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:eventTrigger">
+               <title>Event Trigger</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:cutoffPeriod">
+               <title>Cutoff Period</title>
+               <type>d:category</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:cutoffOnObsolete">
+               <title>Cutoff When Obsolete</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:cutoffOnSuperseded">
+               <title>Cutoff When Superseded</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+ 
+            <!-- Hold Lifecycle State -->
+            <property name="rma:processHold">
+               <title>Process Hold</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:holdPeriod">
+               <title>Hold Period in Years</title>
+               <type>d:float</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:discretionaryHold">
+               <title>Discretionary Hold</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+ 
+            <!-- Transfer Lifecycle State -->
+            <property name="rma:processTransfer">
+               <title>Process Transfer</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:defaultTransferLocation">
+               <title>Transfer Location</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:transferBlockSize">
+               <title>Transfer Blocksize in Years</title>
+               <type>d:float</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+ 
+            <!-- Accession Lifecycle State -->
+            <property name="rma:processAccession">
+               <title>Process Accession</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:accessionPeriod">
+               <title>Time to Accession in Years</title>
+               <type>d:float</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:accessionLocation">
+               <title>Accession Location</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:accessionBlockSize">
+               <title>Accession Blocksize in Years</title>
+               <type>d:float</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+ 
+            <!-- Destruction Lifecycle State -->
+            <property name="rma:processDestruction">
+               <title>Process Destruction</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:destructionLocation"> <!-- hidden for now -->
+               <title>Destruction Location</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+ 
+            <!-- Miscellaneous Lifecycle Metadata -->
+            <property name="rma:filePlanNote">
+               <title>Note</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:recordCounter">
+               <title>Record Counter</title>
+               <type>d:int</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>rma:userSpecifiedData</aspect>
+         </mandatory-aspects>
+      </aspect>
+
+      <!-- Definition of Association Aspect: Superseded -->
+      <aspect name="rma:superseded">
+         <title>RM: Superseded</title>
+         <associations>
+            <association name="rma:superseding">
+               <title>Superceded By</title>
+               <source>
+                  <role>rma:supersededBy</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>rma:supersedes</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+   
+
+      <!-- Definition of new Content Aspect: Record -->
+      <aspect name="rma:record">
+         <title>RM: Record</title>
+         <properties>
+            <property name="rma:recordIdentifier">
+               <title>Unique Record Identifier</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:subject">
+               <title>Subject</title>
+               <type>d:text</type>
+            </property>
+            <property name="rma:format">
+               <title>Format</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:mediaFormat">
+               <title>Media Format</title>
+               <type>d:category</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:dateFiled">
+               <title>Date Filed</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:publicationDate">
+               <title>Publication Date</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:dateReceived">
+               <title>Date Received</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:originator">
+               <title>Originator</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:originatingOrganization">
+               <title>Originating Organization</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:addressee">
+               <title>Addressee</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="rma:otherAddressees">
+               <title>Other Addressees</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:supplementalMarkingList">
+               <title>Supplemental Marking List</title>
+               <type>d:category</type>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>true</multiple>
+            </property>
+            <property name="rma:isObsolete">
+               <title>Obsolete</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:recordNote">
+               <title>Note</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+            <aspect>cm:author</aspect>
+            <aspect>rma:userSpecifiedData</aspect>
+            <aspect>cm:referencing</aspect>
+            <aspect>rma:superseded</aspect>
+         </mandatory-aspects>
+      </aspect>
+
+      <!-- Definition of Disposition Aspect: Vital Record -->
+      <aspect name="rma:vitalrecord">
+         <title>RM: Vital Record</title>
+         <properties>
+            <property name="rma:isVitalRecord">
+               <title>Vital Record</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:prevReviewDate">
+               <title>Last Review Date</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:nextReviewDate">
+               <title>Next Review Date</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+
+      <!-- Definition of Disposition Aspect: Cutoffable -->
+      <aspect name="rma:cutoffable">
+         <title>RM: Cutoffable</title>
+         <properties>
+            <property name="rma:cutoffExecuted">
+               <title>Cutoff Executed</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:cutoffNow">
+               <title>Cutoff Now</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:cutoffDateTime">
+               <title>Cutoff Date</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:cutoffEvent">
+               <title>Cutoff Event</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+
+      <!-- Definition of Disposition Aspect: Holdable -->
+      <aspect name="rma:holdable">
+         <title>RM: Holdable</title>
+         <properties>
+            <property name="rma:holdExecuted">
+               <title>Hold Executed</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:holdUntil">
+               <title>Hold Until</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:holdUntilEvent">
+               <title>Hold Until Event</title>
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:freeze">
+               <title>Freeze</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+
+      <!-- Definition of Disposition Aspect: Transferable -->
+      <aspect name="rma:transferable">
+         <title>RM: Transferable</title>
+         <properties>
+            <property name="rma:transferExecuted">
+               <title>Transfer Executed</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:transferDate">
+               <title>Transfer Date</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+
+      <!-- Definition of Disposition Aspect: Accessionable -->
+      <aspect name="rma:accessionable">
+         <title>RM: Accessionable</title>
+         <properties>
+            <property name="rma:accessionExecuted">
+               <title>Accession Executed</title>
+               <type>d:boolean</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+            <property name="rma:accessionDate">
+               <title>Accession Date</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+
+      <!-- Definition of Disposition Aspect: Destroyable -->
+      <aspect name="rma:destroyable">
+         <title>RM: Destroyable</title>
+         <properties>
+            <property name="rma:destructionDate">
+               <title>Destruction Date</title>
+               <type>d:datetime</type>
+               <mandatory enforced="false">false</mandatory>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <!-- Needed to permanently destroy the attached object -->
+            <aspect>sys:temporary</aspect>
+         </mandatory-aspects>
+      </aspect>
+
+   </aspects>
+   
+</model>

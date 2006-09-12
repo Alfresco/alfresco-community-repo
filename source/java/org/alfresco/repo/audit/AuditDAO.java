@@ -16,6 +16,11 @@
  */
 package org.alfresco.repo.audit;
 
+import java.util.List;
+
+import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * The interface to persist audit information.
  * 
@@ -28,5 +33,13 @@ public interface AuditDAO
      * 
      * @param auditInfo
      */
-    public void audit(AuditInfo auditInfo);
+    public void audit(AuditState auditInfo);
+
+    /**
+     * Get the audit trail for a node.
+     * 
+     * @param nodeRef
+     * @return
+     */
+    public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
 }

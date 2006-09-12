@@ -34,6 +34,7 @@ import org.alfresco.repo.template.NodeSearchResultsMap;
 import org.alfresco.repo.template.SavedSearchResultsMap;
 import org.alfresco.repo.template.XPathResultsMap;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -495,7 +496,7 @@ public final class TemplateNode implements Serializable
     }
     
     /**
-     * @return Display path to this node
+     * @return Display path to this node - the path built of 'cm:name' attribute values.
      */
     public String getDisplayPath()
     {
@@ -512,6 +513,14 @@ public final class TemplateNode implements Serializable
         }
         
         return displayPath;
+    }
+    
+    /**
+     * @return QName path to this node. This can be used for Lucene PATH: style queries
+     */
+    public String getQnamePath()
+    {
+        return this.services.getNodeService().getPath(this.nodeRef).toPrefixString(this.services.getNamespaceService());
     }
     
     /**
@@ -651,6 +660,14 @@ public final class TemplateNode implements Serializable
         return new NodeSearchResultsMap(this, this.services);
     }
     
+    
+    // Audit API
+    
+    
+    public List<AuditInfo> getAuditTrail()
+    {
+        return this.services.getAuditService().getAuditTrail(this.nodeRef);
+    }
     
     // ------------------------------------------------------------------------------
     // Misc helpers 

@@ -141,7 +141,7 @@ public final class DialogManager
    public String getTitle()
    {
       // try and get the title directly from the dialog
-      String title = this.currentDialogState.getDialog().getTitle();
+      String title = this.currentDialogState.getDialog().getContainerTitle();
       
       if (title == null)
       {
@@ -170,7 +170,7 @@ public final class DialogManager
    public String getDescription()
    {
       // try and get the description directly from the dialog
-      String desc = this.currentDialogState.getDialog().getDescription();
+      String desc = this.currentDialogState.getDialog().getContainerDescription();
       
       if (desc == null)
       {

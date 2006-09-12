@@ -73,7 +73,7 @@ public interface IDialogBean
     * 
     * @return The title or null if the title is to be acquired via configuration
     */
-   public String getTitle();
+   public String getContainerTitle();
    
    /**
     * Returns the description to be used for the dialog
@@ -82,5 +82,5 @@ public interface IDialogBean
     * 
     * @return The title or null if the title is to be acquired via configuration
     */
-   public String getDescription();
+   public String getContainerDescription();
 }

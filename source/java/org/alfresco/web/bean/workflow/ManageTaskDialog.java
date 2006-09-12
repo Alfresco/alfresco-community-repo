@@ -218,7 +218,7 @@ public class ManageTaskDialog extends BaseDialogBean
    }
    
    @Override
-   public String getTitle()
+   public String getContainerTitle()
    {
       String titleStart = Application.getMessage(FacesContext.getCurrentInstance(), "manage_task_title");
          
@@ -226,7 +226,7 @@ public class ManageTaskDialog extends BaseDialogBean
    }
    
    @Override
-   public String getDescription()
+   public String getContainerDescription()
    {
       return this.task.description;
    }

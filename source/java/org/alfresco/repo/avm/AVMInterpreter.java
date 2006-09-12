@@ -29,11 +29,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
@@ -49,11 +51,6 @@ public class AVMInterpreter
      * The service interface.
      */
     private AVMService fService;
-    
-    /**
-     * The Node service.
-     */
-    private NodeService fNodeService;
     
     /**
      * The reader for interaction.
@@ -102,11 +99,6 @@ public class AVMInterpreter
     public void setBulkLoader(BulkLoader loader)
     {
         fLoader = loader;
-    }
-    
-    public void setNodeService(NodeService service)
-    {
-        fNodeService = service;
     }
     
     /**
@@ -428,6 +420,21 @@ public class AVMInterpreter
                 AVMNodeDescriptor right = fService.lookup(Integer.parseInt(command[4]), command[3]);
                 AVMNodeDescriptor ca = fService.getCommonAncestor(left, right);
                 out.println(ca);
+            }
+            else if (command[0].equals("statstore"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                AVMStoreDescriptor desc = fService.getAVMStore(command[1]);
+                out.println(desc);
+                Map<QName, PropertyValue> props = 
+                    fService.getStoreProperties(command[1]);
+                for (QName name : props.keySet())
+                {
+                    out.println(name + ": " + props.get(name));
+                }
             }
             else
             {

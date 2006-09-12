@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -2276,6 +2277,8 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             PermissionService perm = (PermissionService)fContext.getBean("PermissionService");
+            AuthenticationComponent ac = (AuthenticationComponent)fContext.getBean("authenticationComponent");
+            ac.authenticate("admin", "admin".toCharArray());
             perm.setPermission(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"), 
                                PermissionService.ADMINISTRATOR_AUTHORITY,
                                PermissionService.ALL_PERMISSIONS,
@@ -2306,6 +2309,8 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             FileFolderService ffs = (FileFolderService)fContext.getBean("FileFolderService");
+            AuthenticationComponent ac = (AuthenticationComponent)fContext.getBean("authenticationComponent");
+            ac.authenticate("admin", "admin".toCharArray());
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c"), 
                        "banana", ContentModel.TYPE_AVM_PLAIN_CONTENT) != null);
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c"),

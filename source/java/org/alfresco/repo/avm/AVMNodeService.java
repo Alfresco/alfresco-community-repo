@@ -268,15 +268,35 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // Do the creates for supported types, or error out.
         try
         {
-            if (nodeTypeQName.equals(ContentModel.TYPE_AVM_FOLDER) ||
+            if (nodeTypeQName.equals(ContentModel.TYPE_AVM_PLAIN_FOLDER) ||
                 nodeTypeQName.equals(ContentModel.TYPE_FOLDER))
             {
                 fAVMService.createDirectory(avmPath, nodeName);
             }
-            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_CONTENT)
+            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_PLAIN_CONTENT)
                      ||nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
             {
                 fAVMService.createFile(avmPath, nodeName);
+            }
+            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_LAYERED_CONTENT))
+            {
+                NodeRef indirection = (NodeRef)properties.get(ContentModel.PROP_AVM_FILE_INDIRECTION);
+                if (indirection == null)
+                {
+                    throw new InvalidTypeException("No Indirection Property", nodeTypeQName);
+                }
+                Object [] indVersionPath = AVMNodeConverter.ToAVMVersionPath(indirection);
+                fAVMService.createLayeredFile((String)indVersionPath[1], avmPath, nodeName);
+            }
+            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_LAYERED_FOLDER))
+            {
+                NodeRef indirection = (NodeRef)properties.get(ContentModel.PROP_AVM_DIR_INDIRECTION);
+                if (indirection == null)
+                {
+                    throw new InvalidTypeException("No Indirection Property.", nodeTypeQName);
+                }
+                Object [] indVersionPath = AVMNodeConverter.ToAVMVersionPath(indirection);
+                fAVMService.createLayeredDirectory((String)indVersionPath[1], avmPath, nodeName);
             }
             else
             {
@@ -450,14 +470,23 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             AVMNodeDescriptor desc = fAVMService.lookup((Integer)avmVersionPath[0],
                                                         (String)avmVersionPath[1]);
-            if (desc.isDirectory())
+            if (desc.isPlainDirectory())
             {
-                return ContentModel.TYPE_AVM_FOLDER;
+                return ContentModel.TYPE_AVM_PLAIN_FOLDER;
+            }
+            else if (desc.isPlainFile())
+            {
+                return ContentModel.TYPE_AVM_PLAIN_CONTENT;
+            }
+            else if (desc.isLayeredDirectory())
+            {
+                return ContentModel.TYPE_AVM_LAYERED_FOLDER;
             }
             else
             {
-                return ContentModel.TYPE_AVM_CONTENT;
+                return ContentModel.TYPE_AVM_LAYERED_CONTENT;
             }
+            
         }
         catch (AVMNotFoundException e)
         {
@@ -845,6 +874,16 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         result.put(ContentModel.PROP_NODE_DBID, new Long(desc.getId()));
         result.put(ContentModel.PROP_STORE_PROTOCOL, "avm");
         result.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
+        if (desc.isLayeredDirectory())
+        {
+            result.put(ContentModel.PROP_AVM_DIR_INDIRECTION,
+                       AVMNodeConverter.ToNodeRef(-1, desc.getIndirection()));
+        }
+        if (desc.isLayeredFile())
+        {
+            result.put(ContentModel.PROP_AVM_FILE_INDIRECTION,
+                       AVMNodeConverter.ToNodeRef(-1, desc.getIndirection()));
+        }
         if (desc.isFile())
         {
             try
@@ -969,6 +1008,22 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             return nodeRef.getStoreRef().getIdentifier();
         }
+        else if (qName.equals(ContentModel.PROP_AVM_DIR_INDIRECTION))
+        {
+            if (desc.isLayeredDirectory())
+            {
+                return AVMNodeConverter.ToNodeRef(-1, desc.getIndirection());
+            }
+            return null;
+        }
+        else if (qName.equals(ContentModel.PROP_AVM_FILE_INDIRECTION))
+        {
+            if (desc.isLayeredFile())
+            {
+                return AVMNodeConverter.ToNodeRef(-1, desc.getIndirection());
+            }
+            return null;
+        }
         else
         {
             fgLogger.error("Invalid Built In Property: " + qName);
@@ -1002,14 +1057,17 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             Map<QName, PropertyValue> values = new HashMap<QName, PropertyValue>();
             for (QName qName : properties.keySet())
             {
-                // TODO This is until modification of built-in properties
                 // For AVM nodes is in place.
                 if (isBuiltInProperty(qName))
                 {
                     if (qName.equals(ContentModel.PROP_CONTENT))
                     {
-                        fAVMService.setContentData((String)avmVersionPath[1], 
-                                (ContentData)properties.get(qName));
+                        AVMNodeDescriptor desc = fAVMService.lookup(-1, (String)avmVersionPath[1]);
+                        if (desc.isPlainFile())
+                        {
+                            fAVMService.setContentData((String)avmVersionPath[1], 
+                                    (ContentData)properties.get(qName));
+                        }
                     }
                 }
                 values.put(qName, new PropertyValue(null, properties.get(qName)));
@@ -1036,7 +1094,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         ContentModel.PROP_NODE_UUID,
         ContentModel.PROP_NODE_DBID,
         ContentModel.PROP_STORE_PROTOCOL,
-        ContentModel.PROP_STORE_IDENTIFIER
+        ContentModel.PROP_STORE_IDENTIFIER,
+        ContentModel.PROP_AVM_FILE_INDIRECTION,
+        ContentModel.PROP_AVM_DIR_INDIRECTION
     };
     
     /**

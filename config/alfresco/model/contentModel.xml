@@ -79,11 +79,29 @@
          </properties>
       </type>
       
+      <!-- Consider this an abstract type for most purposes. -->
       <type name="cm:avmcontent">
-      	<title>AVM Content</title>
-      	<parent>cm:content</parent>
+          <title>AVM Content</title>
+      	  <parent>cm:content</parent>
       </type>
       
+      <type name="cm:avmplaincontent">
+          <title>AVM Plain content</title>
+          <parent>cm:avmcontent</parent>
+      </type>
+      
+      <type name="cm:avmlayeredcontent">
+      	  <title>AVM Layered Content</title>
+      	  <parent>cm:content</parent>
+      	  <properties>
+      	      <property name="cm:avmfileindirection">
+      	          <title>File Layer Indirection</title>
+      	          <type>d:noderef</type>
+      	          <mandatory>true</mandatory>
+      	      </property>
+      	  </properties>
+      </type>
+            
       <type name="cm:dictionaryModel">
          <title>Dictionary Model</title>
          <parent>cm:content</parent>
@@ -143,9 +161,27 @@
          <parent>cm:folder</parent>
       </type>
       
+      <!-- Consider this abstract for most purposes. -->
       <type name="cm:avmfolder">
-      	<title>AVM Folder</title>
-      	<parent>cm:folder</parent>
+      	  <title>AVM Folder</title>
+      	  <parent>cm:folder</parent>
+      </type>
+          
+      <type name="cm:avmplainfolder">
+          <title>AVM Plain Folder</title>
+          <parent>cm:avmfolder</parent>
+      </type>
+          
+      <type name="cm:avmlayeredfolder">
+          <title>AVM Layered Folder</title>
+          <parent>cm:avmfolder</parent>
+          <properties>
+              <property name="cm:avmdirindirection">
+                  <title>Directory Layer Indirection</title>
+                  <type>d:noderef</type>
+                  <mandatory>true</mandatory>
+              </property>
+          </properties>
       </type>
       
       <type name="cm:person">
@@ -694,16 +730,6 @@
                <type>d:datetime</type>
             </property>
          </properties>
-      </aspect>
-      
-      <aspect name="cm:mounted">
-      	<title>Mounted</title>
-      	<properties>
-      		<property name="cm:mountpoint">
-      			<title>Mountpoint</title>
-      			<type>d:noderef</type>
-      		</property>
-      	</properties>
       </aspect>
       
    </aspects>

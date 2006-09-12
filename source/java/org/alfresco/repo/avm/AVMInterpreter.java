@@ -437,48 +437,6 @@ public class AVMInterpreter
                 AVMNodeDescriptor ca = fService.getCommonAncestor(left, right);
                 out.println(ca);
             }
-            else if (command[0].equals("mount"))
-            {
-                if (command.length != 5)
-                {
-                    return "Syntax Error.";
-                }
-                int version = Integer.parseInt(command[1]);
-                String avmPath = command[2];
-                String alfPath = command[3];
-                String mountName = command[4];
-                String [] components = alfPath.split("/");
-                NodeRef nodeRef = fNodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
-                for (String name : components)
-                {
-                    fgLogger.error(name);
-                    List<ChildAssociationRef> children = 
-                        fNodeService.getChildAssocs(nodeRef);
-                    for (ChildAssociationRef child : children)
-                    {
-                        fgLogger.error(" " + child.getQName());
-                        if (child.getQName().getLocalName().equals(name))
-                        {
-                            nodeRef = child.getChildRef();
-                            break;
-                        }
-                    }
-                }
-                Map<QName, Serializable> properties = 
-                    new HashMap<QName, Serializable>();
-                properties.put(ContentModel.PROP_NAME, mountName);
-                ChildAssociationRef childRef =
-                    fNodeService.createNode(nodeRef, ContentModel.ASSOC_CONTAINS, 
-                            QName.createQName(NamespaceService.APP_MODEL_1_0_URI, mountName),
-                            ContentModel.TYPE_FOLDER,
-                            properties);
-                properties.clear();
-                properties.put(ContentModel.PROP_MOUNTPOINT, 
-                        AVMNodeConverter.ToNodeRef(version, avmPath));
-                fNodeService.addAspect(childRef.getChildRef(),
-                                       ContentModel.ASPECT_MOUNTED,
-                                       properties);
-            }
             else
             {
                 return "Syntax Error.";

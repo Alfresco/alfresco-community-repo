@@ -19,7 +19,7 @@ package org.alfresco.web.bean.wcm;
 /**
  * @author Kevin Roast
  */
-public class AVMConstants
+public final class AVMConstants
 {
    /**
     * Private constructor
@@ -28,10 +28,22 @@ public class AVMConstants
    {
    }
    
+   // names of the stores representing the layers for an AVM website
    public final static String STORE_STAGING = "-staging";
    public final static String STORE_MAIN = "-main";
    public final static String STORE_PREVIEW = "-preview";
    
+   // system directories at the top level of an AVM website
    public final static String DIR_APPBASE = "appBase";
    public final static String DIR_WEBAPPS = "avm_webapps";
+   
+   // system property keys for sandbox identification and DNS virtualisation mapping
+   public final static String PROP_SANDBOXID = ".sandbox-id.";
+   public final static String PROP_SANDBOX_STAGING_MAIN = ".sandbox.staging.main";
+   public final static String PROP_SANDBOX_STAGING_PREVIEW = ".sandbox.staging.preview";
+   public final static String PROP_SANDBOX_AUTHOR_MAIN = ".sandbox.author.main";
+   public final static String PROP_SANDBOX_AUTHOR_PREVIEW = ".sandbox.author.preview";
+   public final static String PROP_DNS = ".dns.";
+   
+   public final static String SPACE_ICON_WEBSITE = "space-icon-website";
 }

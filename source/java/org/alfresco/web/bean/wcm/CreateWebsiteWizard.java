@@ -26,15 +26,16 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,22 +90,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // apply the uifacets aspect - icon, title and description props
       Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4);
-      uiFacetsProps.put(ContentModel.PROP_ICON, CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
+      uiFacetsProps.put(ContentModel.PROP_ICON, AVMConstants.SPACE_ICON_WEBSITE);
       uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
       uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
       this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
       
-      // TODO: create layers for invited users
       // TODO: invite users with appropriate permissions into this folder
       
-      // create the AVM store to represent the newly created location website
-      this.avmService.createAVMStore(this.name);
-      AVMStoreDescriptor avmStore = this.avmService.getAVMStore(this.name);
-      this.avmService.createDirectory("/", "appBase");
-      this.avmService.createDirectory("/appBase", "avm_webapps");
-      this.avmService.createDirectory("/appBase/avm_webapps", this.name);
+      // create the AVM stores (layers) to represent the newly created location website
+      createStagingSandbox(this.name);
       
+      // create layer for current user (TODO: based on role)
+      createUserSandbox(this.name, Application.getCurrentUser(context).getUserName());
       
+      // TODO: create layers for invited users based on roles
+      
+      // TODO: import the ZIP structure into the AVM staging store
       
       // set the property on the node to reference the AVM store
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, this.name);
@@ -216,26 +217,149 @@ public class CreateWebsiteWizard extends BaseWizardBean
       return this.websitesFolderId;
    }
    
-   private void createStagingStore(String name)
+   /**
+    * Create the staging sandbox for the named store.
+    * 
+    * A staging sandbox is comprised of two stores, the first named 'storename-staging' with a
+    * preview store named 'storename-preview' layered over the staging store.
+    * 
+    * Various store meta-data properties are set including:
+    * Identifier for store-types: .sandbox.staging.main and .sandbox.staging.preview
+    * Store-id: .sandbox-id.<guid> (unique across all stores in the sandbox)
+    * DNS: .dns.<store> = <path-to-webapps-root>
+    * 
+    * @param name       The store name to create the sandbox for
+    */
+   private void createStagingSandbox(String name)
    {
+      // create the 'staging' store for the website
       String stagingStore = name + AVMConstants.STORE_STAGING;
       this.avmService.createAVMStore(stagingStore);
+      if (logger.isDebugEnabled())
+         logger.debug("Created staging sandbox store: " + stagingStore);
+      
+      // create the system directories 'appBase' and 'avm_webapps'
       String path = stagingStore + ":/";
       this.avmService.createDirectory(path, AVMConstants.DIR_APPBASE);
-      path += '/' + AVMConstants.DIR_APPBASE;
+      path += AVMConstants.DIR_APPBASE;
       this.avmService.createDirectory(path, AVMConstants.DIR_WEBAPPS);
-   }
-   
-   private void createSandboxStores(String name, String username)
-   {
-      String sandboxStore = name + '-' + username + AVMConstants.STORE_MAIN;
-      this.avmService.createAVMStore(sandboxStore);
-      String path = sandboxStore + ":/";
-      this.avmService.createLayeredDirectory(name + AVMConstants.STORE_STAGING, path, AVMConstants.DIR_APPBASE);
       
+      // tag the store with the store type
+      this.avmService.setStoreProperty(stagingStore,
+            QName.createQName(null, AVMConstants.PROP_SANDBOX_STAGING_MAIN),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      // tag the store with the DNS name property
+      tagStoreDNSPath(stagingStore);
+      
+      
+      // create the 'preview' store for the website
       String previewStore = name + AVMConstants.STORE_PREVIEW;
       this.avmService.createAVMStore(previewStore);
+      if (logger.isDebugEnabled())
+         logger.debug("Created staging sandbox store: " + previewStore);
+      
+      // create a layered directory pointing to 'appBase' in the staging area
       path = previewStore + ":/";
-      this.avmService.createLayeredDirectory(name + AVMConstants.STORE_STAGING, path, AVMConstants.DIR_APPBASE);
+      String targetPath = name + AVMConstants.STORE_STAGING + ":/" + AVMConstants.DIR_APPBASE;
+      this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
+      
+      // tag the store with the store type
+      this.avmService.setStoreProperty(stagingStore,
+            QName.createQName(null, AVMConstants.PROP_SANDBOX_STAGING_PREVIEW),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      // tag the store with the DNS name property
+      tagStoreDNSPath(previewStore);
+      
+      
+      // tag all related stores to indicate that they are part of a single sandbox
+      String sandboxIdProp = AVMConstants.PROP_SANDBOXID + GUID.generate();
+      this.avmService.setStoreProperty(stagingStore,
+            QName.createQName(null, sandboxIdProp),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+      this.avmService.setStoreProperty(previewStore,
+            QName.createQName(null, sandboxIdProp),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+   }
+   
+   /**
+    * Create a user sandbox for the named store.
+    * 
+    * A user sandbox is comprised of two stores, the first named 'storename-username-main' layered
+    * over the staging store with a preview store named 'storename-username-preview' layered over
+    * the main store.
+    * 
+    * Various store meta-data properties are set including:
+    * Identifier for store-types: .sandbox.author.main and .sandbox.author.preview
+    * Store-id: .sandbox-id.<guid> (unique across all stores in the sandbox)
+    * DNS: .dns.<store> = <path-to-webapps-root>
+    * 
+    * @param name       The store name to create the sandbox for
+    * @param username   Username of the user to create the sandbox for
+    */
+   private void createUserSandbox(String name, String username)
+   {
+      // create the user 'main' store
+      String userStore = name + '-' + username + AVMConstants.STORE_MAIN;
+      this.avmService.createAVMStore(userStore);
+      if (logger.isDebugEnabled())
+         logger.debug("Created staging sandbox store: " + userStore);
+      
+      // create a layered directory pointing to 'appBase' in the staging area
+      String path = userStore + ":/";
+      String targetPath = name + AVMConstants.STORE_STAGING + ":/" + AVMConstants.DIR_APPBASE;
+      this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
+      
+      // tag the store with the store type
+      this.avmService.setStoreProperty(userStore,
+            QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_MAIN),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      // tag the store with the DNS name property
+      tagStoreDNSPath(userStore);
+      
+      
+      // create the user 'preview' store
+      String previewStore = name + '-' + username + AVMConstants.STORE_PREVIEW;
+      this.avmService.createAVMStore(previewStore);
+      if (logger.isDebugEnabled())
+         logger.debug("Created staging sandbox store: " + previewStore);
+      
+      // create a layered directory pointing to 'appBase' in the user 'main' store
+      path = previewStore + ":/";
+      targetPath = userStore + ":/" + AVMConstants.DIR_APPBASE;
+      this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
+      
+      // tag the store with the store type
+      this.avmService.setStoreProperty(previewStore,
+            QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_PREVIEW),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      // tag the store with the DNS name property
+      tagStoreDNSPath(previewStore);
+      
+      
+      // tag all related stores to indicate that they are part of a single sandbox
+      String sandboxIdProp = AVMConstants.PROP_SANDBOXID + GUID.generate();
+      this.avmService.setStoreProperty(userStore, QName.createQName(null, sandboxIdProp),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+      this.avmService.setStoreProperty(previewStore, QName.createQName(null, sandboxIdProp),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+   }
+   
+   /**
+    * Tag a named store with a DNS path meta-data attribute.
+    * The DNS meta-data attribute is set to the system path 'store:/appBase/avm_webapps'
+    * 
+    * @param store  Name of the store to tag
+    */
+   private void tagStoreDNSPath(String store)
+   {
+      String path = store + ":/" + AVMConstants.DIR_APPBASE + '/' + AVMConstants.DIR_WEBAPPS;
+      // TODO: DNS name mangle the property name - can only contain value DNS characters!
+      String dnsProp = AVMConstants.PROP_DNS + store;
+      this.avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
+            new PropertyValue(DataTypeDefinition.TEXT, path));
    }
 }

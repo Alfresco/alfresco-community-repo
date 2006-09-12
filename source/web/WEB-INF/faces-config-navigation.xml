@@ -98,9 +98,9 @@
       </navigation-case>
    </navigation-rule>
    
-   <!-- Browse screen action outcomes -->
+   <!-- Common document actions available from anywhere -->
    <navigation-rule>
-      <from-view-id>/jsp/browse/browse.jsp</from-view-id>
+      <from-view-id>/jsp/*</from-view-id>
       <navigation-case>
          <from-outcome>addContent</from-outcome>
          <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
@@ -134,6 +134,13 @@
          <from-outcome>editTextInline</from-outcome>
          <to-view-id>/jsp/dialog/edit-text-inline.jsp</to-view-id>
       </navigation-case>
+   </navigation-rule>
+   
+   <!-- Browse screen action outcomes -->
+   <navigation-rule>
+      <from-view-id>/jsp/browse/browse.jsp</from-view-id>
+      <!-- showDocDetails and showSpaceDetails moved to /jsp/* above -->
+      <!-- edit, update, checkout actions moved to /jsp/* above -->
       <navigation-case>
          <from-outcome>editXmlInline</from-outcome>
          <to-view-id>/jsp/dialog/edit-xml-inline.jsp</to-view-id>
@@ -248,7 +255,7 @@
          <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
-
+   
    <navigation-rule>
       <from-view-id>/jsp/dialog/edit-xml-inline.jsp</from-view-id>
       <navigation-case>
@@ -897,45 +904,6 @@
       <navigation-case>
          <from-outcome>topicDeleted</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
-      </navigation-case>
-   
-      <!-- Workflow navigation rules for actions on workflow package items -->
-   
-      <navigation-case>
-         <from-outcome>checkoutFile</from-outcome>
-         <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>checkinFile</from-outcome>
-         <to-view-id>/jsp/dialog/checkin-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>undoCheckoutFile</from-outcome>
-         <to-view-id>/jsp/dialog/undocheckout-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>updateFile</from-outcome>
-         <to-view-id>/jsp/dialog/update-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editFile</from-outcome>
-         <to-view-id>/jsp/dialog/edit-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editHtmlInline</from-outcome>
-         <to-view-id>/jsp/dialog/edit-html-inline.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editTextInline</from-outcome>
-         <to-view-id>/jsp/dialog/edit-text-inline.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>itemDetails</from-outcome>
-         <to-view-id>/jsp/trashcan/item-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>recoveryReport</from-outcome>
-         <to-view-id>/jsp/trashcan/recovery-report.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

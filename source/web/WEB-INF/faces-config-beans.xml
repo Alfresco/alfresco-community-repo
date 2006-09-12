@@ -1467,6 +1467,10 @@
          <value>#{FileFolderService}</value>
       </managed-property>
       <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>
@@ -1782,43 +1786,6 @@
    
    <managed-bean>
       <description>
-         The bean that backs up the Delete Post Dialog
-      </description>
-      <managed-bean-name>DeletePostDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.forums.DeletePostDialog</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>browseBean</property-name>
-         <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>dictionaryService</property-name>
-         <value>#{DictionaryService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
-      </managed-property>
-   </managed-bean>
-   
-   <managed-bean>
-      <description>
          The bean that holds state for the Manage Deleted Items screen.
       </description>
       <managed-bean-name>TrashcanBean</managed-bean-name>
@@ -1837,8 +1804,8 @@
          <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
       </managed-property>
    </managed-bean>
    
@@ -2352,7 +2319,7 @@
          <value>#{ContentService}</value>
       </managed-property>
    </managed-bean>
-
+   
    <managed-bean>
       <description>
          Bean that returns information on a node

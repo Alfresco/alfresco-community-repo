@@ -5,6 +5,7 @@
          <action id="start_workflow">
             <label-id>start_workflow</label-id>
             <image>/images/icons/new_workflow.gif</image>
+            <evaluator>org.alfresco.web.action.evaluator.StartWorkflowEvaluator</evaluator>
             <action>wizard:startWorkflow</action>
             <action-listener>#{WizardManager.setupParameters}</action-listener>
             <params>
@@ -59,6 +60,9 @@
          </action>
          
          <action id="edit_content_properties">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
             <label-id>edit_properties</label-id>
             <image>/images/icons/Change_details.gif</image>
             <action>dialog:editContentProperties</action>

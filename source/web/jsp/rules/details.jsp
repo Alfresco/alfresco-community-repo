@@ -125,5 +125,15 @@
          </div>
       </td>
    </tr>
+   <tr>
+      <td colspan="2">
+         </f:verbatim>
+         <h:panelGrid columns="2">
+            <h:selectBooleanCheckbox value="#{WizardManager.bean.ruleDisabled}" />
+            <h:outputText value="#{msg.rule_disabled}" />
+         </h:panelGrid>
+         <f:verbatim>
+      </td>
+   </tr>
 </table>
 </f:verbatim>

@@ -53,14 +53,14 @@ import org.alfresco.web.app.servlet.FacesHelper;
  */
 public class CreateContentWizard extends BaseContentWizard
 {
-    protected String content = null;
+   protected String content = null;
     protected String templateTypeName;
-    protected List<SelectItem> createMimeTypes;
-    
+   protected List<SelectItem> createMimeTypes;
+   
     private static final Log LOGGER = 
 	LogFactory.getLog(CreateContentWizard.class);
 
-
+   
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -69,7 +69,7 @@ public class CreateContentWizard extends BaseContentWizard
          throws Exception
    {
        LOGGER.debug("saving file content to " + this.fileName);
-       saveContent(null, this.content);
+      saveContent(null, this.content);
        if (this.templateTypeName != null)
        {
 	   LOGGER.debug("generating template output for " + this.templateTypeName);
@@ -87,9 +87,9 @@ public class CreateContentWizard extends BaseContentWizard
 			       this.contentService,
 			       this.nodeService);
        }
-
-       // return the default outcome
-       return outcome;
+      
+      // return the default outcome
+      return outcome;
    }
    
    @Override
@@ -162,7 +162,7 @@ public class CreateContentWizard extends BaseContentWizard
    {
       this.content = content;
    }
-
+   
     public List<SelectItem> getCreateTemplateTypes()
     {
 	Collection<TemplateType> ttl = TemplatingService.getInstance().getTemplateTypes();
@@ -225,7 +225,7 @@ public class CreateContentWizard extends BaseContentWizard
       
       return this.createMimeTypes;
    }
-
+   
    public String getTemplateTypeName()
    {
       return this.templateTypeName;

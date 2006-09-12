@@ -42,8 +42,9 @@ public class DashboardManager
    private static Log logger = LogFactory.getLog(DashboardManager.class);
    
    private static final String PREF_DASHBOARD = "dashboard";
-   static final String LAYOUT_DEFAULT = "default";
-   static final String DASHLET_DEFAULT = "getting-started";
+   private static final String LAYOUT_DEFAULT = "default";
+   private static final String DASHLET_STARTEDDEFAULT = "getting-started";
+   private static final String DASHLET_TASKSDEFAULT = "tasks-todo";
    
    private static final String JSP_DUMMY = "/jsp/dashboards/dummy.jsp";
    
@@ -150,13 +151,22 @@ public class DashboardManager
             {
                Page page = new Page("default", layout);
                Column defaultColumn = new Column();
-               DashletDefinition dashlet = config.getDashletDefinition(DASHLET_DEFAULT);
+               
+               // add the default dashlet(s) to the column
+               DashletDefinition dashlet = config.getDashletDefinition(DASHLET_STARTEDDEFAULT);
                if (dashlet != null)
                {
                   defaultColumn.addDashlet(dashlet);
-                  page.addColumn(defaultColumn);
-                  pageConfig.addPage(page);
                }
+               dashlet = config.getDashletDefinition(DASHLET_TASKSDEFAULT);
+               if (dashlet != null)
+               {
+                  defaultColumn.addDashlet(dashlet);
+               }
+               
+               // add the column to the page and we are done
+               page.addColumn(defaultColumn);
+               pageConfig.addPage(page);
             }
          }
          

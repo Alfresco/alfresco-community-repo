@@ -57,6 +57,76 @@ import org.alfresco.service.transaction.TransactionService;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test link AVMService call.
+     */
+    public void testLink()
+    {
+        try
+        {
+            setupBasicTree();
+            // Just try linking /a/b/c/foo into /a/b
+            fService.link("main:/a/b", "foo", fService.lookup(-1, "main:/a/b/c/foo"));
+            assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getId(),
+                         fService.lookup(-1, "main:/a/b/foo").getId());
+            // Try linking /a/b/c/bar to /a/b/foo. It should fail.
+            System.out.println(recursiveList("main", -1, true));
+            try
+            {
+                fService.link("main:/a/b", "foo", fService.lookup(-1, "main:/a/b/c/bar"));
+                fail();
+            }
+            catch (AVMExistsException e)
+            {
+                // Do nothing.  It's OK.
+            }
+            // Delete /a/b/foo, and link /a/b/c/foo into /a/b.  This checks that
+            // a deleted node is no impediment.
+            fService.removeNode("main:/a/b", "foo");
+            fService.link("main:/a/b", "foo", fService.lookup(-1, "main:/a/b/c/foo"));
+            assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getId(),
+                         fService.lookup(-1, "main:/a/b/foo").getId());
+            // Delete /a/b/foo again in prep for layer tests.
+            fService.removeNode("main:/a/b", "foo");
+            System.out.println(recursiveList("main", -1, true));
+            fService.createSnapshot("main");
+            // Create a layer do a link from /layer/b/c/bar to /layer/b
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.link("main:/layer/b", "bar", fService.lookup(-1, "main:/layer/b/c/bar"));
+            assertEquals(fService.lookup(-1, "main:/layer/b/c/bar").getId(),
+                         fService.lookup(-1, "main:/layer/b/bar").getId());
+            System.out.println(recursiveList("main", -1, true));
+            // Now link /layer/b/c/foo into /layer/b.
+            fService.link("main:/layer/b", "foo", fService.lookup(-1, "main:/layer/b/c/foo"));
+            assertEquals(fService.lookup(-1, "main:/layer/b/c/foo").getId(),
+                         fService.lookup(-1, "main:/layer/b/foo").getId());
+            // Make sure that the underlying layer is not mucked up.
+            assertTrue(fService.lookup(-1, "main:/a/b/foo", true).isDeleted());
+            System.out.println(recursiveList("main", -1, true));
+            // Try to link /layer/b/c/bar to /layer/b/c. It should fail.
+            try
+            {
+                fService.link("main:/layer/b", "bar", fService.lookup(-1, "main:/layer/b/c/bar"));
+                fail();
+            }
+            catch (AVMExistsException e)
+            {
+                // Do nothing.
+            }
+            // Delete /layer/b/bar and redo. It should work.
+            fService.removeNode("main:/layer/b", "bar");
+            fService.link("main:/layer/b", "bar", fService.lookup(-1, "main:/layer/b/c/bar"));
+            assertEquals(fService.lookup(-1, "main:/layer/b/c/bar").getId(),
+                         fService.lookup(-1, "main:/layer/b/bar").getId());
+            System.out.println(recursiveList("main", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+
+    /**
      * Test goofy paths.
      */
     public void testGoofyPaths()

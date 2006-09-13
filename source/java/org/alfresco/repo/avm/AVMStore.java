@@ -404,4 +404,12 @@ public interface AVMStore
      * @return The ACL.
      */
     public DbAccessControlList getACL(int version, String path);
+    
+    /**
+     * Link a node intro a directory, directly.
+     * @param parentPath The path to the directory.
+     * @param name The name to give the node.
+     * @param toLink The node to link.
+     */
+    public void link(String parentPath, String name, AVMNodeDescriptor toLink);
 }

@@ -668,4 +668,12 @@ public interface AVMService
      * @return Whether the given node has the given aspect.
      */
     public boolean hasAspect(int version, String path, QName aspectName);
+    
+    /**
+     * This inserts a node into a parent directly.
+     * @param parentPath The path to the parent directory.
+     * @param name The name to give the node.
+     * @param toLink A descriptor for the node to insert.
+     */
+    public void link(String parentPath, String name, AVMNodeDescriptor toLink);
 }

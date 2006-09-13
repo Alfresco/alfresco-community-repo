@@ -114,4 +114,12 @@ public interface DirectoryNode extends AVMNode
      * @param isRoot
      */
     public void setIsRoot(boolean isRoot);
+    
+    /**
+     * Link a node with the given id into this directory.
+     * @param lPath The Lookup for this node.
+     * @param name The name to give the node.
+     * @param id The id of the node to insert.
+     */
+    public void link(Lookup lPath, String name, long id);
 }

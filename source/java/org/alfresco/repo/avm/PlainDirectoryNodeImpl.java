@@ -25,7 +25,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 
 /**
  * A plain directory.  No monkey tricks except for possiblyCopy.
@@ -399,6 +401,37 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      -1,
                                      false,
                                      -1);
+    }
+    
+    /**
+     * Link a node with the given id into this directory.
+     * @param lPath The Lookup for this directory.
+     * @param name The name to give the node.
+     * @param id The id of the node to insert.
+     */
+    public void link(Lookup lPath, String name, long id)
+    {
+        // Assure that the incoming node exists.
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(id);
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Node not found: " + id);
+        }
+        // Check for an existing child by the given name.
+        ChildEntry child = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
+        if (child != null)
+        {
+            if (child.getChild().getType() != AVMNodeType.DELETED_NODE)
+            {
+                // It's an error if there is a non DELETED_NODE child.
+                throw new AVMExistsException(name + " exists.");
+            }
+            // Get rid of the DELETED_NODE child.
+            AVMContext.fgInstance.fChildEntryDAO.delete(child);
+        }
+        // Make the new entry and save.
+        ChildEntry newChild = new ChildEntryImpl(name, this, node);
+        AVMContext.fgInstance.fChildEntryDAO.save(newChild);
     }
 }
 

@@ -1217,4 +1217,18 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(pathParts[0]);
         return store.getACL(version, pathParts[1]);
     }
+    
+    /**
+     * Link a node into a directory, directly.
+     * @param parentPath The path to the parent.
+     * @param name The name to give the node.
+     * @param toLink The node to link.
+     */
+    public void link(String parentPath, String name, AVMNodeDescriptor toLink)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(parentPath);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        store.link(pathParts[1], name, toLink);
+    }
 }

@@ -27,7 +27,9 @@ import java.util.TreeMap;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
+import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 
 /**
  * A layered directory node.  A layered directory node points at
@@ -616,6 +618,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     public void uncover(Lookup lPath, String name)
     {
         ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
+        if (entry.getChild().getType() != AVMNodeType.DELETED_NODE)
+        {
+            throw new AVMException("One can only uncover deleted nodes.");
+        }
         if (entry != null)
         {
             AVMContext.fgInstance.fChildEntryDAO.delete(entry);
@@ -758,5 +764,40 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     public void setOpacity(boolean opacity)
     {
         fOpacity = opacity;
+    }
+
+    /**
+     * Link a node with the given id into this directory.
+     * @param lPath The Lookup for this.
+     * @param name The name to give the node.
+     * @param id The id of the node to insert.
+     */
+    public void link(Lookup lPath, String name, long id)
+    {
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(id);
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Not Found: " + id);
+        }
+        // Look for an existing child of that name.
+        AVMNode existing = lookupChild(lPath, name, -1, false, true);
+        if (existing != null)
+        {
+            if (existing.getType() != AVMNodeType.DELETED_NODE)
+            {
+                // If the existing child is not a DELETED_NODE it's an error.
+                throw new AVMExistsException(name + " exists.");
+            }
+            // Only if the existing DELETED_NODE child exists directly in this
+            // directory do we delete it.
+            if (directlyContains(existing))
+            {
+                ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
+                AVMContext.fgInstance.fChildEntryDAO.delete(entry);
+            }
+        }
+        // Make the new ChildEntry and save.
+        ChildEntry newChild = new ChildEntryImpl(name, this, node);
+        AVMContext.fgInstance.fChildEntryDAO.save(newChild);
     }
 }

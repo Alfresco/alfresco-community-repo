@@ -17,11 +17,16 @@
 
 package org.alfresco.repo.avm;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 
@@ -70,7 +75,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                                        int dstVersion, String dstPath)
     {
         // TODO Implement.
-        return null;
+        return new ArrayList<AVMDifference>();
     }
     
     /**
@@ -103,7 +108,74 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     public void flatten(String layerPath, String underlyingPath)
     {
-        // TODO Implement.
+        if (layerPath == null || underlyingPath == null)
+        {
+            throw new AVMBadArgumentException("Illegal null path.");
+        }
+        AVMNodeDescriptor layerNode = fAVMService.lookup(-1, layerPath);
+        if (layerNode == null)
+        {
+            throw new AVMNotFoundException("Not found: " + layerPath);
+        }
+        AVMNodeDescriptor underlyingNode = fAVMService.lookup(-1, underlyingPath);
+        if (underlyingNode == null)
+        {
+            throw new AVMNotFoundException("Not found: " + underlyingPath);
+        }
+        flatten(layerNode, underlyingNode);
+    }
+    
+    /**
+     * This is the implementation of flatten.
+     * @param layer The on top node.
+     * @param underlying The underlying node.
+     */
+    private void flatten(AVMNodeDescriptor layer, AVMNodeDescriptor underlying)
+    {
+        // First case: a layered directory.
+        if (layer.isLayeredDirectory())
+        {
+            // layer and underlying must match.
+            if (!layer.getIndirection().equals(underlying.getPath()))
+            {
+                throw new AVMException("Layer and Underlying do not match.");
+            }
+            // The underlying thing must be a directory.
+            if (!underlying.isDirectory())
+            {
+                throw new AVMWrongTypeException("Underlying is not a directory: " + underlying);
+            }
+            Map<String, AVMNodeDescriptor> layerListing =
+                fAVMService.getDirectoryListingDirect(-1, layer.getPath(), true);
+            // If the layer is empty (directly, that is) we're done.
+            if (layerListing.size() == 0)
+            {
+                return;
+            }
+            // Grab the listing 
+            Map<String, AVMNodeDescriptor> underListing =
+                fAVMService.getDirectoryListing(-1, underlying.getPath(), true);
+            for (String name : layerListing.keySet())
+            {
+                AVMNodeDescriptor topNode = layerListing.get(name);
+                AVMNodeDescriptor bottomNode = underListing.get(name);
+                if (bottomNode == null)
+                {
+                    continue;
+                }
+                // We've found an identity so flatten it.
+                if (topNode.getId() == bottomNode.getId())
+                {
+                    fAVMService.removeNode(layer.getPath(), name);
+                    fAVMService.uncover(layer.getPath(), name);
+                }
+                else
+                {
+                    // Otherwise recursively flatten the children.
+                    flatten(topNode, bottomNode);
+                }
+            }
+        }
     }
     
     /**

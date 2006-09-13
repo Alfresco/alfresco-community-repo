@@ -1135,4 +1135,17 @@ public class AVMStoreImpl implements AVMStore, Serializable
         Lookup lPath = lookup(version, path, false, false);
         return lPath.getCurrentNode().getAcl();
     }
+    
+    /**
+     * Link a node intro a directory, directly.
+     * @param parentPath The path to the directory.
+     * @param name The name to give the parent.
+     * @param toLink The node to link.
+     */
+    public void link(String parentPath, String name, AVMNodeDescriptor toLink)
+    {
+        Lookup lPath = lookupDirectory(-1, parentPath, true);
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        dir.link(lPath, name, toLink.getId());
+    }
 }

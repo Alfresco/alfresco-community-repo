@@ -1033,4 +1033,19 @@ public class AVMServiceImpl implements AVMService
         }
         return fAVMRepository.hasAspect(version, path, aspectName);
     }
+    
+    /**
+     * This inserts a node into a parent directly.
+     * @param parentPath The path to the parent directory.
+     * @param name The name to give the node.
+     * @param toLink A descriptor for the node to insert.
+     */
+    public void link(String parentPath, String name, AVMNodeDescriptor toLink)
+    {
+        if (parentPath == null || name == null || toLink == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        fAVMRepository.link(parentPath, name, toLink);
+    }
 }

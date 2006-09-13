@@ -582,7 +582,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             if (child.getType() != AVMNodeType.PLAIN_DIRECTORY &&
                 child.getType() != AVMNodeType.LAYERED_DIRECTORY)
             {
-                throw new AVMWrongTypeException("Not a directory: " + pathElements[i]);
+                throw new AVMNotFoundException("Not a directory: " + pathElements[i]);
             }
             result.add(child, pathElements[i], write);
             dir = (DirectoryNode)result.getCurrentNode();

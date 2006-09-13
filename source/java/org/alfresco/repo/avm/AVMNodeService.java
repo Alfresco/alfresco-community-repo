@@ -142,15 +142,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public boolean exists(StoreRef storeRef)
     {
-        try
-        {
-            fAVMService.getAVMStore(storeRef.getIdentifier());
-            return true;
-        }
-        catch (AVMNotFoundException e)
-        {
-            return false;
-        }
+        return fAVMService.getAVMStore(storeRef.getIdentifier()) != null;
     }
     
     /**
@@ -162,15 +154,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         Object [] avmInfo = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         int version = (Integer)avmInfo[0];
         String avmPath = (String)avmInfo[1];
-        try
-        {
-            fAVMService.lookup(version, avmPath);
-            return true;
-        }
-        catch (AVMException e)
-        {
-            return false;
-        }
+        return fAVMService.lookup(version, avmPath) != null;
     }
     
     /**
@@ -195,15 +179,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public NodeRef getRootNode(StoreRef storeRef) throws InvalidStoreRefException
     {
-        try
+        String storeName = storeRef.getIdentifier();
+        if (fAVMService.getAVMStore(storeName) != null)
         {
-            String storeName = storeRef.getIdentifier();
-            fAVMService.getAVMStore(storeName);
             return AVMNodeConverter.ToNodeRef(-1, storeName + ":/");
         }
-        catch (AVMNotFoundException e)
+        else
         {
-            throw new InvalidStoreRefException(storeRef);
+            throw new InvalidStoreRefException("Not Found.", storeRef);
         }
     }
 
@@ -466,31 +449,27 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        try
-        {
-            AVMNodeDescriptor desc = fAVMService.lookup((Integer)avmVersionPath[0],
-                                                        (String)avmVersionPath[1]);
-            if (desc.isPlainDirectory())
-            {
-                return ContentModel.TYPE_AVM_PLAIN_FOLDER;
-            }
-            else if (desc.isPlainFile())
-            {
-                return ContentModel.TYPE_AVM_PLAIN_CONTENT;
-            }
-            else if (desc.isLayeredDirectory())
-            {
-                return ContentModel.TYPE_AVM_LAYERED_FOLDER;
-            }
-            else
-            {
-                return ContentModel.TYPE_AVM_LAYERED_CONTENT;
-            }
-            
-        }
-        catch (AVMNotFoundException e)
+        AVMNodeDescriptor desc = fAVMService.lookup((Integer)avmVersionPath[0],
+                (String)avmVersionPath[1]);
+        if (desc == null)
         {
             throw new InvalidNodeRefException("Not Found.", nodeRef);
+        }
+        if (desc.isPlainDirectory())
+        {
+            return ContentModel.TYPE_AVM_PLAIN_FOLDER;
+        }
+        else if (desc.isPlainFile())
+        {
+            return ContentModel.TYPE_AVM_PLAIN_CONTENT;
+        }
+        else if (desc.isLayeredDirectory())
+        {
+            return ContentModel.TYPE_AVM_LAYERED_FOLDER;
+        }
+        else
+        {
+            return ContentModel.TYPE_AVM_LAYERED_CONTENT;
         }
     }
     
@@ -844,13 +823,12 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     {
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         Map<QName, PropertyValue> props = null;
-        AVMNodeDescriptor desc = null;
+        AVMNodeDescriptor desc = fAVMService.lookup((Integer)avmVersionPath[0],
+                (String)avmVersionPath[1]);
         try
         {
             props = fAVMService.getNodeProperties((Integer)avmVersionPath[0], 
                                                   (String)avmVersionPath[1]);
-            desc = fAVMService.lookup((Integer)avmVersionPath[0],
-                                      (String)avmVersionPath[1]);
         }
         catch (AVMNotFoundException e)
         {
@@ -958,13 +936,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 return null;
             }
         }
-        AVMNodeDescriptor desc = null;
-        try
-        {
-            desc = fAVMService.lookup((Integer)avmVersionPath[0],
+        AVMNodeDescriptor desc = fAVMService.lookup((Integer)avmVersionPath[0],
                                       (String)avmVersionPath[1]);
-        }
-        catch (AVMNotFoundException e)
+        if (desc == null)
         {
             throw new InvalidNodeRefException("Not Found.", nodeRef);
         }
@@ -1049,6 +1023,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             throw new InvalidNodeRefException("Read only store.", nodeRef);
         }
+        // TODO Not sure this try block is necessary.
         try
         {
             // Invoke policy behaviors.
@@ -1063,6 +1038,10 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                     if (qName.equals(ContentModel.PROP_CONTENT))
                     {
                         AVMNodeDescriptor desc = fAVMService.lookup(-1, (String)avmVersionPath[1]);
+                        if (desc == null)
+                        {
+                            throw new InvalidNodeRefException("Not Found.", nodeRef);
+                        }
                         if (desc.isPlainFile())
                         {
                             fAVMService.setContentData((String)avmVersionPath[1], 
@@ -1338,6 +1317,10 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             AVMNodeDescriptor child = fAVMService.lookup((Integer)avmVersionPath[0],
                                                          (String)avmVersionPath[1]);
+            if (child == null)
+            {
+                return null;
+            }
             return AVMNodeConverter.ToNodeRef((Integer)avmVersionPath[0],
                                               child.getPath());
         }

@@ -450,6 +450,10 @@ public class AVMServiceImpl implements AVMService
      */
     public AVMNodeDescriptor lookup(int version, String path)
     {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Illegal null path.");
+        }
         return lookup(version, path, false);
     }
 
@@ -471,8 +475,15 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        Lookup lookup = fAVMRepository.lookup(version, path, includeDeleted);
-        return lookup.getCurrentNode().getDescriptor(lookup);
+        try
+        {
+            Lookup lookup = fAVMRepository.lookup(version, path, includeDeleted);
+            return lookup.getCurrentNode().getDescriptor(lookup);
+        }
+        catch (AVMNotFoundException e)
+        {
+            return null;
+        }
     }
 
     /**
@@ -483,6 +494,10 @@ public class AVMServiceImpl implements AVMService
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name)
     {
+        if (dir == null || name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
         return lookup(dir, name, false);
     }
     
@@ -503,7 +518,14 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        return fAVMRepository.lookup(dir, name, includeDeleted);        
+        try
+        {
+            return fAVMRepository.lookup(dir, name, includeDeleted);
+        }
+        catch (AVMNotFoundException e)
+        {
+            return null;
+        }
     }
     
     /**
@@ -626,7 +648,14 @@ public class AVMServiceImpl implements AVMService
         {
             throw new AVMBadArgumentException("Null Store Name.");
         }
-        return fAVMRepository.getAVMStore(name);
+        try
+        {
+            return fAVMRepository.getAVMStore(name);
+        }
+        catch (AVMNotFoundException e)
+        {
+            return null;
+        }
     }
 
     /**

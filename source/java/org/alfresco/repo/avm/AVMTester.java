@@ -292,6 +292,10 @@ class AVMTester implements Runnable
         String name = fNames[fgRandom.nextInt(26 * 26)];
         String path = randomPath();
         AVMNodeDescriptor desc = fService.lookup(-1, path);
+        if (desc == null)
+        {
+            return;
+        }
         if (path.equals("main:/"))
         {
             return;

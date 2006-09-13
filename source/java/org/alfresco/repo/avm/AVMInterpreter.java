@@ -148,6 +148,10 @@ public class AVMInterpreter
                 }
                 AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]),
                                                          command[1]);
+                if (desc == null)
+                {
+                    return "Not Found.";
+                }
                 Map<String, AVMNodeDescriptor> listing =
                     fService.getDirectoryListing(desc);
                 for (String name : listing.keySet())
@@ -424,6 +428,10 @@ public class AVMInterpreter
                     return "Syntax Error.";
                 }
                 AVMStoreDescriptor desc = fService.getAVMStore(command[1]);
+                if (desc == null)
+                {
+                    return "Not Found.";
+                }
                 out.println(desc);
                 Map<QName, PropertyValue> props = 
                     fService.getStoreProperties(command[1]);

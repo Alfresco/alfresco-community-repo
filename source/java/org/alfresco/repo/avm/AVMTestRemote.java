@@ -134,21 +134,13 @@ public class AVMTestRemote extends TestCase
     }
     
     /**
-     * Test a call that should throw an exception.
+     * Test a call that should return null;
      */
     public void testErrorState()
     {
         try
         {
-            try
-            {
-                fAVMRemote.lookup(-1, "main:/fizz/fazz");
-                fail();
-            }
-            catch (AVMException e)
-            {
-                e.printStackTrace(System.out);
-            }
+            assertNull(fAVMRemote.lookup(-1, "main:/fizz/fazz"));
         }
         catch (Exception e)
         {

@@ -20,6 +20,7 @@ package org.alfresco.repo.avm;
 import java.util.List;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -114,6 +115,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
     public void resetLayer(String layerPath)
     {
         AVMNodeDescriptor desc = fAVMService.lookup(-1, layerPath);
+        if (desc == null)
+        {
+            throw new AVMNotFoundException("Not Found: " + layerPath);
+        }
         String [] parts = AVMNodeConverter.SplitBase(layerPath);
         fAVMService.removeNode(parts[0], parts[1]);
         fAVMService.createLayeredDirectory(desc.getIndirection(), parts[0], parts[1]);

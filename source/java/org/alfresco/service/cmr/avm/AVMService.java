@@ -367,8 +367,6 @@ public interface AVMService
      * @param path The simple absolute path to the parent directory.
      * @param includeDeleted Whether to see Deleted Nodes.
      * @return An AVMNodeDescriptor.
-     * @throws AVMNotFoundException If <code>path</code> does not exist or
-     * if <code>version</code> does not exist.
      * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal 
      * element that is not a directory.
      */
@@ -379,8 +377,6 @@ public interface AVMService
      * @param dir The descriptor for the directory node.
      * @param name The name to lookup.
      * @return The descriptor for the child.
-     * @throws AVMNotFoundException If <code>name</code> does not exist or
-     * if <code>dir</code> is dangling.
      * @throws AVMWrongTypeException If <code>dir</code> does not refer to a directory.
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name);
@@ -392,8 +388,6 @@ public interface AVMService
      * @param name The name to lookup.
      * @param includeDeleted Whether to see Deleted Nodes.
      * @return The descriptor for the child.
-     * @throws AVMNotFoundException If <code>name</code> does not exist or
-     * if <code>dir</code> is dangling.
      * @throws AVMWrongTypeException If <code>dir</code> does not refer to a directory.
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted);

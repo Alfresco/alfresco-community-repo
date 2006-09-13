@@ -61,12 +61,11 @@ public class OutputUtil
 	LOGGER.debug("computed avm path " + PARENT_AVM_PATH + "/" + parentName);
 	final String result = PARENT_AVM_PATH + "/" + parentName;
 	AVMService avmService = (AVMService)AVMContext.fgInstance.fAppContext.getBean("avmService");
-	try
-	{
-	    avmService.lookup(-1, result);
+	if (avmService.lookup(-1, result) != null)
+    {
 	    return result;
 	}
-	catch (AVMNotFoundException notFound)
+    else
 	{
 	    //	    avmService.createDirectory(PARENT_AVM_PATH, parentName);
 	    return PARENT_AVM_PATH;

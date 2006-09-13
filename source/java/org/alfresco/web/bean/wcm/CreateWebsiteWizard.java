@@ -17,6 +17,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,10 +101,16 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // create the AVM stores (layers) to represent the newly created location website
       createStagingSandbox(this.name);
       
-      // create layer for current user (TODO: based on role)
-      createUserSandbox(this.name, Application.getCurrentUser(context).getUserName());
+      // create a sandbox for each user (TODO: based on role?)
+      List<String> invitedUsers = getInvitedUsernames();
+      invitedUsers.add(Application.getCurrentUser(context).getUserName());
+      for (String username : invitedUsers)
+      {
+         createUserSandbox(this.name, username);
+      }
       
-      // TODO: create layers for invited users based on roles
+      // save the list of invited users against the store
+      this.nodeService.setProperty(nodeRef, ContentModel.PROP_USERSANDBOXES, (Serializable)invitedUsers);
       
       // TODO: import the ZIP structure into the AVM staging store
       
@@ -361,5 +368,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       String dnsProp = AVMConstants.PROP_DNS + store;
       this.avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
             new PropertyValue(DataTypeDefinition.TEXT, path));
+   }
+   
+   /**
+    * @return The list of invited usernames
+    */
+   private List<String> getInvitedUsernames()
+   {
+      // TODO: add the list of invited users here
+      return new ArrayList<String>(1);
    }
 }

@@ -154,6 +154,7 @@
       <component-class>org.alfresco.web.ui.repo.component.UIWorkflowSummary</component-class>
    </component>
    
+   
    <!-- ==================== CONVERTERS ==================== -->
    <component>
       <component-type>org.alfresco.faces.PermissionEvaluator</component-type>

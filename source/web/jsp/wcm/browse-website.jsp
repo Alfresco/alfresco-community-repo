@@ -17,12 +17,13 @@
 
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ taglib uri="/WEB-INF/wcm.tld" prefix="w" %>
 
 <%@ page buffer="64kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
 <r:page titleId="title_browse_website">
 
@@ -94,7 +95,13 @@
                      <a:panel id="staging-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
                         
                         <%-- Staging Sandbox Info here --%>
-                        ---STAGING SANDBOX INFO HERE---
+                        <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                           ---STAGING SANDBOX INFO HERE---<br>
+                           -------------------------------<br>
+                           Last Updated: 1234<br>
+                           12 items currently being modified<br>
+                           3 items pending approval
+                        <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
                         
                      </a:panel>
                      
@@ -107,10 +114,10 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
-                     <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
+                     <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
                         
                         <%-- User Sandboxes List --%>
-                        ---USER SANDBOXES HERE---
+                        <w:userSandboxes value="#{NavigationBean.currentNode.nodeRef}" />
                         
                      </a:panel>
                      

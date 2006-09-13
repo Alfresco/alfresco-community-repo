@@ -2516,4 +2516,29 @@ public class AVMServiceTest extends AVMServiceTestBase
             fail();
         }
     }
+    
+    /**
+     * Test AVMSyncService resetLayer.
+     */
+    public void testResetLayer()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.createFile("main:/layer", "figs").close();
+            assertFalse(recursiveContents("main:/a", -1, true).equals(
+                        recursiveContents("main:/layer", -1, true)));
+            System.out.println(recursiveList("main", -1, true));
+            fSyncService.resetLayer("main:/layer");
+            assertEquals(recursiveContents("main:/a", -1, true),
+                         recursiveContents("main:/layer", -1, true));
+            System.out.println(recursiveList("main", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
 }

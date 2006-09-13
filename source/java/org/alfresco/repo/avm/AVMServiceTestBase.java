@@ -27,6 +27,7 @@ import java.util.TreeMap;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -47,6 +48,10 @@ public class AVMServiceTestBase extends TestCase
      */
     protected static OrphanReaper fReaper;
     
+    /**
+     * The AVMSyncService.
+     */
+    protected static AVMSyncService fSyncService;
     /**
      * The application context.
      */
@@ -70,6 +75,7 @@ public class AVMServiceTestBase extends TestCase
             fContext = new FileSystemXmlApplicationContext("config/alfresco/avm-test-context.xml");
             fService = (AVMService)fContext.getBean("AVMService");
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
+            fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
         }
         fService.createAVMStore("main");
         fStartTime = System.currentTimeMillis();

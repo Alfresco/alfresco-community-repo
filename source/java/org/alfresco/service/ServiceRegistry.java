@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -88,6 +89,7 @@ public interface ServiceRegistry
     static final QName WORKFLOW_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WorkflowService");
     static final QName AUDIT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AuditService");
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
+    static final QName AVM_SYNC_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMSyncService");
     
     /**
      * Get the list of services provided by the Repository
@@ -280,4 +282,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     AVMService getAVMService();
+    
+    /**
+     * Get the AVM Sync Service.
+     * @return The AVM Sync Service.
+     */
+    @NotAuditable
+    AVMSyncService getAVMSyncService();
 }

@@ -34,9 +34,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Logger;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
@@ -45,8 +43,6 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  */
 public class AVMInterpreter
 {
-    private static Logger fgLogger = Logger.getLogger(AVMInterpreter.class);
-
     /**
      * The service interface.
      */

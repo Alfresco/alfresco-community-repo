@@ -83,7 +83,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private static Log logger = LogFactory.getLog(DbNodeServiceImpl.class);
     private static Log loggerPaths = LogFactory.getLog(DbNodeServiceImpl.class.getName() + ".paths");
     
-    private DictionaryService dictionaryService;
     private NodeDaoService nodeDaoService;
     private StoreArchiveMap storeArchiveMap;
     private NodeService avmNodeService;
@@ -91,11 +90,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public DbNodeServiceImpl()
     {
         storeArchiveMap = new StoreArchiveMap();        // in case it is not set
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
     }
 
     public void setNodeDaoService(NodeDaoService nodeDaoService)

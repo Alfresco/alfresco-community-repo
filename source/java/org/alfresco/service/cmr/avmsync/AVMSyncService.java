@@ -24,7 +24,7 @@ import java.util.List;
  * corresponding avm node trees.
  * @author britt
  */
-public interface AvmSyncService
+public interface AVMSyncService
 {
     /**
      * Get a difference list between two corresponding node trees.

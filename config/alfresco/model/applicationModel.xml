@@ -58,6 +58,11 @@
             <property name="app:avmstore">
                <type>d:text</type>
             </property>
+            <!-- list of usernames who have sandboxes in this website -->
+            <property name="app:usersandboxes">
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
          </properties>
          <associations>
             <child-association name="app:formtriples">

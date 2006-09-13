@@ -239,6 +239,7 @@ public interface ContentModel
     // AVM web folder
     static final QName TYPE_AVMWEBFOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webfolder");
     static final QName PROP_AVMSTORE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "avmstore");
+    static final QName PROP_USERSANDBOXES = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "usersandboxes");
     
     
     //

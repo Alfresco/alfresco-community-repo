@@ -32,6 +32,8 @@ public class AVMDifference implements Serializable
     public static final int NEWER = 0;
     public static final int OLDER = 1;
     public static final int CONFLICT = 2;
+    public static final int DIRECTORY = 3;
+    public static final int SAME = 4;
     
     /**
      * Version number of the source node.
@@ -119,5 +121,14 @@ public class AVMDifference implements Serializable
     public int getDifferenceCode()
     {
         return fDiffCode;
+    }
+    
+    /**
+     * Check for improperly initialized instances.
+     * @return Whether source and destination are non null.
+     */
+    public boolean isValid()
+    {
+        return fSourcePath != null && fDestPath != null;
     }
 }

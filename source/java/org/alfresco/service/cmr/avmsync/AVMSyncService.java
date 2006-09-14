@@ -45,14 +45,16 @@ public interface AVMSyncService
      * will cause the transaction to roll back.
      * @param diffList A List of AVMDifference structs.
      * @param ignoreConflicts If this is true the update will skip those 
-     * AVMDifferences which are in conflict or for which the source is older than
+     * AVMDifferences which are in conflict with
      * the destination.
+     * @param ignoreOlder If this is true the update will skip those 
+     * AVMDifferences which have the source older than the destination.
      * @param overrideConflicts If this is true the update will override conflicting
      * AVMDifferences and replace the destination with the conflicting source.
      * @param overrideOlder If this is true the update will override AVMDifferences
      * in which the source is older than the destination and overwrite the destination.
      */
-    public void update(List<AVMDifference> diffList, boolean ignoreConflicts, 
+    public void update(List<AVMDifference> diffList, boolean ignoreConflicts, boolean ignoreOlder,
                        boolean overrideConflicts, boolean overrideOlder);
     
     /**

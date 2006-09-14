@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -56,6 +58,79 @@ import org.alfresco.service.transaction.TransactionService;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Test AVMSyncService update.
+     */
+    public void testUpdate()
+    {
+        try
+        {
+            setupBasicTree();
+            // Try branch to branch update.
+            fService.createBranch(-1, "main:/a", "main:/", "abranch");
+            fService.createFile("main:/abranch", "monkey").close();
+            fService.getFileOutputStream("main:/abranch/b/c/foo").close();
+            System.out.println(recursiveList("main", -1, true));
+            List<AVMDifference> diffs = new ArrayList<AVMDifference>();
+            diffs.add(new AVMDifference(-1, "main:/abranch/monkey",
+                                        -1, "main:/a/monkey",
+                                        AVMDifference.NEWER));
+            diffs.add(new AVMDifference(-1, "main:/abranch/b/c/foo",
+                                        -1, "main:/a/b/c/foo",
+                                        AVMDifference.NEWER));
+            fSyncService.update(diffs, false, false, false, false);
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
+            assertEquals(fService.lookup(-1, "main:/abranch/monkey").getId(),
+                         fService.lookup(-1, "main:/a/monkey").getId());
+            assertEquals(fService.lookup(-1, "main:/abranch/b/c/foo").getId(),
+                         fService.lookup(-1, "main:/a/b/c/foo").getId());
+            // Try updating a deletion.
+            fService.removeNode("main:/abranch", "monkey");
+            System.out.println(recursiveList("main", -1, true));
+            diffs.clear();
+            diffs.add(new AVMDifference(-1, "main:/abranch/monkey",
+                                        -1, "main:/a/monkey",
+                                        AVMDifference.NEWER));
+            fSyncService.update(diffs, false, false, false, false);
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
+            assertEquals(fService.lookup(-1, "main:/abranch/monkey", true).getId(),
+                         fService.lookup(-1, "main:/a/monkey", true).getId());
+            // Try one that should fail.
+            fService.createFile("main:/abranch", "monkey").close();
+            diffs.clear();
+            diffs.add(new AVMDifference(-1, "main:/a/monkey",
+                                        -1, "main:/abranch/monkey",
+                                        AVMDifference.NEWER));
+            try
+            {
+                fSyncService.update(diffs, false, false, false, false);
+                fail();
+            }
+            catch (AVMSyncException se)
+            {
+                // Do nothing.
+            }
+            // Get synced again by doing an override conflict.
+            System.out.println(recursiveList("main", -1, true));
+            diffs.clear();
+            diffs.add(new AVMDifference(-1, "main:/a/monkey",
+                      -1, "main:/abranch/monkey",
+                      AVMDifference.NEWER));
+            fSyncService.update(diffs, false, false, true, false);
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
+            assertEquals(fService.lookup(-1, "main:/a/monkey", true).getId(),
+                         fService.lookup(-1, "main:/abranch/monkey", true).getId());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
     /**
      * Test link AVMService call.
      */

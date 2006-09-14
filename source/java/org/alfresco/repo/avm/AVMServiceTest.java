@@ -59,6 +59,43 @@ import org.alfresco.service.transaction.TransactionService;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test the flatten operation, with a little bit of compare and update.
+     */
+    public void testFlatten()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
+            // Change some stuff.
+            fService.createFile("main:/layer/b", "fig").close();
+            fService.getFileOutputStream("main:/layer/b/c/foo").close();
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
+            // Do a compare.
+            List<AVMDifference> diffs = 
+                fSyncService.compare(-1, "main:/layer", -1, "main:/a");
+            for (AVMDifference diff : diffs)
+            {
+                System.out.println(diff);
+            }
+            // Update.
+            fSyncService.update(diffs, false, false, false, false);
+            System.out.println(recursiveList("main", -1, true));
+            // Flatten.
+            fSyncService.flatten("main:/layer", "main:/a");
+            System.out.println(recursiveList("main", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Test of Descriptor indirection field.
      */
     public void testDescriptorIndirection()

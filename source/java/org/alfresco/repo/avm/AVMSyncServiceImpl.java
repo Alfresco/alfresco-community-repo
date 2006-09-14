@@ -508,16 +508,16 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param layer The on top node.
      * @param underlying The underlying node.
      */
-    private void flatten(AVMNodeDescriptor layer, AVMNodeDescriptor underlying)
+    private boolean flatten(AVMNodeDescriptor layer, AVMNodeDescriptor underlying)
     {
         if (!layer.isLayeredDirectory())
         {
-            return;
+            return false;
         }
         // layer and underlying must match for flattening to be useful.
         if (!layer.getIndirection().equals(underlying.getPath()))
         {
-            return;
+            return false;
         }
         // The underlying thing must be a directory.
         if (!underlying.isDirectory())
@@ -529,11 +529,12 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // If the layer is empty (directly, that is) we're done.
         if (layerListing.size() == 0)
         {
-            return;
+            return true;
         }
         // Grab the listing 
         Map<String, AVMNodeDescriptor> underListing =
             fAVMService.getDirectoryListing(-1, underlying.getPath(), true);
+        boolean flattened = true;
         for (String name : layerListing.keySet())
         {
             AVMNodeDescriptor topNode = layerListing.get(name);
@@ -551,9 +552,18 @@ public class AVMSyncServiceImpl implements AVMSyncService
             else
             {
                 // Otherwise recursively flatten the children.
-                flatten(topNode, bottomNode);
+                if (flatten(topNode, bottomNode))
+                {
+                    fAVMService.removeNode(layer.getPath(), name);
+                    fAVMService.uncover(layer.getPath(), name);
+                }
+                else
+                {
+                    flattened = false;
+                }
             }
         }
+        return flattened;
     }
     
     /**

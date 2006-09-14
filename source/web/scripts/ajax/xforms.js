@@ -32,6 +32,7 @@ dojo.declare("alfresco.xforms.Widget",
 		 this.node = node;
 		 this.id = this.node.getAttribute("id");
 	       },
+             parent: null,
 	     _getBinding: function()
 	       {
 		 return this.xform.getBinding(this.node);
@@ -39,7 +40,7 @@ dojo.declare("alfresco.xforms.Widget",
 	     isRequired: function()
 	       {
 		 var binding = this._getBinding();
-		 var required = binding.required == "true()";
+		 var required = binding && binding.required == "true()";
 		 return required;
 	       },
 	     getInitialValue: function()
@@ -72,30 +73,6 @@ dojo.declare("alfresco.xforms.Widget",
 		 }
 		 return dojo.dom.textContent(node);
 	       },
-	     appendHTML: function(attach_point)
-	       {
-		 var row = document.createElement("tr");
-		 attach_point.appendChild(row);
-		 var cell = document.createElement("td");
-		 row.appendChild(cell);
-		 if (this.isRequired())
-		 {
-		   var req = document.createElement("img");
-		   req.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/required_field.gif");
-		   req.setAttribute("style", "margin:5px");
-		   cell.appendChild(req);
-		 }
-
-		 var cell = document.createElement("td");
-		 row.appendChild(cell);
-
-		 var label = this._getLabelNode();
-		 if (label)
-		   cell.appendChild(document.createTextNode(dojo.dom.textContent(label)));
-		 cell = document.createElement("td");
-		 row.appendChild(cell);
-		 this._appendHTMLForWidgetCell(cell);
-	       },
 	     _getLabelNode: function()
 	       {
 		 var labels = this.node.getElementsByTagName("label");
@@ -107,6 +84,11 @@ dojo.declare("alfresco.xforms.Widget",
 		     return labels[i];
 		 }
 		 return null;
+	       },
+	     getLabel: function()
+	       {
+		 var node = this._getLabelNode();
+		 return node ? dojo.dom.textContent(node) : "";
 	       }
 	     });
 
@@ -118,7 +100,7 @@ dojo.declare("alfresco.xforms.NumericStepper",
 		 this.inherited("initializer", [ xform, node ]);
 		 this.stepper_type = stepper_type;
 	       },
-	     _appendHTMLForWidgetCell: function(attach_point)
+	     render: function(attach_point)
 	       {
 		 var nodeRef = document.createElement("div");
 		 attach_point.appendChild(nodeRef);
@@ -153,7 +135,7 @@ dojo.declare("alfresco.xforms.DatePicker",
 		 this.inherited("initializer", [ xform, node ]);
 		 dojo.debug("created a TextField");
 	       },
-	     _appendHTMLForWidgetCell: function(attach_point)
+	     render: function(attach_point)
 	       {
 		 var initial_value = this.getInitialValue() || dojo.widget.DatePicker.util.toRfcDate();
 		 var dateTextBoxDiv = document.createElement("div");
@@ -201,7 +183,7 @@ dojo.declare("alfresco.xforms.TextField",
 		 this.inherited("initializer", [ xform, node ]);
 		 dojo.debug("created a TextField");
 	       },
-	     _appendHTMLForWidgetCell: function(attach_point)
+	     render: function(attach_point)
 	       {
 		 var nodeRef = document.createElement("div");
 		 attach_point.appendChild(nodeRef);
@@ -234,7 +216,7 @@ dojo.declare("alfresco.xforms.TextArea",
 		 this.inherited("initializer", [ xform, node ]);
 		 dojo.debug("created a TextArea");
 	       },
-	     _appendHTMLForWidgetCell: function(attach_point)
+	     render: function(attach_point)
 	       {
 		 dojo.debug("xxx " + this.id);
 		 var nodeRef = document.createElement("div");
@@ -273,7 +255,7 @@ dojo.declare("alfresco.xforms.Select1",
 		 }
 		 return result;
 	       },
-	     _appendHTMLForWidgetCell: function(attach_point)
+	     render: function(attach_point)
 	       {
 		 var values = this.getValues();
 		 for (var i in values)
@@ -332,7 +314,7 @@ dojo.declare("alfresco.xforms.CheckBox",
 	       {
 		 this.inherited("initializer", [ xform, node ]);
 	       },
-	     _appendHTMLForWidgetCell: function(attach_point)
+	     render: function(attach_point)
 	       {
 		 var nodeRef = document.createElement("div");
 		 attach_point.appendChild(nodeRef);
@@ -359,22 +341,38 @@ dojo.declare("alfresco.xforms.Group",
 	       {
 		 this.inherited("initializer", [ xform, node ]);
 	       },
-	     appendHTML: function(attach_point)
+	     children: [],
+             domNode: null,
+	     addChild: function(child)
+	     {
+	       this.children.push(child);
+	       child.parent = this;
+	       var d = document.createElement("div");
+	       d.setAttribute("style", "border: 2px solid green; width: 100%;");
+	       this.domNode.appendChild(d);
+	       if (child.isRequired() && child.node.nodeName != "xforms:repeat")
 	       {
-		 var n = attach_point;
-		 if (attach_point.nodeName.toLowerCase() == "table")
-		 {
-		   var tr = document.createElement("tr");
-		   var td = document.createElement("td");
-		   td.setAttribute("colspan", "3");
-		   tr.appendChild(td);
-		   attach_point.appendChild(tr);
-		   n = td;
-		 }
-		 var table = document.createElement("table");
-		 table.setAttribute("style", "width:100%; border: 0px solid blue;");
-		 n.appendChild(table);
-		 return table;
+		 var requiredImage = document.createElement("img");
+		 requiredImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/required_field.gif");
+		 requiredImage.setAttribute("style", "margin:5px");
+		 requiredImage.setAttribute("alt", "node Name " + child.node.nodeName);
+		 d.appendChild(requiredImage);
+	       }
+	       var label = child._getLabelNode();
+	       if (label)
+		 d.appendChild(document.createTextNode(dojo.dom.textContent(label)));
+	       var s = document.createElement("span");
+	       d.appendChild(s);
+	       child.render(s);
+	     },
+	     render: function(attach_point)
+	       {
+		 this.domNode = document.createElement("div");
+		 this.domNode.setAttribute("style", "width:100%; border: 0px solid blue;");
+		 if (parent)
+		   this.domNode.style.marginLeft = "10px";
+		 attach_point.appendChild(this.domNode);
+		 return this.domNode;
 	       }
 	     });
 
@@ -385,15 +383,10 @@ dojo.declare("alfresco.xforms.Submit",
 	       {
 		 this.inherited("initializer", [ xform, node ]);
 	       },
-	     appendHTML: function(attach_point)
+	     render: function(attach_point)
 	       {
-		 var row = document.createElement("tr");
-		 attach_point.appendChild(row);
-		 var cell = document.createElement("td");
-		 cell.setAttribute("colspan", "3");
-		 row.appendChild(cell);
 		 var nodeRef = document.createElement("div");
-		 cell.appendChild(nodeRef);
+		 attach_point.appendChild(nodeRef);
 		 var w = dojo.widget.createWidget("Button", 
 						  {
 						  widgetId: this.id,
@@ -401,8 +394,32 @@ dojo.declare("alfresco.xforms.Submit",
 						  }, 
 						  nodeRef);
 		 w.hide();
-		 document.submitTrigger = w;
-		 document.submitTrigger.done = false;
+		 w.onClick = function()
+		   {
+		     document.submitTrigger = w;
+		     document.submitTrigger.done = false;
+		     fireAction(w.widgetId);
+		   };
+	       }
+	     });
+
+dojo.declare("alfresco.xforms.Trigger",
+	     alfresco.xforms.Widget,
+	     {
+	     initializer: function(xform, node) 
+	       {
+		 this.inherited("initializer", [ xform, node ]);
+	       },
+	     render: function(attach_point)
+	       {
+		 var nodeRef = document.createElement("div");
+		 attach_point.appendChild(nodeRef);
+		 var w = dojo.widget.createWidget("Button", 
+						  {
+						  widgetId: this.id,
+						  caption: this.getLabel() + " " + this.id
+						  }, 
+						  nodeRef);
 		 w.onClick = function()
 		   {
 		     fireAction(w.widgetId);
@@ -485,8 +502,10 @@ function xforms_init()
 				  ? bindings[i].parent.id
 				  : 'null'));
     }
-    
-    load_body(xform, xform.getBody(), document.getElementById("alf-ui"));
+    var alfUI = document.getElementById("alf-ui");
+    var root = new alfresco.xforms.Group(xform, document.getElementById("alf-ui"));
+    root.render(alfUI);
+    load_body(xform, xform.getBody(), root);
   },
   error: function(type, e)
   {
@@ -496,20 +515,27 @@ function xforms_init()
   dojo.io.bind(req);
 }
 
-function load_body(xform, currentNode, domNode)
+function load_body(xform, currentNode, parentWidget)
 {
   dojo.lang.forEach(currentNode.childNodes, function(o)
   {
-    dojo.debug("loading " + o + " NN " + o.nodeName);
+    dojo.debug("loading " + o + " NN " + o.nodeName + " into " + parentWidget);
     switch (o.nodeName.toLowerCase())
     {
     case "xforms:group":
       var w = new alfresco.xforms.Group(xform, o);
-      load_body(xform, o, w.appendHTML(domNode));
+      dojo.debug("adding " + w + " to " + parentWidget);
+      parentWidget.addChild(w);
+      load_body(xform, o, w);
+      break;
+    case "xforms:repeat":
+      var w = new alfresco.xforms.Group(xform, o);
+      parentWidget.addChild(w);
+      load_body(xform, o, w);
       break;
     case "xforms:textarea":
       var w = new alfresco.xforms.TextArea(xform, o);
-      w.appendHTML(domNode);
+      parentWidget.addChild(w);
       break;
     case "xforms:input":
       var type = xform.getType(o);
@@ -528,24 +554,27 @@ function load_body(xform, currentNode, domNode)
       default:
 	var w = new alfresco.xforms.TextField(xform, o);
       }
-      w.appendHTML(domNode);
+      parentWidget.addChild(w);
       break;
     case "xforms:select1":
       var w = (xform.getType(o) == "boolean"
 	       ? new alfresco.xforms.CheckBox(xform, o)
 	       : new alfresco.xforms.Select1(xform, o));
-      w.appendHTML(domNode);
+      parentWidget.addChild(domNode);
       break;
     case "xforms:submit":
       var w = new alfresco.xforms.Submit(xform, o);
-      w.appendHTML(domNode);
+      parentWidget.addChild(w);
       break;
-    case "xforms:repeat":
-      var w = new alfresco.xforms.Group(xform, o);
-      load_body(xform, o, w.appendHTML(domNode));
+    case "xforms:trigger":
+      var w = new alfresco.xforms.Trigger(xform, o);
+      parentWidget.addChild(w);
+      break;
+    case "chiba:data":
       break;
     default:
-      load_body(xform, o, domNode);
+      load_body(xform, o, parentWidget);
+      break;
     }
   });
 }
@@ -558,9 +587,12 @@ function fireAction(id)
   mimetype: "text/xml",
   load: function(type, data, evt)
   {
+    if (document.submitTrigger)
+    {
       document.submitTrigger.done = true;
       document.submitTrigger.currentButton.click();
       document.submitTrigger.currentButton = null;
+    }
   },
   error: function(type, e)
   {

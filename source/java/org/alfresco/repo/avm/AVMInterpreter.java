@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
@@ -47,6 +50,11 @@ public class AVMInterpreter
      * The service interface.
      */
     private AVMService fService;
+    
+    /**
+     * The sync service.
+     */
+    private AVMSyncService fSyncService;
     
     /**
      * The reader for interaction.
@@ -86,6 +94,15 @@ public class AVMInterpreter
     public void setAvmService(AVMService service)
     {
         fService = service;
+    }
+    
+    /**
+     * Set the AVM sync service.
+     * @param syncService
+     */
+    public void setAvmSyncService(AVMSyncService syncService)
+    {
+        fSyncService = syncService;
     }
     
     /**
@@ -439,6 +456,49 @@ public class AVMInterpreter
                 {
                     out.println(name + ": " + props.get(name));
                 }
+            }
+            else if (command[0].equals("compare"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                List<AVMDifference> diffs = fSyncService.compare(Integer.parseInt(command[2]),
+                                                                 command[1],
+                                                                 Integer.parseInt(command[4]),
+                                                                 command[3]);
+                for (AVMDifference diff : diffs)
+                {
+                    out.println(diff);
+                }
+            }
+            else if (command[0].equals("update"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                AVMDifference diff = new AVMDifference(Integer.parseInt(command[2]), command[1], 
+                                                       -1, command[3], AVMDifference.NEWER);
+                List<AVMDifference> diffs = new ArrayList<AVMDifference>();
+                diffs.add(diff);
+                fSyncService.update(diffs, false, false, false, false);
+            }
+            else if (command[0].equals("resetLayer"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fSyncService.resetLayer(command[1]);
+            }
+            else if (command[0].equals("flatten"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fSyncService.flatten(command[1], command[2]);
             }
             else
             {

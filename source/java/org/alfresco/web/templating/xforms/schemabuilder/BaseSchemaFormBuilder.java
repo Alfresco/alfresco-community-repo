@@ -462,11 +462,10 @@ public class BaseSchemaFormBuilder
      * @param controlElement __UNDOCUMENTED__
      * @param controlType    __UNDOCUMENTED__
      */
-    public void endFormControl(Element controlElement,
-                               XSTypeDefinition controlType,
-                               int minOccurs,
-                               int maxOccurs) {
-        return;
+    public void endFormControl(final Element controlElement,
+                               final XSTypeDefinition controlType,
+                               final Occurs o) 
+    {
     }
 
     /**
@@ -474,12 +473,11 @@ public class BaseSchemaFormBuilder
      *
      * @param groupElement __UNDOCUMENTED__
      */
-    public void endFormGroup(Element groupElement,
-                             XSTypeDefinition controlType,
-                             int minOccurs,
-                             int maxOccurs,
-                             Element modelSection) {
-        return;
+    public void endFormGroup(final Element groupElement,
+                             final XSTypeDefinition controlType,
+                             final Occurs o,
+                             final Element modelSection) 
+    {
     }
 
     /**
@@ -493,8 +491,8 @@ public class BaseSchemaFormBuilder
      */
     public Element startBindElement(Element bindElement,
                                     XSTypeDefinition controlType,
-                                    int minOccurs,
-                                    int maxOccurs) {
+                                    final Occurs o)
+    {
         // START WORKAROUND
         // Due to a Chiba bug, anyType is not a recognized type name.
         // so, if this is an anyType, then we'll just skip the type
@@ -502,10 +500,11 @@ public class BaseSchemaFormBuilder
         //
         // type.getName() may be 'null' for anonymous types, so compare against
         // static string (see bug #1172541 on sf.net)
-        if (!"anyType".equals(controlType.getName())) {
+        if (!"anyType".equals(controlType.getName())) 
+	{
             Element enveloppe = bindElement.getOwnerDocument().getDocumentElement();
             String typeName = this.getXFormsTypeName(enveloppe, controlType);
-            if (typeName != null && !typeName.equals(""))
+            if (typeName != null && typeName.length() != 0)
                 bindElement.setAttributeNS(XFORMS_NS,
 					   getXFormsNSPrefix() + "type",
 					   typeName);
@@ -513,7 +512,7 @@ public class BaseSchemaFormBuilder
 
 	bindElement.setAttributeNS(XFORMS_NS,
 				   getXFormsNSPrefix() + "required",
-				   minOccurs == 0 ? "false()" : "true()");
+				   o.minimum == 0 ? "false()" : "true()");
 	
 
         //no more minOccurs & maxOccurs element: add a constraint if maxOccurs>1:
@@ -521,15 +520,13 @@ public class BaseSchemaFormBuilder
         String minConstraint = null;
         String maxConstraint = null;
 
-        if (minOccurs > 1) {
+        if (o.minimum > 1) 
             //if 0 or 1 -> no constraint (managed by "required")
-            minConstraint = "count(.) >= " + minOccurs;
-        }
+            minConstraint = "count(.) >= " + o.minimum;
 
-        if (maxOccurs > 1) {
+        if (o.maximum > 1) 
             //if 1 or unbounded -> no constraint
-            maxConstraint = "count(.) <= " + maxOccurs;
-        }
+            maxConstraint = "count(.) <= " + o.maximum;
 
         String constraint = null;
 
@@ -545,13 +542,6 @@ public class BaseSchemaFormBuilder
             bindElement.setAttributeNS(XFORMS_NS,
 				       getXFormsNSPrefix() + "constraint",
 				       constraint);
-
-	//if (minOccurs != 1) {
-	//bindElement.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "minOccurs",String.valueOf(minOccurs));
-	//}
-	//if (maxOccurs != 1) {
-	//bindElement.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "maxOccurs",maxOccurs == -1 ? "unbounded" : String.valueOf((maxOccurs)));
-	//}
         return bindElement;
     }
 

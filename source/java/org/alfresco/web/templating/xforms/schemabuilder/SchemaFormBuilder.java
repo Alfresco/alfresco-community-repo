@@ -34,7 +34,57 @@ import org.alfresco.web.templating.*;
  * @author Brian Dueck
  * @version $Id: SchemaFormBuilder.java,v 1.16 2005/02/10 13:24:57 joernt Exp $
  */
-public interface SchemaFormBuilder {
+public interface SchemaFormBuilder 
+{
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public static class Occurs
+    {
+	public final static int UNBOUNDED = -1;
+	
+	public final int minimum;
+	public final int maximum;
+
+	public Occurs(final XSParticle particle)
+	{
+	    if (particle == null)
+	    {
+		this.minimum = 1;
+		this.maximum = 1;
+	    }
+	    else
+	    {
+		this.minimum = particle.getMinOccurs();
+		this.maximum = (particle.getMaxOccursUnbounded()
+				? Occurs.UNBOUNDED
+				: particle.getMaxOccurs());
+	    }
+	}
+
+	public Occurs(final int minimum)
+	{
+	    this(minimum, UNBOUNDED);
+	}
+
+	public Occurs(final int minimum, final int maximum)
+	{
+	    this.minimum = minimum;
+	    this.maximum = maximum;
+	}
+
+	public boolean isUnbounded()
+	{
+	    return this.maximum == UNBOUNDED;
+	}
+
+	public String toString()
+	{
+	    return "minimum=" + minimum + ", maximum=" + maximum;
+	}
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
 
     public final static Log LOGGER = 
 	LogFactory.getLog(SchemaFormBuilder.class);
@@ -357,9 +407,7 @@ public interface SchemaFormBuilder {
      */
     public void endFormControl(Element controlElement,
                                XSTypeDefinition controlType,
-                               int minOccurs,
-                               int maxOccurs);
-
+                               Occurs occurs);
     /**
      * __UNDOCUMENTED__
      *
@@ -367,8 +415,7 @@ public interface SchemaFormBuilder {
      */
     public void endFormGroup(Element groupElement,
                              XSTypeDefinition controlType,
-                             int minOccurs,
-                             int maxOccurs,
+                             Occurs occurs,
                              Element modelSection);
 
     /**
@@ -393,8 +440,7 @@ public interface SchemaFormBuilder {
      */
     public Element startBindElement(Element bindElement,
                                     XSTypeDefinition controlType,
-                                    int minOccurs,
-                                    int maxOccurs);
+                                    Occurs occurs);
 
     /**
      * This method is invoked after the form builder creates a form control

@@ -20,27 +20,65 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * XHTML implementation of WrapperElementsBuilder: allows to wrap the XForm document in XHTML tags.
  *
  * @author Sophie Ramel
  */
-public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
+public class XHTMLWrapperElementsBuilder 
+    implements WrapperElementsBuilder 
+{
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private static class Link
+    {
+	public final String href;
+	public final String type;
+	public final String rel;
+
+	public Link(final String href, final String type, final String rel)
+	{
+	    this.href = href;
+	    this.type = type;
+	    this.rel = rel;
+	}
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private static class Meta
+    {
+	public final String httpEquiv;
+	public final String name;
+	public final String content;
+	public final String scheme;
+
+	public Meta(final String httpEquiv,
+		    final String name,
+		    final String content,
+		    final String scheme)
+	{
+	    this.httpEquiv = httpEquiv;
+	    this.name = name;
+	    this.content = content;
+	    this.scheme = scheme;
+	}
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
 
     private final static String XHTML_NS = "http://www.w3.org/1999/xhtml";
     private final static String XHTML_PREFIX = "xhtml";
-    //    private final static String XHTML_NS = "http://www.w3.org/2002/06/xhtml2";
-    //    private final static String XHTML_PREFIX = "html";
+
 
     private String title;
-    private final Vector links = new Vector();
-    private final Vector meta = new Vector();
-    private final Hashtable namespaces = new Hashtable();
+    private final Collection<Link> links = new LinkedList<Link>();
+    private final Collection<Meta> meta = new LinkedList<Meta>();
+    private final HashMap<String, String> namespaces = 
+	new HashMap<String, String>();
 
     /**
      * Creates a new instance of XHTMLWrapperElementsBuilder
@@ -50,7 +88,8 @@ public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
     /**
      * add a tag "title" in the header of the HTML document
      */
-    public void setTitle(String title) {
+    public void setTitle(String title) 
+    {
         this.title = title;
     }
 
@@ -61,9 +100,11 @@ public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
      * @param type the "type" parameter of the "link" tag
      * @param rel  the "rel" parameter of the "link" tag
      */
-    public void addLink(String href, String type, String rel) {
-        String[] l = { href, type, rel };
-        links.add(l);
+    public void addLink(final String href, 
+			final String type, 
+			final String rel) 
+    {
+        links.add(new Link(href, type, rel));
     }
 
     /**
@@ -74,15 +115,17 @@ public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
      * @param content    the "content" parameter of the "META" tag
      * @param scheme     the "scheme" parameter of the "META" tag
      */
-    public void addMeta(String http_equiv,
-                        String name,
-                        String content,
-                        String scheme) {
-        String[] s = new String[] { http_equiv, name, content, scheme};
-        meta.add(s);
+    public void addMeta(final String httpEquiv,
+                        final String name,
+                        final String content,
+                        final String scheme) 
+    {
+        meta.add(new Meta(httpEquiv, name, content, scheme));
     }
 
-    public void addNamespaceDeclaration(String prefix, String url) {
+    public void addNamespaceDeclaration(final String prefix,
+					final String url) 
+    {
         namespaces.put(prefix, url);
     }
 
@@ -92,7 +135,8 @@ public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
      * @param controlElement the control element (input, select, repeat, group, ...)
      * @return the wrapper element, already containing the control element
      */
-    public Element createControlsWrapper(Element controlElement) {
+    public Element createControlsWrapper(final Element controlElement) 
+    {
         return controlElement;
     }
 
@@ -101,25 +145,23 @@ public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
      *
      * @return the enveloppe
      */
-    public Element createEnvelope(Document doc) {
+    public Element createEnvelope(Document doc) 
+    {
         Element html = doc.createElementNS(XHTML_NS, XHTML_PREFIX + ":html");
         //set namespace attribute
         html.setAttributeNS(SchemaFormBuilder.XMLNS_NAMESPACE_URI,
-                "xmlns:" + XHTML_PREFIX,
-                XHTMLWrapperElementsBuilder.XHTML_NS);
+			    "xmlns:" + XHTML_PREFIX,
+			    XHTMLWrapperElementsBuilder.XHTML_NS);
         doc.appendChild(html);
 
         //other namespaces
-        Enumeration enumeration = namespaces.keys();
-        while (enumeration.hasMoreElements()) {
-            String prefix = (String) enumeration.nextElement();
-            String ns = (String) namespaces.get(prefix);
+        for (String prefix : this.namespaces.keySet())
+	{
             html.setAttributeNS(SchemaFormBuilder.XMLNS_NAMESPACE_URI,
-                    "xmlns:" + prefix,
-                    ns);
+				"xmlns:" + prefix,
+				this.namespaces.get(prefix));
 
         }
-
         return html;
     }
 
@@ -129,7 +171,8 @@ public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
      * @param groupElement the group or repeat element
      * @return the wrapper element
      */
-    public Element createGroupContentWrapper(Element groupElement) {
+    public Element createGroupContentWrapper(Element groupElement) 
+    {
         return groupElement;
     }
 
@@ -139,8 +182,8 @@ public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
      * @param enveloppeElement the form element (chiba:form or other)
      * @return the wrapper element
      */
-
-    public Element createFormWrapper(Element enveloppeElement) {
+    public Element createFormWrapper(Element enveloppeElement) 
+    {
         Document doc = enveloppeElement.getOwnerDocument();
         Element body = doc.createElementNS(XHTML_NS, XHTML_PREFIX + ":body");
         //body.appendChild(formElement);
@@ -154,76 +197,54 @@ public class XHTMLWrapperElementsBuilder implements WrapperElementsBuilder {
      * @param modelElement the xforms:model element
      * @return the wrapper element, already containing the model
      */
-    public Element createModelWrapper(Element modelElement) {
+    public Element createModelWrapper(Element modelElement) 
+    {
         Document doc = modelElement.getOwnerDocument();
         Element head = doc.createElementNS(XHTML_NS, XHTML_PREFIX + ":head");
         head.appendChild(modelElement);
 
         //eventually add other info
-        if ((title != null) && !title.equals("")) {
+        if (title != null && title.length() != 0) 
+        {
             Element title_el = doc.createElementNS(XHTML_NS, XHTML_PREFIX + ":title");
             Text title_text = doc.createTextNode(title);
             title_el.appendChild(title_text);
             head.appendChild(title_el);
         }
 
-        if ((meta != null) && !meta.isEmpty()) {
-            Iterator it = meta.iterator();
+	for (Meta m : this.meta) 
+	{
+	    Element meta_el = doc.createElementNS(XHTML_NS, XHTML_PREFIX + ":META");
+	    head.appendChild(meta_el);
+	    
+	    //attributes
+	    if (m.httpEquiv != null && m.httpEquiv.length() != 0)
+		meta_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":http-equiv", 
+				       m.httpEquiv);
+	    if (m.name != null && m.name.length() != 0)
+		meta_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":name", m.name);
 
-            while (it.hasNext()) {
-                String[] m = (String[]) it.next();
-                String http_equiv = m[0];
-                String name = m[1];
-                String content = m[2];
-                String scheme = m[3];
+	    if (m.content != null && m.content.length() != 0)
+		meta_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":content", m.content);
 
-                Element meta_el = doc.createElementNS(XHTML_NS, XHTML_PREFIX + ":META");
-                head.appendChild(meta_el);
-
-                //attributes
-                if ((http_equiv != null) && !http_equiv.equals("")) {
-                    meta_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":http-equiv", http_equiv);
-                }
-
-                if ((name != null) && !name.equals("")) {
-                    meta_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":name", name);
-                }
-
-                if ((content != null) && !content.equals("")) {
-                    meta_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":content", content);
-                }
-
-                if ((scheme != null) && !scheme.equals("")) {
-                    meta_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":scheme", scheme);
-                }
-            }
+	    if (m.scheme != null && m.scheme.length() != 0)
+		meta_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":scheme", m.scheme);
         }
 
-        if ((links != null) && !links.isEmpty()) {
-            Iterator it = links.iterator();
+	for (Link l : this.links)
+	{
+	    Element link_el = doc.createElementNS(XHTML_NS, XHTML_PREFIX + ":LINK");
+	    head.appendChild(link_el);
 
-            while (it.hasNext()) {
-                String[] l = (String[]) it.next();
-                String href = l[0];
-                String type = l[1];
-                String rel = l[2];
+	    //attributes
+	    if (l.href != null && l.href.length() != 0)
+		link_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":href", l.href);
 
-                Element link_el = doc.createElementNS(XHTML_NS, XHTML_PREFIX + ":LINK");
-                head.appendChild(link_el);
+	    if (l.type != null && l.type.length() != 0)
+		link_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":type", l.type);
 
-                //attributes
-                if ((href != null) && !href.equals("")) {
-                    link_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":href", href);
-                }
-
-                if ((type != null) && !type.equals("")) {
-                    link_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":type", type);
-                }
-
-                if ((rel != null) && !rel.equals("")) {
-                    link_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":rel", rel);
-                }
-            }
+	    if (l.rel != null && l.rel.length() != 0)
+		link_el.setAttributeNS(XHTML_NS, XHTML_PREFIX + ":rel", l.rel);
         }
         return head;
     }

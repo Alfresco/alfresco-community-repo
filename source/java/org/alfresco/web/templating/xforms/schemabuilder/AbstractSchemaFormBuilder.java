@@ -57,6 +57,8 @@ import org.alfresco.util.TempFileProvider;
  */
 public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
+    ////////////////////////////////////////////////////////////////////////////
+
     private final Comparator typeExtensionSorter = new Comparator() 
     {
 	public int compare(Object obj1, Object obj2) 
@@ -610,8 +612,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      */
     public void endFormControl(Element controlElement,
                                XSTypeDefinition controlType,
-                               int minOccurs,
-                               int maxOccurs) 
+                               Occurs occurs)
     {
     }
 
@@ -1081,51 +1082,15 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      *
      * @return a table containing minOccurs and MaxOccurs
      */
-    public int[] getOccurance(XSElementDeclaration elDecl) {
-        int minOccurs = 1;
-        int maxOccurs = 1;
-
+    public Occurs getOccurance(XSElementDeclaration elDecl) {
         //get occurance on encosing element declaration
         XSParticle particle =
                 this.findCorrespondingParticleInComplexType(elDecl);
-        if (particle != null) {
-            minOccurs = particle.getMinOccurs();
-            if (particle.getMaxOccursUnbounded())
-                maxOccurs = -1;
-            else
-                maxOccurs = particle.getMaxOccurs();
-        }
-
-        //if not set, get occurance of model group content
-        //no -> this is made in "addGroup" directly !
-        /*if (minOccurs == 1 && maxOccurs == 1) {
-            XSTypeDefinition type = elDecl.getTypeDefinition();
-            if (type != null
-                && type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-                XSComplexTypeDefinition complexType =
-                    (XSComplexTypeDefinition) type;
-                XSParticle thisParticle = complexType.getParticle();
-                if (thisParticle != null) {
-                    minOccurs = thisParticle.getMinOccurs();
-                    if (thisParticle.getMaxOccursUnbounded())
-                        maxOccurs = -1;
-                    else
-                        maxOccurs = thisParticle.getMaxOccurs();
-                }
-            }
-        }*/
+	Occurs result = new Occurs(particle);
 
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("getOccurance for "
-                    + elDecl.getName()
-                    + ", minOccurs="
-                    + minOccurs
-                    + ", maxOccurs="
-                    + maxOccurs);
-
-        int[] result = new int[2];
-        result[0] = minOccurs;
-        result[1] = maxOccurs;
+            LOGGER.debug("getOccurance for " + elDecl.getName() + 
+			 ", " + result);
         return result;
     }
 
@@ -1135,18 +1100,14 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                             XSTypeDefinition controlType,
                             XSElementDeclaration owner,
                             String pathToRoot) {
-
-        int[] occurance = this.getOccurance(owner);
-
-        addSimpleType(xForm,
-		      modelSection,
-		      formSection,
-		      controlType,
-		      owner.getName(),
-		      owner,
-		      pathToRoot,
-		      occurance[0],
-		      occurance[1]);
+        this.addSimpleType(xForm,
+			   modelSection,
+			   formSection,
+			   controlType,
+			   owner.getName(),
+			   owner,
+			   pathToRoot,
+			   this.getOccurance(owner));
     }
 
     private void addAttributeSet(Document xForm,
@@ -1276,43 +1237,33 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                 groupWrapper = _wrapper.createGroupContentWrapper(groupElement);
             }
 
-            int occurance[] = this.getOccurance(owner);
-            int minOccurs = occurance[0];
-            int maxOccurs = occurance[1];
-
+            final Occurs o = this.getOccurance(owner);
             Element repeatSection =
-                    addRepeatIfNecessary(xForm,
-                            modelSection,
-                            groupWrapper,
-                            controlType,
-                            minOccurs,
-                            maxOccurs,
-                            pathToRoot);
+		addRepeatIfNecessary(xForm,
+				     modelSection,
+				     groupWrapper,
+				     controlType,
+				     o,
+				     pathToRoot);
             Element repeatContentWrapper = repeatSection;
+	    
 
-            /*if(repeatSection!=groupWrapper)
-               //we have a repeat
-               {
-                   repeatContentWrapper=_wrapper.createGroupContentWrapper(repeatSection);
-                   addComplexTypeChildren(xForm,modelSection,repeatContentWrapper,controlType,owner,pathToRoot, true);
-               }
-               else
-                   addComplexTypeChildren(xForm,modelSection,repeatContentWrapper,controlType,owner,pathToRoot, false);
-             */
-            if (repeatSection != groupWrapper) { //we have a repeat
+            if (repeatSection != groupWrapper) 
+	    { 
+                // we have a repeat
                 repeatContentWrapper =
-                        _wrapper.createGroupContentWrapper(repeatSection);
+		    _wrapper.createGroupContentWrapper(repeatSection);
                 relative = true;
             }
 
             addComplexTypeChildren(xForm,
-                    modelSection,
-                    repeatContentWrapper,
-                    controlType,
-                    owner,
-                    pathToRoot,
-                    relative,
-                    checkIfExtension);
+				   modelSection,
+				   repeatContentWrapper,
+				   controlType,
+				   owner,
+				   pathToRoot,
+				   relative,
+				   checkIfExtension);
 
             Element realModel = modelSection;
             if (relative) {
@@ -1320,15 +1271,11 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                 realModel = DOMUtil.getLastChildElement(modelSection);
             }
 
-            endFormGroup(groupElement,
-                    controlType,
-                    minOccurs,
-                    maxOccurs,
-                    realModel);
+            this.endFormGroup(groupElement, controlType, o, realModel);
 
         } else if (LOGGER.isDebugEnabled())
             LOGGER.debug("addComplexType: control type is null for pathToRoot="
-                    + pathToRoot);
+			 + pathToRoot);
     }
 
     private void addComplexTypeChildren(Document xForm,
@@ -1394,23 +1341,17 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             //process group
             XSParticle particle = controlType.getParticle();
-            if (particle != null) {
+            if (particle != null) 
+	    {
                 XSTerm term = particle.getTerm();
-                if (term instanceof XSModelGroup) {
+                if (term instanceof XSModelGroup) 
+		{
                     if (LOGGER.isDebugEnabled())
                         LOGGER.debug("	Particle of "
                                 + controlType.getName()
                                 + " is a group --->");
 
                     XSModelGroup group = (XSModelGroup) term;
-
-                    //get maxOccurs
-                    int maxOccurs = particle.getMaxOccurs();
-                    if (particle.getMaxOccursUnbounded()) {
-                        maxOccurs = -1;
-                    }
-                    int minOccurs = particle.getMinOccurs();
-
                     //call addGroup on this group
                     this.addGroup(xForm,
                             modelSection,
@@ -1419,11 +1360,11 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                             controlType,
                             owner,
                             pathToRoot,
-                            minOccurs,
-                            maxOccurs,
+                            new Occurs(particle),
                             checkIfExtension);
 
-                } else if (LOGGER.isDebugEnabled())
+                }
+		else if (LOGGER.isDebugEnabled())
                     LOGGER.debug("	Particle of "
                             + controlType.getName()
                             + " is not a group: "
@@ -1447,7 +1388,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                             XSTypeDefinition controlType,
                             String pathToRoot) {
 
-        if (controlType == null) {
+        if (controlType == null) 
+	{
             // TODO!!! Figure out why this happens... for now just warn...
             // seems to happen when there is an element of type IDREFS
             LOGGER.warn("WARNING!!! controlType is null for "
@@ -2157,19 +2099,18 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                           XSComplexTypeDefinition controlType,
                           XSElementDeclaration owner,
                           String pathToRoot,
-                          int minOccurs,
-                          int maxOccurs,
+                          Occurs o,
                           boolean checkIfExtension) {
-        if (group != null) {
+        if (group != null) 
+	{
 
             Element repeatSection =
-                    addRepeatIfNecessary(xForm,
-                            modelSection,
-                            formSection,
-                            owner.getTypeDefinition(),
-                            minOccurs,
-                            maxOccurs,
-                            pathToRoot);
+		addRepeatIfNecessary(xForm,
+				     modelSection,
+				     formSection,
+				     owner.getTypeDefinition(),
+				     o,
+				     pathToRoot);
             Element repeatContentWrapper = repeatSection;
 
             if (repeatSection != formSection) {
@@ -2191,27 +2132,26 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                 if (LOGGER.isDebugEnabled())
                     LOGGER.debug("	: next term = " + term.getName());
 
-                int childMaxOccurs = currentNode.getMaxOccurs();
-                if (currentNode.getMaxOccursUnbounded())
-                    childMaxOccurs = -1;
-                int childMinOccurs = currentNode.getMinOccurs();
+                Occurs childOccurs = new Occurs(currentNode);
 
-                if (term instanceof XSModelGroup) {
+                if (term instanceof XSModelGroup) 
+		{
 
                     if (LOGGER.isDebugEnabled())
                         LOGGER.debug("	term is a group");
 
                     addGroup(xForm,
-                            modelSection,
-                            repeatContentWrapper,
-                            ((XSModelGroup) term),
-                            controlType,
-                            owner,
-                            pathToRoot,
-                            childMinOccurs,
-                            childMaxOccurs,
-                            checkIfExtension);
-                } else if (term instanceof XSElementDeclaration) {
+			     modelSection,
+			     repeatContentWrapper,
+			     ((XSModelGroup) term),
+			     controlType,
+			     owner,
+			     pathToRoot,
+			     childOccurs,
+			     checkIfExtension);
+                } 
+		else if (term instanceof XSElementDeclaration) 
+		{
                     XSElementDeclaration element = (XSElementDeclaration) term;
 
                     if (LOGGER.isDebugEnabled())
@@ -2230,20 +2170,19 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                         //find the existing bind Id
                         //(modelSection is the enclosing bind of the element)
                         NodeList binds = modelSection.getElementsByTagNameNS(XFORMS_NS, "bind");
-                        int i = 0;
-                        int nb = binds.getLength();
                         String bindId = null;
-                        while (i < nb && bindId == null) {
+                        for (int i = 0; i < binds.getLength() && bindId == null; i++) 
+			{
                             Element bind = (Element) binds.item(i);
                             String nodeset = bind.getAttributeNS(XFORMS_NS, "nodeset");
                             if (nodeset != null && nodeset.equals(element.getName()))
                                 bindId = bind.getAttributeNS(XFORMS_NS, "id");
-                            i++;
                         }
 
                         //find the control
                         Element control = null;
-                        if (bindId != null) {
+                        if (bindId != null) 
+			{
                             if (LOGGER.isDebugEnabled())
                                 LOGGER.debug("bindId found: " + bindId);
 
@@ -2297,19 +2236,18 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                          Element modelSection,
                                          Element formSection,
                                          XSTypeDefinition controlType,
-                                         int minOccurs,
-                                         int maxOccurs,
+                                         final Occurs o ,
                                          String pathToRoot) {
         Element repeatSection = formSection;
 
         // add xforms:repeat section if this element re-occurs
         //
-        if (maxOccurs != 1) 
+        if (o.maximum != 1) 
 	{
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("DEBUG: AddRepeatIfNecessary for multiple element for type "
 			     + controlType.getName()
-			     + ", maxOccurs=" + maxOccurs);
+			     + ", maxOccurs=" + o.maximum);
 
             //repeatSection = (Element) formSection.appendChild(xForm.createElementNS(XFORMS_NS,getXFormsNSPrefix() + "repeat"));
             repeatSection = xForm.createElementNS(XFORMS_NS,
@@ -2358,8 +2296,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             this.addTriggersForRepeat(xForm,
 				      formSection,
 				      repeatSection,
-				      minOccurs,
-				      maxOccurs,
+				      o,
 				      bindId);
 	    
             Element controlWrapper =
@@ -2387,8 +2324,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                String owningElementName,
                                XSObject owner,
                                String pathToRoot,
-                               int minOccurs,
-                               int maxOccurs) {
+                               final Occurs o) 
+    {
 
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("addSimpleType for " + controlType.getName() + 
@@ -2398,15 +2335,14 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         Element bindElement = xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "bind");
         String bindId = this.setXFormsId(bindElement);
         bindElement.setAttributeNS(XFORMS_NS,
-                getXFormsNSPrefix() + "nodeset",
-                pathToRoot);
+				   getXFormsNSPrefix() + "nodeset",
+				   pathToRoot);
         bindElement = (Element) modelSection.appendChild(bindElement);
-        bindElement = startBindElement(bindElement, controlType, minOccurs, maxOccurs);
+        bindElement = startBindElement(bindElement, controlType, o);
 
         // add a group if a repeat !
-        if (owner instanceof XSElementDeclaration
-                && maxOccurs != 1
-        ) {
+        if (owner instanceof XSElementDeclaration && o.maximum != 1) 
+	{
             Element groupElement = createGroup(xForm, modelSection, formSection, (XSElementDeclaration) owner);
             //set content
             Element groupWrapper = groupElement;
@@ -2417,19 +2353,19 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         }
 
         //eventual repeat
-        Element repeatSection = addRepeatIfNecessary(xForm,
-						     modelSection,
-						     formSection,
-						     controlType,
-						     minOccurs,
-						     maxOccurs,
-						     pathToRoot);
+        Element repeatSection = this.addRepeatIfNecessary(xForm, 
+							  modelSection, 
+							  formSection, 
+							  controlType, 
+							  o, 
+							  pathToRoot);
 
         // create the form control element
         //put a wrapper for the repeat content, but only if it is really a repeat
         Element contentWrapper = repeatSection;
 
-        if (repeatSection != formSection) {
+        if (repeatSection != formSection) 
+	{
             //content of repeat
             contentWrapper = _wrapper.createGroupContentWrapper(repeatSection);
 
@@ -2438,98 +2374,76 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                     xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "bind");
             String bindId2 = this.setXFormsId(bindElement2);
             bindElement2.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "nodeset",
-                    ".");
-
-            //recopy other attributes: required  and type
-            // ->no, attributes shouldn't be copied
-            /*String required = "required";
-            String type = "type";
-            if (bindElement.hasAttributeNS(XFORMS_NS, required)) {
-                bindElement2.setAttributeNS(XFORMS_NS, getXFormsNSPrefix() + required,
-                                            bindElement.getAttributeNS(XFORMS_NS, required));
-            }
-            if (bindElement.hasAttributeNS(XFORMS_NS, type)) {
-                bindElement2.setAttributeNS(XFORMS_NS, getXFormsNSPrefix() + type,
-                                            bindElement.getAttributeNS(XFORMS_NS, type));
-            }*/
-
+					getXFormsNSPrefix() + "nodeset",
+					".");
             bindElement.appendChild(bindElement2);
             bindId = bindId2;
         }
 
         String caption = createCaption(owningElementName);
-
-        //Element formControl = (Element) contentWrapper.appendChild(createFormControl(xForm,caption,controlType,bindId,bindElement,minOccurs,maxOccurs));
-        Element formControl = createFormControl(xForm,
-						caption,
-						controlType,
-						bindId,
-						bindElement,
-						minOccurs,
-						maxOccurs);
+        Element formControl = this.createFormControl(xForm,
+						     caption,
+						     controlType,
+						     bindId,
+						     bindElement,
+						     o);
         Element controlWrapper = _wrapper.createControlsWrapper(formControl);
         contentWrapper.appendChild(controlWrapper);
 
         // if this is a repeatable then set ref to point to current element
         // not sure if this is a workaround or this is just the way XForms works...
         //
-        if (!repeatSection.equals(formSection)) {
+        if (!repeatSection.equals(formSection)) 
+	{
             formControl.setAttributeNS(XFORMS_NS,
 				       getXFormsNSPrefix() + "ref",
 				       ".");
         }
 
         Element hint = createHint(xForm, owner);
-
-        if (hint != null) {
+        if (hint != null)
             formControl.appendChild(hint);
-        }
 
         //add selector if repeat
         //if (repeatSection != formSection)
         //this.addSelector(xForm, (Element) formControl.getParentNode());
         //
         // TODO: Generate help message based on datatype and restrictions
-        endFormControl(formControl, controlType, minOccurs, maxOccurs);
+        endFormControl(formControl, controlType, o);
         endBindElement(bindElement);
     }
 
-    private void addSimpleType(Document xForm,
-                               Element modelSection,
-                               Element formSection,
-                               XSSimpleTypeDefinition controlType,
-                               XSElementDeclaration owner,
-                               String pathToRoot) {
-
-        int[] occurance = this.getOccurance(owner);
-        addSimpleType(xForm,
-		      modelSection,
-		      formSection,
-		      controlType,
-		      owner.getName(),
-		      owner,
-		      pathToRoot,
-		      occurance[0],
-		      occurance[1]);
+    private void addSimpleType(final Document xForm,
+                               final Element modelSection,
+                               final Element formSection,
+                               final XSSimpleTypeDefinition controlType,
+                               final XSElementDeclaration owner,
+                               final String pathToRoot) {
+        this.addSimpleType(xForm,
+			   modelSection,
+			   formSection,
+			   controlType,
+			   owner.getName(),
+			   owner,
+			   pathToRoot,
+			   this.getOccurance(owner));
     }
 
-    private void addSimpleType(Document xForm,
-                               Element modelSection,
-                               Element formSection,
-                               XSSimpleTypeDefinition controlType,
-                               XSAttributeUse owningAttribute,
-                               String pathToRoot) {
+    private void addSimpleType(final Document xForm,
+                               final Element modelSection,
+                               final Element formSection,
+                               final XSSimpleTypeDefinition controlType,
+                               final XSAttributeUse owningAttribute,
+                               final String pathToRoot) {
 
-        addSimpleType(xForm,
-		      modelSection,
-		      formSection,
-		      controlType,
-		      owningAttribute.getAttrDeclaration().getName(),
-		      owningAttribute,
-		      pathToRoot,
-		      owningAttribute.getRequired() ? 1 : 0,
-		      1);
+        this.addSimpleType(xForm,
+			   modelSection,
+			   formSection,
+			   controlType,
+			   owningAttribute.getAttrDeclaration().getName(),
+			   owningAttribute,
+			   pathToRoot,
+			   new Occurs(owningAttribute.getRequired() ? 1 : 0, 1));
     }
 
     /**
@@ -2538,8 +2452,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     private void addTriggersForRepeat(Document xForm,
                                       Element formSection,
                                       Element repeatSection,
-                                      int minOccurs,
-                                      int maxOccurs,
+                                      Occurs o,
                                       String bindId) {
         ///////////// insert //////////////////
         //trigger insert
@@ -2784,8 +2697,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                       XSTypeDefinition controlType,
                                       String bindId,
                                       Element bindElement,
-                                      int minOccurs,
-                                      int maxOccurs) {
+                                      Occurs o) {
         // Select1 xform control to use:
         // Will use one of the following: input, textarea, selectOne, selectBoolean, selectMany, range
         // secret, output, button, do not apply
@@ -2868,26 +2780,14 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         this.setXFormsId(alertElement);
 
         StringBuffer alert =
-                new StringBuffer("Please provide a valid value for '" + caption + "'.");
+	    new StringBuffer("Please provide a valid value for '" + caption + "'.");
 
         Element enveloppe = xForm.getDocumentElement();
-
-        if (minOccurs != 0) {
-            alert.append(" '"
-                    + caption
-                    + "' is a required '"
-                    + createCaption(this.getXFormsTypeName(enveloppe, controlType))
-                    + "' value.");
-        } else {
-            alert.append(" '"
-                    + caption
-                    + "' is an optional '"
-                    + createCaption(this.getXFormsTypeName(enveloppe, controlType))
-                    + "' value.");
-        }
-
+	alert.append(" '" + caption + 
+		     "' is " + (o.minimum == 0 ? "an optional" : "a required") + " '" + 
+		     createCaption(this.getXFormsTypeName(enveloppe, controlType)) + 
+		     "' value.");
         alertElement.appendChild(xForm.createTextNode(alert.toString()));
-
         return formControl;
     }
 

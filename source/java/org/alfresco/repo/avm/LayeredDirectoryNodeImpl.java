@@ -637,13 +637,15 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     {
         BasicAttributes attrs = getBasicAttributes();
         String path = lPath.getRepresentedPath();
-        if (path.endsWith("/"))
+        path = AVMNodeConverter.ExtendAVMPath(path, name);
+        String indirect = null;
+        if (fPrimaryIndirection)
         {
-            path = path + name;
+            indirect = fIndirection;
         }
         else
         {
-            path = path + "/" + name;
+            indirect = AVMNodeConverter.ExtendAVMPath(lPath.getCurrentIndirection(), name);
         }
         return new AVMNodeDescriptor(path,
                                      name,
@@ -656,7 +658,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                      attrs.getAccessDate(),
                                      getId(),
                                      getVersionID(),
-                                     getUnderlying(lPath),
+                                     indirect,
                                      fPrimaryIndirection,
                                      fLayerID,
                                      fOpacity,

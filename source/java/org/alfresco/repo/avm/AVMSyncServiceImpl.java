@@ -74,8 +74,182 @@ public class AVMSyncServiceImpl implements AVMSyncService
     public List<AVMDifference> compare(int srcVersion, String srcPath, 
                                        int dstVersion, String dstPath)
     {
-        // TODO Implement.
-        return new ArrayList<AVMDifference>();
+        if (srcPath == null || dstPath == null)
+        {
+            throw new AVMBadArgumentException("Illegal null path.");
+        }
+        List<AVMDifference> result = new ArrayList<AVMDifference>();
+        AVMNodeDescriptor srcDesc = fAVMService.lookup(srcVersion, srcPath, true);
+        if (srcDesc == null)
+        {
+            throw new AVMSyncException("Source not found: " + srcPath);
+        }
+        AVMNodeDescriptor dstDesc = fAVMService.lookup(dstVersion, dstPath, true);
+        if (dstDesc == null)
+        {
+            // Special case: no pre-existing version in the destination.
+            result.add(new AVMDifference(srcVersion, srcPath,
+                                         dstVersion, dstPath,
+                                         AVMDifference.NEWER));
+        }
+        else
+        {
+            // Invoke the recursive implementation.
+            compare(srcVersion, srcDesc, dstVersion, dstDesc, result);
+        }
+        return result;
+    }
+    
+    // TODO We need getDirectlyListingDirect(descriptor, includeDeleted)
+    /**
+     * Internal recursive implementation of compare.
+     * @param srcVersion The version of the source tree.
+     * @param srcDesc The current source descriptor.
+     * @param dstVersion The version of the destination tree.
+     * @param dstDesc The current dstDesc
+     */
+    private void compare(int srcVersion, AVMNodeDescriptor srcDesc,
+                         int dstVersion, AVMNodeDescriptor dstDesc,
+                         List<AVMDifference> result)
+    {
+        // Determine how the source and destination nodes differ.
+        int diffCode = compareOne(srcDesc, dstDesc);
+        switch (diffCode)
+        {
+            case AVMDifference.SAME :
+            {
+                // A big short circuit.
+                return;
+            }
+            // The trivial to handle cases.
+            case AVMDifference.NEWER :
+            case AVMDifference.OLDER :
+            case AVMDifference.CONFLICT :
+            {
+                result.add(new AVMDifference(srcVersion, srcDesc.getPath(),
+                                             dstVersion, dstDesc.getPath(),
+                                             diffCode));
+                return;
+            }
+            case AVMDifference.DIRECTORY :
+            {
+                // First special case: source is a layered directory which points to 
+                // the destinations path, and we are comparing 'head' versions.
+                if (srcDesc.isLayeredDirectory() && 
+                    srcDesc.getIndirection().equals(dstDesc.getPath()) && srcVersion < 0 && dstVersion < 0)
+                {
+                    // Get only a direct listing, since that's all that can be different.
+                    Map<String, AVMNodeDescriptor> srcList =
+                        fAVMService.getDirectoryListingDirect(-1, srcDesc.getPath(), true);
+                    // The biggest shortcut: if the source directory is directly empty
+                    // then we're done.
+                    if (srcList.size() == 0)
+                    {
+                        return;
+                    }
+                    // We grab a complete listing of the destination.
+                    Map<String, AVMNodeDescriptor> dstList =
+                        fAVMService.getDirectoryListing(dstDesc, true);
+                    for (String name : srcList.keySet())
+                    {
+                        AVMNodeDescriptor srcChild = srcList.get(name);
+                        AVMNodeDescriptor dstChild = dstList.get(name);
+                        if (dstChild == null)
+                        {
+                            // A missing destination child means the source is NEWER.
+                            result.add(new AVMDifference(srcVersion, srcChild.getPath(),
+                                    dstVersion, 
+                                    AVMNodeConverter.ExtendAVMPath(dstDesc.getPath(), name),
+                                    AVMDifference.NEWER));
+                            continue;
+                        }
+                        // Otherwise recursively invoke.
+                        compare(srcVersion, srcChild,
+                                dstVersion, dstChild,
+                                result);
+                    }
+                    return;
+                }
+                // Second special case.  Just as above but reversed.
+                if (dstDesc.isLayeredDirectory() &&
+                    dstDesc.getIndirection().equals(srcDesc.getPath()) && srcVersion < 0 && dstVersion < 0)
+                {
+                    // Get direct content of destination.
+                    Map<String, AVMNodeDescriptor> dstList =
+                        fAVMService.getDirectoryListingDirect(dstVersion, dstDesc.getPath(), true);
+                    // Big short circuit.
+                    if (dstList.size() == 0)
+                    {
+                        return;
+                    }
+                    // Get the source listing.
+                    Map<String, AVMNodeDescriptor> srcList =
+                        fAVMService.getDirectoryListing(srcDesc, true);
+                    for (String name : dstList.keySet())
+                    {
+                        AVMNodeDescriptor dstChild = dstList.get(name);
+                        AVMNodeDescriptor srcChild = srcList.get(name);
+                        if (srcChild == null)
+                        {
+                            // Missing means the source is older.
+                            result.add(new AVMDifference(srcVersion, 
+                                                         AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name),
+                                                         dstVersion, dstChild.getPath(),
+                                                         AVMDifference.OLDER));
+                            continue;
+                        }
+                        // Otherwise, recursively invoke.
+                        compare(srcVersion, srcChild, 
+                                dstVersion, dstChild,
+                                result);
+                    }
+                    return;
+                }
+                // Neither of the special cases apply, so brute force is the only answer.
+                Map<String, AVMNodeDescriptor> srcList =
+                    fAVMService.getDirectoryListing(srcDesc, true);
+                Map<String, AVMNodeDescriptor> dstList =
+                    fAVMService.getDirectoryListing(dstDesc, true);
+                // Iterate over the source.
+                for (String name : srcList.keySet())
+                {
+                    AVMNodeDescriptor srcChild = srcList.get(name);
+                    AVMNodeDescriptor dstChild = dstList.get(name);
+                    if (dstChild == null)
+                    {
+                        // Not found in the destination means NEWER.
+                        result.add(new AVMDifference(srcVersion, srcChild.getPath(),
+                                                     dstVersion,
+                                                     AVMNodeConverter.ExtendAVMPath(dstDesc.getPath(), name),
+                                                     AVMDifference.NEWER));
+                        continue;
+                    }
+                    // Otherwise recursive invocation.
+                    compare(srcVersion, srcChild,
+                            dstVersion, dstChild,
+                            result);
+                }
+                // Iterate over the destination.
+                for (String name : dstList.keySet())
+                {
+                    if (srcList.containsKey(name))
+                    {
+                        continue;
+                    }
+                    AVMNodeDescriptor dstChild = dstList.get(name);
+                    // An entry not found in the source is OLDER.
+                    result.add(new AVMDifference(srcVersion,
+                                                 AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name),
+                                                 dstVersion, dstChild.getPath(),
+                                                 AVMDifference.OLDER));
+                }
+                break;
+            }
+            default :
+            {
+                throw new AVMSyncException("Invalid Difference Code, Internal Error.");
+            }
+        }
     }
     
     /**
@@ -112,22 +286,28 @@ public class AVMSyncServiceImpl implements AVMSyncService
             String [] dstParts = AVMNodeConverter.SplitBase(diff.getDestinationPath());
             if (dstParts[0] == null || diff.getDestinationVersion() >= 0)
             {
+                // You can't have a root node as a destination.
                 throw new AVMSyncException("Invalid destination node: " + diff.getDestinationPath());
             }
             AVMNodeDescriptor dstDesc = fAVMService.lookup(-1, diff.getDestinationPath(), true);
+            // The default is that the source is newer in the case where
+            // the destination doesn't exist.
             int diffCode = AVMDifference.NEWER;
             if (dstDesc != null) 
             {
                 diffCode = compareOne(srcDesc, dstDesc);
             }
+            // Dispatch.
             switch (diffCode)
             {
                 case AVMDifference.SAME :
                 {
+                    // Nada to do.
                     continue;
                 }
                 case AVMDifference.NEWER :
                 {
+                    // You can't delete what isn't there.
                     if (dstDesc != null)
                     {
                         fAVMService.removeNode(dstParts[0], dstParts[1]);
@@ -137,38 +317,46 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 }
                 case AVMDifference.OLDER :
                 {
+                    // You can force it.
                     if (overrideOlder)
                     {
                         fAVMService.removeNode(dstParts[0], dstParts[1]);
                         fAVMService.link(dstParts[0], dstParts[1], srcDesc);
                         continue;
                     }
+                    // You can ignore it.
                     if (ignoreOlder)
                     {
                         continue;
                     }
+                    // Or it's an error.
                     throw new AVMSyncException("Older version prevents update.");
                 }
                 case AVMDifference.CONFLICT :
                 {
+                    // You can force it.
                     if (overrideConflicts)
                     {
                         fAVMService.removeNode(dstParts[0], dstParts[1]);
                         fAVMService.link(dstParts[0], dstParts[1], srcDesc);
                         continue;
                     }
+                    // You can ignore it.
                     if (ignoreConflicts)
                     {
                         continue;
                     }
+                    // Or it's an error.
                     throw new AVMSyncException("Conflict prevents update.");
                 }
                 case AVMDifference.DIRECTORY :
                 {
+                    // You can only ignore this.
                     if (ignoreConflicts)
                     {
                         continue;
                     }
+                    // Otherwise it's an error.
                     throw new AVMSyncException("Directory conflict prevents update.");
                 }
                 default :
@@ -192,8 +380,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return AVMDifference.SAME;
         }
-        // Matched directories that are not identical are operationally in conflict
-        // but get their own special difference code.
+        // Matched directories that are not identical are nominally in conflict
+        // but get their own special difference code for comparison logic. The DIRECTORY
+        // difference code never gets returned to callers of compare.
         if (srcDesc.isDirectory() && dstDesc.isDirectory())
         {
             return AVMDifference.DIRECTORY;
@@ -204,6 +393,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return AVMDifference.CONFLICT;
         }
+        // A deleted node on either side means uniform handling because
+        // a deleted node can be the descendent of any other type of node.
         if (srcDesc.isDeleted() || dstDesc.isDeleted())
         {
             AVMNodeDescriptor common = fAVMService.getCommonAncestor(srcDesc, dstDesc);
@@ -225,8 +416,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // At this point both source and destination are both some kind of file.
         if (srcDesc.isLayeredFile())
         {
+            // Handle the layered file source case.
             if (dstDesc.isPlainFile())
             {
+                // We consider a layered source file that points at the destination
+                // file SAME.
                 if (srcDesc.getIndirection().equals(dstDesc.getPath()))
                 {
                     return AVMDifference.SAME;
@@ -254,6 +448,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // Source is a plain file.
         if (dstDesc.isLayeredFile())
         {
+            // We consider a source file that is the target of a layered destination file to be
+            // SAME.
             if (dstDesc.getIndirection().equals(srcDesc.getPath()))
             {
                 return AVMDifference.SAME;

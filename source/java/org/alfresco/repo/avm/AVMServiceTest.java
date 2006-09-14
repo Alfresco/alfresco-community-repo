@@ -59,6 +59,34 @@ import org.alfresco.service.transaction.TransactionService;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test of Descriptor indirection field.
+     */
+    public void testDescriptorIndirection()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.createFile("main:/layer/b/c", "bambino").close();
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/layer");
+            assertEquals("main:/a", desc.getIndirection());
+            Map<String, AVMNodeDescriptor> list = fService.getDirectoryListing(-1, "main:/");
+            assertEquals("main:/a", list.get("layer").getIndirection());
+            desc = fService.lookup(-1, "main:/layer/b");
+            assertEquals("main:/a/b", desc.getIndirection());
+            list = fService.getDirectoryListing(-1, "main:/layer");
+            assertEquals("main:/a/b", list.get("b").getIndirection());
+            list = fService.getDirectoryListingDirect(-1, "main:/layer");
+            assertEquals("main:/a/b", list.get("b").getIndirection());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Test AVMSyncService update.
      */
     public void testUpdate()
@@ -71,6 +99,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("main:/abranch", "monkey").close();
             fService.getFileOutputStream("main:/abranch/b/c/foo").close();
             System.out.println(recursiveList("main", -1, true));
+            List<AVMDifference> cmp =
+                fSyncService.compare(-1, "main:/abranch", -1, "main:/a");
+            for (AVMDifference diff : cmp)
+            {
+                System.out.println(diff);
+            }
+            assertEquals(2, cmp.size());
             List<AVMDifference> diffs = new ArrayList<AVMDifference>();
             diffs.add(new AVMDifference(-1, "main:/abranch/monkey",
                                         -1, "main:/a/monkey",
@@ -88,17 +123,32 @@ public class AVMServiceTest extends AVMServiceTestBase
             // Try updating a deletion.
             fService.removeNode("main:/abranch", "monkey");
             System.out.println(recursiveList("main", -1, true));
+            cmp =
+                fSyncService.compare(-1, "main:/abranch", -1, "main:/a");
+            for (AVMDifference diff : cmp)
+            {
+                System.out.println(diff);
+            }
+            assertEquals(1, cmp.size());
             diffs.clear();
             diffs.add(new AVMDifference(-1, "main:/abranch/monkey",
                                         -1, "main:/a/monkey",
                                         AVMDifference.NEWER));
             fSyncService.update(diffs, false, false, false, false);
+            assertEquals(0, fSyncService.compare(-1, "main:/abranch", -1, "main:/a").size());
             fService.createSnapshot("main");
             System.out.println(recursiveList("main", -1, true));
             assertEquals(fService.lookup(-1, "main:/abranch/monkey", true).getId(),
                          fService.lookup(-1, "main:/a/monkey", true).getId());
             // Try one that should fail.
             fService.createFile("main:/abranch", "monkey").close();
+            cmp =
+                fSyncService.compare(-1, "main:/abranch", -1, "main:/a");
+            for (AVMDifference diff : cmp)
+            {
+                System.out.println(diff);
+            }
+            assertEquals(1, cmp.size());
             diffs.clear();
             diffs.add(new AVMDifference(-1, "main:/a/monkey",
                                         -1, "main:/abranch/monkey",
@@ -119,10 +169,95 @@ public class AVMServiceTest extends AVMServiceTestBase
                       -1, "main:/abranch/monkey",
                       AVMDifference.NEWER));
             fSyncService.update(diffs, false, false, true, false);
+            assertEquals(0, fSyncService.compare(-1, "main:/abranch", -1, "main:/a").size());
             fService.createSnapshot("main");
             System.out.println(recursiveList("main", -1, true));
             assertEquals(fService.lookup(-1, "main:/a/monkey", true).getId(),
                          fService.lookup(-1, "main:/abranch/monkey", true).getId());
+            // Cleanup for layered tests.
+            fService.purgeAVMStore("main");
+            fService.createAVMStore("main");
+            setupBasicTree();
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.createFile("main:/layer", "monkey").close();
+            fService.getFileOutputStream("main:/layer/b/c/foo").close();
+            cmp =
+                fSyncService.compare(-1, "main:/layer", -1, "main:/a");
+            for (AVMDifference diff : cmp)
+            {
+                System.out.println(diff);
+            }
+            assertEquals(2, cmp.size());
+            System.out.println(recursiveList("main", -1, true));
+            diffs.clear();
+            diffs.add(new AVMDifference(-1, "main:/layer/monkey",
+                                        -1, "main:/a/monkey",
+                                        AVMDifference.NEWER));
+            diffs.add(new AVMDifference(-1, "main:/layer/b/c/foo",
+                                        -1, "main:/a/b/c/foo",
+                                        AVMDifference.NEWER));
+            fSyncService.update(diffs, false, false, false, false);
+            assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a").size());
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
+            assertEquals(fService.lookup(-1, "main:/layer/monkey").getId(),
+                         fService.lookup(-1, "main:/a/monkey").getId());
+            assertEquals(fService.lookup(-1, "main:/layer/b/c/foo").getId(),
+                         fService.lookup(-1, "main:/a/b/c/foo").getId());
+            // Try updating a deletion.
+            fService.removeNode("main:/layer", "monkey");
+            System.out.println(recursiveList("main", -1, true));
+            cmp =
+                fSyncService.compare(-1, "main:/layer", -1, "main:/a");
+            for (AVMDifference diff : cmp)
+            {
+                System.out.println(diff);
+            }
+            assertEquals(1, cmp.size());
+            diffs.clear();
+            diffs.add(new AVMDifference(-1, "main:/layer/monkey",
+                                        -1, "main:/a/monkey",
+                                        AVMDifference.NEWER));
+            fSyncService.update(diffs, false, false, false, false);
+            assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a").size());
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
+            assertEquals(fService.lookup(-1, "main:/layer/monkey", true).getId(),
+                         fService.lookup(-1, "main:/a/monkey", true).getId());
+            // Try one that should fail.
+            fService.createFile("main:/layer", "monkey").close();
+            cmp =
+                fSyncService.compare(-1, "main:/layer", -1, "main:/a");
+            for (AVMDifference diff : cmp)
+            {
+                System.out.println(diff);
+            }
+            assertEquals(1, cmp.size());
+            diffs.clear();
+            diffs.add(new AVMDifference(-1, "main:/a/monkey",
+                                        -1, "main:/layer/monkey",
+                                        AVMDifference.NEWER));
+            try
+            {
+                fSyncService.update(diffs, false, false, false, false);
+                fail();
+            }
+            catch (AVMSyncException se)
+            {
+                // Do nothing.
+            }
+            // Get synced again by doing an override conflict.
+            System.out.println(recursiveList("main", -1, true));
+            diffs.clear();
+            diffs.add(new AVMDifference(-1, "main:/a/monkey",
+                                        -1, "main:/layer/monkey",
+                                        AVMDifference.NEWER));
+            fSyncService.update(diffs, false, false, true, false);
+            assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a").size());
+            fService.createSnapshot("main");
+            System.out.println(recursiveList("main", -1, true));
+            assertEquals(fService.lookup(-1, "main:/a/monkey", true).getId(),
+                         fService.lookup(-1, "main:/layer/monkey", true).getId());
         }
         catch (Exception e)
         {

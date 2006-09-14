@@ -131,4 +131,43 @@ public class AVMDifference implements Serializable
     {
         return fSourcePath != null && fDestPath != null;
     }
+    
+    /**
+     * Get as String.
+     * @return A String representation of this.
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append(fSourcePath);
+        builder.append("[");
+        builder.append(fSourceVersion);
+        builder.append("] ");
+        switch (fDiffCode)
+        {
+            case SAME :
+                builder.append("= ");
+                break;
+            case NEWER :
+                builder.append("> ");
+                break;
+            case OLDER :
+                builder.append("< ");
+                break;
+            case CONFLICT :
+                builder.append("<> ");
+                break;
+            case DIRECTORY :
+                builder.append("| ");
+                break;
+            default :
+                builder.append("? ");
+        }
+        builder.append(fDestPath);
+        builder.append("[");
+        builder.append(fDestVersion);
+        builder.append("]");
+        return builder.toString();
+    }
 }

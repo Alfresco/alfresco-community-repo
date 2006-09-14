@@ -74,6 +74,10 @@
                               <div class="mainSubText"><h:outputText value="#{msg.website_info}" id="msg3" /></div>
                               <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
                            </td>
+                           <td align=right>
+                              <%-- Import website content action --%>
+                              <a:actionLink value="#{msg.import_website_content}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
+                           </td>
                         </tr>
                      </table>
                      
@@ -96,11 +100,21 @@
                         
                         <%-- Staging Sandbox Info here --%>
                         <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
-                           ---STAGING SANDBOX INFO HERE---<br>
-                           -------------------------------<br>
-                           Last Updated: 1234<br>
-                           12 items currently being modified<br>
-                           3 items pending approval
+                           <table cellspacing=2 cellpadding=2 border=0 width=100%>
+                              <tr>
+                                 <td align=left width=32><h:graphicImage url="/images/icons/website_large.gif" width="32" height="32" /></td>
+                                 <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
+                                 <td align=right>(P)&nbsp;(E)&nbsp;(T)&nbsp;(D)</td>
+                              </tr>
+                              <tr>
+                                 <td></td>
+                                 <td colspan=2>
+                                    Last Updated: 20th September 2006<P>
+                                    12 items currently being modified<P>
+                                    3 items pending approval
+                                 </td>
+                              </tr>
+                           </table>
                         <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
                         
                      </a:panel>

@@ -907,4 +907,12 @@
       </navigation-case>
    </navigation-rule>
    
+   <navigation-rule>
+      <from-view-id>/jsp/wcm/*</from-view-id>
+      <navigation-case>
+         <from-outcome>importContent</from-outcome>
+         <to-view-id>/jsp/wcm/import-content-dialog.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
 </faces-config>

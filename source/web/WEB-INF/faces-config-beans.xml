@@ -565,6 +565,15 @@
    
    <managed-bean>
       <description>
+         The bean that backs up the Create Website Wizard
+      </description>
+      <managed-bean-name>ImportWebsiteDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.ImportWebsiteDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          The bean that backs up the Set Content Properties Dialog
       </description>
       <managed-bean-name>SetContentPropertiesDialog</managed-bean-name>

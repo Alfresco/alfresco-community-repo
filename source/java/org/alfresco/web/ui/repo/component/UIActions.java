@@ -64,10 +64,11 @@ public class UIActions extends SelfRenderingComponent
    private static final String ATTR_STYLECLASS = "styleClass";
    private static final String ATTR_STYLE = "style";
    private static final String ACTION_CONTEXT = "actionContext";
-   private static final String RENDERER_ACTIONLINK = "org.alfresco.faces.ActionLinkRenderer";
-   private static final String COMPONENT_ACTIONLINK = "org.alfresco.faces.ActionLink";
-   private static final String COMPONENT_PERMISSIONEVAL = "org.alfresco.faces.PermissionEvaluator";
-   private static final String COMPONENT_ACTIONEVAL = "org.alfresco.faces.ActionInstanceEvaluator";
+   
+   public static final String RENDERER_ACTIONLINK = "org.alfresco.faces.ActionLinkRenderer";
+   public static final String COMPONENT_ACTIONLINK = "org.alfresco.faces.ActionLink";
+   public static final String COMPONENT_PERMISSIONEVAL = "org.alfresco.faces.PermissionEvaluator";
+   public static final String COMPONENT_ACTIONEVAL = "org.alfresco.faces.ActionInstanceEvaluator";
    
    private final static Class ACTION_CLASS_ARGS[] = {javax.faces.event.ActionEvent.class};
 

@@ -407,15 +407,20 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * Link a node with the given id into this directory.
      * @param lPath The Lookup for this directory.
      * @param name The name to give the node.
-     * @param id The id of the node to insert.
+     * @param toLink The node to link in.
      */
-    public void link(Lookup lPath, String name, long id)
+    public void link(Lookup lPath, String name, AVMNodeDescriptor toLink)
     {
         // Assure that the incoming node exists.
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(id);
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(toLink.getId());
         if (node == null)
         {
-            throw new AVMNotFoundException("Node not found: " + id);
+            throw new AVMNotFoundException("Node not found: " + toLink.getId());
+        }
+        if (node.getType() == AVMNodeType.LAYERED_DIRECTORY &&
+            !((LayeredDirectoryNode)node).getPrimaryIndirection())
+        {
+            throw new AVMBadArgumentException("Non primary layered directories cannot be linked.");
         }
         // Check for an existing child by the given name.
         ChildEntry child = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);

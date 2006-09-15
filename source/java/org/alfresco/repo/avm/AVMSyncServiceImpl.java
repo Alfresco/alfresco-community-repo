@@ -308,11 +308,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 case AVMDifference.NEWER :
                 {
                     // You can't delete what isn't there.
-                    if (dstDesc != null)
-                    {
-                        fAVMService.removeNode(dstParts[0], dstParts[1]);
-                    }
-                    fAVMService.link(dstParts[0], dstParts[1], srcDesc);
+                    linkIn(dstParts[0], dstParts[1], srcDesc, dstDesc != null);
                     continue;
                 }
                 case AVMDifference.OLDER :
@@ -320,8 +316,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     // You can force it.
                     if (overrideOlder)
                     {
-                        fAVMService.removeNode(dstParts[0], dstParts[1]);
-                        fAVMService.link(dstParts[0], dstParts[1], srcDesc);
+                        linkIn(dstParts[0], dstParts[1], srcDesc, true);
                         continue;
                     }
                     // You can ignore it.
@@ -337,8 +332,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     // You can force it.
                     if (overrideConflicts)
                     {
-                        fAVMService.removeNode(dstParts[0], dstParts[1]);
-                        fAVMService.link(dstParts[0], dstParts[1], srcDesc);
+                        linkIn(dstParts[0], dstParts[1], srcDesc, true);
                         continue;
                     }
                     // You can ignore it.
@@ -367,6 +361,56 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
     }
 
+    /**
+     * Do the actual work of connecting nodes to the destination tree.
+     * @param parentPath The parent path the node will go in.
+     * @param name The name it will have.
+     * @param toLink The node descriptor.
+     * @param removeFirst Whether to do a removeNode before linking in.
+     */
+    private void linkIn(String parentPath, String name, AVMNodeDescriptor toLink, boolean removeFirst)
+    {
+        if (removeFirst)
+        {
+            fAVMService.removeNode(parentPath, name);
+        }
+        if (toLink.isLayeredDirectory() && !toLink.isPrimary())
+        {
+            recursiveCopy(parentPath, name, toLink);
+            return;
+        }
+        fAVMService.link(parentPath, name, toLink);
+    }
+    
+    // TODO doesn't handle copies from non head nodes.
+    
+    /**
+     * Recursively copy a node into the given position.
+     * @param parentPath The place to put it.
+     * @param name The name to give it.
+     * @param toCopy The it to put.
+     */
+    private void recursiveCopy(String parentPath, String name, AVMNodeDescriptor toCopy)
+    {
+        // TODO Can we just do a link if it's a plain directory.
+        // If it's a file or deleted simply link it in.
+        if (toCopy.isFile() || toCopy.isDeleted())
+        {
+            fAVMService.link(parentPath, name, toCopy);
+            return;
+        }
+        // Otherwise make a directory in the target parent, and recursiveCopy all the source
+        // children into it.
+        fAVMService.createDirectory(parentPath, name);
+        String newParentPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
+        Map<String, AVMNodeDescriptor> children = 
+            fAVMService.getDirectoryListing(-1, toCopy.getPath(), true);
+        for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
+        {
+            recursiveCopy(newParentPath, entry.getKey(), entry.getValue());
+        }
+    }
+    
     /**
      * The workhorse of comparison and updating. Determine the versioning relationship
      * of two nodes. 

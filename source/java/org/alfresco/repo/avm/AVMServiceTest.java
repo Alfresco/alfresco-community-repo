@@ -35,6 +35,7 @@ import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -356,6 +357,16 @@ public class AVMServiceTest extends AVMServiceTestBase
                 fail();
             }
             catch (AVMExistsException e)
+            {
+                // Do nothing.
+            }
+            // Try to link /layer/b to /frinx. It should fail.
+            try
+            {
+                fService.link("main:/", "frinx", fService.lookup(-1, "main:/layer/b"));
+                fail();
+            }
+            catch (AVMBadArgumentException ba)
             {
                 // Do nothing.
             }

@@ -1146,6 +1146,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
     {
         Lookup lPath = lookupDirectory(-1, parentPath, true);
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        dir.link(lPath, name, toLink.getId());
+        dir.link(lPath, name, toLink);
     }
 }

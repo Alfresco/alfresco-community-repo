@@ -119,7 +119,7 @@ public interface DirectoryNode extends AVMNode
      * Link a node with the given id into this directory.
      * @param lPath The Lookup for this node.
      * @param name The name to give the node.
-     * @param id The id of the node to insert.
+     * @param toLink The node to link in.
      */
-    public void link(Lookup lPath, String name, long id);
+    public void link(Lookup lPath, String name, AVMNodeDescriptor toLink);
 }

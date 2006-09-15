@@ -1285,4 +1285,38 @@ public class AVMRepository
         }
         dir.link(name, child);
     }
+    
+    /**
+     * Remove name without leaving behind a deleted node. Dangerous 
+     * if used unwisely.
+     * @param lDir The layered directory node.
+     * @param name The name of the child.
+     */
+    public void flatten(AVMNodeDescriptor lDir, String name)
+    {
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(lDir.getId());
+        if (!(node instanceof LayeredDirectoryNode))
+        {
+            throw new AVMWrongTypeException("Not a Layered Directory.");
+        }
+        LayeredDirectoryNode dir = (LayeredDirectoryNode)node;
+        if (!dir.getIsNew())
+        {
+            throw new AVMException("Directory has not already been copied.");
+        }
+        dir.flatten(name);
+    }
+    
+    /**
+     * Force a copy on write.
+     * @param path The path to force.
+     */
+    public void forceCopy(String path)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        // Just force a copy if needed by looking up in write mode.
+        store.lookup(-1, pathParts[1], true, false);
+    }
 }

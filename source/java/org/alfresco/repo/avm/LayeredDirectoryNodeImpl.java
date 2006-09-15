@@ -832,4 +832,17 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         ChildEntry newChild = new ChildEntryImpl(name, this, node);
         AVMContext.fgInstance.fChildEntryDAO.save(newChild);
     }
+    
+    /**
+     * Remove name without leaving behind a deleted node.
+     * @param name The name of the child to flatten.
+     */
+    public void flatten(String name)
+    {
+        ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
+        if (entry != null)
+        {
+            AVMContext.fgInstance.fChildEntryDAO.delete(entry);
+        }
+    }
 }

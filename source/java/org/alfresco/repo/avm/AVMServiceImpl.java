@@ -1083,4 +1083,35 @@ public class AVMServiceImpl implements AVMService
         }
         fAVMRepository.link(parent, name, child);
     }
+    
+    /**
+     * Flatten a direct child of a layered directory. This does
+     * the equivalent of removing the given child from the directory 
+     * and then doing an uncover. This routine makes many dangerous 
+     * assumptions and is only for use by AVMSyncService. Don't use it
+     * if you don't know precisely what you are doing.
+     * @param lDir The layered directory node.
+     * @param name The name to flatten.
+     */
+    public void flatten(AVMNodeDescriptor lDir, String name)
+    {
+        if (lDir == null || name == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        fAVMRepository.flatten(lDir, name);
+    }
+
+    /**
+     * Force copy on write of a path.
+     * @param path The path to force.
+     */
+    public void forceCopy(String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null Path.");
+        }
+        fAVMRepository.forceCopy(path);
+    }
 }

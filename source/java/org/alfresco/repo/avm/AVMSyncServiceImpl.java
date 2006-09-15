@@ -593,6 +593,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return true;
         }
+        fAVMService.forceCopy(layer.getPath());
+        layer = fAVMService.lookup(-1, layer.getPath());
         // Grab the listing 
         Map<String, AVMNodeDescriptor> underListing =
             fAVMService.getDirectoryListing(underlying, true);
@@ -608,16 +610,14 @@ public class AVMSyncServiceImpl implements AVMSyncService
             // We've found an identity so flatten it.
             if (topNode.getId() == bottomNode.getId())
             {
-                fAVMService.removeNode(layer.getPath(), name);
-                fAVMService.uncover(layer.getPath(), name);
+                fAVMService.flatten(layer, name);
             }
             else
             {
                 // Otherwise recursively flatten the children.
                 if (flatten(topNode, bottomNode))
                 {
-                    fAVMService.removeNode(layer.getPath(), name);
-                    fAVMService.uncover(layer.getPath(), name);
+                    fAVMService.flatten(layer, name);
                 }
                 else
                 {

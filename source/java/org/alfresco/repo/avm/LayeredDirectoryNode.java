@@ -60,6 +60,12 @@ public interface LayeredDirectoryNode extends DirectoryNode, Layered
     public void uncover(Lookup lPath, String name);
     
     /**
+     * Remove name without leaving behind a deleted node.
+     * @param name The name of the child to flatten.
+     */
+    public void flatten(String name);
+    
+    /**
      * Set the indirection.
      * @param indirection
      */

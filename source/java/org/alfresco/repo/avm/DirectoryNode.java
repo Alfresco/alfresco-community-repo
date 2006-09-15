@@ -82,6 +82,15 @@ public interface DirectoryNode extends AVMNode
     public Map<String, AVMNode> getListingDirect(Lookup lPath, boolean includeDeleted);
 
     /**
+     * Get a listing of nodes directly contained by a directory.
+     * @param dir The descriptor for the directory.
+     * @param includeDeleted Whether to include deleted nodes.
+     * @return A Map of Strings to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir,
+                                                                 boolean includeDeleted);    
+
+    /**
      * Get a listing from a directory specified by an AVMNodeDescriptor.
      * @param dir The directory to list.
      * @return A Map of names to node descriptors

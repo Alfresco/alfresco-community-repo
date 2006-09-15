@@ -2639,8 +2639,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             FileFolderService ffs = (FileFolderService)fContext.getBean("FileFolderService");
             AuthenticationComponent ac = (AuthenticationComponent)fContext.getBean("authenticationComponent");
             ac.authenticate("admin", "admin".toCharArray());
-            assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c"), 
-                       "banana", ContentModel.TYPE_AVM_PLAIN_CONTENT) != null);
+            assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/"), 
+                    "banana", ContentModel.TYPE_AVM_PLAIN_CONTENT) != null);
+            assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main://"), 
+                    "banana", ContentModel.TYPE_AVM_PLAIN_CONTENT) != null);
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c"),
                        "apples", ContentModel.TYPE_AVM_PLAIN_FOLDER) != null);
             NodeService ns = (NodeService)fContext.getBean("NodeService");

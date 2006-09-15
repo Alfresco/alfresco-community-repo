@@ -29,6 +29,7 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -516,6 +517,32 @@ public class AVMRepository
     }
     
     /**
+     * Get the list of nodes directly contained in a directory.
+     * @param dir The descriptor to the directory node.
+     * @param includeDeleted Whether to include deleted children.
+     * @return A Map of names to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> 
+        getListingDirect(AVMNodeDescriptor dir, boolean includeDeleted)
+    {
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
+        if (node == null)
+        {
+            throw new AVMBadArgumentException("Invalid Node.");
+        }
+        if (node.getType() == AVMNodeType.PLAIN_DIRECTORY)
+        {
+            return getListing(dir, includeDeleted);
+        }
+        if (node.getType() != AVMNodeType.LAYERED_DIRECTORY)
+        {
+            throw new AVMWrongTypeException("Not a directory.");
+        }
+        LayeredDirectoryNode dirNode = (LayeredDirectoryNode)node;
+        return dirNode.getListingDirect(dir, includeDeleted);
+    }
+    
+    /**
      * Get a directory listing from a directory node descriptor.
      * @param dir The directory node descriptor.
      * @return A SortedMap listing.
@@ -524,6 +551,10 @@ public class AVMRepository
     {
         fLookupCount.set(1);
         AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
+        if (node == null)
+        {
+            throw new AVMBadArgumentException("Invalid Node.");
+        }
         if (node.getType() != AVMNodeType.LAYERED_DIRECTORY &&
             node.getType() != AVMNodeType.PLAIN_DIRECTORY)
         {

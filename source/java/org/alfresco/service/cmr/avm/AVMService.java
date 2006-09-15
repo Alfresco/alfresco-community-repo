@@ -116,6 +116,15 @@ public interface AVMService
         getDirectoryListingDirect(int version, String path, boolean includeDeleted);
 
     /**
+     * Get a listing of all the directly contained children of a directory.
+     * @param dir The directory descriptor.
+     * @param includeDeleted Whether to include deleted children.
+     * @return A Map of Strings to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor>
+        getDirectoryListingDirect(AVMNodeDescriptor dir, boolean includeDeleted);
+    
+    /**
      * Get a directory listing from a node descriptor.
      * @param dir The directory node descriptor.
      * @return A Map of names to node descriptors.

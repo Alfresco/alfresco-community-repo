@@ -44,6 +44,10 @@ public class AVMNodeConverter
         {
             throw new AVMException("Malformed AVM Path.");
         }
+        while (pathParts[1].endsWith("/") && pathParts[1].length() > 1)
+        {
+            pathParts[1] = pathParts[1].substring(0, pathParts[1].length() - 1);
+        }
         StoreRef storeRef = ToStoreRef(pathParts[0]);
         String translated = version + pathParts[1];
         translated = translated.replaceAll("/+", ";");

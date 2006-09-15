@@ -134,6 +134,22 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Get a listing of all the directly contained children of a directory.
+     * @param dir The directory descriptor.
+     * @param includeDeleted Whether to include deleted children.
+     * @return A Map of Strings to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor>
+        getDirectoryListingDirect(AVMNodeDescriptor dir, boolean includeDeleted)
+    {
+        if (dir == null)
+        {
+            throw new AVMBadArgumentException("Illegal null descriptor.");
+        }
+        return fAVMRepository.getListingDirect(dir, includeDeleted);
+    }
+
+    /**
      * Get the listing of nodes contained directly in a directory. This is the
      * same as getDirectoryListing for PlainDirectories, but returns only those that
      * are directly contained in a layered directory.
@@ -172,6 +188,7 @@ public class AVMServiceImpl implements AVMService
         }
         return fAVMRepository.getListingDirect(version, path, includeDeleted);
     }
+    
     /**
      * Get a directory listing from a node descriptor.
      * @param dir The directory node descriptor.

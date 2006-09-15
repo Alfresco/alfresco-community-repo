@@ -365,6 +365,31 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     }
 
     /**
+     * Get the direct contents of this directory.
+     * @param dir The descriptor that describes us.
+     * @param includeDeleted Whether to inlude deleted nodes.
+     * @return A Map of Strings to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir, 
+                                                                 boolean includeDeleted)
+    {
+        List<ChildEntry> children = AVMContext.fgInstance.fChildEntryDAO.getByParent(this);
+        SortedMap<String, AVMNodeDescriptor> listing = new TreeMap<String, AVMNodeDescriptor>();
+        for (ChildEntry child : children)
+        {
+            AVMNode childNode = child.getChild();
+            if (!includeDeleted && childNode.getType() == AVMNodeType.DELETED_NODE)
+            {
+                continue;
+            }
+            AVMNodeDescriptor childDesc =
+                childNode.getDescriptor(dir.getPath(), child.getName(), dir.getIndirection());
+            listing.put(child.getName(), childDesc);
+        }
+        return listing;
+    }
+    
+    /**
      * Get a listing from a directory node descriptor.
      * @param dir The directory node descriptor.
      * @param includeDeleted Should DeletedNodes be shown.

@@ -119,6 +119,18 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         return getListing(lPath, includeDeleted);
     }
+    
+    /**
+     * Get a listing of the nodes directly contained by a directory.
+     * @param dir The node's descriptor.
+     * @param includeDeleted Whether to include deleted nodes.
+     * @return A Map of Strings to descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir, 
+                                                                 boolean includeDeleted)
+    {
+        return getListing(dir, includeDeleted);
+    }
 
     /**
      * Get a listing of from a directory node descriptor.

@@ -140,7 +140,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 {
                     // Get only a direct listing, since that's all that can be different.
                     Map<String, AVMNodeDescriptor> srcList =
-                        fAVMService.getDirectoryListingDirect(-1, srcDesc.getPath(), true);
+                        fAVMService.getDirectoryListingDirect(srcDesc, true);
                     // The biggest shortcut: if the source directory is directly empty
                     // then we're done.
                     if (srcList.size() == 0)
@@ -176,7 +176,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 {
                     // Get direct content of destination.
                     Map<String, AVMNodeDescriptor> dstList =
-                        fAVMService.getDirectoryListingDirect(dstVersion, dstDesc.getPath(), true);
+                        fAVMService.getDirectoryListingDirect(dstDesc, true);
                     // Big short circuit.
                     if (dstList.size() == 0)
                     {
@@ -569,7 +569,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             throw new AVMWrongTypeException("Underlying is not a directory: " + underlying);
         }
         Map<String, AVMNodeDescriptor> layerListing =
-            fAVMService.getDirectoryListingDirect(-1, layer.getPath(), true);
+            fAVMService.getDirectoryListingDirect(layer, true);
         // If the layer is empty (directly, that is) we're done.
         if (layerListing.size() == 0)
         {

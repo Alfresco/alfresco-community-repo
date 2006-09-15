@@ -27,6 +27,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -124,7 +125,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    /**
-    * @param avmService The avmService to set.
+    * @param avmService The AVMService to set.
     */
    public void setAvmService(AVMService avmService)
    {
@@ -240,16 +241,18 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private void createStagingSandbox(String name)
    {
       // create the 'staging' store for the website
-      String stagingStore = name + AVMConstants.STORE_STAGING;
+      String stagingStore = AVMConstants.buildAVMStagingStoreName(name);
       this.avmService.createAVMStore(stagingStore);
       if (logger.isDebugEnabled())
          logger.debug("Created staging sandbox store: " + stagingStore);
       
       // create the system directories 'appBase' and 'avm_webapps'
       String path = stagingStore + ":/";
-      this.avmService.createDirectory(path, AVMConstants.DIR_APPBASE);
+      //this.avmService.createDirectory(path, AVMConstants.DIR_APPBASE);
+      this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
       path += AVMConstants.DIR_APPBASE;
-      this.avmService.createDirectory(path, AVMConstants.DIR_WEBAPPS);
+      //this.avmService.createDirectory(path, AVMConstants.DIR_WEBAPPS);
+      this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_WEBAPPS, ContentModel.TYPE_AVM_PLAIN_FOLDER);
       
       // tag the store with the store type
       this.avmService.setStoreProperty(stagingStore,
@@ -261,7 +264,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       
       // create the 'preview' store for the website
-      String previewStore = name + AVMConstants.STORE_PREVIEW;
+      String previewStore = AVMConstants.buildAVMStagingPreviewStoreName(name);
       this.avmService.createAVMStore(previewStore);
       if (logger.isDebugEnabled())
          logger.debug("Created staging sandbox store: " + previewStore);
@@ -270,6 +273,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       path = previewStore + ":/";
       String targetPath = name + AVMConstants.STORE_STAGING + ":/" + AVMConstants.DIR_APPBASE;
       this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
+      //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
       
       // tag the store with the store type
       this.avmService.setStoreProperty(stagingStore,
@@ -308,7 +312,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private void createUserSandbox(String name, String username)
    {
       // create the user 'main' store
-      String userStore = name + '-' + username + AVMConstants.STORE_MAIN;
+      String userStore = AVMConstants.buildAVMUserMainStoreName(name, username);
       this.avmService.createAVMStore(userStore);
       if (logger.isDebugEnabled())
          logger.debug("Created staging sandbox store: " + userStore);
@@ -328,7 +332,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       
       // create the user 'preview' store
-      String previewStore = name + '-' + username + AVMConstants.STORE_PREVIEW;
+      String previewStore = AVMConstants.buildAVMUserPreviewStoreName(name, username);
       this.avmService.createAVMStore(previewStore);
       if (logger.isDebugEnabled())
          logger.debug("Created staging sandbox store: " + previewStore);

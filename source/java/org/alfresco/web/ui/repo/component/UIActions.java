@@ -70,7 +70,7 @@ public class UIActions extends SelfRenderingComponent
    public static final String COMPONENT_PERMISSIONEVAL = "org.alfresco.faces.PermissionEvaluator";
    public static final String COMPONENT_ACTIONEVAL = "org.alfresco.faces.ActionInstanceEvaluator";
    
-   private final static Class ACTION_CLASS_ARGS[] = {javax.faces.event.ActionEvent.class};
+   public final static Class ACTION_CLASS_ARGS[] = {javax.faces.event.ActionEvent.class};
 
    /**
     * @see javax.faces.component.UIComponent#getFamily()

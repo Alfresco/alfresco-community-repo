@@ -28,6 +28,31 @@ public final class AVMConstants
    {
    }
    
+   public static String buildAVMStagingStoreName(String store)
+   {
+      return store + AVMConstants.STORE_STAGING;
+   }
+   
+   public static String buildAVMStagingPreviewStoreName(String store)
+   {
+      return store + AVMConstants.STORE_PREVIEW;
+   }
+   
+   public static String buildAVMUserMainStoreName(String store, String username)
+   {
+      return store + '-' + username + AVMConstants.STORE_MAIN;
+   }
+   
+   public static String buildAVMUserPreviewStoreName(String store, String username)
+   {
+      return store + '-' + username + AVMConstants.STORE_PREVIEW;
+   }
+   
+   public static String buildAVMStoreRootPath(String store)
+   {
+      return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS + '/';
+   }
+   
    // names of the stores representing the layers for an AVM website
    public final static String STORE_STAGING = "-staging";
    public final static String STORE_MAIN = "-main";

@@ -913,6 +913,10 @@
          <from-outcome>importContent</from-outcome>
          <to-view-id>/jsp/wcm/import-content-dialog.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>browseSandbox</from-outcome>
+         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
 </faces-config>

@@ -70,7 +70,7 @@
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr>
                            <td width="32">
-                              <h:graphicImage id="dialog-logo" url="/images/icons/add_content_large.gif" />
+                              <h:graphicImage id="dialog-logo" url="/images/icons/import_website_large.gif" width="32" height="32" />
                            </td>
                            <td>
                               <div class="mainTitle"><h:outputText value="#{msg.import_website_content_title}" /></div>

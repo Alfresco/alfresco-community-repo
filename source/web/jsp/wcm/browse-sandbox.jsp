@@ -25,13 +25,13 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<r:page titleId="title_browse_website">
+<r:page titleId="title_browse_sandbox">
 
 <f:view>
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="browse-website">
+   <h:form acceptCharset="UTF-8" id="browse-sandbox">
    
    <%-- Main outer table --%>
    <table cellspacing=0 cellpadding=2>
@@ -66,17 +66,13 @@
                      <table cellspacing=4 cellpadding=0 width=100%>
                         <tr>
                            <td width=32>
-                              <h:graphicImage id="space-logo" url="/images/icons/website_large.gif" width="32" height="32" />
+                              <h:graphicImage id="space-logo" url="#{AVMBrowseBean.icon}" width="32" height="32" />
                            </td>
                            <td>
                               <%-- Summary --%>
-                              <div class="mainTitle"><h:outputText value="#{NavigationBean.nodeProperties.name}" id="msg2" /></div>
-                              <div class="mainSubText"><h:outputText value="#{msg.website_info}" id="msg3" /></div>
+                              <div class="mainTitle"><h:outputText value="#{AVMBrowseBean.sandboxTitle}" id="msg2" /></div>
+                              <div class="mainSubText"><h:outputText value="#{msg.sandbox_info}" id="msg3" /></div>
                               <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
-                           </td>
-                           <td align=right>
-                              <%-- Import website content action --%>
-                              <a:actionLink value="#{msg.import_website_content}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
                            </td>
                         </tr>
                      </table>
@@ -92,33 +88,19 @@
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width=4 height=9></td>
                </tr>
                
-               <%-- Details - Staging sandbox --%>
+               <%-- Details - Folders --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
-                     <a:panel id="staging-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
+                     
+                     <a:panel id="folders-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
+                              label="#{msg.website_browse_folders}">
                         
-                        <%-- Staging Sandbox Info here --%>
-                        <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
-                           <table cellspacing=2 cellpadding=2 border=0 width=100%>
-                              <tr>
-                                 <td align=left width=32><h:graphicImage url="/images/icons/sandbox_large.gif" width="32" height="32" /></td>
-                                 <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
-                                 <td align=right>
-                                    (P)&nbsp;(E)&nbsp;(T)&nbsp;(D)&nbsp;
-                                    <a:actionLink value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
-                                 </td>
-                              </tr>
-                              <tr>
-                                 <td></td>
-                                 <td colspan=2 style='line-height:8px'>
-                                    Last Updated: 20th September 2006<p>
-                                    12 items currently being modified<p>
-                                    3 items pending approval
-                                 </td>
-                              </tr>
-                           </table>
-                        <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                        <a:richList id="folder-list" binding="#{AVMBrowseBean.foldersRichList}" viewMode="details" pageSize="10"
+                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
+                           value="#{AVMBrowseBean.folders}" var="r">
+                           
+                        </a:richList>
                         
                      </a:panel>
                      
@@ -126,15 +108,19 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
                </tr>
                
-               <%-- Details - User sandboxes --%>
+               <%-- Details - Files --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
-                     <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
+                     <a:panel id="files-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
+                              label="#{msg.website_browse_files}">
                         
-                        <%-- User Sandboxes List --%>
-                        <w:userSandboxes value="#{NavigationBean.currentNode.nodeRef}" />
+                        <a:richList id="files-list" binding="#{AVMBrowseBean.filesRichList}" viewMode="details" pageSize="10"
+                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
+                           value="#{AVMBrowseBean.files}" var="r">
+                           
+                        </a:richList>
                         
                      </a:panel>
                      
@@ -148,7 +134,6 @@
                   <td>
                      <%-- messages tag to show messages not handled by other specific message tags --%>
                      <h:messages globalOnly="true" styleClass="errorMessage" layout="table" />
-                     <h:message for="sandboxes-panel" styleClass="statusMessage" />
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
                </tr>

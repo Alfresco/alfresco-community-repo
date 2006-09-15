@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.faces.component.NamingContainer;
 import javax.faces.component.UIComponent;
+import javax.faces.component.UIParameter;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
@@ -41,12 +42,15 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.ui.common.ComponentConstants;
+import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.repo.component.UIActions;
 import org.alfresco.web.ui.wcm.WebResources;
+import org.apache.myfaces.taglib.UIComponentTagUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
 import sun.swing.UIAction;
@@ -176,7 +180,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
             String username = users.get(i);
             
             // build the name of the main store for the user
-            String mainStore = storeRoot + '-' + username + AVMConstants.STORE_MAIN;
+            String mainStore = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
             
             // check it exists before we render the view
             if (avmService.getAVMStore(mainStore) != null)
@@ -189,7 +193,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                
                // components for the current username, preview, browse and modified items inner list
                out.write("<table cellspacing=2 cellpadding=2 border=0 width=100%><tr><td>");
-               out.write(Utils.buildImageTag(context, WebResources.IMAGE_SANDBOX_32, 32, 32, ""));
+               out.write(Utils.buildImageTag(context, WebResources.IMAGE_USERSANDBOX_32, 32, 32, ""));
                out.write("</td><td width=100%>");
                out.write("<b>");
                out.write(bundle.getString(MSG_USERNAME));
@@ -199,13 +203,18 @@ public class UIUserSandboxes extends SelfRenderingComponent
                
                // direct actions for a sandbox
                Utils.encodeRecursive(context, aquireAction(
-                     context, "sandbox_preview", "/images/icons/preview_website.gif"));
+                     context, mainStore, username, "sandbox_preview", "/images/icons/preview_website.gif",
+                     null, null));
                out.write("&nbsp;&nbsp;");
+               
                Utils.encodeRecursive(context, aquireAction(
-                     context, "sandbox_create", "/images/icons/new_content.gif"));
+                     context, mainStore, username, "sandbox_create", "/images/icons/new_content.gif",
+                     null, null));
                out.write("&nbsp;&nbsp;");
+               
                Utils.encodeRecursive(context, aquireAction(
-                     context, "sandbox_browse", "/images/icons/space_small.gif"));
+                     context, mainStore, username, "sandbox_browse", "/images/icons/space_small.gif",
+                     "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
                out.write("</nobr></td></tr>");
                
                // modified items panel
@@ -273,12 +282,13 @@ public class UIUserSandboxes extends SelfRenderingComponent
       }
    }
    
-   private UIActionLink aquireAction(FacesContext fc, String name, String icon)
+   private UIActionLink aquireAction(FacesContext fc, String store, String username,
+         String name, String icon, String actionListener, String outcome)
    {
       UIActionLink action = findAction(name);
       if (action == null)
       {
-         action = createAction(fc, name, icon);
+         action = createAction(fc, store, username, name, icon, actionListener, outcome);
       }
       return action;
    }
@@ -298,7 +308,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
       return action;
    }
    
-   private UIActionLink createAction(FacesContext fc, String name, String icon)
+   private UIActionLink createAction(FacesContext fc, String store, String username,
+         String name, String icon, String actionListener, String outcome)
    {
       javax.faces.application.Application facesApp = fc.getApplication();
       UIActionLink control = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
@@ -308,6 +319,25 @@ public class UIUserSandboxes extends SelfRenderingComponent
       control.setValue(Application.getMessage(fc, name));
       control.setShowLink(false);
       control.setImage(icon);
+      
+      if (actionListener != null)
+      {
+         control.setActionListener(facesApp.createMethodBinding(
+               actionListener, UIActions.ACTION_CLASS_ARGS));
+      
+         UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+         param.setName("store");
+         param.setValue(store);
+         control.getChildren().add(param);
+         param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+         param.setName("username");
+         param.setValue(username);
+         control.getChildren().add(param);
+      }
+      if (outcome != null)
+      {
+         control.setAction(new ConstantMethodBinding(outcome));
+      }
       
       this.getChildren().add(control);
       

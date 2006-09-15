@@ -17,6 +17,10 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
+
 /**
  * Base class for Directories.
  * @author britt
@@ -40,4 +44,26 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     {
         super(id, repo);
     }
+    
+    /**
+     * Dangerous version of link.
+     * @param name The name to give the child.
+     * @param toLink The child to link in.
+     */
+    public void link(String name, AVMNodeDescriptor toLink)
+    {
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(toLink.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Child node not found.");
+        }
+        if (node.getType() == AVMNodeType.LAYERED_DIRECTORY &&
+            !((LayeredDirectoryNode)node).getPrimaryIndirection())
+        {
+            throw new AVMBadArgumentException("Non primary layered directories cannot be linked.");
+        }
+        // Make the new ChildEntry and save.
+        ChildEntry newChild = new ChildEntryImpl(name, this, node);
+        AVMContext.fgInstance.fChildEntryDAO.save(newChild);
+    }    
 }

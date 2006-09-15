@@ -1065,4 +1065,22 @@ public class AVMServiceImpl implements AVMService
         }
         fAVMRepository.link(parentPath, name, toLink);
     }
+
+    /**
+     * This is a more dangerous version of link, which assumes
+     * that copy on write has occurred for the parent node. This is
+     * an internal call. Don't use it if you don't know precisely
+     * what you are doing.
+     * @param parent The parent node.
+     * @param name The name to give the child.
+     * @param child The child node to link.
+     */
+    public void link(AVMNodeDescriptor parent, String name, AVMNodeDescriptor child)
+    {
+        if (parent == null || child == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        fAVMRepository.link(parent, name, child);
+    }
 }

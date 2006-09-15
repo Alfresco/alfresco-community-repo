@@ -685,4 +685,15 @@ public interface AVMService
      * @param toLink A descriptor for the node to insert.
      */
     public void link(String parentPath, String name, AVMNodeDescriptor toLink);
+    
+    /**
+     * This is a more dangerous version of link, which assumes
+     * that copy on write has occurred for the parent node. This is
+     * an internal call. Don't use it if you don't know precisely
+     * what you are doing.
+     * @param parent The parent node.
+     * @param name The name to give the child.
+     * @param child The child node to link.
+     */
+    public void link(AVMNodeDescriptor parent, String name, AVMNodeDescriptor child);
 }

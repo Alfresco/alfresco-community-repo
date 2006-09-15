@@ -60,6 +60,56 @@ import org.alfresco.service.transaction.TransactionService;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test bulk update.
+     */
+    public void testBulkUpdate()
+    {
+        try
+        {
+            BulkLoader loader = new BulkLoader();
+            loader.setAvmService(fService);
+            fService.createAVMStore("layer");
+            fService.createLayeredDirectory("main:/", "layer:/", "layer");
+            loader.recursiveLoad("config/alfresco/bootstrap", "layer:/layer");
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/");
+            assertEquals(1, diffs.size());
+            fService.createSnapshot("layer");
+            fSyncService.update(diffs, false, false, false, false);
+            fService.createSnapshot("main");
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/");
+            assertEquals(0, diffs.size());
+            fSyncService.flatten("layer:/layer", "main:/");
+            System.out.println("Layer:");
+            System.out.println(recursiveList("layer", -1, true));
+            System.out.println("Main:");
+            System.out.println(recursiveList("main", -1, true));
+            fService.createAVMStore("layer2");
+            fService.createLayeredDirectory("layer:/layer", "layer2:/", "layer");
+            loader.recursiveLoad("config/alfresco/bootstrap", "layer2:/layer/bootstrap");
+            fService.createSnapshot("layer2");
+            diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer");
+            assertEquals(1, diffs.size());
+            fSyncService.update(diffs, false, false, false, false);
+            diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer");
+            assertEquals(0, diffs.size());
+            fSyncService.flatten("layer2:/layer", "layer:/layer");
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/");
+            assertEquals(1, diffs.size());
+            System.out.println("Layer2:");
+            System.out.println(recursiveList("layer2", -1, true));
+            System.out.println("Layer:");
+            System.out.println(recursiveList("layer", -1, true));
+            System.out.println("Main:");
+            System.out.println(recursiveList("main", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Test the flatten operation, with a little bit of compare and update.
      */
     public void testFlatten()

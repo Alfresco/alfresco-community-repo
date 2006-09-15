@@ -392,22 +392,40 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private void recursiveCopy(String parentPath, String name, AVMNodeDescriptor toCopy)
     {
-        // TODO Can we just do a link if it's a plain directory.
-        // If it's a file or deleted simply link it in.
-        if (toCopy.isFile() || toCopy.isDeleted())
+        fAVMService.createDirectory(parentPath, name);
+        String newParentPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
+        AVMNodeDescriptor parentDesc = fAVMService.lookup(-1, newParentPath, true);
+        Map<String, AVMNodeDescriptor> children =
+            fAVMService.getDirectoryListing(toCopy, true);
+        for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
         {
-            fAVMService.link(parentPath, name, toCopy);
+            recursiveCopy(parentDesc, entry.getKey(), entry.getValue());
+        }
+    }
+    
+    /**
+     * Shortcutting helper that uses an AVMNodeDescriptor parent.
+     * @param parent The parent we are linking into.
+     * @param name The name to link in.
+     * @param toCopy The node to link in.
+     */
+    private void recursiveCopy(AVMNodeDescriptor parent, String name, AVMNodeDescriptor toCopy)
+    {
+        // If it's a file or deleted simply link it in.
+        if (toCopy.isFile() || toCopy.isDeleted() || toCopy.isPlainDirectory())
+        {
+            fAVMService.link(parent, name, toCopy);
             return;
         }
         // Otherwise make a directory in the target parent, and recursiveCopy all the source
         // children into it.
-        fAVMService.createDirectory(parentPath, name);
-        String newParentPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
+        fAVMService.createDirectory(parent.getPath(), name);
+        AVMNodeDescriptor newParentDesc = fAVMService.lookup(parent, name);
         Map<String, AVMNodeDescriptor> children = 
-            fAVMService.getDirectoryListing(-1, toCopy.getPath(), true);
+            fAVMService.getDirectoryListing(toCopy, true);
         for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
         {
-            recursiveCopy(newParentPath, entry.getKey(), entry.getValue());
+            recursiveCopy(newParentDesc, entry.getKey(), entry.getValue());
         }
     }
     
@@ -577,7 +595,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         // Grab the listing 
         Map<String, AVMNodeDescriptor> underListing =
-            fAVMService.getDirectoryListing(-1, underlying.getPath(), true);
+            fAVMService.getDirectoryListing(underlying, true);
         boolean flattened = true;
         for (String name : layerListing.keySet())
         {

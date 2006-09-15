@@ -1262,4 +1262,27 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(pathParts[0]);
         store.link(pathParts[1], name, toLink);
     }
+    
+    /**
+     * This is the danger version of link. It must be called on
+     * a copied and unsnapshotted directory.  It blithely inserts
+     * a child without checking if a child exists with a conflicting name.
+     * @param parent The parent directory.
+     * @param name The name to give the child.
+     * @param child The child to link in.
+     */
+    public void link(AVMNodeDescriptor parent, String name, AVMNodeDescriptor child)
+    {
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(parent.getId());
+        if (!(node instanceof DirectoryNode))
+        {
+            throw new AVMWrongTypeException("Not a Directory.");
+        }
+        DirectoryNode dir = (DirectoryNode)node;
+        if (!dir.getIsNew())
+        {
+            throw new AVMException("Directory has not already been copied.");
+        }
+        dir.link(name, child);
+    }
 }

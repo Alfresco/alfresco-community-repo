@@ -131,4 +131,12 @@ public interface DirectoryNode extends AVMNode
      * @param toLink The node to link in.
      */
     public void link(Lookup lPath, String name, AVMNodeDescriptor toLink);
+    
+    /**
+     * Dangerous version of link that assumes that a child node of
+     * the given name does not already exist.
+     * @param name The name to give the child.
+     * @param toLink The child to link in.
+     */
+    public void link(String name, AVMNodeDescriptor toLink);
 }

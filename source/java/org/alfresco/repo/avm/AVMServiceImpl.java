@@ -308,6 +308,22 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Create a new directory, in an already copy on written node.
+     * This should only be used if you really know what you're doing.
+     * @param parent The parent node.
+     * @param name The name of the new directory.
+     * @return A descriptor for the newly created directory.
+     */
+    public AVMNodeDescriptor createDirectory(AVMNodeDescriptor parent, String name)
+    {
+        if (parent == null || name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        return fAVMRepository.createDirectory(parent, name);
+    }
+
+    /**
      * Create a new layered file.  It must not exist.
      * @param srcPath The src path.  Ie the target for the layering.
      * @param parent The path to the parent directory.
@@ -1106,12 +1122,12 @@ public class AVMServiceImpl implements AVMService
      * Force copy on write of a path.
      * @param path The path to force.
      */
-    public void forceCopy(String path)
+    public AVMNodeDescriptor forceCopy(String path)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null Path.");
         }
-        fAVMRepository.forceCopy(path);
+        return fAVMRepository.forceCopy(path);
     }
 }

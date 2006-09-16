@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.apache.log4j.Logger;
 
 /**
  * This implements APIs that allow comparison and synchronization
@@ -38,6 +39,8 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
  */
 public class AVMSyncServiceImpl implements AVMSyncService
 {
+    private static Logger fgLogger = Logger.getLogger(AVMSyncServiceImpl.class);
+    
     /**
      * The AVMService.
      */
@@ -419,12 +422,13 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         // Otherwise make a directory in the target parent, and recursiveCopy all the source
         // children into it.
-        fAVMService.createDirectory(parent.getPath(), name);
-        AVMNodeDescriptor newParentDesc = fAVMService.lookup(parent, name);
+        AVMNodeDescriptor newParentDesc = fAVMService.createDirectory(parent, name);
+        fgLogger.error(newParentDesc);
         Map<String, AVMNodeDescriptor> children = 
             fAVMService.getDirectoryListing(toCopy, true);
         for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
         {
+            fgLogger.error(entry.getKey());
             recursiveCopy(newParentDesc, entry.getKey(), entry.getValue());
         }
     }
@@ -593,8 +597,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return true;
         }
-        fAVMService.forceCopy(layer.getPath());
-        layer = fAVMService.lookup(-1, layer.getPath());
+        layer = fAVMService.forceCopy(layer.getPath());
         // Grab the listing 
         Map<String, AVMNodeDescriptor> underListing =
             fAVMService.getDirectoryListing(underlying, true);

@@ -193,6 +193,15 @@ public interface AVMService
     public void createDirectory(String path, String name);
     
     /**
+     * Create a new directory, in an already copy on written node.
+     * This should only be used if you really know what you're doing.
+     * @param parent The parent node.
+     * @param name The name of the new directory.
+     * @return A descriptor for the newly created directory.
+     */
+    public AVMNodeDescriptor createDirectory(AVMNodeDescriptor parent, String name);
+    
+    /**
      * Create a new layered file.
      * @param targetPath The simple absolute path that the new file will point at.
      * @param parent The simple absolute path to the parent.
@@ -712,5 +721,5 @@ public interface AVMService
      * Force copy on write of a path.
      * @param path The path to force.
      */
-    public void forceCopy(String path);
+    public AVMNodeDescriptor forceCopy(String path);
 }

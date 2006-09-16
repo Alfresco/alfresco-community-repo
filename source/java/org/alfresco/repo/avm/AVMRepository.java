@@ -137,6 +137,43 @@ public class AVMRepository
     }
 
     /**
+     * Create a new directory. This assumes that the parent is already
+     * copied and therefore should only be used with great care.
+     * @param parent The parent node.
+     * @param name The name of the new directory.
+     * @return A descriptor for the newly created directory.
+     */
+    public AVMNodeDescriptor createDirectory(AVMNodeDescriptor parent, String name)
+    {
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(parent.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException(parent.getId() + " not found.");
+        }
+        if (!(node instanceof DirectoryNode))
+        {
+            throw new AVMWrongTypeException("Not a directory.");
+        }
+        // We need the store to do anything so...
+        String [] pathParts = SplitPath(parent.getPath());
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        DirectoryNode dir = (DirectoryNode)node;
+        DirectoryNode child = null;
+        if (dir instanceof LayeredDirectoryNode)
+        {
+            child = new LayeredDirectoryNodeImpl((String)null, store);
+            ((LayeredDirectoryNode)child).setPrimaryIndirection(false);
+            ((LayeredDirectoryNode)child).setLayerID(parent.getLayerID());
+        }
+        else
+        {
+            child = new PlainDirectoryNodeImpl(store);
+        }
+        dir.putChild(name, child);
+        return child.getDescriptor(parent.getPath(), name, parent.getIndirection());
+    }
+    
+    /**
      * Create a new layered directory.
      * @param srcPath The target indirection for the new layered directory.
      * @param dstPath The path to the containing directory.
@@ -1311,12 +1348,14 @@ public class AVMRepository
      * Force a copy on write.
      * @param path The path to force.
      */
-    public void forceCopy(String path)
+    public AVMNodeDescriptor forceCopy(String path)
     {
         fLookupCount.set(1);
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);
         // Just force a copy if needed by looking up in write mode.
-        store.lookup(-1, pathParts[1], true, false);
+        Lookup lPath = store.lookup(-1, pathParts[1], true, false);
+        AVMNode node = lPath.getCurrentNode();
+        return node.getDescriptor(lPath);
     }
 }

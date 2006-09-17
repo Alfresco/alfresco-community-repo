@@ -141,4 +141,17 @@ class VersionRootDAOHibernate extends HibernateDaoSupport implements
                                                "(select max(v.versionID) from VersionRootImpl v)");
         return (VersionRoot)query.uniqueResult();
     }
+    
+    /**
+     * Get the highest numbered id from all the versions in a store.
+     * @param store The store.
+     * @return The highest numbered id.
+     */
+    public Integer getMaxVersionID(AVMStore store)
+    {
+        Query query = getSession().createQuery("select max(vr.versionID) from VersionRootImpl vr " + 
+                                               "where vr.avmStore = :store");
+        query.setEntity("store", store);
+        return (Integer)query.uniqueResult();
+    }
 }

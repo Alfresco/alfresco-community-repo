@@ -47,6 +47,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
     private AVMService fAVMService;
 
     /**
+     * The AVMRepository.
+     */
+    private AVMRepository fAVMRepository;
+    
+    /**
      * Do nothing constructor.
      */
     public AVMSyncServiceImpl()
@@ -54,15 +59,17 @@ public class AVMSyncServiceImpl implements AVMSyncService
     }
 
     /**
-     * Set the AVM Service. For Spring. For now, at least,
-     * it's important to wire this using the unintercepted AVMServiceImpl,
-     * as AVMServiceImpl uses Runtime Exceptions for handling valid states
-     * that should not cause rollbacks.
+     * Set the AVM Service. For Spring. 
      * @param avmService The AVMService reference.
      */
     public void setAvmService(AVMService avmService)
     {
         fAVMService = avmService;
+    }
+    
+    public void setAvmRepository(AVMRepository avmRepository)
+    {
+        fAVMRepository = avmRepository;
     }
     
     /**
@@ -280,7 +287,14 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 throw new AVMSyncException("Malformed AVMDifference.");
             }
-            AVMNodeDescriptor srcDesc = fAVMService.lookup(diff.getSourceVersion(),
+            int colonOff = diff.getSourcePath().indexOf(':');
+            if (colonOff == -1)
+            {
+                throw new AVMBadArgumentException("Invalid path.");
+            }
+            String storeName = diff.getSourcePath().substring(0, colonOff);
+            int version = fAVMService.createSnapshot(storeName);
+            AVMNodeDescriptor srcDesc = fAVMService.lookup(version,
                                                            diff.getSourcePath(), true);
             if (srcDesc == null)
             {
@@ -385,8 +399,6 @@ public class AVMSyncServiceImpl implements AVMSyncService
         fAVMService.link(parentPath, name, toLink);
     }
     
-    // TODO doesn't handle copies from non head nodes.
-    
     /**
      * Recursively copy a node into the given position.
      * @param parentPath The place to put it.
@@ -417,12 +429,12 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // If it's a file or deleted simply link it in.
         if (toCopy.isFile() || toCopy.isDeleted() || toCopy.isPlainDirectory())
         {
-            fAVMService.link(parent, name, toCopy);
+            fAVMRepository.link(parent, name, toCopy);
             return;
         }
         // Otherwise make a directory in the target parent, and recursiveCopy all the source
         // children into it.
-        AVMNodeDescriptor newParentDesc = fAVMService.createDirectory(parent, name);
+        AVMNodeDescriptor newParentDesc = fAVMRepository.createDirectory(parent, name);
         fgLogger.error(newParentDesc);
         Map<String, AVMNodeDescriptor> children = 
             fAVMService.getDirectoryListing(toCopy, true);
@@ -613,14 +625,14 @@ public class AVMSyncServiceImpl implements AVMSyncService
             // We've found an identity so flatten it.
             if (topNode.getId() == bottomNode.getId())
             {
-                fAVMService.flatten(layer, name);
+                fAVMRepository.flatten(layer, name);
             }
             else
             {
                 // Otherwise recursively flatten the children.
                 if (flatten(topNode, bottomNode))
                 {
-                    fAVMService.flatten(layer, name);
+                    fAVMRepository.flatten(layer, name);
                 }
                 else
                 {

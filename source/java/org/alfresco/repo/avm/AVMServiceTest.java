@@ -60,6 +60,61 @@ import org.alfresco.service.transaction.TransactionService;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test that an update forces a snapshot on the source.
+     */
+    public void testUpdateSnapshot()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createAVMStore("branch");
+            fService.createBranch(-1, "main:/", "branch:/", "branch");
+            // Modify some things in the branch.
+            fService.createFile("branch:/branch/a/b", "fing").close();
+            fService.getFileOutputStream("branch:/branch/a/b/c/foo").close();
+            fService.removeNode("branch:/branch/a/b/c", "bar");
+            List<AVMDifference> diffs =
+                fSyncService.compare(-1, "branch:/branch", -1, "main:/");
+            assertEquals(3, diffs.size());
+            // Now update.
+            fSyncService.update(diffs, false, false, false, false);
+            diffs = fSyncService.compare(-1, "branch:/branch", -1, "main:/");
+            assertEquals(0, diffs.size());
+            fService.getFileOutputStream("branch:/branch/a/b/fing").close();
+            assertTrue(fService.lookup(-1, "branch:/branch/a/b/fing").getId() !=
+                       fService.lookup(-1, "main:/a/b/fing").getId());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
+     * Test that branching forces a snapshot on the source repository.
+     */
+    public void testBranchSnapshot()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createBranch(-1, "main:/a", "main:/", "abranch");
+            assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getId(),
+                         fService.lookup(-1, "main:/abranch/b/c/foo").getId());
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            assertTrue(fService.lookup(-1, "main:/a/b/c/foo").getId() !=
+                       fService.lookup(-1, "main:/abranch/b/c/foo").getId());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Test bulk update.
      */
     public void testBulkUpdate()

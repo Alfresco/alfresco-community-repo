@@ -25,7 +25,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
-import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -316,18 +315,14 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         else
         {
-            try
+            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
+            if (lookup != null)
             {
-                Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
                 listing = dir.getListing(lookup, includeDeleted);
             }
-            catch (AVMException re)
+            else
             {
-                if (re instanceof AVMCycleException)
-                {
-                    throw re;
-                }
                 // It's OK for an indirection to dangle.
                 listing = new HashMap<String, AVMNode>();
             }
@@ -406,9 +401,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         // If we are not opaque, get the underlying base listing.
         if (!fOpacity)
         {
-            try
+            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, dir.getIndirection());
+            if (lookup != null)
             {
-                Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, dir.getIndirection());
                 DirectoryNode dirNode = (DirectoryNode)lookup.getCurrentNode();
                 Map<String, AVMNode> listing = dirNode.getListing(lookup, includeDeleted);
                 for (String name : listing.keySet())
@@ -416,13 +411,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                     baseListing.put(name,
                                     listing.get(name).getDescriptor(dir.getPath(), name,
                                                                     lookup.getCurrentIndirection()));
-                }
-            }
-            catch (AVMException e)
-            {
-                if (e instanceof AVMCycleException)
-                {   
-                    throw e;
                 }
             }
         }
@@ -489,20 +477,16 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             return null;
         }
         // Not here so check our indirection.
-        try
+        Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
+        if (lookup != null)
         {
-            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getUnderlying(lPath));
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
             AVMNode retVal = dir.lookupChild(lookup, name, -1, false, includeDeleted);
             lPath.setFinalStore(lookup.getFinalStore());
             return retVal;
         }
-        catch (AVMException re)
+        else
         {
-            if (re instanceof AVMCycleException)
-            {
-                throw re;
-            }
             return null;
         }
     }
@@ -535,9 +519,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             return null;
         }
-        try
+        Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, mine.getIndirection());
+        if (lookup != null)
         {
-            Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, mine.getIndirection());
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
             AVMNode child = dir.lookupChild(lookup, name, -1, false, includeDeleted);
             if (child == null)
@@ -546,12 +530,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             }
             return child.getDescriptor(lookup);
         }
-        catch (AVMException e)
+        else
         {
-            if (e instanceof AVMCycleException)
-            {
-                throw e;
-            }
             return null;
         }
     }

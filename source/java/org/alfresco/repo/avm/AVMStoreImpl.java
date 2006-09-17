@@ -141,7 +141,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         // If the root isn't new, we can't take a snapshot since nothing has changed.
         if (!fRoot.getIsNew())
         {
-            throw new AVMExistsException("Already snapshotted.");
+            // So we just return the most recent snapshot.
+            return AVMContext.fgInstance.fVersionRootDAO.getMaxVersionID(this);
         }
         // Clear out the new nodes.
         List<AVMNode> newInRep = AVMContext.fgInstance.fAVMNodeDAO.getNewInStore(this);
@@ -150,11 +151,16 @@ public class AVMStoreImpl implements AVMStore, Serializable
             newGuy.setStoreNew(null);
         }
         // Make up a new version record.
+        String user = AVMContext.fgInstance.getAuthenticationComponent().getCurrentUserName();
+        if (user == null)
+        {
+            user = AVMContext.fgInstance.getAuthenticationComponent().getSystemUserName();
+        }
         VersionRoot versionRoot = new VersionRootImpl(this,
                                                       fRoot,
                                                       fNextVersionID,
                                                       System.currentTimeMillis(),
-                                                      "britt");
+                                                      user);
         AVMContext.fgInstance.fVersionRootDAO.save(versionRoot);
         // Increment the version id.
         fNextVersionID++;
@@ -169,6 +175,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void createDirectory(String path, String name)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true, false) != null)
         {
@@ -202,6 +212,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                        String name)
     {
         Lookup lPath = lookupDirectory(-1, dstPath, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true, false) != null)
         {
@@ -236,6 +250,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public OutputStream createFile(String path, String name)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true, false) != null)
         {
@@ -262,6 +280,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void createFile(String path, String name, File data)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true, false) != null)
         {
@@ -288,6 +310,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void createLayeredFile(String srcPath, String dstPath, String name)
     {
         Lookup lPath = lookupDirectory(-1, dstPath, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true, false) != null)
         {
@@ -354,6 +380,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                                            boolean includeDeleted)
     {
         Lookup lPath = lookupDirectory(version, path, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         Map<String, AVMNode> listing = dir.getListing(lPath, includeDeleted);
         return translateListing(listing, lPath);
@@ -369,6 +399,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                                                  boolean includeDeleted)
     {
         Lookup lPath = lookupDirectory(version, path, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (lPath.isLayered() && dir.getType() != AVMNodeType.LAYERED_DIRECTORY)
         {
@@ -407,6 +441,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public List<String> getDeleted(int version, String path)
     {
         Lookup lPath = lookupDirectory(version, path, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         return dir.getDeletedNames();
     }
@@ -443,6 +481,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void removeNode(String path, String name)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (dir.lookupChild(lPath, name, -1, true, false) == null)
         {
@@ -460,6 +502,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void uncover(String dirPath, String name)
     {
         Lookup lPath = lookup(-1, dirPath, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() != AVMNodeType.LAYERED_DIRECTORY)
         {
@@ -540,7 +586,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         Lookup result = new Lookup(this, fName);
         if (path.length() == 0)
         {
-            throw new AVMException("Invalid path: " + path);
+            return null;
         }
         while (path.startsWith("/"))
         {
@@ -576,13 +622,13 @@ public class AVMStoreImpl implements AVMStore, Serializable
             AVMNode child = dir.lookupChild(result, pathElements[i], version, write, includeDeleted);
             if (child == null)
             {
-                throw new AVMNotFoundException("Not found: " + pathElements[i]);
+                return null;
             }
             // Every element that is not the last needs to be a directory.
             if (child.getType() != AVMNodeType.PLAIN_DIRECTORY &&
                 child.getType() != AVMNodeType.LAYERED_DIRECTORY)
             {
-                throw new AVMNotFoundException("Not a directory: " + pathElements[i]);
+                return null;
             }
             result.add(child, pathElements[i], write);
             dir = (DirectoryNode)result.getCurrentNode();
@@ -592,7 +638,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                         includeDeleted);
         if (child == null)
         {
-            throw new AVMNotFoundException("Not found: " + pathElements[pathElements.length - 1]);
+            return null;
         }
         result.add(child, pathElements[pathElements.length - 1], write);
         return result;
@@ -629,10 +675,14 @@ public class AVMStoreImpl implements AVMStore, Serializable
         // Just do a regular lookup and assert that the last element
         // is a directory.
         Lookup lPath = lookup(version, path, write, false);
+        if (lPath == null)
+        {
+            return null;
+        }
         if (lPath.getCurrentNode().getType() != AVMNodeType.PLAIN_DIRECTORY &&
             lPath.getCurrentNode().getType() != AVMNodeType.LAYERED_DIRECTORY)
         {
-            throw new AVMWrongTypeException("Not a directory: " + path);
+            return null;
         }
         return lPath;
     }
@@ -646,6 +696,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public String getIndirectionPath(int version, String path)
     {
         Lookup lPath = lookup(version, path, false, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
         {
@@ -665,7 +719,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void makePrimary(String path)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
-//        lPath.acquireLocks();
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (!lPath.isLayered())
         {
@@ -683,7 +740,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void retargetLayeredDirectory(String path, String target)
     {
         Lookup lPath = lookupDirectory(-1, path, true);
-//        lPath.acquireLocks();
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         if (!lPath.isLayered())
         {
@@ -844,6 +904,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void setOpacity(String path, boolean opacity)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         if (!(node instanceof LayeredDirectoryNode))
         {
@@ -863,6 +927,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void setNodeProperty(String path, QName name, PropertyValue value)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         node.setProperty(name, value);
     }
@@ -875,6 +943,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void setNodeProperties(String path, Map<QName, PropertyValue> properties)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         node.setProperties(properties);
     }
@@ -889,6 +961,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public PropertyValue getNodeProperty(int version, String path, QName name)
     {
         Lookup lPath = lookup(version, path, false, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         return node.getProperty(name);
     }
@@ -902,6 +978,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public Map<QName, PropertyValue> getNodeProperties(int version, String path)
     {
         Lookup lPath = lookup(version, path, false, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         return node.getProperties();
     }
@@ -914,6 +994,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void deleteNodeProperty(String path, QName name)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         node.deleteProperty(name);
     }
@@ -925,6 +1009,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void deleteNodeProperties(String path)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         node.deleteProperties();
     }
@@ -999,6 +1087,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public ContentData getContentDataForRead(int version, String path)
     {
         Lookup lPath = lookup(version, path, false, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         if (!(node instanceof FileNode))
         {
@@ -1015,6 +1107,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public ContentData getContentDataForWrite(String path)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         if (!(node instanceof FileNode))
         {
@@ -1031,6 +1127,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void setContentData(String path, ContentData data)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         if (!(node instanceof FileNode))
         {
@@ -1047,6 +1147,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void addAspect(String path, QName aspectName)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         if (AVMContext.fgInstance.fAVMAspectNameDAO.exists(node, aspectName))
         {
@@ -1068,6 +1172,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public List<QName> getAspects(int version, String path)
     {
         Lookup lPath = lookup(version, path, false, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         List<AVMAspectName> names = 
             AVMContext.fgInstance.fAVMAspectNameDAO.get(node);
@@ -1087,6 +1195,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void removeAspect(String path, QName aspectName)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         AVMContext.fgInstance.fAVMAspectNameDAO.delete(node, aspectName);
         AspectDefinition def = AVMContext.fgInstance.getDictionaryService().getAspect(aspectName);
@@ -1108,6 +1220,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public boolean hasAspect(int version, String path, QName aspectName)
     {
         Lookup lPath = lookup(version, path, false, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         return AVMContext.fgInstance.fAVMAspectNameDAO.exists(node, aspectName);
     }
@@ -1120,6 +1236,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void setACL(String path, DbAccessControlList acl)
     {
         Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         AVMNode node = lPath.getCurrentNode();
         node.setAcl(acl);
     }
@@ -1133,6 +1253,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public DbAccessControlList getACL(int version, String path)
     {
         Lookup lPath = lookup(version, path, false, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         return lPath.getCurrentNode().getAcl();
     }
     
@@ -1145,6 +1269,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public void link(String parentPath, String name, AVMNodeDescriptor toLink)
     {
         Lookup lPath = lookupDirectory(-1, parentPath, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         dir.link(lPath, name, toLink);
     }

@@ -308,22 +308,6 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
-     * Create a new directory, in an already copy on written node.
-     * This should only be used if you really know what you're doing.
-     * @param parent The parent node.
-     * @param name The name of the new directory.
-     * @return A descriptor for the newly created directory.
-     */
-    public AVMNodeDescriptor createDirectory(AVMNodeDescriptor parent, String name)
-    {
-        if (parent == null || name == null)
-        {
-            throw new AVMBadArgumentException("Illegal null argument.");
-        }
-        return fAVMRepository.createDirectory(parent, name);
-    }
-
-    /**
      * Create a new layered file.  It must not exist.
      * @param srcPath The src path.  Ie the target for the layering.
      * @param parent The path to the parent directory.
@@ -511,6 +495,10 @@ public class AVMServiceImpl implements AVMService
         try
         {
             Lookup lookup = fAVMRepository.lookup(version, path, includeDeleted);
+            if (lookup == null)
+            {
+                return null;
+            }
             return lookup.getCurrentNode().getDescriptor(lookup);
         }
         catch (AVMNotFoundException e)
@@ -1080,42 +1068,6 @@ public class AVMServiceImpl implements AVMService
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
         fAVMRepository.link(parentPath, name, toLink);
-    }
-
-    /**
-     * This is a more dangerous version of link, which assumes
-     * that copy on write has occurred for the parent node. This is
-     * an internal call. Don't use it if you don't know precisely
-     * what you are doing.
-     * @param parent The parent node.
-     * @param name The name to give the child.
-     * @param child The child node to link.
-     */
-    public void link(AVMNodeDescriptor parent, String name, AVMNodeDescriptor child)
-    {
-        if (parent == null || child == null)
-        {
-            throw new AVMBadArgumentException("Illegal Null Argument.");
-        }
-        fAVMRepository.link(parent, name, child);
-    }
-    
-    /**
-     * Flatten a direct child of a layered directory. This does
-     * the equivalent of removing the given child from the directory 
-     * and then doing an uncover. This routine makes many dangerous 
-     * assumptions and is only for use by AVMSyncService. Don't use it
-     * if you don't know precisely what you are doing.
-     * @param lDir The layered directory node.
-     * @param name The name to flatten.
-     */
-    public void flatten(AVMNodeDescriptor lDir, String name)
-    {
-        if (lDir == null || name == null)
-        {
-            throw new AVMBadArgumentException("Illegal Null Argument.");
-        }
-        fAVMRepository.flatten(lDir, name);
     }
 
     /**

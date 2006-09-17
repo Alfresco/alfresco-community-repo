@@ -193,15 +193,6 @@ public interface AVMService
     public void createDirectory(String path, String name);
     
     /**
-     * Create a new directory, in an already copy on written node.
-     * This should only be used if you really know what you're doing.
-     * @param parent The parent node.
-     * @param name The name of the new directory.
-     * @return A descriptor for the newly created directory.
-     */
-    public AVMNodeDescriptor createDirectory(AVMNodeDescriptor parent, String name);
-    
-    /**
      * Create a new layered file.
      * @param targetPath The simple absolute path that the new file will point at.
      * @param parent The simple absolute path to the parent.
@@ -694,28 +685,6 @@ public interface AVMService
      * @param toLink A descriptor for the node to insert.
      */
     public void link(String parentPath, String name, AVMNodeDescriptor toLink);
-    
-    /**
-     * This is a more dangerous version of link, which assumes
-     * that copy on write has occurred for the parent node. This is
-     * an internal call. Don't use it if you don't know precisely
-     * what you are doing.
-     * @param parent The parent node.
-     * @param name The name to give the child.
-     * @param child The child node to link.
-     */
-    public void link(AVMNodeDescriptor parent, String name, AVMNodeDescriptor child);
-    
-    /**
-     * Flatten a direct child of a layered directory. This does
-     * the equivalent of removing the given child from the directory 
-     * and then doing an uncover. This routine makes many dangerous 
-     * assumptions and is only for use by AVMSyncService. Don't use it
-     * if you don't know precisely what you are doing.
-     * @param lDir The layered directory node.
-     * @param name The name to flatten.
-     */
-    public void flatten(AVMNodeDescriptor lDir, String name);
     
     /**
      * Force copy on write of a path.

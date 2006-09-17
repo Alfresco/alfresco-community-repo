@@ -60,6 +60,42 @@ import org.alfresco.service.transaction.TransactionService;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test that non head version sources are update correctly.
+     */
+    public void testVersionUpdate()
+    {
+        try
+        {
+            BulkLoader loader = new BulkLoader();
+            loader.setAvmService(fService);
+            fService.createAVMStore("source");
+            fService.createAVMStore("dest");
+            loader.recursiveLoad("config/alfresco/bootstrap", "source:/");
+            int version1 = fService.createSnapshot("source");
+            loader.recursiveLoad("config/alfresco/extension", "source:/");
+            int version2 = fService.createSnapshot("source");
+            List<AVMDifference> diffs = 
+                fSyncService.compare(version1, "source:/", -1, "dest:/");
+            fService.createSnapshot("dest");
+            assertEquals(1, diffs.size());
+            fSyncService.update(diffs, false, false, false, false);
+            diffs = fSyncService.compare(version1, "source:/", -1, "dest:/");
+            assertEquals(0, diffs.size());
+            diffs = fSyncService.compare(version2, "source:/", -1, "dest:/");
+            assertEquals(1, diffs.size());
+            fSyncService.update(diffs, false, false, false, false);
+            fService.createSnapshot("dest");
+            diffs = fSyncService.compare(version2, "source:/", -1, "dest:/");
+            assertEquals(0, diffs.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Test that an update forces a snapshot on the source.
      */
     public void testUpdateSnapshot()

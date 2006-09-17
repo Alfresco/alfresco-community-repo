@@ -18,8 +18,11 @@
 package org.alfresco.repo.avm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -281,19 +284,33 @@ public class AVMSyncServiceImpl implements AVMSyncService
     public void update(List<AVMDifference> diffList, boolean ignoreConflicts, boolean ignoreOlder,
                        boolean overrideConflicts, boolean overrideOlder)
     {
+        Map<String, Integer> storeVersions = new HashMap<String, Integer>();
         for (AVMDifference diff : diffList)
         {
             if (!diff.isValid())
             {
                 throw new AVMSyncException("Malformed AVMDifference.");
             }
-            int colonOff = diff.getSourcePath().indexOf(':');
-            if (colonOff == -1)
+            // Snapshot the source if needed.
+            int version = diff.getSourceVersion();
+            if (version < 0)
             {
-                throw new AVMBadArgumentException("Invalid path.");
+                int colonOff = diff.getSourcePath().indexOf(':');
+                if (colonOff == -1)
+                {
+                    throw new AVMBadArgumentException("Invalid path.");
+                }
+                String storeName = diff.getSourcePath().substring(0, colonOff);
+                if (storeVersions.containsKey(storeName))
+                {
+                    // We've already snapshotted this store.
+                    version = storeVersions.get(storeName);
+                }
+                else
+                {
+                    version = fAVMService.createSnapshot(storeName);
+                }
             }
-            String storeName = diff.getSourcePath().substring(0, colonOff);
-            int version = fAVMService.createSnapshot(storeName);
             AVMNodeDescriptor srcDesc = fAVMService.lookup(version,
                                                            diff.getSourcePath(), true);
             if (srcDesc == null)

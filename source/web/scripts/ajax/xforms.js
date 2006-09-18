@@ -14,7 +14,7 @@ tinyMCE.init({
       theme: "advanced",
       mode: "exact",
       encoding: null,
-      save_callback : "setXFormsValue",
+      save_callback : "document.xform.setXFormsValue",
       add_unload_trigger: false,
       add_form_submit_trigger: false,
       theme_advanced_toolbar_location : "top",
@@ -70,20 +70,20 @@ dojo.declare("alfresco.xforms.Widget",
 		 var a = [];
 		 do
 		 {
-		   a.push(b);
+		   a.push(b.nodeset);
 		   b = b.parent;
 		 }
 		 while (b);
 		 var node = this.xform.getInstance();
 		 for (var i = a.length - 1; i >= 0; i--)
 		 {
-		   var element_name = (a[i].nodeset.match(/^\//)
-				       ? a[i].nodeset.replace(/^\/(.+)/, "$1")
-				       : a[i].nodeset);
-		   dojo.debug("locating " + a[i].nodeset + "(" + element_name + ")" +
+		   var element_name = (a[i].match(/^\//)
+				       ? a[i].replace(/^\/(.+)/, "$1")
+				       : a[i]);
+		   dojo.debug("locating " + a[i] + "(" + element_name + ")" +
 			      " in " + node.nodeName);
 		   if (element_name.match(/^@/))
-		     return node.getAttribute(a[i].nodeset.replace(/^@(.+)/, "$1"));
+		     return node.getAttribute(a[i].replace(/^@(.+)/, "$1"));
 		   else if (element_name == '.')
 		     break;
 		   node = node.getElementsByTagName(element_name)[0];
@@ -92,7 +92,9 @@ dojo.declare("alfresco.xforms.Widget",
 		   else
 		     return null;
 		 }
-		 return dojo.dom.textContent(node);
+		 var result = dojo.dom.textContent(node);
+		 dojo.debug("got '" + result + "' for " + a.reverse().join("/"));
+		 return result;
 	       },
 	     _getLabelNode: function()
 	       {
@@ -163,7 +165,7 @@ dojo.declare("alfresco.xforms.DatePicker",
 		 var initial_value = this.getInitialValue() || dojo.widget.DatePicker.util.toRfcDate();
 		 var dateTextBoxDiv = document.createElement("div");
 		 attach_point.appendChild(dateTextBoxDiv);
-		 var dateTextBox = dojo.widget.createWidget("DateTextBox", 
+		 this.dateTextBox = dojo.widget.createWidget("DateTextBox", 
 							    {
 							    widgetId: this.id,
 							    required: this.isRequired(), 
@@ -171,32 +173,41 @@ dojo.declare("alfresco.xforms.DatePicker",
 							    value: initial_value 
 							    }, 
 							    dateTextBoxDiv);
-		 dateTextBox.onfocus = function(o) 
-		 { 
-		   dateTextBox.hide(); dojo.debug("hiding " + o); 
-		   dateTextBox.picker.show();
-		 };
+		 dojo.event.connect(this.dateTextBox, 
+				    "onfocus", 
+				    this, 
+				    this._dateTextBox_focusHandler);
 		 var datePickerDiv = document.createElement("div");
 		 attach_point.appendChild(datePickerDiv);
-		 dateTextBox.picker = dojo.widget.createWidget("DatePicker", 
-							       { 
-							       isHidden: true, 
-							       value : initial_value 
-							       }, 
-							       datePickerDiv);
-		 dateTextBox.picker.hide();
-		 dojo.event.connect(dateTextBox.picker,
+		 this.dateTextBox.picker = dojo.widget.createWidget("DatePicker", 
+								    { 
+								    isHidden: true, 
+								    value : initial_value 
+								    }, 
+								    datePickerDiv);
+		 this.dateTextBox.picker.hide();
+		 dojo.event.connect(this.dateTextBox.picker,
 				    "onSetDate", 
 				    this,
-				    function(event)
-				    {
-				      dateTextBox.picker.hide();
-				      dateTextBox.show();
-				      dateTextBox.setValue(dojo.widget.DatePicker.util.toRfcDate(dateTextBox.picker.date));
-				      this.xform.setXFormsValue(dateTextBox.widgetId, 
-								dateTextBox.getValue());
-				    });
-	       }
+				    this._datePicker_setDateHandler);
+	       },
+	     _dateTextBox_focusHandler: function(event)
+             {
+		 this.dateTextBox.hide(); 
+		 this.dateTextBox.picker.show();
+		 this.domContainer.style.height = 
+		   this.dateTextBox.picker.domNode.offsetHeight + "px";
+             },
+	     _datePicker_setDateHandler: function(event)
+	     {
+	       this.dateTextBox.picker.hide();
+	       this.dateTextBox.show();
+	       this.domContainer.style.height = 
+		 this.dateTextBox.domNode.offsetHeight + "px";
+	       this.dateTextBox.setValue(dojo.widget.DatePicker.util.toRfcDate(this.dateTextBox.picker.date));
+	       this.xform.setXFormsValue(this.dateTextBox.widgetId, 
+					 this.dateTextBox.getValue());
+	     }
 	     });
 
 dojo.declare("alfresco.xforms.TextField",
@@ -281,82 +292,85 @@ dojo.declare("alfresco.xforms.Select1",
 		 return result;
 	       },
 	     render: function(attach_point)
+             {
+	       var values = this.getValues();
+	       for (var i in values)
 	       {
-		 var values = this.getValues();
+		 dojo.debug("values["+ i + "] = " + values[i].id + 
+			    ", " + values[i].label + ", " + values[i].value);
+	       }
+	       var initial_value = this.getInitialValue();
+	       if (values.length <= 5)
+	       {
 		 for (var i in values)
 		 {
-		   dojo.debug("values["+ i + "] = " + values[i].id + 
-			      ", " + values[i].label + ", " + values[i].value);
-		 }
-		 var initial_value = this.getInitialValue();
-		 if (values.length <= 5)
-		 {
-		   for (var i in values)
-		   {
-		     var radio = document.createElement("input");
-		     radio.setAttribute("id", this.id);
-		     radio.setAttribute("name", this.id);
-		     radio.setAttribute("type", "radio");
-		     radio.setAttribute("value", values[i].value);
-		     if (values[i].value == initial_value)
-		       radio.setAttribute("checked", "true");
-		     radio.onclick = function(event) 
-		       { 
-			 this.xform.setXFormsValue(this.getAttribute("id"),
-						   this.value);
-		       }
-		     attach_point.appendChild(radio);
-		     attach_point.appendChild(document.createTextNode(values[i].label));
-		   }
-		 }
-		 else
-		 {
-		   var combobox = document.createElement("select");
-		   combobox.setAttribute("id", this.id);
-		   attach_point.appendChild(combobox);
-		   for (var i in values)
-		   {
-		     var option = document.createElement("option");
-		     option.appendChild(document.createTextNode(values[i].label));
-		     option.setAttribute("value", values[i].value);
-		     if (values[i].value == initial_value)
-		       option.setAttribute("selected", "true");
-		     combobox.appendChild(option);
-		   }
-		   combobox.onchange = function(event) 
-		     { 
-		       this.xform.setXFormsValue(this.getAttribute("id"),
-						 this.options[this.selectedIndex].value);
-		     }
+		   var radio = document.createElement("input");
+		   radio.setAttribute("id", this.id);
+		   radio.setAttribute("name", this.id);
+		   radio.setAttribute("type", "radio");
+		   radio.setAttribute("value", values[i].value);
+		   if (values[i].value == initial_value)
+		     radio.setAttribute("checked", "true");
+		   dojo.event.connect(radio, "onclick", this, this._radio_clickHandler);
+		   attach_point.appendChild(radio);
+		   attach_point.appendChild(document.createTextNode(values[i].label));
 		 }
 	       }
+	       else
+	       {
+		 var combobox = document.createElement("select");
+		 combobox.setAttribute("id", this.id);
+		 attach_point.appendChild(combobox);
+		 for (var i in values)
+		 {
+		   var option = document.createElement("option");
+		   option.appendChild(document.createTextNode(values[i].label));
+		   option.setAttribute("value", values[i].value);
+		   if (values[i].value == initial_value)
+		     option.setAttribute("selected", "true");
+		   combobox.appendChild(option);
+		 }
+		 dojo.event.connect(combobox, "onchange", this, this._combobox_changeHandler);
+	       }
+	     },
+             _combobox_changeHandler: function(event) 
+	     { 
+	       this.xform.setXFormsValue(event.target.getAttribute("id"),
+					 event.target.options[event.target.selectedIndex].value);
+	     },
+	     _radio_clickHandler: function(event)
+	     { 
+	       this.xform.setXFormsValue(event.target.getAttribute("id"),
+					 event.target.value);
+	     }
 	     });
 
 dojo.declare("alfresco.xforms.CheckBox",
 	     alfresco.xforms.Widget,
 	     {
 	     initializer: function(xform, node) 
-	       {
-		 this.inherited("initializer", [ xform, node ]);
-	       },
+	     {
+	       this.inherited("initializer", [ xform, node ]);
+	     },
 	     render: function(attach_point)
-	       {
-		 var nodeRef = document.createElement("div");
-		 attach_point.appendChild(nodeRef);
-		 var initial_value = this.getInitialValue() || false;
-		 var w = dojo.widget.createWidget("CheckBox", 
-						  { 
-						  widgetId: this.id,
-						  checked: initial_value 
-						  },
-						  nodeRef);
-		 dojo.event.connect(w,
-				    "onClick",
-				    function(event)
-				    {
-				      this.xform.setXFormsValue(w.widgetId, w.checked);
-				    });
-	       }
+	     {
+	       var nodeRef = document.createElement("div");
+	       attach_point.appendChild(nodeRef);
+	       var initial_value = this.getInitialValue() || false;
+	       this.widget = dojo.widget.createWidget("CheckBox", 
+						      { 
+						      widgetId: this.id,
+						      checked: initial_value 
+						      },
+						      nodeRef);
+
+	       dojo.event.connect(this.widget, "onClick", this, this._checkBox_clickHandler);
+	     },
+             _checkBox_clickHandler: function(event)
+	     {
+	       this.xform.setXFormsValue(this.widget.widgetId, 
+					 this.widget.checked);
+	     }
 	     });
 
 dojo.declare("alfresco.xforms.Group",
@@ -698,14 +712,41 @@ dojo.declare("alfresco.xforms.Submit",
 						  caption: "submit" 
 						  }, 
 						  nodeRef);
-		 w.hide();
+		 w.widget = this;
+		 this.widget = w;
+		 document.submitWidget = this;
 		 w.onClick = function()
 		   {
-		     document.submitTrigger = w;
-		     document.submitTrigger.done = false;
-		     fireAction(w.widgetId);
+		     document.submitWidget.done = false;
+		     w.widget.xform.fireAction(w.widgetId);
 		   };
+		 this.domContainer.style.display = "none";
 	       }
+	     });
+
+dojo.declare("alfresco.xforms.XFormsEvent",
+	     null,
+	     {
+	     initializer: function(node)
+             {
+	       this.type = node.nodeName;
+	       this.targetId = node.getAttribute("targetId");
+	       this.targetName = node.getAttribute("targetName");
+	       this.properties = {};
+	       for (var i = 0; i < node.childNodes.length; i++)
+	       {
+		 if (dojo.dom.isNode(node.childNodes[i]))
+		   this.properties[node.childNodes[i].getAttribute("name")] =
+		     node.childNodes[i].getAttribute("value");
+	       }
+	     },
+	     getTarget: function()
+	     {
+	       var targetDomNode = document.getElementById(this.targetId + "-domNode");
+	       if (!targetDomNode)
+		 throw new Error("unable to find node " + this.targetId + "-domNode");
+	       return targetDomNode.widget;
+	     }
 	     });
 
 dojo.declare("alfresco.xforms.XForm",
@@ -795,12 +836,6 @@ dojo.declare("alfresco.xforms.XForm",
 		 {
 		   dojo.debug("fireAction." + type);
 		   this.xform._handleEventLog(data.documentElement);
-		   if (document.submitTrigger)
-		   {
-		     document.submitTrigger.done = true;
-		     document.submitTrigger.currentButton.click();
-		     document.submitTrigger.currentButton = null;
-		   }
 		 },
 		 error: function(type, e)
 		 {
@@ -835,52 +870,36 @@ dojo.declare("alfresco.xforms.XForm",
 		 {
 		   if (dojo.dom.isNode(events.childNodes[i]))
 		   {
-		     var targetId = events.childNodes[i].getAttribute("targetId");
-		     var targetName = events.childNodes[i].getAttribute("targetName");
-		     dojo.debug("parsing " + events.childNodes[i].nodeName +
-				"(" + targetId + ", " + targetName + ")");
-		     switch (events.childNodes[i].nodeName)
+		     var xfe = new alfresco.xforms.XFormsEvent(events.childNodes[i]);
+		     dojo.debug("parsing " + xfe.type +
+				"(" + xfe.targetId + ", " + xfe.targetName + ")");
+		     switch (xfe.type)
 		     {
 		     case "chiba-index-changed":
 		     {
-		       var index = events.childNodes[i].getElementsByTagName("index")[0];
-		       index = Number(dojo.dom.textContent(index)) - 1;
-
-		       var targetDomNode = document.getElementById(targetId + "-domNode");
-		       if (!targetDomNode)
-			 throw new Error("unable to find node " + targetId + "-domNode");
-		       var target = targetDomNode.widget;
-
-		       target.handleIndexChanged(index);
+		       var index = Number(xfe.properties["index"]) - 1;
+		       xfe.getTarget().handleIndexChanged(index);
 		       break;
 		     }
 		     case "chiba-prototype-cloned":
 		     {
-		       var prototypeId = events.childNodes[i].getElementsByTagName("prototypeId")[0];
-		       prototypeId = dojo.dom.textContent(prototypeId);
-
-		       var targetDomNode = document.getElementById(targetId + "-domNode");
-		       if (!targetDomNode)
-			 throw new Error("unable to find node " + targetId + "-domNode");
-		       var target = targetDomNode.widget;
-
-		       var clone = target.handlePrototypeCloned(prototypeId);
+		       var prototypeId = xfe.properties["prototypeId"];
+		       var clone = xfe.getTarget().handlePrototypeCloned(prototypeId);
 		       prototypeClones.push(clone);
 		       break;
 		     }
 		     case "chiba-id-generated":
 		     {
-		       var originalId = events.childNodes[i].getElementsByTagName("originalId")[0];
-		       originalId = dojo.dom.textContent(originalId);
+		       var originalId = xfe.properties["originalId"];
 
-		       dojo.debug("handleIdGenerated(" + targetId + ", " + originalId + ")");
+		       dojo.debug("handleIdGenerated(" + xfe.targetId + ", " + originalId + ")");
 		       var clone = prototypeClones[prototypeClones.length - 1];
 		       var node = _findElementById(clone, originalId);
 		       if (node)
 		       {
-			 dojo.debug("applying id " + targetId + 
+			 dojo.debug("applying id " + xfe.targetId + 
 				    " to " + node.nodeName + "(" + originalId + ")");
-			 node.setAttribute("id", targetId);
+			 node.setAttribute("id", xfe.targetId);
 		       }
 		       else
 			 throw new Error("unable to find " + originalId + 
@@ -889,30 +908,29 @@ dojo.declare("alfresco.xforms.XForm",
 		     }
 		     case "chiba-item-inserted":
 		     {
-		       var position = events.childNodes[i].getElementsByTagName("position")[0];
-		       position = Number(dojo.dom.textContent(position)) - 1;
-
-		       var targetDomNode = document.getElementById(targetId + "-domNode");
-		       if (!targetDomNode)
-			 throw new Error("unable to find node " + targetId + "-domNode");
-		       var target = targetDomNode.widget;
-
+		       var position = Number(xfe.properties["position"]) - 1;
+		     
 		       var clone = prototypeClones.pop();
-		       target.handleItemInserted(clone, position);
+		       xfe.getTarget().handleItemInserted(clone, position);
 		       break;
 		     }
 		     case "chiba-item-deleted":
 		     {
-		       var position = events.childNodes[i].getElementsByTagName("position")[0];
-		       position = Number(dojo.dom.textContent(position)) - 1;
-
-		       var targetDomNode = document.getElementById(targetId + "-domNode");
-		       if (!targetDomNode)
-			 throw new Error("unable to find node " + targetId + "-domNode");
-		       var target = targetDomNode.widget;
-		       target.handleItemDeleted(position);
+		       var position = Number(xfe.properties["position"]) - 1;
+		       xfe.getTarget().handleItemDeleted(position);
 		       break;
 		     }
+		     case "chiba-replace-all":
+		       if (document.submitWidget)
+		       {
+			 document.submitWidget.done = true;
+			 document.submitWidget.currentButton.click();
+			 document.submitWidget.currentButton = null;
+		       }
+		       break;
+		     case "xforms-submit-error":
+		       alert("you gotta fill out the form first!");
+		       break;
 		     default:
 		     {
 		       dojo.debug("unhandled event " + events.childNodes[i].nodeName);
@@ -944,6 +962,7 @@ function xforms_init()
     var root = new alfresco.xforms.Group(xform, document.getElementById("alf-ui"));
     root.render(alfUI);
     load_body(xform, xform.getBody(), root);
+    document.xform = xform;
   },
   error: function(type, e)
   {
@@ -1021,12 +1040,12 @@ function addSubmitHandlerToButton(b)
 //    alert("submitting xform from " + b.getAttribute("id") + 
 //	  " b " + b +
 //	  " this " + this );
-    if (!document.submitTrigger.done)
+    if (!document.submitWidget.done)
     {
       //      alert("not done, resubmitting");
       tinyMCE.triggerSave();
-      document.submitTrigger.currentButton = this;
-      document.submitTrigger.buttonClick(); 
+      document.submitWidget.currentButton = this;
+      document.submitWidget.widget.buttonClick(); 
       return false;
     }
     else

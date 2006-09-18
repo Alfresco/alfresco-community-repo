@@ -257,10 +257,11 @@ public class XFormsBean
 
 	    for (Object name : xfe.getPropertyNames())
 	    {
-		final Element propertyElement = result.createElement((String)name);
+		final Element propertyElement = result.createElement("property");
 		eventElement.appendChild(propertyElement);
+		propertyElement.setAttribute("name", (String)name);
 		final String value = xfe.getContextInfo((String)name).toString();
-		propertyElement.appendChild(result.createTextNode(value));
+		propertyElement.setAttribute("value", value);
 	    }
 	}
 	this.eventLog.clear();

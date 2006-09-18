@@ -7,6 +7,7 @@ dojo.require("dojo.widget.Checkbox");
 dojo.require("dojo.widget.Editor");
 dojo.require("dojo.widget.Spinner");
 dojo.require("dojo.html.style");
+dojo.require("dojo.fx.html");
 dojo.hostenv.writeIncludes();
 dojo.addOnLoad(xforms_init);
 
@@ -472,8 +473,13 @@ dojo.declare("alfresco.xforms.Group",
 	       if (!child)
 		 throw new Error("unabled to find child at " + position);
 	       this.children.splice(position, 1);
-	       dojo.dom.removeChildren(child.domContainer);
-	       this.domNode.removeChild(child.domContainer);
+	       dojo.fx.html.fadeOut(child.domContainer,
+				    500,
+				    function(node)
+				    {
+				      dojo.dom.removeChildren(node);
+				      node.parentNode.removeChild(node);
+				    });
 	     },
 	     isIndented: function()
              {
@@ -544,7 +550,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	     {
 	       this.inherited("removeChildAt", [ position ]);
 	       if (this.selectedIndex == position)
-		 this.handleIndexChanged(position);
+		 this.handleIndexChanged(Math.min(this.children.length - 1, position));
 	     },
 	     _insertRepeatItem_handler: function(event)
 	     {
@@ -637,7 +643,8 @@ dojo.declare("alfresco.xforms.Repeat",
 	       if (this.selectedIndex != null && this.selectedIndex >= 0)
 	       {
 		 var child = this.getChildAt(this.selectedIndex);
-		 child.domContainer.style.backgroundColor = "white";
+		 if (child)
+		   child.domContainer.style.backgroundColor = "white";
 	       }
 	       
 	       if (index >= 0)
@@ -742,7 +749,7 @@ dojo.declare("alfresco.xforms.XFormsEvent",
 	       this.properties = {};
 	       for (var i = 0; i < node.childNodes.length; i++)
 	       {
-		 if (dojo.dom.isNode(node.childNodes[i]))
+		 if (node.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
 		   this.properties[node.childNodes[i].getAttribute("name")] =
 		     node.childNodes[i].getAttribute("value");
 	       }
@@ -876,7 +883,7 @@ dojo.declare("alfresco.xforms.XForm",
 		 var prototypeClones = [];
 		 for (var i = 0; i < events.childNodes.length; i++)
 		 {
-		   if (dojo.dom.isNode(events.childNodes[i]))
+		   if (events.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
 		   {
 		     var xfe = new alfresco.xforms.XFormsEvent(events.childNodes[i]);
 		     dojo.debug("parsing " + xfe.type +
@@ -983,50 +990,50 @@ function xforms_init()
 function create_widget(xform, node)
 {
   switch (node.nodeName.toLowerCase())
+  {
+  case "xforms:group":
+    return new alfresco.xforms.Group(xform, node);
+  case "xforms:repeat":
+    return new alfresco.xforms.Repeat(xform, node);
+  case "xforms:textarea":
+    return new alfresco.xforms.TextArea(xform, node);
+  case "xforms:input":
+    var type = xform.getType(node);
+    switch (type)
     {
-    case "xforms:group":
-      return new alfresco.xforms.Group(xform, node);
-    case "xforms:repeat":
-      return new alfresco.xforms.Repeat(xform, node);
-    case "xforms:textarea":
-      return new alfresco.xforms.TextArea(xform, node);
-    case "xforms:input":
-      var type = xform.getType(node);
-      switch (type)
-      {
-      case "date":
-	return new alfresco.xforms.DatePicker(xform, node);
-      case "integer":
-      case "positiveInteger":
-      case "negativeInteger":
-      case "double":
-	return new alfresco.xforms.NumericStepper(xform, node, type);
+    case "date":
+      return new alfresco.xforms.DatePicker(xform, node);
+    case "integer":
+    case "positiveInteger":
+    case "negativeInteger":
+    case "double":
+      return new alfresco.xforms.NumericStepper(xform, node, type);
       case "string":
-      default:
-	return new alfresco.xforms.TextField(xform, node);
-      }
-    case "xforms:select1":
-      return (xform.getType(node) == "boolean"
-	      ? new alfresco.xforms.CheckBox(xform, node)
-	      : new alfresco.xforms.Select1(xform, node));
-    case "xforms:submit":
-      return  new alfresco.xforms.Submit(xform, node);
-    case "xforms:trigger":
-      return new alfresco.xforms.Trigger(xform, node);
-    case "chiba:data":
-    case "xforms:label":
-    case "xforms:alert":
-      return null;
     default:
-      throw new Error("unknown type " + node.nodeName);
+      return new alfresco.xforms.TextField(xform, node);
     }
+  case "xforms:select1":
+    return (xform.getType(node) == "boolean"
+	    ? new alfresco.xforms.CheckBox(xform, node)
+	    : new alfresco.xforms.Select1(xform, node));
+  case "xforms:submit":
+    return  new alfresco.xforms.Submit(xform, node);
+  case "xforms:trigger":
+    return new alfresco.xforms.Trigger(xform, node);
+  case "chiba:data":
+  case "xforms:label":
+  case "xforms:alert":
+    return null;
+  default:
+    throw new Error("unknown type " + node.nodeName);
+  }
 }
 
 function load_body(xform, currentNode, parentWidget)
 {
   dojo.lang.forEach(currentNode.childNodes, function(o)
   {
-    if (dojo.dom.isNode(o))
+    if (o.nodeType == dojo.dom.ELEMENT_NODE)
     {
       dojo.debug("loading " + o + " NN " + o.nodeName + " into " + parentWidget);
       var w = create_widget(xform, o);
@@ -1073,7 +1080,7 @@ function _findElementById(node, id)
     return node;
   for (var i = 0; i < node.childNodes.length; i++)
   {
-    if (dojo.dom.isNode(node.childNodes[i]))
+    if (node.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
     {
       var n = _findElementById(node.childNodes[i], id);
       if (n)

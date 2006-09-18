@@ -86,7 +86,7 @@ public class XFormsInputMethod
 	final String[] scripts = 
 	{
 	    "/scripts/tiny_mce/tiny_mce_src.js",
-	    "/scripts/ajax/dojo.js",
+	    "/scripts/ajax/dojo/dojo.js",
 	    "/scripts/ajax/xforms.js"
 	};
 	    

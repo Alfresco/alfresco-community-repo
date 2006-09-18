@@ -1259,7 +1259,7 @@ public final class Utils
          // write out the scripts
          out.write("\n<script type=\"text/javascript\" src=\"");
          out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/dojo.js\"> </script>\n");
+         out.write("/scripts/ajax/dojo/dojo.js\"> </script>\n");
          out.write("<script type=\"text/javascript\" src=\"");
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/scripts/ajax/common.js\"> </script>\n");

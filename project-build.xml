@@ -48,7 +48,16 @@
          <fileset dir="${dir.project.repository}/build/dist" includes="${dir.name.repository}.jar" />
          <fileset dir="${dir.project.remoteapi}/build/dist" includes="${dir.name.remoteapi}.jar" />
       </copy>
-      
+
+      <mkdir dir="${dir.assemble}/scripts/ajax"/>
+      <unzip src="${dir.common.lib}/dojo-0.3.1-ajax.zip"
+	     dest="${dir.assemble}/scripts/ajax"/>
+      <delete dir="${dir.assemble}/scripts/ajax/dojo"/>
+      <move file="${dir.assemble}/scripts/ajax/dojo-0.3.1-ajax"
+	    tofile="${dir.assemble}/scripts/ajax/dojo"/>
+      <delete dir="${dir.assemble}/scripts/ajax/dojo/tests"/>
+      <delete dir="${dir.assemble}/scripts/ajax/dojo/demos"/>
+	    
       <!-- add config files to WEB-INF/classes -->
       <copy todir="${dir.assemble}/WEB-INF/classes">
          <fileset dir="${dir.config.repository}" excludes="**/*.sample" />
@@ -70,6 +79,7 @@
       <copy todir="${dir.assemble}/wsdl">
          <fileset dir="${dir.project.remoteapi}/source/wsdl" />
       </copy>
+      
    </target>
  
    <target name="assemble-war-tomcat" if="isTomcat">

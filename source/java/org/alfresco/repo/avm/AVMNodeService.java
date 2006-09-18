@@ -1242,10 +1242,6 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMNotFoundException e)
         {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
-        }
-        catch (AVMWrongTypeException e)
-        {
             return result;
         }
         for (String name : children.keySet())

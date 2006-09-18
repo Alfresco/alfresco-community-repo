@@ -83,26 +83,23 @@ public class XFormsInputMethod
 					    " };\n" +
 					    "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
 	div.appendChild(e);
-
+	final String[] scripts = 
+	{
+	    "/scripts/tiny_mce/tiny_mce_src.js",
+	    "/scripts/ajax/dojo.js",
+	    "/scripts/ajax/xforms.js"
+	};
+	    
 	// include all our scripts, order is significant
-	e = result.createElement("script");
-	e.setAttribute("type", "text/javascript");
-	e.setAttribute("src", cp + "/scripts/tiny_mce/tiny_mce_src.js");
-	e.appendChild(result.createTextNode("\n"));
-	div.appendChild(e);
+	for (int i = 0; i < scripts.length; i++)
+	{
+	    e = result.createElement("script");
+	    e.setAttribute("type", "text/javascript");
+	    e.setAttribute("src", cp + scripts[i]);
+	    e.appendChild(result.createTextNode("\n"));
+	    div.appendChild(e);
+	}
  
-	e = result.createElement("script");
-	e.setAttribute("type", "text/javascript");
-	e.setAttribute("src", cp + "/scripts/ajax/dojo.js");
-	e.appendChild(result.createTextNode("\n"));
-	div.appendChild(e);
-
-	e = result.createElement("script");
-	e.setAttribute("type", "text/javascript");
-	e.setAttribute("src", cp + "/scripts/ajax/xforms.js");
-	e.appendChild(result.createTextNode("\n"));
-	div.appendChild(e);
-
 	ts.writeXML(result, out);
     }
 

@@ -64,41 +64,26 @@ dojo.declare("alfresco.xforms.Widget",
 	       var required = binding && binding.required == "true()";
 	       return required;
 	     },
-	     getModelNode: function()
-	     {
-	       ///XXXarielb todo
-	     },
 	     getInitialValue: function()
 	     {
-	       var b = this._getBinding();
-	       var a = [];
-	       do
-	       {
-		 a.push(b.nodeset);
-		 b = b.parent;
-	       }
-	       while (b);
-	       var node = this.xform.getInstance();
-	       for (var i = a.length - 1; i >= 0; i--)
-	       {
-		 var element_name = (a[i].match(/^\//)
-				     ? a[i].replace(/^\/(.+)/, "$1")
-				     : a[i]);
-		 dojo.debug("locating " + a[i] + "(" + element_name + ")" +
-			    " in " + node.nodeName);
-		 if (element_name.match(/^@/))
-		   return node.getAttribute(a[i].replace(/^@(.+)/, "$1"));
-		 else if (element_name == '.')
-		   break;
-		 node = node.getElementsByTagName(element_name)[0];
-		 if (node)
-		   dojo.debug("got node " + node.nodeName);
-		 else
-		   return null;
-	       }
-	       var result = dojo.dom.textContent(node);
-	       dojo.debug("got '" + result + "' for " + a.reverse().join("/"));
-	       return result;
+	       var chibaData = this.node.getElementsByTagName("data");
+	       if (chibaData.length == 0)
+		 return null;
+
+	       chibaData = chibaData[chibaData.length - 1];
+	       var xpath = "/" + chibaData.getAttribute("chiba:xpath");
+	       var d = this.node.ownerDocument;
+	       var nsResolver = d.createNSResolver(d);
+	       var contextNode = this.xform.getInstance();
+	       dojo.debug("locating " + xpath + 
+			  " from " + chibaData.nodeName + 
+			  " in " + contextNode.nodeName);
+	       var result = d.evaluate(xpath, 
+				       this.xform.getInstance(), 
+				       nsResolver, 
+				       XPathResult.STRING_TYPE, 
+				       null);
+	       return result.stringValue;
 	     },
 	     _getLabelNode: function()
 	     {
@@ -278,6 +263,7 @@ dojo.declare("alfresco.xforms.Select1",
 	       },
 	     getValues: function()
 	       {
+		 var binding = this._getBinding();
 		 var values = this.node.getElementsByTagName("item");
 		 var result = [];
 		 for (var v in values)
@@ -286,11 +272,28 @@ dojo.declare("alfresco.xforms.Select1",
 		   {
 		     var label = values[v].getElementsByTagName("label")[0];
 		     var value = values[v].getElementsByTagName("value")[0];
-		     result.push({ 
-		       id: value.getAttribute("id"), 
-		       label: dojo.dom.textContent(label),
-                       value: dojo.dom.textContent(value)
-		     });
+		     var valid = true;
+		     if (binding.constraint)
+		     {
+		       dojo.debug("testing " + binding.constraint + 
+				  " on " + dojo.dom.textContent(value));
+		       var d = this.node.ownerDocument;
+		       valid = d.evaluate(binding.constraint,
+					  value,
+					  d.createNSResolver(d),
+					  XPathResult.ANY_TYPE,
+					  null);
+		       dojo.debug("valid " + dojo.dom.textContent(value) + "? " + valid);
+		       valid = valid.booleanValue;
+		     }
+		     if (valid)
+		     {
+		       result.push({ 
+			 id: value.getAttribute("id"), 
+			 label: dojo.dom.textContent(label),
+			 value: dojo.dom.textContent(value)
+		       });
+		     }
 		   }
 		 }
 		 return result;
@@ -571,7 +574,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	       {
 		 var index = this.getChildIndex(child);
 		 if (index < 0)
-		   alert("unable to find child " + child.id + " in " + this.id);
+		   throw new Error("unable to find child " + child.id + " in " + this.id);
 
 		 // chiba thinks indexes are initialized to 1 so just
 		 // highlight the thing
@@ -803,6 +806,7 @@ dojo.declare("alfresco.xforms.XForm",
 		       required: bind.childNodes[i].getAttribute("xforms:required"),
 		       nodeset: bind.childNodes[i].getAttribute("xforms:nodeset"),
 		       type: bind.childNodes[i].getAttribute("xforms:type"),
+		       constraint: bind.childNodes[i].getAttribute("xforms:constraint"),
 		       parent: parent
 		     };
 		     this._loadBindings(bind.childNodes[i], result[id], result);

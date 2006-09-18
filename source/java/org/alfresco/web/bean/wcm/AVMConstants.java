@@ -50,7 +50,7 @@ public final class AVMConstants
    
    public static String buildAVMStoreRootPath(String store)
    {
-      return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS + '/';
+      return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS;
    }
    
    // names of the stores representing the layers for an AVM website

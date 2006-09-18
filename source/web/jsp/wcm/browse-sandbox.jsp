@@ -88,6 +88,15 @@
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width=4 height=9></td>
                </tr>
                
+               <%-- Website Path Breadcrumb --%>
+               <tr>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
+                  <td style="padding-left:8px;padding-top:4px;padding-bottom:4px">
+                     <a:breadcrumb value="#{AVMBrowseBean.location}" styleClass="title" />
+                  </td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
+               </tr>
+               
                <%-- Details - Folders --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
@@ -100,6 +109,60 @@
                            styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                            value="#{AVMBrowseBean.folders}" var="r">
                            
+                           <%-- Primary column with folder name --%>
+                           <a:column primary="true" width="200" style="padding:2px;text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
+                              </f:facet>
+                              <f:facet name="small-icon">
+                                 <a:actionLink id="col1-act1" value="#{r.name}" image="/images/icons/#{r.smallIcon}.gif" actionListener="#{AVMBrowseBean.clickFolder}" showLink="false">
+                                    <f:param name="id" value="#{r.id}" />
+                                 </a:actionLink>
+                              </f:facet>
+                              <a:actionLink id="col1-act2" value="#{r.name}" actionListener="#{AVMBrowseBean.clickFolder}">
+                                 <f:param name="id" value="#{r.id}" />
+                              </a:actionLink>
+                           </a:column>
+                           
+                           <%-- Description column for all view modes --%>
+                           <a:column id="col4" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col4-sort" label="#{msg.description}" value="description" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col4-txt" value="#{r.description}" />
+                           </a:column>
+                           
+                           <%-- Created Date column for details view mode --%>
+                           <a:column id="col6" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col6-sort" label="#{msg.created}" value="created" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col6-txt" value="#{r.created}">
+                                 <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+                              </h:outputText>
+                           </a:column>
+                           
+                           <%-- Modified Date column for details/icons view modes --%>
+                           <a:column id="col7" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col7-sort" label="#{msg.modified}" value="modified" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col7-txt" value="#{r.modified}">
+                                 <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+                              </h:outputText>
+                           </a:column>
+                           
+                           <%-- Space Actions column --%>
+                           <a:column id="col9" actions="true" style="text-align:left">
+                              <f:facet name="header">
+                                 <h:outputText id="col9-txt" value="#{msg.actions}"/>
+                              </f:facet>
+                              
+                              <%-- actions are configured in web-client-config-actions.xml --%>
+                              <%--<r:actions id="col9-acts1" value="space_browse" context="#{r}" showLink="false" styleClass="inlineAction" />--%>
+                           </a:column>
+                           
+                           <a:dataPager id="pager1" styleClass="pager" />
                         </a:richList>
                         
                      </a:panel>
@@ -119,6 +182,68 @@
                         <a:richList id="files-list" binding="#{AVMBrowseBean.filesRichList}" viewMode="details" pageSize="10"
                            styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
                            value="#{AVMBrowseBean.files}" var="r">
+                           
+                           <%-- Primary column for details view mode --%>
+                           <a:column id="col10" primary="true" width="200" style="padding:2px;text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col10-sort" label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
+                              </f:facet>
+                              <f:facet name="small-icon">
+                                 <a:actionLink id="col10-act1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType16}" showLink="false" styleClass="inlineAction" />
+                              </f:facet>
+                              <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
+                              <r:lockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
+                           </a:column>
+                           
+                           <%-- Description column for all view modes --%>
+                           <a:column id="col13" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col13-sort" label="#{msg.description}" value="description" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col13-txt" value="#{r.description}" />
+                           </a:column>
+                           
+                           <%-- Size for details/icons view modes --%>
+                           <a:column id="col15" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col15-sort" label="#{msg.size}" value="size" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col15-txt" value="#{r.size}">
+                                 <a:convertSize />
+                              </h:outputText>
+                           </a:column>
+                           
+                           <%-- Created Date column for details view mode --%>
+                           <a:column id="col16" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col16-sort" label="#{msg.created}" value="created" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col16-txt" value="#{r.created}">
+                                 <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+                              </h:outputText>
+                           </a:column>
+                           
+                           <%-- Modified Date column for details/icons view modes --%>
+                           <a:column id="col17" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col17-sort" label="#{msg.modified}" value="modified" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col17-txt" value="#{r.modified}">
+                                 <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+                              </h:outputText>
+                           </a:column>
+                           
+                           <%-- Content Actions column --%>
+                           <a:column id="col18" actions="true" style="text-align:left">
+                              <f:facet name="header">
+                                 <h:outputText id="col18-txt" value="#{msg.actions}"/>
+                              </f:facet>
+                              
+                              <%-- actions are configured in web-client-config-actions.xml --%>
+                              <%-- <r:actions id="col18-acts1" value="document_browse" context="#{r}" showLink="false" styleClass="inlineAction" /> --%>
+                           </a:column>
+                           
+                           <a:dataPager id="pager2" styleClass="pager" />
                            
                         </a:richList>
                         

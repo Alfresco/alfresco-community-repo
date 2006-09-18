@@ -17,26 +17,35 @@
 package org.alfresco.web.bean.wcm;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIBreadcrumb;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.logging.Log;
@@ -57,9 +66,15 @@ public class AVMBrowseBean implements IContextListener
    private String sandbox;
    private String username;
    private String sandboxTitle = null;
+   private String currentPath = null;
    
    private UIRichList foldersRichList;
    private UIRichList filesRichList;
+   
+   private List<Map> files = null;
+   private List<Map> folders = null;
+   
+   private List<IBreadcrumbHandler> location = null;
    
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;
@@ -79,6 +94,9 @@ public class AVMBrowseBean implements IContextListener
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
    
+   /** AVM service bean reference */
+   protected AVMService avmService;
+   
    
    /**
     * Default Constructor
@@ -93,6 +111,14 @@ public class AVMBrowseBean implements IContextListener
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
+   
+   /**
+    * @param avmService The AVMService to set.
+    */
+   public void setAvmService(AVMService avmService)
+   {
+      this.avmService = avmService;
+   }
    
    /**
     * @param nodeService The NodeService to set.
@@ -259,12 +285,77 @@ public class AVMBrowseBean implements IContextListener
    
    public List<Map> getFolders()
    {
-      return Collections.emptyList();
+      if (this.folders == null)
+      {
+         getNodes();
+      }
+      return this.folders;
    }
    
    public List<Map> getFiles()
    {
-      return Collections.emptyList();
+      if (this.files == null)
+      {
+         getNodes();
+      }
+      return this.files;
+   }
+   
+   private void getNodes()
+   {
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(-1, getCurrentPath());
+         this.files = new ArrayList<Map>(nodes.size());
+         this.folders = new ArrayList<Map>(nodes.size());
+         for (String name : nodes.keySet())
+         {
+            AVMNodeDescriptor avmRef = nodes.get(name);
+            
+            // build the client representation of the AVM node
+            AVMNode node = new AVMNode(avmRef);
+            
+            // add any common properties
+            
+            // properties specific to folders or files
+            if (avmRef.isDirectory())
+            {
+               node.getProperties().put("smallIcon", BrowseBean.SPACE_SMALL_DEFAULT);
+               this.folders.add(node);
+            }
+            else
+            {
+               node.getProperties().put("fileType16", Utils.getFileTypeImage(name, true));
+               node.getProperties().put("url", DownloadContentServlet.generateBrowserURL(
+                     AVMNodeConverter.ToNodeRef(-1, avmRef.getPath()), name));
+               this.files.add(node);
+            }
+         }
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         this.folders = Collections.<Map>emptyList();
+         this.files = Collections.<Map>emptyList();
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+   }
+   
+   public void clickFolder(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String path = params.get("id");
+      updateUILocation(path);
    }
 
    /**
@@ -295,7 +386,63 @@ public class AVMBrowseBean implements IContextListener
       this.sandboxTitle = null;
       
       // update UI state ready for return to the previous screen
+      this.location = null;
+      setCurrentPath(null);
+   }
+   
+   /**
+    * @return Breadcrumb location list
+    */
+   public List<IBreadcrumbHandler> getLocation()
+   {
+      if (this.location == null)
+      {
+         List<IBreadcrumbHandler> loc = new ArrayList<IBreadcrumbHandler>(8);
+         loc.add(new AVMBreadcrumbHandler(getCurrentPath()));
+         
+         this.location = loc;
+      }
+      return this.location;
+   }
+   
+   /**
+    * @param location Breadcrumb location list
+    */
+   public void setLocation(List<IBreadcrumbHandler> location)
+   {
+      this.location = location;
+   }
+   
+   /**
+    * @return the internal AVM path to the current folder for browsing
+    */
+   private String getCurrentPath()
+   {
+      if (this.currentPath == null)
+      {
+         this.currentPath = AVMConstants.buildAVMStoreRootPath(getSandbox());
+      }
+      return this.currentPath;
+   }
+   
+   /**
+    * @param path       the internal AVM path to the current folder for browsing
+    */
+   private void setCurrentPath(String path)
+   {
+      this.currentPath = path;
+      
+      // update UI state ready for screen refresh
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+   }
+   
+   /**
+    * Update the breadcrumb with the clicked Group location
+    */
+   private void updateUILocation(String path)
+   {
+      this.location.add(new AVMBreadcrumbHandler(path));
+      setCurrentPath(path);
    }
    
    
@@ -311,20 +458,56 @@ public class AVMBrowseBean implements IContextListener
       {
          this.foldersRichList.setValue(null);
       }
-      /*
-      // clear the value for the list components - will cause re-bind to it's data and refresh
-      if (this.forumsRichList != null)
+      if (this.filesRichList != null)
       {
-         this.forumsRichList.setValue(null);
-         if (this.forumsRichList.getInitialSortColumn() == null)
+         this.filesRichList.setValue(null);
+      }
+      
+      this.files = null;
+      this.folders = null;
+   }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Inner classes
+   
+   /**
+    * Class to handle breadcrumb interaction for AVM page
+    */
+   private class AVMBreadcrumbHandler implements IBreadcrumbHandler
+   {
+      private String path;
+      
+      AVMBreadcrumbHandler(String path)
+      {
+         this.path = path;
+      }
+      
+      public String navigationOutcome(UIBreadcrumb breadcrumb)
+      {
+         setCurrentPath(path);
+         setLocation((List)breadcrumb.getValue());
+         return null;
+      }
+      
+      @Override
+      public String toString()
+      {
+         if (AVMConstants.buildAVMStoreRootPath(getSandbox()).equals(path))
          {
-            // set the initial sort column and direction
-            this.forumsRichList.setInitialSortColumn(
-                  this.viewsConfig.getDefaultSortColumn(PAGE_NAME_FORUMS));
-            this.forumsRichList.setInitialSortDescending(
-                  this.viewsConfig.hasDescendingSort(PAGE_NAME_FORUMS));
+            // don't display the 'root' webapps path as this will confuse users
+            // instead display which sandbox we are in
+            String label = username;
+            if (label == null)
+            {
+               label = Application.getMessage(FacesContext.getCurrentInstance(), MSG_SANDBOXSTAGING);
+            }
+            return label;
+         }
+         else
+         {
+            return path.substring(path.lastIndexOf('/') + 1);
          }
       }
-      */
    }
 }

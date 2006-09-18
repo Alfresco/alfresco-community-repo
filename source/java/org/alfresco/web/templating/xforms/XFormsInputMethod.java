@@ -145,6 +145,8 @@ public class XFormsInputMethod
 				      true);
 	LOGGER.debug("building xform for schema " + tt.getName());
 	final Document result = builder.buildForm(tt); //schemaFile.getPath());
+	LOGGER.debug("generated xform:");
+	LOGGER.debug(ts.writeXMLToString(result));
 	//	xmlContentFile.delete();
 	//	schemaFile.delete();
 	return result;

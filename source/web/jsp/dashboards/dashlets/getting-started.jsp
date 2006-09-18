@@ -24,7 +24,7 @@
 <f:verbatim>
 <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellow", "#ffffcc"); %>
 </f:verbatim>
-<h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" style="background-colour:##ffffcc" rowClasses="alignTop">
+<h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" style="background-color:##ffffcc" rowClasses="alignTop">
    <h:panelGrid columns="1" cellpadding="2" cellspacing="2" border="0">
       <h:outputText style="font-size: 11px; font-weight:bold; color:#4272B4" value="#{msg.product_name}" />
    

@@ -92,8 +92,13 @@ public interface SchemaFormBuilder
     /**
      * XMLSchema Instance Namespace declaration
      */
-    public static final String XMLSCHEMA_INSTANCE_NAMESPACE_URI = 
+    public static final String XMLSCHEMA_INSTANCE_NS = 
 	"http://www.w3.org/2001/XMLSchema-instance";
+
+    /**
+     * XMLSchema instance prefix *
+     */
+    public static final String XMLSCHEMA_INSTANCE_NS_PREFIX = "xsi:";
 
     /**
      * XMLNS Namespace declaration.
@@ -110,7 +115,13 @@ public interface SchemaFormBuilder
     /**
      * XForms namespace declaration.
      */
-    public static final String XFORMS_NS = "http://www.w3.org/2002/xforms";
+    public static final String XFORMS_NS = 
+	"http://www.w3.org/2002/xforms";
+
+    /**
+     * XForms prefix
+     */
+    public static final String XFORMS_NS_PREFIX = "xforms:";
 
     /**
      * Chiba namespace declaration.
@@ -119,9 +130,19 @@ public interface SchemaFormBuilder
 	"http://chiba.sourceforge.net/xforms";
 
     /**
+     * Chiba prefix
+     */
+    public static final String CHIBA_NS_PREFIX = "chiba:";
+
+    /**
      * XLink namespace declaration.
      */
     public static final String XLINK_NS = "http://www.w3.org/1999/xlink";
+
+    /**
+     * Xlink prefix
+     */
+    public static final String XLINK_NS_PREFIX = "xlink:";
 
     /**
      * XML Events namsepace declaration.
@@ -129,29 +150,9 @@ public interface SchemaFormBuilder
     public static final String XMLEVENTS_NS = "http://www.w3.org/2001/xml-events";
 
     /**
-     * Chiba prefix
-     */
-    public static final String chibaNSPrefix = "chiba:";
-
-    /**
-     * XForms prefix
-     */
-    public static final String xformsNSPrefix = "xforms:";
-
-    /**
-     * Xlink prefix
-     */
-    public static final String xlinkNSPrefix = "xlink:";
-
-    /**
-     * XMLSchema instance prefix *
-     */
-    public static final String xmlSchemaInstancePrefix = "xsi:";
-
-    /**
      * XML Events prefix
      */
-    public static final String xmleventsNSPrefix = "ev:";
+    public static final String XMLEVENTS_NS_PREFIX = "ev:";
 
     /**
      * Prossible values of the "@method" on the "submission" element

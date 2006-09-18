@@ -167,15 +167,17 @@ public class BaseSchemaFormBuilder
     public Element createControlForAnyType(Document xForm,
                                            String caption,
                                            XSTypeDefinition controlType) {
-        Element control = xForm.createElementNS(XFORMS_NS, 
-						getXFormsNSPrefix() + "textarea");
+        Element control = xForm.createElementNS(SchemaFormBuilder.XFORMS_NS, 
+						SchemaFormBuilder.XFORMS_NS_PREFIX + "textarea");
         this.setXFormsId(control);
-        control.setAttributeNS(CHIBA_NS, getChibaNSPrefix() + "height", "3");
+        control.setAttributeNS(SchemaFormBuilder.CHIBA_NS, 
+			       SchemaFormBuilder.CHIBA_NS_PREFIX + "height", 
+			       "3");
 
         //label
         Element captionElement = (Element)
-	    control.appendChild(xForm.createElementNS(XFORMS_NS,
-						      getXFormsNSPrefix() + "label"));
+	    control.appendChild(xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+						      SchemaFormBuilder.XFORMS_NS_PREFIX + "label"));
         this.setXFormsId(captionElement);
         captionElement.appendChild(xForm.createTextNode(caption));
 
@@ -199,24 +201,24 @@ public class BaseSchemaFormBuilder
         if ("boolean".equals(controlType.getName()))
 	{
             control = xForm.createElementNS(XFORMS_NS,
-					    getXFormsNSPrefix() + "select1");
+					    SchemaFormBuilder.XFORMS_NS_PREFIX + "select1");
             control.setAttributeNS(XFORMS_NS,
-				   getXFormsNSPrefix() + "appearance",
+				   SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
 				   "full");
             this.setXFormsId(control);
 
             Element item_true =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "item");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
             this.setXFormsId(item_true);
             Element label_true =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "label");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
             this.setXFormsId(label_true);
             Text label_true_text = xForm.createTextNode("true");
             label_true.appendChild(label_true_text);
             item_true.appendChild(label_true);
 
             Element value_true =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "value");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
             this.setXFormsId(value_true);
             Text value_true_text = xForm.createTextNode("true");
             value_true.appendChild(value_true_text);
@@ -224,17 +226,17 @@ public class BaseSchemaFormBuilder
             control.appendChild(item_true);
 
             Element item_false =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "item");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
             this.setXFormsId(item_false);
             Element label_false =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "label");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
             this.setXFormsId(label_false);
             Text label_false_text = xForm.createTextNode("false");
             label_false.appendChild(label_false_text);
             item_false.appendChild(label_false);
 
             Element value_false =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "value");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
             this.setXFormsId(value_false);
             Text value_false_text = xForm.createTextNode("false");
             value_false.appendChild(value_false_text);
@@ -243,14 +245,14 @@ public class BaseSchemaFormBuilder
         } 
 	else 
 	{
-            control = xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "input");
+            control = xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "input");
             this.setXFormsId(control);
         }
 
         //label
         Element captionElement = (Element)
 	    control.appendChild(xForm.createElementNS(XFORMS_NS,
-						      getXFormsNSPrefix() + "label"));
+						      SchemaFormBuilder.XFORMS_NS_PREFIX + "label"));
         this.setXFormsId(captionElement);
         captionElement.appendChild(xForm.createTextNode(caption));
 
@@ -283,18 +285,18 @@ public class BaseSchemaFormBuilder
         Vector enumValues = new Vector();
 
         Element control = xForm.createElementNS(XFORMS_NS,
-						    getXFormsNSPrefix() + "select1");
+						    SchemaFormBuilder.XFORMS_NS_PREFIX + "select1");
         this.setXFormsId(control);
 
         //label
         Element captionElement1 = (Element)
 		control.appendChild(xForm.createElementNS(XFORMS_NS,
-							  getXFormsNSPrefix() + "label"));
+							  SchemaFormBuilder.XFORMS_NS_PREFIX + "label"));
         this.setXFormsId(captionElement1);
         captionElement1.appendChild(xForm.createTextNode(caption));
 
         Element choices = xForm.createElementNS(XFORMS_NS,
-						    getXFormsNSPrefix() + "choices");
+						    SchemaFormBuilder.XFORMS_NS_PREFIX + "choices");
         this.setXFormsId(choices);
 
         for (int i = 0; i < nbFacets; i++) {
@@ -304,11 +306,11 @@ public class BaseSchemaFormBuilder
 
         if (nbFacets < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))) {
             control.setAttributeNS(XFORMS_NS,
-				       getXFormsNSPrefix() + "appearance",
+				       SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
 				       getProperty(SELECTONE_UI_CONTROL_SHORT_PROP));
         } else {
             control.setAttributeNS(XFORMS_NS,
-				       getXFormsNSPrefix() + "appearance",
+				       SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
 				       getProperty(SELECTONE_UI_CONTROL_LONG_PROP));
 
             // add the "Please select..." instruction item for the combobox
@@ -318,20 +320,20 @@ public class BaseSchemaFormBuilder
             {
                 String pleaseSelect = "[Select1 " + caption + "]";
                 Element item = xForm.createElementNS(XFORMS_NS,
-							 getXFormsNSPrefix() + "item");
+							 SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
                 this.setXFormsId(item);
                 choices.appendChild(item);
 
                 Element captionElement = 
 			xForm.createElementNS(XFORMS_NS,
-					      getXFormsNSPrefix() + "label");
+					      SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
                 this.setXFormsId(captionElement);
                 item.appendChild(captionElement);
                 captionElement.appendChild(xForm.createTextNode(pleaseSelect));
 
                 Element value =
                         xForm.createElementNS(XFORMS_NS,
-						  getXFormsNSPrefix() + "value");
+						  SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
                 this.setXFormsId(value);
                 item.appendChild(value);
                 value.appendChild(xForm.createTextNode(pleaseSelect));
@@ -344,13 +346,13 @@ public class BaseSchemaFormBuilder
                 //check if there was a constraint
                 String constraint = bindElement.getAttributeNS(XFORMS_NS, "constraint");
 
-                constraint = ((constraint != null && constraint.length() != 0) 
-				  ? constraint + " and " + isValidExpr
-				  : isValidExpr);
+                constraint = (constraint != null && constraint.length() != 0
+			      ? constraint + " and " + isValidExpr
+			      : isValidExpr);
 
                 bindElement.setAttributeNS(XFORMS_NS,
-					       getXFormsNSPrefix() + "constraint",
-					       constraint);
+					   SchemaFormBuilder.XFORMS_NS_PREFIX + "constraint",
+					   constraint);
             }
         }
 
@@ -381,13 +383,13 @@ public class BaseSchemaFormBuilder
         if (nbFacets <= 0) 
 	    return null;
         Element control = xForm.createElementNS(XFORMS_NS,
-						getXFormsNSPrefix() + "select");
+						SchemaFormBuilder.XFORMS_NS_PREFIX + "select");
         this.setXFormsId(control);
 
         //label
         Element captionElement = (Element)
 	    control.appendChild(xForm.createElementNS(XFORMS_NS,
-						      getXFormsNSPrefix() + "label"));
+						      SchemaFormBuilder.XFORMS_NS_PREFIX + "label"));
         this.setXFormsId(captionElement);
         captionElement.appendChild(xForm.createTextNode(caption));
 
@@ -402,24 +404,26 @@ public class BaseSchemaFormBuilder
         //
         // For now, use checkbox if there are < DEFAULT_LONG_LIST_MAX_SIZE items, otherwise use long control
         //
-        if (enumValues.size()
-                < Long.parseLong(getProperty(SELECTMANY_LONG_LIST_SIZE_PROP))) {
+        if (enumValues.size() < Long.parseLong(getProperty(SELECTMANY_LONG_LIST_SIZE_PROP))) 
+	{
             control.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "appearance",
-                    getProperty(SELECTMANY_UI_CONTROL_SHORT_PROP));
-        } else {
+				   SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+				   getProperty(SELECTMANY_UI_CONTROL_SHORT_PROP));
+        } 
+	else 
+	    {
             control.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "appearance",
-                    getProperty(SELECTMANY_UI_CONTROL_LONG_PROP));
+				   SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+				   getProperty(SELECTMANY_UI_CONTROL_LONG_PROP));
         }
 
         Element choices =
                 xForm.createElementNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "choices");
+				      SchemaFormBuilder.XFORMS_NS_PREFIX + "choices");
         this.setXFormsId(choices);
         control.appendChild(choices);
 
-        addChoicesForSelectControl(xForm, choices, enumValues);
+        this.addChoicesForSelectControl(xForm, choices, enumValues);
 
         return control;
     }
@@ -431,7 +435,8 @@ public class BaseSchemaFormBuilder
      * @param node  __UNDOCUMENTED__
      * @return __UNDOCUMENTED__
      */
-    public Element createHint(Document xForm, XSObject node) {
+    public Element createHint(Document xForm, XSObject node) 
+    {
         XSAnnotation annotation = null;
         if (node instanceof XSElementDeclaration)
             annotation = ((XSElementDeclaration) node).getAnnotation();
@@ -441,10 +446,9 @@ public class BaseSchemaFormBuilder
             annotation =
                     ((XSAttributeUse) node).getAttrDeclaration().getAnnotation();
 
-        if (annotation != null)
-            return addHintFromDocumentation(xForm, annotation);
-        else
-            return null;
+        return (annotation != null
+		? addHintFromDocumentation(xForm, annotation)
+		: null);
     }
 
     /**
@@ -452,8 +456,8 @@ public class BaseSchemaFormBuilder
      *
      * @param bindElement __UNDOCUMENTED__
      */
-    public void endBindElement(Element bindElement) {
-        return;
+    public void endBindElement(Element bindElement) 
+    {
     }
 
     /**
@@ -506,12 +510,12 @@ public class BaseSchemaFormBuilder
             String typeName = this.getXFormsTypeName(enveloppe, controlType);
             if (typeName != null && typeName.length() != 0)
                 bindElement.setAttributeNS(XFORMS_NS,
-					   getXFormsNSPrefix() + "type",
+					   SchemaFormBuilder.XFORMS_NS_PREFIX + "type",
 					   typeName);
         }
 
 	bindElement.setAttributeNS(XFORMS_NS,
-				   getXFormsNSPrefix() + "required",
+				   SchemaFormBuilder.XFORMS_NS_PREFIX + "required",
 				   o.minimum == 0 ? "false()" : "true()");
 	
 
@@ -528,19 +532,14 @@ public class BaseSchemaFormBuilder
             //if 1 or unbounded -> no constraint
             maxConstraint = "count(.) <= " + o.maximum;
 
-        String constraint = null;
-
-        if ((minConstraint != null) && (maxConstraint != null)) {
-            constraint = minConstraint + " and " + maxConstraint;
-        } else if (minConstraint != null) {
-            constraint = minConstraint;
-        } else {
-            constraint = maxConstraint;
-        }
-
+        final String constraint = (minConstraint != null && maxConstraint != null
+				   ? minConstraint + " and " + maxConstraint
+				   : (minConstraint != null
+				      ? minConstraint
+				      : maxConstraint));
         if (constraint != null && constraint.length() != 0)
             bindElement.setAttributeNS(XFORMS_NS,
-				       getXFormsNSPrefix() + "constraint",
+				       SchemaFormBuilder.XFORMS_NS_PREFIX + "constraint",
 				       constraint);
         return bindElement;
     }
@@ -553,7 +552,8 @@ public class BaseSchemaFormBuilder
      * @return __UNDOCUMENTED__
      */
     public Element startFormControl(Element controlElement,
-                                    XSTypeDefinition controlType) {
+                                    XSTypeDefinition controlType) 
+    {
         return controlElement;
     }
 
@@ -565,7 +565,8 @@ public class BaseSchemaFormBuilder
      * @return __UNDOCUMENTED__
      */
     public Element startFormGroup(Element groupElement,
-                                  XSElementDeclaration schemaElement) {
+                                  XSElementDeclaration schemaElement) 
+    {
         //groupElement.setAttributeNS(CHIBA_NS,getChibaNSPrefix() + "box-align",getProperty(GROUP_BOX_ALIGN_PROP));
         //groupElement.setAttributeNS(CHIBA_NS,getChibaNSPrefix() + "box-orient",getProperty(GROUP_BOX_ORIENT_PROP));
         //groupElement.setAttributeNS(CHIBA_NS,getChibaNSPrefix() + "caption-width",getProperty(GROUP_CAPTION_WIDTH_PROP));

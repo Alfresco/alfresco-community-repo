@@ -308,16 +308,27 @@ public final class TemplatingService
     {
 	try 
 	{
-	    System.out.println("writing out a document for " + n.getNodeName() + 
-			       " to " + output);
 	    final TransformerFactory tf = TransformerFactory.newInstance();
 	    final Transformer t = tf.newTransformer();
+	    t.setOutputProperty(OutputKeys.INDENT, "yes");
+
+	    if (LOGGER.isDebugEnabled())
+	    {
+		LOGGER.debug("writing out a document for " + 
+			     (n instanceof Document
+			      ? ((Document)n).getDocumentElement()
+			      : n).getNodeName() + 
+			     " to " + output);
+		final StringWriter sw = new StringWriter();
+		t.transform(new DOMSource(n), new StreamResult(sw));
+		LOGGER.debug(sw.toString());
+	    }
 	    t.transform(new DOMSource(n), new StreamResult(output));
 	}
 	catch (TransformerException te)
         {
 	    te.printStackTrace();
-	assert false : te.getMessage();
+	    assert false : te.getMessage();
 	}
     }
 

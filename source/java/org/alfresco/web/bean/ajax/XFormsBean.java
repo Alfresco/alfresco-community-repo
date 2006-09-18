@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
@@ -36,7 +37,10 @@ import org.w3c.dom.Node;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.chiba.xml.xforms.ChibaBean;
 import org.chiba.xml.xforms.exception.XFormsException;
+import org.chiba.xml.xforms.events.XFormsEvent;
 import org.chiba.xml.xforms.events.XFormsEventFactory;
+
+import org.w3c.dom.*;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
@@ -47,13 +51,13 @@ import org.chiba.xml.xforms.connector.http.AbstractHTTPConnector;
  * Manages the chiba bean lifecycle.
  */
 public class XFormsBean
-    implements EventListener
 {
     private static final Log LOGGER = LogFactory.getLog(XFormsBean.class);
 
     private TemplateType tt;
     private InstanceData instanceData = null;
     private ChibaBean chibaBean;
+    private final LinkedList<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
 
     /** @return the template type */
     public TemplateType getTemplateType()
@@ -95,12 +99,33 @@ public class XFormsBean
 		tt.getInputMethods().get(0);
 	    final Document form = tim.getXForm(instanceData.getContent(), tt);
 	    this.chibaBean.setXMLContainer(form);
-	    this.chibaBean.init();
-	    EventTarget et = (EventTarget)
+
+	    final EventTarget et = (EventTarget)
 		this.chibaBean.getXMLContainer().getDocumentElement();
-	    //XXXarielb register more listener for to do validation and do something
-	    //with the results.
-	    et.addEventListener(XFormsEventFactory.SUBMIT_ERROR, this, true);
+	    final EventListener el = new EventListener()
+	    {
+		public void handleEvent(Event e)
+		{
+		    XFormsBean.LOGGER.debug("received event " + e);
+		    XFormsBean.this.eventLog.add((XFormsEvent)e);
+		}
+	    };
+            // interaction events my occur during init so we have to register before
+            et.addEventListener(XFormsEventFactory.CHIBA_LOAD_URI, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_RENDER_MESSAGE, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_REPLACE_ALL, el, true);
+
+	    this.chibaBean.init();
+
+            // register for notification events
+	    et.addEventListener(XFormsEventFactory.SUBMIT_ERROR, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_STATE_CHANGED, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_PROTOTYPE_CLONED, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_ID_GENERATED, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_ITEM_INSERTED, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_ITEM_DELETED, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_INDEX_CHANGED, el, true);
+            et.addEventListener(XFormsEventFactory.CHIBA_SWITCH_TOGGLED, el, true);
 	}
 	catch (FormBuilderException fbe)
         {
@@ -143,8 +168,34 @@ public class XFormsBean
 
 	LOGGER.debug(this + " setXFormsValue(" + id + ", " + value + ")");
 	this.chibaBean.updateControlValue(id, value);
+
+	final TemplatingService ts = TemplatingService.getInstance();
 	final ResponseWriter out = context.getResponseWriter();
-	out.write("<todo/>");
+	ts.writeXML(this.getEventLog(), out);
+	out.close();
+    }
+
+    /**
+     * sets the value of a control in the processor.
+     *
+     * @param id the id of the control in the host document
+     * @param value the new value
+     * @return the list of events that may result through this action
+     */
+    public void setRepeatIndex() 
+	throws XFormsException, IOException
+    {
+	final FacesContext context = FacesContext.getCurrentInstance();
+	final Map requestParameters = context.getExternalContext().getRequestParameterMap();
+	final String id = (String)requestParameters.get("id");
+	final int index = Integer.parseInt((String)requestParameters.get("index"));
+
+	LOGGER.debug(this + " setRepeatIndex(" + id + ", " + index + ")");
+	this.chibaBean.updateRepeatIndex(id, index);
+
+	final TemplatingService ts = TemplatingService.getInstance();
+	final ResponseWriter out = context.getResponseWriter();
+	ts.writeXML(this.getEventLog(), out);
 	out.close();
     }
 
@@ -162,8 +213,10 @@ public class XFormsBean
 
 	LOGGER.debug(this + " fireAction(" + id + ")");
 	this.chibaBean.dispatch(id, XFormsEventFactory.DOM_ACTIVATE);
+
+	final TemplatingService ts = TemplatingService.getInstance();
 	final ResponseWriter out = context.getResponseWriter();
-	out.write("<todo/>");
+	ts.writeXML(this.getEventLog(), out);
 	out.close();
     }
 
@@ -180,15 +233,38 @@ public class XFormsBean
 	final TemplatingService ts = TemplatingService.getInstance();
 	final Document result = ts.parseXML(request.getInputStream());
 	this.instanceData.setContent(result);
+
 	final ResponseWriter out = context.getResponseWriter();
 	ts.writeXML(result, out);
 	out.close();
     }
 
-    //XXXarielb placeholder for error handling
-    public void handleEvent(Event e)
+    private Node getEventLog()
     {
-	LOGGER.debug("handleEvent " + e);
+	final TemplatingService ts = TemplatingService.getInstance();
+	final Document result = ts.newDocument();
+	final Element eventsElement = result.createElement("events");
+	result.appendChild(eventsElement);
+	for (XFormsEvent xfe : this.eventLog)
+	{
+	    final String type = xfe.getType();
+	    final Element target = (Element)xfe.getTarget();
+
+	    final Element eventElement = result.createElement(type);
+	    eventsElement.appendChild(eventElement);
+	    eventElement.setAttribute("targetId", target.getAttributeNS(null, "id"));
+	    eventElement.setAttribute("targetName", target.getLocalName());
+
+	    for (Object name : xfe.getPropertyNames())
+	    {
+		final Element propertyElement = result.createElement((String)name);
+		eventElement.appendChild(propertyElement);
+		final String value = xfe.getContextInfo((String)name).toString();
+		propertyElement.appendChild(result.createTextNode(value));
+	    }
+	}
+	this.eventLog.clear();
+	return result;
     }
 
     /**

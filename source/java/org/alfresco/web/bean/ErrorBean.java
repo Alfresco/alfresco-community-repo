@@ -123,7 +123,8 @@ public class ErrorBean
    {
       StringWriter stringWriter = new StringWriter();
       PrintWriter writer = new PrintWriter(stringWriter);
-      this.lastError.printStackTrace(writer);
+      if (this.lastError != null)
+	  this.lastError.printStackTrace(writer);
       
       // format the message for HTML display
       String trace = stringWriter.toString();

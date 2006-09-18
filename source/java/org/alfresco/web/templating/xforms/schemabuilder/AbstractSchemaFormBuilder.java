@@ -455,7 +455,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             //add XMLSchema if we use schema types
             if (_useSchemaTypes && modelSection != null)
                 modelSection.setAttributeNS(XFORMS_NS,
-					    this.getXFormsNSPrefix() + "schema",
+					    SchemaFormBuilder.XFORMS_NS_PREFIX + "schema",
 					    inputURI);
 
             //change stylesheet
@@ -463,7 +463,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             if (stylesheet != null && stylesheet.length() != 0)
                 envelopeElement.setAttributeNS(CHIBA_NS,
-					       this.getChibaNSPrefix() + "stylesheet",
+					       SchemaFormBuilder.CHIBA_NS_PREFIX + "stylesheet",
 					       stylesheet);
 
             // TODO: Commented out because comments aren't output properly by the Transformer.
@@ -516,7 +516,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             }
 
             Element instanceElement = (Element)
-		modelSection.appendChild(xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "instance"));
+		modelSection.appendChild(xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "instance"));
             this.setXFormsId(instanceElement);
 
             Element rootElement;
@@ -532,9 +532,9 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 		instanceElement.appendChild(rootElement);
 		
 		//add XMLSchema instance NS
-		String prefix = xmlSchemaInstancePrefix.substring(0, xmlSchemaInstancePrefix.length() - 1);
+		String prefix = XMLSCHEMA_INSTANCE_NS_PREFIX.substring(0, XMLSCHEMA_INSTANCE_NS_PREFIX.length() - 1);
 		if (!rootElement.hasAttributeNS(XMLNS_NAMESPACE_URI, prefix))
-		    rootElement.setAttributeNS(XMLNS_NAMESPACE_URI, "xmlns:" + prefix, XMLSCHEMA_INSTANCE_NAMESPACE_URI);
+		    rootElement.setAttributeNS(XMLNS_NAMESPACE_URI, "xmlns:" + prefix, XMLSCHEMA_INSTANCE_NS);
 		
 		//possibility abandonned for the moment:
 		//modify the instance to add the correct "xsi:type" attributes wherever needed
@@ -557,37 +557,37 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             Element submitInfoElement = (Element)
 		modelSection.appendChild(xForm.createElementNS(XFORMS_NS,
-							       getXFormsNSPrefix() + "submission"));
+							       SchemaFormBuilder.XFORMS_NS_PREFIX + "submission"));
 
-            //submitInfoElement.setAttributeNS(XFORMS_NS,getXFormsNSPrefix()+"id","save");
+            //submitInfoElement.setAttributeNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX+"id","save");
             String submissionId = this.setXFormsId(submitInfoElement);
 
             //action
 	    submitInfoElement.setAttributeNS(XFORMS_NS,
-					     getXFormsNSPrefix() + "action",
+					     SchemaFormBuilder.XFORMS_NS_PREFIX + "action",
 					     _action == null ? "" : _action);
 
             //method
 	    submitInfoElement.setAttributeNS(XFORMS_NS,
-					     getXFormsNSPrefix() + "method",
+					     SchemaFormBuilder.XFORMS_NS_PREFIX + "method",
 					     (_submitMethod != null && _submitMethod.length() != 0
 					      ? _submitMethod
 					      :  AbstractSchemaFormBuilder.SUBMIT_METHOD_POST));
 
-            //Element submitButton = (Element) formSection.appendChild(xForm.createElementNS(XFORMS_NS,getXFormsNSPrefix()+"submit"));
+            //Element submitButton = (Element) formSection.appendChild(xForm.createElementNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX+"submit"));
             Element submitButton =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "submit");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "submit");
             Element submitControlWrapper =
                     _wrapper.createControlsWrapper(submitButton);
             formContentWrapper.appendChild(submitControlWrapper);
             submitButton.setAttributeNS(XFORMS_NS,
-					getXFormsNSPrefix() + "submission",
+					SchemaFormBuilder.XFORMS_NS_PREFIX + "submission",
 					submissionId);
             this.setXFormsId(submitButton);
 
             Element submitButtonCaption = (Element)
 		submitButton.appendChild(xForm.createElementNS(XFORMS_NS,
-							       getXFormsNSPrefix() + "label"));
+							       SchemaFormBuilder.XFORMS_NS_PREFIX + "label"));
             submitButtonCaption.appendChild(xForm.createTextNode("Submit"));
             this.setXFormsId(submitButtonCaption);
             return xForm;
@@ -812,32 +812,27 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         return name;
     }
 
-    /**
-     * Returns the prefix for the Chiba namespace.
-     */
-    protected String getChibaNSPrefix() {
-        return chibaNSPrefix;
-    }
-
-    protected String setXFormsId(Element el) {
-        //remove the eventuel "id" attribute
-        if (el.hasAttributeNS(SchemaFormBuilder.XFORMS_NS, "id"))
-            el.removeAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
-
-        //long count=this.incIdCounter();
+    protected String setXFormsId(final Element el)
+    {
         long count = 0;
-        String name = el.getLocalName();
-        Long l = (Long) counter.get(name);
+        final String name = el.getLocalName();
+        final Long l = (Long) counter.get(name);
 
         if (l != null)
             count = l.longValue();
-
-        String id = name + "_" + count;
-
         //increment the counter
         counter.put(name, new Long(count + 1));
+
+        return this.setXFormsId(el, name + "_" + count);
+    }
+
+    protected String setXFormsId(final Element el, final String id) 
+    {
+        if (el.hasAttributeNS(SchemaFormBuilder.XFORMS_NS, "id"))
+            el.removeAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
+
         el.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
-			  this.getXFormsNSPrefix() + "id",
+			  SchemaFormBuilder.XFORMS_NS_PREFIX + "id",
 			  id);
         return id;
     }
@@ -845,33 +840,19 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     /**
      * method to set an Id to this element and to all XForms descendants of this element
      */
-    private void resetXFormIds(Element newControl) {
-        if (newControl.getNamespaceURI() != null
-                && newControl.getNamespaceURI().equals(XFORMS_NS))
+    private void resetXFormIds(Element newControl) 
+    {
+        if (newControl.getNamespaceURI() != null && 
+	    newControl.getNamespaceURI().equals(XFORMS_NS))
             this.setXFormsId(newControl);
 
         //recursive call
-        NodeList children = newControl.getChildNodes();
-        int nb = children.getLength();
-        for (int i = 0; i < nb; i++) {
-            Node child = children.item(i);
+        final NodeList children = newControl.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            final Node child = children.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE)
                 this.resetXFormIds((Element) child);
         }
-    }
-
-    /**
-     * Returns the prefix for the XForms namespace.
-     */
-    protected String getXFormsNSPrefix() {
-        return xformsNSPrefix;
-    }
-
-    /**
-     * Returns the prefix for the XLink namespace.
-     */
-    protected String getXLinkNSPrefix() {
-        return xlinkNSPrefix;
     }
 
     /**
@@ -897,18 +878,18 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 	{
             String textValue = (String) iterator.next();
             Element item =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "item");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
             this.setXFormsId(item);
             choicesElement.appendChild(item);
 
             Element captionElement =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "label");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
             this.setXFormsId(captionElement);
             item.appendChild(captionElement);
             captionElement.appendChild(xForm.createTextNode(createCaption(textValue)));
 
             Element value =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "value");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
             this.setXFormsId(value);
             item.appendChild(value);
             value.appendChild(xForm.createTextNode(textValue));
@@ -951,18 +932,18 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                 LOGGER.debug("addChoicesForSelectSwitchControl, processing " + textValue);
 
             Element item =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "item");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
             this.setXFormsId(item);
             choicesElement.appendChild(item);
 
             Element captionElement =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "label");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
             this.setXFormsId(captionElement);
             item.appendChild(captionElement);
             captionElement.appendChild(xForm.createTextNode(createCaption(textValue)));
 
             Element value =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "value");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
             this.setXFormsId(value);
             item.appendChild(value);
             value.appendChild(xForm.createTextNode(textValue));
@@ -971,27 +952,29 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             Element action =
                     xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "action");
+                            SchemaFormBuilder.XFORMS_NS_PREFIX + "action");
             this.setXFormsId(action);
             item.appendChild(action);
 
-            action.setAttributeNS(XMLEVENTS_NS, xmleventsNSPrefix + "event", "xforms-select");
+            action.setAttributeNS(SchemaFormBuilder.XMLEVENTS_NS, 
+				  SchemaFormBuilder.XMLEVENTS_NS_PREFIX + "event", 
+				  "xforms-select");
 
-            Element toggle = xForm.createElementNS(XFORMS_NS,
-						   getXFormsNSPrefix() + "toggle");
+            Element toggle = xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+						   SchemaFormBuilder.XFORMS_NS_PREFIX + "toggle");
             this.setXFormsId(toggle);
 
             //build the case element
             Element caseElement =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "case");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "case");
             String case_id = this.setXFormsId(caseElement);
             case_types.put(textValue, caseElement);
 
             toggle.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "case",
+                    SchemaFormBuilder.XFORMS_NS_PREFIX + "case",
                     case_id);
 
-            //toggle.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "case",bindIdPrefix + "_" + textValue +"_case");
+            //toggle.setAttributeNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX + "case",bindIdPrefix + "_" + textValue +"_case");
             action.appendChild(toggle);
         }
     }
@@ -1005,76 +988,71 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      */
     protected Element addHintFromDocumentation(Document xForm,
                                                XSAnnotation annotation) {
-        if (annotation != null) {
-            Element hintElement =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "hint");
-            this.setXFormsId(hintElement);
+        if (annotation == null)
+	    return null;
+	Element hintElement =
+	    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "hint");
+	this.setXFormsId(hintElement);
+	
+	Text hintText = (Text)
+	    hintElement.appendChild(xForm.createTextNode(""));
+	
+	//write annotation to empty doc
+	Document doc = DOMUtil.newDocument(true, false);
+	annotation.writeAnnotation(doc, XSAnnotation.W3C_DOM_DOCUMENT);
+	
+	//get "annotation" element
+	NodeList annots = doc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema",
+						     "annotation");
+	if (annots.getLength() > 0) 
+	{
+	    Element annotEl = (Element) annots.item(0);
+	    
+	    //documentation
+	    NodeList docos =
+		annotEl.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema",
+					       "documentation");
+	    for (int j = 0; j < docos.getLength(); j++) 
+	    {
+		Element doco = (Element) docos.item(j);
 
-            Text hintText =
-                    (Text) hintElement.appendChild(xForm.createTextNode(""));
-
-            //write annotation to empty doc
-            Document doc = DOMUtil.newDocument(true, false);
-            annotation.writeAnnotation(doc, XSAnnotation.W3C_DOM_DOCUMENT);
-
-            //get "annotation" element
-            NodeList annots =
-                    doc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema",
-                            "annotation");
-            if (annots.getLength() > 0) {
-                Element annotEl = (Element) annots.item(0);
-
-                //documentation
-                NodeList docos =
-                        annotEl.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema",
-                                "documentation");
-                int nbDocos = docos.getLength();
-                for (int j = 0; j < nbDocos; j++) {
-                    Element doco = (Element) docos.item(j);
-
-                    //get text value
-                    String text = DOMUtil.getTextNodeAsString(doco);
-                    hintText.appendData(text);
-
-                    if (j < nbDocos - 1) {
-                        hintText.appendData(" ");
-                    }
-                }
-                return hintElement;
-            }
-            return null;
-        }
-
+		//get text value
+		String text = DOMUtil.getTextNodeAsString(doco);
+		hintText.appendData(text);
+		
+		if (j < docos.getLength() - 1) 
+		    hintText.appendData(" ");
+	    }
+	    return hintElement;
+	}
         return null;
     }
 
-    public XSParticle findCorrespondingParticleInComplexType(XSElementDeclaration elDecl) {
-        XSParticle thisParticle = null;
-
+    public XSParticle findCorrespondingParticleInComplexType(final XSElementDeclaration elDecl) 
+    {
         XSComplexTypeDefinition complexType = elDecl.getEnclosingCTDefinition();
-        if (complexType != null) {
-            XSParticle particle = complexType.getParticle();
-            XSTerm term = particle.getTerm();
-            XSObjectList particles;
-            if (term instanceof XSModelGroup) {
-                XSModelGroup group = (XSModelGroup) term;
-                particles = group.getParticles();
-                if (particles != null) {
-                    int nb = particles.getLength();
-                    int i = 0;
-                    while (i < nb && thisParticle == null) {
-                        XSParticle part = (XSParticle) particles.item(i);
-                        //test term
-                        XSTerm thisTerm = part.getTerm();
-                        if (thisTerm == elDecl)
-                            thisParticle = part;
+        if (complexType == null)
+	    return null;
 
-                        i++;
-                    }
-                }
-            }
+	XSParticle particle = complexType.getParticle();
+	XSTerm term = particle.getTerm();
+	if (! (term instanceof XSModelGroup)) 
+	    return null;
+
+	XSModelGroup group = (XSModelGroup) term;
+	XSObjectList particles = group.getParticles();
+	if (particles == null)
+	    return null;
+
+	for (int i = 0; i < particles.getLength(); i++) 
+	{
+	    XSParticle part = (XSParticle) particles.item(i);
+	    //test term
+	    XSTerm thisTerm = part.getTerm();
+	    if (thisTerm == elDecl)
+		return part;
         }
-        return thisParticle;
+        return null;
     }
 
     /**
@@ -1082,7 +1060,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      *
      * @return a table containing minOccurs and MaxOccurs
      */
-    public Occurs getOccurance(XSElementDeclaration elDecl) {
+    public Occurs getOccurance(XSElementDeclaration elDecl) 
+    {
         //get occurance on encosing element declaration
         XSParticle particle =
                 this.findCorrespondingParticleInComplexType(elDecl);
@@ -1121,7 +1100,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
         if (attrUses != null) {
             int nbAttr = attrUses.getLength();
-            for (int i = 0; i < nbAttr; i++) {
+            for (int i = 0; i < nbAttr; i++) 
+	    {
                 XSAttributeUse currentAttributeUse = (XSAttributeUse)attrUses.item(i);
                 XSAttributeDeclaration currentAttribute =
 		    currentAttributeUse.getAttrDeclaration();
@@ -1164,7 +1144,9 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                             LOGGER.debug("bindId found: " + bindId);
 
                         JXPathContext context = JXPathContext.newContext(formSection.getOwnerDocument());
-                        Pointer pointer = context.getPointer("//*[@" + this.getXFormsNSPrefix() + "bind='" + bindId + "']");
+                        final Pointer pointer = 
+			    context.getPointer("//*[@" + SchemaFormBuilder.XFORMS_NS_PREFIX + 
+					       "bind='" + bindId + "']");
                         if (pointer != null)
                             control = (Element) pointer.getNode();
                     }
@@ -1180,30 +1162,20 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                         formSection.appendChild(newControl);
                     }
 
-                } else {
-                    String newPathToRoot;
-
-                    if (pathToRoot == null || pathToRoot.length() == 0) {
-                        newPathToRoot = "@" + currentAttribute.getName();
-                    } else if (pathToRoot.endsWith("/")) {
-                        newPathToRoot =
-                                pathToRoot + "@" + currentAttribute.getName();
-                    } else {
-                        newPathToRoot =
-                                pathToRoot + "/@" + currentAttribute.getName();
-                    }
-
-                    XSSimpleTypeDefinition simpleType =
-                            currentAttribute.getTypeDefinition();
-                    //TODO SRA: UrType ?
-                    /*if(simpleType==null){
-                        simpleType=new UrType();
-                    }*/
+                } 
+		else 
+		{
+                    final String newPathToRoot =
+			(pathToRoot == null || pathToRoot.length() == 0
+			 ? "@" + currentAttribute.getName()
+			 : (pathToRoot.endsWith("/")
+			    ? pathToRoot + "@" + currentAttribute.getName()
+			    : pathToRoot + "/@" + currentAttribute.getName()));
 
                     addSimpleType(xForm,
 				  modelSection,
 				  formSection,
-				  simpleType,
+				  currentAttribute.getTypeDefinition(),
 				  currentAttributeUse,
 				  newPathToRoot);
                 }
@@ -1233,20 +1205,18 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                     createGroup(xForm, modelSection, formSection, owner);
             Element groupWrapper = groupElement;
 
-            if (groupElement != modelSection) {
+            if (groupElement != modelSection) 
                 groupWrapper = _wrapper.createGroupContentWrapper(groupElement);
-            }
 
             final Occurs o = this.getOccurance(owner);
             Element repeatSection =
-		addRepeatIfNecessary(xForm,
-				     modelSection,
-				     groupWrapper,
-				     controlType,
-				     o,
-				     pathToRoot);
+		this.addRepeatIfNecessary(xForm,
+					  modelSection,
+					  groupWrapper,
+					  controlType,
+					  o,
+					  pathToRoot);
             Element repeatContentWrapper = repeatSection;
-	    
 
             if (repeatSection != groupWrapper) 
 	    { 
@@ -1287,94 +1257,100 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                         boolean relative,
                                         boolean checkIfExtension) {
 
-        if (controlType != null) {
+        if (controlType == null)
+	    return;
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("addComplexTypeChildren for " + controlType.getName());
-                if (owner != null)
-                    LOGGER.debug("	owner=" + owner.getName());
-            }
-            if (controlType.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_MIXED
-                    || (controlType.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_SIMPLE
-                    && controlType.getAttributeUses() != null && controlType.getAttributeUses().getLength() > 0)
-            ) {
-                XSTypeDefinition base = controlType.getBaseType();
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("	Control type is mixed . base type=" + base.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("addComplexTypeChildren for " + controlType.getName());
+            if (owner != null)
+                LOGGER.debug("	owner=" + owner.getName());
+        }
+        if (controlType.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_MIXED || 
+	    (controlType.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_SIMPLE && 
+	     controlType.getAttributeUses() != null && 
+	     controlType.getAttributeUses().getLength() > 0)) 
+	{
+            XSTypeDefinition base = controlType.getBaseType();
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("	Control type is mixed . base type=" + base.getName());
 
-                if (base != null && base != controlType) {
-                    if (base.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
-                        addSimpleType(xForm,
-                                modelSection,
-                                formSection,
-                                (XSSimpleTypeDefinition) base,
-                                owner,
-                                pathToRoot);
-                    } else
-                        LOGGER.warn("addComplexTypeChildren for mixed type with basic type complex !");
-                }
-            } else if (LOGGER.isDebugEnabled())
-                LOGGER.debug("	Content type = " + controlType.getContentType());
-
-
-            // check for compatible subtypes
-            // of controlType.
-            // add a type switch if there are any
-            // compatible sub-types (i.e. anything
-            // that derives from controlType)
-            // add child elements
-            if (relative) {
-                pathToRoot = "";
-
-                //modelSection: find the last element put in the modelSection = bind
-                modelSection = DOMUtil.getLastChildElement(modelSection);
-            }
-
-            //attributes
-            addAttributeSet(xForm,
-			    modelSection,
-			    formSection,
-			    controlType,
-			    owner,
-			    pathToRoot,
-			    checkIfExtension);
-
-            //process group
-            XSParticle particle = controlType.getParticle();
-            if (particle != null) 
+            if (base != null && base != controlType) 
 	    {
-                XSTerm term = particle.getTerm();
-                if (term instanceof XSModelGroup) 
+                if (base.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) 
 		{
-                    if (LOGGER.isDebugEnabled())
-                        LOGGER.debug("	Particle of "
-                                + controlType.getName()
-                                + " is a group --->");
-
-                    XSModelGroup group = (XSModelGroup) term;
-                    //call addGroup on this group
-                    this.addGroup(xForm,
-                            modelSection,
-                            formSection,
-                            group,
-                            controlType,
-                            owner,
-                            pathToRoot,
-                            new Occurs(particle),
-                            checkIfExtension);
-
+                    addSimpleType(xForm,
+				      modelSection,
+				      formSection,
+				      (XSSimpleTypeDefinition) base,
+				      owner,
+				      pathToRoot);
                 }
-		else if (LOGGER.isDebugEnabled())
+		else
+                    LOGGER.warn("addComplexTypeChildren for mixed type with basic type complex !");
+            }
+        } 
+	else if (LOGGER.isDebugEnabled())
+            LOGGER.debug("	Content type = " + controlType.getContentType());
+
+
+        // check for compatible subtypes
+        // of controlType.
+        // add a type switch if there are any
+        // compatible sub-types (i.e. anything
+        // that derives from controlType)
+        // add child elements
+        if (relative) 
+	{
+            pathToRoot = "";
+
+            //modelSection: find the last element put in the modelSection = bind
+            modelSection = DOMUtil.getLastChildElement(modelSection);
+        }
+
+        //attributes
+        addAttributeSet(xForm,
+			modelSection,
+			formSection,
+			controlType,
+			owner,
+			pathToRoot,
+			checkIfExtension);
+
+        //process group
+        XSParticle particle = controlType.getParticle();
+        if (particle != null) 
+	{
+            XSTerm term = particle.getTerm();
+            if (term instanceof XSModelGroup) 
+	    {
+                if (LOGGER.isDebugEnabled())
                     LOGGER.debug("	Particle of "
                             + controlType.getName()
-                            + " is not a group: "
-                            + term.getClass().getName());
-            }
+                            + " is a group --->");
 
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("--->end of addComplexTypeChildren for "
-                        + controlType.getName());
+                XSModelGroup group = (XSModelGroup) term;
+                //call addGroup on this group
+                this.addGroup(xForm,
+				  modelSection,
+				  formSection,
+				  group,
+				  controlType,
+				  owner,
+				  pathToRoot,
+				  new Occurs(particle),
+				  checkIfExtension);
+
+            }
+	    else if (LOGGER.isDebugEnabled())
+                LOGGER.debug("	Particle of "
+			     + controlType.getName()
+			     + " is not a group: "
+			     + term.getClass().getName());
         }
+
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("--->end of addComplexTypeChildren for "
+                    + controlType.getName());
     }
 
     /**
@@ -1400,501 +1376,500 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             return;
         }
 
-        switch (controlType.getTypeCategory()) {
-            case XSTypeDefinition.SIMPLE_TYPE:
-                {
-                    addSimpleType(xForm,
-                            modelSection,
-                            formSection,
-                            (XSSimpleTypeDefinition) controlType,
-                            elementDecl,
-                            pathToRoot);
+        switch (controlType.getTypeCategory()) 
+	{
+	case XSTypeDefinition.SIMPLE_TYPE:
+	{
+	    addSimpleType(xForm,
+			  modelSection,
+			  formSection,
+			  (XSSimpleTypeDefinition) controlType,
+			  elementDecl,
+			  pathToRoot);
+	    
+	    break;
+	}
+	case XSTypeDefinition.COMPLEX_TYPE:
+	{
+	    
+	    if (controlType.getName() != null && 
+		controlType.getName().equals("anyType")) 
+	    {
+		addAnyType(xForm,
+			   modelSection,
+			   formSection,
+			   (XSComplexTypeDefinition) controlType,
+			   elementDecl,
+			   pathToRoot);
+		
+		break;
+	    }
+		
+	    // find the types which are compatible(derived from) the parent type.
+	    //
+	    // This is used if we encounter a XML Schema that permits the xsi:type
+	    // attribute to specify subtypes for the element.
+	    //
+	    // For example, the <address> element may be typed to permit any of
+	    // the following scenarios:
+	    // <address xsi:type="USAddress">
+	    // </address>
+	    // <address xsi:type="CanadianAddress">
+	    // </address>
+	    // <address xsi:type="InternationalAddress">
+	    // </address>
+	    //
+	    // What we want to do is generate an XForm' switch element with cases
+	    // representing any valid non-abstract subtype.
+	    //
+	    // <xforms:select1 xforms:bind="xsi_type_13"
+	    //		  <xforms:label>Address</xforms:label>
+	    //        <xforms:choices>
+	    //                <xforms:item>
+	    //                        <xforms:label>US Address Type</xforms:label>
+	    //                        <xforms:value>USAddressType</xforms:value>
+	    //                        <xforms:action ev:event="xforms-select">
+	    //                                <xforms:toggle xforms:case="USAddressType-case"/>
+	    //                        </xforms:action>
+	    //                </xforms:item>
+	    //                <xforms:item>
+	    //                        <xforms:label>Canadian Address Type</xforms:label>
+	    //                        <xforms:value>CanadianAddressType</xforms:value>
+	    //                        <xforms:action ev:event="xforms-select">
+	    //                                <xforms:toggle xforms:case="CanadianAddressType-case"/>
+	    //                        </xforms:action>
+	    //                </xforms:item>
+	    //                <xforms:item>
+	    //                        <xforms:label>International Address Type</xforms:label>
+	    //                        <xforms:value>InternationalAddressType</xforms:value>
+	    //                        <xforms:action ev:event="xforms-select">
+	    //                                <xforms:toggle xforms:case="InternationalAddressType-case"/>
+	    //                        </xforms:action>
+	    //                </xforms:item>
+	    //
+	    //          </xforms:choices>
+	    // <xforms:select1>
+	    // <xforms:trigger>
+	    //	<xforms:label>validate Address type</xforms:label>
+	    //	<xforms:action>
+	    //		<xforms:dispatch id="dispatcher" xforms:name="xforms-activate" xforms:target="select1_0"/>
+	    //	</xforms:action>
+	    //</xforms:trigger>
+	    //
+	    // <xforms:switch id="address_xsi_type_switch">
+	    //      <xforms:case id="USAddressType-case" selected="false">
+	    //          <!-- US Address Type sub-elements here-->
+	    //      </xforms:case>
+	    //      <xforms:case id="CanadianAddressType-case" selected="false">
+	    //          <!-- US Address Type sub-elements here-->
+	    //      </xforms:case>
+	    //      ...
+	    // </xforms:switch>
+	    //
+	    //   + change bindings to add:
+	    //	- a bind for the "@xsi:type" attribute
+	    //	- for each possible element that can be added through the use of an inheritance, add a "relevant" attribute:
+	    //	ex: xforms:relevant="../@xsi:type='USAddress'"
+	    
+	    // look for compatible types
+	    //
+	    String typeName = controlType.getName();
+	    boolean relative = true;
+	    
+	    if (typeName != null) 
+	    {
+		TreeSet compatibleTypes = (TreeSet) typeTree.get(controlType.getName());
+		//TreeSet compatibleTypes = (TreeSet) typeTree.get(controlType);
+		
+		if (compatibleTypes != null) 
+		{
+		    relative = false;
+		    
+		    if (LOGGER.isDebugEnabled()) 
+		    {
+			LOGGER.debug("compatible types for "
+				     + typeName
+				     + ":");
+			Iterator it1 = compatibleTypes.iterator();
+			while (it1.hasNext()) 
+			{
+			    //String name = (String) it1.next();
+			    XSTypeDefinition compType = (XSTypeDefinition) it1.next();
+			    LOGGER.debug("          compatible type name=" + compType.getName());
+			}
+		    }
+		    
+		    Element control =
+			xForm.createElementNS(XFORMS_NS,
+					      SchemaFormBuilder.XFORMS_NS_PREFIX + "select1");
+		    String select1_id = this.setXFormsId(control);
+		    
+		    Element choices =
+			xForm.createElementNS(XFORMS_NS,
+					      SchemaFormBuilder.XFORMS_NS_PREFIX + "choices");
+		    this.setXFormsId(choices);
+		    
+		    //get possible values
+		    Vector enumValues = new Vector();
+		    //add the type (if not abstract)
+		    if (!((XSComplexTypeDefinition) controlType).getAbstract())
+			enumValues.add(controlType);
+		    //enumValues.add(typeName);
+		    
+		    //add compatible types
+		    Iterator it = compatibleTypes.iterator();
+		    while (it.hasNext()) 
+		    {
+			enumValues.add(it.next());
+		    }
 
-                    break;
-                }
-            case XSTypeDefinition.COMPLEX_TYPE:
-                {
+		    if (enumValues.size() > 1) 
+		    {
+			String caption =
+			    createCaption(elementDecl.getName() + " Type");
+			Element controlCaption =
+			    (Element) control.appendChild(xForm.createElementNS(XFORMS_NS,
+										SchemaFormBuilder.XFORMS_NS_PREFIX + "label"));
+			this.setXFormsId(controlCaption);
+			controlCaption.appendChild(xForm.createTextNode(caption));
+			
+			// multiple compatible types for this element exist
+			// in the schema - allow the user to choose from
+			// between compatible non-abstract types
+			Element bindElement =
+			    xForm.createElementNS(XFORMS_NS,
+						  SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");
+			String bindId =
+			    this.setXFormsId(bindElement);
+			
+			bindElement.setAttributeNS(XFORMS_NS,
+						   SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
+						   pathToRoot + "/@xsi:type");
+			
+			modelSection.appendChild(bindElement);
+			control.setAttributeNS(XFORMS_NS,
+					       SchemaFormBuilder.XFORMS_NS_PREFIX + "bind",
+					       bindId);
+			
+			//add the "element" bind, in addition
+			Element bindElement2 =
+			    xForm.createElementNS(XFORMS_NS,
+						  SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");
+			String bindId2 =
+			    this.setXFormsId(bindElement2);
+			bindElement2.setAttributeNS(XFORMS_NS,
+						    SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
+						    pathToRoot);
+			
+			modelSection.appendChild(bindElement2);
+			
+			if (enumValues.size() < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))) 
+			{
+			    control.setAttributeNS(XFORMS_NS,
+						   SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+						   getProperty(SELECTONE_UI_CONTROL_SHORT_PROP));
+			} else {
+			    control.setAttributeNS(XFORMS_NS,
+						   SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+						   getProperty(SELECTONE_UI_CONTROL_LONG_PROP));
+			    
+			    // add the "Please select..." instruction item for the combobox
+			    // and set the isValid attribute on the bind element to check for the "Please select..."
+			    // item to indicate that is not a valid value
+			    //
+			    String pleaseSelect =
+				"[Select1 " + caption + "]";
+			    Element item =
+				xForm.createElementNS(XFORMS_NS,
+						      SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
+			    this.setXFormsId(item);
+			    choices.appendChild(item);
+			    
+			    Element captionElement =
+				xForm.createElementNS(XFORMS_NS,
+						      SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+			    this.setXFormsId(captionElement);
+			    item.appendChild(captionElement);
+			    captionElement.appendChild(xForm.createTextNode(pleaseSelect));
+			    
+			    Element value =
+				xForm.createElementNS(XFORMS_NS,
+						      SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
+			    this.setXFormsId(value);
+			    item.appendChild(value);
+			    value.appendChild(xForm.createTextNode(pleaseSelect));
+			    
+			    // not(purchaseOrder/state = '[Choose State]')
+			    //String isValidExpr = "not(" + bindElement.getAttributeNS(XFORMS_NS, "nodeset") + " = '" + pleaseSelect + "')";
+			    // ->no, not(. = '[Choose State]')
+			    String isValidExpr =
+				"not( . = '"
+				+ pleaseSelect
+				+ "')";
+			    
+			    //check if there was a constraint
+			    String constraint =
+				bindElement.getAttributeNS(XFORMS_NS,
+							   "constraint");
+			    
+			    constraint = (constraint != null && constraint.length() != 0
+					  ? constraint + " && " + isValidExpr
+					  : isValidExpr);
+			    
+			    bindElement.setAttributeNS(XFORMS_NS,
+						       SchemaFormBuilder.XFORMS_NS_PREFIX
+						       + "constraint",
+						       constraint);
+			}
 
-                    if (controlType.getName() != null
-                            && controlType.getName().equals("anyType")) {
-                        addAnyType(xForm,
-                                modelSection,
-                                formSection,
-                                (XSComplexTypeDefinition) controlType,
-                                elementDecl,
-                                pathToRoot);
+			Element choicesControlWrapper =
+			    _wrapper.createControlsWrapper(choices);
+			control.appendChild(choicesControlWrapper);
+			
+			Element controlWrapper =
+			    _wrapper.createControlsWrapper(control);
+			formSection.appendChild(controlWrapper);
+			
+			/////////////////                                      ///////////////
+			// add content to select1
+			HashMap case_types = new HashMap();
+			addChoicesForSelectSwitchControl(xForm,
+							 choices,
+							 enumValues,
+							 case_types);
+			
+			/////////////////
+			//add a trigger for this control (is there a way to not need it ?)
+			Element trigger = xForm.createElementNS(XFORMS_NS,
+								SchemaFormBuilder.XFORMS_NS_PREFIX + "trigger");
+			formSection.appendChild(trigger);
+			this.setXFormsId(trigger);
+			Element label_trigger = xForm.createElementNS(XFORMS_NS,
+								      SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+			this.setXFormsId(label_trigger);
+			trigger.appendChild(label_trigger);
+			String trigger_caption = createCaption("validate choice");
+			label_trigger.appendChild(xForm.createTextNode(trigger_caption));
+			Element action_trigger = xForm.createElementNS(XFORMS_NS,
+								       SchemaFormBuilder.XFORMS_NS_PREFIX + "action");
+			this.setXFormsId(action_trigger);
+			trigger.appendChild(action_trigger);
+			Element dispatch_trigger = xForm.createElementNS(XFORMS_NS,
+									 SchemaFormBuilder.XFORMS_NS_PREFIX + "dispatch");
+			this.setXFormsId(dispatch_trigger);
+			action_trigger.appendChild(dispatch_trigger);
+			dispatch_trigger.setAttributeNS(XFORMS_NS,
+							SchemaFormBuilder.XFORMS_NS_PREFIX + "name",
+							"DOMActivate");
+			dispatch_trigger.setAttributeNS(XFORMS_NS,
+							SchemaFormBuilder.XFORMS_NS_PREFIX + "target",
+							select1_id);
+			
+			/////////////////
+			//add switch
+			Element switchElement =
+			    xForm.createElementNS(XFORMS_NS,
+						  SchemaFormBuilder.XFORMS_NS_PREFIX + "switch");
+			this.setXFormsId(switchElement);
+			
+			Element switchControlWrapper =
+			    _wrapper.createControlsWrapper(switchElement);
+			formSection.appendChild(switchControlWrapper);
+			//formSection.appendChild(switchElement);
+			
+			/////////////// add this type //////////////
+			Element firstCaseElement = (Element) case_types.get(controlType.getName());
+			switchElement.appendChild(firstCaseElement);
+			addComplexType(xForm,
+				       modelSection,
+				       firstCaseElement,
+				       (XSComplexTypeDefinition) controlType,
+				       elementDecl,
+				       pathToRoot,
+				       true,
+				       false);
+			
+			/////////////// add sub types //////////////
+			it = compatibleTypes.iterator();
+			// add each compatible type within
+			// a case statement
+			while (it.hasNext()) {
+			    /*String compatibleTypeName = (String) it.next();
+			    //WARNING: order of parameters inversed from the doc for 2.6.0 !!!
+			    XSTypeDefinition type =getSchema().getTypeDefinition(
+			    compatibleTypeName,
+			    targetNamespace);*/
+			    XSTypeDefinition type = (XSTypeDefinition) it.next();
+			    String compatibleTypeName = type.getName();
+			    
+			    if (LOGGER.isDebugEnabled()) {
+				if (type == null)
+				    LOGGER.debug(">>>addElement: compatible type is null!! type="
+						 + compatibleTypeName
+						 + ", targetNamespace="
+						 + targetNamespace);
+				else
+				    LOGGER.debug("   >>>addElement: adding compatible type "
+						 + type.getName());
+			    }
+			    
+			    if (type != null && 
+				type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+				
+				//Element caseElement = (Element) xForm.createElementNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX + "case");
+				//caseElement.setAttributeNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX + "id",bindId + "_" + type.getName() +"_case");
+				//String case_id=this.setXFormsId(caseElement);
+				Element caseElement =
+				    (Element) case_types.get(type.getName());
+				switchElement.appendChild(caseElement);
+				
+				addComplexType(xForm,
+					       modelSection,
+					       caseElement,
+					       (XSComplexTypeDefinition) type,
+					       elementDecl,
+					       pathToRoot,
+					       true,
+					       true);
+				
+				//////
+				// modify bind to add a "relevant" attribute that checks the value of @xsi:type
+				//
+				if (LOGGER.isDebugEnabled())
+				    DOMUtil.prettyPrintDOM(bindElement2);
+				NodeList binds = bindElement2.getElementsByTagNameNS(XFORMS_NS, "bind");
+				Element thisBind = null;
+				int nb_binds = binds.getLength();
+				int i = 0;
+				while (i < nb_binds && thisBind == null) 
+				{
+				    Element subBind = (Element) binds.item(i);
+				    String name = subBind.getAttributeNS(XFORMS_NS, "nodeset");
+				    
+				    if (LOGGER.isDebugEnabled())
+					LOGGER.debug("Testing sub-bind with nodeset " + name);
+				    
+				    if (this.isElementDeclaredIn(name, (XSComplexTypeDefinition) type, false)
+					|| this.isAttributeDeclaredIn(name, (XSComplexTypeDefinition) type, false)
+					) {
+					if (LOGGER.isDebugEnabled())
+					    LOGGER.debug("Element/Attribute " + name + " declared in type " + type.getName() + ": adding relevant attribute");
 
-                        break;
-                    } else {
+					//test sub types of this type
+					TreeSet subCompatibleTypes = (TreeSet) typeTree.get(type.getName());
+					//TreeSet subCompatibleTypes = (TreeSet) typeTree.get(type);
+					
+					String newRelevant = null;
+					if (subCompatibleTypes == null || subCompatibleTypes.isEmpty()) {
+					    //just add ../@xsi:type='type'
+					    newRelevant = "../@xsi:type='" + type.getName() + "'";
+					} else {
+					    //add ../@xsi:type='type' or ../@xsi:type='otherType' or ...
+					    newRelevant = "../@xsi:type='" + type.getName() + "'";
+					    Iterator it_ct = subCompatibleTypes.iterator();
+					    while (it_ct.hasNext()) {
+						//String otherTypeName = (String) it_ct.next();
+						XSTypeDefinition otherType = (XSTypeDefinition) it_ct.next();
+						String otherTypeName = otherType.getName();
+						newRelevant = newRelevant + " or ../@xsi:type='" + otherTypeName + "'";
+					    }
+					}
 
-                        // find the types which are compatible(derived from) the parent type.
-                        //
-                        // This is used if we encounter a XML Schema that permits the xsi:type
-                        // attribute to specify subtypes for the element.
-                        //
-                        // For example, the <address> element may be typed to permit any of
-                        // the following scenarios:
-                        // <address xsi:type="USAddress">
-                        // </address>
-                        // <address xsi:type="CanadianAddress">
-                        // </address>
-                        // <address xsi:type="InternationalAddress">
-                        // </address>
-                        //
-                        // What we want to do is generate an XForm' switch element with cases
-                        // representing any valid non-abstract subtype.
-                        //
-                        // <xforms:select1 xforms:bind="xsi_type_13"
-                        //		  <xforms:label>Address</xforms:label>
-                        //        <xforms:choices>
-                        //                <xforms:item>
-                        //                        <xforms:label>US Address Type</xforms:label>
-                        //                        <xforms:value>USAddressType</xforms:value>
-                        //                        <xforms:action ev:event="xforms-select">
-                        //                                <xforms:toggle xforms:case="USAddressType-case"/>
-                        //                        </xforms:action>
-                        //                </xforms:item>
-                        //                <xforms:item>
-                        //                        <xforms:label>Canadian Address Type</xforms:label>
-                        //                        <xforms:value>CanadianAddressType</xforms:value>
-                        //                        <xforms:action ev:event="xforms-select">
-                        //                                <xforms:toggle xforms:case="CanadianAddressType-case"/>
-                        //                        </xforms:action>
-                        //                </xforms:item>
-                        //                <xforms:item>
-                        //                        <xforms:label>International Address Type</xforms:label>
-                        //                        <xforms:value>InternationalAddressType</xforms:value>
-                        //                        <xforms:action ev:event="xforms-select">
-                        //                                <xforms:toggle xforms:case="InternationalAddressType-case"/>
-                        //                        </xforms:action>
-                        //                </xforms:item>
-                        //
-                        //          </xforms:choices>
-                        // <xforms:select1>
-                        // <xforms:trigger>
-                        //	<xforms:label>validate Address type</xforms:label>
-                        //	<xforms:action>
-                        //		<xforms:dispatch id="dispatcher" xforms:name="xforms-activate" xforms:target="select1_0"/>
-                        //	</xforms:action>
-                        //</xforms:trigger>
-                        //
-                        // <xforms:switch id="address_xsi_type_switch">
-                        //      <xforms:case id="USAddressType-case" selected="false">
-                        //          <!-- US Address Type sub-elements here-->
-                        //      </xforms:case>
-                        //      <xforms:case id="CanadianAddressType-case" selected="false">
-                        //          <!-- US Address Type sub-elements here-->
-                        //      </xforms:case>
-                        //      ...
-                        // </xforms:switch>
-                        //
-                        //   + change bindings to add:
-                        //	- a bind for the "@xsi:type" attribute
-                        //	- for each possible element that can be added through the use of an inheritance, add a "relevant" attribute:
-                        //	ex: xforms:relevant="../@xsi:type='USAddress'"
+					//change relevant attribute
+					String relevant = subBind.getAttributeNS(XFORMS_NS, "relevant");
+					if (relevant != null && relevant.length() != 0) 
+					    newRelevant = ("(" + relevant + 
+							   ") and " + newRelevant);
+					if (newRelevant != null && newRelevant.length() != 0)
+					    subBind.setAttributeNS(XFORMS_NS, 
+								   SchemaFormBuilder.XFORMS_NS_PREFIX + "relevant", 
+								   newRelevant);
+				    }
 
-                        // look for compatible types
-                        //
-                        String typeName = controlType.getName();
-                        boolean relative = true;
+				    i++;
+				}
+			    }
+			}
 
-                        if (typeName != null) {
-                            TreeSet compatibleTypes = (TreeSet) typeTree.get(controlType.getName());
-                            //TreeSet compatibleTypes = (TreeSet) typeTree.get(controlType);
+			/*if (LOGGER.isDebugEnabled()) {
+			  LOGGER.debug(
+			  "###addElement for derived type: bind created:");
+			  DOMUtil.prettyPrintDOM(bindElement2);
+			  }*/
 
-                            if (compatibleTypes != null) {
-                                relative = false;
+			// we're done
+			//
+			break;
 
-                                if (LOGGER.isDebugEnabled()) {
-                                    LOGGER.debug("compatible types for "
-                                            + typeName
-                                            + ":");
-                                    Iterator it1 = compatibleTypes.iterator();
-                                    while (it1.hasNext()) {
-                                        //String name = (String) it1.next();
-                                        XSTypeDefinition compType = (XSTypeDefinition) it1.next();
-                                        LOGGER.debug("          compatible type name=" + compType.getName());
-                                    }
-                                }
+		    } else if (enumValues.size() == 1) {
+			// only one compatible type, set the controlType value
+			// and fall through
+			//
+			//controlType = getSchema().getComplexType((String)enumValues.get(0));
+			controlType =
+			    this.schema.getTypeDefinition((String) enumValues.get(0),
+							  targetNamespace);
+		    }
+		} else if (LOGGER.isDebugEnabled())
+		    LOGGER.debug("No compatible type found for " + typeName);
 
-                                Element control =
-                                        xForm.createElementNS(XFORMS_NS,
-                                                getXFormsNSPrefix() + "select1");
-                                String select1_id = this.setXFormsId(control);
+		//name not null but no compatibleType?
+		relative = true;
+	    }
 
-                                Element choices =
-                                        xForm.createElementNS(XFORMS_NS,
-                                                getXFormsNSPrefix() + "choices");
-                                this.setXFormsId(choices);
+	    if (relative) //create the bind in case it is a repeat
+	    {
+		if (LOGGER.isDebugEnabled())
+		    LOGGER.debug(">>>Adding empty bind for " + typeName);
 
-                                //get possible values
-                                Vector enumValues = new Vector();
-                                //add the type (if not abstract)
-                                if (!((XSComplexTypeDefinition) controlType).getAbstract())
-                                    enumValues.add(controlType);
-                                //enumValues.add(typeName);
+		// create the <xforms:bind> element and add it to the model.
+		Element bindElement =
+		    xForm.createElementNS(XFORMS_NS,
+					  SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");
+		String bindId = this.setXFormsId(bindElement);
+		bindElement.setAttributeNS(XFORMS_NS,
+					   SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
+					   pathToRoot);
 
-                                //add compatible types
-                                Iterator it = compatibleTypes.iterator();
-                                while (it.hasNext()) {
-                                    enumValues.add(it.next());
-                                }
+		modelSection.appendChild(bindElement);
+	    } else if (LOGGER.isDebugEnabled()) {
+		LOGGER.debug("addElement: bind is not relative for "
+			     + elementDecl.getName());
+	    }
 
-                                if (enumValues.size() > 1) {
-
-                                    String caption =
-                                            createCaption(elementDecl.getName() + " Type");
-                                    Element controlCaption =
-                                            (Element) control.appendChild(xForm.createElementNS(XFORMS_NS,
-                                                    getXFormsNSPrefix() + "label"));
-                                    this.setXFormsId(controlCaption);
-                                    controlCaption.appendChild(xForm.createTextNode(caption));
-
-                                    // multiple compatible types for this element exist
-                                    // in the schema - allow the user to choose from
-                                    // between compatible non-abstract types
-                                    Element bindElement =
-                                            xForm.createElementNS(XFORMS_NS,
-                                                    getXFormsNSPrefix() + "bind");
-                                    String bindId =
-                                            this.setXFormsId(bindElement);
-
-                                    bindElement.setAttributeNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "nodeset",
-                                            pathToRoot + "/@xsi:type");
-
-                                    modelSection.appendChild(bindElement);
-                                    control.setAttributeNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "bind",
-                                            bindId);
-
-                                    //add the "element" bind, in addition
-                                    Element bindElement2 =
-                                            xForm.createElementNS(XFORMS_NS,
-                                                    getXFormsNSPrefix() + "bind");
-                                    String bindId2 =
-                                            this.setXFormsId(bindElement2);
-                                    bindElement2.setAttributeNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "nodeset",
-                                            pathToRoot);
-
-                                    modelSection.appendChild(bindElement2);
-
-                                    if (enumValues.size()
-                                            < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))) {
-                                        control.setAttributeNS(XFORMS_NS,
-                                                getXFormsNSPrefix() + "appearance",
-                                                getProperty(SELECTONE_UI_CONTROL_SHORT_PROP));
-                                    } else {
-                                        control.setAttributeNS(XFORMS_NS,
-                                                getXFormsNSPrefix() + "appearance",
-                                                getProperty(SELECTONE_UI_CONTROL_LONG_PROP));
-
-                                        // add the "Please select..." instruction item for the combobox
-                                        // and set the isValid attribute on the bind element to check for the "Please select..."
-                                        // item to indicate that is not a valid value
-                                        //
-                                        String pleaseSelect =
-                                                "[Select1 " + caption + "]";
-                                        Element item =
-                                                xForm.createElementNS(XFORMS_NS,
-                                                        getXFormsNSPrefix()
-                                                + "item");
-                                        this.setXFormsId(item);
-                                        choices.appendChild(item);
-
-                                        Element captionElement =
-                                                xForm.createElementNS(XFORMS_NS,
-                                                        getXFormsNSPrefix()
-                                                + "label");
-                                        this.setXFormsId(captionElement);
-                                        item.appendChild(captionElement);
-                                        captionElement.appendChild(xForm.createTextNode(pleaseSelect));
-
-                                        Element value =
-                                                xForm.createElementNS(XFORMS_NS,
-                                                        getXFormsNSPrefix()
-                                                + "value");
-                                        this.setXFormsId(value);
-                                        item.appendChild(value);
-                                        value.appendChild(xForm.createTextNode(pleaseSelect));
-
-                                        // not(purchaseOrder/state = '[Choose State]')
-                                        //String isValidExpr = "not(" + bindElement.getAttributeNS(XFORMS_NS, "nodeset") + " = '" + pleaseSelect + "')";
-                                        // ->no, not(. = '[Choose State]')
-                                        String isValidExpr =
-                                                "not( . = '"
-                                                + pleaseSelect
-                                                + "')";
-
-                                        //check if there was a constraint
-                                        String constraint =
-                                                bindElement.getAttributeNS(XFORMS_NS,
-                                                        "constraint");
-
-                                        if ((constraint != null)
-                                                && !constraint.equals("")) {
-                                            constraint =
-                                                    constraint
-                                                    + " && "
-                                                    + isValidExpr;
-                                        } else {
-                                            constraint = isValidExpr;
-                                        }
-
-                                        bindElement.setAttributeNS(XFORMS_NS,
-                                                getXFormsNSPrefix()
-                                                + "constraint",
-                                                constraint);
-                                    }
-
-                                    Element choicesControlWrapper =
-                                            _wrapper.createControlsWrapper(choices);
-                                    control.appendChild(choicesControlWrapper);
-
-                                    Element controlWrapper =
-                                            _wrapper.createControlsWrapper(control);
-                                    formSection.appendChild(controlWrapper);
-
-                                    /////////////////                                      ///////////////
-                                    // add content to select1
-                                    HashMap case_types = new HashMap();
-                                    addChoicesForSelectSwitchControl(xForm,
-                                            choices,
-                                            enumValues,
-                                            case_types);
-
-                                    /////////////////
-                                    //add a trigger for this control (is there a way to not need it ?)
-                                    Element trigger = xForm.createElementNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "trigger");
-                                    formSection.appendChild(trigger);
-                                    this.setXFormsId(trigger);
-                                    Element label_trigger = xForm.createElementNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "label");
-                                    this.setXFormsId(label_trigger);
-                                    trigger.appendChild(label_trigger);
-                                    String trigger_caption = createCaption("validate choice");
-                                    label_trigger.appendChild(xForm.createTextNode(trigger_caption));
-                                    Element action_trigger = xForm.createElementNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "action");
-                                    this.setXFormsId(action_trigger);
-                                    trigger.appendChild(action_trigger);
-                                    Element dispatch_trigger = xForm.createElementNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "dispatch");
-                                    this.setXFormsId(dispatch_trigger);
-                                    action_trigger.appendChild(dispatch_trigger);
-                                    dispatch_trigger.setAttributeNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "name",
-                                            "DOMActivate");
-                                    dispatch_trigger.setAttributeNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "target",
-                                            select1_id);
-
-                                    /////////////////
-                                    //add switch
-                                    Element switchElement =
-                                            xForm.createElementNS(XFORMS_NS,
-                                                    getXFormsNSPrefix() + "switch");
-                                    this.setXFormsId(switchElement);
-
-                                    Element switchControlWrapper =
-                                            _wrapper.createControlsWrapper(switchElement);
-                                    formSection.appendChild(switchControlWrapper);
-                                    //formSection.appendChild(switchElement);
-
-                                    /////////////// add this type //////////////
-                                    Element firstCaseElement = (Element) case_types.get(controlType.getName());
-                                    switchElement.appendChild(firstCaseElement);
-                                    addComplexType(xForm,
-                                            modelSection,
-                                            firstCaseElement,
-                                            (XSComplexTypeDefinition) controlType,
-                                            elementDecl,
-                                            pathToRoot,
-                                            true,
-                                            false);
-
-                                    /////////////// add sub types //////////////
-                                    it = compatibleTypes.iterator();
-                                    // add each compatible type within
-                                    // a case statement
-                                    while (it.hasNext()) {
-                                        /*String compatibleTypeName = (String) it.next();
-                                        //WARNING: order of parameters inversed from the doc for 2.6.0 !!!
-                                        XSTypeDefinition type =getSchema().getTypeDefinition(
-                                                compatibleTypeName,
-                                                targetNamespace);*/
-                                        XSTypeDefinition type = (XSTypeDefinition) it.next();
-                                        String compatibleTypeName = type.getName();
-
-                                        if (LOGGER.isDebugEnabled()) {
-                                            if (type == null)
-                                                LOGGER.debug(">>>addElement: compatible type is null!! type="
-                                                        + compatibleTypeName
-                                                        + ", targetNamespace="
-                                                        + targetNamespace);
-                                            else
-                                                LOGGER.debug("   >>>addElement: adding compatible type "
-                                                        + type.getName());
-                                        }
-
-                                        if (type != null
-                                                && type.getTypeCategory()
-                                                == XSTypeDefinition
-                                                .COMPLEX_TYPE) {
-
-                                            //Element caseElement = (Element) xForm.createElementNS(XFORMS_NS,getXFormsNSPrefix() + "case");
-                                            //caseElement.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "id",bindId + "_" + type.getName() +"_case");
-                                            //String case_id=this.setXFormsId(caseElement);
-                                            Element caseElement =
-                                                    (Element) case_types.get(type.getName());
-                                            switchElement.appendChild(caseElement);
-
-                                            addComplexType(xForm,
-                                                    modelSection,
-                                                    caseElement,
-                                                    (XSComplexTypeDefinition) type,
-                                                    elementDecl,
-                                                    pathToRoot,
-                                                    true,
-                                                    true);
-
-                                            //////
-                                            // modify bind to add a "relevant" attribute that checks the value of @xsi:type
-                                            //
-                                            if (LOGGER.isDebugEnabled())
-                                                DOMUtil.prettyPrintDOM(bindElement2);
-                                            NodeList binds = bindElement2.getElementsByTagNameNS(XFORMS_NS, "bind");
-                                            Element thisBind = null;
-                                            int nb_binds = binds.getLength();
-                                            int i = 0;
-                                            while (i < nb_binds && thisBind == null) {
-                                                Element subBind = (Element) binds.item(i);
-                                                String name = subBind.getAttributeNS(XFORMS_NS, "nodeset");
-
-                                                if (LOGGER.isDebugEnabled())
-                                                    LOGGER.debug("Testing sub-bind with nodeset " + name);
-
-                                                if (this.isElementDeclaredIn(name, (XSComplexTypeDefinition) type, false)
-                                                        || this.isAttributeDeclaredIn(name, (XSComplexTypeDefinition) type, false)
-                                                ) {
-                                                    if (LOGGER.isDebugEnabled())
-                                                        LOGGER.debug("Element/Attribute " + name + " declared in type " + type.getName() + ": adding relevant attribute");
-
-                                                    //test sub types of this type
-                                                    TreeSet subCompatibleTypes = (TreeSet) typeTree.get(type.getName());
-                                                    //TreeSet subCompatibleTypes = (TreeSet) typeTree.get(type);
-
-                                                    String newRelevant = null;
-                                                    if (subCompatibleTypes == null || subCompatibleTypes.isEmpty()) {
-                                                        //just add ../@xsi:type='type'
-                                                        newRelevant = "../@xsi:type='" + type.getName() + "'";
-                                                    } else {
-                                                        //add ../@xsi:type='type' or ../@xsi:type='otherType' or ...
-                                                        newRelevant = "../@xsi:type='" + type.getName() + "'";
-                                                        Iterator it_ct = subCompatibleTypes.iterator();
-                                                        while (it_ct.hasNext()) {
-                                                            //String otherTypeName = (String) it_ct.next();
-                                                            XSTypeDefinition otherType = (XSTypeDefinition) it_ct.next();
-                                                            String otherTypeName = otherType.getName();
-                                                            newRelevant = newRelevant + " or ../@xsi:type='" + otherTypeName + "'";
-                                                        }
-                                                    }
-
-                                                    //change relevant attribute
-                                                    String relevant = subBind.getAttributeNS(XFORMS_NS, "relevant");
-                                                    if (relevant != null && !relevant.equals("")) {
-                                                        newRelevant = "(" + relevant + ") and " + newRelevant;
-                                                    }
-                                                    if (newRelevant != null && !newRelevant.equals(""))
-                                                        subBind.setAttributeNS(XFORMS_NS, getXFormsNSPrefix() + "relevant", newRelevant);
-                                                }
-
-                                                i++;
-                                            }
-                                        }
-                                    }
-
-                                    /*if (LOGGER.isDebugEnabled()) {
-                                        LOGGER.debug(
-                                            "###addElement for derived type: bind created:");
-                                        DOMUtil.prettyPrintDOM(bindElement2);
-                                    }*/
-
-                                    // we're done
-                                    //
-                                    break;
-
-                                } else if (enumValues.size() == 1) {
-                                    // only one compatible type, set the controlType value
-                                    // and fall through
-                                    //
-                                    //controlType = getSchema().getComplexType((String)enumValues.get(0));
-                                    controlType =
-                                            this.schema.getTypeDefinition((String) enumValues.get(0),
-                                                    targetNamespace);
-                                }
-                            } else if (LOGGER.isDebugEnabled())
-                                LOGGER.debug("No compatible type found for " + typeName);
-
-                            //name not null but no compatibleType?
-                            relative = true;
-                        }
-
-                        if (relative) //create the bind in case it is a repeat
-                        {
-                            if (LOGGER.isDebugEnabled())
-                                LOGGER.debug(">>>Adding empty bind for " + typeName);
-
-                            // create the <xforms:bind> element and add it to the model.
-                            Element bindElement =
-                                    xForm.createElementNS(XFORMS_NS,
-                                            getXFormsNSPrefix() + "bind");
-                            String bindId = this.setXFormsId(bindElement);
-                            bindElement.setAttributeNS(XFORMS_NS,
-                                    getXFormsNSPrefix() + "nodeset",
-                                    pathToRoot);
-
-                            modelSection.appendChild(bindElement);
-                        } else if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("addElement: bind is not relative for "
-                                    + elementDecl.getName());
-                        }
-
-                        //addComplexType(xForm,modelSection, formSection,(ComplexType)controlType,elementDecl,pathToRoot, relative);
-                        addComplexType(xForm,
-                                modelSection,
-                                formSection,
-                                (XSComplexTypeDefinition) controlType,
-                                elementDecl,
-                                pathToRoot,
-                                true,
-                                false);
-
-                        break;
-                    }
-                }
-
-            default : // TODO: add wildcard support
-                LOGGER.warn("\nWARNING!!! - Unsupported type ["
-                        + elementDecl.getType()
-                        + "] for node ["
-                        + controlType.getName()
-                        + "]");
-        }
+	    //addComplexType(xForm,modelSection, formSection,(ComplexType)controlType,elementDecl,pathToRoot, relative);
+	    addComplexType(xForm,
+			   modelSection,
+			   formSection,
+			   (XSComplexTypeDefinition) controlType,
+			   elementDecl,
+			   pathToRoot,
+			   true,
+			   false);
+			
+	    break;
+	}
+	
+	default : // TODO: add wildcard support
+	    LOGGER.warn("\nWARNING!!! - Unsupported type ["
+		    + elementDecl.getType()
+			+ "] for node ["
+			+ controlType.getName()
+			+ "]");
+	}
     }
-
+    
     /**
      * check that the element defined by this name is declared directly in the type
      */
-    private boolean isElementDeclaredIn(String name, XSComplexTypeDefinition type, boolean recursive) {
+    private boolean isElementDeclaredIn(String name, XSComplexTypeDefinition type, boolean recursive) 
+    {
         boolean found = false;
 
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("isElement " + name + " declared in " + type.getName());
 
-//test if extension + declared in parent + not recursive -> NOK
+        //test if extension + declared in parent + not recursive -> NOK
         if (!recursive && type.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) {
             XSComplexTypeDefinition parent = (XSComplexTypeDefinition) type.getBaseType();
             if (LOGGER.isDebugEnabled())
@@ -2044,7 +2019,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
             XSAttributeUse anAttr = (XSAttributeUse) attrs.item(i);
             if (anAttr != null) {
                 String name = anAttr.getName();
-                if (name == null || name.equals(""))
+                if (name == null || name.length() == 0)
                     name = anAttr.getAttrDeclaration().getName();
                 if (attrName.equals(name))
                     found = true;
@@ -2105,12 +2080,12 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 	{
 
             Element repeatSection =
-		addRepeatIfNecessary(xForm,
-				     modelSection,
-				     formSection,
-				     owner.getTypeDefinition(),
-				     o,
-				     pathToRoot);
+		this.addRepeatIfNecessary(xForm,
+					  modelSection,
+					  formSection,
+					  owner.getTypeDefinition(),
+					  o,
+					  pathToRoot);
             Element repeatContentWrapper = repeatSection;
 
             if (repeatSection != formSection) {
@@ -2186,8 +2161,11 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                             if (LOGGER.isDebugEnabled())
                                 LOGGER.debug("bindId found: " + bindId);
 
-                            JXPathContext context = JXPathContext.newContext(formSection.getOwnerDocument());
-                            Pointer pointer = context.getPointer("//*[@" + this.getXFormsNSPrefix() + "bind='" + bindId + "']");
+                            final JXPathContext context = 
+				JXPathContext.newContext(formSection.getOwnerDocument());
+                            final Pointer pointer = 
+				context.getPointer("//*[@" + SchemaFormBuilder.XFORMS_NS_PREFIX + 
+						   "bind='" + bindId + "']");
                             if (pointer != null)
                                 control = (Element) pointer.getNode();
                         }
@@ -2203,21 +2181,21 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                             repeatContentWrapper.appendChild(newControl);
                         }
 
-                    } else { //add it normally
-                        String elementName = getElementName(element, xForm);
+                    } 
+		    else
+		    { //add it normally
+                        final String elementName = getElementName(element, xForm);
 
-                        String path = pathToRoot + "/" + elementName;
-
-                        if (pathToRoot.equals("")) { //relative
-                            path = elementName;
-                        }
-
-                        addElement(xForm,
-                                modelSection,
-                                repeatContentWrapper,
-                                element,
-                                element.getTypeDefinition(),
-                                path);
+                        final String path = (pathToRoot.length() == 0
+					     ? elementName
+					     : pathToRoot + "/" + elementName);
+			
+                        this.addElement(xForm,
+					modelSection,
+					repeatContentWrapper,
+					element,
+					element.getTypeDefinition(),
+					path);
                     }
                 } else { //XSWildcard -> ignore ?
                     //LOGGER.warn("XSWildcard found in group from "+owner.getName()+" for pathToRoot="+pathToRoot);
@@ -2238,79 +2216,76 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                          XSTypeDefinition controlType,
                                          final Occurs o ,
                                          String pathToRoot) {
-        Element repeatSection = formSection;
 
         // add xforms:repeat section if this element re-occurs
         //
-        if (o.maximum != 1) 
+        if (o.maximum == 1) 
+	    return formSection;
+
+	if (LOGGER.isDebugEnabled())
+	    LOGGER.debug("DEBUG: AddRepeatIfNecessary for multiple element for type "
+			 + controlType.getName()
+			 + ", maxOccurs=" + o.maximum);
+	
+	final Element repeatSection = 
+	    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "repeat");
+
+	//bind instead of repeat
+	//repeatSection.setAttributeNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",pathToRoot);
+	// bind -> last element in the modelSection
+	Element bind = DOMUtil.getLastChildElement(modelSection);
+	String bindId = null;
+
+	if (bind != null && 
+	    bind.getLocalName() != null && 
+	    "bind".equals(bind.getLocalName())) 
+	    bindId = bind.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
+	else 
 	{
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("DEBUG: AddRepeatIfNecessary for multiple element for type "
-			     + controlType.getName()
-			     + ", maxOccurs=" + o.maximum);
+	    LOGGER.warn("addRepeatIfNecessary: bind not found: "
+			+ bind
+			+ " (model selection name="
+			+ modelSection.getNodeName()
+			+ ")");
 
-            //repeatSection = (Element) formSection.appendChild(xForm.createElementNS(XFORMS_NS,getXFormsNSPrefix() + "repeat"));
-            repeatSection = xForm.createElementNS(XFORMS_NS,
-						  getXFormsNSPrefix() + "repeat");
+	    //if no bind is found -> modelSection is already a bind, get its parent last child
+	    bind = DOMUtil.getLastChildElement(modelSection.getParentNode());
 
-            //bind instead of repeat
-            //repeatSection.setAttributeNS(XFORMS_NS,getXFormsNSPrefix() + "nodeset",pathToRoot);
-            // bind -> last element in the modelSection
-            Element bind = DOMUtil.getLastChildElement(modelSection);
-            String bindId = null;
-
-            if (bind != null && 
+	    if (bind != null &&
 		bind.getLocalName() != null && 
-		"bind".equals(bind.getLocalName())) {
-                bindId = bind.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
-            } else {
-                LOGGER.warn("addRepeatIfNecessary: bind not found: "
-			    + bind
-			    + " (model selection name="
-			    + modelSection.getNodeName()
-			    + ")");
+		"bind".equals(bind.getLocalName())) 
+		bindId = bind.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
+	    else 
+		LOGGER.warn("addRepeatIfNecessary: bind really not found");
+	}
 
-                //if no bind is found -> modelSection is already a bind, get its parent last child
-                bind = DOMUtil.getLastChildElement(modelSection.getParentNode());
+	repeatSection.setAttributeNS(XFORMS_NS,
+				     SchemaFormBuilder.XFORMS_NS_PREFIX + "bind",
+				     bindId);
+	this.setXFormsId(repeatSection);
 
-                if (bind != null &&
-		    bind.getLocalName() != null && 
-		    "bind".equals(bind.getLocalName())) {
-                    bindId = bind.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
-                } else {
-                    LOGGER.warn("addRepeatIfNecessary: bind really not found");
-                }
-            }
+	//appearance=full is more user friendly
+	repeatSection.setAttributeNS(XFORMS_NS,
+				     SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+				     "full");
 
-            repeatSection.setAttributeNS(XFORMS_NS,
-					 getXFormsNSPrefix() + "bind",
-					 bindId);
-            this.setXFormsId(repeatSection);
-
-            //appearance=full is more user friendly
-            repeatSection.setAttributeNS(XFORMS_NS,
-                    getXFormsNSPrefix() + "appearance",
-                    "full");
-
-            //triggers
-            this.addTriggersForRepeat(xForm,
-				      formSection,
-				      repeatSection,
-				      o,
-				      bindId);
+	//triggers
+	this.addTriggersForRepeat(xForm,
+				  formSection,
+				  repeatSection,
+				  o,
+				  bindId);
 	    
-            Element controlWrapper =
-                    _wrapper.createControlsWrapper(repeatSection);
-            formSection.appendChild(controlWrapper);
+	final Element controlWrapper =
+	    _wrapper.createControlsWrapper(repeatSection);
+	formSection.appendChild(controlWrapper);
 
-            //add a group inside the repeat?
-            Element group = xForm.createElementNS(XFORMS_NS,
-						  this.getXFormsNSPrefix() + "group");
-            this.setXFormsId(group);
-            repeatSection.appendChild(group);
-            repeatSection = group;
-        }
-
+	//add a group inside the repeat?
+	//            Element group = xForm.createElementNS(XFORMS_NS,
+	//this.SchemaFormBuilder.XFORMS_NS_PREFIX + "group");
+	//this.setXFormsId(group);
+	//repeatSection.appendChild(group);
+	//repeatSection = group;
         return repeatSection;
     }
 
@@ -2332,10 +2307,10 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 			 " (owningElementName=" + owningElementName + ")");
 
         // create the <xforms:bind> element and add it to the model.
-        Element bindElement = xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "bind");
+        Element bindElement = xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");
         String bindId = this.setXFormsId(bindElement);
         bindElement.setAttributeNS(XFORMS_NS,
-				   getXFormsNSPrefix() + "nodeset",
+				   SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
 				   pathToRoot);
         bindElement = (Element) modelSection.appendChild(bindElement);
         bindElement = startBindElement(bindElement, controlType, o);
@@ -2371,10 +2346,10 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             //if there is a repeat -> create another bind with "."
             Element bindElement2 =
-                    xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "bind");
+                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");
             String bindId2 = this.setXFormsId(bindElement2);
             bindElement2.setAttributeNS(XFORMS_NS,
-					getXFormsNSPrefix() + "nodeset",
+					SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
 					".");
             bindElement.appendChild(bindElement2);
             bindId = bindId2;
@@ -2396,7 +2371,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         if (!repeatSection.equals(formSection)) 
 	{
             formControl.setAttributeNS(XFORMS_NS,
-				       getXFormsNSPrefix() + "ref",
+				       SchemaFormBuilder.XFORMS_NS_PREFIX + "ref",
 				       ".");
         }
 
@@ -2446,245 +2421,252 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 			   new Occurs(owningAttribute.getRequired() ? 1 : 0, 1));
     }
 
+    private Element createTriggerForRepeat(final Document xForm,
+					   final String label,
+					   final Element action)
+    {
+        final Element trigger =
+	    xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "trigger");
+        this.setXFormsId(trigger);
+
+        //label insert
+        final Element triggerLabel =
+	    xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+        this.setXFormsId(triggerLabel);
+        trigger.appendChild(triggerLabel);
+        //triggerLabel_insert.setAttributeNS(SchemaFormBuilder.XLINK_NS,
+	//				   SchemaFormBuilder.XLINK_NS_PREFIX + "href",
+	//				   "images/add_new.gif");
+
+        triggerLabel.appendChild(xForm.createTextNode(label));
+
+        //hint insert
+        //Element hint_insert =
+        //        xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+        //                SchemaFormBuilder.XFORMS_NS_PREFIX + "hint");
+        //this.setXFormsId(hint_insert);
+        //Text hint_insert_text =
+        //        xForm.createTextNode("inserts a new entry in this collection");
+        //hint_insert.appendChild(hint_insert_text);
+        //trigger_insert.appendChild(hint_insert);
+
+        //insert action
+        final Element actionWrapper =
+	    xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "action");
+	actionWrapper.appendChild(action);
+        trigger.appendChild(action);
+        this.setXFormsId(action);
+
+	return trigger;
+    }
+				  
+
     /**
      * add triggers to use the repeat elements (allow to add an element, ...)
      */
-    private void addTriggersForRepeat(Document xForm,
-                                      Element formSection,
-                                      Element repeatSection,
-                                      Occurs o,
-                                      String bindId) {
+    private void addTriggersForRepeat(final Document xForm,
+                                      final Element formSection,
+                                      final Element repeatSection,
+                                      final Occurs o,
+                                      final String bindId) {
+        //xforms:at = xforms:index from the "id" attribute on the repeat element
+        final String repeatId =
+	    repeatSection.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
+
         ///////////// insert //////////////////
         //trigger insert
-        Element trigger_insert =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "trigger");
-        this.setXFormsId(trigger_insert);
 
-        //label insert
-        Element triggerLabel_insert =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "label");
-        this.setXFormsId(triggerLabel_insert);
-        trigger_insert.appendChild(triggerLabel_insert);
-        triggerLabel_insert.setAttributeNS(SchemaFormBuilder.XLINK_NS,
-                SchemaFormBuilder.xlinkNSPrefix + "href",
-                "images/add_new.gif");
-
-        Text label_insert = xForm.createTextNode("Insert after selected");
-        triggerLabel_insert.appendChild(label_insert);
-
-        //hint insert
-        Element hint_insert =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "hint");
-        this.setXFormsId(hint_insert);
-        Text hint_insert_text =
-                xForm.createTextNode("inserts a new entry in this collection");
-        hint_insert.appendChild(hint_insert_text);
-        trigger_insert.appendChild(hint_insert);
-
-        //insert action
-        Element action_insert =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "action");
-        trigger_insert.appendChild(action_insert);
-        this.setXFormsId(action_insert);
-
-        Element insert =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "insert");
-        action_insert.appendChild(insert);
-        this.setXFormsId(insert);
+	Element action =
+	    xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "insert");
+        this.setXFormsId(action);
 
         //insert: bind & other attributes
-        if (bindId != null) {
-            insert.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
-                    SchemaFormBuilder.xformsNSPrefix + "bind",
-                    bindId);
-        }
+        if (bindId != null)
+            action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "bind",
+				  bindId);
 
-        insert.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
-                SchemaFormBuilder.xformsNSPrefix + "position",
-                "after");
+        action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+			      SchemaFormBuilder.XFORMS_NS_PREFIX + "position",
+			      "before");
 
-        //xforms:at = xforms:index from the "id" attribute on the repeat element
-        String repeatId =
-                repeatSection.getAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
+        if (repeatId != null)
+            action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "at",
+				  "1");
 
-        if (repeatId != null) {
-            insert.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
-                    SchemaFormBuilder.xformsNSPrefix + "at",
-                    SchemaFormBuilder.xformsNSPrefix + "index('" + repeatId + "')");
-        }
+        final Element trigger_insert_before =
+	    this.createTriggerForRepeat(xForm, "insert at beginning", action);
+
+
+	action = xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+				       SchemaFormBuilder.XFORMS_NS_PREFIX + "insert");
+        this.setXFormsId(action);
+
+        //insert: bind & other attributes
+        if (bindId != null)
+            action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "bind",
+				  bindId);
+
+        action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+			      SchemaFormBuilder.XFORMS_NS_PREFIX + "position",
+			      "after");
+
+        if (repeatId != null)
+            action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "at",
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "index('" + repeatId + "')");
+					
+	final Element trigger_insert_after =
+	    this.createTriggerForRepeat(xForm, "insert after selected", action);
 
         ///////////// delete //////////////////
         //trigger delete
-        Element trigger_delete =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "trigger");
-        this.setXFormsId(trigger_delete);
-
-        //label delete
-        Element triggerLabel_delete =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "label");
-        this.setXFormsId(triggerLabel_delete);
-        trigger_delete.appendChild(triggerLabel_delete);
-        triggerLabel_delete.setAttributeNS(SchemaFormBuilder.XLINK_NS,
-                SchemaFormBuilder.xlinkNSPrefix + "href",
-                "images/delete.gif");
-
-        Text label_delete = xForm.createTextNode("Delete selected");
-        triggerLabel_delete.appendChild(label_delete);
-
-        //hint delete
-        Element hint_delete =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "hint");
-        this.setXFormsId(hint_delete);
-        Text hint_delete_text =
-                xForm.createTextNode("deletes selected entry from this collection");
-        hint_delete.appendChild(hint_delete_text);
-        trigger_delete.appendChild(hint_delete);
-
-        //delete action
-        Element action_delete =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "action");
-        trigger_delete.appendChild(action_delete);
-        this.setXFormsId(action_delete);
-
-        Element delete =
-                xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
-                        SchemaFormBuilder.xformsNSPrefix + "delete");
-        action_delete.appendChild(delete);
-        this.setXFormsId(delete);
+        action = xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+				       SchemaFormBuilder.XFORMS_NS_PREFIX + "delete");
+        this.setXFormsId(action);
 
         //delete: bind & other attributes
-        if (bindId != null) {
-            delete.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
-                    SchemaFormBuilder.xformsNSPrefix + "bind",
-                    bindId);
-        }
+        if (bindId != null)
+            action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "bind",
+				  bindId);
 
         //xforms:at = xforms:index from the "id" attribute on the repeat element
-        if (repeatId != null) {
-            delete.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
-                    SchemaFormBuilder.xformsNSPrefix + "at",
-                    SchemaFormBuilder.xformsNSPrefix + "index('" + repeatId + "')");
-        }
+        if (repeatId != null)
+	    action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "at",
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "index('" + repeatId + "')");
+
+        final Element trigger_delete =
+	    this.createTriggerForRepeat(xForm, "delete selected", action);
+
 
         //add the triggers
-        Element wrapper_triggers =
-                _wrapper.createControlsWrapper(trigger_insert);
+        final Element wrapper_triggers =
+	    _wrapper.createControlsWrapper(trigger_insert_before);
 
-        if (wrapper_triggers == trigger_insert) { //no wrapper
-            formSection.appendChild(trigger_insert);
+        if (wrapper_triggers == trigger_insert_after) 
+	{
+	    //no wrapper
+            formSection.appendChild(trigger_insert_before);
+            formSection.appendChild(trigger_insert_after);
             formSection.appendChild(trigger_delete);
-        } else {
+        } 
+	else 
+	{
             formSection.appendChild(wrapper_triggers);
+            final Element insert_parent = (Element)trigger_insert_before.getParentNode();
 
-            Element insert_parent = (Element) trigger_insert.getParentNode();
-
-            if (insert_parent != null) {
+            if (insert_parent != null)
+	    {
+		insert_parent.appendChild(trigger_insert_before);
                 insert_parent.appendChild(trigger_delete);
-            }
+	    }
         }
     }
 
-    private void buildTypeTree(XSTypeDefinition type, TreeSet descendents) {
-        if (type != null) {
+    private void buildTypeTree(XSTypeDefinition type, TreeSet descendents) 
+    {
+        if (type == null) 
+	    return;
 
-            if (descendents.size() > 0) {
-                //TreeSet compatibleTypes = (TreeSet) typeTree.get(type.getName());
-                TreeSet compatibleTypes = (TreeSet) typeTree.get(type.getName());
+	if (descendents.size() > 0) 
+	{
+	    //TreeSet compatibleTypes = (TreeSet) typeTree.get(type.getName());
+	    TreeSet compatibleTypes = (TreeSet) typeTree.get(type.getName());
+	    
+	    if (compatibleTypes == null) 
+	    {
+		//compatibleTypes = new TreeSet(descendents);
+		compatibleTypes = new TreeSet(this.typeExtensionSorter);
+		compatibleTypes.addAll(descendents);
+		//typeTree.put(type.getName(), compatibleTypes);
+		typeTree.put(type.getName(), compatibleTypes);
+	    }
+	    else 
+	    {
+		compatibleTypes.addAll(descendents);
+	    }
+	}
 
-                if (compatibleTypes == null) {
-                    //compatibleTypes = new TreeSet(descendents);
-                    compatibleTypes = new TreeSet(this.typeExtensionSorter);
-                    compatibleTypes.addAll(descendents);
-                    //typeTree.put(type.getName(), compatibleTypes);
-                    typeTree.put(type.getName(), compatibleTypes);
-                } else {
-                    compatibleTypes.addAll(descendents);
-                }
-            }
-
-            XSTypeDefinition parentType = type.getBaseType();
-
-            if (parentType != null
-                    && type.getTypeCategory() == parentType.getTypeCategory()) {
-                /*String typeName = type.getName();
-                String parentTypeName = parentType.getName();
-                if ((typeName == null && parentTypeName != null)
-                    || (typeName != null && parentTypeName == null)
-                    || (typeName != null
-                        && parentTypeName != null
-                        && !type.getName().equals(parentType.getName())
-                        && !parentType.getName().equals("anyType"))) {*/
-                if (type != parentType
-                        && (parentType.getName() == null
-                        || !parentType.getName().equals("anyType"))) {
-
-		    //TreeSet newDescendents=new TreeSet(descendents);
-                    TreeSet newDescendents = new TreeSet(this.typeExtensionSorter);
-                    newDescendents.addAll(descendents);
-
+	XSTypeDefinition parentType = type.getBaseType();
+	
+	if (parentType != null && 
+	    type.getTypeCategory() == parentType.getTypeCategory()) 
+	{
+	    if (type != parentType && 
+		(parentType.getName() == null || !parentType.getName().equals("anyType"))) 
+	    {
+		
+		//TreeSet newDescendents=new TreeSet(descendents);
+		TreeSet newDescendents = new TreeSet(this.typeExtensionSorter);
+		newDescendents.addAll(descendents);
+		
 //extension (we only add it to "newDescendants" because we don't want
 //to have a type descendant to itself, but to consider it for the parent
-                    if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-                        XSComplexTypeDefinition complexType =
-                                (XSComplexTypeDefinition) type;
-                        if (complexType.getDerivationMethod()
-                                == XSConstants.DERIVATION_EXTENSION
-                                && !complexType.getAbstract()
-                                && !descendents.contains(type) //to be tested
+		if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) 
+		{
+		    XSComplexTypeDefinition complexType =
+			(XSComplexTypeDefinition) type;
+		    if (complexType.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION
+			&& !complexType.getAbstract()
+			&& !descendents.contains(type) //to be tested
                         //&& !descendents.contains(type.getName()) //to be tested
-                        ) {
+                        ) 
+		    {
 //newDescendents.add(type.getName());
-                            newDescendents.add(type);
-                        }
-                    }
+			newDescendents.add(type);
+		    }
+		}
 //note: extensions are impossible on simpleTypes !
 
-                    buildTypeTree(parentType, newDescendents);
-                }
-            }
+		buildTypeTree(parentType, newDescendents);
+	    }
         }
     }
 
-    private void buildTypeTree(XSModel schema) {
+    private void buildTypeTree(XSModel schema) 
+    {
         // build the type tree for complex types
-        //
         XSNamedMap types = schema.getComponents(XSConstants.TYPE_DEFINITION);
-        int nb = types.getLength();
-        for (int i = 0; i < nb; i++) {
+        for (int i = 0; i < types.getLength(); i++) 
+	{
             XSTypeDefinition t = (XSTypeDefinition) types.item(i);
-            if (t.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
+            if (t.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) 
+	    {
                 XSComplexTypeDefinition type = (XSComplexTypeDefinition) t;
                 buildTypeTree(type, new TreeSet(this.typeExtensionSorter));
             }
         }
 
         // build the type tree for simple types
-        for (int i = 0; i < nb; i++) {
+        for (int i = 0; i < types.getLength(); i++) {
             XSTypeDefinition t = (XSTypeDefinition) types.item(i);
-            if (t.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+            if (t.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) 
+	    {
                 XSSimpleTypeDefinition type = (XSSimpleTypeDefinition) t;
                 buildTypeTree(type, new TreeSet(this.typeExtensionSorter));
             }
         }
 
         // print out type hierarchy for debugging purposes
-        if (LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) 
+	{
             Iterator keys = typeTree.keySet().iterator();
-            while (keys.hasNext()) {
+            while (keys.hasNext()) 
+	    {
                 String typeName = (String) keys.next();
                 TreeSet descendents = (TreeSet) typeTree.get(typeName);
                 LOGGER.debug(">>>> for " + typeName + " Descendants=\n ");
                 Iterator it = descendents.iterator();
-                while (it.hasNext()) {
+                while (it.hasNext()) 
+		{
                     XSTypeDefinition desc = (XSTypeDefinition) it.next();
                     LOGGER.debug("      " + desc.getName());
                 }
@@ -2697,7 +2679,8 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                       XSTypeDefinition controlType,
                                       String bindId,
                                       Element bindElement,
-                                      Occurs o) {
+                                      Occurs o) 
+    {
         // Select1 xform control to use:
         // Will use one of the following: input, textarea, selectOne, selectBoolean, selectMany, range
         // secret, output, button, do not apply
@@ -2710,39 +2693,34 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         //
         Element formControl = null;
 
-        if (controlType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
+        if (controlType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) 
+	{
             XSSimpleTypeDefinition simpleType =
                     (XSSimpleTypeDefinition) controlType;
             if (simpleType.getItemType() != null) //list
             {
-                formControl =
-                        createControlForListType(xForm,
-                                simpleType,
-                                caption,
-                                bindElement);
-            } else { //other simple type
+                formControl = createControlForListType(xForm,
+						       simpleType,
+						       caption,
+						       bindElement);
+            } 
+	    else
+	    {
+		//other simple type
                 // need to check constraints to determine which form control to use
                 //
                 // use the selectOne control
                 //
-                //XSObjectList enumerationFacets = simpleType.getFacets(XSSimpleTypeDefinition.FACET_ENUMERATION);
-                //if(enumerationFacets.getLength()>0){
-                if (simpleType
-                        .isDefinedFacet(XSSimpleTypeDefinition.FACET_ENUMERATION)) {
-                    formControl =
-                            createControlForEnumerationType(xForm,
-                                    simpleType,
-                                    caption,
-                                    bindElement);
-                }
-                /*if (enumerationFacets.hasMoreElements()) {
-                formControl = createControlForEnumerationType(xForm, (SimpleType)controlType, caption,
-                                                      bindElement);
-                } */
+                if (simpleType.isDefinedFacet(XSSimpleTypeDefinition.FACET_ENUMERATION)) 
+                    formControl = createControlForEnumerationType(xForm,
+								  simpleType,
+								  caption,
+								  bindElement);
             }
-        } else if (
-                controlType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE
-                && controlType.getName().equals("anyType")) {
+        } 
+	else if (controlType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE && 
+		 controlType.getName().equals("anyType")) 
+	{
             formControl = createControlForAnyType(xForm, caption, controlType);
         }
 
@@ -2752,21 +2730,9 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 						     (XSSimpleTypeDefinition)controlType);
 
         startFormControl(formControl, controlType);
-        formControl.setAttributeNS(XFORMS_NS, getXFormsNSPrefix() + "bind", bindId);
-
-        //put the label before
-        // no -> put in the "createControlFor..." methods
-
-        /*Element captionElement=xForm.createElementNS(XFORMS_NS,getXFormsNSPrefix() + "label");
-           this.setXFormsId(captionElement);
-           captionElement.appendChild(xForm.createTextNode(caption));
-           if(formControl.hasChildNodes())
-           {
-           Node first=formControl.getFirstChild();
-           captionElement = (Element) formControl.insertBefore(captionElement, first);
-           }
-           else
-           captionElement = (Element) formControl.appendChild(captionElement);        */
+        formControl.setAttributeNS(XFORMS_NS, 
+				   SchemaFormBuilder.XFORMS_NS_PREFIX + "bind", 
+				   bindId);
 
         // TODO: Enhance alert statement based on facet restrictions.
         // TODO: Enhance to support minOccurs > 1 and maxOccurs > 1.
@@ -2774,9 +2740,9 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         //
         //       e.g. Please provide a valid value for 'Address'. 'Address' is a mandatory decimal field.
         //
-        Element alertElement =
-                (Element) formControl.appendChild(xForm.createElementNS(XFORMS_NS,
-                        getXFormsNSPrefix() + "alert"));
+        Element alertElement = (Element) 
+	    formControl.appendChild(xForm.createElementNS(XFORMS_NS,
+							  SchemaFormBuilder.XFORMS_NS_PREFIX + "alert"));
         this.setXFormsId(alertElement);
 
         StringBuffer alert =
@@ -2798,9 +2764,9 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
      * @param controlType the type from which we want the name
      * @return the complete type name (with namespace prefix) of the type in the XForms doc
      */
-    protected String getXFormsTypeName(Element context, XSTypeDefinition controlType) {
+    protected String getXFormsTypeName(Element context, XSTypeDefinition controlType) 
+    {
         String result = null;
-
         String typeName = controlType.getName();
         String typeNS = controlType.getNamespace();
 
@@ -2850,35 +2816,31 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
                                         String formName,
                                         String stylesheet)
 	throws ParserConfigurationException {
-        Document xForm = documentBuilder.newDocument();
+        final Document xForm = documentBuilder.newDocument();
 
-        Element envelopeElement = _wrapper.createEnvelope(xForm);
+        final Element envelopeElement = _wrapper.createEnvelope(xForm);
 
-        // set required namespace attributes
-        envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-				       "xmlns:" + getChibaNSPrefix().substring(0, getChibaNSPrefix().length() - 1),
-				       CHIBA_NS);
-        envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-				       "xmlns:" + getXFormsNSPrefix().substring(0, getXFormsNSPrefix().length() - 1),
-				       XFORMS_NS);
-        envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-				       "xmlns:" + getXLinkNSPrefix().substring(0, getXLinkNSPrefix().length() - 1),
-				       XLINK_NS);
-	//XMLEvent
-        envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-				       "xmlns:" + xmleventsNSPrefix.substring(0, xmleventsNSPrefix.length() - 1), 
-				       XMLEVENTS_NS);
-	//XML Schema Instance
-        envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
-				       "xmlns:" + xmlSchemaInstancePrefix.substring(0, xmlSchemaInstancePrefix.length() - 1),
-				       XMLSCHEMA_INSTANCE_NAMESPACE_URI);
+	final Map<String, String> namespaces = new HashMap<String, String>();
+	namespaces.put(SchemaFormBuilder.CHIBA_NS_PREFIX, SchemaFormBuilder.CHIBA_NS);
+	namespaces.put(SchemaFormBuilder.XFORMS_NS_PREFIX, SchemaFormBuilder.XFORMS_NS);
+	namespaces.put(SchemaFormBuilder.XLINK_NS_PREFIX, SchemaFormBuilder.XLINK_NS);
+	namespaces.put(SchemaFormBuilder.XMLEVENTS_NS_PREFIX, SchemaFormBuilder.XMLEVENTS_NS);
+	namespaces.put(SchemaFormBuilder.XMLSCHEMA_INSTANCE_NS_PREFIX, 
+		       SchemaFormBuilder.XMLSCHEMA_INSTANCE_NS);
+	for (String nsPrefix : namespaces.keySet())
+	{
+	    envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
+					   "xmlns:" + nsPrefix.substring(0, nsPrefix.length() - 1),
+					   namespaces.get(nsPrefix));
+	}
+
 	//base
         if (_base != null && _base.length() != 0)
             envelopeElement.setAttributeNS(XML_NAMESPACE_URI, "xml:base", _base);
 
         //model element
         Element modelElement = xForm.createElementNS(XFORMS_NS, 
-						     getXFormsNSPrefix() + "model");
+						     SchemaFormBuilder.XFORMS_NS_PREFIX + "model");
         this.setXFormsId(modelElement);
         Element modelWrapper = _wrapper.createModelWrapper(modelElement);
         envelopeElement.appendChild(modelWrapper);
@@ -2898,7 +2860,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         // add a group node and recurse
         //
         Element groupElement =
-                xForm.createElementNS(XFORMS_NS, getXFormsNSPrefix() + "group");
+                xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "group");
         groupElement = startFormGroup(groupElement, owner);
 
         if (groupElement == null)
@@ -2915,7 +2877,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             Element captionElement =
                     (Element) groupElement.appendChild(xForm.createElementNS(XFORMS_NS,
-                            getXFormsNSPrefix() + "label"));
+                            SchemaFormBuilder.XFORMS_NS_PREFIX + "label"));
             this.setXFormsId(captionElement);
             captionElement.appendChild(xForm.createTextNode(createCaption(owner)));
         }

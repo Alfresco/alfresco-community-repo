@@ -814,23 +814,26 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
     protected String setXFormsId(final Element el)
     {
-        long count = 0;
-        final String name = el.getLocalName();
-        final Long l = (Long) counter.get(name);
-
-        if (l != null)
-            count = l.longValue();
-        //increment the counter
-        counter.put(name, new Long(count + 1));
-
-        return this.setXFormsId(el, name + "_" + count);
+	return this.setXFormsId(el, null);
     }
 
-    protected String setXFormsId(final Element el, final String id) 
+    protected String setXFormsId(final Element el, String id) 
     {
         if (el.hasAttributeNS(SchemaFormBuilder.XFORMS_NS, "id"))
             el.removeAttributeNS(SchemaFormBuilder.XFORMS_NS, "id");
-
+	if (id == null)
+	{
+	    long count = 0;
+	    final String name = el.getLocalName();
+	    final Long l = (Long) counter.get(name);
+	    
+	    if (l != null)
+		count = l.longValue();
+	    //increment the counter
+	    counter.put(name, new Long(count + 1));
+	    
+	    id = name + "_" + count;
+	}
         el.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
 			  SchemaFormBuilder.XFORMS_NS_PREFIX + "id",
 			  id);
@@ -2422,13 +2425,14 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
     }
 
     private Element createTriggerForRepeat(final Document xForm,
+					   final String id,
 					   final String label,
 					   final Element action)
     {
         final Element trigger =
 	    xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
 				  SchemaFormBuilder.XFORMS_NS_PREFIX + "trigger");
-        this.setXFormsId(trigger);
+        this.setXFormsId(trigger, id != null ? id : null);
 
         //label insert
         final Element triggerLabel =
@@ -2482,8 +2486,6 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 	Element action =
 	    xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
 				  SchemaFormBuilder.XFORMS_NS_PREFIX + "insert");
-        this.setXFormsId(action);
-
         //insert: bind & other attributes
         if (bindId != null)
             action.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
@@ -2500,12 +2502,14 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 				  "1");
 
         final Element trigger_insert_before =
-	    this.createTriggerForRepeat(xForm, "insert at beginning", action);
+	    this.createTriggerForRepeat(xForm, 
+					repeatId != null ? repeatId + "-insert_before" : null,
+					"insert at beginning", 
+					action);
 
 
 	action = xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
 				       SchemaFormBuilder.XFORMS_NS_PREFIX + "insert");
-        this.setXFormsId(action);
 
         //insert: bind & other attributes
         if (bindId != null)
@@ -2523,13 +2527,15 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 				  SchemaFormBuilder.XFORMS_NS_PREFIX + "index('" + repeatId + "')");
 					
 	final Element trigger_insert_after =
-	    this.createTriggerForRepeat(xForm, "insert after selected", action);
+	    this.createTriggerForRepeat(xForm, 
+					repeatId != null ? repeatId + "-insert_after" : null,
+					"insert after selected", 
+					action);
 
         ///////////// delete //////////////////
         //trigger delete
         action = xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
 				       SchemaFormBuilder.XFORMS_NS_PREFIX + "delete");
-        this.setXFormsId(action);
 
         //delete: bind & other attributes
         if (bindId != null)
@@ -2544,14 +2550,17 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 				  SchemaFormBuilder.XFORMS_NS_PREFIX + "index('" + repeatId + "')");
 
         final Element trigger_delete =
-	    this.createTriggerForRepeat(xForm, "delete selected", action);
+	    this.createTriggerForRepeat(xForm, 
+					repeatId != null ? repeatId + "-delete" : null,
+					"delete selected", 
+					action);
 
 
         //add the triggers
         final Element wrapper_triggers =
 	    _wrapper.createControlsWrapper(trigger_insert_before);
 
-        if (wrapper_triggers == trigger_insert_after) 
+        if (wrapper_triggers == trigger_insert_before) 
 	{
 	    //no wrapper
             formSection.appendChild(trigger_insert_before);
@@ -2565,7 +2574,7 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
             if (insert_parent != null)
 	    {
-		insert_parent.appendChild(trigger_insert_before);
+		insert_parent.appendChild(trigger_insert_after);
                 insert_parent.appendChild(trigger_delete);
 	    }
         }
@@ -2597,37 +2606,30 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
 
 	XSTypeDefinition parentType = type.getBaseType();
 	
-	if (parentType != null && 
-	    type.getTypeCategory() == parentType.getTypeCategory()) 
+	if (parentType == null ||
+	    type.getTypeCategory() != parentType.getTypeCategory()) 
+	    return;
+	if (type != parentType && 
+	    (parentType.getName() == null || !parentType.getName().equals("anyType"))) 
 	{
-	    if (type != parentType && 
-		(parentType.getName() == null || !parentType.getName().equals("anyType"))) 
-	    {
-		
-		//TreeSet newDescendents=new TreeSet(descendents);
-		TreeSet newDescendents = new TreeSet(this.typeExtensionSorter);
-		newDescendents.addAll(descendents);
-		
+	    
+	    //TreeSet newDescendents=new TreeSet(descendents);
+	    TreeSet newDescendents = new TreeSet(this.typeExtensionSorter);
+	    newDescendents.addAll(descendents);
+	    
 //extension (we only add it to "newDescendants" because we don't want
 //to have a type descendant to itself, but to consider it for the parent
-		if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) 
-		{
-		    XSComplexTypeDefinition complexType =
-			(XSComplexTypeDefinition) type;
-		    if (complexType.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION
-			&& !complexType.getAbstract()
-			&& !descendents.contains(type) //to be tested
-                        //&& !descendents.contains(type.getName()) //to be tested
-                        ) 
-		    {
-//newDescendents.add(type.getName());
-			newDescendents.add(type);
-		    }
-		}
-//note: extensions are impossible on simpleTypes !
-
-		buildTypeTree(parentType, newDescendents);
+	    if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) 
+	    {
+		final XSComplexTypeDefinition complexType = (XSComplexTypeDefinition)type;
+		if (complexType.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION && 
+		    !complexType.getAbstract() && 
+		    !descendents.contains(type)) 
+		    newDescendents.add(type);
 	    }
+//note: extensions are impossible on simpleTypes !
+	    
+	    this.buildTypeTree(parentType, newDescendents);
         }
     }
 
@@ -2740,20 +2742,20 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         //
         //       e.g. Please provide a valid value for 'Address'. 'Address' is a mandatory decimal field.
         //
-        Element alertElement = (Element) 
-	    formControl.appendChild(xForm.createElementNS(XFORMS_NS,
-							  SchemaFormBuilder.XFORMS_NS_PREFIX + "alert"));
-        this.setXFormsId(alertElement);
-
-        StringBuffer alert =
-	    new StringBuffer("Please provide a valid value for '" + caption + "'.");
-
-        Element enveloppe = xForm.getDocumentElement();
-	alert.append(" '" + caption + 
-		     "' is " + (o.minimum == 0 ? "an optional" : "a required") + " '" + 
-		     createCaption(this.getXFormsTypeName(enveloppe, controlType)) + 
-		     "' value.");
-        alertElement.appendChild(xForm.createTextNode(alert.toString()));
+//        Element alertElement = (Element) 
+//	    formControl.appendChild(xForm.createElementNS(XFORMS_NS,
+//							  SchemaFormBuilder.XFORMS_NS_PREFIX + "alert"));
+//        this.setXFormsId(alertElement);
+//
+//        StringBuffer alert =
+//	    new StringBuffer("Please provide a valid value for '" + caption + "'.");
+//
+//        Element enveloppe = xForm.getDocumentElement();
+//	alert.append(" '" + caption + 
+//		     "' is " + (o.minimum == 0 ? "an optional" : "a required") + " '" + 
+//		     createCaption(this.getXFormsTypeName(enveloppe, controlType)) + 
+//		     "' value.");
+//        alertElement.appendChild(xForm.createTextNode(alert.toString()));
         return formControl;
     }
 
@@ -2898,11 +2900,13 @@ public abstract class AbstractSchemaFormBuilder implements SchemaFormBuilder {
         if (namespace != null && namespace.length() != 0) 
 	{
             String prefix;
-            if ((prefix = (String) namespacePrefixes.get(namespace)) == null) {
+            if ((prefix = (String) namespacePrefixes.get(namespace)) == null) 
+	    {
                 String basePrefix = (namespace.substring(namespace.lastIndexOf('/', namespace.length()-2)+1));
                 int i=1;
                 prefix = basePrefix;
-                while (namespacePrefixes.containsValue(prefix)) {
+                while (namespacePrefixes.containsValue(prefix)) 
+		{
                     prefix = basePrefix + (i++);
                 }
                 namespacePrefixes.put(namespace, prefix);

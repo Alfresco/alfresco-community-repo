@@ -445,12 +445,21 @@ dojo.declare("alfresco.xforms.Group",
 		 d.style.height = contentDiv.offsetHeight;
 	       return d;
 	     },
+	     removeChildAt: function(position)
+	     {
+	       var child = this.getChildAt(position);
+	       if (!child)
+		 throw new Error("unabled to find child at " + position);
+	       this.children.splice(position, 1);
+	       dojo.dom.removeChildren(child.domContainer);
+	       this.domNode.removeChild(child.domContainer);
+	     },
 	     isIndented: function()
-	       {
+             {
 		 return false && this.parent != null;
-	       },
+             },
 	     render: function(attach_point)
-	       {
+             {
 		 this.domNode = document.createElement("div");
 		 this.domNode.setAttribute("id", this.id + "-domNode");
 		 this.domNode.widget = this;
@@ -459,16 +468,16 @@ dojo.declare("alfresco.xforms.Group",
 		   this.domNode.style.marginLeft = "10px";
 		 attach_point.appendChild(this.domNode);
 		 return this.domNode;
-	       }
+             }
 	     });
 
 dojo.declare("alfresco.xforms.Repeat",
 	     alfresco.xforms.Group,
 	     {
 	     initializer: function(xform, node) 
-	       {
-		 this.inherited("initializer", [ xform, node ]);
-	       },
+             {
+	       this.inherited("initializer", [ xform, node ]);
+	     },
              selectedIndex: null,
              insertChildAt: function(child, position)
 	     {
@@ -491,8 +500,8 @@ dojo.declare("alfresco.xforms.Repeat",
 	       var images = [ 
 		 { src: "plus", action: this._insertRepeatItem_handler },
 		 { src: "arrow_up", action: this._moveRepeatItemUp_handler },
-		 { src: "arrow_down", action: null }, 
-		 { src: "minus", action: null }
+		 { src: "arrow_down", action: this._moveRepeatItemDown_handler }, 
+		 { src: "minus", action: this._removeRepeatItem_handler }
 	       ];
 	       for (var i in images)
 	       {
@@ -505,19 +514,36 @@ dojo.declare("alfresco.xforms.Repeat",
 		 img.repeatItem = child;
 		 img.repeat = this;
 		 controls.appendChild(img);
-		 dojo.event.browser.addListener(img, "onclick", images[i].action);
+		 dojo.event.connect(img, "onclick", this, images[i].action);
 	       }
 
 	       return result;
 	     },
+	     removeChildAt: function(position)
+	     {
+	       this.inherited("removeChildAt", [ position ]);
+	       if (this.selectedIndex == position)
+		 this.handleIndexChanged(position);
+	     },
 	     _insertRepeatItem_handler: function(event)
 	     {
-	       alert("insert r=" + event.target.repeat.id + 
-		     " item " + event.target.repeatItem.id);
+	       var trigger = _findElementById(this.node.parentNode, 
+					      this.id + "-insert_after");
+	       this.xform.fireAction(trigger.getAttribute("id"));
+	     },
+	     _removeRepeatItem_handler: function(event)
+	     {
+	       var trigger = _findElementById(this.node.parentNode, 
+					      this.id + "-delete");
+	       this.xform.fireAction(trigger.getAttribute("id"));
 	     },
 	     _moveRepeatItemUp_handler: function(event)
 	     {
 	       alert("moveUp " + event);
+	     },
+	     _moveRepeatItemDown_handler: function(event)
+	     {
+	       alert("moveDown " + event);
 	     },
 	     setFocusedChild: function(child)
 	     {
@@ -535,7 +561,6 @@ dojo.declare("alfresco.xforms.Repeat",
 		   this.handleIndexChanged(0);
 		 // xforms repeat indexes are 1-based
 		 this.xform.setRepeatIndex(this.id, index + 1);
-
 	       }
 	     },
 	     isIndented: function()
@@ -543,58 +568,64 @@ dojo.declare("alfresco.xforms.Repeat",
 	       return false;
 	     },
 	     render: function(attach_point)
-	       {
-		 this.domNode = this.inherited("render", [ attach_point ]);
-		 this.domNode.style.borderColor = "black";
-		 this.domNode.style.borderWidth = "1px";
-
-		 var d = document.createElement("div");
-		 d.repeat = this;
-		 this.domNode.appendChild(d);
-		 d.setAttribute("style", "position: relative; line-height: 16px; background-color: #cddbe8; font-weight: bold;");
-		 dojo.event.browser.addListener(d, "onclick", function(event)
-						{
-						  event.currentTarget.repeat.setFocusedChild(null);
-						});
-
-		 var labelElement = document.createElement("div");
-		 d.appendChild(labelElement);
-		 labelElement.appendChild(document.createTextNode(this.parent.getLabel()));
-		 labelElement.setAttribute("style", "position: relative; left: 5%; top: 0px;");
-
-		 var addElement = document.createElement("img");
-		 d.appendChild(addElement);
-		 addElement.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/plus.gif");
-		 addElement.style.width = "16px";
-		 addElement.style.height = "16px";
-		 addElement.style.position = "absolute";
-		 addElement.style.top = "0px";
-		 addElement.style.left = "80%";
-
-		 dojo.event.browser.addListener(addElement, "onclick", function(event)
-						{
-						  var repeat = event.currentTarget.parentNode.repeat;
-						  repeat.xform.fireAction("trigger_0");
-						});
-
-		 return this.domNode;
-	       },
+	     {
+	       this.domNode = this.inherited("render", [ attach_point ]);
+	       this.domNode.style.borderColor = "black";
+	       this.domNode.style.borderWidth = "1px";
+	       
+	       var d = document.createElement("div");
+	       d.repeat = this;
+	       this.domNode.appendChild(d);
+	       d.setAttribute("style", "position: relative; line-height: 16px; background-color: #cddbe8; font-weight: bold;");
+	       dojo.event.browser.addListener(d, 
+					      "onclick", 
+					      function(event)
+					      {
+						event.currentTarget.repeat.setFocusedChild(null);
+					      });
+	       
+	       var labelElement = document.createElement("div");
+	       d.appendChild(labelElement);
+	       labelElement.appendChild(document.createTextNode(this.parent.getLabel()));
+	       labelElement.setAttribute("style", "position: relative; left: 5%; top: 0px;");
+	       
+	       var addElement = document.createElement("img");
+	       d.appendChild(addElement);
+	       addElement.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/plus.gif");
+	       addElement.style.width = "16px";
+	       addElement.style.height = "16px";
+	       addElement.style.position = "absolute";
+	       addElement.style.top = "0px";
+	       addElement.style.left = "80%";
+	       
+	       dojo.event.browser.addListener(addElement, 
+					      "onclick", 
+					      function(event)
+					      {
+						var repeat = event.currentTarget.parentNode.repeat;
+						var trigger = _findElementById(repeat.node.parentNode, 
+									       repeat.id + "-insert_before");
+						repeat.xform.fireAction(trigger.getAttribute("id"));
+					      });
+	       
+	       return this.domNode;
+	     },
 	     handleIndexChanged: function(index)
+	     {
+	       dojo.debug(this.id + ".handleIndexChanged(" + index + ")");
+	       if (this.selectedIndex != null && this.selectedIndex >= 0)
 	       {
-		 dojo.debug(this.id + ".handleIndexChanged(" + index + ")");
-		 if (this.selectedIndex != null && this.selectedIndex >= 0)
-		 {
-		   var child = this.getChildAt(this.selectedIndex);
-		   child.domContainer.style.backgroundColor = "white";
-		 }
-
-		 if (index >= 0)
-		 {
-		   var child = this.getChildAt(index);
-		   child.domContainer.style.backgroundColor = "orange";
-		 }
-		 this.selectedIndex = index;
-	       },
+		 var child = this.getChildAt(this.selectedIndex);
+		 child.domContainer.style.backgroundColor = "white";
+	       }
+	       
+	       if (index >= 0)
+	       {
+		 var child = this.getChildAt(index);
+		 child.domContainer.style.backgroundColor = "orange";
+	       }
+	       this.selectedIndex = index;
+	     },
 	     handlePrototypeCloned: function(prototypeId)
 	       {
 		 dojo.debug(this.id + ".handlePrototypeCloned("+ prototypeId +")");
@@ -616,6 +647,11 @@ dojo.declare("alfresco.xforms.Repeat",
 		 var w = create_widget(this.xform, clonedPrototype);
 		 this.insertChildAt(w, position);
 		 load_body(this.xform, w.node, w);
+	       },
+	     handleItemDeleted: function(position)
+	       {
+		 dojo.debug(this.id + ".handleItemDeleted(" + position + ")");
+		 this.removeChildAt(position);
 	       }
 	     });
 
@@ -838,29 +874,15 @@ dojo.declare("alfresco.xforms.XForm",
 		       originalId = dojo.dom.textContent(originalId);
 
 		       dojo.debug("handleIdGenerated(" + targetId + ", " + originalId + ")");
-		       function applyId(node, oldId, newId)
-		       {
-			 dojo.debug("looking for " + oldId + 
-				    " in " + node.nodeName + 
-				    "(" + node.getAttribute("id") + ")");
-			 if (node.getAttribute("id") == oldId)
-			 {
-			   dojo.debug("applying id " + newId + 
-				      " to " + node.nodeName + "(" + oldId + ")");
-			   node.setAttribute("id", newId);
-			   return true;
-			 }
-			 for (var i = 0; i < node.childNodes.length; i++)
-			 {
-			   if (dojo.dom.isNode(node.childNodes[i]) &&
-			       applyId(node.childNodes[i], oldId, newId))
-			     return true;
-			 }
-			 return false;
-		       }
-
 		       var clone = prototypeClones[prototypeClones.length - 1];
-		       if (!applyId(clone, originalId, targetId))
+		       var node = _findElementById(clone, originalId);
+		       if (node)
+		       {
+			 dojo.debug("applying id " + targetId + 
+				    " to " + node.nodeName + "(" + originalId + ")");
+			 node.setAttribute("id", targetId);
+		       }
+		       else
 			 throw new Error("unable to find " + originalId + 
 					 " in clone " + dojo.dom.innerXML(clone));
 		       break;
@@ -877,6 +899,18 @@ dojo.declare("alfresco.xforms.XForm",
 
 		       var clone = prototypeClones.pop();
 		       target.handleItemInserted(clone, position);
+		       break;
+		     }
+		     case "chiba-item-deleted":
+		     {
+		       var position = events.childNodes[i].getElementsByTagName("position")[0];
+		       position = Number(dojo.dom.textContent(position)) - 1;
+
+		       var targetDomNode = document.getElementById(targetId + "-domNode");
+		       if (!targetDomNode)
+			 throw new Error("unable to find node " + targetId + "-domNode");
+		       var target = targetDomNode.widget;
+		       target.handleItemDeleted(position);
 		       break;
 		     }
 		     default:
@@ -1001,4 +1035,23 @@ function addSubmitHandlerToButton(b)
       return baseOnClick(event);
     }
   }
+}
+
+function _findElementById(node, id)
+{
+  dojo.debug("looking for " + id + 
+	     " in " + node.nodeName + 
+	     "(" + node.getAttribute("id") + ")");
+  if (node.getAttribute("id") == id)
+    return node;
+  for (var i = 0; i < node.childNodes.length; i++)
+  {
+    if (dojo.dom.isNode(node.childNodes[i]))
+    {
+      var n = _findElementById(node.childNodes[i], id);
+      if (n)
+	return n;
+    }
+  }
+  return null;
 }

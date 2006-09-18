@@ -46,7 +46,7 @@ final InstanceData instanceData = new InstanceData() {
     { 
         try
 	{
-            return ccb.getDocumentContent() != null ? ts.parseXML(ccb.getDocumentContent()) : null;
+            return ccb.getEditorOutput() != null ? ts.parseXML(ccb.getEditorOutput()) : null;
         }
 	catch (Exception e)
 	{

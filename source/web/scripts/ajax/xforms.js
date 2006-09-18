@@ -44,112 +44,116 @@ dojo.declare("alfresco.xforms.Widget",
              parent: null,
              domContainer: null,
 	     _getBinding: function()
-	       {
-		 return this.xform.getBinding(this.node);
-	       },
+	     {
+	       return this.xform.getBinding(this.node);
+	     },
 	     getDepth: function()
+	     {
+	       var result = 1;
+	       var p = this.parent;
+	       while (p)
 	       {
-		 var result = 1;
-		 var p = this.parent;
-		 while (p)
-		 {
-		   result++;
-		   p = p.parent;
-		 }
-		 return result;
-	       },
-	     isRequired: function()
-	       {
-		 var binding = this._getBinding();
-		 var required = binding && binding.required == "true()";
-		 return required;
-	       },
-	     getInitialValue: function()
-	       {
-		 var b = this._getBinding();
-		 var a = [];
-		 do
-		 {
-		   a.push(b.nodeset);
-		   b = b.parent;
-		 }
-		 while (b);
-		 var node = this.xform.getInstance();
-		 for (var i = a.length - 1; i >= 0; i--)
-		 {
-		   var element_name = (a[i].match(/^\//)
-				       ? a[i].replace(/^\/(.+)/, "$1")
-				       : a[i]);
-		   dojo.debug("locating " + a[i] + "(" + element_name + ")" +
-			      " in " + node.nodeName);
-		   if (element_name.match(/^@/))
-		     return node.getAttribute(a[i].replace(/^@(.+)/, "$1"));
-		   else if (element_name == '.')
-		     break;
-		   node = node.getElementsByTagName(element_name)[0];
-		   if (node)
-		     dojo.debug("got node " + node.nodeName);
-		   else
-		     return null;
-		 }
-		 var result = dojo.dom.textContent(node);
-		 dojo.debug("got '" + result + "' for " + a.reverse().join("/"));
-		 return result;
-	       },
-	     _getLabelNode: function()
-	       {
-		 var labels = this.node.getElementsByTagName("label");
-		 for (var i = 0; i < labels.length; i++)
-		 {
-		   dojo.debug("parent " + labels[i].parentNode.nodeName + 
-			      " o " + this.node.nodeName);
-		   if (labels[i].parentNode == this.node)
-		     return labels[i];
-		 }
-		 return null;
-	       },
-	     getLabel: function()
-	       {
-		 var node = this._getLabelNode();
-		 return node ? dojo.dom.textContent(node) : "";
+		 result++;
+		 p = p.parent;
 	       }
+	       return result;
+	     },
+	     isRequired: function()
+	     {
+	       var binding = this._getBinding();
+	       var required = binding && binding.required == "true()";
+	       return required;
+	     },
+	     getModelNode: function()
+	     {
+	       ///XXXarielb todo
+	     },
+	     getInitialValue: function()
+	     {
+	       var b = this._getBinding();
+	       var a = [];
+	       do
+	       {
+		 a.push(b.nodeset);
+		 b = b.parent;
+	       }
+	       while (b);
+	       var node = this.xform.getInstance();
+	       for (var i = a.length - 1; i >= 0; i--)
+	       {
+		 var element_name = (a[i].match(/^\//)
+				     ? a[i].replace(/^\/(.+)/, "$1")
+				     : a[i]);
+		 dojo.debug("locating " + a[i] + "(" + element_name + ")" +
+			    " in " + node.nodeName);
+		 if (element_name.match(/^@/))
+		   return node.getAttribute(a[i].replace(/^@(.+)/, "$1"));
+		 else if (element_name == '.')
+		   break;
+		 node = node.getElementsByTagName(element_name)[0];
+		 if (node)
+		   dojo.debug("got node " + node.nodeName);
+		 else
+		   return null;
+	       }
+	       var result = dojo.dom.textContent(node);
+	       dojo.debug("got '" + result + "' for " + a.reverse().join("/"));
+	       return result;
+	     },
+	     _getLabelNode: function()
+	     {
+	       var labels = this.node.getElementsByTagName("label");
+	       for (var i = 0; i < labels.length; i++)
+	       {
+		 dojo.debug("parent " + labels[i].parentNode.nodeName + 
+			    " o " + this.node.nodeName);
+		 if (labels[i].parentNode == this.node)
+		   return labels[i];
+	       }
+	       return null;
+	     },
+	     getLabel: function()
+	     {
+	       var node = this._getLabelNode();
+	       return node ? dojo.dom.textContent(node) : "";
+	     }
 	     });
 
 dojo.declare("alfresco.xforms.NumericStepper",
 	     alfresco.xforms.Widget,
 	     {
 	     initializer: function(xform, node, stepper_type) 
-	       {
-		 this.inherited("initializer", [ xform, node ]);
-		 this.stepper_type = stepper_type;
-	       },
+	     {
+	       this.inherited("initializer", [ xform, node ]);
+	       this.stepper_type = stepper_type;
+	     },
 	     render: function(attach_point)
-	       {
-		 var nodeRef = document.createElement("div");
-		 attach_point.appendChild(nodeRef);
-		 var initial_value = this.getInitialValue() || "";
-		 var w = dojo.widget.createWidget(this.stepper_type == "double"
-						  ? "SpinnerRealNumberTextBox"
-						  : "SpinnerIntegerTextBox", 
-						  { 
-						  widgetId: this.id,
-						  required: this.isRequired(), 
-						  value: initial_value 
-						  }, 
-						  nodeRef);
-		 w.widget = this;
-		 this.widget = w;
-		 dojo.event.connect(w, "adjustValue", this, this._widget_changeHandler);
-		 dojo.event.connect(w, "onkeyup", this, this._widget_changeHandler);
-	       },
+	     {
+	       var nodeRef = document.createElement("div");
+	       attach_point.appendChild(nodeRef);
+	       var initial_value = this.getInitialValue() || "";
+	       var w = dojo.widget.createWidget((this.stepper_type == "double"
+						 ? "SpinnerRealNumberTextBox"
+						 : "SpinnerIntegerTextBox"), 
+						{ 
+						widgetId: this.id,
+						required: this.isRequired(), 
+						value: initial_value 
+						}, 
+						nodeRef);
+	       w.widget = this;
+	       this.widget = w;
+	       dojo.event.connect(w, "adjustValue", this, this._widget_changeHandler);
+	       dojo.event.connect(w, "onkeyup", this, this._widget_changeHandler);
+	     },
 	     getValue: function()
-	       {
-		 return this.widget.getValue();
-	       },
+	     {
+	       return this.widget.getValue();
+	     },
              _widget_changeHandler: function(event)
-	       {
-		 this.xform.setXFormsValue(this.id, this.getValue());
-	       }
+	     {
+	       this.xform.setXFormsValue(this.id, this.getValue());
+	     }
 	     });
 
 dojo.declare("alfresco.xforms.DatePicker",

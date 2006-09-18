@@ -106,8 +106,8 @@
                               label="#{msg.website_browse_folders}">
                         
                         <a:richList id="folder-list" binding="#{AVMBrowseBean.foldersRichList}" viewMode="details" pageSize="10"
-                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                           value="#{AVMBrowseBean.folders}" var="r">
+                              styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
+                              value="#{AVMBrowseBean.folders}" var="r">
                            
                            <%-- Primary column with folder name --%>
                            <a:column primary="true" width="200" style="padding:2px;text-align:left">
@@ -180,8 +180,8 @@
                               label="#{msg.website_browse_files}">
                         
                         <a:richList id="files-list" binding="#{AVMBrowseBean.filesRichList}" viewMode="details" pageSize="10"
-                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                           value="#{AVMBrowseBean.files}" var="r">
+                              styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
+                              value="#{AVMBrowseBean.files}" var="r">
                            
                            <%-- Primary column for details view mode --%>
                            <a:column id="col10" primary="true" width="200" style="padding:2px;text-align:left">

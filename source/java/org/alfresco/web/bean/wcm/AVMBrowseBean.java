@@ -320,8 +320,6 @@ public class AVMBrowseBean implements IContextListener
             // build the client representation of the AVM node
             AVMNode node = new AVMNode(avmRef);
             
-            // add any common properties
-            
             // properties specific to folders or files
             if (avmRef.isDirectory())
             {

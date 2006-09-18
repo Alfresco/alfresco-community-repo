@@ -193,7 +193,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
                
                // components for the current username, preview, browse and modified items inner list
                out.write("<table cellspacing=2 cellpadding=2 border=0 width=100%><tr><td>");
-               out.write(Utils.buildImageTag(context, WebResources.IMAGE_USERSANDBOX_32, 32, 32, ""));
+               // show the icon for the sandbox as a clickable browse link image
+               Utils.encodeRecursive(context, aquireAction(
+                     context, mainStore, username, "sandbox_icon", WebResources.IMAGE_USERSANDBOX_32,
+                     "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
+               //out.write(Utils.buildImageTag(context, WebResources.IMAGE_USERSANDBOX_32, 32, 32, ""));
                out.write("</td><td width=100%>");
                out.write("<b>");
                out.write(bundle.getString(MSG_USERNAME));

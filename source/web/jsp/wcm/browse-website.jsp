@@ -102,7 +102,7 @@
                         <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
                            <table cellspacing=2 cellpadding=2 border=0 width=100%>
                               <tr>
-                                 <td align=left width=32><h:graphicImage url="/images/icons/sandbox_large.gif" width="32" height="32" /></td>
+                                 <td align=left width=32><a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" /></td>
                                  <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
                                  <td align=right>
                                     (P)&nbsp;(E)&nbsp;(T)&nbsp;(D)&nbsp;

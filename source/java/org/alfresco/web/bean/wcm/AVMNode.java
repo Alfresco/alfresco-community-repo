@@ -75,6 +75,7 @@ public class AVMNode implements Map<String, Object>
          
          this.properties.put("id", this.path);
          this.properties.put("path", this.path);
+         this.properties.put("size", this.avmRef.getLength());
          this.properties.put("name", this.avmRef.getName());
          this.properties.put("created", this.avmRef.getCreateDate());
          this.properties.put("modified", this.avmRef.getModDate());

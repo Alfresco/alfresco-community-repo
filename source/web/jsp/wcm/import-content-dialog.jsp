@@ -144,7 +144,7 @@
                                  <h:form acceptCharset="UTF-8" id="add-content-upload-end">
                                  <% if (foundFile) { %>
                                  <tr>
-                                    <td colspan="3">
+                                    <td>
                                        <table border="0" cellspacing="2" cellpadding="2" class="selectedItems">
                                           <tr>
                                              <td colspan="2" class="selectedItemsHeader">
@@ -163,6 +163,11 @@
                                           </tr>
                                        </table>
                                     </td>
+                                    <td width="100%" valign="middle" align="center">
+                                       <div id="progress" style="display:none">
+                                          <img src="<%=request.getContextPath()%>/images/icons/process_animation.gif" width=174 height=14>
+                                       </div>
+                                    </td>
                                  </tr>
                                  <% } %>
                                  
@@ -177,7 +182,8 @@
                                     <td align="center">
                                        <h:commandButton id="finish-button" styleClass="wizardButton"
                                                         value="#{msg.ok}" 
-                                                        action="#{ImportWebsiteDialog.finish}" 
+                                                        action="#{ImportWebsiteDialog.finish}"
+                                                        onclick="javascript:document.getElementById('progress').style.display='inline';"
                                                         disabled="#{ImportWebsiteDialog.finishButtonDisabled}" />
                                     </td>
                                  </tr>

@@ -19,10 +19,8 @@ package org.alfresco.repo.avm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -113,7 +111,6 @@ public class AVMSyncServiceImpl implements AVMSyncService
         return result;
     }
     
-    // TODO We need getDirectlyListingDirect(descriptor, includeDeleted)
     /**
      * Internal recursive implementation of compare.
      * @param srcVersion The version of the source tree.

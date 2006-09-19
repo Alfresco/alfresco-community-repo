@@ -105,7 +105,12 @@ public class AVMStoreImpl implements AVMStore, Serializable
         fNextVersionID = 0;
         fRoot = null;
         AVMContext.fgInstance.fAVMStoreDAO.save(this);
-        setProperty(ContentModel.PROP_CREATOR, new PropertyValue(null, "britt"));
+        String creator = AVMContext.fgInstance.getAuthenticationComponent().getCurrentUserName();
+        if (creator == null)
+        {
+            creator = AVMContext.fgInstance.getAuthenticationComponent().getSystemUserName();
+        }
+        setProperty(ContentModel.PROP_CREATOR, new PropertyValue(null, creator));
         setProperty(ContentModel.PROP_CREATED, new PropertyValue(null, new Date(System.currentTimeMillis())));
         // Make up the initial version record and save.
         long time = System.currentTimeMillis();
@@ -116,7 +121,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                                       fRoot,
                                                       fNextVersionID,
                                                       time,
-                                                      "britt");
+                                                      creator);
         fNextVersionID++;
         AVMContext.fgInstance.fVersionRootDAO.save(versionRoot);
     }

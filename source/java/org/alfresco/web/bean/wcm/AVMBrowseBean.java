@@ -19,8 +19,10 @@ package org.alfresco.web.bean.wcm;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -30,6 +32,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -62,6 +65,9 @@ public class AVMBrowseBean implements IContextListener
    
    private static final String MSG_SANDBOXTITLE = "sandbox_title";
    private static final String MSG_SANDBOXSTAGING = "sandbox_staging";
+   private static final String MSG_CREATED_ON = "store_created_on";
+   private static final String MSG_CREATED_BY = "store_created_by";
+   private static final String MSG_WORKING_USERS = "store_working_users";
    
    private String sandbox;
    private String username;
@@ -104,8 +110,6 @@ public class AVMBrowseBean implements IContextListener
    public AVMBrowseBean()
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
-      
-      //initFromClientConfig();
    }
 
    
@@ -171,19 +175,45 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * Summary text for the staging store:
+    *    Created On: xx/yy/zz
+    *    Created By: username
+    *    There are N user(s) working on this website.
+    * 
+    * @return summary text
+    */
+   public String getStagingSummary()
+   {
+      StringBuilder summary = new StringBuilder(128);
+      
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ResourceBundle msg = Application.getBundle(fc);
+      Node websiteNode = this.navigator.getCurrentNode();
+      String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
+      String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot);
+      AVMStoreDescriptor store = this.avmService.getAVMStore(stagingStore);
+      if (store != null)
+      {
+         // TODO: count user stores!
+         int users = 1;
+         summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
+                .append(Utils.getDateFormat(fc).format(new Date(store.getCreateDate())))
+                .append("<p>");
+         summary.append(msg.getString(MSG_CREATED_BY)).append(": ")
+                .append(store.getCreator())
+                .append("<p>");
+         summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), users));
+      }
+      
+      return summary.toString();
+   }
+   
+   /**
     * @param foldersRichList      The foldersRichList to set.
     */
    public void setFoldersRichList(UIRichList foldersRichList)
    {
       this.foldersRichList = foldersRichList;
-      /*if (this.foldersRichList != null)
-      {
-         // set the initial sort column and direction
-         this.foldersRichList.setInitialSortColumn(
-               this.viewsConfig.getDefaultSortColumn(PAGE_NAME_FORUMS));
-         this.foldersRichList.setInitialSortDescending(
-               this.viewsConfig.hasDescendingSort(PAGE_NAME_FORUMS));
-      }*/
    }
    
    /**
@@ -278,11 +308,17 @@ public class AVMBrowseBean implements IContextListener
       return this.username == null ? WebResources.IMAGE_SANDBOX_32 : WebResources.IMAGE_USERSANDBOX_32;
    }
    
+   /**
+    * @return website node the view is currently within
+    */
    public Node getWebsite()
    {
       return this.navigator.getCurrentNode();
    }
    
+   /**
+    * @return Map of avm node objects representing the folders with the current website space
+    */
    public List<Map> getFolders()
    {
       if (this.folders == null)
@@ -292,6 +328,9 @@ public class AVMBrowseBean implements IContextListener
       return this.folders;
    }
    
+   /**
+    * @return Map of avm node objects representing the files with the current website space
+    */
    public List<Map> getFiles()
    {
       if (this.files == null)
@@ -301,6 +340,9 @@ public class AVMBrowseBean implements IContextListener
       return this.files;
    }
    
+   /**
+    * Build the lists of files and folders within the current browsing path in a website space
+    */
    private void getNodes()
    {
       UserTransaction tx = null;
@@ -348,6 +390,9 @@ public class AVMBrowseBean implements IContextListener
       }
    }
    
+   /**
+    * Update the UI after a folder click action in the website browsing screens
+    */
    public void clickFolder(ActionEvent event)
    {
       UIActionLink link = (UIActionLink)event.getComponent();

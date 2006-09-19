@@ -1,0 +1,32 @@
+<alfresco-config>
+
+   <config>
+      <actions>
+         
+         <!-- Edit WCM document -->
+         <action id="edit_doc">
+            <label-id>edit</label-id>
+            <image>/images/icons/edit_icon.gif</image>
+            <action-listener>#{AVMEditBean.setupEditAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         
+         <!-- Actions for a document in the AVM Browse screen -->
+         <action-group id="avm_file_browse">
+            <show-link>false</show-link>
+            <action idref="edit_doc" />            
+         </action-group>
+         
+         <!-- Actions for a document in Modified Files list -->
+         <action-group id="avm_file_modified">
+            <show-link>false</show-link>
+            <action idref="edit_doc" />            
+         </action-group>
+         
+      </actions>
+   </config>
+
+</alfresco-config>

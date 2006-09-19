@@ -98,7 +98,7 @@
                   <td style="padding:4px">
                      <a:panel id="staging-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
                         
-                        <%-- Staging Sandbox Info here --%>
+                        <%-- Staging Sandbox Info --%>
                         <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
                            <table cellspacing=2 cellpadding=2 border=0 width=100%>
                               <tr>
@@ -111,10 +111,8 @@
                               </tr>
                               <tr>
                                  <td></td>
-                                 <td colspan=2 style='line-height:8px'>
-                                    Last Updated: 20th September 2006<p>
-                                    12 items currently being modified<p>
-                                    3 items pending approval
+                                 <td colspan=2 style='line-height:6px'>
+                                    <h:outputText value="#{AVMBrowseBean.stagingSummary}" escape="false" />
                                  </td>
                               </tr>
                            </table>

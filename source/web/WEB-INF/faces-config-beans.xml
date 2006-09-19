@@ -607,6 +607,23 @@
    
    <managed-bean>
       <description>
+         The bean that backs up the AVM file editing screens
+      </description>
+      <managed-bean-name>AVMEditBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.AVMEditBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentService</property-name>
+         <value>#{ContentService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          The bean that backs up the Set Content Properties Dialog
       </description>
       <managed-bean-name>SetContentPropertiesDialog</managed-bean-name>

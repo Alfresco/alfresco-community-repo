@@ -420,6 +420,14 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-color: #e00028;
 }
 
+.modifiedItemsList
+{
+   background-color: #EEEEEE;
+   border-width: 1px;
+   border-style: dashed;
+   border-color: #AAAAAA;
+}
+
 .wizardSectionHeading
 {
    padding: 2px;

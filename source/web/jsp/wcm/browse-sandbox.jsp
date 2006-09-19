@@ -256,7 +256,7 @@
                               </f:facet>
                               
                               <%-- actions are configured in web-client-config-actions.xml --%>
-                              <%-- <r:actions id="col18-acts1" value="document_browse" context="#{r}" showLink="false" styleClass="inlineAction" /> --%>
+                              <r:actions id="col18-acts1" value="avm_file_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
                            </a:column>
                            
                            <a:dataPager id="pager2" styleClass="pager" />

@@ -17,15 +17,14 @@
 package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.faces.component.NamingContainer;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIParameter;
 import javax.faces.context.FacesContext;
@@ -37,17 +36,16 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.PanelGenerator;
@@ -55,21 +53,20 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.converter.ByteSizeConverter;
-import org.alfresco.web.ui.common.converter.XMLDateConverter;
 import org.alfresco.web.ui.repo.component.UIActions;
 import org.alfresco.web.ui.wcm.WebResources;
-import org.apache.myfaces.taglib.UIComponentTagUtils;
 import org.springframework.web.jsf.FacesContextUtils;
-
-import sun.swing.UIAction;
 
 /**
  * @author Kevin Roast
  */
 public class UIUserSandboxes extends SelfRenderingComponent
 {
+   private static final String ACTIONS_FILE = "avm_file_modified";
+
+   private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
+
    private static final String MSG_MODIFIED_ITEMS = "modified_items";
-   private static final String MSG_DATETIME_PATTERN = "date_time_pattern";
    private static final String MSG_SIZE = "size";
    private static final String MSG_CREATED = "created_date";
    private static final String MSG_USERNAME = "username";
@@ -84,7 +81,6 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private NodeRef value;
    
    private ByteSizeConverter sizeConverter = null;
-   private XMLDateConverter dateConverter = null;
    
    private Set<String> expandedPanels = new HashSet<String>();
    
@@ -253,7 +249,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                if (this.expandedPanels.contains(username))
                {
                   out.write("<div style='padding:2px'></div>");
-                  out.write("<table cellspacing=2 cellpadding=2 border=0 width=100%>");
+                  out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=2 border=0 width=100%>");
                   
                   // header row
                   out.write("<tr align=left><th width=16></th><th>");
@@ -313,10 +309,14 @@ public class UIUserSandboxes extends SelfRenderingComponent
    {
       AVMSyncService avmSyncService = getAVMSyncService(fc);
       AVMService avmService = getAVMService(fc);
+      DateFormat df = Utils.getDateTimeFormat(fc);
       
       // build the paths to the stores to compare
       String userStore  = AVMConstants.buildAVMUserMainStoreName(storeRoot, username) + ":/";
       String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot) + ":/";
+      
+      // get the UIActions component responsible for rendering context related user actions
+      UIActions uiFileActions = aquireUIActions(ACTIONS_FILE);
       
       // use the sync service to get the list of diffs between the stores
       List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore);
@@ -353,10 +353,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
                }
                out.write("</td><td>");
                // created date
-               out.write(getDateConverter().getAsString(fc, this, node.getCreateDate()));
+               out.write(df.format(new Date(node.getCreateDate())));
                out.write("</td><td>");
                // modified date
-               out.write(getDateConverter().getAsString(fc, this, node.getModDate()));
+               out.write(df.format(new Date(node.getModDate())));
                out.write("</td><td>");
                if (node.isFile())
                {
@@ -364,8 +364,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(getSizeConverter().getAsString(fc, this, node.getLength()));
                }
                out.write("</td><td>");
-               // TODO: add UI actions for this item
-               out.write("(P)&nbsp;(E)&nbsp;(T)&nbsp;(D)");
+               // add UI actions for this item
+               uiFileActions.setContext(new AVMNode(node));
+               Utils.encodeRecursive(fc, uiFileActions);
                out.write("</td></tr>");
             }
          //}
@@ -384,18 +385,29 @@ public class UIUserSandboxes extends SelfRenderingComponent
       return this.sizeConverter;
    }
    
-   /**
-    * @return Date format converter
-    */
-   private XMLDateConverter getDateConverter()
+   private UIActions aquireUIActions(String id)
    {
-      if (this.dateConverter == null)
+      UIActions uiActions = null;
+      for (UIComponent component : (List<UIComponent>)getChildren())
       {
-         this.dateConverter = new XMLDateConverter();
-         this.dateConverter.setPattern(
-               Application.getMessage(FacesContext.getCurrentInstance(), MSG_DATETIME_PATTERN));
+         if (id.equals(component.getId()))
+         {
+            uiActions = (UIActions)component;
+            break;
+         }
       }
-      return this.dateConverter;
+      if (uiActions == null)
+      {
+         javax.faces.application.Application facesApp = FacesContext.getCurrentInstance().getApplication();
+         uiActions = (UIActions)facesApp.createComponent(COMPONENT_ACTIONS);
+         uiActions.setShowLink(false);
+         uiActions.setId(id);
+         uiActions.setParent(this);
+         uiActions.setValue(id);
+         
+         this.getChildren().add(uiActions);
+      }
+      return uiActions;
    }
    
    /**

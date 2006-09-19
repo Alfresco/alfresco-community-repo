@@ -14,6 +14,7 @@
             <value>classpath:alfresco/web-client-config-actions.xml</value>
             <value>classpath:alfresco/web-client-config-workflow.xml</value>
             <value>classpath:alfresco/web-client-config-forum-actions.xml</value>
+            <value>classpath:alfresco/web-client-config-wcm-actions.xml</value>
             <value>classpath:alfresco/web-client-config-workflow-actions.xml</value>
             <value>classpath:alfresco/extension/web-client-config-custom.xml</value>
          </list>

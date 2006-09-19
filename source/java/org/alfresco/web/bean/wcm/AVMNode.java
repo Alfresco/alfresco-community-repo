@@ -51,10 +51,20 @@ public class AVMNode implements Map<String, Object>
    public AVMNode(AVMNodeDescriptor avmRef)
    {
       this.avmRef = avmRef;
-      this.version = -1;      // TODO: why does avmNode.getVersionID() return 1?
+      this.version = -1;      // TODO: always 1 for now...
       this.path = avmRef.getPath();
       
       getProperties();
+   }
+   
+   public String getPath()
+   {
+      return this.path;
+   }
+   
+   public int getVersion()
+   {
+      return this.version;
    }
 
    /**

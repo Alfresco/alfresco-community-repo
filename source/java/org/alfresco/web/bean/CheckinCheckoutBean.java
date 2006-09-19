@@ -579,11 +579,16 @@ public class CheckinCheckoutBean
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();
                   this.navigator.setupDispatchContext(node);
-		   String s = (MimetypeMap.MIMETYPE_XML.equals(mimetype)
-			       ? "dialog:editXmlInline"
-			       : "dialog:editTextInline");
-		   fc.getApplication().getNavigationHandler().handleNavigation(fc, null, s);
-                  
+                  String outcome;
+                  if (MimetypeMap.MIMETYPE_XML.equals(mimetype))
+                  {
+                     outcome = "dialog:editXmlInline";
+                  }
+                  else
+                  {
+                     outcome = "dialog:editTextInline";
+                  }
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
                }
                else
                {

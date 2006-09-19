@@ -124,7 +124,7 @@
                               </a:actionLink>
                            </a:column>
                            
-                           <%-- Description column for all view modes --%>
+                           <%-- Description column --%>
                            <a:column id="col4" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col4-sort" label="#{msg.description}" value="description" styleClass="header"/>
@@ -132,7 +132,15 @@
                               <h:outputText id="col4-txt" value="#{r.description}" />
                            </a:column>
                            
-                           <%-- Created Date column for details view mode --%>
+                           <%-- Creator column --%>
+                           <a:column id="col5" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col5-sort" label="#{msg.creator}" value="creator" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col5-txt" value="#{r.creator}" />
+                           </a:column>
+                           
+                           <%-- Created Date column --%>
                            <a:column id="col6" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col6-sort" label="#{msg.created}" value="created" styleClass="header"/>
@@ -142,7 +150,7 @@
                               </h:outputText>
                            </a:column>
                            
-                           <%-- Modified Date column for details/icons view modes --%>
+                           <%-- Modified Date column --%>
                            <a:column id="col7" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col7-sort" label="#{msg.modified}" value="modified" styleClass="header"/>
@@ -195,7 +203,7 @@
                               <r:lockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
                            </a:column>
                            
-                           <%-- Description column for all view modes --%>
+                           <%-- Description column --%>
                            <a:column id="col13" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col13-sort" label="#{msg.description}" value="description" styleClass="header"/>
@@ -203,7 +211,7 @@
                               <h:outputText id="col13-txt" value="#{r.description}" />
                            </a:column>
                            
-                           <%-- Size for details/icons view modes --%>
+                           <%-- Size column --%>
                            <a:column id="col15" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col15-sort" label="#{msg.size}" value="size" styleClass="header"/>
@@ -213,7 +221,15 @@
                               </h:outputText>
                            </a:column>
                            
-                           <%-- Created Date column for details view mode --%>
+                           <%-- Creator column --%>
+                           <a:column id="col15a" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col15a-sort" label="#{msg.creator}" value="creator" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col15a-txt" value="#{r.creator}" />
+                           </a:column>
+                           
+                           <%-- Created Date column --%>
                            <a:column id="col16" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col16-sort" label="#{msg.created}" value="created" styleClass="header"/>
@@ -223,7 +239,7 @@
                               </h:outputText>
                            </a:column>
                            
-                           <%-- Modified Date column for details/icons view modes --%>
+                           <%-- Modified Date column --%>
                            <a:column id="col17" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col17-sort" label="#{msg.modified}" value="modified" styleClass="header"/>

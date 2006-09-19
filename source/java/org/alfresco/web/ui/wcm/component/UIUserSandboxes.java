@@ -34,12 +34,18 @@ import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.ui.common.ComponentConstants;
@@ -48,11 +54,14 @@ import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.converter.ByteSizeConverter;
+import org.alfresco.web.ui.common.converter.XMLDateConverter;
 import org.alfresco.web.ui.repo.component.UIActions;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.myfaces.taglib.UIComponentTagUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
+import sun.security.krb5.internal.crypto.f;
 import sun.swing.UIAction;
 
 /**
@@ -60,14 +69,23 @@ import sun.swing.UIAction;
  */
 public class UIUserSandboxes extends SelfRenderingComponent
 {
+   private static final String MSG_MODIFIED_ITEMS = "modified_items";
+   private static final String MSG_DATETIME_PATTERN = "date_time_pattern";
+   private static final String MSG_SIZE = "size";
+   private static final String MSG_CREATED = "created_date";
    private static final String MSG_USERNAME = "username";
    private static final String MSG_NAME = "name";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_MODIFIED = "modified_date";
    private static final String MSG_ACTIONS = "actions";
    
+   private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
+   
    /** website to show sandboxes for */
    private NodeRef value;
+   
+   private ByteSizeConverter sizeConverter = null;
+   private XMLDateConverter dateConverter = null;
    
    private Set<String> expandedPanels = new HashSet<String>();
    
@@ -230,7 +248,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
                }
                out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
                      Utils.generateFormSubmit(context, this, getClientId(context), username)));
-               out.write("&nbsp;<b>Modified Items (3)</b>");
+               out.write("&nbsp;<b>");
+               out.write(bundle.getString(MSG_MODIFIED_ITEMS));
+               out.write("</b>");
                if (this.expandedPanels.contains(username))
                {
                   out.write("<div style='padding:2px'></div>");
@@ -240,26 +260,19 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("<tr align=left><th width=16></th><th>");
                   out.write(bundle.getString(MSG_NAME));
                   out.write("</th><th>");
-                  out.write(bundle.getString(MSG_DESCRIPTION));
+                  out.write(bundle.getString(MSG_CREATED));
                   out.write("</th><th>");
                   out.write(bundle.getString(MSG_MODIFIED));
+                  out.write("</th><th>");
+                  out.write(bundle.getString(MSG_SIZE));
                   out.write("</th><th>");
                   out.write(bundle.getString(MSG_ACTIONS));
                   out.write("</th></tr>");
                   
-                  // row per modified doc item
-                  // TODO: add modified items list for this sandbox user
-                  out.write("<tr><td width=16>(O)</td><td>");
-                  out.write("Some document.html");
-                  out.write("</td><td>");
-                  out.write("A description would go here");
-                  out.write("</td><td>");
-                  out.write("01-01-2006 11:58am");
-                  out.write("</td><td>");
-                  // TODO: add UI actions for this item
-                  out.write("(P)&nbsp;(E)&nbsp;(T)&nbsp;(D)");
-                  out.write("</td></tr>");
+                  // row per modified doc item for this sandbox user
+                  renderUserFiles(context, out, username, storeRoot);
                   
+                  // end table
                   out.write("</table>");
                }
                out.write("</td></tr></table>");
@@ -286,6 +299,119 @@ public class UIUserSandboxes extends SelfRenderingComponent
       }
    }
    
+   /**
+    * Render the list of user modified files/folders in the layered sandbox area.
+    * 
+    * @param fc         FacesContext
+    * @param out        ResponseWriter
+    * @param username   The username to render the modified files for
+    * @param storeRoot  Root name of the store containing the users sandbox
+    * 
+    * @throws IOException
+    */
+   private void renderUserFiles(FacesContext fc, ResponseWriter out, String username, String storeRoot)
+      throws IOException
+   {
+      AVMSyncService avmSyncService = getAVMSyncService(fc);
+      AVMService avmService = getAVMService(fc);
+      
+      // build the paths to the stores to compare
+      String userStore  = AVMConstants.buildAVMUserMainStoreName(storeRoot, username) + ":/";
+      String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot) + ":/";
+      
+      // use the sync service to get the list of diffs between the stores
+      List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore);
+      for (AVMDifference diff : diffs)
+      {
+         //if (diff.getDifferenceCode() == AVMDifference.NEWER)
+         //{
+            String sourcePath = diff.getSourcePath();
+            AVMNodeDescriptor node = avmService.lookup(-1, sourcePath);
+            if (node != null)
+            {
+               // icon and name of the file/folder - files are clickable to see the content
+               String name = node.getName();
+               String linkPrefix =
+                     "<a href=\"" +
+                     fc.getExternalContext().getRequestContextPath() +
+                     DownloadContentServlet.generateBrowserURL(AVMNodeConverter.ToNodeRef(-1, sourcePath), name) +
+                     "\" target='new'>";
+               out.write("<tr><td width=16>");
+               if (node.isFile())
+               {
+                  out.write(linkPrefix);
+                  out.write(Utils.buildImageTag(fc, Utils.getFileTypeImage(fc, name, true), ""));
+                  out.write("</a></td><td>");
+                  out.write(linkPrefix);
+                  out.write(name);
+                  out.write("</a>");
+               }
+               else
+               {
+                  out.write(Utils.buildImageTag(fc, SPACE_ICON, 16, 16, ""));
+                  out.write("</td><td>");
+                  out.write(name);
+               }
+               out.write("</td><td>");
+               // created date
+               out.write(getDateConverter().getAsString(fc, this, node.getCreateDate()));
+               out.write("</td><td>");
+               // modified date
+               out.write(getDateConverter().getAsString(fc, this, node.getModDate()));
+               out.write("</td><td>");
+               if (node.isFile())
+               {
+                  // size of files
+                  out.write(getSizeConverter().getAsString(fc, this, node.getLength()));
+               }
+               out.write("</td><td>");
+               // TODO: add UI actions for this item
+               out.write("(P)&nbsp;(E)&nbsp;(T)&nbsp;(D)");
+               out.write("</td></tr>");
+            }
+         //}
+      }
+   }
+   
+   /**
+    * @return Byte size converter
+    */
+   private ByteSizeConverter getSizeConverter()
+   {
+      if (this.sizeConverter == null)
+      {
+         this.sizeConverter = new ByteSizeConverter();
+      }
+      return this.sizeConverter;
+   }
+   
+   /**
+    * @return Date format converter
+    */
+   private XMLDateConverter getDateConverter()
+   {
+      if (this.dateConverter == null)
+      {
+         this.dateConverter = new XMLDateConverter();
+         this.dateConverter.setPattern(
+               Application.getMessage(FacesContext.getCurrentInstance(), MSG_DATETIME_PATTERN));
+      }
+      return this.dateConverter;
+   }
+   
+   /**
+    * Aquire a UIActionLink component for the specified action
+    * 
+    * @param fc               FacesContext
+    * @param store            Root store name for the user sandbox
+    * @param username         Username of the user for the action
+    * @param name             Action name - will be used for I18N message lookup
+    * @param icon             Icon to display for the actio n
+    * @param actionListener   Actionlistener for the action
+    * @param outcome          Navigation outcome for the action
+    * 
+    * @return UIActionLink component
+    */
    private UIActionLink aquireAction(FacesContext fc, String store, String username,
          String name, String icon, String actionListener, String outcome)
    {
@@ -297,6 +423,13 @@ public class UIUserSandboxes extends SelfRenderingComponent
       return action;
    }
    
+   /**
+    * Locate a child UIActionLink component by name.
+    * 
+    * @param name    Of the action component to find
+    * 
+    * @return UIActionLink component if found, else null if not created yet
+    */
    private UIActionLink findAction(String name)
    {
       UIActionLink action = null;
@@ -312,6 +445,19 @@ public class UIUserSandboxes extends SelfRenderingComponent
       return action;
    }
    
+   /**
+    * Create a UIActionLink child component.
+    * 
+    * @param fc               FacesContext
+    * @param store            Root store name for the user sandbox
+    * @param username         Username of the user for the action
+    * @param name             Action name - will be used for I18N message lookup
+    * @param icon             Icon to display for the actio n
+    * @param actionListener   Actionlistener for the action
+    * @param outcome          Navigation outcome for the action
+    * 
+    * @return UIActionLink child component
+    */
    private UIActionLink createAction(FacesContext fc, String store, String username,
          String name, String icon, String actionListener, String outcome)
    {
@@ -356,6 +502,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private NodeService getNodeService(FacesContext fc)
    {
       return Repository.getServiceRegistry(fc).getNodeService();
+   }
+   
+   private AVMSyncService getAVMSyncService(FacesContext fc)
+   {
+      return (AVMSyncService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("AVMSyncService");
    }
    
    

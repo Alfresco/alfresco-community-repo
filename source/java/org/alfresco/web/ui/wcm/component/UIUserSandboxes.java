@@ -61,7 +61,6 @@ import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.myfaces.taglib.UIComponentTagUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
-import sun.security.krb5.internal.crypto.f;
 import sun.swing.UIAction;
 
 /**

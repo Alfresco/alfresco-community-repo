@@ -6,7 +6,6 @@ dojo.require("dojo.widget.ComboBox");
 dojo.require("dojo.widget.Checkbox");
 dojo.require("dojo.widget.Editor");
 dojo.require("dojo.widget.Spinner");
-dojo.require("dojo.html.style");
 dojo.require("dojo.fx.html");
 dojo.hostenv.writeIncludes();
 dojo.addOnLoad(xforms_init);
@@ -119,8 +118,8 @@ dojo.declare("alfresco.xforms.NumericStepper",
 	       attach_point.appendChild(nodeRef);
 	       var initial_value = this.getInitialValue() || "";
 	       var w = dojo.widget.createWidget((this.stepper_type == "double"
-						 ? "SpinnerRealNumberTextBox"
-						 : "SpinnerIntegerTextBox"), 
+						 ? "AdjustableRealNumberTextBox"
+						 : "AdjustableIntegerTextBox"), 
 						{ 
 						widgetId: this.id,
 						required: this.isRequired(), 
@@ -1003,10 +1002,21 @@ function create_widget(xform, node)
     {
     case "date":
       return new alfresco.xforms.DatePicker(xform, node);
-    case "integer":
-    case "positiveInteger":
-    case "negativeInteger":
+    case "byte":
     case "double":
+    case "float":
+    case "int":
+    case "integer":
+    case "long":
+    case "negativeInteger":
+    case "nonNegativeInteger":
+    case "nonPositiveInteger":
+    case "short":
+    case "unsignedByte":
+    case "unsignedInt":
+    case "unsignedLong":
+    case "unsignedShort":
+    case "positiveInteger":
       return new alfresco.xforms.NumericStepper(xform, node, type);
       case "string":
     default:

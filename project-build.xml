@@ -57,6 +57,12 @@
         dest="${dir.assemble}/scripts/ajax/dojo"/>
       <delete dir="${dir.assemble}/scripts/ajax/dojo/tests"/>
       <delete dir="${dir.assemble}/scripts/ajax/dojo/demos"/>
+
+      <unzip src="${dir.common.lib}/tinymce_2_0_6_1.zip"
+	     dest="${dir.assemble}/scripts"/>
+      <move file="${dir.assemble}/scripts/tinymce/jscripts/tiny_mce"
+	    todir="${dir.assemble}/scripts/"/>
+      <delete dir="${dir.assemble}/scripts/tinymce"/>
 	    
       <!-- add config files to WEB-INF/classes -->
       <copy todir="${dir.assemble}/WEB-INF/classes">

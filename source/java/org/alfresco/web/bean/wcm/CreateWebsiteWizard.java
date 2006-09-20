@@ -102,7 +102,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // create the AVM stores (layers) to represent the newly created location website
       createStagingSandbox(this.name);
       
-      // create a sandbox for each user (TODO: based on role?)
+      // create a sandbox for each user - TODO: based on role?
       List<String> invitedUsers = getInvitedUsernames();
       invitedUsers.add(Application.getCurrentUser(context).getUserName());
       for (String username : invitedUsers)
@@ -112,8 +112,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // save the list of invited users against the store
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_USERSANDBOXES, (Serializable)invitedUsers);
-      
-      // TODO: import the ZIP structure into the AVM staging store
       
       // set the property on the node to reference the AVM store
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, this.name);

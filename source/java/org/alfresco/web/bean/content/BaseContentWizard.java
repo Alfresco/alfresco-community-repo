@@ -381,7 +381,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
       }
       else 
       {
-	  writer.putContent(strContent == null ? "" : strContent);
+         writer.putContent(strContent == null ? "" : strContent);
       }
       
       // remember the created node now

@@ -105,7 +105,8 @@
                                  <td align=left width=32><a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" /></td>
                                  <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
                                  <td align=right>
-                                    (P)&nbsp;(E)&nbsp;(T)&nbsp;(D)&nbsp;
+                                    <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" />
+                                    <a:actionLink value="#{msg.sandbox_create}" image="/images/icons/new_content.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="wizard:createWebContent" />
                                     <a:actionLink value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
                                  </td>
                               </tr>
@@ -132,7 +133,7 @@
                      <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
                         
                         <%-- User Sandboxes List --%>
-                        <w:userSandboxes value="#{NavigationBean.currentNode.nodeRef}" />
+                        <w:userSandboxes binding="#{AVMBrowseBean.userSandboxes}" value="#{NavigationBean.currentNode.nodeRef}" />
                         
                      </a:panel>
                      

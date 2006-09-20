@@ -51,6 +51,7 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIBreadcrumb;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.wcm.WebResources;
+import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -74,12 +75,19 @@ public class AVMBrowseBean implements IContextListener
    private String sandboxTitle = null;
    private String currentPath = null;
    
+   /* component references */
    private UIRichList foldersRichList;
    private UIRichList filesRichList;
+   private UIUserSandboxes userSandboxes;
    
+   /* transient lists of files/folders for a directory */
    private List<Map> files = null;
    private List<Map> folders = null;
    
+   /** Current AVM Node context*/
+   private AVMNode avmNode = null;
+   
+   /** breadcrumb location */
    private List<IBreadcrumbHandler> location = null;
    
    /** The NodeService to be used by the bean */
@@ -130,6 +138,11 @@ public class AVMBrowseBean implements IContextListener
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
+   }
+   
+   public NodeService getNodeService()
+   {
+      return this.nodeService;
    }
 
    /**
@@ -239,7 +252,23 @@ public class AVMBrowseBean implements IContextListener
    {
       this.filesRichList = filesRichList;
    }
-
+   
+   /**
+    * @return Returns the userSandboxes.
+    */
+   public UIUserSandboxes getUserSandboxes()
+   {
+      return this.userSandboxes;
+   }
+   
+   /**
+    * @param userSandboxes       The userSandboxes to set.
+    */
+   public void setUserSandboxes(UIUserSandboxes userSandboxes)
+   {
+      this.userSandboxes = userSandboxes;
+   }
+   
    /**
     * @return Returns the sandbox.
     */
@@ -317,6 +346,53 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @return Returns the current AVM node context.
+    */
+   public AVMNode getAvmNode()
+   {
+      return this.avmNode;
+   }
+
+   /**
+    * @param avmNode       The AVM node context to set.
+    */
+   public void setAvmNode(AVMNode avmNode)
+   {
+      this.avmNode = avmNode;
+   }
+   
+   /**
+    * @param avmRef        The AVMNodeDescriptor context to set.
+    */
+   public void setAVMNodeDescriptor(AVMNodeDescriptor avmRef)
+   {
+      this.avmNode = new AVMNode(avmRef);
+   }
+   
+   /**
+    * @return Breadcrumb location list
+    */
+   public List<IBreadcrumbHandler> getLocation()
+   {
+      if (this.location == null)
+      {
+         List<IBreadcrumbHandler> loc = new ArrayList<IBreadcrumbHandler>(8);
+         loc.add(new AVMBreadcrumbHandler(getCurrentPath()));
+         
+         this.location = loc;
+      }
+      return this.location;
+   }
+   
+   /**
+    * @param location Breadcrumb location list
+    */
+   public void setLocation(List<IBreadcrumbHandler> location)
+   {
+      this.location = location;
+   }
+   
+   /**
     * @return Map of avm node objects representing the folders with the current website space
     */
    public List<Map> getFolders()
@@ -390,6 +466,10 @@ public class AVMBrowseBean implements IContextListener
       }
    }
    
+   
+   // ------------------------------------------------------------------------------
+   // Action event handlers
+   
    /**
     * Update the UI after a folder click action in the website browsing screens
     */
@@ -434,27 +514,33 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * @return Breadcrumb location list
+    * Action event called by all actions that need to setup a Content node context on the 
+    * before an action page/wizard is called. The context will be an AVMNodeDescriptor in
+    * setAVMNode() which can be retrieved on action pages via getAVMNode().
+    * 
+    * @param event   ActionEvent
     */
-   public List<IBreadcrumbHandler> getLocation()
+   public void setupContentAction(ActionEvent event)
    {
-      if (this.location == null)
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String path = params.get("id");
+      if (path != null && path.length() != 0)
       {
-         List<IBreadcrumbHandler> loc = new ArrayList<IBreadcrumbHandler>(8);
-         loc.add(new AVMBreadcrumbHandler(getCurrentPath()));
-         
-         this.location = loc;
+         setAVMNodeDescriptor(avmService.lookup(-1, path));
       }
-      return this.location;
+      else
+      {
+         setAVMNodeDescriptor(null);
+      }
+      
+      // update UI state ready for return after dialog close
+      UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
    }
    
-   /**
-    * @param location Breadcrumb location list
-    */
-   public void setLocation(List<IBreadcrumbHandler> location)
-   {
-      this.location = location;
-   }
+   
+   // ------------------------------------------------------------------------------
+   // Private helpers
    
    /**
     * @return the internal AVM path to the current folder for browsing

@@ -53,8 +53,8 @@
       <unzip src="${dir.common.lib}/dojo-0.3.1-ajax.zip"
 	     dest="${dir.assemble}/scripts/ajax"/>
       <delete dir="${dir.assemble}/scripts/ajax/dojo"/>
-      <move file="${dir.assemble}/scripts/ajax/dojo-0.3.1-ajax"
-	    tofile="${dir.assemble}/scripts/ajax/dojo"/>
+      <rename src="${dir.assemble}/scripts/ajax/dojo-0.3.1-ajax"
+        dest="${dir.assemble}/scripts/ajax/dojo"/>
       <delete dir="${dir.assemble}/scripts/ajax/dojo/tests"/>
       <delete dir="${dir.assemble}/scripts/ajax/dojo/demos"/>
 	    

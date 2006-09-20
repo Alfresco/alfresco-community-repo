@@ -145,7 +145,7 @@
             </step>
          </wizard>
          
-         <!-- Definition of the add content wizard -->
+         <!-- Definition of the Create Content wizard -->
          <wizard name="createContent" managed-bean="CreateContentWizard"
                  title-id="create_content_title" description-id="create_content_desc"
                  icon="/images/icons/new_content_large.gif">
@@ -158,12 +158,6 @@
             <step name="content" title-id="enter_content" description-id="create_content_step2_desc">
                <condition if="#{CreateContentWizard.mimeType == 'text/html'}">
                   <page path="/jsp/content/create-content-wizard/create-html.jsp"
-                        title-id="create_content_step2_title"
-                        description-id="create_content_step2_desc"
-                        instruction-id="default_instruction" />
-               </condition>
-               <condition if="#{CreateContentWizard.mimeType == 'text/xml'}">
-                  <page path="/jsp/content/create-content-wizard/create-xml.jsp"
                         title-id="create_content_step2_title"
                         description-id="create_content_step2_desc"
                         instruction-id="default_instruction" />
@@ -181,7 +175,45 @@
                      instruction-id="content_finish_instruction" />
             </step>
          </wizard>
-
+         
+         <!-- Definition of the Create Web Content wizard -->
+         <wizard name="createWebContent" managed-bean="CreateWebContentWizard"
+                 title-id="create_content_title" description-id="create_content_desc"
+                 icon="/images/icons/new_content_large.gif">
+            <step name="details" title-id="details" description-id="create_content_step1_desc">
+               <page path="/jsp/wcm/create-web-content-wizard/details.jsp" 
+                     title-id="create_content_step1_title"
+                     description-id="create_content_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="content" title-id="enter_content" description-id="create_content_step2_desc">
+               <condition if="#{CreateWebContentWizard.mimeType == 'text/html'}">
+                  <page path="/jsp/wcm/create-web-content-wizard/create-html.jsp"
+                        title-id="create_content_step2_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
+               <condition if="#{CreateWebContentWizard.mimeType == 'text/xml'}">
+                  <page path="/jsp/wcm/create-web-content-wizard/create-xml.jsp"
+                        title-id="create_content_step2_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
+               <!-- Default to the inline text editor -->
+               <page path="/jsp/wcm/create-web-content-wizard/create-text.jsp"
+                     title-id="create_content_step2_title"
+                     description-id="create_content_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="content_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of the Create XML Type wizard -->
          <wizard name="createXMLContentType" managed-bean="CreateXmlContentTypeWizard"
                  title-id="create_xml_content_type_title" description-id="create_xml_content_type_desc"
                  icon="/images/icons/new_content_large.gif">

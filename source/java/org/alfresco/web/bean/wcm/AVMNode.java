@@ -16,21 +16,19 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
-import org.alfresco.web.bean.repository.NodePropertyResolver;
-import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
@@ -65,6 +63,16 @@ public class AVMNode implements Map<String, Object>
    public int getVersion()
    {
       return this.version;
+   }
+   
+   public String getName()
+   {
+      return this.avmRef.getName();
+   }
+   
+   public NodeRef getNodeRef()
+   {
+      return AVMNodeConverter.ToNodeRef(this.version, this.path);
    }
 
    /**
@@ -156,22 +164,7 @@ public class AVMNode implements Map<String, Object>
     */
    public Object get(Object key)
    {
-      Object obj = null;
-      
-      // there are some things that aren't available as properties
-      // but from method calls, so for these handle them individually
-      Map<String, Object> props = getProperties();
-      /*if (propsInitialised == false)
-      {
-         // well known properties required as publically accessable map attributes
-         props.put("id", this.getId());
-         props.put("name", this.getName());     // TODO: perf test pulling back single prop here instead of all!
-         props.put("nodeRef", this.getNodeRef());
-         
-         propsInitialised = true;
-      }*/
-      
-      return props.get(key);
+      return getProperties().get(key);
    }
 
    /**

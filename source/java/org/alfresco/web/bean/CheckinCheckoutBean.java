@@ -944,10 +944,10 @@ public class CheckinCheckoutBean
    private static Log logger = LogFactory.getLog(CheckinCheckoutBean.class);
    
    /** I18N messages */
-   private static final String MSG_ERROR_CHECKIN = "error_checkin";
-   private static final String MSG_ERROR_CANCELCHECKOUT = "error_cancel_checkout";
-   private static final String MSG_ERROR_UPDATE = "error_update";
-   private static final String MSG_ERROR_CHECKOUT = "error_checkout";
+   public static final String MSG_ERROR_CHECKIN = "error_checkin";
+   public static final String MSG_ERROR_CANCELCHECKOUT = "error_cancel_checkout";
+   public static final String MSG_ERROR_UPDATE = "error_update";
+   public static final String MSG_ERROR_CHECKOUT = "error_checkout";
 
    /** constants for copy location selection */
    private static final String COPYLOCATION_CURRENT = "current";

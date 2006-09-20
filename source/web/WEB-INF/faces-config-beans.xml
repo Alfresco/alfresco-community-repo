@@ -536,6 +536,43 @@
    
    <managed-bean>
       <description>
+         The bean that backs up the Create Web Content Wizard
+      </description>
+      <managed-bean-name>CreateWebContentWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.CreateWebContentWizard</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentService</property-name>
+         <value>#{ContentService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          The bean that backs up the Create Website Wizard
       </description>
       <managed-bean-name>CreateWebsiteWizard</managed-bean-name>
@@ -619,6 +656,44 @@
       <managed-property>
          <property-name>contentService</property-name>
          <value>#{ContentService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Delete AVM File Dialog
+      </description>
+      <managed-bean-name>DeleteFileDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.DeleteFileDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Delete AVM Folder Dialog
+      </description>
+      <managed-bean-name>DeleteFolderDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.DeleteFolderDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
    

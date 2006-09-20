@@ -323,8 +323,8 @@
             <image>/images/icons/new_content.gif</image>
             <action>wizard:createContent</action>
          </action>
-
-	 <!-- Create XML content type -->
+         
+         <!-- Create XML content type -->
          <action id="create_xml_content_type">
             <permissions>
                <permission allow="true">CreateChildren</permission>

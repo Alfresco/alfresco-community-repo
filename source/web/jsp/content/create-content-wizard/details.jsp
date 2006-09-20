@@ -91,12 +91,6 @@
                     valueChangeListener="#{WizardManager.bean.createContentChanged}">
       <f:selectItems value="#{WizardManager.bean.createMimeTypes}" />
    </h:selectOneMenu>
-
-   <h:outputText value=""/>
-   <h:outputText value="#{msg.template_type}:"/>
-   <h:selectOneMenu value="#{WizardManager.bean.templateTypeName}">
-      <f:selectItems value="#{WizardManager.bean.createTemplateTypes}" />
-   </h:selectOneMenu>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" style="padding-top: 4px;"

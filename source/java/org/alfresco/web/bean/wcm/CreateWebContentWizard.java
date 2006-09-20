@@ -14,9 +14,10 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.bean.content;
+package org.alfresco.web.bean.wcm;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -31,33 +32,54 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.content.BaseContentWizard;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
+import org.alfresco.web.templating.OutputUtil;
+import org.alfresco.web.templating.TemplateType;
+import org.alfresco.web.templating.TemplatingService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Bean implementation for the "Create Content Wizard" dialog
- * 
- * @author gavinc
+ * Bean implementation for the "Create Web Content Wizard" dialog
  */
-public class CreateContentWizard extends BaseContentWizard
+public class CreateWebContentWizard extends BaseContentWizard
 {
    protected String content = null;
+   protected String templateTypeName;
    protected List<SelectItem> createMimeTypes;
    
-   private static Log logger = LogFactory.getLog(CreateContentWizard.class);
-
+   private static final Log logger = LogFactory.getLog(CreateWebContentWizard.class);
+   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
    @Override
    protected String finishImpl(FacesContext context, String outcome)
-         throws Exception
+      throws Exception
    {
+      logger.debug("saving file content to " + this.fileName);
       saveContent(null, this.content);
+      if (this.templateTypeName != null)
+      {
+         logger.debug("generating template output for " + this.templateTypeName);
+         this.nodeService.setProperty(this.createdNode, 
+               TemplatingService.TT_QNAME, 
+               this.templateTypeName);
+         TemplatingService ts = TemplatingService.getInstance();
+         TemplateType tt = this.getTemplateType();
+         OutputUtil.generate(this.createdNode,
+               ts.parseXML(this.content),
+               tt,
+               this.fileName,
+               this.getContainerNodeRef(),
+               this.fileFolderService,
+               this.contentService,
+               this.nodeService);
+      }
       
       // return the default outcome
       return outcome;
@@ -70,7 +92,8 @@ public class CreateContentWizard extends BaseContentWizard
       
       this.content = null;
       this.inlineEdit = true;
-      this.mimeType = MimetypeMap.MIMETYPE_HTML;
+      this.templateTypeName = null;
+      this.mimeType = MimetypeMap.MIMETYPE_XML;
    }
    
    @Override
@@ -104,9 +127,9 @@ public class CreateContentWizard extends BaseContentWizard
          // we are going to immediately edit the properties so we need
          // to setup the BrowseBean context appropriately
          this.browseBean.setDocument(new Node(this.createdNode));
-      
+         
          return getDefaultFinishOutcome() + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
-                "dialog:setContentProperties";
+         "dialog:setContentProperties";
       }
       else
       {
@@ -131,6 +154,20 @@ public class CreateContentWizard extends BaseContentWizard
    public void setContent(String content)
    {
       this.content = content;
+   }
+   
+   public List<SelectItem> getCreateTemplateTypes()
+   {
+      Collection<TemplateType> ttl = TemplatingService.getInstance().getTemplateTypes();
+      List<SelectItem> sil = new ArrayList<SelectItem>(ttl.size());
+      for (TemplateType tt : ttl)
+      {
+         sil.add(new SelectItem(tt.getName(), tt.getName()));
+      }
+      
+      QuickSort sorter = new QuickSort(sil, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+      sorter.sort();
+      return sil;
    }
    
    /**
@@ -182,6 +219,25 @@ public class CreateContentWizard extends BaseContentWizard
       return this.createMimeTypes;
    }
    
+   public String getTemplateTypeName()
+   {
+      return this.templateTypeName;
+   }
+   
+   public TemplateType getTemplateType()
+   {
+      final TemplatingService ts = TemplatingService.getInstance();
+      return ts.getTemplateType(this.getTemplateTypeName());
+   }
+   
+   /**
+    * @param templateType Sets the currently selected template type
+    */
+   public void setTemplateTypeName(final String templateTypeName)
+   {
+      this.templateTypeName = templateTypeName;
+   }
+   
    /**
     * @return Returns the summary data for the wizard.
     */
@@ -192,16 +248,16 @@ public class CreateContentWizard extends BaseContentWizard
       // TODO: show first few lines of content here?
       return buildSummary(
             new String[] {bundle.getString("file_name"), 
-                          bundle.getString("type"), 
-                          bundle.getString("content_type")},
-            new String[] {this.fileName, getSummaryObjectType(), 
-                          getSummaryMimeType(this.mimeType)});
+                  bundle.getString("type"), 
+                  bundle.getString("content_type")},
+                  new String[] {this.fileName, getSummaryObjectType(), 
+                  getSummaryMimeType(this.mimeType)});
    }
    
    
    // ------------------------------------------------------------------------------
    // Action event handlers
-      
+   
    /**
     * Create content type value changed by the user
     */

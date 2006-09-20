@@ -16,21 +16,24 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.util.Map;
-
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.bean.CheckinCheckoutBean;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Bean backing the edit pages for a AVM node content.
@@ -38,16 +41,16 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  * @author Kevin Roast
  */
 public class AVMEditBean
-{
-   /** Current AVM Node context*/
-   private AVMNodeDescriptor avmNode = null;
-   
+{   
    private String documentContent = null;
    
    private String editorOutput = null;
    
    /** AVM service bean reference */
    protected AVMService avmService;
+   
+   /** AVM Browse Bean reference */
+   protected AVMBrowseBean avmBrowseBean;
    
    /** The ContentService bean reference */
    protected ContentService contentService;
@@ -57,13 +60,21 @@ public class AVMEditBean
    // Bean property getters and setters 
    
    /**
-    * @param avmService The AVMService to set.
+    * @param avmService       The AVMService to set.
     */
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
    }
    
+   /**
+    * @param avmBrowseBean    The AVMBrowseBean to set.
+    */
+   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   {
+      this.avmBrowseBean = avmBrowseBean;
+   }
+
    /**
     * @param contentService   The ContentService to set.
     */
@@ -75,17 +86,33 @@ public class AVMEditBean
    /**
     * @return Returns the current AVM node context.
     */
-   public AVMNodeDescriptor getAVMNode()
+   public AVMNode getAvmNode()
    {
-      return this.avmNode;
+      return this.avmBrowseBean.getAvmNode();
    }
-
+   
    /**
-    * @param avmNode       The AVM node context to set.
+    * @return Large file icon for current AVM node
     */
-   public void setAVMNode(AVMNodeDescriptor avmNode)
+   public String getFileType32()
    {
-      this.avmNode = avmNode;
+      return Utils.getFileTypeImage(getAvmNode().getName(), false);
+   }
+   
+   /**
+    * @return Small file icon for current AVM node
+    */
+   public String getFileType16()
+   {
+      return Utils.getFileTypeImage(getAvmNode().getName(), true);
+   }
+   
+   /**
+    * @return Content URL for current AVM node
+    */
+   public String getUrl()
+   {
+      return DownloadContentServlet.generateDownloadURL(AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath()), getAvmNode().getName());
    }
    
    /**
@@ -125,37 +152,15 @@ public class AVMEditBean
    // Action event handlers
    
    /**
-    * Action event called by all actions that need to setup a Content node context on the 
-    * before an action page/wizard is called. The context will be an AVMNodeDescriptor in
-    * setAVMNode() which can be retrieved on action pages via getAVMNode().
-    * 
-    * @param event   ActionEvent
-    */
-   public void setupContentAction(ActionEvent event)
-   {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String path = params.get("id");
-      if (path != null && path.length() != 0)
-      {
-         setAVMNode(avmService.lookup(-1, path));
-      }
-      else
-      {
-         setAVMNode(null);
-      }
-   }
-   
-   /**
     * Action handler called to calculate which editing screen to display based on the mimetype
     * of a document. If appropriate, the in-line editing screen will be shown.
     */
    public void setupEditAction(ActionEvent event)
    {
-      setupContentAction(event);
+      this.avmBrowseBean.setupContentAction(event);
       
       // retrieve the content reader for this node
-      NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, getAVMNode().getPath());
+      NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath());
       ContentReader reader = contentService.getReader(avmRef, ContentModel.PROP_CONTENT);
       if (reader != null)
       {
@@ -200,5 +205,82 @@ public class AVMEditBean
             fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editAvmFile");
          }
       }
+   }
+   
+   /**
+    * Action called upon completion of the Edit File download page
+    */
+   public String editFileOK()
+   {
+      String outcome = null;
+      
+      AVMNode node = getAvmNode();
+      if (node != null)
+      {
+         resetState();
+         
+         outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+      }
+      
+      return outcome;
+   }
+   
+   /**
+    * Action handler called to set the content of a node from an inline editing page.
+    */
+   public String editInlineOK()
+   {
+      String outcome = null;
+      
+      UserTransaction tx = null;
+      
+      AVMNode avmNode = getAvmNode();
+      if (avmNode != null)
+      {
+         NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath());
+         try
+         {
+            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
+            tx.begin();
+            
+            // get an updating writer that we can use to modify the content on the current node
+            ContentWriter writer = this.contentService.getWriter(avmRef, ContentModel.PROP_CONTENT, true);
+            writer.putContent(this.editorOutput);
+            
+            // commit the transaction
+            tx.commit();
+            
+            // TODO: generate template content
+            /*if (nodeService.getProperty(node.getNodeRef(),
+                  TemplatingService.TT_QNAME) != null)
+            {
+               OutputUtil.regenerate(node.getNodeRef(),
+                     this.contentService,
+                     this.nodeService);
+            }*/
+            
+            resetState();
+            
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+         }
+         catch (Throwable err)
+         {
+            // rollback the transaction
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            Utils.addErrorMessage(Application.getMessage(
+                  FacesContext.getCurrentInstance(), CheckinCheckoutBean.MSG_ERROR_UPDATE) + err.getMessage());
+         }
+      }
+      
+      return outcome;
+   }
+   
+   private void resetState()
+   {
+      // clean up and clear action context
+      //clearUpload();
+      this.avmBrowseBean.setAvmNode(null);
+      setDocumentContent(null);
+      setEditorOutput(null);
    }
 }

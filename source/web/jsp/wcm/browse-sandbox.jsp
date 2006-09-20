@@ -166,8 +166,8 @@
                                  <h:outputText id="col9-txt" value="#{msg.actions}"/>
                               </f:facet>
                               
-                              <%-- actions are configured in web-client-config-actions.xml --%>
-                              <%--<r:actions id="col9-acts1" value="space_browse" context="#{r}" showLink="false" styleClass="inlineAction" />--%>
+                              <%-- actions are configured in web-client-config-wcm-actions.xml --%>
+                              <r:actions id="col9-acts1" value="avm_folder_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
                            </a:column>
                            
                            <a:dataPager id="pager1" styleClass="pager" />
@@ -255,7 +255,7 @@
                                  <h:outputText id="col18-txt" value="#{msg.actions}"/>
                               </f:facet>
                               
-                              <%-- actions are configured in web-client-config-actions.xml --%>
+                              <%-- actions are configured in web-client-config-wcm-actions.xml --%>
                               <r:actions id="col18-acts1" value="avm_file_browse" context="#{r}" showLink="false" styleClass="inlineAction" />
                            </a:column>
                            

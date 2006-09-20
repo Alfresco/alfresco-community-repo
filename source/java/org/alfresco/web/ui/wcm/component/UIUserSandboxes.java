@@ -63,6 +63,7 @@ import org.springframework.web.jsf.FacesContextUtils;
 public class UIUserSandboxes extends SelfRenderingComponent
 {
    private static final String ACTIONS_FILE = "avm_file_modified";
+   private static final String ACTIONS_FOLDER = "avm_folder_modified";
 
    private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
 
@@ -74,6 +75,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_MODIFIED = "modified_date";
    private static final String MSG_ACTIONS = "actions";
+   private static final String MSG_DELETED_ITEM = "avm_node_deleted";
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    
@@ -207,10 +209,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
                // components for the current username, preview, browse and modified items inner list
                out.write("<table cellspacing=2 cellpadding=2 border=0 width=100%><tr><td>");
                // show the icon for the sandbox as a clickable browse link image
+               // this is currently identical to the sandbox_browse action as below
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_icon", WebResources.IMAGE_USERSANDBOX_32,
                      "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
-               //out.write(Utils.buildImageTag(context, WebResources.IMAGE_USERSANDBOX_32, 32, 32, ""));
                out.write("</td><td width=100%>");
                out.write("<b>");
                out.write(bundle.getString(MSG_USERNAME));
@@ -222,12 +224,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_preview", "/images/icons/preview_website.gif",
                      null, null));
-               out.write("&nbsp;&nbsp;");
+               out.write("&nbsp;");
                
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_create", "/images/icons/new_content.gif",
-                     null, null));
-               out.write("&nbsp;&nbsp;");
+                     "#{AVMBrowseBean.setupSandboxAction}", "wizard:createWebContent"));
+               out.write("&nbsp;");
                
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_browse", "/images/icons/space_small.gif",
@@ -249,26 +251,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
                if (this.expandedPanels.contains(username))
                {
                   out.write("<div style='padding:2px'></div>");
-                  out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=2 border=0 width=100%>");
-                  
-                  // header row
-                  out.write("<tr align=left><th width=16></th><th>");
-                  out.write(bundle.getString(MSG_NAME));
-                  out.write("</th><th>");
-                  out.write(bundle.getString(MSG_CREATED));
-                  out.write("</th><th>");
-                  out.write(bundle.getString(MSG_MODIFIED));
-                  out.write("</th><th>");
-                  out.write(bundle.getString(MSG_SIZE));
-                  out.write("</th><th>");
-                  out.write(bundle.getString(MSG_ACTIONS));
-                  out.write("</th></tr>");
-                  
-                  // row per modified doc item for this sandbox user
+
+                  // list the modified docs for this sandbox user
                   renderUserFiles(context, out, username, storeRoot);
-                  
-                  // end table
-                  out.write("</table>");
                }
                out.write("</td></tr></table>");
                
@@ -309,7 +294,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
    {
       AVMSyncService avmSyncService = getAVMSyncService(fc);
       AVMService avmService = getAVMService(fc);
+      
       DateFormat df = Utils.getDateTimeFormat(fc);
+      ResourceBundle bundle = Application.getBundle(fc);
       
       // build the paths to the stores to compare
       String userStore  = AVMConstants.buildAVMUserMainStoreName(storeRoot, username) + ":/";
@@ -317,13 +304,32 @@ public class UIUserSandboxes extends SelfRenderingComponent
       
       // get the UIActions component responsible for rendering context related user actions
       UIActions uiFileActions = aquireUIActions(ACTIONS_FILE);
+      UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER);
       
       // use the sync service to get the list of diffs between the stores
       List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore);
-      for (AVMDifference diff : diffs)
+      if (diffs.size() != 0)
       {
-         //if (diff.getDifferenceCode() == AVMDifference.NEWER)
-         //{
+         // output the table of modified items
+         out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=2 border=0 width=100%>");
+         
+         // header row
+         out.write("<tr align=left><th width=16></th><th>");
+         out.write(bundle.getString(MSG_NAME));
+         out.write("</th><th>");
+         out.write(bundle.getString(MSG_CREATED));
+         out.write("</th><th>");
+         out.write(bundle.getString(MSG_MODIFIED));
+         out.write("</th><th>");
+         out.write(bundle.getString(MSG_SIZE));
+         out.write("</th><th>");
+         out.write(bundle.getString(MSG_ACTIONS));
+         out.write("</th></tr>");
+         
+         // output each of the modified files as a row in the table
+         for (AVMDifference diff : diffs)
+         {
+            // TODO: display cases for diff.getDifferenceCode()?
             String sourcePath = diff.getSourcePath();
             AVMNodeDescriptor node = avmService.lookup(-1, sourcePath);
             if (node != null)
@@ -352,24 +358,87 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(name);
                }
                out.write("</td><td>");
+               
                // created date
                out.write(df.format(new Date(node.getCreateDate())));
                out.write("</td><td>");
+               
                // modified date
                out.write(df.format(new Date(node.getModDate())));
                out.write("</td><td>");
+               
+               // size of files
                if (node.isFile())
                {
-                  // size of files
                   out.write(getSizeConverter().getAsString(fc, this, node.getLength()));
+                  out.write("</td><td>");
+               
+                  // add UI actions for this item
+                  uiFileActions.setContext(new AVMNode(node));
+                  Utils.encodeRecursive(fc, uiFileActions);
                }
-               out.write("</td><td>");
-               // add UI actions for this item
-               uiFileActions.setContext(new AVMNode(node));
-               Utils.encodeRecursive(fc, uiFileActions);
+               else
+               {
+                  out.write("</td><td>");
+               
+                  // add UI actions for this item
+                  uiFolderActions.setContext(new AVMNode(node));
+                  Utils.encodeRecursive(fc, uiFolderActions);
+               }
                out.write("</td></tr>");
             }
-         //}
+            else
+            {
+               // must have been deleted from this sandbox - show ghosted
+               AVMNodeDescriptor ghost = avmService.lookup(-1, diff.getDestinationPath());
+               if (ghost != null)
+               {
+                  // icon and name of the file/folder - files are clickable to see the content
+                  String name = ghost.getName();
+                  out.write("<tr><td width=16>");
+                  if (ghost.isFile())
+                  {
+                     out.write(Utils.buildImageTag(fc, Utils.getFileTypeImage(fc, name, true), ""));
+                     out.write("</td><td style='color:#aaaaaa'>");
+                     out.write(name);
+                     out.write("</a>");
+                  }
+                  else
+                  {
+                     out.write(Utils.buildImageTag(fc, SPACE_ICON, 16, 16, ""));
+                     out.write("</td><td style='color:#aaaaaa'>");
+                     out.write(name);
+                  }
+                  out.write("</td><td style='color:#aaaaaa'>");
+                  
+                  // created date
+                  out.write(df.format(new Date(ghost.getCreateDate())));
+                  out.write("</td><td style='color:#aaaaaa'>");
+                  
+                  // modified date
+                  out.write(df.format(new Date(ghost.getModDate())));
+                  out.write("</td><td style='color:#aaaaaa'>");
+                  
+                  // size of files
+                  if (ghost.isFile())
+                  {
+                     out.write(getSizeConverter().getAsString(fc, this, ghost.getLength()));
+                  }
+                  out.write("</td><td style='color:#aaaaaa'>");
+                  
+                  // no UI actions for this item
+                  out.write('[' + bundle.getString(MSG_DELETED_ITEM) + ']');
+                  out.write("</td></tr>");
+               }
+            }
+         }
+         
+         // end table
+         out.write("</table>");
+      }
+      else
+      {
+         // TODO: output "no modified files found" message
       }
    }
    
@@ -385,6 +454,14 @@ public class UIUserSandboxes extends SelfRenderingComponent
       return this.sizeConverter;
    }
    
+   /**
+    * Aquire the UIActions component for the specified action group ID.
+    * Search for the component in the child list or create as needed. 
+    * 
+    * @param id      ActionGroup id of the UIActions component
+    * 
+    * @return UIActions component
+    */
    private UIActions aquireUIActions(String id)
    {
       UIActions uiActions = null;
@@ -401,6 +478,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          javax.faces.application.Application facesApp = FacesContext.getCurrentInstance().getApplication();
          uiActions = (UIActions)facesApp.createComponent(COMPONENT_ACTIONS);
          uiActions.setShowLink(false);
+         uiActions.getAttributes().put("styleClass", "inlineAction");
          uiActions.setId(id);
          uiActions.setParent(this);
          uiActions.setValue(id);

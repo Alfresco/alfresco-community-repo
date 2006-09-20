@@ -6,6 +6,7 @@
             <extension display="Plain Text" default="true">txt</extension>
             <extension display="Comma Separated Values">csv</extension>
             <extension display="Java Source">java</extension>
+            <extension display="Java Server Page">jsp</extension>
             <extension display="SQL">sql</extension>
             <extension display="Java Properties">properties</extension>
             <extension display="FreeMarker Template">ftl</extension>

@@ -72,6 +72,30 @@
          <show-property name="bpm:priority" ignore-if-missing="false" />
       </property-sheet>
    </config>
+
+   <!-- WCM Workflow Submit. -->
+
+   <config evaluator="node-type" condition="wcmwf:startSubmit">
+       <property-sheet>
+           <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+           <show-property name="wcmwf:description" ignore-if-missing="false" />
+           <show-property name="wcmwf:sourcePath" ignore-if-missing="false" />
+           <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+           <show-association name="wcmwf:assignee" ignore-if-missing="false" />
+       </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="wcwmf:review">
+       <property-sheet>
+           <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+           <show-property name="bpm:taskId" ignore-if-missing="false" />
+           <show-property name="wcmwf:description" ignore-if-missing="false" />
+           <show-property name="wcmwf:sourcePath" ignore-if-missing="false" />
+           <show-property name="bpm:status" ignore-if-missing="false" />
+           <show-property name="bpm:dueDate" ignore-if-missing="false" />
+           <show-property name="bpm:priority" ignore-if-missing="false" />
+       </property-sheet>
+   </config>
    
    <!--         -->
    <!-- Actions -->

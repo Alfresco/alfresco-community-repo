@@ -274,7 +274,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
       
       // tag the store with the store type
-      this.avmService.setStoreProperty(stagingStore,
+      this.avmService.setStoreProperty(previewStore,
             QName.createQName(null, AVMConstants.PROP_SANDBOX_STAGING_PREVIEW),
             new PropertyValue(DataTypeDefinition.TEXT, null));
       
@@ -324,6 +324,12 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.avmService.setStoreProperty(userStore,
             QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_MAIN),
             new PropertyValue(DataTypeDefinition.TEXT, null));
+
+      // tag the store with the base name of the website so that corresponding
+      // staging areas can be found.
+      this.avmService.setStoreProperty(userStore,
+            QName.createQName(null, AVMConstants.PROP_WEBSITE_NAME),
+            new PropertyValue(DataTypeDefinition.TEXT, name));
       
       // tag the store with the DNS name property
       tagStoreDNSPath(userStore);

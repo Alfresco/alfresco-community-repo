@@ -174,7 +174,7 @@ final InstanceData instanceData = new InstanceData() {
                         
                         <%-- Inline editor --%>
                         <tr>
-                           <td width="100%" valign="top" height="360px">
+                           <td width="100%" valign="top" height="100%">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
 <% tim.generate(instanceData, tt, out); %>
 

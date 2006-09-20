@@ -7,6 +7,7 @@ dojo.require("dojo.widget.Checkbox");
 dojo.require("dojo.widget.Editor");
 dojo.require("dojo.widget.Spinner");
 dojo.require("dojo.fx.html");
+dojo.require("dojo.lfx.html");
 dojo.hostenv.writeIncludes();
 dojo.addOnLoad(xforms_init);
 
@@ -117,11 +118,12 @@ dojo.declare("alfresco.xforms.NumericStepper",
 	       var nodeRef = document.createElement("div");
 	       attach_point.appendChild(nodeRef);
 	       var initial_value = this.getInitialValue() || "";
+
 	       var w = dojo.widget.createWidget((this.stepper_type == "double"
 						 ? "AdjustableRealNumberTextBox"
 						 : "AdjustableIntegerTextBox"), 
 						{ 
-						widgetId: this.id,
+						widgetId: this.id + "-widget",
 						required: this.isRequired(), 
 						value: initial_value 
 						}, 
@@ -147,7 +149,6 @@ dojo.declare("alfresco.xforms.DatePicker",
 	     initializer: function(xform, node) 
 	       {
 		 this.inherited("initializer", [ xform, node ]);
-		 dojo.debug("created a TextField");
 	       },
 	     render: function(attach_point)
 	       {
@@ -156,7 +157,7 @@ dojo.declare("alfresco.xforms.DatePicker",
 		 attach_point.appendChild(dateTextBoxDiv);
 		 this.dateTextBox = dojo.widget.createWidget("DateTextBox", 
 							    {
-							    widgetId: this.id,
+							    widgetId: this.id + "-widget",
 							    required: this.isRequired(), 
 							    format: "YYYY-MM-DD", 
 							    value: initial_value 
@@ -205,16 +206,16 @@ dojo.declare("alfresco.xforms.TextField",
 	     initializer: function(xform, node) 
 	       {
 		 this.inherited("initializer", [ xform, node ]);
-		 dojo.debug("created a TextField");
 	       },
 	     render: function(attach_point)
 	       {
 		 var nodeRef = document.createElement("div");
 		 attach_point.appendChild(nodeRef);
 		 var initial_value = this.getInitialValue() || "";
+
 		 var w = dojo.widget.createWidget("ValidationTextBox", 
 						  {
-						  widgetId: this.id,
+						  widgetId: this.id + "-widget",
 						  required: this.isRequired(), 
 						  value: initial_value 
 						  }, 
@@ -366,7 +367,7 @@ dojo.declare("alfresco.xforms.CheckBox",
 	       var initial_value = this.getInitialValue() || false;
 	       this.widget = dojo.widget.createWidget("CheckBox", 
 						      { 
-						      widgetId: this.id,
+						      widgetId: this.id + "-widget",
 						      checked: initial_value 
 						      },
 						      nodeRef);
@@ -417,6 +418,7 @@ dojo.declare("alfresco.xforms.Group",
 	       var d = document.createElement("div");
 	       child.domContainer = d;
 	       d.setAttribute("style", "position: relative; border: 0px solid green; margin-top: 2px; margin-bottom: 2px;");
+	       d.style.width = "100%";
 	       if (this.parent && this.parent.domNode)
 		 d.style.top = this.parent.domNode.style.bottom;
 
@@ -430,40 +432,41 @@ dojo.declare("alfresco.xforms.Group",
 		 this.domNode.insertBefore(d, this.getChildAt(position).domContainer);
 		 this.children.splice(position, 0, child);
 	       }
-
-	       if (child.isRequired() && !(child instanceof alfresco.xforms.Group))
+	       if (!(child instanceof alfresco.xforms.Group))
 	       {
 		 var requiredImage = document.createElement("img");
 		 requiredImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/required_field.gif");
-		 requiredImage.setAttribute("style", "margin:5px;");
+		 requiredImage.setAttribute("style", "margin: 0px 5px 0px 5px;");
 		 d.appendChild(requiredImage);
-		 requiredImage.style.position = "relative";
-		 requiredImage.style.top = "0px";
-		 requiredImage.style.left = "0px";
-		 requiredImage.style.lineHeight = d.style.height;
-	       }
-	       var label = child._getLabelNode();
-	       if (label && !(child instanceof alfresco.xforms.Group))
-	       {
-		 var labelDiv = document.createElement("div");
-		 labelDiv.appendChild(document.createTextNode(dojo.dom.textContent(label)));
-		 d.appendChild(labelDiv);
-		 labelDiv.style.position = "relative";
-		 labelDiv.style.top = "-" + labelDiv.offsetTop + "px";
-		 labelDiv.style.left = "5%";
+		 
+		 if (!child.isRequired())
+		   requiredImage.style.visibility = "hidden";
+		 var label = child._getLabelNode();
+		 if (label)
+		   d.appendChild(document.createTextNode(dojo.dom.textContent(label)));
 	       }
 	       var contentDiv = document.createElement("div");
+	       contentDiv.setAttribute("id", child.id + "-content");
 	       d.appendChild(contentDiv);
-	       child.render(contentDiv);
 	       contentDiv.style.position = "relative";
+	       child.render(contentDiv);
+	       if (!(child instanceof alfresco.xforms.Group))
+	       {
+		 d.style.height = contentDiv.offsetHeight + "px";
+		 d.style.lineHeight = d.style.height;
+	       }
+
+//	       contentDiv.appendChild(document.createTextNode("ot " + contentDiv.offsetTop + 
+//							      "st " + contentDiv.style.top));
+
 	       contentDiv.style.top = "-" + contentDiv.offsetTop + "px";
 	       contentDiv.style.left = (child instanceof alfresco.xforms.Group 
 					? "0px" 
-					: "40%");
+					: "30%");
+	       contentDiv.style.width = (d.offsetWidth - contentDiv.offsetLeft) + "px";
+
 	       d.style.borderColor = "pink";
 	       d.style.borderWidth = "0px";
-	       if (!(child instanceof alfresco.xforms.Group))
-		 d.style.height = contentDiv.offsetHeight;
 	       return d;
 	     },
 	     removeChildAt: function(position)
@@ -477,7 +480,7 @@ dojo.declare("alfresco.xforms.Group",
 				    function(node)
 				    {
 				      dojo.dom.removeChildren(node);
-				      node.parentNode.removeChild(node);
+				      dojo.dom.removeNode(node);
 				    });
 	     },
 	     isIndented: function()
@@ -489,10 +492,12 @@ dojo.declare("alfresco.xforms.Group",
 		 this.domNode = document.createElement("div");
 		 this.domNode.setAttribute("id", this.id + "-domNode");
 		 this.domNode.widget = this;
+		 attach_point.appendChild(this.domNode);
+
 		 this.domNode.setAttribute("style", "border: 0px solid blue;");
+		 this.domNode.style.width = "100%";
 		 if (this.isIndented())
 		   this.domNode.style.marginLeft = "10px";
-		 attach_point.appendChild(this.domNode);
 		 return this.domNode;
              }
 	     });
@@ -508,8 +513,6 @@ dojo.declare("alfresco.xforms.Repeat",
              insertChildAt: function(child, position)
 	     {
 	       var result = this.inherited("insertChildAt", [ child, position ]);
-	       result.style.borderColor = "green";
-	       result.style.borderWidth = "0px";
 	       child.repeat = this;
 
 	       dojo.event.browser.addListener(result, "onclick", function(event)
@@ -532,8 +535,8 @@ dojo.declare("alfresco.xforms.Repeat",
 	       for (var i in images)
 	       {
 		 var img = document.createElement("img");
-		 img.setAttribute("src", 
-				  WEBAPP_CONTEXT + "/images/icons/" + images[i].src + ".gif");
+		 img.setAttribute("src", (WEBAPP_CONTEXT + "/images/icons/" + 
+					  images[i].src + ".gif"));
 		 img.style.width = "16px";
 		 img.style.height = "16px";
 		 img.style.marginRight = "4px";
@@ -565,11 +568,48 @@ dojo.declare("alfresco.xforms.Repeat",
 	     },
 	     _moveRepeatItemUp_handler: function(event)
 	     {
-	       alert("moveUp " + event);
+	       var r = event.target.repeat;
+	       var index = r.getChildIndex(event.target.repeatItem);
+	       if (index == 0 || r.children.length == 1)
+		 return;
+	       event.target.repeat.swapChildren(index, index - 1);
+//	       this.handleIndexChanged(index - 1);
 	     },
 	     _moveRepeatItemDown_handler: function(event)
 	     {
-	       alert("moveDown " + event);
+	       var r = event.target.repeat;
+	       var index = r.getChildIndex(event.target.repeatItem);
+	       if (index == r.children.length - 1 || r.children.length == 1)
+		 return;
+	       event.target.repeat.swapChildren(index, index + 1);
+//	       this.handleIndexChanged(index + 1);
+	     },
+	     swapChildren: function(fromIndex, toIndex)
+	     {
+	       dojo.debug(this.id + ".swapChildren(" + fromIndex + 
+			  ", " + toIndex + ")");
+	       var fromChild = this.getChildAt(fromIndex);
+	       var toChild = this.getChildAt(toIndex);
+//	       var toChildCoords = dojo.style.getAbsolutePosition(toChild.domContainer);
+//	       toChildCoords = [ toChildCoords.x, toChildCoords.y ];
+//	       alert("to coords [ " + toChildCoords[0] + ", " + toChildCoords[0] + "]");
+//	       var fromChildCoords = dojo.style.getAbsolutePosition(fromChild.domContainer);
+//	       fromChildCoords = [ fromChildCoords.x, fromChildCoords.y ];
+//	       alert("from coords [ " + fromChildCoords[0] + ", " + fromChildCoords[0] + "]");
+//	       dojo.lfx.html.slideTo(fromChild.domContainer, 5000, toChildCoords);
+//	       dojo.lfx.html.slideTo(toChild.domContainer, 5000, fromChildCoords);
+
+
+	       var swapNode = document.createElement("div");
+//	       dojo.dom.removeNode(toChild.domContainer);
+//	       dojo.dom.removeNode(fromChild.domContainer);
+	       this.domNode.replaceChild(swapNode, fromChild.domContainer);
+	       this.domNode.replaceChild(fromChild.domContainer, toChild.domContainer);
+	       this.domNode.replaceChild(toChild.domContainer, swapNode);
+	       
+
+	       this.children[fromIndex] = toChild;
+	       this.children[toIndex] = fromChild;
 	     },
 	     setFocusedChild: function(child)
 	     {
@@ -602,18 +642,27 @@ dojo.declare("alfresco.xforms.Repeat",
 	       var d = document.createElement("div");
 	       d.repeat = this;
 	       this.domNode.appendChild(d);
-	       d.setAttribute("style", "position: relative; line-height: 16px; background-color: #cddbe8; font-weight: bold;");
+	       d.setAttribute("style", "position: relative; height: 20px; line-height: 20px; background-color: #cddbe8; font-weight: bold;");
+	       d.style.width = "100%";
 	       dojo.event.browser.addListener(d, 
 					      "onclick", 
 					      function(event)
 					      {
 						event.currentTarget.repeat.setFocusedChild(null);
 					      });
-	       
-	       var labelElement = document.createElement("div");
+
+	       //used only for positioning the label accurately
+	       var requiredImage = document.createElement("img");
+	       requiredImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/required_field.gif");
+	       requiredImage.setAttribute("style", "margin: 0px 5px 0px 5px;");
+	       d.appendChild(requiredImage);
+//	       requiredImage.style.position = "relative";
+//	       requiredImage.style.top = "0px";
+//	       requiredImage.style.left = "0px";
+	       requiredImage.style.visibility = "hidden";
+
+	       var labelElement = document.createTextNode(this.parent.getLabel());//document.createElement("span");
 	       d.appendChild(labelElement);
-	       labelElement.appendChild(document.createTextNode(this.parent.getLabel()));
-	       labelElement.setAttribute("style", "position: relative; left: 5%; top: 0px;");
 	       
 	       var addElement = document.createElement("img");
 	       d.appendChild(addElement);
@@ -639,18 +688,27 @@ dojo.declare("alfresco.xforms.Repeat",
 	     handleIndexChanged: function(index)
 	     {
 	       dojo.debug(this.id + ".handleIndexChanged(" + index + ")");
-	       if (this.selectedIndex != null && this.selectedIndex >= 0)
-	       {
-		 var child = this.getChildAt(this.selectedIndex);
-		 if (child)
-		   child.domContainer.style.backgroundColor = "white";
-	       }
+	       if (this.selectedIndex != null && 
+		   this.selectedIndex >= 0 &&
+		   this.selectedIndex < this.children.length)
+		 dojo.lfx.html.unhighlight(this.getChildAt(this.selectedIndex).domContainer, 
+					   "white",
+					   200, 
+					   0, 
+					   function(node)
+					   {
+					     node.style.backgroundColor = "white";
+					   }).play();
 	       
-	       if (index >= 0)
-	       {
-		 var child = this.getChildAt(index);
-		 child.domContainer.style.backgroundColor = "orange";
-	       }
+	       if (index >= 0 && index < this.children.length)
+		 dojo.lfx.html.highlight(this.getChildAt(index).domContainer, 
+					 "orange", 
+					 200,
+					 0,
+					 function(node)
+					 {
+					   node.style.backgroundColor = "orange";
+					 }).play();
 	       this.selectedIndex = index;
 	     },
 	     handlePrototypeCloned: function(prototypeId)
@@ -696,7 +754,7 @@ dojo.declare("alfresco.xforms.Trigger",
 		 attach_point.appendChild(nodeRef);
 		 var w = dojo.widget.createWidget("Button", 
 						  {
-						  widgetId: this.id,
+						  widgetId: this.id + "-widget",
 						  caption: this.getLabel() + " " + this.id
 						  }, 
 						  nodeRef);
@@ -721,7 +779,7 @@ dojo.declare("alfresco.xforms.Submit",
 		 attach_point.appendChild(nodeRef);
 		 var w = dojo.widget.createWidget("Button", 
 						  {
-						  widgetId: this.id,
+						  widgetId: this.id + "-widget",
 						  caption: "submit" 
 						  }, 
 						  nodeRef);
@@ -973,7 +1031,9 @@ function xforms_init()
 				  : 'null'));
     }
     var alfUI = document.getElementById("alf-ui");
-    var root = new alfresco.xforms.Group(xform, document.getElementById("alf-ui"));
+    alfUI.style.width = "100%";
+
+    var root = new alfresco.xforms.Group(xform, alfUI);
     root.render(alfUI);
     load_body(xform, xform.getBody(), root);
     document.xform = xform;

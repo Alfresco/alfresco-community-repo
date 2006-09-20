@@ -74,7 +74,6 @@ public class XFormsInputMethod
 	// this div is where the ui will write to
 	final Element div = result.createElement("div");
 	div.setAttribute("id", "alf-ui");
-	div.setAttribute("style", "width: 100%; border: solid 0px orange;");
 	result.appendChild(div);
 
 	// a script with config information and globals.

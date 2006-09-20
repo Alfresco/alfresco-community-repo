@@ -22,6 +22,12 @@
               <prop key="mimetype">text/xml</prop>
               <prop key="redeploy">false</prop>
             </props>
+            <props>
+              <prop key="engineId">jbpm</prop>
+              <prop key="location">alfresco/workflow/wcmSubmit.xml</prop>
+              <prop key="mimetype">text/xml</prop>
+              <prop key="redeploy">false</prop>
+            </props>
          </list>
       </property>
    </bean>

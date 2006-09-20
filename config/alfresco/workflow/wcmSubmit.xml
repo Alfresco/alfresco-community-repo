@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This describes a process for submitting changed content in a user -->
+<!-- sandbox, via an approver, to the staging sandbox. -->
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wcmwf:submit">
+
+    <swimlane name="initiator"/>
+
+    <start-state name="start">
+        <task name="wcmwf:startSubmit" swimlane="initiator">
+            <controller>
+                <variable name="assignee" access="write" mapped-name="wcmwf:assignee"/>
+                <variable name="description" access="write" mapped-name="wcmwf:description"/>
+                <variable name="sourcePath" access="write" mapped-name="wcmwf:sourcePath"/>
+                <variable name="workflowcontext" access="write" mapped-name="bpm:context"/>
+            </controller>
+        </task>
+        <transition name="" to="review"/>
+    </start-state>
+
+    <swimlane name="assignee">
+        <assignment actor-id="#{assignee.properties['cm:userName']}"/>
+    </swimlane>
+
+    <task-node name="review">
+        <task name="wcmwf:review" swimlane="assignee">
+            <controller>
+                <variable name="description" access="read" mapped-name="wcmwf:description"/>
+                <variable name="sourcePath" access="read" mapped-name="wcmwf:sourcePath"/>
+                <variable name="workflowcontext" access="write" mapped-name="bpm:context"/>
+            </controller>
+        </task>
+        <transition name="approve" to="end">
+            <action class="org.alfresco.repo.avm.wf.AVMSubmitHandler"/>
+        </transition>
+    </task-node>
+
+    <end-state name="end"/>
+
+</process-definition>

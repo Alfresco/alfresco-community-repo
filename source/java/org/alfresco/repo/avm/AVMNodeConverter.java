@@ -114,6 +114,11 @@ public class AVMNodeConverter
      */
     public static String [] SplitBase(String path)
     {
+        path = path.replaceAll("/+", "/");
+        while (path.endsWith("/") && !path.endsWith(":/"))
+        {
+            path = path.substring(0, path.length() - 1);
+        }
         if (path.endsWith(":/"))
         {
             String [] res = new String[2];

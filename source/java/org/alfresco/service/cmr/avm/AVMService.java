@@ -262,6 +262,12 @@ public interface AVMService
     public void removeNode(String parent, String name);
     
     /**
+     * Remove a node from by its full path.
+     * @param path The full path to the node to remove.
+     */
+    public void removeNode(String path);
+    
+    /**
      * Rename a node.
      * @param srcParent The simple absolute path to the parent folder.
      * @param srcName The name of the node in the src Folder.

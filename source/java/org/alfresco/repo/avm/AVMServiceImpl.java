@@ -384,6 +384,24 @@ public class AVMServiceImpl implements AVMService
         }
         fAVMRepository.remove(parent, name);
     }
+    
+    /**
+     * Remove a node by full path.
+     * @param path The full path to the node.
+     */
+    public void removeNode(String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        String [] basePath = AVMNodeConverter.SplitBase(path);
+        if (basePath[0] == null)
+        {
+            throw new AVMBadArgumentException("Cannot remove root node.");
+        }
+        fAVMRepository.remove(basePath[0], basePath[1]);
+    }
 
     /**
      * Rename a node.

@@ -60,6 +60,32 @@ import org.alfresco.service.transaction.TransactionService;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test one argument remove.
+     */
+    public void testOneArgRemove()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.removeNode("main:/a/b/c/foo/");
+            fService.removeNode("main://d");
+            try
+            {
+                fService.removeNode("main://");
+                fail();
+            }
+            catch (AVMException e)
+            {
+                // Do nothing.
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+        }
+    }
+    
+    /**
      * Test that non head version sources are update correctly.
      */
     public void testVersionUpdate()

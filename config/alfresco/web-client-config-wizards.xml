@@ -178,7 +178,7 @@
          
          <!-- Definition of the Create Web Content wizard -->
          <wizard name="createWebContent" managed-bean="CreateWebContentWizard"
-                 title-id="create_content_title" description-id="create_content_desc"
+                 title-id="create_web_content_title" description-id="create_web_content_desc"
                  icon="/images/icons/new_content_large.gif">
             <step name="details" title-id="details" description-id="create_content_step1_desc">
                <page path="/jsp/wcm/create-web-content-wizard/details.jsp" 

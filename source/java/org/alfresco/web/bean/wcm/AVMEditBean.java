@@ -28,11 +28,14 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.CheckinCheckoutBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.templating.OutputUtil;
+import org.alfresco.web.templating.TemplatingService;
 import org.alfresco.web.ui.common.Utils;
 
 /**
@@ -54,6 +57,9 @@ public class AVMEditBean
    
    /** The ContentService bean reference */
    protected ContentService contentService;
+   
+   /** The NodeService bean reference */
+   protected NodeService nodeService;
    
    
    // ------------------------------------------------------------------------------
@@ -83,6 +89,14 @@ public class AVMEditBean
       this.contentService = contentService;
    }
    
+   /**
+    * @param nodeService      The nodeService to set.
+    */
+   public void setNodeService(NodeService nodeService)
+   {
+      this.nodeService = nodeService;
+   }
+
    /**
     * @return Returns the current AVM node context.
     */
@@ -250,14 +264,13 @@ public class AVMEditBean
             // commit the transaction
             tx.commit();
             
-            // TODO: generate template content
-            /*if (nodeService.getProperty(node.getNodeRef(),
-                  TemplatingService.TT_QNAME) != null)
+            // TODO: regenerate template content
+            if (nodeService.getProperty(avmRef, TemplatingService.TT_QNAME) != null)
             {
-               OutputUtil.regenerate(node.getNodeRef(),
+               OutputUtil.regenerate(avmRef,
                      this.contentService,
                      this.nodeService);
-            }*/
+            }
             
             resetState();
             

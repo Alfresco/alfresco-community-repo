@@ -16,15 +16,13 @@
  */
 package org.alfresco.web.templating;
 
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMContext;
-import org.alfresco.service.cmr.avm.AVMExistsException;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -53,7 +51,7 @@ public class OutputUtil
    
    private static String getAVMParentPath(NodeRef nodeRef,
          NodeService nodeService)
-   throws Exception
+      throws Exception
    {
       ChildAssociationRef caf = nodeService.getPrimaryParent(nodeRef);
       final String parentName = (String)
@@ -72,80 +70,47 @@ public class OutputUtil
       }
    }
    
-   public static void generate(NodeRef createdNode,
+   public static void generate(String parentPath,
          Document xml, 
          TemplateType tt, 
          String fileName,
-         NodeRef containerNodeRef,
-         FileFolderService fileFolderService,
          ContentService contentService,
-         NodeService nodeService)
-   throws Exception 
+         NodeService nodeService,
+         AVMService avmService)
+      throws Exception 
    {
       try 
       {
          // get the node ref of the node that will contain the content
          String generatedFileName = stripExtension(fileName) + ".shtml";
-         FileInfo fileInfo = 
-            fileFolderService.create(containerNodeRef,
-                  generatedFileName,
-                  ContentModel.TYPE_CONTENT);
-         NodeRef fileNodeRef = fileInfo.getNodeRef();
+         
+         OutputStream fileOut = avmService.createFile(parentPath, generatedFileName);
+         
+         String fullAvmPath = parentPath + '/' + generatedFileName;
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + 
-                  generatedFileName);
+                  fullAvmPath);
          
-         // get a writer for the content and put the file
-         ContentWriter writer = contentService.getWriter(fileNodeRef, 
-               ContentModel.PROP_CONTENT, true);
-         // set the mimetype and encoding
-         writer.setMimetype("text/html");
-         writer.setEncoding("UTF-8");
          TemplateOutputMethod tom = tt.getOutputMethods().get(0);
-         OutputStreamWriter out = 
-            new OutputStreamWriter(writer.getContentOutputStream());
+         OutputStreamWriter out = new OutputStreamWriter(fileOut);
          tom.generate(xml, tt, out);
          out.close();
-         nodeService.setProperty(fileNodeRef,
+         
+         NodeRef outputNodeRef = AVMNodeConverter.ToNodeRef(-1, fullAvmPath);
+         nodeService.setProperty(outputNodeRef,
                TemplatingService.TT_QNAME,
                tt.getName());
          
          LOGGER.debug("generated " + generatedFileName + " using " + tom);
          
-         if (createdNode != null)
-         {
-            nodeService.setProperty(createdNode,
-                  TemplatingService.TT_GENERATED_OUTPUT_QNAME,
-                  fileNodeRef.toString());
-         }
+         NodeRef createdNodeRef = AVMNodeConverter.ToNodeRef(-1, parentPath + '/' + fileName);
+         nodeService.setProperty(createdNodeRef,
+               TemplatingService.TT_GENERATED_OUTPUT_QNAME,
+               outputNodeRef.toString());
          
-         AVMService avmService = (AVMService)AVMContext.fgInstance.fAppContext.getBean("avmService");
-         final String parentAVMPath = getAVMParentPath(createdNode, nodeService);
-         try 
-         {
-            out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, generatedFileName));
-         }
-         catch (AVMExistsException e)
-         {
-            out = new OutputStreamWriter(avmService.getFileOutputStream(parentAVMPath + "/" + generatedFileName));
-         }
-         LOGGER.debug("generating " + generatedFileName + " to avm");
-         tom.generate(xml, tt, out);
-         out.close();
-         try 
-         {
-            out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, generatedFileName));
-         }
-         catch (AVMExistsException e)
-         {
-            out = new OutputStreamWriter(avmService.getFileOutputStream(parentAVMPath + "/" + generatedFileName));
-         }
-         LOGGER.debug("generating " + generatedFileName + " to avm");
-         tom.generate(xml, tt, out);
-         out.close();
-         
-         try 
+         // TODO: should this output go anywhere in the AVM world now we are writing directly?
+         /*try
          {
             out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, fileName));
          }
@@ -156,7 +121,7 @@ public class OutputUtil
          LOGGER.debug("writing xml " + fileName + " to avm");
          final TemplatingService ts = TemplatingService.getInstance();
          ts.writeXML(xml, out);
-         out.close();
+         out.close();*/
       }
       catch (Exception e)
       {
@@ -169,7 +134,7 @@ public class OutputUtil
    public static void regenerate(final NodeRef nodeRef, 
          final ContentService contentService,
          final NodeService nodeService)
-   throws Exception 
+      throws Exception 
    {
       try 
       {
@@ -203,14 +168,14 @@ public class OutputUtil
          writer.setEncoding("UTF-8");
          // put a loop to generate all output methods
          TemplateOutputMethod tom = tt.getOutputMethods().get(0);
-         OutputStreamWriter out = 
-            new OutputStreamWriter(writer.getContentOutputStream());
+         OutputStreamWriter out = new OutputStreamWriter(writer.getContentOutputStream());
          tom.generate(xml, tt, out);
          out.close();
          
          LOGGER.debug("generated " + fileName + " using " + tom);
          
-         AVMService avmService = (AVMService)AVMContext.fgInstance.fAppContext.getBean("avmService");
+         // TODO: do we need these now - as the NodeRef's above are now AVM NodeRefs...?
+         /*AVMService avmService = (AVMService)AVMContext.fgInstance.fAppContext.getBean("avmService");
          final String parentAVMPath = getAVMParentPath(nodeRef, nodeService);
          try 
          {
@@ -222,9 +187,9 @@ public class OutputUtil
          }
          LOGGER.debug("generating " + generatedFileName + " to avm");
          tom.generate(xml, tt, out);
-         out.close();
+         out.close();*/
          
-         try 
+         /*try 
          {
             out =  new OutputStreamWriter(avmService.createFile(parentAVMPath, fileName));
          }
@@ -234,7 +199,7 @@ public class OutputUtil
          }
          LOGGER.debug("writing xml " + fileName + " to avm");
          ts.writeXML(xml, out);
-         out.close();
+         out.close();*/
       }
       catch (Exception e)
       {

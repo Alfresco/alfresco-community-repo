@@ -569,6 +569,14 @@
          <property-name>dictionaryService</property-name>
          <value>#{DictionaryService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

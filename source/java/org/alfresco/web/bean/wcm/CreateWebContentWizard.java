@@ -16,8 +16,15 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -29,11 +36,20 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.templating.OutputUtil;
@@ -47,11 +63,35 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateWebContentWizard extends BaseContentWizard
 {
+   private static final Log logger = LogFactory.getLog(CreateWebContentWizard.class);
+   
    protected String content = null;
    protected String templateTypeName;
    protected List<SelectItem> createMimeTypes;
+   protected String createdPath = null;
    
-   private static final Log logger = LogFactory.getLog(CreateWebContentWizard.class);
+   /** AVM service bean reference */
+   protected AVMService avmService;
+   
+   /** AVM Browse Bean reference */
+   protected AVMBrowseBean avmBrowseBean;
+   
+   
+   /**
+    * @param avmService       The AVMService to set.
+    */
+   public void setAvmService(AVMService avmService)
+   {
+      this.avmService = avmService;
+   }
+   
+   /**
+    * @param avmBrowseBean    The AVMBrowseBean to set.
+    */
+   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   {
+      this.avmBrowseBean = avmBrowseBean;
+   }
    
    
    // ------------------------------------------------------------------------------
@@ -63,26 +103,67 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       logger.debug("saving file content to " + this.fileName);
       saveContent(null, this.content);
-      if (this.templateTypeName != null)
+      
+      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.templateTypeName != null)
       {
          logger.debug("generating template output for " + this.templateTypeName);
-         this.nodeService.setProperty(this.createdNode, 
+         this.nodeService.setProperty(AVMNodeConverter.ToNodeRef(-1, this.createdPath), 
                TemplatingService.TT_QNAME, 
                this.templateTypeName);
          TemplatingService ts = TemplatingService.getInstance();
          TemplateType tt = this.getTemplateType();
-         OutputUtil.generate(this.createdNode,
+         OutputUtil.generate(this.createdPath.substring(0, this.createdPath.lastIndexOf('/')),
                ts.parseXML(this.content),
                tt,
                this.fileName,
-               this.getContainerNodeRef(),
-               this.fileFolderService,
                this.contentService,
-               this.nodeService);
+               this.nodeService,
+               this.avmService);
       }
       
       // return the default outcome
       return outcome;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helper methods
+
+   /**
+    * Save the specified content using the currently set wizard attributes
+    * 
+    * @param fileContent      File content to save
+    * @param strContent       String content to save
+    */
+   protected void saveContent(File fileContent, String strContent) throws Exception
+   {
+      // get the parent path of the location to save the content
+      String path;
+      AVMNode avmNode = this.avmBrowseBean.getAvmNode();
+      if (avmNode == null)
+      {
+         // create in root of current website
+         Node websiteNode = this.navigator.getCurrentNode();
+         String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
+         path = AVMConstants.buildAVMStoreRootPath(AVMConstants.buildAVMStagingStoreName(storeRoot));
+      }
+      else
+      {
+         // create in current folder path
+         path = avmNode.getPath();
+      }
+      
+      // put the content of the file into the AVM store
+      if (fileContent != null)
+      {
+         avmService.createFile(path, this.fileName, new BufferedInputStream(new FileInputStream(fileContent)));
+      }
+      else 
+      {
+         avmService.createFile(path, this.fileName, new ByteArrayInputStream((strContent == null ? "" : strContent).getBytes()));
+      }
+      
+      // remember the created path
+      this.createdPath = path + '/' + this.fileName;
    }
    
    @Override
@@ -117,25 +198,6 @@ public class CreateWebContentWizard extends BaseContentWizard
       return disabled;
    }
    
-   @Override
-   protected String doPostCommitProcessing(FacesContext context, String outcome)
-   {
-      // as we were successful, go to the set properties dialog if asked
-      // to otherwise just return
-      if (this.showOtherProperties)
-      {
-         // we are going to immediately edit the properties so we need
-         // to setup the BrowseBean context appropriately
-         this.browseBean.setDocument(new Node(this.createdNode));
-         
-         return getDefaultFinishOutcome() + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
-         "dialog:setContentProperties";
-      }
-      else
-      {
-         return outcome;
-      }
-   }
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters

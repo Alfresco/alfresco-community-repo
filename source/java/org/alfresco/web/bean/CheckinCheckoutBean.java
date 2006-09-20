@@ -46,8 +46,6 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.templating.OutputUtil;
-import org.alfresco.web.templating.TemplatingService;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
@@ -640,14 +638,6 @@ public class CheckinCheckoutBean
             
             // commit the transaction
             tx.commit();
-            
-	    if (nodeService.getProperty(node.getNodeRef(),
-					TemplatingService.TT_QNAME) != null)
-	    {
-		OutputUtil.regenerate(node.getNodeRef(),
-				      this.contentService,
-				      this.nodeService);
-	    }
             
             // clean up and clear action context
             clearUpload();

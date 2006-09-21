@@ -33,14 +33,14 @@
     
     <xsd:complexType name="Store">
     	<xsd:sequence>
-    		<xsd:element name="scheme" type="xsd:string"/>
-    		<xsd:element name="address" type="xsd:string"/>
+    		<xsd:element name="scheme" type="xsd:string" maxOccurs="1" minOccurs="0" nillable="true"/>
+    		<xsd:element name="address" type="xsd:string"  maxOccurs="1" minOccurs="0" nillable="true"/>
     	</xsd:sequence>
     </xsd:complexType>
 
     <xsd:complexType name="Reference">
     	<xsd:sequence>
-    		<xsd:element name="store" type="cms:Store"/>
+    		<xsd:element name="store" type="cms:Store"  maxOccurs="1" minOccurs="0" nillable="true" />
     		<xsd:element maxOccurs="1" minOccurs="0" name="uuid" type="cms:UUID" nillable="true"/>
     		<xsd:element default="/" maxOccurs="1" minOccurs="0" name="path" type="cms:Path" nillable="true"/>
     	</xsd:sequence>
@@ -56,8 +56,8 @@
 
 	<xsd:group name="ChildAssociation">
 		<xsd:sequence>
-			<xsd:element maxOccurs="1" minOccurs="0" name="associationType" type="cms:Name"/>
- 			<xsd:element maxOccurs="1" minOccurs="0" name="childName" type="cms:Name"/>
+			<xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="associationType" type="cms:Name"/>
+ 			<xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="childName" type="cms:Name"/>
 		</xsd:sequence>
 	</xsd:group>
 

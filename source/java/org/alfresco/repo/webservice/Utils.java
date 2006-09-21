@@ -95,54 +95,78 @@ public class Utils
     public static Serializable getValueFromNamedValue(DictionaryService dictionaryService, QName propertyName, NamedValue namedValue)
     {
         Serializable result = null;
-        org.alfresco.service.cmr.dictionary.PropertyDefinition propDef = dictionaryService.getProperty(propertyName);
-        if (propDef != null)
-        {    
-            DataTypeDefinition propertyType = propDef.getDataType();
-            if (propertyType != null)
-            {           
-                if (namedValue == null || namedValue.getIsMultiValue() == false)
+        if (namedValue != null)
+        {
+	        org.alfresco.service.cmr.dictionary.PropertyDefinition propDef = dictionaryService.getProperty(propertyName);
+	        if (propDef == null)
+	        {
+	        	if (namedValue.getIsMultiValue() == false)
                 {
-                    if (logger.isDebugEnabled() == true)
-                    {
-                        logger.debug("Converting single-valued property '" + propertyName.toString() + "' with value " + namedValue.getValue());
-                    }
-                    
-                    result = (Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, namedValue.getValue());
+	        		result = namedValue.getValue();
                 }
-                else
-                {
-                    String[] values = namedValue.getValues();
-                    
-                    if (logger.isDebugEnabled() == true)
-                    {
-                        logger.debug("Converting multi-valued property '" + propertyName.toString() + "' with values " + values.toString());
-                    }
-                    
+	        	else
+	        	{
+	        		String[] values = namedValue.getValues();
+	                    
                     if (values != null)
                     {
                         Collection<Serializable> collection = new ArrayList<Serializable>(values.length);
                         for (String value : values)
                         {
-                            collection.add((Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, value));
+                            collection.add(value);
                         }
-                        
-                        if (logger.isDebugEnabled() == true)
-                        {
-                            logger.debug("The collection for the multi-value property has been generated '" + collection.toString());
-                        }
-                        
                         result = (Serializable)collection;
                     }
-                }
-            }
-            else
-            {
-                if (logger.isDebugEnabled() == true)
-                {
-                    logger.debug("No property definition was found for property '" + propertyName.toString() + "'");
-                }
-            }
+	        	}
+	        }
+	        else
+	        {    
+	            DataTypeDefinition propertyType = propDef.getDataType();
+	            if (propertyType != null)
+	            {           
+	                if (namedValue.getIsMultiValue() == false)
+	                {
+	                    if (logger.isDebugEnabled() == true)
+	                    {
+	                        logger.debug("Converting single-valued property '" + propertyName.toString() + "' with value " + namedValue.getValue());
+	                    }
+	                    
+	                    result = (Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, namedValue.getValue());
+	                }
+	                else
+	                {
+	                    String[] values = namedValue.getValues();
+	                    
+	                    if (logger.isDebugEnabled() == true)
+	                    {
+	                        logger.debug("Converting multi-valued property '" + propertyName.toString() + "' with values " + values.toString());
+	                    }
+	                    
+	                    if (values != null)
+	                    {
+	                        Collection<Serializable> collection = new ArrayList<Serializable>(values.length);
+	                        for (String value : values)
+	                        {
+	                            collection.add((Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, value));
+	                        }
+	                        
+	                        if (logger.isDebugEnabled() == true)
+	                        {
+	                            logger.debug("The collection for the multi-value property has been generated '" + collection.toString());
+	                        }
+	                        
+	                        result = (Serializable)collection;
+	                    }
+	                }
+	            }
+	            else
+	            {
+	                if (logger.isDebugEnabled() == true)
+	                {
+	                    logger.debug("No property definition was found for property '" + propertyName.toString() + "'");
+	                }
+	            }
+	        }
         }
         return result;
     }

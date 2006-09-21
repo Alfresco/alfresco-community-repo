@@ -19,7 +19,9 @@
 				<xsd:complexType>
 					<xsd:sequence>
 					    <xsd:element name="id" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
-						<xsd:element name="parent" type="cms:ParentReference"></xsd:element>
+						<xsd:element name="parent" type="cms:ParentReference" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+						<xsd:element name="parent_id" type="xsd:string" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+				        <xsd:group ref="cms:ChildAssociation" maxOccurs="1" minOccurs="0" nillable="true"></xsd:group>
 						<xsd:element name="type" type="cms:Name" maxOccurs="1" minOccurs="0"></xsd:element>
 						<xsd:element name="property" type="cms:NamedValue" maxOccurs="unbounded" minOccurs="0"></xsd:element>
 					</xsd:sequence>

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.webservice.repository.UpdateResult;
 import org.alfresco.repo.webservice.types.CML;
 import org.alfresco.repo.webservice.types.CMLAddAspect;
@@ -53,12 +54,16 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Roy Wetherall
  */
 public class CMLUtil
 {
+	private static Log logger = LogFactory.getLog(CMLUtil.class);
+	
     private static final String CREATE = "create";
     private static final String ADD_ASPECT = "addAspect";
     private static final String REMOVE_ASPECT = "removeAspect";
@@ -163,6 +168,11 @@ public class CMLUtil
         CMLWriteContent[] writes = cml.getWriteContent();
         if (writes != null)
         {
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug(writes.length + " write content statements ready for execution.");
+        	}
+        	
             for (CMLWriteContent write : writes)
             {
                 executeCMLWriteContent(write, context, results);
@@ -249,15 +259,37 @@ public class CMLUtil
      */
     private void executeCMLCreate(CMLCreate create, ExecutionContext context, List<UpdateResult> results)
     {
+    	NodeRef parentNodeRef = null;
+    	QName assocTypeQName = null;
+    	QName assocQName = null;
+    	
         // Get the detail of the parent
-        ParentReference parentReference = create.getParent();        
-        NodeRef parentNodeRef = Utils.convertToNodeRef(
-                                            parentReference, 
-                                            this.nodeService, 
-                                            this.searchService, 
-                                            this.namespaceService);
-        QName assocTypeQName = QName.createQName(parentReference.getAssociationType());
-        QName assocQName = QName.createQName(parentReference.getChildName());
+        ParentReference parentReference = create.getParent();
+        if (parentReference != null)
+        {
+	        parentNodeRef = Utils.convertToNodeRef(
+	                                            parentReference, 
+	                                            this.nodeService, 
+	                                            this.searchService, 
+	                                            this.namespaceService);
+	        assocTypeQName = QName.createQName(parentReference.getAssociationType());
+	        assocQName = QName.createQName(parentReference.getChildName());
+        }
+        else
+        {
+        	String parentId = create.getParent_id();
+        	if (parentId != null)
+        	{
+        		parentNodeRef = context.idMap.get(parentId);
+        	}		
+        	assocTypeQName = QName.createQName(create.getAssociationType());
+        	assocQName = QName.createQName(create.getChildName());
+        }
+        
+        if (parentNodeRef == null)
+        {
+        	throw new AlfrescoRuntimeException("No parent details have been specified for the node being created.");
+        }
         
         // Get the type of the node to create
         QName nodeTypeQName = QName.createQName(create.getType());
@@ -363,17 +395,33 @@ public class CMLUtil
     
     private List<NodeRef> getNodeRefList(String id, Predicate predicate, ExecutionContext context)
     {
+    	boolean bResolved = false;
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
         if (id != null && id.length() != 0)
         {
             NodeRef localNodeRef = context.getNodeRef(id);
             if (localNodeRef != null)
             {
+            	if (logger.isDebugEnabled() == true)
+            	{
+            		logger.debug("Local node ref has been resolved for id = " + id);
+            	}
+            	
                 nodeRefs.add(localNodeRef);
+                bResolved = true;
             }
         }
-        else
+        
+        if (bResolved == false)
         {
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug("Trying to resolve predicate for where statement");
+        		if (predicate.getNodes() == null)
+        		{
+        			logger.debug("!! Predicate has no nodes !!");
+        		}
+        	}
             nodeRefs = Utils.resolvePredicate(predicate, this.nodeService, this.searchService, this.namespaceService);
         }
         return nodeRefs;
@@ -405,23 +453,43 @@ public class CMLUtil
         ContentFormat format = write.getFormat();
         byte[] content = write.getContent();
         
-        for (NodeRef nodeRef : nodeRefs)
-        {            
-            //Get the content writer
-            ContentWriter writer = this.contentService.getWriter(nodeRef, property, true);
-            
-            // Set the content format details (if they have been specified)
-            if (format != null)
-            {
-                writer.setEncoding(format.getEncoding());
-                writer.setMimetype(format.getMimetype());
-            }
-            
-            // Write the content 
-            InputStream is = new ByteArrayInputStream(content);
-            writer.putContent(is);
-            
-            results.add(createResult(WRITE_CONTENT, null, nodeRef, nodeRef));
+        if (logger.isDebugEnabled() == true)
+        {
+        	if (nodeRefs != null)
+        	{
+        		logger.debug("Write content: " + nodeRefs.size() + " nodes found for execution");
+        	}
+        	else
+        	{
+        		logger.debug("No nodes found to write content to!");
+        	}
+        }
+        
+        if (nodeRefs != null)
+        {
+	        for (NodeRef nodeRef : nodeRefs)
+	        {            
+	            //Get the content writer
+	            ContentWriter writer = this.contentService.getWriter(nodeRef, property, true);
+	            
+	            // Set the content format details (if they have been specified)
+	            if (format != null)
+	            {
+	                writer.setEncoding(format.getEncoding());
+	                writer.setMimetype(format.getMimetype());
+	            }
+	            
+	            // Write the content 
+	            InputStream is = new ByteArrayInputStream(content);
+	            writer.putContent(is);
+	            
+	            if (logger.isDebugEnabled() == true)
+	            {
+	            	logger.debug("Write content: content written on node " + nodeRef.toString() + " with format " + format.getMimetype() + "|" + format.getEncoding());
+	            }
+	            
+	            results.add(createResult(WRITE_CONTENT, null, nodeRef, nodeRef));
+	        }
         }
     }
     

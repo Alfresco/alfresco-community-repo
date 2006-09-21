@@ -648,6 +648,10 @@
          <property-name>navigationBean</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -668,6 +672,10 @@
       <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
    

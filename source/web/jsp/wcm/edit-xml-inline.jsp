@@ -33,10 +33,10 @@
 <%@ page import="org.alfresco.web.templating.*" %>
 <%@ page import="org.w3c.dom.Document" %>
 <%
-final AVMBrowseBean ccb = (AVMBrowseBean)session.getAttribute("AVMBrowseBean");
-NodeRef nr = ccb.getAvmNode().getNodeRef();
-final AVMEditBean aeb = (AVMEditBean)session.getAttribute("AVMEditBean");
-String ttName = (String)ccb.getNodeService().getProperty(nr, TemplatingService.TT_QNAME);
+final AVMBrowseBean browseBean = (AVMBrowseBean)session.getAttribute("AVMBrowseBean");
+NodeRef nr = browseBean.getAvmNode().getNodeRef();
+final AVMEditBean editBean = (AVMEditBean)session.getAttribute("AVMEditBean");
+String ttName = (String)browseBean.getNodeService().getProperty(nr, TemplatingService.TT_QNAME);
 final TemplatingService ts = TemplatingService.getInstance();
 final TemplateType tt  = ts.getTemplateType(ttName);
 TemplateInputMethod tim = tt.getInputMethods().get(0);
@@ -46,7 +46,7 @@ final InstanceData instanceData = new InstanceData()
    { 
       try
       {
-         return aeb.getEditorOutput() != null ? ts.parseXML(aeb.getEditorOutput()) : null;
+         return editBean.getEditorOutput() != null ? ts.parseXML(editBean.getEditorOutput()) : null;
       }
       catch (Exception e)
       {
@@ -57,7 +57,7 @@ final InstanceData instanceData = new InstanceData()
    
    public void setContent(final Document d)
    {
-      aeb.setEditorOutput(ts.writeXMLToString(d));
+      editBean.setEditorOutput(ts.writeXMLToString(d));
    }
 };
 %>
@@ -130,33 +130,30 @@ final InstanceData instanceData = new InstanceData()
                   <td height="100%">
                      <table cellspacing="0" cellpadding="3" border="0" width="100%" height="100%">
                         <tr>
-                           <td valign="top" rowspan=2>
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
-                              <table cellpadding="1" cellspacing="1" border="0">
-                                 <tr>
-                                    <td align="center">
-                                       <h:commandButton id="save-button" value="#{msg.save}" action="#{CheckinCheckoutBean.editInlineOK}" styleClass="dialogControls" />
-                                    </td>
-                                 </tr>
-                                 <tr><td class="dialogButtonSpacing"></td></tr>
-                                 <tr>
-                                    <td align="center">
-                                       <h:commandButton value="#{msg.cancel}" action="browse" styleClass="dialogControls" />
-                                    </td>
-                                 </tr>
-                              </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
-                           </td>
-                        </tr>
-                        
-                        <%-- Inline editor --%>
-                        <tr>
+                           <%-- Inline editor --%>
                            <td width="100%" valign="top" height="100%">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                                  
                                  <% tim.generate(instanceData, tt, out); %>
                                  
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
+                           </td>
+                           <td valign="top" rowspan=2>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <table cellpadding="1" cellspacing="1" border="0">
+                                 <tr>
+                                    <td align="center">
+                                       <h:commandButton id="save-button" value="#{msg.save}" action="#{AVMEditBean.editInlineOK}" styleClass="dialogControls" />
+                                    </td>
+                                 </tr>
+                                 <tr><td class="dialogButtonSpacing"></td></tr>
+                                 <tr>
+                                    <td align="center">
+                                       <h:commandButton value="#{msg.cancel}" action="dialog:close" styleClass="dialogControls" />
+                                    </td>
+                                 </tr>
+                              </table>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
                            </td>
                         </tr>
                      </table>

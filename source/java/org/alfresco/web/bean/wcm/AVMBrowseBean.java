@@ -140,6 +140,11 @@ public class AVMBrowseBean implements IContextListener
       this.nodeService = nodeService;
    }
    
+   /**
+    * Getter used by the Inline Edit XML JSP
+    * 
+    * @return The NodeService
+    */
    public NodeService getNodeService()
    {
       return this.nodeService;
@@ -370,6 +375,29 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @return the internal AVM path to the current folder for browsing
+    */
+   public String getCurrentPath()
+   {
+      if (this.currentPath == null)
+      {
+         this.currentPath = AVMConstants.buildAVMStoreRootPath(getSandbox());
+      }
+      return this.currentPath;
+   }
+   
+   /**
+    * @param path       the internal AVM path to the current folder for browsing
+    */
+   public void setCurrentPath(String path)
+   {
+      this.currentPath = path;
+      
+      // update UI state ready for screen refresh
+      UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+   }
+   
+   /**
     * @return Breadcrumb location list
     */
    public List<IBreadcrumbHandler> getLocation()
@@ -541,29 +569,6 @@ public class AVMBrowseBean implements IContextListener
    
    // ------------------------------------------------------------------------------
    // Private helpers
-   
-   /**
-    * @return the internal AVM path to the current folder for browsing
-    */
-   private String getCurrentPath()
-   {
-      if (this.currentPath == null)
-      {
-         this.currentPath = AVMConstants.buildAVMStoreRootPath(getSandbox());
-      }
-      return this.currentPath;
-   }
-   
-   /**
-    * @param path       the internal AVM path to the current folder for browsing
-    */
-   private void setCurrentPath(String path)
-   {
-      this.currentPath = path;
-      
-      // update UI state ready for screen refresh
-      UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
-   }
    
    /**
     * Update the breadcrumb with the clicked Group location

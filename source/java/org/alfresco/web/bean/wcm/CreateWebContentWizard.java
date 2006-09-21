@@ -20,11 +20,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.Serializable;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -36,20 +33,11 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.templating.OutputUtil;
@@ -137,20 +125,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected void saveContent(File fileContent, String strContent) throws Exception
    {
       // get the parent path of the location to save the content
-      String path;
-      AVMNode avmNode = this.avmBrowseBean.getAvmNode();
-      if (avmNode == null)
-      {
-         // create in root of current website
-         Node websiteNode = this.navigator.getCurrentNode();
-         String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
-         path = AVMConstants.buildAVMStoreRootPath(AVMConstants.buildAVMStagingStoreName(storeRoot));
-      }
-      else
-      {
-         // create in current folder path
-         path = avmNode.getPath();
-      }
+      String path = this.avmBrowseBean.getCurrentPath();
       
       // put the content of the file into the AVM store
       if (fileContent != null)

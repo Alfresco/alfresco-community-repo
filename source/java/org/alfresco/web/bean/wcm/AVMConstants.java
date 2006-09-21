@@ -70,5 +70,6 @@ public final class AVMConstants
    public final static String PROP_SANDBOX_AUTHOR_PREVIEW = ".sandbox.author.preview";
    public final static String PROP_DNS = ".dns.";
    public final static String PROP_WEBSITE_NAME = ".website.name";
+   public final static String PROP_SANDBOX_STORE_PREFIX = ".sandbox.store.";
    public final static String SPACE_ICON_WEBSITE = "space-icon-website";
 }

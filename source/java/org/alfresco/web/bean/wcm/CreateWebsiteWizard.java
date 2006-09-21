@@ -353,6 +353,12 @@ public class CreateWebsiteWizard extends BaseWizardBean
             QName.createQName(null, AVMConstants.PROP_WEBSITE_NAME),
             new PropertyValue(DataTypeDefinition.TEXT, name));
       
+      // tag the store, oddly enough, with its own store name for querying.
+      // when will the madness end.
+      this.avmService.setStoreProperty(userStore,
+            QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + userStore),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+      
       // tag the store with the DNS name property
       tagStoreDNSPath(userStore);
       
@@ -371,6 +377,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // tag the store with the store type
       this.avmService.setStoreProperty(previewStore,
             QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_PREVIEW),
+            new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      // tag the store with its own store name for querying.
+      this.avmService.setStoreProperty(previewStore,
+            QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + previewStore),
             new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with the DNS name property

@@ -49,7 +49,7 @@
             <child-association name="cm:contains">
                <source>
                   <mandatory>false</mandatory>
-                  <many>false</many>
+                  <many>true</many>
                </source>
                <target>
                   <class>sys:base</class>

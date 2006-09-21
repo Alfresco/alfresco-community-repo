@@ -2,269 +2,321 @@
 
 <model name="bpm:businessprocessmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
-   <description>Business Process Model</description>
-   <author>Alfresco</author>
-   <version>1.0</version>
+    <description>Business Process Model</description>
+    <author>Alfresco</author>
+    <version>1.0</version>
 
-   <!-- Imports are required to allow references to definitions in other models -->   
-   <imports>
-      <!-- Import Alfresco Dictionary Definitions -->
-      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
-      <!-- Import Alfresco Content Domain Model Definitions -->
-      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
-   </imports>
+    <!-- Imports are required to allow references to definitions in other models -->
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <!-- Import Alfresco Content Domain Model Definitions -->
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+    </imports>
 
-   <namespaces>
-      <namespace uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
-   </namespaces>
-   
-   <constraints>
-   
-      <constraint name="bpm:allowedPriority" type="LIST">
-         <parameter name="allowedValues">
-            <!--  TODO: Determine if priority values can be mapped to human-readable strings -->
-            <list>
-               <value>1</value>
-               <value>2</value>
-               <value>3</value>
-            </list>
-         </parameter>
-      </constraint>
-      
-      <constraint name="bpm:allowedStatus" type="LIST">
-         <parameter name="allowedValues">
-             <!--  TODO: Determine if status values can be mapped to human-readable strings -->
-             <list>
-                 <value>Not Yet Started</value>
-                 <value>In Progress</value>
-                 <value>On Hold</value>
-                 <value>Cancelled</value>
-                 <value>Completed</value>
-             </list>
-         </parameter>
-      </constraint>               
-      
-      <constraint name="bpm:percentage" type="MINMAX">
-         <parameter name="minValue"><value>0</value></parameter>
-         <parameter name="maxValue"><value>100</value></parameter>
-      </constraint>      
-      
-   </constraints>
-   
-   <types>
-               
-      <!--                                 -->
-      <!--  Base definition for all Tasks  -->
-      <!--                                 -->
-      
-      <type name="bpm:task">
-         <title>Task</title>
-         <description>Task</description>
-         <parent>cm:content</parent>
-         
-         <properties>
-         
-            <!--             -->
-            <!--  Assignment -->
-            <!--             -->
-            <!--  Note: Implemented via cm:ownable aspect -->
-         
-            <!--                  -->
-            <!--  Task Identifier -->
-            <!--                  -->
-            <property name="bpm:taskId">
-               <title>Task Identifier</title>
-               <type>d:long</type>
-               <protected>true</protected>
-               <mandatory>true</mandatory>
-            </property>
-         
-            <!--             -->   
-            <!--  Task Dates -->
-            <!--             -->
-            <property name="bpm:startDate">
-               <title>Start Date</title>
-               <type>d:date</type>
-               <protected>true</protected>
-            </property>
-            <property name="bpm:completionDate">
-               <title>End Date</title>
-               <type>d:date</type>
-               <protected>true</protected>
-            </property>
-            <property name="bpm:dueDate">
-               <title>Due Date</title>
-               <type>d:date</type>
-            </property>
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm" />
+    </namespaces>
 
-            <!--                -->
-            <!--  Task Progress -->
-            <!--                -->
-            <property name="bpm:status">
-               <title>Status</title>
-               <type>d:text</type>
-               <mandatory>true</mandatory>
-               <default>Not Yet Started</default>
-               <constraints>
-                  <constraint ref="bpm:allowedStatus"/>
-               </constraints>
-            </property>
-            <property name="bpm:priority">
-               <title>Priority</title>
-               <type>d:int</type>
-               <mandatory>true</mandatory>
-               <default>2</default>
-               <constraints>
-                  <constraint ref="bpm:allowedPriority"/>
-               </constraints>
-            </property>
-            <property name="bpm:percentComplete">
-               <title>Percentage Complete</title>
-               <type>d:int</type>
-               <mandatory>true</mandatory>
-               <default>0</default>
-               <constraints>
-                  <constraint ref="bpm:percentage"/>
-               </constraints>
-            </property>
+    <constraints>
 
-            <!--             -->
-            <!--  Task Notes -->
-            <!--             -->
-            <!--  Note: Implemented via cm:content property : see 'fm:post' -->
+        <constraint name="bpm:allowedPriority" type="LIST">
+            <parameter name="allowedValues">
+                <!--  TODO: Determine if priority values can be mapped to human-readable strings -->
+                <list>
+                    <value>1</value>
+                    <value>2</value>
+                    <value>3</value>
+                </list>
+            </parameter>
+        </constraint>
 
-         </properties>
+        <constraint name="bpm:allowedStatus" type="LIST">
+            <parameter name="allowedValues">
+                <!--  TODO: Determine if status values can be mapped to human-readable strings -->
+                <list>
+                    <value>Not Yet Started</value>
+                    <value>In Progress</value>
+                    <value>On Hold</value>
+                    <value>Cancelled</value>
+                    <value>Completed</value>
+                </list>
+            </parameter>
+        </constraint>
 
-         <associations>
+        <constraint name="bpm:percentage" type="MINMAX">
+            <parameter name="minValue">
+                <value>0</value>
+            </parameter>
+            <parameter name="maxValue">
+                <value>100</value>
+            </parameter>
+        </constraint>
 
-            <!--  List of users who may potentially get assigned to the task -->            
-            <association name="bpm:pooledActors">
-               <title>Pooled Users</title>
-               <source>
-                  <mandatory>false</mandatory>
-                  <many>false</many>
-               </source>
-               <target>
-                  <class>cm:person</class>
-                  <mandatory>false</mandatory>
-                  <many>true</many>
-               </target>
-            </association>
+    </constraints>
 
-         </associations>
+    <types>
 
-         <mandatory-aspects>
-            <aspect>cm:ownable</aspect>
-         </mandatory-aspects>
-      </type>
+        <!--                                 -->
+        <!--  Base definition for all Tasks  -->
+        <!--                                 -->
+
+        <type name="bpm:task">
+            <parent>cm:content</parent>
+
+            <properties>
+
+                <!--             -->
+                <!--  Assignment -->
+                <!--             -->
+                <!--  Note: Implemented via cm:ownable aspect -->
+
+                <!--                  -->
+                <!--  Task Identifier -->
+                <!--                  -->
+                <property name="bpm:taskId">
+                    <type>d:long</type>
+                    <protected>true</protected>
+                    <mandatory>true</mandatory>
+                </property>
+
+                <!--  Task Description -->
+                <property name="bpm:description">
+                    <type>d:text</type>
+                </property>
+
+                <!--             -->
+                <!--  Task Dates -->
+                <!--             -->
+                <property name="bpm:startDate">
+                    <type>d:date</type>
+                    <protected>true</protected>
+                </property>
+                <property name="bpm:completionDate">
+                    <type>d:date</type>
+                    <protected>true</protected>
+                </property>
+                <property name="bpm:dueDate">
+                    <type>d:date</type>
+                </property>
+
+                <!--                -->
+                <!--  Task Progress -->
+                <!--                -->
+                <property name="bpm:status">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <default>Not Yet Started</default>
+                    <constraints>
+                        <constraint ref="bpm:allowedStatus" />
+                    </constraints>
+                </property>
+                <property name="bpm:priority">
+                    <type>d:int</type>
+                    <mandatory>true</mandatory>
+                    <default>2</default>
+                    <constraints>
+                        <constraint ref="bpm:allowedPriority" />
+                    </constraints>
+                </property>
+                <property name="bpm:percentComplete">
+                    <type>d:int</type>
+                    <mandatory>true</mandatory>
+                    <default>0</default>
+                    <constraints>
+                        <constraint ref="bpm:percentage" />
+                    </constraints>
+                </property>
+
+                <!--             -->
+                <!--  Task Notes -->
+                <!--             -->
+                <!--  Note: Implemented via cm:content property : see 'fm:post' -->
+
+            </properties>
+
+            <associations>
+
+                <!--  List of users who may potentially get assigned to the task -->
+                <association name="bpm:pooledActors">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>cm:person</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+
+            </associations>
+
+            <mandatory-aspects>
+                <aspect>cm:ownable</aspect>
+            </mandatory-aspects>
+        </type>
 
 
-      <!--                                                 -->
-      <!--  The base for all Tasks assigned via a Workflow -->
-      <!--                                                 -->
-      
-      <type name="bpm:workflowTask">
-         <title>Workflow Task</title>
-         <description>Task assigned via Workflow</description>
-         <parent>bpm:task</parent>      
-      
-         <properties>
+        <!--                                                 -->
+        <!--  The base for all Tasks assigned via a Workflow -->
+        <!--                                                 -->
 
-            <!--  Task Context          -->
-            <!--  e.g. Space, Document  -->
-            <property name="bpm:context">
-               <title>Task Context</title>
-               <type>d:noderef</type>
-            </property>
-                        
-            <!--  Task Outcome -->
-            <property name="bpm:outcome">
-               <title>Task Outcome</title>
-               <type>d:text</type>   <!-- Transition id -->
-            </property>
+        <type name="bpm:workflowTask">
+            <parent>bpm:task</parent>
 
-            <!--  Items within package marked as complete -->
-            <property name="bpm:completedItems">
-               <type>d:noderef</type>
-               <multiple>true</multiple>
-            </property>
+            <properties>
 
-            <!--  Applicable actions for workflow package -->
-            <property name="bpm:packageActionGroup">
-               <type>d:text</type>
-            </property>
+                <!--  Task Context          -->
+                <!--  e.g. Space, Document  -->
+                <property name="bpm:context">
+                    <type>d:noderef</type>
+                </property>
 
-            <!--  Applicable actions for workflow package item -->
-            <property name="bpm:packageItemActionGroup">
-               <type>d:text</type>
-               <default>workflow_item_read_actions</default>
-            </property>
-         </properties>
+                <!--  Task Outcome -->
+                <property name="bpm:outcome">
+                    <type>d:text</type><!-- Transition id -->
+                </property>
 
-         <associations>
-                  
-            <association name="bpm:package">
-               <title>Workflow Package</title>
-               <source>
-                  <mandatory>false</mandatory>
-                  <many>false</many>
-               </source>
-               <target>
-                  <class>bpm:workflowPackage</class>
-                  <mandatory>true</mandatory>
-                  <many>false</many>
-               </target>
-            </association>
-         
-         </associations>
-         
-      </type>
+                <!--  Items within package marked as complete -->
+                <property name="bpm:completedItems">
+                    <type>d:noderef</type>
+                    <multiple>true</multiple>
+                </property>
+
+                <!--  Applicable actions for workflow package -->
+                <property name="bpm:packageActionGroup">
+                    <type>d:text</type>
+                    <!-- NOTE: no default specified, therefore no actions -->
+                </property>
+
+                <!--  Applicable actions for workflow package item -->
+                <property name="bpm:packageItemActionGroup">
+                    <type>d:text</type>
+                    <default>workflow_item_read_actions</default>
+                </property>
+
+            </properties>
+
+            <associations>
+
+                <association name="bpm:package">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>bpm:workflowPackage</class>
+                        <mandatory>true</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+
+            </associations>
+
+        </type>
+
+
+        <!--                     -->
+        <!--  Default Start Task -->
+        <!--                     -->
+
+        <type name="bpm:startTask">
+            <parent>bpm:workflowTask</parent>
+
+            <properties>
+
+                <!--  Description for the workflow as a whole -->
+                <property name="bpm:workflowDescription">
+                    <type>d:text</type>
+                </property>
+
+                <!--  Due date for the workflow as a whole -->
+                <property name="bpm:workflowDueDate">
+                    <type>d:date</type>
+                </property>
+
+                <!--  Priority for the workflow as a whole -->
+                <property name="bpm:workflowPriority">
+                    <type>d:int</type>
+                    <default>2</default>
+                    <constraints>
+                        <constraint ref="bpm:allowedPriority" />
+                    </constraints>
+                </property>
+
+            </properties>
+
+            <associations>
+
+                <association name="bpm:assignee">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>cm:person</class>
+                        <mandatory>true</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+
+            </associations>
+
+            <overrides>
+
+                <property name="bpm:packageActionGroup">
+                    <default>workflow_collection_actions</default>
+                </property>
+
+                <property name="bpm:packageItemActionGroup">
+                    <default>workflow_item_collection_actions</default>
+                </property>
+
+            </overrides>
+
+        </type>
 
     </types>
-    
+
     <aspects>
-    
-      <!--                                                             -->
-      <!--  A collection of content routed through a workflow.         -->
-      <!--                                                             -->
-      <!--  Note: this aspect should be applied to a container such as -->
-      <!--        a folder, versioned folder or layered folder.        -->
-      <!--                                                             -->
-      
-      <aspect name="bpm:workflowPackage">
-         <title>Workflow Package</title>
 
-         <properties>
+        <!--                                                             -->
+        <!--  A collection of content routed through a workflow.         -->
+        <!--                                                             -->
+        <!--  Note: this aspect should be applied to a container such as -->
+        <!--        a folder, versioned folder or layered folder.        -->
+        <!--                                                             -->
 
-            <!--                        -->         
-            <!--  Associated Workflow   -->
-            <!--                        -->         
-            <property name="bpm:workflowDefinitionId">
-               <title>Workflow Definition Id</title>
-               <type>d:text</type>
-            </property>
-            <property name="bpm:workflowDefinitionName">
-               <title>Workflow Definition Name</title>
-               <type>d:text</type>
-            </property>
-            <property name="bpm:workflowInstanceId">
-               <title>Workflow Instance Id</title>
-               <type>d:text</type>
-            </property>
-         
-            <!--  TODO: Define properties (replicated from Workflow/Task Engine) for -->
-            <!--        search within Alfresco e.g. task info, workflow info ...     -->
-         
-         </properties>
-      
-         <!--  Commentary -->
-         <!--  Note: Implement tracking of comments via fm:discussable aspect        -->
-         <!--  Note: Haven't made this aspect mandatory as this would force creation -->
-         <!--        of forum folder against each package, even if there aren't any  -->
-         <!--        comments                                                        -->
-         
-      </aspect>
+        <aspect name="bpm:workflowPackage">
+            <properties>
 
-   </aspects>
-   
+                <!--                        -->
+                <!--  Associated Workflow   -->
+                <!--                        -->
+                <property name="bpm:workflowDefinitionId">
+                    <type>d:text</type>
+                </property>
+                <property name="bpm:workflowDefinitionName">
+                    <type>d:text</type>
+                </property>
+                <property name="bpm:workflowInstanceId">
+                    <type>d:text</type>
+                </property>
+
+                <!--  TODO: Define properties (replicated from Workflow/Task Engine) for -->
+                <!--        search within Alfresco e.g. task info, workflow info ...     -->
+
+            </properties>
+
+            <!--  Commentary -->
+            <!--  Note: Implement tracking of comments via fm:discussable aspect        -->
+            <!--  Note: Haven't made this aspect mandatory as this would force creation -->
+            <!--        of forum folder against each package, even if there aren't any  -->
+            <!--        comments                                                        -->
+
+        </aspect>
+
+    </aspects>
+
 </model>

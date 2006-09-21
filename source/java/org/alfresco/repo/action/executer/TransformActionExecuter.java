@@ -240,7 +240,10 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             contentWriter.setMimetype(mimeType);                        // new mimetype
             contentWriter.setEncoding(contentReader.getEncoding());     // original encoding
 
-    		// Try and transform the content
+    		// Try and transform the content - failures are caught and allowed to fail silently.
+            // This is unique to this action, and is essentially a broken pattern.
+            // Clients should rather get the exception and then decide to replay with rules/actions turned off or not.
+            // TODO: Check failure patterns for actions.
             try
             {
             	doTransform(ruleAction, contentReader, contentWriter);
@@ -258,8 +261,16 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         }
 	}	
 	
+    /**
+     * Executed in a new transaction so that failures don't cause the entire transaction to rollback.
+     */
 	protected void doTransform(Action ruleAction, ContentReader contentReader, ContentWriter contentWriter)	
 	{
+        // try to pre-empt the lack of a transformer
+        if (!this.contentService.isTransformable(contentReader, contentWriter))
+        {
+            throw new NoTransformerException(contentReader.getMimetype(), contentWriter.getMimetype());
+        }
 		this.contentService.transform(contentReader, contentWriter);
 	}
 	

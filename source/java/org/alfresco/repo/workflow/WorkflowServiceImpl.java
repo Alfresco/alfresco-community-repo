@@ -186,6 +186,16 @@ public class WorkflowServiceImpl implements WorkflowService
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#getWorkflowById(java.lang.String)
+     */
+    public WorkflowInstance getWorkflowById(String workflowId)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(workflowId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.getWorkflowById(workflowId);
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#getWorkflowPaths(java.lang.String)
      */
     public List<WorkflowPath> getWorkflowPaths(String workflowId)
@@ -296,6 +306,27 @@ public class WorkflowServiceImpl implements WorkflowService
     {
         return workflowPackageComponent.createPackage(container);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#getWorkflowsForContent(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    public List<WorkflowInstance> getWorkflowsForContent(NodeRef packageItem, boolean active)
+    {
+        List<String> workflowIds = workflowPackageComponent.getWorkflowIdsForContent(packageItem);
+        List<WorkflowInstance> workflowInstances = new ArrayList<WorkflowInstance>(workflowIds.size());
+        for (String workflowId : workflowIds)
+        {
+            String engineId = BPMEngineRegistry.getEngineId(workflowId);
+            WorkflowComponent component = getWorkflowComponent(engineId);
+            WorkflowInstance instance = component.getWorkflowById(workflowId);
+            if (instance.active == active)
+            {
+                workflowInstances.add(instance);
+            }
+        }
+        return workflowInstances;
+    }
+
     
     /**
      * Gets the Workflow Component registered against the specified BPM Engine Id

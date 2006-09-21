@@ -40,7 +40,6 @@ import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -1461,15 +1460,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             nodeToMove.setStore(store);
             NodeRef newNodeRef = nodeToMove.getNodeRef();
             
-            String txnId = AlfrescoTransactionSupport.getTransactionId();
             // update old status
             NodeStatus oldNodeStatus = nodeDaoService.getNodeStatus(oldNodeRef, true);
             oldNodeStatus.setNode(null);
-            oldNodeStatus.getTransaction().setChangeTxnId(txnId);
             // create the new status
             NodeStatus newNodeStatus = nodeDaoService.getNodeStatus(newNodeRef, true);
             newNodeStatus.setNode(nodeToMove);
-            newNodeStatus.getTransaction().setChangeTxnId(txnId);
         }
     }
     

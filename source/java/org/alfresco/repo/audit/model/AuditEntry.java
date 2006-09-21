@@ -217,4 +217,23 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
         throw new UnsupportedOperationException();
     }
 
+    public TrueFalseUnset getAuditInternalServiceMethods( MethodInvocation mi)
+    {
+        String serviceName = getPublicServiceIdentifier().getPublicServiceName(mi);
+        ServiceAuditEntry service = services.get(serviceName);
+        if(service != null)
+        {
+            return service.getAuditInternalServiceMethods( mi);
+        }
+        else
+        {
+            if(s_logger.isDebugEnabled())
+            {
+                s_logger.debug("No specific audit entry for service "+serviceName);
+            }
+            return getEffectiveAuditInternal();
+            
+        }
+    }
+
 }

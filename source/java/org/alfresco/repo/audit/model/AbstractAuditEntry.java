@@ -136,6 +136,49 @@ public abstract class AbstractAuditEntry
     {
         return recordOptions;
     }
+    
+    
+    protected TrueFalseUnset getEffectiveAuditInternal()
+    {
+        TrueFalseUnset auditInternal;
+        if (checkEnabled() == TrueFalseUnset.TRUE)
+        {
+            auditInternal = getAuditInternalOrParentAuditInternal();
+        }
+        else
+        {
+            auditInternal = TrueFalseUnset.FALSE;
+        }
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("... Effective audit internal is = "+auditInternal);
+        }
+        return auditInternal;
+    }
+
+    private TrueFalseUnset getAuditInternalOrParentAuditInternal()
+    {
+        TrueFalseUnset auditInternal = getAuditInternal();
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("... ...  audit internal is = "+auditInternal);
+        }
+        if (auditInternal == TrueFalseUnset.UNSET)
+        {
+            if (getParent() == null)
+            {
+                return TrueFalseUnset.UNSET;
+            }
+            else
+            {
+                return getParent().getAuditInternalOrParentAuditInternal();
+            }
+        }
+        else
+        {
+            return auditInternal;
+        }
+    }
 
     protected AuditMode getEffectiveAuditMode()
     {

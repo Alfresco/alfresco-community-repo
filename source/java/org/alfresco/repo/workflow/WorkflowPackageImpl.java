@@ -21,8 +21,6 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -31,6 +29,7 @@ import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ParameterCheck;
 
 
 /**
@@ -41,14 +40,13 @@ import org.alfresco.util.GUID;
  */
 public class WorkflowPackageImpl implements WorkflowPackageComponent
 {
-    private final static String PACKAGE_FOLDER = "Workflow Packages";
+    private final static String PACKAGE_FOLDER = "packages";
 
     // service dependencies
     private ImporterBootstrap bootstrap;
     private SearchService searchService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
-    private FileFolderService fileFolderService;
     private NodeRef systemWorkflowContainer = null;
 
     
@@ -58,14 +56,6 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     public void setImporterBootstrap(ImporterBootstrap bootstrap)
     {
         this.bootstrap = bootstrap;
-    }
-
-    /**
-     * @param fileFolderService  file folder service
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
     }
 
     /**
@@ -105,11 +95,23 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
             NodeRef system = getSystemWorkflowContainer();
             
             // TODO: Consider structuring this folder, if number of children becomes an issue
-            List<String> folders = new ArrayList<String>();
-            folders.add(PACKAGE_FOLDER);
-            folders.add(GUID.generate());
-            FileInfo containerFolder = fileFolderService.makeFolders(system, folders, ContentModel.TYPE_FOLDER);
-            container = containerFolder.getNodeRef();
+            NodeRef packages = null;
+            List<NodeRef> results = searchService.selectNodes(system, "./" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + PACKAGE_FOLDER, null, namespaceService, false);
+            if (results.size() > 0)
+            {
+                packages = results.get(0);
+            }
+            else
+            {
+                QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, PACKAGE_FOLDER);
+                ChildAssociationRef childRef = nodeService.createNode(system, ContentModel.ASSOC_CHILDREN, qname, ContentModel.TYPE_SYSTEM_FOLDER);
+                packages = childRef.getChildRef();
+            }
+            
+            String containerName = "pkg_" + GUID.generate();
+            QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName);
+            ChildAssociationRef childRef = nodeService.createNode(packages, ContentModel.ASSOC_CONTAINS, qname, ContentModel.TYPE_SYSTEM_FOLDER);
+            container = childRef.getChildRef();
         }
         
         // attach workflow package
@@ -121,6 +123,32 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         
         // return container
         return container;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowPackageComponent#getWorkflowIdsForContent(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    public List<String> getWorkflowIdsForContent(NodeRef packageItem)
+    {
+        ParameterCheck.mandatory("packageItem", packageItem);
+        List<String> workflowIds = new ArrayList<String>();
+        if (nodeService.exists(packageItem))
+        {
+            List<ChildAssociationRef> packageItemParents = nodeService.getParentAssocs(packageItem);
+            for (ChildAssociationRef packageItemParent : packageItemParents)
+            {
+                NodeRef parentRef = packageItemParent.getParentRef();
+                if (nodeService.hasAspect(parentRef, WorkflowModel.ASPECT_WORKFLOW_PACKAGE))
+                {
+                    String workflowInstance = (String)nodeService.getProperty(parentRef, WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
+                    if (workflowInstance != null && workflowInstance.length() > 0)
+                    {
+                        workflowIds.add(workflowInstance);
+                    }
+                }
+            }
+        }
+        return workflowIds;
     }
 
     
@@ -201,10 +229,10 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         {
             String name = bootstrap.getConfiguration().getProperty("system.workflow_container.childname");
             QName qname = QName.createQName(name, namespaceService);
-            ChildAssociationRef childRef = nodeService.createNode(systemContainer, ContentModel.ASSOC_CHILDREN, qname, ContentModel.TYPE_FOLDER);
+            ChildAssociationRef childRef = nodeService.createNode(systemContainer, ContentModel.ASSOC_CHILDREN, qname, ContentModel.TYPE_CONTAINER);
             systemWorkflowContainer = childRef.getChildRef();
         }
         return systemWorkflowContainer;
     }
-    
+
 }

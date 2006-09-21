@@ -81,7 +81,7 @@ public class DictionaryComponent implements DictionaryService
         Collection<QName> propertyTypes = new ArrayList<QName>();
         for (QName model : getAllModels())
         {
-            propertyTypes.addAll(getAspects(model));
+            propertyTypes.addAll(getDataTypes(model));
         }
         return propertyTypes;
     }

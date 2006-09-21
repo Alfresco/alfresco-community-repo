@@ -84,6 +84,10 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
         {
             NodeRef scriptRef = (NodeRef)action.getParameterValue(PARAM_SCRIPTREF);
             NodeRef spaceRef = this.serviceRegistry.getRuleService().getOwningNodeRef(action);
+            if (spaceRef == null)
+            {
+                spaceRef = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
+            }
             
             if (nodeService.exists(scriptRef))
             {

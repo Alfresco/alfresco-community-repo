@@ -608,10 +608,28 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         //  Process the security blob
         
         byte[] respBlob = null;
-
+        boolean isNTLMSSP = false;
+        
         try
         {
-            if ( useRawNTLMSSP())
+        	
+            // Check if the blob has the NTLMSSP signature
+            
+            if ( secBlobLen >= NTLM.Signature.length) {
+              
+              // Check for the NTLMSSP signature
+              
+              int idx = 0;
+              while ( idx < NTLM.Signature.length && buf[secBlobPos + idx] == NTLM.Signature[ idx])
+                idx++;
+              
+              if ( idx == NTLM.Signature.length)
+                isNTLMSSP = true;
+            }
+            
+        	// Process the security blob
+            
+            if ( isNTLMSSP == true)
             {
                 //  Process an NTLMSSP security blob
     
@@ -657,7 +675,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         //  Check if there is/was a session setup object stored in the session, this indicates a multi-stage session
         //  setup so set the status code accordingly
         
-        if ( useRawNTLMSSP() || sess.hasSetupObject() || setupObj != null)
+        if ( useRawNTLMSSP() || isNTLMSSP == true || sess.hasSetupObject() || setupObj != null)
         {
             //  NTLMSSP has two stages, if there is a stored setup object then indicate more processing
             //  required

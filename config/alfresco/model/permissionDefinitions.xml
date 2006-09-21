@@ -62,11 +62,48 @@
       <!-- Convenient groupings of low level permissions -->
       <!-- ============================================= -->
       
-      <permissionGroup name="Read"  expose="true" allowFullControl="false" />  
-      <permissionGroup name="Write" expose="true" allowFullControl="false" />  
-      <permissionGroup name="Delete" expose="true" allowFullControl="false" />  
-      <permissionGroup name="AddChildren" expose="true" allowFullControl="false" />  
-      <permissionGroup name="Execute" allowFullControl="false" expose="false"/>
+      <permissionGroup name="Read"  expose="true" allowFullControl="false">
+           <includePermissionGroup type="sys:base" permissionGroup="ReadProperties"/>
+           <includePermissionGroup type="sys:base" permissionGroup="ReadChildren"/>
+           <includePermissionGroup type="sys:base" permissionGroup="ReadContent"/>
+      </permissionGroup>
+       
+      <permissionGroup name="Write" expose="true" allowFullControl="false">
+           <includePermissionGroup type="sys:base" permissionGroup="WriteProperties"/>
+           <includePermissionGroup type="sys:base" permissionGroup="WriteContent"/>
+      </permissionGroup>  
+       
+      <permissionGroup name="Delete" expose="true" allowFullControl="false">
+           <includePermissionGroup type="sys:base" permissionGroup="DeleteNode"/>
+           <includePermissionGroup type="sys:base" permissionGroup="DeleteChildren"/>
+      </permissionGroup>
+       
+      <permissionGroup name="AddChildren" expose="true" allowFullControl="false">
+           <includePermissionGroup type="sys:base" permissionGroup="CreateChildren"/>
+           <includePermissionGroup type="sys:base" permissionGroup="LinkChildren"/>
+      </permissionGroup>
+       
+      <permissionGroup name="Execute" allowFullControl="false" expose="false">
+          <includePermissionGroup type="sys:base" permissionGroup="ExecuteContent"/>
+      </permissionGroup>
+       
+      <!-- Groups for low level permissions -->
+       
+      <permissionGroup name="ReadProperties" expose="true" allowFullControl="false" />  
+      <permissionGroup name="ReadChildren" expose="true" allowFullControl="false" />  
+      <permissionGroup name="WriteProperties" expose="true" allowFullControl="false" />  
+      <permissionGroup name="ReadContent" expose="false" allowFullControl="false" />  
+      <permissionGroup name="WriteContent" expose="false" allowFullControl="false" />  
+      <permissionGroup name="ExecuteContent" expose="false" allowFullControl="false" />  
+      <permissionGroup name="DeleteNode" expose="true" allowFullControl="false" />  
+      <permissionGroup name="DeleteChildren" expose="true" allowFullControl="false" />  
+      <permissionGroup name="CreateChildren" expose="true" allowFullControl="false" />  
+      <permissionGroup name="LinkChildren" expose="true" allowFullControl="false" />  
+      <permissionGroup name="DeleteAssociations" expose="true" allowFullControl="false" />  
+      <permissionGroup name="ReadAssociations" expose="true" allowFullControl="false" />  
+      <permissionGroup name="CreateAssociations" expose="true" allowFullControl="false" />  
+      <permissionGroup name="ReadPermissions" expose="true" allowFullControl="false" />  
+      <permissionGroup name="ChangePermissions" expose="true" allowFullControl="false" />  
     
       <!-- =========== -->
       <!-- Permissions -->
@@ -80,10 +117,10 @@
       <!-- tree at all pioints.                                                           -->
       <!--                                                                                -->
       
-      <permission name="ReadProperties" expose="true" >
-         <grantedToGroup permissionGroup="Read" />
+      <permission name="_ReadProperties" expose="false" >
+         <grantedToGroup permissionGroup="ReadProperties" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
          -->
       </permission>
       
@@ -93,10 +130,10 @@
       <!-- all of the parent nodes from which this node inherits permissions             -->
       <!--                                                                               -->
       
-      <permission name="ReadChildren" expose="true" >
-         <grantedToGroup permissionGroup="Read" />
+      <permission name="_ReadChildren" expose="false" >
+         <grantedToGroup permissionGroup="ReadChildren" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
          -->
       </permission>
       
@@ -106,10 +143,10 @@
       <!-- a property.                                                                   -->
       <!--                                                                               -->
       
-      <permission name="WriteProperties" expose="true" >
-         <grantedToGroup permissionGroup="Write" />
+      <permission name="_WriteProperties" expose="false" >
+         <grantedToGroup permissionGroup="WriteProperties" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
          -->
       </permission>
       
@@ -124,42 +161,42 @@
       
       <!-- The permission to read content.                                               -->
       
-      <permission name="ReadContent" expose="false">
-         <grantedToGroup permissionGroup="Read"/>
+      <permission name="_ReadContent" expose="false">
+         <grantedToGroup permissionGroup="ReadContent"/>
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
          -->
       </permission>
 
       <!-- The permission to write content.                                              -->
       
-      <permission name="WriteContent" expose="false">
-         <grantedToGroup permissionGroup="Write" />
+      <permission name="_WriteContent" expose="false">
+         <grantedToGroup permissionGroup="WriteContent" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
          -->
       </permission>
       
       <!-- Execute permission on content.                                                -->
       
-      <permission name="ExecuteContent" expose="false">
-         <grantedToGroup permissionGroup="Execute" />
+      <permission name="_ExecuteContent" expose="false">
+         <grantedToGroup permissionGroup="ExecuteContent" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
          -->
       </permission>
       
-      <permission name="DeleteNode" expose="true" >
-         <grantedToGroup permissionGroup="Delete" />
+      <permission name="_DeleteNode" expose="false" >
+         <grantedToGroup permissionGroup="DeleteNode" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
-         <requiredPermission on="parent" name="DeleteChildren" implies="false"/>
-         <requiredPermission on="node" name="DeleteChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_DeleteChildren" implies="false"/>
+         <requiredPermission on="node" name="_DeleteChildren" implies="false"/>
          -->
          <!-- Remove the recursive check for now for performance -->
          <!-- TODO: have one permission to check for delete on an item and one to check  -->
          <!--       child permissions when delete is called on the node service          --> 
-         <!--  <requiredPermission on="children" name="DeleteNode" implies="false"/>     -->
+         <!--  <requiredPermission on="children" name="_DeleteNode" implies="false"/>     -->
       </permission>
       
       
@@ -167,52 +204,55 @@
       <!--                                                                               -->
       <!-- At the moment this includes both unlink and delete                            -->
       <!--                                                                               -->
-      <permission name="DeleteChildren" expose="true" >
-         <grantedToGroup permissionGroup="Delete" />
+      <permission name="_DeleteChildren" expose="false" >
+         <grantedToGroup permissionGroup="DeleteChildren" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
          -->
       </permission>
       
       <!-- The permission to create new nodes                                            -->
       
-      <permission name="CreateChildren" expose="true" >
-         <grantedToGroup permissionGroup="AddChildren" />
+      <permission name="_CreateChildren" expose="false" >
+         <grantedToGroup permissionGroup="CreateChildren" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false" />
+         <requiredPermission on="parent" name="_ReadChildren" implies="false" />
          -->
       </permission>
       
       <!-- The permission to link nodes                                                  -->
       
-      <permission name="LinkChildren" expose="true" >
-         <grantedToGroup permissionGroup="AddChildren" />
+      <permission name="_LinkChildren" expose="false" >
+         <grantedToGroup permissionGroup="LinkChildren" />
          <!-- Commented out parent permission check ...
-         <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
          -->
       </permission>
      
      <!-- The permission to delte associations between nodes (not children)              -->
      
-      <permission name="DeleteAssociations" expose="true" >
+      <permission name="_DeleteAssociations" expose="false" >
+        <grantedToGroup permissionGroup="DeleteAssociations" />
         <!-- Commented out parent permission check ...
-        <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+        <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
         -->
       </permission>
       
       <!-- The permission to read associations                                           -->
       
-      <permission name="ReadAssociations" expose="true" >
+      <permission name="_ReadAssociations" expose="false" >
+        <grantedToGroup permissionGroup="ReadAssociations" />
         <!-- Commented out parent permission check ...
-        <requiredPermission on="parent" name="ReadChildren" implies="false" />
+        <requiredPermission on="parent" name="_ReadChildren" implies="false" />
         -->
       </permission>
       
       <!-- The permission to create associations                                         -->
       
-      <permission name="CreateAssociations" expose="true" >
+      <permission name="_CreateAssociations" expose="false" >
+        <grantedToGroup permissionGroup="CreateAssociations" />
         <!-- Commented out parent permission check ...
-        <requiredPermission on="parent" name="ReadChildren" implies="false" />
+        <requiredPermission on="parent" name="_ReadChildren" implies="false" />
         -->
       </permission>
       
@@ -222,17 +262,19 @@
       
       <!-- The permission to read the permissions on a node                              -->
       
-      <permission name="ReadPermissions" expose="true" >
+      <permission name="_ReadPermissions" expose="false" >
+        <grantedToGroup permissionGroup="ReadPermissions" />
         <!-- Commented out parent permission check ...
-        <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+        <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
         -->
       </permission>
       
       <!-- The permission to the change the permissions associated with a node           -->
       
-      <permission name="ChangePermissions" expose="true" >
+      <permission name="_ChangePermissions" expose="false" >
+        <grantedToGroup permissionGroup="ChangePermissions" />
         <!-- Commented out parent permission check ...
-        <requiredPermission on="parent" name="ReadChildren" implies="false"/>
+        <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
         -->
       </permission>
       
@@ -284,6 +326,21 @@
           <includePermissionGroup permissionGroup="Read" type="sys:base" />
       </permissionGroup>
       
+      <!-- records permission -->
+      <!-- Should be tied to the aspect -->
+      <!-- onwership should be removed when using this permission --> 
+      <permissionGroup name="RecordAdministrator" allowFullControl="false" expose="false">
+          <includePermissionGroup type="sys:base" permissionGroup="ReadProperties"/>
+          <includePermissionGroup type="sys:base" permissionGroup="ReadChildren"/>
+          <includePermissionGroup type="sys:base" permissionGroup="WriteProperties"/>
+          <includePermissionGroup type="sys:base" permissionGroup="ReadContent"/>
+          <includePermissionGroup type="sys:base" permissionGroup="DeleteChildren"/>
+          <includePermissionGroup type="sys:base" permissionGroup="CreateChildren"/>
+          <includePermissionGroup type="sys:base" permissionGroup="LinkChildren"/>
+          <includePermissionGroup type="sys:base" permissionGroup="DeleteAssociations"/>
+          <includePermissionGroup type="sys:base" permissionGroup="CreateAssociations"/>
+      </permissionGroup>
+       
    </permissionSet>
    
    <!-- =============================== -->
@@ -299,6 +356,7 @@
       <permissionGroup name="Contributor" extends="true" expose="true"/>
       <permissionGroup name="Editor" extends="true" expose="true"/>
       <permissionGroup name="Consumer" extends="true" expose="true"/>
+      <permissionGroup name="RecordAdministrator" extends="true" expose="false"/>
       
    </permissionSet>
    
@@ -309,16 +367,20 @@
    <permissionSet type="cm:ownable" expose="selected">
       
       <!-- Permission control to allow ownership of the node to be taken from others     -->
-      <permissionGroup name="TakeOwnership" requiresType="false" expose="false"/>
+      <permissionGroup name="TakeOwnership" requiresType="false" expose="false">
+           <includePermissionGroup permissionGroup="SetOwner" type="cm:ownable" />
+      </permissionGroup>
+       
+      <permissionGroup name="SetOwner" requiresType="false" expose="false"/>
       
       <!-- The low level permission to control setting the owner of a node               -->
-      <permission name="SetOwner" expose="false" requiresType="false">
-        <grantedToGroup permissionGroup="TakeOwnership" />
+      <permission name="_SetOwner" expose="false" requiresType="false">
+        <grantedToGroup permissionGroup="SetOwner" />
         <!-- require to be able to reach the node and set properties in the node         -->
         <!-- Commented out parent permission check ...
-        <requiredPermission on="parent" name="ReadChildren" />
+        <requiredPermission on="parent" name="_ReadChildren" />
         -->
-        <requiredPermission on="node" name="WriteProperties" />
+        <requiredPermission on="node" type="sys:base" name="_WriteProperties" />
       </permission>
       
    </permissionSet>
@@ -334,24 +396,34 @@
       <!-- of permissions.                                                               -->
     
       <!-- Check Out permission - exposed for all object types                           -->
-      <permissionGroup name="CheckOut" requiresType="false" expose="false"/>
+      <permissionGroup name="CheckOut" requiresType="false" expose="false">
+          <includePermissionGroup permissionGroup="Lock" type="cm:lockable" />
+      </permissionGroup>
       
       <!-- Check In permission - only exposed when the lockable aspect is present        -->
-      <permissionGroup name="CheckIn" requiresType="true" expose="false"/>
+      <permissionGroup name="CheckIn" requiresType="true" expose="false">
+          <includePermissionGroup permissionGroup="Unlock" type="cm:lockable" />
+      </permissionGroup>
       
       <!-- Cancel Check Out permission - only exposed for the lockable aspect is present -->
-      <permissionGroup name="CancelCheckOut" requiresType="true" expose="false"/>
+      <permissionGroup name="CancelCheckOut" requiresType="true" expose="false">
+          <includePermissionGroup permissionGroup="Unlock" type="cm:lockable" />
+      </permissionGroup>
+       
+       
+      <permissionGroup name="Lock" requiresType="false" expose="false"/>
+      <permissionGroup name="Unlock" requiresType="true" expose="false"/>
+       
     
       <!-- Low level lock permission                                                     -->
-      <permission name="Lock" requiresType="false" expose="false">
-        <grantedToGroup permissionGroup="CheckOut" />
+      <permission name="_Lock" requiresType="false" expose="false">
+        <grantedToGroup permissionGroup="Lock" />
         <requiredPermission on="node" type="sys:base"  name="Write"/>
       </permission>
       
       <!-- Low level unlock permission                                                   -->
-      <permission name="Unlock" requiresType="true" expose="false">
-        <grantedToGroup permissionGroup="CheckIn" />
-        <grantedToGroup permissionGroup="CancelCheckOut" />
+      <permission name="_Unlock" requiresType="true" expose="false">
+        <grantedToGroup permissionGroup="Unlock" />
       </permission>      
       
    </permissionSet>

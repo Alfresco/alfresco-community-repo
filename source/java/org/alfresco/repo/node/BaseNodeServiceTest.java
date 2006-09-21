@@ -35,6 +35,7 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
 import org.alfresco.repo.domain.hibernate.NodeImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -161,6 +162,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 StoreRef.PROTOCOL_WORKSPACE,
                 "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
+        
+        // downgrade integrity checks
+        IntegrityChecker.setWarnInTransaction();
     }
     
     @Override

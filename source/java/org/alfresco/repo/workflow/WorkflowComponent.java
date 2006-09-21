@@ -119,6 +119,14 @@ public interface WorkflowComponent
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId);
     
     /**
+     * Gets a specific workflow instances
+     *
+     * @param workflowId  the id of the workflow to retrieve
+     * @return  the workflow instance 
+     */
+    public WorkflowInstance getWorkflowById(String workflowId);
+    
+    /**
      * Gets all Paths for the specified Workflow instance
      * 
      * @param workflowId  workflow instance id

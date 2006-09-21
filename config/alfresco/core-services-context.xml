@@ -404,13 +404,14 @@
     <bean id="dictionaryModelBootstrap" class="org.alfresco.repo.dictionary.DictionaryBootstrap" init-method="bootstrap" abstract="true">
     	<property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
     </bean>
-    
+
     <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="resourceBundles">
         <property name="models">
             <list>
                 <value>alfresco/model/dictionaryModel.xml</value>
                 <value>alfresco/model/systemModel.xml</value>
                 <value>alfresco/model/contentModel.xml</value>
+                <value>alfresco/model/bpmModel.xml</value>
                 <value>alfresco/model/applicationModel.xml</value>
                 <value>alfresco/model/forumModel.xml</value>
                 <value>alfresco/model/recordsModel.xml</value>
@@ -428,6 +429,7 @@
                 <value>alfresco/messages/system-model</value>
                 <value>alfresco/messages/dictionary-model</value>
                 <value>alfresco/messages/content-model</value>
+                <value>alfresco/messages/bpm-messages</value>
                 <value>alfresco/messages/application-model</value>
                 <value>alfresco/messages/forum-model</value>
             </list>

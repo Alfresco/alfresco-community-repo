@@ -1,57 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="test_script">
-   <swimlane name="initiator"></swimlane>
+    <swimlane name="initiator"></swimlane>
 
-   <start-state name="start">
-      <task name="submit" swimlane="initiator">
-         <event type="task-assign">
+    <start-state name="start">
+        <task name="submit" swimlane="initiator">
+            <event type="task-assign">
+                <script>
+                    System.out.println("taskInstance.create: " + taskInstance.create);
+                    System.out.println("taskInstance.description: " + taskInstance.description);
+                </script>
+            </event>
+            <controller>
+                <variable name="testNode" access="write,required" />
+                <variable name="bpm_workflowDescription" access="write" />
+            </controller>
+        </task>
+        <transition name="" to="doit" />
+    </start-state>
+
+    <node name="doit">
+        <event type="node-enter">
             <script>
-               System.out.println("taskInstance.create: " + taskInstance.create);
+                <expression>
+                    System.out.println("testNode.created: " + testNode.properties{"cm:created"});
+                    System.out.println("test node " + testNode.name + " contains " + testNode.children.length + " children");
+                </expression>
+                <variable name="testNode" access="read" />
             </script>
-         </event>
-         <controller>
-            <variable name="testNode" access="write,required" />
-         </controller>
-      </task>
-      <transition name="" to="doit"/>
-   </start-state>
-   
-   <node name="doit">
-      <event type="node-enter">
-      <script>
-         <expression>
-            System.out.println("testNode.created: " + testNode.properties{"cm:created"});
-            System.out.println("test node " + testNode.name + " contains " + testNode.children.length + " children");
-         </expression>
-         <variable name="testNode" access="read"/>
-      </script>
-      </event>
-      <event type="node-enter">
-      <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-         <script>
-              <!-- following line fails as it attempts to convert properties of children to javascript objects -->
-              <!-- except the beanshell line above has already pre-created the children without the javascript scope -->
-              <!-- object -->
-              <!-- var result = "testNode.created: " + testNode.properties["cm:created"] + ", testNode.children.length: " + testNode.children[0].properties["cm:name"]; -->
-            <expression>
-               var result = "testNode.created: " + testNode.properties["cm:created"] + ", testNode.children.length: " + testNode.children.length;
-               result;
-            </expression>
-            <variable name="testNode" access="read"/>
-            <variable name="alfrescoScriptResult" access="write"/>
-         </script>
-      </action>
-      </event>
-      <transition name="" to="end"/>
-   </node>
-   
-   <end-state name="end">
-     <event type="node-enter">
-      <script>
-         System.out.println("javascript: " + alfrescoScriptResult);
-      </script>
-     </event>   
-   </end-state>
-   
+        </event>
+        <event type="node-enter">
+            <action
+                class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                <script>
+                    <!-- following line fails as it attempts to convert properties of children to javascript objects -->
+                    <!-- except the beanshell line above has already pre-created the children without the javascript scope -->
+                    <!-- object -->
+                    <!-- var result = "testNode.created: " + testNode.properties["cm:created"] + ", testNode.children.length: " + testNode.children[0].properties["cm:name"]; -->
+                    <expression>
+                        var result = "testNode.created: " + theTestNode.properties["cm:created"] + ", theTestNode.children.length: " + theTestNode.children.length;
+                        if (logger.isLoggingEnabled())
+                        {
+                            logger.log(result);
+                        }
+                        result;
+                    </expression>
+                    <variable name="testNode" access="read" mapped-name="theTestNode" />
+                    <variable name="alfrescoScriptResult" access="write" />
+                </script>
+            </action>
+        </event>
+        <transition name="" to="end" />
+    </node>
+
+    <end-state name="end">
+        <event type="node-enter">
+            <script>
+                System.out.println("javascript: " + alfrescoScriptResult);
+                System.out.println("bpm_workflowDescription: " + bpm_description);
+            </script>
+        </event>
+    </end-state>
+
 </process-definition>

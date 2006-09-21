@@ -16,12 +16,15 @@
  */
 package org.alfresco.repo.workflow;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.dictionary.DictionaryBootstrap;
+import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
@@ -56,7 +59,10 @@ public class WorkflowDeployer implements ApplicationListener
     private TransactionService transactionService;
     private WorkflowService workflowService;
     private AuthenticationComponent authenticationComponent;
+    private DictionaryDAO dictionaryDAO;
     private List<Properties> workflowDefinitions;
+    private List<String> models = new ArrayList<String>();
+    private List<String> resourceBundles = new ArrayList<String>();
 
     
     /**
@@ -90,6 +96,16 @@ public class WorkflowDeployer implements ApplicationListener
     }
 
     /**
+     * Sets the Dictionary DAO
+     * 
+     * @param dictionaryDAO
+     */
+    public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
+    {
+        this.dictionaryDAO = dictionaryDAO;
+    }
+    
+    /**
      * Sets the Workflow Definitions
      * 
      * @param workflowDefinitions
@@ -99,6 +115,26 @@ public class WorkflowDeployer implements ApplicationListener
         this.workflowDefinitions = workflowDefinitions;
     }
 
+    /**
+     * Sets the initial list of Workflow models to bootstrap with
+     * 
+     * @param modelResources the model names
+     */
+    public void setModels(List<String> modelResources)
+    {
+        this.models = modelResources;
+    }
+    
+    /**
+     * Sets the initial list of Workflow reosurce bundles to bootstrap with
+     * 
+     * @param modelResources the model names
+     */
+    public void setLabels(List<String> labels)
+    {
+        this.resourceBundles = labels;
+    }
+        
     /**
      * Deploy the Workflow Definitions
      */
@@ -124,6 +160,16 @@ public class WorkflowDeployer implements ApplicationListener
         {
             userTransaction.begin();
         
+            // bootstrap the workflow models and labels
+            if (models != null && resourceBundles != null)
+            {
+            	DictionaryBootstrap dictionaryBootstrap = new DictionaryBootstrap();
+            	dictionaryBootstrap.setDictionaryDAO(dictionaryDAO);
+            	dictionaryBootstrap.setModels(models);
+            	dictionaryBootstrap.setLabels(resourceBundles);
+            	dictionaryBootstrap.bootstrap();
+            }
+            
             // bootstrap the workflow definitions
             if (workflowDefinitions != null)
             {

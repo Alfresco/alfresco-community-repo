@@ -38,7 +38,9 @@
     
     <!-- The COCI Service -->
     
-    <Service name="CheckOutCheckInService"/>
+    <Service name="CheckOutCheckInService">
+        <Method name="getWorkingCopy" mode="none"/>
+    </Service>
     
     <!-- The DictionaryService -->
     <!-- There are no audtiable methods in the data dictionary service -->
@@ -46,14 +48,18 @@
     
     <!-- The Lock Service -->
     
-    <Service name="LockService"/>
+    <Service name="LockService">
+        <Method name="getLockStatus" mode="none"/>
+        <Method name="getLockType" mode="none"/>
+        <Method name="getLocks" mode="none"/>
+    </Service>
     
     <!-- The File/Folder Service -->
     
     <Service name="FileFolderService" mode="none">
         <Method name="rename" mode="all"/>
         <Method name="move" mode="all"/>
-        <Method name="copy" mode="all"/>
+        <Method name="copy" mode="all" auditInternal="true"/>
         <Method name="create" mode="all"/>
         <Method name="delete" mode="all"/>
         <Method name="makeFolders" mode="all"/>
@@ -65,7 +71,7 @@
     </Service>
     
     <Service name="CopyService" mode="none">
-        <Method name="copy" mode="all"/>
+        <Method name="copy" mode="all" auditInternal="true"/>
     </Service>
     
     <!-- The MimetypeService -->
@@ -90,11 +96,13 @@
         <Method name="restoreNode" mode="all"/>
     </Service>
     
-    <Service name="ScriptService"/>
+    <Service name="ScriptService" auditInternal="true"/>
     
-    <Service name="TemplateService"/>
+    <Service name="TemplateService" auditInternal="true">
+        <Method name="getTemplateProcessor" mode="none"/>
+    </Service>
     
-    <Service name="RuleService" mode="none">
+    <Service name="RuleService" mode="none" auditInternal="true">
         <Method name="disableRules" mode="all"/>
         <Method name="enableRules" mode="all"/>
         <Method name="disableRule" mode="all"/>
@@ -177,5 +185,18 @@
     <Service name="NamespaceService" mode="none" enabled="false"/>
     
     <Service name="TransactionService" mode="none" enabled="false"/>
+    
+    <Service name="WorkflowService" auditInternal="true">
+        <Method name="isDefinitionDeployed" mode="none"/>
+        <Method name="getDefinitions" mode="none"/>
+        <Method name="getDefinitionById" mode="none"/>
+        <Method name="getDefinitionByName" mode="none"/>
+        <Method name="getActiveWorkflows" mode="none"/>
+        <Method name="getWorkflowPaths" mode="none"/>
+        <Method name="getTasksForWorkflowPath" mode="none"/>
+        <Method name="getTaskById" mode="none"/>
+        <Method name="getAssignedTasks" mode="none"/>
+        <Method name="getPooledTasks" mode="none"/>
+    </Service>
     
 </Audit>

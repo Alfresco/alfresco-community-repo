@@ -67,7 +67,7 @@
         
         <!-- Date is used as the key for look up -->
        
-        <property name="date" column="date" type="date"                    index="adt_date_idx" not-null="true"/>
+        <property name="date" column="date_only" type="date"                    index="adt_date_idx" not-null="true"/>
         <property name="dayOfYear" column="day_of_year" type="integer"     index="adt_doy_idx"  not-null="true"/>
         <property name="dayOfMonth" column="day_of_month" type="integer"   index="adt_dom_idx"  not-null="true"/>
         <property name="dayOfWeek" column="day_of_week" type="integer"     index="adt_dow_idx"  not-null="true"/>
@@ -135,24 +135,34 @@
     
     <query name="audit.GetAuditSourceByApplication">
         select 
-            audit_store
+            audit_store_byid
+        from
+            org.alfresco.repo.audit.hibernate.AuditSourceImpl as audit_store_byid
+        where
+            audit_store_byid = 
+        (select max(audit_store.id)
         from
             org.alfresco.repo.audit.hibernate.AuditSourceImpl as audit_store
         where
             audit_store.application = :application and
             audit_store.service is null and
-            audit_store.method is null 
+            audit_store.method is null)
     </query>
     
     <query name="audit.GetAuditSourceByApplicationServiceMethod">
         select 
-            audit_store
+            audit_store_byid
+        from
+            org.alfresco.repo.audit.hibernate.AuditSourceImpl as audit_store_byid
+        where
+            audit_store_byid = 
+        (select max(audit_store.id)
         from
             org.alfresco.repo.audit.hibernate.AuditSourceImpl as audit_store
         where
             audit_store.application = :application and
             audit_store.service = :service and
-            audit_store.method = :method
+            audit_store.method = :method)
     </query>
     
     <query name="audit.GetAuditTrailForNode">

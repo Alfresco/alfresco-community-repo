@@ -1774,7 +1774,7 @@ public class ServerConfiguration implements ApplicationListener
                 // Check if the appropriate authentication component type is configured
                 
                 if ( ntlmMode != NTLMMode.NONE)
-                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator");
+                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator (can only be used with LDAP/JAAS auth component)");
                 
                 // Load the passthru authenticator dynamically
                 

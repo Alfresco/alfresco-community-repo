@@ -86,7 +86,7 @@
          <value>false</value>  <!-- use only to trace problems -->
       </property>
       <property name="failOnViolation" >
-         <value>false</value>  <!-- set to true to generate runtime exceptions upon violation -->
+         <value>true</value>
       </property>
       <property name="maxErrorsPerTransaction" >
          <value>5</value>  <!-- limit output (exception and log) to the first N violation messages -->

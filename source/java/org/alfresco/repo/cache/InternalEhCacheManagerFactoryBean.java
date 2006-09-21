@@ -44,7 +44,7 @@ import org.springframework.util.ResourceUtils;
  * For Alfresco purposes, there are two files that are looked for:
  * <ul>
  *   <li><b>classpath:alfresco/extension/ehcache-custom.xml</b>, which will take precedence</li>
- *   <li><b>classpath:alfresco/ehcache.xml</b>, which is the default shipped with Alfresco</li>
+ *   <li><b>classpath:alfresco/ehcache-default.xml</b>, which is the default shipped with Alfresco</li>
  * </ul>
  * <p>
  * The EHCache static singleton instance is used but ensuring that all access to the

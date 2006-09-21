@@ -67,6 +67,8 @@ public class LDAPPersonExportSource implements ExportSource
     private NamespaceService namespaceService;
 
     private String defaultHomeFolder;
+    
+    private boolean errorOnMissingUID;
 
     public LDAPPersonExportSource()
     {
@@ -113,6 +115,11 @@ public class LDAPPersonExportSource implements ExportSource
         this.attributeMapping = attributeMapping;
     }
 
+    public void setErrorOnMissingUID(boolean errorOnMissingUID)
+    {
+        this.errorOnMissingUID = errorOnMissingUID;
+    }
+    
     public void generateExport(XMLWriter writer)
     {
         QName nodeUUID = QName.createQName("sys:node-uuid", namespaceService);
@@ -161,8 +168,16 @@ public class LDAPPersonExportSource implements ExportSource
                     Attribute uidAttribute = attributes.get(userIdAttributeName);
                     if (uidAttribute == null)
                     {
+                        if(errorOnMissingUID)
+                        {
                         throw new ExportSourceImporterException(
                                 "User returned by user search does not have mandatory user id attribute " + attributes);
+                        }
+                        else
+                        {
+                            s_logger.warn("User returned by user search does not have mandatory user id attribute " + attributes);
+                            continue;
+                        }
                     }
                     String uid = (String) uidAttribute.get(0);
 

@@ -364,15 +364,19 @@
          transaction.changeTxnId = :changeTxnId
    </query>
 
-   <query name="node.GetContentDataStrings">
-      select distinct
-         props.stringValue
+   <query name="node.GetNodesWithPropertyValuesByActualType">
+      select
+         node
       from
          org.alfresco.repo.domain.hibernate.NodeImpl as node
       join
-         node.properties props
+         node.properties prop
       where
-         props.stringValue like 'contentUrl%'
+         (
+            prop.actualType = :actualTypeString or
+            prop.actualType = 'SERIALIZABLE'
+         ) and
+         prop.persistedType != 'NULL'
    </query>
 
    <query name="node.patch.GetNodesWithPersistedSerializableProperties">

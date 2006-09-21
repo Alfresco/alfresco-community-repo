@@ -198,6 +198,18 @@ public class IntegrityTest extends TestCase
         assertNotNull("Static IntegrityChecker not created", integrityChecker);
     }
     
+    public void testTemporaryDowngrading() throws Exception
+    {
+        assertEquals("Per-transaction override not correct", false, IntegrityChecker.isWarnInTransaction());
+        // create bad node
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_PROPERTIES, null);
+        // switch it off
+        IntegrityChecker.setWarnInTransaction();
+        assertEquals("Per-transaction override not correct", true, IntegrityChecker.isWarnInTransaction());
+        // now, only warnings should occur
+        checkIntegrityNoFailure();
+    }
+    
     public void testCreateWithoutProperties() throws Exception
     {
         NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_PROPERTIES, null);

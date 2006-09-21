@@ -45,26 +45,23 @@ public interface WorkflowModel
     // workflow task contstants
     static final QName TYPE_WORKFLOW_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowTask");
     static final QName PROP_CONTEXT = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "context");
+    static final QName PROP_DESCRIPTION = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "description");
     static final QName PROP_OUTCOME = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "outcome");
     static final QName PROP_PACKAGE_ACTION_GROUP = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "packageActionGroup");
     static final QName PROP_PACKAGE_ITEM_ACTION_GROUP = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "packageItemActionGroup");
     static final QName ASSOC_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package");
-    
+
+    // workflow task contstants
+    static final QName TYPE_START_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "startTask");
+    static final QName PROP_WORKFLOW_DESCRIPTION = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDescription");
+    static final QName PROP_WORKFLOW_PRIORITY = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowPriority");
+    static final QName PROP_WORKFLOW_DUE_DATE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDueDate");
+    static final QName ASSOC_ASSIGNEE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "assignee");
+
     // workflow package
     static final QName ASPECT_WORKFLOW_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowPackage");
     static final QName PROP_WORKFLOW_DEFINITION_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDefinitionId");
     static final QName PROP_WORKFLOW_DEFINITION_NAME = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDefinitionName");
     static final QName PROP_WORKFLOW_INSTANCE_ID = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowInstanceId");
- 
-
-    //
-    // Workflow Models
-    //
-    
-    // review & approve
-    static final QName TYPE_SUBMITREVIEW_TASK = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "submitReviewTask");
-    static final QName PROP_REVIEW_PRIORITY = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "reviewPriority");
-    static final QName PROP_REVIEW_DUE_DATE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "reviewDueDate");
-    static final QName ASSOC_REVIEWER = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "reviewer");
-    
+     
 }

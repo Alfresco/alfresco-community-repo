@@ -73,7 +73,11 @@ public class FileFolderServiceImpl implements FileFolderService
     /** Shallow search for all files and folders */
     private static final String LUCENE_QUERY_SHALLOW_ALL =
         "+PARENT:\"${cm:parent}\"" +
-        "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" ";
+        "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
+        "+(" +
+        "TYPE:\"" + ContentModel.TYPE_CONTENT + "\" " +
+        "TYPE:\"" + ContentModel.TYPE_FOLDER + "\" " +
+        ")";
     
     /** Shallow search for all files and folders */
     private static final String LUCENE_QUERY_SHALLOW_FOLDERS =

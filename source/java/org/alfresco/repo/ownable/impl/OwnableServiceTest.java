@@ -141,6 +141,14 @@ public class OwnableServiceTest extends TestCase
         
         permissionService.setInheritParentPermissions(testNode, false);
         
+        
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rootNodeRef, PermissionService.TAKE_OWNERSHIP));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rootNodeRef, PermissionService.SET_OWNER));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.TAKE_OWNERSHIP));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.SET_OWNER));
+        
+        permissionService.setPermission(rootNodeRef, "andy", PermissionService.WRITE_PROPERTIES, true);
+        
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rootNodeRef, PermissionService.TAKE_OWNERSHIP));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rootNodeRef, PermissionService.SET_OWNER));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.TAKE_OWNERSHIP));

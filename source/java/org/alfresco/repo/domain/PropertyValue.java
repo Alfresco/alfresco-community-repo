@@ -19,6 +19,7 @@ package org.alfresco.repo.domain;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -438,17 +439,30 @@ public class PropertyValue implements Cloneable, Serializable
      * 
      * @return Returns the <code>ValueType</code>  - never null
      */
-    private ValueType makeValueType(QName typeQName)
+    private static ValueType makeValueType(QName typeQName)
     {
         ValueType valueType = valueTypesByPropertyType.get(typeQName);
         if (valueType == null)
         {
             throw new AlfrescoRuntimeException(
                     "Property type not recognised: \n" +
-                    "   type: " + typeQName + "\n" +
-                    "   property: " + this);
+                    "   type: " + typeQName);
         }
         return valueType;
+    }
+    
+    /**
+     * Given an actual type qualified name, returns the <tt>String</tt> that represents it in
+     * the database.
+     * 
+     * @param typeQName the type qualified name
+     * @return Returns the <tt>String</tt> representation of the type,
+     *      e.g. <b>CONTENT</b> for type <b>d:content</b>.
+     */
+    public static String getActualTypeString(QName typeQName)
+    {
+        ValueType valueType = makeValueType(typeQName);
+        return valueType.toString();
     }
     
     @Override
@@ -632,15 +646,16 @@ public class PropertyValue implements Cloneable, Serializable
      * @return Returns the value of this property as the desired type, or a <code>Collection</code>
      *      of values of the required type
      * 
-     * @throws java.lang.UnsupportedOperationException if the value cannot be converted to the
-     *      type given
+     * @throws AlfrescoRuntimeException
+     *      if the type given is not recognized
+     * @throws org.alfresco.service.cmr.repository.datatype.TypeConversionException
+     *      if the conversion to the required type fails
      * 
      * @see DataTypeDefinition#ANY The static qualified names for the types
      */
     public Serializable getValue(QName typeQName)
     {
         // first check for null
-        
         ValueType requiredType = makeValueType(typeQName);
         if (requiredType == ValueType.SERIALIZABLE)
         {
@@ -678,6 +693,24 @@ public class PropertyValue implements Cloneable, Serializable
                     "   result: " + ret);
         }
         return ret;
+    }
+    
+    /**
+     * Gets the value or values as a guaranteed collection.
+     * 
+     * @see #getValue(QName)
+     */
+    public Collection<Serializable> getCollection(QName typeQName)
+    {
+        Serializable value = getValue(typeQName);
+        if (value instanceof Collection)
+        {
+            return (Collection<Serializable>) value;
+        }
+        else
+        {
+            return Collections.singletonList(value);
+        }
     }
     
     public boolean getBooleanValue()

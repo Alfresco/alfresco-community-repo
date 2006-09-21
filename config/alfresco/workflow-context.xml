@@ -4,44 +4,6 @@
 <beans>
 
    <!--                                 -->
-   <!-- Workflow Definitions            -->
-   <!--                                 -->
-
-   <bean id="workflow.workflowBootstrap" parent="workflowDeployer">
-      <property name="workflowDefinitions">
-         <list>
-            <props>
-              <prop key="engineId">jbpm</prop>
-              <prop key="location">org/alfresco/repo/workflow/jbpm/review_and_approve_processdefinition.xml</prop>
-              <prop key="mimetype">text/xml</prop>
-              <prop key="redeploy">false</prop>
-            </props>
-            <props>
-              <prop key="engineId">jbpm</prop>
-              <prop key="location">org/alfresco/repo/workflow/jbpm/adhoc_task_processdefinition.xml</prop>
-              <prop key="mimetype">text/xml</prop>
-              <prop key="redeploy">false</prop>
-            </props>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="workflow.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
-      <property name="models">
-         <list>
-            <value>alfresco/model/bpmModel.xml</value>
-            <value>alfresco/model/workflowModel.xml</value>
-         </list>
-      </property>
-      <property name="labels">
-         <list>
-            <value>alfresco/messages/bpm-messages</value>
-            <value>alfresco/messages/workflow-messages</value>
-         </list>
-      </property>
-   </bean>
-
-   <!--                                 -->
    <!-- Workflow Service Implementation -->
    <!--                                 -->
 
@@ -49,6 +11,7 @@
       <property name="transactionService" ref="transactionComponent"/>
       <property name="authenticationComponent" ref="authenticationComponent" />
       <property name="workflowService" ref="WorkflowService" />
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>
    </bean>
    
    <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">
@@ -58,7 +21,6 @@
 
    <bean id="workflowPackageImpl" class="org.alfresco.repo.workflow.WorkflowPackageImpl">
       <property name="importerBootstrap" ref="spacesBootstrap"/>
-      <property name="fileFolderService" ref="fileFolderService"/>
       <property name="searchService" ref="searchService"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="namespaceService" ref="namespaceService"/>
@@ -70,7 +32,7 @@
 
    <bean id="start-workflow" class="org.alfresco.repo.workflow.StartWorkflowActionExecuter" parent="action-executer">
       <property name="publicAction">
-         <value>false</value>
+         <value>true</value>
       </property>
       <property name="namespaceService">
          <ref bean="NamespaceService" />
@@ -103,7 +65,7 @@
       <property name="configuration" value="classpath:org/alfresco/repo/workflow/jbpm/jbpm.cfg.xml"/>
    </bean>
 
-   <bean id="jbpm_template" class="org.springmodules.workflow.jbpm31.JbpmTemplate">
+   <bean id="jbpm_template" class="org.alfresco.repo.workflow.jbpm.JBPMTransactionTemplate">
       <constructor-arg index="0" ref="jbpm_configuration"/>
    </bean>
 

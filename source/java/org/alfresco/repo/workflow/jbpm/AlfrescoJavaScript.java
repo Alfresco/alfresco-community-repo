@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.dom4j.Element;
 import org.jbpm.context.def.VariableAccess;
 import org.jbpm.context.exe.ContextInstance;
@@ -36,7 +37,7 @@ import org.xml.sax.InputSource;
  * A jBPM Action Handler for executing Alfresco Script
  *
  * The configuration of this action is as follows:
- *  <script language="javascript">
+ *  <script>
  *     <expression>
  *        the script to execute
  *     </expression>
@@ -72,6 +73,12 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     @SuppressWarnings("unchecked")
     public void execute(ExecutionContext executionContext) throws Exception
     {
+        // validate script
+        if (script == null)
+        {
+            throw new WorkflowException("Script has not been provided");
+        }
+        
         // extract action configuration
         String expression = null;
         List<VariableAccess> variableAccesses = null;        
@@ -96,7 +103,12 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         else
         {
             variableAccesses = jpdlReader.readVariableAccesses(script);
-            expression = script.element("expression").getTextTrim();
+            Element expressionElement = script.element("expression");
+            if (expressionElement == null)
+            {
+                throw new WorkflowException("Script expression has not been provided");
+            }
+            expression = expressionElement.getTextTrim();
         }
 
         // construct script arguments and execute

@@ -37,7 +37,9 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.dictionary.NamespaceDAOImpl;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.QueryRegisterComponent;
@@ -159,7 +161,7 @@ public class LuceneTest2 extends TestCase
 
     private QueryRegisterComponent queryRegisterComponent;
 
-    private NamespacePrefixResolver namespacePrefixResolver;
+    private DictionaryNamespaceComponent namespacePrefixResolver;
 
     private LuceneIndexerAndSearcher indexerAndSearcher;
 
@@ -170,6 +172,8 @@ public class LuceneTest2 extends TestCase
     private AuthenticationComponent authenticationComponent;
 
     private NodeRef[] documentOrder;
+
+    private NamespaceDAOImpl namespaceDao;
 
     public LuceneTest2()
     {
@@ -185,10 +189,13 @@ public class LuceneTest2 extends TestCase
         luceneFTS = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
         contentService = (ContentService) ctx.getBean("contentService");
         queryRegisterComponent = (QueryRegisterComponent) ctx.getBean("queryRegisterComponent");
-        namespacePrefixResolver = (NamespacePrefixResolver) ctx.getBean("namespaceService");
+        namespacePrefixResolver = (DictionaryNamespaceComponent) ctx.getBean("namespaceService");
         indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("luceneIndexerAndSearcherFactory");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        
+        namespaceDao = (NamespaceDAOImpl)  ctx.getBean("namespaceDAO");
+        
 
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         
@@ -208,7 +215,9 @@ public class LuceneTest2 extends TestCase
         assertNotNull(modelStream);
         M2Model model = M2Model.createModel(modelStream);
         dictionaryDAO.putModel(model);
-
+        
+        namespaceDao.addPrefix("test", TEST_NAMESPACE);
+        
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
@@ -1861,19 +1870,39 @@ public class LuceneTest2 extends TestCase
                 null);
         assertEquals(1, results.length());
         results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toPrefixString(namespacePrefixResolver) + "\"", null,
+                null);
+        assertEquals(1, results.length());
+        results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toString() + "\"",
                 null, null);
         assertEquals(13, results.length());
         results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toPrefixString(namespacePrefixResolver) + "\"",
+                null, null);
+        assertEquals(13, results.length());
+        results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\""
-                + ISO9075.getXPathName(testAspect) + "\"", null, null);
+                + testAspect.toString() + "\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\""
+                + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\""
-                + ISO9075.getXPathName(testSuperAspect) + "\"", null, null);
+                + testAspect.toString() + "\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\""
+                + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 

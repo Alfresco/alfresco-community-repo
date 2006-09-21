@@ -156,7 +156,25 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("TYPE"))
             {
-                TypeDefinition target = dictionaryService.getType(QName.createQName(queryText));
+                TypeDefinition target;
+                if(queryText.startsWith("{"))
+                {
+                    target = dictionaryService.getType(QName.createQName(queryText));
+                }
+                else
+                {
+                    int colonPosition = queryText.indexOf(':');
+                    if (colonPosition == -1)
+                    {
+                        // use the default namespace
+                        target  = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
+                    }
+                    else
+                    {
+                        // find the prefix
+                        target  = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText.substring(colonPosition + 1)));
+                    }
+                }
                 if (target == null)
                 {
                     throw new SearcherException("Invalid type: " + queryText);
@@ -186,7 +204,26 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("ASPECT"))
             {
-                AspectDefinition target = dictionaryService.getAspect(QName.createQName(queryText));
+                AspectDefinition target;
+                if(queryText.startsWith("{"))
+                {
+                    target = dictionaryService.getAspect(QName.createQName(queryText));
+                }
+                else
+                {
+                    int colonPosition = queryText.indexOf(':');
+                    if (colonPosition == -1)
+                    {
+                        // use the default namespace
+                        target  = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
+                    }
+                    else
+                    {
+                        // find the prefix
+                        target  = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText.substring(colonPosition + 1)));
+                    }
+                }
+                
                 QName targetQName = target.getName();
                 HashSet<QName> subclasses = new HashSet<QName>();
                 for (QName classRef : dictionaryService.getAllAspects())

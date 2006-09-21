@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="wf:workflowmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/workflow/1.0" prefix="wf"/>
+   </namespaces>
+      
+   <types>
+
+      <!--                               -->
+      <!--  Basic Review & Approve Tasks -->               
+      <!--                               -->
+      
+      <type name="wf:submitReviewTask">
+         <parent>bpm:startTask</parent>
+      </type>
+
+      <type name="wf:reviewTask">
+         <parent>bpm:workflowTask</parent>
+         
+         <overrides>
+         
+            <property name="bpm:packageItemActionGroup">
+               <default>workflow_item_edit_actions</default>
+            </property>
+            
+         </overrides>
+
+      </type>
+
+
+      <!--                               -->
+      <!--  Adhoc Tasks -->               
+      <!--                               -->
+      
+      
+      <type name="wf:submitAdhocTask">
+         <parent>bpm:startTask</parent>
+         
+         <properties>
+            <property name="wf:notifyMe">
+               <type>d:boolean</type>
+               <default>false</default>
+            </property>
+         </properties>
+
+      </type>
+
+      <type name="wf:adhocTask">
+         <parent>bpm:workflowTask</parent>
+      </type>
+
+      <type name="wf:completedAdhocTask">
+         <parent>bpm:workflowTask</parent>
+      </type>
+
+   </types>
+
+</model>

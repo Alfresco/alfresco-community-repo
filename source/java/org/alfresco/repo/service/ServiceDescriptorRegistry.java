@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
@@ -331,4 +332,14 @@ public class ServiceDescriptorRegistry
     {
         return (AuditService)getService(AUDIT_SERVICE);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getOwnableService()
+     */
+    public OwnableService getOwnableService()
+    {
+        return (OwnableService)getService(OWNABLE_SERVICE);
+    }
+    
+    
 }

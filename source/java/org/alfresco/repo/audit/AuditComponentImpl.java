@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 
+import org.alfresco.repo.audit.model.TrueFalseUnset;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.Auditable;
@@ -123,13 +124,26 @@ public class AuditComponentImpl implements AuditComponent
     {
         if ((auditFlag.get() == null) || (!auditFlag.get().booleanValue()))
         {
+            boolean auditInternal = (auditModel.getAuditInternalServiceMethods(mi) == TrueFalseUnset.TRUE);
             try
             {
-                auditFlag.set(Boolean.TRUE);
-
                 Method method = mi.getMethod();
                 String methodName = method.getName();
                 String serviceName = publicServiceIdentifier.getPublicServiceName(mi);
+                
+                if (!auditInternal)
+                {
+                    auditFlag.set(Boolean.TRUE);
+                }
+                else
+                {
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("Auditing internal service use for  - " + serviceName + "." + methodName);
+                    }
+                }
+
+             
                 if (method.isAnnotationPresent(Auditable.class))
                 {
 
@@ -170,7 +184,10 @@ public class AuditComponentImpl implements AuditComponent
             }
             finally
             {
-                auditFlag.set(Boolean.FALSE);
+                if (!auditInternal)
+                {
+                    auditFlag.set(Boolean.FALSE);
+                }
             }
         }
         else
@@ -272,7 +289,7 @@ public class AuditComponentImpl implements AuditComponent
                 }
                 else if (returnObject instanceof StoreRef)
                 {
-                    auditInfo.setKeyStore((StoreRef)returnObject);
+                    auditInfo.setKeyStore((StoreRef) returnObject);
                 }
             }
         }

@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.workflow;
 
+import java.util.List;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 
@@ -38,6 +40,14 @@ public interface WorkflowPackageComponent
      */
     public NodeRef createPackage(NodeRef container);
     
-    // TODO: Support for finding packages via meta-data of WorkflowPackage aspect
+    // TODO: Further support for finding packages via meta-data of WorkflowPackage aspect
+    
+    /**
+     * Gets the Workflows that act upon the specified Repository content.
+     *  
+     * @param packageItem  the repository content item to get workflows for
+     * @return  list of workflows which act upon the specified content
+     */
+    public List<String> getWorkflowIdsForContent(NodeRef packageItem);
     
 }

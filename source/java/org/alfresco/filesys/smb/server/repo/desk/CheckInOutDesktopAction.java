@@ -16,6 +16,10 @@
  */
 package org.alfresco.filesys.smb.server.repo.desk;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.NotifyChange;
 import org.alfresco.filesys.smb.server.repo.DesktopAction;
@@ -81,9 +85,10 @@ public class CheckInOutDesktopAction extends DesktopAction {
             {
                 try
                 {
-                    // Check in the file
+                    // Check in the file, pass an empty version properties so that veriosnable nodes create a new version
                     
-                    getCheckInOutService().checkin( target.getNode(), null, null, false);
+                	Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+                    getCheckInOutService().checkin( target.getNode(), versionProperties, null, false);
 
                     // Check if there are any file/directory change notify requests active
 

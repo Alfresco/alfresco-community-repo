@@ -210,7 +210,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             throw new IllegalArgumentException("Property 'policyComponent' has not been set");
         }
         
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this, "onMoveNode"));
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.TYPE_BASE, new JavaBehaviour(this, "onMoveNode"));
     
     }
 

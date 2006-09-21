@@ -69,7 +69,7 @@ public class NodeListConverterTest extends BaseSpringTest
         taskComponent = registry.getTaskComponent("jbpm");
         
         // deploy latest review and approve process definition
-        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/review_and_approve_processdefinition.xml");
+        ClassPathResource processDef = new ClassPathResource("alfresco/workflow/review_processdefinition.xml");
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);

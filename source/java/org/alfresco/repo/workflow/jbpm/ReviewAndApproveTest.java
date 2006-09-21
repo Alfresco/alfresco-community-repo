@@ -69,7 +69,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         taskComponent = registry.getTaskComponent("jbpm");
         
         // deploy latest review and approve process definition
-        ClassPathResource processDef = new ClassPathResource("org/alfresco/repo/workflow/jbpm/review_and_approve_processdefinition.xml");
+        ClassPathResource processDef = new ClassPathResource("alfresco/workflow/review_processdefinition.xml");
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);
@@ -97,9 +97,9 @@ public class ReviewAndApproveTest extends BaseSpringTest
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_PACKAGE, testNodeRef);
         Date reviewDueDate = new Date();
-        params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewDueDate"), reviewDueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, reviewDueDate);
         NodeRef reviewer = personService.getPerson("admin");
-        params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewer"), reviewer);
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, reviewer);
         
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
         assertNotNull(path);
@@ -134,9 +134,9 @@ public class ReviewAndApproveTest extends BaseSpringTest
         params.put(WorkflowModel.ASSOC_PACKAGE, testNodeRef);
         params.put(WorkflowModel.PROP_COMPLETED_ITEMS, (Serializable)nodeRefs);
         Date reviewDueDate = new Date();
-        params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewDueDate"), reviewDueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, reviewDueDate);
         NodeRef reviewer = personService.getPerson("admin");
-        params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewer"), reviewer);
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, reviewer);
         
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
         assertNotNull(path);

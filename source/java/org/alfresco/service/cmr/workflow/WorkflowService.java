@@ -148,6 +148,15 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId);
+
+    /**
+     * Gets a specific workflow instances
+     *
+     * @param workflowId  the id of the workflow to retrieve
+     * @return  the workflow instance 
+     */
+    @Auditable(parameters = {"workflowId"})
+    public WorkflowInstance getWorkflowById(String workflowId);
     
     /**
      * Gets all Paths for the specified Workflow instance
@@ -241,6 +250,11 @@ public interface WorkflowService
     @Auditable(parameters = {"taskId", "transitionId"})
     public WorkflowTask endTask(String taskId, String transitionId);
     
+    
+    //
+    // Package Management
+    //
+    
     /**
      * Create a Workflow Package (a container of content to route through the Workflow).
      * 
@@ -251,5 +265,15 @@ public interface WorkflowService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"container"})
     public NodeRef createPackage(NodeRef container);
+
+    /**
+     * Gets the Workflows that act upon the specified Repository content.
+     *  
+     * @param packageItem  the repository content item to get workflows for
+     * @param active  true => active workflows only, false => completed workflows only
+     * @return  list of workflows which act upon the specified content
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"packageItem", "active"})
+    public List<WorkflowInstance> getWorkflowsForContent(NodeRef packageItem, boolean active);
     
 }

@@ -52,7 +52,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -306,7 +306,7 @@ public class IndexInfo
                             IndexWriter writer;
                             try
                             {
-                                writer = new IndexWriter(oldIndex, new StandardAnalyzer(), false);
+                                writer = new IndexWriter(oldIndex, new AlfrescoStandardAnalyser(), false);
                                 writer.setUseCompoundFile(writerUseCompoundFile);
                                 writer.minMergeDocs = writerMinMergeDocs;
                                 writer.mergeFactor = writerMergeFactor;
@@ -442,7 +442,7 @@ public class IndexInfo
         IndexWriter writer;
         try
         {
-            writer = new IndexWriter(emptyIndex, new StandardAnalyzer(), true);
+            writer = new IndexWriter(emptyIndex, new AlfrescoStandardAnalyser(), true);
             writer.setUseCompoundFile(writerUseCompoundFile);
             writer.minMergeDocs = writerMinMergeDocs;
             writer.mergeFactor = writerMergeFactor;
@@ -2424,11 +2424,11 @@ public class IndexInfo
                             if (docCount < maxDocsForInMemoryMerge)
                             {
                                 ramDirectory = new RAMDirectory();
-                                writer = new IndexWriter(ramDirectory, new StandardAnalyzer(), true);
+                                writer = new IndexWriter(ramDirectory, new AlfrescoStandardAnalyser(), true);
                             }
                             else
                             {
-                                writer = new IndexWriter(location, new StandardAnalyzer(), true);
+                                writer = new IndexWriter(location, new AlfrescoStandardAnalyser(), true);
                                
                             }
                             writer.setUseCompoundFile(mergerUseCompoundFile);

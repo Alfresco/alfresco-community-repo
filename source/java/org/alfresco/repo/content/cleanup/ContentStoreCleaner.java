@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.content.cleanup;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -27,10 +28,12 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -116,26 +119,10 @@ public class ContentStoreCleaner
      */
     private void checkProperties()
     {
-        if (dictionaryService == null)
-        {
-            throw new AlfrescoRuntimeException("Property 'dictionaryService' not set");
-        }
-        if (nodeDaoService == null)
-        {
-            throw new AlfrescoRuntimeException("Property 'nodeDaoService' not set");
-        }
-        if (transactionService == null)
-        {
-            throw new AlfrescoRuntimeException("Property 'transactionService' not set");
-        }
-        if (stores == null || stores.size() == 0)
-        {
-            throw new AlfrescoRuntimeException("Property 'stores' not set");
-        }
-        if (listeners == null)
-        {
-            throw new AlfrescoRuntimeException("Property 'listeners' not set");
-        }
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "nodeDaoService", nodeDaoService);
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "listeners", listeners);
         
         // check the protect days
         if (protectDays < 0)
@@ -152,26 +139,27 @@ public class ContentStoreCleaner
     
     private Set<String> getValidUrls()
     {
+        final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
         // wrap to make the request in a transaction
-        TransactionWork<List<String>> getUrlsWork = new TransactionWork<List<String>>()
+        TransactionWork<List<Serializable>> getUrlsWork = new TransactionWork<List<Serializable>>()
         {
-            public List<String> doWork() throws Exception
+            public List<Serializable> doWork() throws Exception
             {
-                return nodeDaoService.getContentDataStrings();
+                return nodeDaoService.getPropertyValuesByActualType(contentDataType);
             };
         };
         // execute in READ-ONLY txn
-        List<String> contentDataStrings = TransactionUtil.executeInUserTransaction(
+        List<Serializable> values = TransactionUtil.executeInUserTransaction(
                 transactionService,
                 getUrlsWork,
                 true);
         
         // get all valid URLs
-        Set<String> validUrls = new HashSet<String>(contentDataStrings.size());
+        Set<String> validUrls = new HashSet<String>(values.size());
         // convert the strings to objects and extract the URL
-        for (String contentDataString : contentDataStrings)
+        for (Serializable value : values)
         {
-            ContentData contentData = ContentData.createContentProperty(contentDataString);
+            ContentData contentData = (ContentData) value;
             if (contentData.getContentUrl() != null)
             {
                 // a URL was present

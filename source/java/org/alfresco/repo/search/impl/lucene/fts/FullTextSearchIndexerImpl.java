@@ -31,7 +31,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearchIndexer
 {
-    private enum State {
+    private enum State
+    {
         ACTIVE, PAUSING, PAUSED
     };
 
@@ -48,7 +49,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     public FullTextSearchIndexerImpl()
     {
         super();
-        //System.out.println("Created id is "+this);
+        // System.out.println("Created id is "+this);
     }
 
     /*
@@ -64,8 +65,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     /*
      * (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer#indexCompleted(org.alfresco.repo.ref.StoreRef,
-     *      int, java.lang.Exception)
+     * @see org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer#indexCompleted(org.alfresco.repo.ref.StoreRef, int, java.lang.Exception)
      */
     public synchronized void indexCompleted(StoreRef storeRef, int remaining, Exception e)
     {
@@ -83,7 +83,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         }
         finally
         {
-            //System.out.println("..Index Complete: id is "+this);
+            // System.out.println("..Index Complete: id is "+this);
             this.notifyAll();
         }
     }
@@ -96,19 +96,19 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     public synchronized void pause() throws InterruptedException
     {
         pauseCount++;
-        //System.out.println("..Waiting "+pauseCount+" id is "+this);
+        // System.out.println("..Waiting "+pauseCount+" id is "+this);
         while ((indexing.size() > 0))
         {
-            //System.out.println("Pause: Waiting with count of "+indexing.size()+" id is "+this);
+            // System.out.println("Pause: Waiting with count of "+indexing.size()+" id is "+this);
             this.wait();
         }
         pauseCount--;
-        if(pauseCount == 0)
+        if (pauseCount == 0)
         {
             paused = true;
             this.notifyAll(); // only resumers
         }
-        //System.out.println("..Remaining "+pauseCount +" paused = "+paused+" id is "+this);
+        // System.out.println("..Remaining "+pauseCount +" paused = "+paused+" id is "+this);
     }
 
     /*
@@ -118,16 +118,16 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
      */
     public synchronized void resume() throws InterruptedException
     {
-        if(pauseCount == 0)
+        if (pauseCount == 0)
         {
-            //System.out.println("Direct resume"+" id is "+this);
+            // System.out.println("Direct resume"+" id is "+this);
             paused = false;
         }
-        else 
+        else
         {
-            while(pauseCount > 0)
+            while (pauseCount > 0)
             {
-                //System.out.println("Reusme waiting on "+pauseCount+" id is "+this);
+                // System.out.println("Reusme waiting on "+pauseCount+" id is "+this);
                 this.wait();
             }
             paused = false;
@@ -136,13 +136,13 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
 
     private synchronized boolean isPaused() throws InterruptedException
     {
-        if(pauseCount == 0)
+        if (pauseCount == 0)
         {
-           return paused;
+            return paused;
         }
-        else 
+        else
         {
-            while(pauseCount > 0)
+            while (pauseCount > 0)
             {
                 this.wait();
             }
@@ -160,17 +160,22 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         // Use the calling thread to index
         // Parallel indexing via multiple Quartz thread initiating indexing
 
-        StoreRef toIndex = getNextRef();
-        if (toIndex != null)
+        int done = 0;
+        while (done == 0)
         {
-            //System.out.println("Indexing "+toIndex+" at "+(new java.util.Date()));
-            IndexerSPI indexer = luceneIndexerAndSearcherFactory.getIndexer(toIndex);
-            indexer.registerCallBack(this);
-            indexer.updateFullTextSearch(1000);
-        }
-        else
-        { 
-            //System.out.println("Nothing to Indexing at "+(new java.util.Date()));
+            StoreRef toIndex = getNextRef();
+            if (toIndex != null)
+            {
+                // System.out.println("Indexing "+toIndex+" at "+(new java.util.Date()));
+                IndexerSPI indexer = luceneIndexerAndSearcherFactory.getIndexer(toIndex);
+                indexer.registerCallBack(this);
+                done += indexer.updateFullTextSearch(1000);
+            }
+            else
+            {
+                break;
+                // System.out.println("Nothing to Indexing at "+(new java.util.Date()));
+            }
         }
     }
 
@@ -178,7 +183,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     {
         if (paused || (pauseCount > 0))
         {
-            //System.out.println("Indexing suspended"+" id is "+this);
+            // System.out.println("Indexing suspended"+" id is "+this);
             return null;
         }
 
@@ -189,6 +194,8 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
             if (!indexing.contains(ref))
             {
                 nextStoreRef = ref;
+                // FIFO
+                break;
             }
         }
 

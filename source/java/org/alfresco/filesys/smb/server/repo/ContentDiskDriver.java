@@ -831,20 +831,108 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             }
             else
             {
-                // Create the transaction
-                
-                sess.beginTransaction(transactionService, true);
-                
-                // Get the file information to check if the file/folder exists
-                
-                FileInfo info = getFileInformation(sess, tree, name);
-                if (info.isDirectory())
+                // Check if pseudo files are enabled
+
+                if ( hasPseudoFileInterface(ctx))
                 {
-                    status = FileStatus.DirectoryExists;
+                	// Check if the file name is a pseudo file name
+                	
+                	if ( getPseudoFileInterface( ctx).isPseudoFile(sess, tree, name)) {
+    	            	// Make sure the parent folder has a file state, and the path exists
+                		
+    	                String[] paths = FileName.splitPath( name);
+    	                fstate = ctx.getStateTable().findFileState( paths[0]);
+    	                
+    	                if ( fstate == null) {
+
+    	                	// Check if the path exists
+    	                	
+    	                	if ( fileExists( sess, tree, paths[0]) == FileStatus.DirectoryExists)
+    	                	{
+    	                		// Create the file state
+    	                		
+    	                		fstate = ctx.getStateTable().findFileState( paths[0], true, true);
+    	                		
+    	                		fstate.setFileStatus( FileStatus.DirectoryExists);
+    	                		
+   	        	                // Get the node for the folder path
+    	        	                
+   	                			sess.beginTransaction(transactionService, true);
+   	        	                fstate.setNodeRef( getNodeForPath( tree, paths[0]));
+    	                		
+    	                		// Add pseudo files to the folder
+    	                		
+    	                		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
+    	                		
+    	                		// Debug
+    	                		
+    	                		if ( logger.isInfoEnabled())
+    	                			logger.info( "Added file state for pseudo files folder (exists) - " + paths[0]);
+    	                	}
+    	                }
+    	                else if ( fstate.hasPseudoFiles() == false)
+    	                {
+	                		// Make sure the file state has the node ref
+	                		
+	                		if ( fstate.hasNodeRef() == false)
+	                		{
+	        	            	// Create the transaction
+	        	                
+	        	                sess.beginTransaction(transactionService, true);
+	        	            
+	        	                // Get the node for the folder path
+	        	                
+	        	                fstate.setNodeRef( getNodeForPath( tree, paths[0]));
+	                		}
+	                		
+    	                	// Add pseudo files for the parent folder
+    	                	
+                    		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
+                    		
+                    		// Debug
+                    		
+                    		if ( logger.isInfoEnabled())
+                    			logger.info( "Added pseudo files for folder (exists) - " + paths[0]);
+    	                }
+    	            	
+    	                // Check if the path is to a pseudo file
+    	                
+    	                PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( sess, tree, name);
+    	                if ( pfile != null)
+    	                {
+    	                    // Indicate that the file exists
+    	                    
+    	                    status = FileStatus.FileExists;
+    	                }
+    	                else
+    	                {
+    	                	// Failed to find pseudo file
+    	                	
+    	                	if ( logger.isInfoEnabled())
+    	                		logger.info( "Failed to find pseudo file (exists) - " + name);
+    	                }
+                	}
                 }
-                else
+
+                // If the file is not a pseudo file then search for the file
+                
+                if ( status == FileStatus.Unknown) 
                 {
-                    status = FileStatus.FileExists;
+	            	// Create the transaction
+	                
+	                sess.beginTransaction(transactionService, true);
+	                
+	                // Get the file information to check if the file/folder exists
+	                
+	                FileInfo info = getFileInformation(sess, tree, name);
+	                if (info.isDirectory())
+	                {
+	                    status = FileStatus.DirectoryExists;
+	                }
+	                else
+	                {
+	                    status = FileStatus.FileExists;
+	                }
                 }
             }
         }
@@ -861,13 +949,17 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             status = FileStatus.NotExist;
         }
 
-        // done
+        // Debug
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("File status determined: \n" +
                     "   name: " + name + "\n" +
                     "   status: " + status);
         }
+        
+        // Return the file/folder status
+        
         return status;
     }
     
@@ -896,15 +988,65 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             if ( hasPseudoFileInterface(ctx))
             {
-                // Check if the path is to a pseudo file
-                
-                PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( sess, tree, params.getPath());
-                if ( pfile != null)
-                {
-                    // Create a network file to access the pseudo file data
-                    
-                    return pfile.getFile( params.getPath());
-                }
+            	// Check if the file name is a pseudo file name
+            	
+            	String path = params.getPath();
+
+            	if ( getPseudoFileInterface( ctx).isPseudoFile(sess, tree, path)) {
+            		
+	            	// Make sure the parent folder has a file state, and the path exists
+	
+	                String[] paths = FileName.splitPath( path);
+	                FileState fstate = ctx.getStateTable().findFileState( paths[0]);
+	                
+	                if ( fstate == null) {
+
+	                	// Check if the path exists
+	                	
+	                	if ( fileExists( sess, tree, paths[0]) == FileStatus.DirectoryExists)
+	                	{
+	                		// Create the file state and add any pseudo files
+	                		
+	                		fstate = ctx.getStateTable().findFileState( paths[0], true, true);
+	                		
+	                		fstate.setFileStatus( FileStatus.DirectoryExists);
+	                		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
+	                		
+	                		// Debug
+	                		
+	                		if ( logger.isInfoEnabled())
+	                			logger.info( "Added file state for pseudo files folder (open) - " + paths[0]);
+	                	}
+	                }
+	                else if ( fstate.hasPseudoFiles() == false)
+	                {
+	                	// Add pseudo files for the parent folder
+	                	
+                		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
+                		
+                		// Debug
+                		
+                		if ( logger.isInfoEnabled())
+                			logger.info( "Added pseudo files for folder (open) - " + paths[0]);
+	                }
+	            	
+	                // Check if the path is to a pseudo file
+	                
+	                PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( sess, tree, params.getPath());
+	                if ( pfile != null)
+	                {
+	                    // Create a network file to access the pseudo file data
+	                    
+	                    return pfile.getFile( params.getPath());
+	                }
+	                else
+	                {
+	                	// Failed to find pseudo file
+	                	
+	                	if ( logger.isInfoEnabled())
+	                		logger.info( "Failed to find pseudo file (open) - " + params.getPath());
+	                }
+            	}
             }
             
             // Not a pseudo file, try and open a normal file/folder node
@@ -1045,7 +1187,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
         
         try
         {
-            // get the device root
+            // Get the device root
 
             ContentContext ctx = (ContentContext) tree.getContext();
             NodeRef deviceRootNodeRef = ctx.getRootNode();
@@ -1888,7 +2030,8 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             FileState fstate = ctx.getStateTable().findFileState(path);
             if ( fstate != null && fstate.hasNodeRef() && fstate.exists() )
             {
-                // check that the node exists
+                // Check that the node exists
+            	
                 if (nodeService.exists(fstate.getNodeRef()))
                 {
                 	// Bump the file states expiry time

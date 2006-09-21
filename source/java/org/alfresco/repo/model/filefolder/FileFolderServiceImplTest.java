@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -90,6 +91,9 @@ public class FileFolderServiceImplTest extends TestCase
         // start the transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
+        
+        // downgrade integrity
+        IntegrityChecker.setWarnInTransaction();
         
         // authenticate
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());

@@ -91,6 +91,10 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
 
     private AuthorityDAO authorityDAO;
 
+    private boolean errorOnMissingGID;
+
+    private boolean errorOnMissingUID;
+
     public LDAPGroupExportSource()
     {
         super();
@@ -144,6 +148,16 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
     public void setErrorOnMissingMembers(boolean errorOnMissingMembers)
     {
         this.errorOnMissingMembers = errorOnMissingMembers;
+    }
+
+    public void setErrorOnMissingGID(boolean errorOnMissingGID)
+    {
+        this.errorOnMissingGID = errorOnMissingGID;
+    }
+
+    public void setErrorOnMissingUID(boolean errorOnMissingUID)
+    {
+        this.errorOnMissingUID = errorOnMissingUID;
     }
 
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
@@ -279,7 +293,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 ContentModel.TYPE_AUTHORITY_CONTAINER.getLocalName(), ContentModel.TYPE_AUTHORITY_CONTAINER
                         .toPrefixString(namespaceService), attrs);
 
-        if ((authorityDAO != null ) && authorityDAO.authorityExists(group.gid))
+        if ((authorityDAO != null) && authorityDAO.authorityExists(group.gid))
         {
             NodeRef authNodeRef = authorityDAO.getAuthorityNodeRefOrNull(group.gid);
             if (authNodeRef != null)
@@ -295,7 +309,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                         .toPrefixString(namespaceService));
             }
         }
-        
+
         writer.startElement(ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI(), ContentModel.PROP_AUTHORITY_NAME
                 .getLocalName(), ContentModel.PROP_AUTHORITY_NAME.toPrefixString(namespaceService),
                 new AttributesImpl());
@@ -368,8 +382,17 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 Attribute gidAttribute = attributes.get(groupIdAttributeName);
                 if (gidAttribute == null)
                 {
-                    throw new ExportSourceImporterException(
-                            "Group returned by group search does not have mandatory group id attribute " + attributes);
+                    if (errorOnMissingGID)
+                    {
+                        throw new ExportSourceImporterException(
+                                "Group returned by group search does not have mandatory group id attribute "
+                                        + attributes);
+                    }
+                    else
+                    {
+                        s_logger.warn("Missing GID on " + attributes);
+                        continue;
+                    }
                 }
                 String gid = (String) gidAttribute.get(0);
 
@@ -453,7 +476,15 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                         Attribute objectclass = attributes.get("objectclass");
                         if (objectclass == null)
                         {
-                            throw new ExportSourceImporterException("Failed to find attribute objectclass for DN " + dn);
+                            if (errorOnMissingMembers)
+                            {
+                                throw new ExportSourceImporterException("Failed to find attribute objectclass for DN "
+                                        + dn);
+                            }
+                            else
+                            {
+                                continue;
+                            }
                         }
                         for (int i = 0; i < objectclass.size(); i++)
                         {
@@ -479,8 +510,18 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                     Attribute groupIdAttribute = attributes.get(groupIdAttributeName);
                                     if (groupIdAttribute == null)
                                     {
-                                        throw new ExportSourceImporterException("Group missing group id attribute DN ="
-                                                + dn + "  att = " + groupIdAttributeName);
+                                        if (errorOnMissingGID)
+                                        {
+                                            throw new ExportSourceImporterException(
+                                                    "Group missing group id attribute DN ="
+                                                            + dn + "  att = " + groupIdAttributeName);
+                                        }
+                                        else
+                                        {
+                                            s_logger.warn("Group missing group id attribute DN ="
+                                                    + dn + "  att = " + groupIdAttributeName);
+                                            continue;
+                                        }
                                     }
                                     id = (String) groupIdAttribute.get(0);
                                 }
@@ -504,8 +545,18 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                     Attribute userIdAttribute = attributes.get(userIdAttributeName);
                                     if (userIdAttribute == null)
                                     {
-                                        throw new ExportSourceImporterException("User missing user id attribute DN ="
-                                                + dn + "  att = " + userIdAttributeName);
+                                        if (errorOnMissingUID)
+                                        {
+                                            throw new ExportSourceImporterException(
+                                                    "User missing user id attribute DN ="
+                                                            + dn + "  att = " + userIdAttributeName);
+                                        }
+                                        else
+                                        {
+                                            s_logger.warn("User missing user id attribute DN ="
+                                                    + dn + "  att = " + userIdAttributeName);
+                                            continue;
+                                        }
                                     }
                                     id = (String) userIdAttribute.get(0);
                                 }
@@ -527,7 +578,14 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                         {
                             if (isGroup == null)
                             {
-                                throw new ExportSourceImporterException("Type not recognised for DN" + dn);
+                                if (errorOnMissingMembers)
+                                {
+                                    throw new ExportSourceImporterException("Type not recognised for DN" + dn);
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                             else if (isGroup)
                             {
@@ -538,7 +596,14 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                 Group child = lookup.get("GROUP_" + id);
                                 if (child == null)
                                 {
+                                    if (errorOnMissingMembers)
+                                    {
                                     throw new ExportSourceImporterException("Failed to find child group " + id);
+                                    }
+                                    else
+                                    {
+                                        continue;
+                                    }
                                 }
                                 if (rootGroups.contains(child))
                                 {
@@ -688,7 +753,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
         TransactionService txs = (TransactionService) ctx.getBean("transactionComponent");
         UserTransaction tx = txs.getUserTransaction();
         tx.begin();
-        
+
         File file = new File(args[0]);
         Writer writer = new BufferedWriter(new FileWriter(file));
         XMLWriter xmlWriter = createXMLExporter(writer);

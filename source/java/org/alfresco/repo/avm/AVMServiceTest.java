@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -59,6 +61,53 @@ import org.alfresco.service.transaction.TransactionService;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Test the SimpleAVMSubmitAction.
+     */
+    public void testSubmitAction()
+    {
+        try
+        {
+            fService.createAVMStore("foo-staging");
+            fService.createDirectory("foo-staging:/", "layer");
+            fService.createDirectory("foo-staging:/layer", "a");
+            fService.createDirectory("foo-staging:/layer/a","b");
+            fService.createDirectory("foo-staging:/layer/a/b", "c");
+            fService.createFile("foo-staging:/layer/a/b/c", "foo").close();
+            fService.createFile("foo-staging:/layer/a/b/c", "bar").close();
+            fService.createAVMStore("area");
+            fService.setStoreProperty("area", QName.createQName(null, ".website.name"),
+                                      new PropertyValue(null, "foo"));   
+            fService.createLayeredDirectory("foo-staging:/layer", "area:/", "layer");
+            fService.createFile("area:/layer", "figs").close();
+            fService.getFileOutputStream("area:/layer/a/b/c/foo").close();
+            fService.removeNode("area:/layer/a/b/c/bar");
+            List<AVMDifference> diffs = 
+                fSyncService.compare(-1, "area:/layer", -1, "foo-staging:/layer");
+            assertEquals(3, diffs.size());
+            final SimpleAVMSubmitAction action = (SimpleAVMSubmitAction)fContext.getBean("simple-avm-submit");
+            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            {
+                public Object doWork() throws Exception
+                {
+                    action.execute(null, AVMNodeConverter.ToNodeRef(-1, "area:/layer"));
+                    return null;
+                }
+            };
+            TxnWork worker = new TxnWork();
+            TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"), 
+                                                     worker);
+            diffs = 
+                fSyncService.compare(-1, "area:/layer", -1, "foo-staging:/layer");
+            assertEquals(0, diffs.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
     /**
      * Test one argument remove.
      */

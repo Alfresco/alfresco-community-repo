@@ -837,8 +837,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         for (QName qName : props.keySet())
         {
             PropertyValue value = props.get(qName);
-            PropertyDefinition def = this.dictionaryService.getProperty(qName);
-            result.put(qName, value.getValue(def.getDataType().getName()));
+            PropertyDefinition def = dictionaryService.getProperty(qName);
+            result.put(qName, makeSerializableValue(def, value));
         }
         // Now spoof properties that are built in.
         result.put(ContentModel.PROP_CREATED, new Date(desc.getCreateDate()));
@@ -900,7 +900,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 return null;
             }
             PropertyDefinition def = this.dictionaryService.getProperty(qname);
-            return value.getValue(def.getDataType().getName());
+            return makeSerializableValue(def, value);
         }
         catch (AVMNotFoundException e)
         {

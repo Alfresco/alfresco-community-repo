@@ -17,9 +17,13 @@
 
 package org.alfresco.repo.avm.wf;
 
+import java.util.List;
+
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
@@ -63,6 +67,21 @@ public class AVMSubmitHandler extends JBPMSpringActionHandler
     public void execute(ExecutionContext executionContext) throws Exception
     {
         String avmSource = (String)executionContext.getContextInstance().getVariable("sourcePath");
-        fgLogger.error("Would be submittting: " + avmSource);
+        String [] storePath = avmSource.split(":");
+        if (storePath.length != 2)
+        {
+            fgLogger.error("Malformed path: " + avmSource);
+            return;
+        }
+        String webSiteName = 
+            fAVMService.getStoreProperty(storePath[0], QName.createQName(null, ".website.name")).
+            getStringValue();
+        String avmDest = webSiteName + "-staging:" + storePath[1];
+        List<AVMDifference> diffs = 
+            fAVMSyncService.compare(-1, avmSource, -1, avmDest);
+        // Ignore conflicts and older nodes for now.
+        fAVMSyncService.update(diffs, true, true, false, false);
+        // Now flatten out the source.
+        fAVMSyncService.flatten(avmSource, avmDest);
     }
 }

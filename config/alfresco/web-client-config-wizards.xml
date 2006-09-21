@@ -15,6 +15,18 @@
                      description-id="create_website_step1_desc"
                      instruction-id="default_instruction" />
             </step>
+            <step name="invite" title-id="website_invite" description-id="create_website_step2_desc">
+               <page path="/jsp/wcm/create-website-wizard/invite.jsp"
+                     title-id="create_website_step2_title"
+                     description-id="create_website_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="notify" title-id="website_notify" description-id="create_website_step3_desc">
+               <page path="/jsp/wcm/create-website-wizard/notify.jsp"
+                     title-id="create_website_step3_title"
+                     description-id="create_website_step3_desc"
+                     instruction-id="default_instruction" />
+            </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
                      title-id="summary"

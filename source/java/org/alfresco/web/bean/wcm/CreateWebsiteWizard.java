@@ -36,9 +36,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
+import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -71,6 +75,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.name = null;
       this.title = null;
       this.description = null;
+      
+      // init the dependant bean we are using for the invite users pages
+      InviteWebsiteUsersWizard wiz = (InviteWebsiteUsersWizard)FacesHelper.getManagedBean(
+            FacesContext.getCurrentInstance(), "InviteWebsiteUsersWizard");
+      wiz.init();
    }
    
    /**
@@ -97,29 +106,41 @@ public class CreateWebsiteWizard extends BaseWizardBean
       uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
       this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
       
-      // TODO: invite users with appropriate permissions into this folder
-      
-      // create the AVM stores (layers) to represent the newly created location website
-      createStagingSandbox(this.name);
-      
-      // create a sandbox for each user - TODO: based on role?
-      List<String> invitedUsers = getInvitedUsernames();
-      invitedUsers.add(Application.getCurrentUser(context).getUserName());
-      for (String username : invitedUsers)
-      {
-         createUserSandbox(this.name, username);
+      // invite users with appropriate permissions into this folder
+      InviteWebsiteUsersWizard wiz = (InviteWebsiteUsersWizard)FacesHelper.getManagedBean(
+            FacesContext.getCurrentInstance(), "InviteWebsiteUsersWizard");
+      wiz.setNode(new Node(nodeRef));
+      outcome = wiz.finish();
+      if (outcome != null)
+      {       
+         // create the AVM stores (layers) to represent the newly created location website
+         createStagingSandbox(this.name);
+         
+         // create a sandbox for each user
+         // TODO: create sandbox appropriately based on role
+         List<String> invitedUsers = getInvitedUsernames(wiz);
+         String currentUser = Application.getCurrentUser(context).getUserName();
+         if (invitedUsers.contains(currentUser) == false)
+         {
+            invitedUsers.add(Application.getCurrentUser(context).getUserName());
+         }
+         for (String username : invitedUsers)
+         {
+            createUserSandbox(this.name, username);
+         }
+         
+         // save the list of invited users against the store
+         this.nodeService.setProperty(nodeRef, ContentModel.PROP_USERSANDBOXES, (Serializable)invitedUsers);
+         
+         // set the property on the node to reference the AVM store
+         this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, this.name);
+         
+         // navigate to the Websites folder so we can see the newly created folder
+         this.navigator.setCurrentNodeId(websiteParentId);
+         
+         outcome = AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
       }
-      
-      // save the list of invited users against the store
-      this.nodeService.setProperty(nodeRef, ContentModel.PROP_USERSANDBOXES, (Serializable)invitedUsers);
-      
-      // set the property on the node to reference the AVM store
-      this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, this.name);
-      
-      // navigate to the Websites folder so we can see the newly created folder
-      this.navigator.setCurrentNodeId(websiteParentId);
-      
-      return "browse";
+      return outcome;
    }
    
    /**
@@ -303,6 +324,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     * Identifier for store-types: .sandbox.author.main and .sandbox.author.preview
     * Store-id: .sandbox-id.<guid> (unique across all stores in the sandbox)
     * DNS: .dns.<store> = <path-to-webapps-root>
+    * Website Name: .website.name = website name
     * 
     * @param name       The store name to create the sandbox for
     * @param username   Username of the user to create the sandbox for
@@ -381,9 +403,15 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * @return The list of invited usernames
     */
-   private List<String> getInvitedUsernames()
+   private List<String> getInvitedUsernames(InviteWebsiteUsersWizard wizard)
    {
-      // TODO: add the list of invited users here
-      return new ArrayList<String>(1);
+      // add the list of invited users here
+      List<UserGroupRole> users = (List<UserGroupRole>)wizard.getUserRolesDataModel().getWrappedData();
+      List<String> invited = new ArrayList<String>(users.size());
+      for (UserGroupRole u : users)
+      {
+         invited.add(u.getAuthority());
+      }
+      return invited;
    }
 }

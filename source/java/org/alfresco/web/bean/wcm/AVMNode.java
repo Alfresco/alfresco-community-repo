@@ -49,7 +49,7 @@ public class AVMNode implements Map<String, Object>
    public AVMNode(AVMNodeDescriptor avmRef)
    {
       this.avmRef = avmRef;
-      this.version = -1;      // TODO: always 1 for now...
+      this.version = -1;      // TODO: always -1 for now...
       this.path = avmRef.getPath();
       
       getProperties();

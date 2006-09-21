@@ -303,6 +303,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot) + ":/";
       
       // get the UIActions component responsible for rendering context related user actions
+      // TODO: we may need a component per user instance
       UIActions uiFileActions = aquireUIActions(ACTIONS_FILE);
       UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER);
       
@@ -504,7 +505,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private UIActionLink aquireAction(FacesContext fc, String store, String username,
          String name, String icon, String actionListener, String outcome)
    {
-      UIActionLink action = findAction(name);
+      UIActionLink action = findAction(name, username);
       if (action == null)
       {
          action = createAction(fc, store, username, name, icon, actionListener, outcome);
@@ -515,14 +516,15 @@ public class UIUserSandboxes extends SelfRenderingComponent
    /**
     * Locate a child UIActionLink component by name.
     * 
-    * @param name    Of the action component to find
+    * @param name       Of the action component to find
+    * @param username   Username of the user owner of the action
     * 
     * @return UIActionLink component if found, else null if not created yet
     */
-   private UIActionLink findAction(String name)
+   private UIActionLink findAction(String name, String username)
    {
       UIActionLink action = null;
-      String actionId = getId() + name;
+      String actionId = getId() + name + username;
       for (UIComponent component : (List<UIComponent>)getChildren())
       {
          if (actionId.equals(component.getId()))
@@ -554,7 +556,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       UIActionLink control = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
       
       control.setRendererType(UIActions.RENDERER_ACTIONLINK);
-      control.setId(getId() + name);
+      control.setId(getId() + name + username);
       control.setValue(Application.getMessage(fc, name));
       control.setShowLink(false);
       control.setImage(icon);

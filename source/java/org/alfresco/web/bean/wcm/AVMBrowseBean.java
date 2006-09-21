@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -212,8 +213,8 @@ public class AVMBrowseBean implements IContextListener
       AVMStoreDescriptor store = this.avmService.getAVMStore(stagingStore);
       if (store != null)
       {
-         // TODO: count user stores!
-         int users = 1;
+         // TODO: count user stores with correct query
+         int users = avmService.queryStoresPropertyKeys(QName.createQName(null, storeRoot + "-%" + AVMConstants.STORE_MAIN)).size();
          summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
                 .append(Utils.getDateFormat(fc).format(new Date(store.getCreateDate())))
                 .append("<p>");

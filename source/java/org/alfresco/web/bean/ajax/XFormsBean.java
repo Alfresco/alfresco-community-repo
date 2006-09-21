@@ -18,6 +18,7 @@ package org.alfresco.web.bean.ajax;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -118,7 +119,11 @@ public class XFormsBean
 	    this.chibaBean.init();
 
             // register for notification events
+	    et.addEventListener(XFormsEventFactory.SUBMIT_DONE, el, true);
 	    et.addEventListener(XFormsEventFactory.SUBMIT_ERROR, el, true);
+	    et.addEventListener(XFormsEventFactory.REQUIRED, el, true);
+	    et.addEventListener(XFormsEventFactory.INVALID, el, true);
+	    et.addEventListener(XFormsEventFactory.OUT_OF_RANGE, el, true);
             et.addEventListener(XFormsEventFactory.CHIBA_STATE_CHANGED, el, true);
             et.addEventListener(XFormsEventFactory.CHIBA_PROTOTYPE_CLONED, el, true);
             et.addEventListener(XFormsEventFactory.CHIBA_ID_GENERATED, el, true);
@@ -248,6 +253,7 @@ public class XFormsBean
 	for (XFormsEvent xfe : this.eventLog)
 	{
 	    final String type = xfe.getType();
+	    LOGGER.debug("adding event " + type + " to the event log");
 	    final Element target = (Element)xfe.getTarget();
 
 	    final Element eventElement = result.createElement(type);
@@ -255,13 +261,20 @@ public class XFormsBean
 	    eventElement.setAttribute("targetId", target.getAttributeNS(null, "id"));
 	    eventElement.setAttribute("targetName", target.getLocalName());
 
-	    for (Object name : xfe.getPropertyNames())
+	    final Collection properties = xfe.getPropertyNames();
+	    if (properties != null)
 	    {
-		final Element propertyElement = result.createElement("property");
-		eventElement.appendChild(propertyElement);
-		propertyElement.setAttribute("name", (String)name);
-		final String value = xfe.getContextInfo((String)name).toString();
-		propertyElement.setAttribute("value", value);
+		for (Object name : properties)
+		{
+		    final Object value = xfe.getContextInfo((String)name);
+		    LOGGER.debug("adding property {" + name + 
+				 ":" + value + "} to event " + type);
+		    final Element propertyElement = result.createElement("property");
+		    eventElement.appendChild(propertyElement);
+		    propertyElement.setAttribute("name", name.toString());
+		    propertyElement.setAttribute("value", 
+						 value != null ? value.toString() : null);
+		}
 	    }
 	}
 	this.eventLog.clear();

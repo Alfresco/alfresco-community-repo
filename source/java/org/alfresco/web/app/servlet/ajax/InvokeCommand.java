@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2005 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
 package org.alfresco.web.app.servlet.ajax;
 
 import java.io.IOException;
@@ -8,6 +24,7 @@ import javax.faces.FactoryFinder;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
+import javax.faces.el.EvaluationException;
 import javax.faces.el.MethodBinding;
 import javax.faces.render.RenderKit;
 import javax.faces.render.RenderKitFactory;
@@ -34,8 +51,10 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class InvokeCommand extends BaseAjaxCommand
 {
-   public void execute(FacesContext facesContext, String expression,
-         HttpServletRequest request, HttpServletResponse response)
+   public void execute(final FacesContext facesContext, 
+		       final String expression,
+		       final HttpServletRequest request, 
+		       final HttpServletResponse response)
          throws ServletException, IOException
    {
       // setup the JSF response writer.
@@ -46,19 +65,19 @@ public class InvokeCommand extends BaseAjaxCommand
       // In the future we may use annotations on the method to be called to specify what content
       // type should be used for the response.
       
-      OutputStream os = response.getOutputStream();
-      UIViewRoot viewRoot = facesContext.getViewRoot();
-      RenderKitFactory renderFactory = (RenderKitFactory)FactoryFinder.
+      final OutputStream os = response.getOutputStream();
+      final UIViewRoot viewRoot = facesContext.getViewRoot();
+      final RenderKitFactory renderFactory = (RenderKitFactory)FactoryFinder.
             getFactory(FactoryFinder.RENDER_KIT_FACTORY);
-      RenderKit renderKit = renderFactory.getRenderKit(facesContext, 
+      final RenderKit renderKit = renderFactory.getRenderKit(facesContext, 
             viewRoot.getRenderKitId());
-      ResponseWriter writer = renderKit.createResponseWriter(
-            new OutputStreamWriter(os), MimetypeMap.MIMETYPE_HTML, "UTF-8");
+      final ResponseWriter writer = renderKit.createResponseWriter(
+            new OutputStreamWriter(os), MimetypeMap.MIMETYPE_XML, "UTF-8");
       facesContext.setResponseWriter(writer);
       response.setContentType(writer.getContentType());
       
       // create the JSF binding expression
-      String bindingExpr = makeBindingExpression(expression);
+      final String bindingExpr = makeBindingExpression(expression);
       
       if (logger.isDebugEnabled())
          logger.debug("Invoking method represented by " + bindingExpr);
@@ -67,8 +86,8 @@ public class InvokeCommand extends BaseAjaxCommand
       try
       {
          // create the method binding from the expression
-         MethodBinding binding = facesContext.getApplication().createMethodBinding(
-               bindingExpr, new Class[] {});
+         final MethodBinding binding = 
+	     facesContext.getApplication().createMethodBinding(bindingExpr, new Class[] {});
          
          if (binding != null)
          {
@@ -86,9 +105,17 @@ public class InvokeCommand extends BaseAjaxCommand
       catch (Throwable err)
       {
          // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         
-         throw new AlfrescoRuntimeException("Failed to execute method: " + err.getMessage(), err);
+         try { if (tx != null) { tx.rollback(); } } catch (Exception ex) { }
+	 if (err instanceof EvaluationException)
+	 {
+            final Throwable cause = ((EvaluationException)err).getCause();
+	    if (cause != null)
+	       err = cause;
+	 }
+	 logger.error(err);
+         throw new AlfrescoRuntimeException("Failed to execute method " + expression + 
+					    ": " + err.getMessage(), 
+					    err);
       }
 
       // force the output back to the client

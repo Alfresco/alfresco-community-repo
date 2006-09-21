@@ -135,12 +135,12 @@ public class TemplateTypeImpl
 	{
 	    final TemplatingService ts = TemplatingService.getInstance();
 	    final Document d = ts.parseXML(new ByteArrayInputStream(xmlString.getBytes()));
-	    System.out.println("sample xml:");
-	    System.out.println(ts.writeXMLToString(d));
+	    LOGGER.debug("sample xml:");
+	    LOGGER.debug(ts.writeXMLToString(d));
 
 	    TemplateTypeImpl.cleanUpSampleXml(d.getDocumentElement());
-	    System.out.println("cleaned up xml:");
-	    System.out.println(ts.writeXMLToString(d));
+	    LOGGER.debug("cleaned up xml:");
+	    LOGGER.debug(ts.writeXMLToString(d));
 	    return d;
 	}
 	catch (ParserConfigurationException pce)

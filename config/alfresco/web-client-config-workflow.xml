@@ -85,7 +85,7 @@
        </property-sheet>
    </config>
 
-   <config evaluator="node-type" condition="wcwmf:review">
+   <config evaluator="node-type" condition="wcmwf:review">
        <property-sheet>
            <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
            <show-property name="wcmwf:description" ignore-if-missing="false" />

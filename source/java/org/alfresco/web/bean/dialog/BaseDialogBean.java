@@ -130,12 +130,12 @@ public abstract class BaseDialogBean implements IDialogBean
       return true;
    }
 
-   public String getTitle()
+   public String getContainerTitle()
    {
       return null;
    }
    
-   public String getDescription()
+   public String getContainerDescription()
    {
       return null;
    }

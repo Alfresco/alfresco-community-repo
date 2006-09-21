@@ -121,15 +121,20 @@ public class ErrorBean
     */
    public String getStackTrace()
    {
-      StringWriter stringWriter = new StringWriter();
-      PrintWriter writer = new PrintWriter(stringWriter);
-      this.lastError.printStackTrace(writer);
+      String trace = "No stack trace available";
       
-      // format the message for HTML display
-      String trace = stringWriter.toString();
-      trace = trace.replaceAll("<", "&lt;");
-      trace = trace.replaceAll(">", "&gt;");
-      trace = trace.replaceAll("\n", "<br/>");
+      if (this.lastError != null)
+      {
+         StringWriter stringWriter = new StringWriter();
+         PrintWriter writer = new PrintWriter(stringWriter);
+         this.lastError.printStackTrace(writer);
+         
+         // format the message for HTML display
+         trace = stringWriter.toString();
+         trace = trace.replaceAll("<", "&lt;");
+         trace = trace.replaceAll(">", "&gt;");
+         trace = trace.replaceAll("\n", "<br/>");
+      }
       
       return trace;
    }

@@ -111,165 +111,175 @@ public class ActionLinkRenderer extends BaseRenderer
     */
    private String renderActionLink(FacesContext context, UIActionLink link)
    {
-      Map attrs = link.getAttributes();
-      StringBuilder linkBuf = new StringBuilder(256);
+      // if there is no value for the link there will be no visible output
+      // on the page so don't bother rendering anything
+      String linkHtml = "";
+      Object linkValue = link.getValue();
       
-      if (link.getHref() == null)
+      if (linkValue != null)
       {
-         linkBuf.append("<a href='#' onclick=\"");
+         Map attrs = link.getAttributes();
+         StringBuilder linkBuf = new StringBuilder(256);
          
-         // if we have an overriden onclick add that
-         if (link.getOnclick() != null)
+         if (link.getHref() == null)
          {
-            linkBuf.append(link.getOnclick());
-         }
-         else
-         {
-            // generate JavaScript to set a hidden form field and submit
-            // a form which request attributes that we can decode
-            linkBuf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterComponents(link)));
-         }
-         
-         linkBuf.append('"');
-      }
-      else
-      {
-         String href = link.getHref();
-         
-         // prefix the web context path if required
-         linkBuf.append("<a href=\"");
-         if (href.startsWith("/"))
-         {
-            linkBuf.append(context.getExternalContext().getRequestContextPath());
-         }
-         linkBuf.append(href);
-         
-         // append arguments if specified
-         Map<String, String> actionParams = getParameterComponents(link);
-         if (actionParams != null)
-         {
-            boolean first = (href.indexOf('?') == -1);
-            for (String name : actionParams.keySet())
+            linkBuf.append("<a href='#' onclick=\"");
+            
+            // if we have an overriden onclick add that
+            if (link.getOnclick() != null)
             {
-               String paramValue = actionParams.get(name);
-               if (first)
-               {
-                  linkBuf.append('?');
-                  first = false;
-               }
-               else
-               {
-                  linkBuf.append('&');
-               }
-               try
-               {
-                  linkBuf.append(name).append("=").append(URLEncoder.encode(paramValue, "UTF-8"));
-               }
-               catch (UnsupportedEncodingException err)
-               {
-                  // if this happens we have bigger problems than a missing URL parameter...!
-               }
-            }
-         }
-         
-         linkBuf.append('"');
-         
-         // output href 'target' attribute if supplied
-         if (link.getTarget() != null)
-         {
-            linkBuf.append(" target=\"")
-                   .append(link.getTarget())
-                   .append("\"");
-         }
-      }
-      
-      if (attrs.get("style") != null)
-      {
-         linkBuf.append(" style=\"")
-                .append(attrs.get("style"))
-                .append('"');
-      }
-      if (attrs.get("styleClass") != null)
-      {
-         linkBuf.append(" class=")
-                .append(attrs.get("styleClass"));
-      }
-      if (link.getTooltip() != null)
-      {
-         linkBuf.append(" title=\"")
-                .append(Utils.encode(link.getTooltip()))
-                .append('"');
-      }
-      linkBuf.append('>');
-      
-      StringBuilder buf = new StringBuilder(350);
-      if (link.getImage() != null)
-      {
-         int padding = link.getPadding();
-         if (padding != 0)
-         {
-            // TODO: make this width value a property!
-            buf.append("<table cellspacing=0 cellpadding=0><tr><td width=16>");
-         }
-         
-         if (link.getShowLink() == false)
-         {
-            buf.append(linkBuf.toString());
-         }
-         
-         // TODO: allow configuring of alignment attribute
-         buf.append(Utils.buildImageTag(context, link.getImage(), (String)link.getValue(), "absmiddle"));
-         
-         if (link.getShowLink() == false)
-         {
-            buf.append("</a>");
-         }
-         else
-         {
-            if (padding != 0)
-            {
-               buf.append("</td><td style=\"padding:")
-                  .append(padding)
-                  .append("px\">");
+               linkBuf.append(link.getOnclick());
             }
             else
             {
-               // TODO: add horizontal spacing as component property
-               buf.append("<span style='padding-left:2px");
-               
-               // text next to an image may need alignment
-               if (attrs.get("verticalAlign") != null)
-               {
-                  buf.append(";vertical-align:")
-                     .append(attrs.get("verticalAlign"));
-               }
-               
-               buf.append("'>");
+               // generate JavaScript to set a hidden form field and submit
+               // a form which request attributes that we can decode
+               linkBuf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterComponents(link)));
             }
             
-            buf.append(linkBuf.toString());
-            buf.append(Utils.encode(link.getValue().toString()));
-            buf.append("</a>");
+            linkBuf.append('"');
+         }
+         else
+         {
+            String href = link.getHref();
             
-            if (padding == 0)
+            // prefix the web context path if required
+            linkBuf.append("<a href=\"");
+            if (href.startsWith("/"))
             {
-               buf.append("</span>");
+               linkBuf.append(context.getExternalContext().getRequestContextPath());
+            }
+            linkBuf.append(href);
+            
+            // append arguments if specified
+            Map<String, String> actionParams = getParameterComponents(link);
+            if (actionParams != null)
+            {
+               boolean first = (href.indexOf('?') == -1);
+               for (String name : actionParams.keySet())
+               {
+                  String paramValue = actionParams.get(name);
+                  if (first)
+                  {
+                     linkBuf.append('?');
+                     first = false;
+                  }
+                  else
+                  {
+                     linkBuf.append('&');
+                  }
+                  try
+                  {
+                     linkBuf.append(name).append("=").append(URLEncoder.encode(paramValue, "UTF-8"));
+                  }
+                  catch (UnsupportedEncodingException err)
+                  {
+                     // if this happens we have bigger problems than a missing URL parameter...!
+                  }
+               }
+            }
+            
+            linkBuf.append('"');
+            
+            // output href 'target' attribute if supplied
+            if (link.getTarget() != null)
+            {
+               linkBuf.append(" target=\"")
+                      .append(link.getTarget())
+                      .append("\"");
             }
          }
          
-         if (padding != 0)
+         if (attrs.get("style") != null)
          {
-            buf.append("</td></tr></table>");
+            linkBuf.append(" style=\"")
+                   .append(attrs.get("style"))
+                   .append('"');
          }
-      }
-      else
-      {
-         buf.append(linkBuf.toString());
-         buf.append(Utils.encode(link.getValue().toString()));
-         buf.append("</a>");
+         if (attrs.get("styleClass") != null)
+         {
+            linkBuf.append(" class=")
+                   .append(attrs.get("styleClass"));
+         }
+         if (link.getTooltip() != null)
+         {
+            linkBuf.append(" title=\"")
+                   .append(Utils.encode(link.getTooltip()))
+                   .append('"');
+         }
+         linkBuf.append('>');
+         
+         StringBuilder buf = new StringBuilder(350);
+         if (link.getImage() != null)
+         {
+            int padding = link.getPadding();
+            if (padding != 0)
+            {
+               // TODO: make this width value a property!
+               buf.append("<table cellspacing=0 cellpadding=0><tr><td width=16>");
+            }
+            
+            if (link.getShowLink() == false)
+            {
+               buf.append(linkBuf.toString());
+            }
+            
+            // TODO: allow configuring of alignment attribute
+            buf.append(Utils.buildImageTag(context, link.getImage(), (String)link.getValue(), "absmiddle"));
+            
+            if (link.getShowLink() == false)
+            {
+               buf.append("</a>");
+            }
+            else
+            {
+               if (padding != 0)
+               {
+                  buf.append("</td><td style=\"padding:")
+                     .append(padding)
+                     .append("px\">");
+               }
+               else
+               {
+                  // TODO: add horizontal spacing as component property
+                  buf.append("<span style='padding-left:2px");
+                  
+                  // text next to an image may need alignment
+                  if (attrs.get("verticalAlign") != null)
+                  {
+                     buf.append(";vertical-align:")
+                        .append(attrs.get("verticalAlign"));
+                  }
+                  
+                  buf.append("'>");
+               }
+               
+               buf.append(linkBuf.toString());
+               buf.append(Utils.encode(link.getValue().toString()));
+               buf.append("</a>");
+               
+               if (padding == 0)
+               {
+                  buf.append("</span>");
+               }
+            }
+            
+            if (padding != 0)
+            {
+               buf.append("</td></tr></table>");
+            }
+         }
+         else
+         {
+            buf.append(linkBuf.toString());
+            buf.append(Utils.encode(link.getValue().toString()));
+            buf.append("</a>");
+         }
+         
+         linkHtml = buf.toString();
       }
       
-      return buf.toString();
+      return linkHtml;
    }
    
    /**
@@ -282,71 +292,81 @@ public class ActionLinkRenderer extends BaseRenderer
     */
    private String renderMenuAction(FacesContext context, UIActionLink link, int padding)
    {
-      StringBuilder buf = new StringBuilder(256);
+      // if there is no value for the link there will be no visible output
+      // on the page so don't bother rendering anything
+      String linkHtml = "";
+      Object linkValue = link.getValue();
       
-      buf.append("<tr><td>");
-      
-      // render image cell first for a menu
-      if (link.getImage() != null)
+      if (linkValue != null)
       {
-         buf.append(Utils.buildImageTag(context, link.getImage(), (String)link.getValue()));
-      }
-      
-      buf.append("</td><td");
-      if (padding != 0)
-      {
-         buf.append(" style=\"padding:")
-            .append(padding)
-            .append("px\"");
-      }
-      buf.append(">");
-      
-      // render text link cell for the menu
-      if (link.getHref() == null)
-      {
-         buf.append("<a href='#' onclick=\"");
-         buf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterComponents(link)));
-         buf.append('"');
-      }
-      else
-      {
-         String href = link.getHref();
-         if (href.startsWith("http") == false)
-         {
-            href = context.getExternalContext().getRequestContextPath() + href;
-         }
-         buf.append("<a href=\"")
-            .append(href)
-            .append('"');
+         StringBuilder buf = new StringBuilder(256);
          
-         // output href 'target' attribute if supplied
-         if (link.getTarget() != null)
+         buf.append("<tr><td>");
+         
+         // render image cell first for a menu
+         if (link.getImage() != null)
          {
-            buf.append(" target=\"")
-               .append(link.getTarget())
-               .append("\"");
+            buf.append(Utils.buildImageTag(context, link.getImage(), (String)link.getValue()));
          }
+         
+         buf.append("</td><td");
+         if (padding != 0)
+         {
+            buf.append(" style=\"padding:")
+               .append(padding)
+               .append("px\"");
+         }
+         buf.append(">");
+         
+         // render text link cell for the menu
+         if (link.getHref() == null)
+         {
+            buf.append("<a href='#' onclick=\"");
+            buf.append(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterComponents(link)));
+            buf.append('"');
+         }
+         else
+         {
+            String href = link.getHref();
+            if (href.startsWith("http") == false)
+            {
+               href = context.getExternalContext().getRequestContextPath() + href;
+            }
+            buf.append("<a href=\"")
+               .append(href)
+               .append('"');
+            
+            // output href 'target' attribute if supplied
+            if (link.getTarget() != null)
+            {
+               buf.append(" target=\"")
+                  .append(link.getTarget())
+                  .append("\"");
+            }
+         }
+         
+         Map attrs = link.getAttributes();
+         if (attrs.get("style") != null)
+         {
+            buf.append(" style=\"")
+               .append(attrs.get("style"))
+               .append('"');
+         }
+         if (attrs.get("styleClass") != null)
+         {
+            buf.append(" class=")
+               .append(attrs.get("styleClass"));
+         }
+         buf.append('>');
+         buf.append(Utils.encode(link.getValue().toString()));
+         buf.append("</a>");
+         
+         buf.append("</td></tr>");
+         
+         linkHtml = buf.toString();
       }
       
-      Map attrs = link.getAttributes();
-      if (attrs.get("style") != null)
-      {
-         buf.append(" style=\"")
-            .append(attrs.get("style"))
-            .append('"');
-      }
-      if (attrs.get("styleClass") != null)
-      {
-         buf.append(" class=")
-            .append(attrs.get("styleClass"));
-      }
-      buf.append('>');
-      buf.append(Utils.encode(link.getValue().toString()));
-      buf.append("</a>");
-      
-      buf.append("</td></tr>");
-      
-      return buf.toString();
+      return linkHtml;
    }
    
    

@@ -26,6 +26,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
@@ -105,16 +106,7 @@ public class ManageTaskDialog extends BaseDialogBean
          this.workflowInstance = this.task.path.instance;
          
          // setup the workflow package for the task
-         Serializable obj = this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
-         // TODO: remove this workaroud where JBPM may return a String and not the NodeRef
-         if (obj instanceof NodeRef)
-         {
-            this.workflowPackage = (NodeRef)obj;
-         }
-         else if (obj instanceof String)
-         {
-            this.workflowPackage = new NodeRef((String)obj);
-         }
+         this.workflowPackage = (NodeRef)this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
          
          if (logger.isDebugEnabled())
          {
@@ -208,7 +200,7 @@ public class ManageTaskDialog extends BaseDialogBean
    @Override
    public String getFinishButtonLabel()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), "save");
+      return Application.getMessage(FacesContext.getCurrentInstance(), "save_changes");
    }
    
    @Override
@@ -218,7 +210,7 @@ public class ManageTaskDialog extends BaseDialogBean
    }
    
    @Override
-   public String getTitle()
+   public String getContainerTitle()
    {
       String titleStart = Application.getMessage(FacesContext.getCurrentInstance(), "manage_task_title");
          
@@ -226,7 +218,7 @@ public class ManageTaskDialog extends BaseDialogBean
    }
    
    @Override
-   public String getDescription()
+   public String getContainerDescription()
    {
       return this.task.description;
    }
@@ -251,7 +243,7 @@ public class ManageTaskDialog extends BaseDialogBean
       String selectedTransition = null;
       for (WorkflowTransition trans : this.transitions)
       {
-         Object result = reqParams.get(CLIENT_ID_PREFIX + trans.title);
+         Object result = reqParams.get(CLIENT_ID_PREFIX + FacesHelper.makeLegalId(trans.title));
          if (result != null)
          {
             // this was the button that was pressed
@@ -635,7 +627,10 @@ public class ManageTaskDialog extends BaseDialogBean
       node.addPropertyResolver("displayPath", this.browseBean.resolverDisplayPath);
       
       // add a property resolver to indicate whether the item has been completed or not
-//                           node.addPropertyResolver("completed", this.completeResolver);
+//      node.addPropertyResolver("completed", this.completeResolver);
+      
+      // add the id of the task being managed
+      node.getProperties().put("taskId", this.task.id);
       
       this.resources.add(node);
    }

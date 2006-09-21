@@ -848,7 +848,7 @@ public class AdvancedSearchBean
                   search.addFixedValueQuery(QName.createQName(qname), strVal);
                }
             }
-            else
+            else if (value != null)
             {
                // by default use toString() value - this is for text fields and unknown types
                String strVal = value.toString();

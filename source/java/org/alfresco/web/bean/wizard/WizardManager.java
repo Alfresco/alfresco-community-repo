@@ -152,7 +152,7 @@ public final class WizardManager
    public String getTitle()
    {
       // try and get the title directly from the wizard
-      String title = this.currentWizardState.getWizard().getTitle();
+      String title = this.currentWizardState.getWizard().getContainerTitle();
       
       if (title == null)
       {
@@ -181,7 +181,7 @@ public final class WizardManager
    public String getDescription()
    {
       // try and get the description directly from the dialog
-      String desc = this.currentWizardState.getWizard().getDescription();
+      String desc = this.currentWizardState.getWizard().getContainerDescription();
       
       if (desc == null)
       {

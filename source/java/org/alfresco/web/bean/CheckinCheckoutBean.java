@@ -29,6 +29,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -40,6 +41,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -129,6 +134,14 @@ public class CheckinCheckoutBean
    public void setContentService(ContentService contentService)
    {
       this.contentService = contentService;
+   }
+   
+   /**
+    * @param workflowService  The WorkflowService to set.
+    */
+   public void setWorkflowService(WorkflowService workflowService)
+   {
+      this.workflowService = workflowService;
    }
    
    /**
@@ -357,13 +370,29 @@ public class CheckinCheckoutBean
       if (id != null && id.length() != 0)
       {
          setupContentDocument(id);
-      }
+      } 
       else
       {
          setDocument(null);
       }
       
-      clearUpload();
+      resetState();
+   }
+   
+   public void setupWorkflowContentAction(ActionEvent event)
+   {
+      // do the common processing
+      setupContentAction(event);
+      
+      // retrieve the id of the task
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      this.workflowTaskId = params.get("taskId");
+      
+      this.isWorkflowAction = true;
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Setup for workflow package action for task id: " + this.workflowTaskId);
    }
    
    /**
@@ -435,7 +464,7 @@ public class CheckinCheckoutBean
                logger.debug("Checkout copy location: " + getCopyLocation());
                logger.debug("Selected Space Id: " + this.selectedSpaceId);
             }
-            NodeRef workingCopyRef;
+            NodeRef workingCopyRef = null;
             if (getCopyLocation().equals(COPYLOCATION_OTHER) && this.selectedSpaceId != null)
             {
                // checkout to a arbituary parent Space 
@@ -447,7 +476,31 @@ public class CheckinCheckoutBean
             }
             else
             {
+               // checkout the content to the current space
                workingCopyRef = this.versionOperationsService.checkout(node.getNodeRef());
+               
+               // if this is a workflow action and there is a task id present we need
+               // to also link the working copy to the workflow package so it appears
+               // in the resources panel in the manage task dialog
+               if (this.isWorkflowAction && this.workflowTaskId != null)
+               {
+                  WorkflowTask task = this.workflowService.getTaskById(this.workflowTaskId);
+                  if (task != null)
+                  {
+                     NodeRef workflowPackage = (NodeRef)task.properties.get(WorkflowModel.ASSOC_PACKAGE);
+                     if (workflowPackage != null)
+                     {
+                        this.nodeService.addChild(workflowPackage, workingCopyRef, 
+                              ContentModel.ASSOC_CONTAINS, QName.createQName(
+                              NamespaceService.CONTENT_MODEL_1_0_URI,
+                              QName.createValidLocalName((String)this.nodeService.getProperty(
+                              workingCopyRef, ContentModel.PROP_NAME))));
+                        
+                        if (logger.isDebugEnabled())
+                           logger.debug("Added working copy to workflow package: " + workflowPackage);
+                     }
+                  }
+               }
             }
             
             // set the working copy Node instance
@@ -500,7 +553,7 @@ public class CheckinCheckoutBean
          }
          
          // clean up and clear action context
-         clearUpload();
+         resetState();
          setDocument(null);
          setWorkingDocument(null);
 
@@ -525,7 +578,7 @@ public class CheckinCheckoutBean
       if (node != null)
       {
          // clean up and clear action context
-         clearUpload();
+         resetState();
          setDocument(null);
          setWorkingDocument(null);
          
@@ -631,7 +684,7 @@ public class CheckinCheckoutBean
             tx.commit();
             
             // clean up and clear action context
-            clearUpload();
+            resetState();
             setDocument(null);
             setDocumentContent(null);
             setEditorOutput(null);
@@ -669,7 +722,7 @@ public class CheckinCheckoutBean
             // try to cancel checkout of the working copy
             this.versionOperationsService.cancelCheckout(node.getNodeRef());
             
-            clearUpload();
+            resetState();
             
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
@@ -718,10 +771,15 @@ public class CheckinCheckoutBean
             {
                throw new IllegalStateException("Node supplied for undo checkout has neither Working Copy or Locked aspect!");
             }
-         
-            clearUpload();
             
-            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+            
+            if (this.isWorkflowAction == false)
+            {
+               outcome = outcome + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+            }
+            
+            resetState();
          }
          catch (Throwable err)
          {
@@ -804,12 +862,16 @@ public class CheckinCheckoutBean
             // commit the transaction
             tx.commit();
             
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+            
+            if (this.isWorkflowAction == false)
+            {
+               outcome = outcome + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+            }
+            
             // clear action context
             setDocument(null);
-            clearUpload();
-            
-            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
-                      AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
+            resetState();
          }
          catch (Throwable err)
          {
@@ -863,7 +925,7 @@ public class CheckinCheckoutBean
             
             // clear action context
             setDocument(null);
-            clearUpload();
+            resetState();
             
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
@@ -889,7 +951,7 @@ public class CheckinCheckoutBean
    public String cancel()
    {
       // reset the state
-      clearUpload();
+      resetState();
       
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
@@ -897,7 +959,7 @@ public class CheckinCheckoutBean
    /**
     * Clear form state and upload file bean
     */
-   private void clearUpload()
+   private void resetState()
    {
       // delete the temporary file we uploaded earlier
       if (this.file != null)
@@ -912,6 +974,8 @@ public class CheckinCheckoutBean
       this.copyLocation = COPYLOCATION_CURRENT;
       this.versionNotes = "";
       this.selectedSpaceId = null;
+      this.isWorkflowAction = false;
+      this.workflowTaskId = null;
       
       // remove the file upload bean from the session
       FacesContext ctx = FacesContext.getCurrentInstance();
@@ -951,6 +1015,8 @@ public class CheckinCheckoutBean
    private String fileName;
    private boolean keepCheckedOut = false;
    private boolean minorChange = true;
+   private boolean isWorkflowAction = false;
+   private String workflowTaskId;
    private String copyLocation = COPYLOCATION_CURRENT;
    private String versionNotes = "";
    private NodeRef selectedSpaceId = null;
@@ -969,4 +1035,7 @@ public class CheckinCheckoutBean
    
    /** The ContentService to be used by the bean */
    protected ContentService contentService;
+   
+   /** The WorkflowService to be used by the bean */
+   protected WorkflowService workflowService;
 }

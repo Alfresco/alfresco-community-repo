@@ -15,7 +15,7 @@ import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
  */
 public class HtmlSeparatorGenerator extends BaseComponentGenerator
 {
-   protected String html = "<b>default</b>";
+   protected String html = "";
    
    /**
     * Returns the HTML configured to be used for this separator

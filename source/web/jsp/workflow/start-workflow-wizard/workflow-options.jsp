@@ -42,7 +42,8 @@
          titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
    
    <r:propertySheetGrid id="task-props" value="#{WizardManager.bean.taskMetadataNode}" 
-                        var="taskProps" columns="1" externalConfig="true" />
+                        var="taskProps" columns="1" externalConfig="true" 
+                        nextButtonId="next-button" />
 </a:panel>
    
 <h:outputText id="padding" styleClass="paddingRow" value="&nbsp;" escape="false" />
@@ -81,7 +82,7 @@
          <f:facet name="header">
             <a:sortLink id="col3-sort" label="#{msg.path}" value="path" styleClass="header"/>
          </f:facet>
-         <r:nodePath id="col3-path" value="#{r.path}" />
+         <r:nodePath id="col3-path" value="#{r.path}" disabled="true" />
       </a:column>
       
       <%-- Created Date column --%>

@@ -50,7 +50,7 @@ public class ReassignTaskDialog extends BaseDialogBean
    {
       super.init(parameters);
       
-      this.taskId = this.parameters.get("task-id");
+      this.taskId = this.parameters.get("id");
       if (this.taskId == null || this.taskId.length() == 0)
       {
          throw new IllegalArgumentException("Reassign task dialog called without task id");

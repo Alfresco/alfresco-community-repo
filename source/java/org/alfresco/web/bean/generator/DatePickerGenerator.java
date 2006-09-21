@@ -4,7 +4,6 @@ import java.util.Date;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
-import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 
@@ -25,6 +24,7 @@ import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
  */
 public class DatePickerGenerator extends BaseComponentGenerator
 {
+   private boolean initialiseIfNull = false;
    private int yearCount = 30;
    private int startYear = new Date().getYear() + 1900 + 2;
    
@@ -61,6 +61,26 @@ public class DatePickerGenerator extends BaseComponentGenerator
    {
       this.yearCount = yearCount;
    }
+   
+   /**
+    * @return Determines whether the control should initially show
+    *         today's date if the model value is null
+    */
+   public boolean isInitialiseIfNull()
+   {
+      return initialiseIfNull;
+   }
+
+   /**
+    * @param initialiseIfNull Determines whether the control should 
+    *        initially show today's date if the model value is null.
+    *        This will also hide the None button thus disallowing
+    *        the user to set the date back to null.
+    */
+   public void setInitialiseIfNull(boolean initialiseIfNull)
+   {
+      this.initialiseIfNull = initialiseIfNull;
+   }
 
    @SuppressWarnings("unchecked")
    public UIComponent generate(FacesContext context, String id)
@@ -71,6 +91,7 @@ public class DatePickerGenerator extends BaseComponentGenerator
       FacesHelper.setupComponentId(context, component, id);
       component.getAttributes().put("startYear", this.startYear);
       component.getAttributes().put("yearCount", this.yearCount);
+      component.getAttributes().put("initialiseIfNull", new Boolean(this.initialiseIfNull));
       component.getAttributes().put("style", "margin-right: 7px;");
                
       return component;

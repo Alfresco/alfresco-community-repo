@@ -100,38 +100,14 @@ public final class AuthenticationHelper
    {
       HttpSession session = httpRequest.getSession();
       
-      // examine the appropriate session for our User object
-      User user = null;
+      // retrieve the User object
+      User user = getUser(httpRequest, httpResponse);
+      
+      // get the login bean if we're not in the portal
       LoginBean loginBean = null;
       if (Application.inPortalServer() == false)
       {
-         user = (User)session.getAttribute(AUTHENTICATION_USER);
          loginBean = (LoginBean)session.getAttribute(LOGIN_BEAN);
-      }
-      else
-      {
-         // naff solution as we need to enumerate all session keys until we find the one that
-         // should match our User objects - this is weak but we don't know how the underlying
-         // Portal vendor has decided to encode the objects in the session
-         if (portalUserKeyName.get() == null)
-         {
-            String userKeyPostfix = "?" + AUTHENTICATION_USER; 
-            Enumeration enumNames = session.getAttributeNames();
-            while (enumNames.hasMoreElements())
-            {
-               String name = (String)enumNames.nextElement();
-               if (name.endsWith(userKeyPostfix))
-               {
-                  // cache the key value once found!
-                  portalUserKeyName.set(name);
-                  break;
-               }
-            }
-         }
-         if (portalUserKeyName.get() != null)
-         {
-            user = (User)session.getAttribute(portalUserKeyName.get());
-         }
       }
       
       // setup the authentication context
@@ -386,6 +362,52 @@ public final class AuthenticationHelper
       }
       
       return AuthenticationStatus.Failure;
+   }
+   
+   /**
+    * Attempts to retrieve the User object stored in the current session.
+    * 
+    * @param httpRequest The HTTP request
+    * @param httpResponse The HTTP response
+    * @return The User object representing the current user or null if it could not be found
+    */
+   public static User getUser(HttpServletRequest httpRequest, HttpServletResponse httpResponse)
+   {
+      HttpSession session = httpRequest.getSession();
+      User user = null;
+      
+      // examine the appropriate session to try and find the User object
+      if (Application.inPortalServer() == false)
+      {
+         user = (User)session.getAttribute(AUTHENTICATION_USER);
+      }
+      else
+      {
+         // naff solution as we need to enumerate all session keys until we find the one that
+         // should match our User objects - this is weak but we don't know how the underlying
+         // Portal vendor has decided to encode the objects in the session
+         if (portalUserKeyName.get() == null)
+         {
+            String userKeyPostfix = "?" + AUTHENTICATION_USER; 
+            Enumeration enumNames = session.getAttributeNames();
+            while (enumNames.hasMoreElements())
+            {
+               String name = (String)enumNames.nextElement();
+               if (name.endsWith(userKeyPostfix))
+               {
+                  // cache the key value once found!
+                  portalUserKeyName.set(name);
+                  break;
+               }
+            }
+         }
+         if (portalUserKeyName.get() != null)
+         {
+            user = (User)session.getAttribute(portalUserKeyName.get());
+         }
+      }
+      
+      return user;
    }
    
    /**

@@ -73,7 +73,7 @@ public class CommandServlet extends BaseServlet
    /**
     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
     */
-   protected void doGet(HttpServletRequest req, HttpServletResponse res)
+   protected void service(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException
    {
       String uri = req.getRequestURI();

@@ -1021,6 +1021,10 @@
          <property-name>contentService</property-name>
          <value>#{ContentService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -2071,6 +2075,10 @@
          <property-name>yearCount</property-name>
          <value>30</value>
       </managed-property>
+      <managed-property>
+         <property-name>initialiseIfNull</property-name>
+         <value>false</value>
+      </managed-property>
       -->
    </managed-bean>
    
@@ -2089,6 +2097,10 @@
       <managed-property>
          <property-name>yearCount</property-name>
          <value>30</value>
+      </managed-property>
+      <managed-property>
+         <property-name>initialiseIfNull</property-name>
+         <value>false</value>
       </managed-property>
       -->
    </managed-bean>

@@ -39,6 +39,7 @@ public class PropertySheetGridTag extends BaseComponentTag
    private String cellpadding;
    private String cellspacing;
    private String finishButtonId;
+   private String nextButtonId;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
@@ -145,6 +146,14 @@ public class PropertySheetGridTag extends BaseComponentTag
    }
 
    /**
+    * @param nextButtonId Sets the next button id
+    */
+   public void setNextButtonId(String nextButtonId)
+   {
+      this.nextButtonId = nextButtonId;
+   }
+   
+   /**
     * @param finishButtonId Sets the finish button id
     */
    public void setFinishButtonId(String finishButtonId)
@@ -171,6 +180,7 @@ public class PropertySheetGridTag extends BaseComponentTag
       setStringStaticProperty(component, "cellpadding", this.cellpadding);
       setStringStaticProperty(component, "cellspacing", this.cellspacing);
       setStringStaticProperty(component, "finishButtonId", this.finishButtonId);
+      setStringStaticProperty(component, "nextButtonId", this.nextButtonId);
    }
 
    /**
@@ -190,6 +200,7 @@ public class PropertySheetGridTag extends BaseComponentTag
       this.cellpadding = null;
       this.cellspacing = null;
       this.finishButtonId = null;
+      this.nextButtonId = null;
       
       super.release();
    }

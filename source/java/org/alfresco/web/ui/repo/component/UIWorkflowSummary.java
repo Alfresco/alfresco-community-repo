@@ -103,18 +103,24 @@ public class UIWorkflowSummary extends SelfRenderingComponent
             out.write(userName);
          }
          out.write("</td></tr><tr><td>");
-         out.write(bundle.getString("start_date"));
+         out.write(bundle.getString("started_on"));
          out.write(":</td><td>");
          if (wi.startDate != null)
          {
             out.write(format.format(wi.startDate));
          }
          out.write("</td></tr><tr><td>");
-         out.write(bundle.getString("due_date"));
+         out.write(bundle.getString("completed_on"));
          out.write(":</td><td>");
          if (wi.endDate != null)
          {
             out.write(format.format(wi.endDate));
+         }
+         else
+         {
+            out.write("&lt;");
+            out.write(bundle.getString("in_progress"));
+            out.write("&gt;");
          }
          out.write("</td></tr></table>");
       }

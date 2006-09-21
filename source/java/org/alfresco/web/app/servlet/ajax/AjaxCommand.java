@@ -22,7 +22,7 @@ public interface AjaxCommand
     * expression. Parameters required to call the method can be retrieved
     * from the request. 
     * 
-    * Currently the content type of the response will always be text/html, in the 
+    * Currently the content type of the response will always be text/xml, in the 
     * future sublcasses may provide a mechanism to allow the content type to be set
     * dynamically.
     * 

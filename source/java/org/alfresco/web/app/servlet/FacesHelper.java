@@ -145,12 +145,31 @@ public final class FacesHelper
       else
       {
          // make sure we do not have illegal characters in the id
+         id = makeLegalId(id);
+      }
+      
+      component.setId(id);
+   }
+
+   /**
+    * Makes the given id a legal JSF component id by replacing illegal
+    * characters with underscores.
+    * 
+    * @param id The id to make legal
+    * @return The legalised id
+    */
+   public static String makeLegalId(String id)
+   {
+      if (id != null)
+      {
+         // replace illegal ID characters with an underscore
          id = id.replace(':', '_');
+         id = id.replace(' ', '_');
          
          // TODO: check all other illegal characters - only allowed dash and underscore
       }
       
-      component.setId(id);
+      return id;
    }
    
    /**

@@ -42,7 +42,7 @@ public class InvokeCommand extends BaseAjaxCommand
       
       // NOTE: it doesn't seem to matter what the content type of the response is (at least with Dojo), 
       // it determines it's behaviour from the mimetype specified in the AJAX call on the client,
-      // therefore, for now we will always return a content type of text/html.
+      // therefore, for now we will always return a content type of text/xml.
       // In the future we may use annotations on the method to be called to specify what content
       // type should be used for the response.
       
@@ -53,7 +53,7 @@ public class InvokeCommand extends BaseAjaxCommand
       RenderKit renderKit = renderFactory.getRenderKit(facesContext, 
             viewRoot.getRenderKitId());
       ResponseWriter writer = renderKit.createResponseWriter(
-            new OutputStreamWriter(os), MimetypeMap.MIMETYPE_HTML, "UTF-8");
+            new OutputStreamWriter(os), MimetypeMap.MIMETYPE_XML, "UTF-8");
       facesContext.setResponseWriter(writer);
       response.setContentType(writer.getContentType());
       

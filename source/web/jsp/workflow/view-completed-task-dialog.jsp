@@ -31,11 +31,14 @@
 <a:panel id="resources-panel" label="#{msg.resources}"
          border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
    
+   <h:outputText value="#{msg.no_resources}" rendered="#{empty DialogManager.bean.resources}" />
+   
    <a:richList id="resources-list" viewMode="details" value="#{DialogManager.bean.resources}" var="r"
                binding="#{DialogManager.bean.packageItemsRichList}"
                styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
                altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
-               initialSortColumn="name" initialSortDescending="true">
+               initialSortColumn="name" initialSortDescending="true"
+               rendered="#{not empty DialogManager.bean.resources}">
       
       <%-- Name column --%>
       <a:column id="col1" primary="true" width="200" style="padding:2px; text-align:left">
@@ -63,7 +66,8 @@
          <f:facet name="header">
             <a:sortLink id="col3-sort" label="#{msg.path}" value="path" styleClass="header"/>
          </f:facet>
-         <r:nodePath id="col3-path" value="#{r.path}" />
+         <r:nodePath id="col3-path" value="#{r.path}" action="dialog:close:browse" 
+                     actionListener="#{BrowseBean.clickSpacePath}" />
       </a:column>
       
       <%-- Created Date column --%>

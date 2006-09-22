@@ -594,7 +594,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             throw new AVMBadArgumentException("Illegal null path.");
         }
-        AVMNodeDescriptor layerNode = fAVMService.lookup(-1, layerPath);
+        AVMNodeDescriptor layerNode = fAVMService.lookup(-1, layerPath, true);
         if (layerNode == null)
         {
             throw new AVMNotFoundException("Not found: " + layerPath);

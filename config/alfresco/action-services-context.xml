@@ -406,4 +406,13 @@
     	</property>
     </bean>
     
+    <bean id="simple-avm-promote" class="org.alfresco.repo.avm.actions.SimpleAVMPromoteAction" parent="action-executer">
+    	<property name="avmSyncService">
+    	    <ref bean="avmSyncService"/>
+    	</property>
+    	<property name="publicAction">
+    	    <value>false</value>
+    	</property>
+    </bean>
+    
 </beans>

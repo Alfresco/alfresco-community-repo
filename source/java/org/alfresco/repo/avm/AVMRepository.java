@@ -351,7 +351,7 @@ public class AVMRepository
                        String dstName)
     {
         // This is about as ugly as it gets.  
-        if (dstPath.indexOf(srcPath + srcName) == 0)
+        if ((dstPath + "/").indexOf(srcPath + srcName + "/") == 0)
         {
             throw new AVMCycleException("Cyclic rename.");
         }

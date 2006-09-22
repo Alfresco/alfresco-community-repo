@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.avm.actions.SimpleAVMPromoteAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
@@ -53,6 +55,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 
 /**
  * Big test of AVM behavior.
@@ -60,6 +63,45 @@ import org.alfresco.service.transaction.TransactionService;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Test the promote action.
+     */
+    public void testPromoteAction()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createDirectory("main:/", "appBase");
+            fService.rename("main:/", "a", "main:/appBase", "a");
+            fService.rename("main:/", "d", "main:/appBase", "d");
+            fService.createSnapshot("main");
+            fService.createAVMStore("source");
+            fService.createLayeredDirectory("main:/appBase", "source:/", "appBase");
+            fService.getFileOutputStream("source:/appBase/a/b/c/foo").close();
+            final ActionImpl action = new ActionImpl(AVMNodeConverter.ToNodeRef(-1, "source:/appBase/a"), 
+                    GUID.generate(),
+                    SimpleAVMPromoteAction.NAME);
+            action.setParameterValue(SimpleAVMPromoteAction.PARAM_TARGET_STORE, "main");
+            final SimpleAVMPromoteAction promote = (SimpleAVMPromoteAction)fContext.getBean("simple-avm-promote");
+            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            {
+                public Object doWork() throws Exception
+                {
+                    promote.execute(action, AVMNodeConverter.ToNodeRef(-1, "source:/appBase/a"));
+                    return null;
+                }
+            };
+            TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
+                                                     new TxnWork());
+            assertEquals(0, fSyncService.compare(-1, "source:/appBase", -1, "main:/appBase").size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
     /**
      * Test a noodle update.
      */
@@ -96,28 +138,28 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             fService.createAVMStore("foo-staging");
-            fService.createDirectory("foo-staging:/", "layer");
-            fService.createDirectory("foo-staging:/layer", "a");
-            fService.createDirectory("foo-staging:/layer/a","b");
-            fService.createDirectory("foo-staging:/layer/a/b", "c");
-            fService.createFile("foo-staging:/layer/a/b/c", "foo").close();
-            fService.createFile("foo-staging:/layer/a/b/c", "bar").close();
+            fService.createDirectory("foo-staging:/", "appBase");
+            fService.createDirectory("foo-staging:/appBase", "a");
+            fService.createDirectory("foo-staging:/appBase/a","b");
+            fService.createDirectory("foo-staging:/appBase/a/b", "c");
+            fService.createFile("foo-staging:/appBase/a/b/c", "foo").close();
+            fService.createFile("foo-staging:/appBase/a/b/c", "bar").close();
             fService.createAVMStore("area");
             fService.setStoreProperty("area", QName.createQName(null, ".website.name"),
                                       new PropertyValue(null, "foo"));   
-            fService.createLayeredDirectory("foo-staging:/layer", "area:/", "layer");
-            fService.createFile("area:/layer", "figs").close();
-            fService.getFileOutputStream("area:/layer/a/b/c/foo").close();
-            fService.removeNode("area:/layer/a/b/c/bar");
+            fService.createLayeredDirectory("foo-staging:/appBase", "area:/", "appBase");
+            fService.createFile("area:/appBase", "figs").close();
+            fService.getFileOutputStream("area:/appBase/a/b/c/foo").close();
+            fService.removeNode("area:/appBase/a/b/c/bar");
             List<AVMDifference> diffs = 
-                fSyncService.compare(-1, "area:/layer", -1, "foo-staging:/layer");
+                fSyncService.compare(-1, "area:/appBase", -1, "foo-staging:/appBase");
             assertEquals(3, diffs.size());
             final SimpleAVMSubmitAction action = (SimpleAVMSubmitAction)fContext.getBean("simple-avm-submit");
             class TxnWork implements TransactionUtil.TransactionWork<Object>
             {
                 public Object doWork() throws Exception
                 {
-                    action.execute(null, AVMNodeConverter.ToNodeRef(-1, "area:/layer"));
+                    action.execute(null, AVMNodeConverter.ToNodeRef(-1, "area:/appBase"));
                     return null;
                 }
             };
@@ -125,7 +167,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"), 
                                                      worker);
             diffs = 
-                fSyncService.compare(-1, "area:/layer", -1, "foo-staging:/layer");
+                fSyncService.compare(-1, "area:/appBase", -1, "foo-staging:/appBase");
             assertEquals(0, diffs.size());
         }
         catch (Exception e)

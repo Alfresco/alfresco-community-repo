@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -92,6 +93,10 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         String path = (String)avmVersionPath[1];
         // Get store name and path parts.
         String [] storePath = path.split(":");
+        if (storePath.length != 2)
+        {
+            throw new AVMSyncException("Malformed source path " + path);
+        }
         // Get the .website.name property.
         PropertyValue wsProp = 
             fAVMService.getStoreProperty(storePath[0], 
@@ -111,7 +116,7 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         // Do the update.
         fAVMSyncService.update(diffs, true, true, false, false);
         // Cleanup by flattening the source relative to the destination.
-        fAVMSyncService.flatten(path, avmDest);
+        fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");
     }
 
     /**

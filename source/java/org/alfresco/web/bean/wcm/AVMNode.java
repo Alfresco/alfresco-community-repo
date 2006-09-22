@@ -30,7 +30,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.web.bean.repository.Repository;
-import sun.security.krb5.internal.av;
 
 /**
  * @author Kevin Roast

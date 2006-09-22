@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.namespace.QName;
+import org.apache.log4j.Logger;
 
 /**
  * This or AVMStore are
@@ -49,6 +50,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class AVMRepository
 {
+    private static Logger fgLogger = Logger.getLogger(AVMRepository.class);
+    
     /**
      * The single instance of AVMRepository.
      */

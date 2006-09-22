@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
@@ -61,6 +60,34 @@ import org.alfresco.service.transaction.TransactionService;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Test a noodle update.
+     */
+    public void testNoodleUpdate()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createAVMStore("staging");
+            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "staging:/");
+            assertEquals(2, diffs.size());
+            List<AVMDifference> noodle = new ArrayList<AVMDifference>();
+            noodle.add(new AVMDifference(-1, "main:/a/b/c/foo", -1, "staging:/a/b/c/foo", 
+                                         AVMDifference.NEWER));
+            noodle.add(new AVMDifference(-1, "main:/d", -1, "staging:/d",
+                                         AVMDifference.NEWER));
+            fSyncService.update(noodle, false, false, false, false);
+            diffs = fSyncService.compare(-1, "main:/", -1, "staging:/");
+            assertEquals(1, diffs.size());
+            assertEquals("main:/a/b/c/bar", diffs.get(0).getSourcePath());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
     /**
      * Test the SimpleAVMSubmitAction.
      */

@@ -401,6 +401,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private void linkIn(String parentPath, String name, AVMNodeDescriptor toLink, boolean removeFirst)
     {
+        mkdirs(parentPath);
         if (removeFirst)
         {
             fAVMService.removeNode(parentPath, name);
@@ -673,5 +674,26 @@ public class AVMSyncServiceImpl implements AVMSyncService
         String [] parts = AVMNodeConverter.SplitBase(layerPath);
         fAVMService.removeNode(parts[0], parts[1]);
         fAVMService.createLayeredDirectory(desc.getIndirection(), parts[0], parts[1]);
+    }
+    
+    /**
+     * Make sure this entire directory path exists.
+     * @param path
+     */
+    private void mkdirs(String path)
+    {
+        if (fAVMService.lookup(-1, path) != null)
+        {
+            return;
+        }
+        String [] pathParts = AVMNodeConverter.SplitBase(path);
+        if (pathParts[0] == null)
+        {
+            // This is a root path and as such has to exist.
+            // Something else is going on.
+            throw new AVMSyncException("No corresponding destination path: " + path);
+        }
+        mkdirs(pathParts[0]);
+        fAVMService.createDirectory(pathParts[0], pathParts[1]);
     }
 }

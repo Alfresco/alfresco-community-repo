@@ -213,8 +213,8 @@ public class AVMBrowseBean implements IContextListener
       AVMStoreDescriptor store = this.avmService.getAVMStore(stagingStore);
       if (store != null)
       {
-         // TODO: count user stores with correct query
-         int users = avmService.queryStoresPropertyKeys(QName.createQName(null, storeRoot + "-%" + AVMConstants.STORE_MAIN)).size();
+         // count user stores
+         int users = avmService.queryStoresPropertyKeys(QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + storeRoot + "-%" + AVMConstants.STORE_MAIN)).size();
          summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
                 .append(Utils.getDateFormat(fc).format(new Date(store.getCreateDate())))
                 .append("<p>");

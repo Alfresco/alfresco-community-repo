@@ -19,8 +19,10 @@ package org.alfresco.repo.avm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -282,6 +284,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                        boolean overrideConflicts, boolean overrideOlder)
     {
         Map<String, Integer> storeVersions = new HashMap<String, Integer>();
+        Set<String> destStores = new HashSet<String>();
         for (AVMDifference diff : diffList)
         {
             if (!diff.isValid())
@@ -328,6 +331,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 diffCode = compareOne(srcDesc, dstDesc);
             }
+            // Keep track of stores updated so that they can all be snapshotted
+            // at end of update.
+            String dstPath = diff.getDestinationPath();
+            destStores.add(dstPath.substring(0, dstPath.indexOf(':')));
             // Dispatch.
             switch (diffCode)
             {
@@ -386,9 +393,13 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 }
                 default :
                 {
-                    throw new AVMSyncException("Invalid Differenc Code: Internal Error.");
+                    throw new AVMSyncException("Invalid Difference Code: Internal Error.");
                 }
             }
+        }
+        for (String storeName : destStores)
+        {
+            fAVMService.createSnapshot(storeName);
         }
     }
 

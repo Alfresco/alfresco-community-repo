@@ -29,6 +29,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.action.Action;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -49,6 +51,8 @@ import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -73,6 +77,14 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_CREATED_ON = "store_created_on";
    private static final String MSG_CREATED_BY = "store_created_by";
    private static final String MSG_WORKING_USERS = "store_working_users";
+   private static final String MSG_SUBMIT_SUCCESS = "submit_success";
+   private static final String MSG_SUBMITALL_SUCCESS = "submitall_success";
+   
+   /** Component id the status messages are tied too */
+   private static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
+   
+   /** Action bean Id for the AVM Submit action*/
+   private static final String ACTION_AVM_SUBMIT = "simple-avm-submit";
    
    private String sandbox;
    private String username;
@@ -90,6 +102,9 @@ public class AVMBrowseBean implements IContextListener
    
    /** Current AVM Node context*/
    private AVMNode avmNode = null;
+   
+   private String wcmDomain;
+   private String wcmPort;
    
    /** breadcrumb location */
    private List<IBreadcrumbHandler> location = null;
@@ -115,6 +130,7 @@ public class AVMBrowseBean implements IContextListener
    /** AVM service bean reference */
    protected AVMService avmService;
    
+   /** Action service bean reference */
    protected ActionService actionService; 
    
    
@@ -124,6 +140,10 @@ public class AVMBrowseBean implements IContextListener
    public AVMBrowseBean()
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
+      
+      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
+      this.wcmDomain = config.getWCMDomain();
+      this.wcmPort = config.getWCMPort();
    }
 
    
@@ -570,17 +590,21 @@ public class AVMBrowseBean implements IContextListener
       String path = params.get("id");
       if (path != null && path.length() != 0)
       {
-         setAVMNodeDescriptor(avmService.lookup(-1, path));
+         AVMNodeDescriptor node = avmService.lookup(-1, path, true);
+         setAVMNodeDescriptor(node);
       }
       else
       {
-         setAVMNodeDescriptor(null);
+         setAvmNode(null);
       }
       
       // update UI state ready for return after dialog close
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
    }
    
+   /**
+    * Submit a node from a user sandbox into the staging area sandbox
+    */
    public void submitNode(ActionEvent event)
    {
       setupContentAction(event);
@@ -592,17 +616,59 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         Action action = this.actionService.createAction("simple-avm-submit");
+         Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
          this.actionService.executeAction(action, getAvmNode().getNodeRef());
          
          // commit the transaction
          tx.commit();
          
          // if we get here, all was well - output friendly status message to the user
-         String msg = "Successfully submitted: " + getAvmNode().getName();
+         String msg = MessageFormat.format(Application.getMessage(
+               context, MSG_SUBMIT_SUCCESS), getAvmNode().getName());
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
          String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
-         context.addMessage(formId + ':' + "sandboxes-panel", facesMsg);
+         context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+   }
+   
+   /**
+    * Submit an entire user sandbox
+    */
+   public void submitAll(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String store = params.get("store");
+      String username = params.get("username");
+      
+      String rootPath = AVMConstants.buildAVMStoreRootPath(store);
+      NodeRef rootRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
+         this.actionService.executeAction(action, rootRef);
+         
+         // commit the transaction
+         tx.commit();
+         
+         // if we get here, all was well - output friendly status message to the user
+         String msg = MessageFormat.format(Application.getMessage(
+               context, MSG_SUBMITALL_SUCCESS), username);
+         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+         String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
+         context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
       }
       catch (Throwable err)
       {

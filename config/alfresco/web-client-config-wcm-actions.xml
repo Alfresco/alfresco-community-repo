@@ -74,6 +74,12 @@
             <action idref="delete_folder" />
          </action-group>
          
+         <!-- Actions for a deleted node in Modified Files list -->
+         <action-group id="avm_deleted_modified">
+            <show-link>false</show-link>
+            <action idref="submit" />
+         </action-group>
+         
       </actions>
    </config>
 

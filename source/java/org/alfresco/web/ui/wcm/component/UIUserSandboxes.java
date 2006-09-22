@@ -64,6 +64,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
 {
    private static final String ACTIONS_FILE = "avm_file_modified";
    private static final String ACTIONS_FOLDER = "avm_folder_modified";
+   private static final String ACTIONS_DELETED = "avm_deleted_modified";
 
    private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
 
@@ -232,6 +233,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
                out.write("&nbsp;");
                
                Utils.encodeRecursive(context, aquireAction(
+                     context, mainStore, username, "sandbox_submitall", "/images/icons/submit.gif",
+                     "#{AVMBrowseBean.submitAll}", null));
+               out.write("&nbsp;");
+               
+               Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_browse", "/images/icons/space_small.gif",
                      "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
                out.write("</nobr></td></tr>");
@@ -303,9 +309,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
       String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot) + ":/";
       
       // get the UIActions component responsible for rendering context related user actions
-      // TODO: we may need a component per user instance
+      // TODO: we may need a component per user instance? (or use evaluators for roles...)
       UIActions uiFileActions = aquireUIActions(ACTIONS_FILE);
       UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER);
+      UIActions uiDeletedActions = aquireUIActions(ACTIONS_DELETED);
       
       // use the sync service to get the list of diffs between the stores
       List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore);
@@ -391,7 +398,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
             else
             {
                // must have been deleted from this sandbox - show ghosted
-               AVMNodeDescriptor ghost = avmService.lookup(-1, diff.getDestinationPath());
+               AVMNodeDescriptor ghost = avmService.lookup(-1, diff.getSourcePath(), true);
                if (ghost != null)
                {
                   // icon and name of the file/folder - files are clickable to see the content
@@ -401,14 +408,14 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   {
                      out.write(Utils.buildImageTag(fc, Utils.getFileTypeImage(fc, name, true), ""));
                      out.write("</td><td style='color:#aaaaaa'>");
-                     out.write(name);
+                     out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
                      out.write("</a>");
                   }
                   else
                   {
                      out.write(Utils.buildImageTag(fc, SPACE_ICON, 16, 16, ""));
                      out.write("</td><td style='color:#aaaaaa'>");
-                     out.write(name);
+                     out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
                   }
                   out.write("</td><td style='color:#aaaaaa'>");
                   
@@ -427,8 +434,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   }
                   out.write("</td><td style='color:#aaaaaa'>");
                   
-                  // no UI actions for this item
-                  out.write('[' + bundle.getString(MSG_DELETED_ITEM) + ']');
+                  // deleted UI actions for this item
+                  uiDeletedActions.setContext(new AVMNode(ghost, true));
+                  Utils.encodeRecursive(fc, uiDeletedActions);
+                  
                   out.write("</td></tr>");
                }
             }

@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.web.bean.repository.Repository;
+import sun.security.krb5.internal.av;
 
 /**
  * @author Kevin Roast
@@ -41,6 +42,7 @@ public class AVMNode implements Map<String, Object>
    private AVMNodeDescriptor avmRef;
    private String path;
    private int version;
+   private boolean deleted = false;
    
    
    /**
@@ -51,8 +53,12 @@ public class AVMNode implements Map<String, Object>
       this.avmRef = avmRef;
       this.version = -1;      // TODO: always -1 for now...
       this.path = avmRef.getPath();
-      
-      getProperties();
+   }
+   
+   public AVMNode(AVMNodeDescriptor avmRef, boolean deleted)
+   {
+      this(avmRef);
+      this.deleted = deleted;
    }
    
    public String getPath()
@@ -82,13 +88,16 @@ public class AVMNode implements Map<String, Object>
    {
       if (this.properties == null)
       {
-         Map<QName, PropertyValue> props = getServiceRegistry().getAVMService().getNodeProperties(this.version, this.path);
-         
          this.properties = new QNameMap<String, Object>(getServiceRegistry().getNamespaceService());
-         for (QName qname: props.keySet())
+         
+         if (this.deleted == false)
          {
-            PropertyValue propValue = props.get(qname);
-            this.properties.put(qname.toString(), propValue.getSerializableValue());
+            Map<QName, PropertyValue> props = getServiceRegistry().getAVMService().getNodeProperties(this.version, this.path);
+            for (QName qname: props.keySet())
+            {
+               PropertyValue propValue = props.get(qname);
+               this.properties.put(qname.toString(), propValue.getSerializableValue());
+            }
          }
          
          this.properties.put("id", this.path);

@@ -191,9 +191,7 @@ public class ImportWebsiteDialog
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
-            //
-            // TODO: import the content into the appropriate store for the website
-            //
+            // import the content into the appropriate store for the website
             String storeRoot = (String)this.navigationBean.getCurrentNode().getProperties().get(
                   ContentModel.PROP_AVMSTORE);
             if (storeRoot != null)
@@ -207,6 +205,7 @@ public class ImportWebsiteDialog
                   // convert the AVM path to a NodeRef so we can use the NodeService to perform import
                   NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
                   processZipImport(this.file, importRef);
+                  
                   // After an import it's a good idea to snapshot the staging store
                   this.avmService.createSnapshot(store);
                }

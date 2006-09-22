@@ -279,8 +279,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with the DNS name property
-      tagStoreDNSPath(stagingStore);
-      
+      tagStoreDNSPath(stagingStore, name, "staging");
       
       // create the 'preview' store for the website
       String previewStore = AVMConstants.buildAVMStagingPreviewStoreName(name);
@@ -300,7 +299,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with the DNS name property
-      tagStoreDNSPath(previewStore);
+      tagStoreDNSPath(previewStore, name, "preview");
       
       
       // tag all related stores to indicate that they are part of a single sandbox
@@ -360,7 +359,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with the DNS name property
-      tagStoreDNSPath(userStore);
+      tagStoreDNSPath(userStore, name, username, "main");
       
       
       // create the user 'preview' store
@@ -385,7 +384,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with the DNS name property
-      tagStoreDNSPath(previewStore);
+      tagStoreDNSPath(previewStore, name, username, "preview");
       
       
       // tag all related stores to indicate that they are part of a single sandbox
@@ -402,11 +401,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
     * 
     * @param store  Name of the store to tag
     */
-   private void tagStoreDNSPath(String store)
+   private void tagStoreDNSPath(String store, String... components)
    {
       String path = store + ":/" + AVMConstants.DIR_APPBASE + '/' + AVMConstants.DIR_WEBAPPS;
       // TODO: DNS name mangle the property name - can only contain value DNS characters!
-      String dnsProp = AVMConstants.PROP_DNS + store;
+      String dnsProp = AVMConstants.PROP_DNS + DNSNameMangler.MakeDNSName(components);
       this.avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
             new PropertyValue(DataTypeDefinition.TEXT, path));
    }

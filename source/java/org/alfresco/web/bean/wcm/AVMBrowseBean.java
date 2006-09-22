@@ -24,12 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -111,6 +114,8 @@ public class AVMBrowseBean implements IContextListener
    
    /** AVM service bean reference */
    protected AVMService avmService;
+   
+   protected ActionService actionService; 
    
    
    /**
@@ -194,6 +199,14 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @param actionService The actionService to set.
+    */
+   public void setActionService(ActionService actionService)
+   {
+      this.actionService = actionService;
+   }
+
+   /**
     * Summary text for the staging store:
     *    Created On: xx/yy/zz
     *    Created By: username
@@ -214,7 +227,8 @@ public class AVMBrowseBean implements IContextListener
       if (store != null)
       {
          // count user stores
-         int users = avmService.queryStoresPropertyKeys(QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + storeRoot + "-%" + AVMConstants.STORE_MAIN)).size();
+         int users = avmService.queryStoresPropertyKeys(QName.createQName(null,
+               AVMConstants.PROP_SANDBOX_STORE_PREFIX + storeRoot + "-%" + AVMConstants.STORE_MAIN)).size();
          summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
                 .append(Utils.getDateFormat(fc).format(new Date(store.getCreateDate())))
                 .append("<p>");
@@ -565,6 +579,37 @@ public class AVMBrowseBean implements IContextListener
       
       // update UI state ready for return after dialog close
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+   }
+   
+   public void submitNode(ActionEvent event)
+   {
+      setupContentAction(event);
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         Action action = this.actionService.createAction("simple-avm-submit");
+         this.actionService.executeAction(action, getAvmNode().getNodeRef());
+         
+         // commit the transaction
+         tx.commit();
+         
+         // if we get here, all was well - output friendly status message to the user
+         String msg = "Successfully submitted: " + getAvmNode().getName();
+         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+         String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
+         context.addMessage(formId + ':' + "sandboxes-panel", facesMsg);
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
    }
    
    

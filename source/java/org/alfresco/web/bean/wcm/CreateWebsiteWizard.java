@@ -404,7 +404,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private void tagStoreDNSPath(String store, String... components)
    {
       String path = store + ":/" + AVMConstants.DIR_APPBASE + '/' + AVMConstants.DIR_WEBAPPS;
-      // TODO: DNS name mangle the property name - can only contain value DNS characters!
+      // DNS name mangle the property name - can only contain value DNS characters!
       String dnsProp = AVMConstants.PROP_DNS + DNSNameMangler.MakeDNSName(components);
       this.avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
             new PropertyValue(DataTypeDefinition.TEXT, path));

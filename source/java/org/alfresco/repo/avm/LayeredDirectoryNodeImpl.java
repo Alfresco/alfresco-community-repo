@@ -806,6 +806,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 ChildEntry entry = AVMContext.fgInstance.fChildEntryDAO.getByNameParent(name, this);
                 AVMContext.fgInstance.fChildEntryDAO.delete(entry);
+                AVMContext.fgInstance.fAVMNodeDAO.flush();
             }
         }
         // Make the new ChildEntry and save.

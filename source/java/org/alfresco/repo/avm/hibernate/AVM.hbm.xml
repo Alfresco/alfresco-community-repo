@@ -141,9 +141,11 @@
 		<id name="id" column="id" type="long">
 			<generator class="native"/>
 		</id>
+		<natural-id>
+			<property name="name" type="string" length="160" column="name" index="child_name_index" not-null="true"/>
+			<many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl" not-null="true"/>
+		</natural-id>
 		<version name="vers" column="vers" type="long"/>
-		<property name="name" type="string" column="name" index="child_name_index" not-null="true"/>
-		<many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl" not-null="true"/>
 		<many-to-one name="child" column="child_id" class="AVMNodeImpl"
 			not-null="true"/>
 	</class>

@@ -445,6 +445,8 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             }
             // Get rid of the DELETED_NODE child.
             AVMContext.fgInstance.fChildEntryDAO.delete(child);
+            // Another &*#*&#$ flush.
+            AVMContext.fgInstance.fAVMNodeDAO.flush();
         }
         // Make the new entry and save.
         ChildEntry newChild = new ChildEntryImpl(name, this, node);

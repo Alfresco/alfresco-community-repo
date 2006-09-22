@@ -207,6 +207,8 @@ public class ImportWebsiteDialog
                   // convert the AVM path to a NodeRef so we can use the NodeService to perform import
                   NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
                   processZipImport(this.file, importRef);
+                  // After an import it's a good idea to snapshot the staging store
+                  this.avmService.createSnapshot(store);
                }
             }
             else

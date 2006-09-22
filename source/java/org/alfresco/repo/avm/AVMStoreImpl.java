@@ -463,19 +463,6 @@ public class AVMStoreImpl implements AVMStore, Serializable
     {
         ContentWriter writer = getWriter(path);
         return writer.getContentOutputStream();
-        /*
-        Lookup lPath = lookup(-1, path, true);
-        AVMNode node = lPath.getCurrentNode();
-        if (node.getType() != AVMNodeType.PLAIN_FILE &&
-            node.getType() != AVMNodeType.LAYERED_FILE)
-        {
-            throw new AVMWrongTypeException("Not a file: " + path);
-        }
-        FileNode file = (FileNode)node;
-        FileContent content = file.getContentForWrite();
-        file.updateModTime();
-        return content.getOutputStream();
-        */
     }
 
     /**
@@ -1121,6 +1108,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMWrongTypeException("File Expected.");
         }
+        node.updateModTime();
         return ((FileNode)node).getContentData(lPath);
     }
 

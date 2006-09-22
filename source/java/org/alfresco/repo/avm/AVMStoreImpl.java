@@ -1042,7 +1042,12 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public PropertyValue getProperty(QName name)
     {
-        return AVMContext.fgInstance.fAVMStorePropertyDAO.get(this, name).getValue();
+        AVMStoreProperty prop = AVMContext.fgInstance.fAVMStorePropertyDAO.get(this, name);
+        if (prop == null)
+        {
+            return null;
+        }
+        return prop.getValue();
     }
     
     /**

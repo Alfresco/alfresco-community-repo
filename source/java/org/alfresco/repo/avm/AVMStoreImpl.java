@@ -692,16 +692,22 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMNotFoundException("Path not found.");
         }
+        if (!lPath.isLayered())
+        {
+            return null;
+        }
         AVMNode node = lPath.getCurrentNode();
         if (node.getType() == AVMNodeType.LAYERED_DIRECTORY)
         {
-            return ((LayeredDirectoryNode)node).getUnderlying(lPath);
+            LayeredDirectoryNode dir = (LayeredDirectoryNode)node;
+            return dir.getUnderlying(lPath);
         }
-        if (node.getType() == AVMNodeType.LAYERED_FILE)
+        else if (node.getType() == AVMNodeType.LAYERED_FILE)
         {
-            return ((LayeredFileNode)node).getUnderlying(lPath);
+            LayeredFileNode file = (LayeredFileNode)node;
+            return file.getUnderlying(lPath);
         }
-        throw new AVMWrongTypeException("Not a layered node: " + path);
+        return lPath.getIndirectionPath();
     }
     
     /**

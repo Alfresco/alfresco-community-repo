@@ -104,6 +104,7 @@ class Lookup
         fFinalStore = store;
     }
     
+    // TODO This is badly in need of cleanup.
     /**
      * Add a new node to the lookup.
      * @param node The node to add.
@@ -135,6 +136,13 @@ class Lookup
                     comp.setIndirection(computeIndirection(name));
                 }
                 fLayeredYet = true;
+                // Record the first layer seen.
+                if (fTopLayer == null)
+                {
+                    fTopLayer = oNode;
+                    fTopLayerIndex = fPosition + 1;
+                }
+                fLowestLayerIndex = fPosition + 1;
             }
             fComponents.add(comp);
             fPosition++;

@@ -64,6 +64,30 @@ import org.alfresco.util.GUID;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test getIndirection.
+     */
+    public void testGetIndirection()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createAVMStore("layer");
+            fService.createLayeredDirectory("main:/a", "layer:/", "layer");
+            assertEquals("main:/a", fService.getIndirectionPath(-1, "layer:/layer"));
+            assertEquals("main:/a/b", fService.getIndirectionPath(-1, "layer:/layer/b"));
+            assertEquals("main:/a/b/c", fService.getIndirectionPath(-1, "layer:/layer/b/c"));
+            assertEquals("main:/a/b/c/foo", fService.getIndirectionPath(-1, "layer:/layer/b/c/foo"));
+            fService.createLayeredDirectory("main:/d", "layer:/layer/b", "dlayer");
+            assertEquals("main:/d", fService.getIndirectionPath(-1, "layer:/layer/b/dlayer"));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    /**
      * Test the promote action.
      */
     public void testPromoteAction()

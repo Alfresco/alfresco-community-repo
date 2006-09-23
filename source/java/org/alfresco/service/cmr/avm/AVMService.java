@@ -408,10 +408,10 @@ public interface AVMService
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted);
     
     /**
-     * Get the indirection path for a layered file or directory.
+     * Get the indirection path for a node in a layered context.
      * @param version The version number to get.
      * @param path The path to the node of interest.
-     * @return The indirection path.
+     * @return The indirection path, or null if the path is not in a layered context.
      * @throws AVMNotFoundException If <code>path</code> does not exist or
      * if <code>version</code> does not exist.
      * @throws AVMWrongTypeException If <code>path</code> contains a non-terminal

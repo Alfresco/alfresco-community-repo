@@ -1568,7 +1568,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createLayeredFile("main:/a/b/c/foo", "main:/d", "lfoo");
             fService.createSnapshot("main");
             System.out.println(recursiveList("main", -1, true));
-            assertEquals("main:/a/b/c/foo", fService.getIndirectionPath(-1, "main:/d/lfoo"));
+            assertEquals("main:/a/b/c/foo", fService.lookup(-1, "main:/d/lfoo").getIndirection());
             BufferedReader reader = 
                 new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/d/lfoo")));
             String line = reader.readLine();

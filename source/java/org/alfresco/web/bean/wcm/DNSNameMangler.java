@@ -32,9 +32,9 @@ class DNSNameMangler
 
     // Regular expressions.
     private static final Pattern RX_DNS_LEGAL =
-        Pattern.compile("^[a-z0-9][a-z0-9-]{0,57}[a-z0-9]$");
+        Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9-]{0,57}[a-zA-Z0-9]$");
     private static final Pattern RX_ILLEGAL_CHARS =
-        Pattern.compile("[^a-z0-9]");
+        Pattern.compile("[^a-zA-Z0-9]");
     private static final Pattern RX_HYPHENS =
         Pattern.compile("\\-+");
     private static final Pattern RX_LEADING_HYPHEN =
@@ -79,7 +79,9 @@ class DNSNameMangler
      */
     static String MangleOne(String name)
     {
-        name = name.toLowerCase();
+        // Preserve case for prettier auto-generated URLs 
+        // name = name.toLowerCase();
+
         name = RX_ILLEGAL_CHARS.matcher(name).replaceAll("-");
         name = RX_HYPHENS.matcher(name).replaceAll("-");
         name = RX_LEADING_HYPHEN.matcher(name).replaceAll("x");

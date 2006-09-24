@@ -312,10 +312,12 @@ public final class TemplatingService implements Serializable
          if (LOGGER.isDebugEnabled())
          {
             LOGGER.debug("writing out a document for " + 
-                  (n instanceof Document
-                        ? ((Document)n).getDocumentElement()
-                              : n).getNodeName() + 
-                              " to " + output);
+			 (n instanceof Document
+			  ? ((Document)n).getDocumentElement()
+			  : n).getNodeName() + 
+			 " to " + (output instanceof StringWriter
+				   ? "string"
+				   : output));
             final StringWriter sw = new StringWriter();
             t.transform(new DOMSource(n), new StreamResult(sw));
             LOGGER.debug(sw.toString());

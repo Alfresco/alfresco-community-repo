@@ -18,6 +18,7 @@ package org.alfresco.web.templating;
 
 import org.w3c.dom.Document;
 import java.util.List;
+import java.net.URI;
 import java.io.Serializable;
 //import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -34,12 +35,11 @@ public interface TemplateType
     /** the xml schema for this template type */
     public Document getSchema();
 
+    public String /* URI */ getSchemaURI();
+
 //    public void setSchemaNodeRef(final NodeRef nodeRef);
 //    
 //    public NodeRef getSchemaNodeRef();
-
-    /** Provides a sample xml file for the schema */
-    public Document getSampleXml(final String rootTagName);
 
     //XXXarielb not used currently and not sure if it's necessary...
     //    public void addInputMethod(final TemplateInputMethod in);

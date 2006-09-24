@@ -51,24 +51,20 @@ public class BaseSchemaFormBuilder
      * @param action         __UNDOCUMENTED__
      * @param submitMethod   __UNDOCUMENTED__
      * @param wrapper        __UNDOCUMENTED__
-     * @param stylesheet     __UNDOCUMENTED__
      */
-    public BaseSchemaFormBuilder(String rootTagName,
-                                 Document instanceDocument,
-                                 String action,
-                                 String submitMethod,
-                                 WrapperElementsBuilder wrapper,
-                                 String stylesheet,
-                                 String base,
-                                 boolean userSchemaTypes) {
+    public BaseSchemaFormBuilder(final String rootTagName,
+                                 final Document instanceDocument,
+                                 final String action,
+                                 final String submitMethod,
+                                 final WrapperElementsBuilder wrapper,
+                                 final String base) 
+    {
         super(rootTagName,
 	      instanceDocument,
 	      action,
 	      submitMethod,
 	      wrapper,
-	      stylesheet,
-	      base,
-	      userSchemaTypes);
+	      base);
     }
 
     /**
@@ -493,8 +489,9 @@ public class BaseSchemaFormBuilder
      * @param maxOccurs   __UNDOCUMENTED__
      * @return __UNDOCUMENTED__
      */
-    public Element startBindElement(Element bindElement,
-                                    XSTypeDefinition controlType,
+    public Element startBindElement(final Element bindElement,
+				    final XSModel schema,
+                                    final XSTypeDefinition controlType,
                                     final Occurs o)
     {
         // START WORKAROUND
@@ -507,7 +504,7 @@ public class BaseSchemaFormBuilder
         if (!"anyType".equals(controlType.getName())) 
 	{
             Element enveloppe = bindElement.getOwnerDocument().getDocumentElement();
-            String typeName = this.getXFormsTypeName(enveloppe, controlType);
+            String typeName = this.getXFormsTypeName(enveloppe, schema, controlType);
             if (typeName != null && typeName.length() != 0)
                 bindElement.setAttributeNS(XFORMS_NS,
 					   SchemaFormBuilder.XFORMS_NS_PREFIX + "type",
@@ -567,11 +564,6 @@ public class BaseSchemaFormBuilder
     public Element startFormGroup(Element groupElement,
                                   XSElementDeclaration schemaElement) 
     {
-        //groupElement.setAttributeNS(CHIBA_NS,getChibaNSPrefix() + "box-align",getProperty(GROUP_BOX_ALIGN_PROP));
-        //groupElement.setAttributeNS(CHIBA_NS,getChibaNSPrefix() + "box-orient",getProperty(GROUP_BOX_ORIENT_PROP));
-        //groupElement.setAttributeNS(CHIBA_NS,getChibaNSPrefix() + "caption-width",getProperty(GROUP_CAPTION_WIDTH_PROP));
-        //groupElement.setAttributeNS(CHIBA_NS,getChibaNSPrefix() + "width",getProperty(GROUP_WIDTH_PROP));
-        //groupElement.setAttributeNS(CHIBA_NS,getChibaNSPrefix() + "border",getProperty(GROUP_BORDER_PROP));
         return groupElement;
     }
 }

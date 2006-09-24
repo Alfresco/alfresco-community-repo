@@ -96,7 +96,7 @@ public interface SchemaFormBuilder
 	"http://www.w3.org/2001/XMLSchema-instance";
 
     /**
-     * XMLSchema instance prefix *
+     * XMLSchema instance prefix
      */
     public static final String XMLSCHEMA_INSTANCE_NS_PREFIX = "xsi:";
 
@@ -104,7 +104,7 @@ public interface SchemaFormBuilder
      * XMLNS Namespace declaration.
      */
     public static final String XMLNS_NAMESPACE_URI =
-            "http://www.w3.org/2000/xmlns/";
+	"http://www.w3.org/2000/xmlns/";
 
     /**
      * XML Namespace declaration
@@ -181,20 +181,6 @@ public interface SchemaFormBuilder
 	"urlencoded-post";
 
     /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public String getAction();
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public Document getInstanceDocument();
-
-    /**
      * Get the current set of properties used by implementations of SchemaFormBuilder.
      *
      * @return The list of properties.
@@ -226,24 +212,6 @@ public interface SchemaFormBuilder
      */
     public String getProperty(String key, String defaultValue);
 
-    /**
-     * Properties choosed by the user
-     */
-    public String getRootTagName();
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public String getStylesheet();
-
-    /**
-     * __UNDOCUMENTED__
-     *
-     * @return __UNDOCUMENTED__
-     */
-    public String getSubmitMethod();
 
     /**
      * Generate the XForm based on a user supplied XML Schema.
@@ -440,6 +408,7 @@ public interface SchemaFormBuilder
      * @return The bind Element to use in the XForm - bindElement or a replacement.
      */
     public Element startBindElement(Element bindElement,
+				    XSModel schema,
                                     XSTypeDefinition controlType,
                                     Occurs occurs);
 

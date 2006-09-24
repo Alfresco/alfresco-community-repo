@@ -17,22 +17,16 @@
 package org.alfresco.web.templating.xforms;
 
 import java.io.*;
+import java.net.URI;
 import java.util.*;
-import javax.xml.parsers.ParserConfigurationException;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-import org.alfresco.util.TempFileProvider;
-import org.alfresco.web.templating.*;
-import org.alfresco.web.templating.xforms.schemabuilder.FormBuilderException;
-
-import org.apache.xmlbeans.*;
-import org.apache.xmlbeans.impl.xsd2inst.SampleXmlUtil;
-
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.templating.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
 public class TemplateTypeImpl 
     implements TemplateType
@@ -64,6 +58,21 @@ public class TemplateTypeImpl
 	return this.name;
     }
 
+    public String /* URI */ getSchemaURI()
+    {
+	final javax.faces.context.FacesContext fc = 
+	    javax.faces.context.FacesContext.getCurrentInstance();
+	final javax.servlet.http.HttpSession session = (javax.servlet.http.HttpSession)
+	    fc.getExternalContext().getSession(true);
+	
+	org.alfresco.web.bean.repository.User user = (org.alfresco.web.bean.repository.User)
+	    session.getAttribute(org.alfresco.web.app.servlet.AuthenticationHelper.AUTHENTICATION_USER);
+
+	String result = DownloadContentServlet.generateDownloadURL(this.schemaNodeRef, this.name + ".xsd");
+	result += "?ticket=" + user.getTicket();
+	return result;
+    }
+
     public Document getSchema()
     {
 	if (this.schema == null)
@@ -79,108 +88,6 @@ public class TemplateTypeImpl
 	    }
 	}
 	return this.schema;
-    }
-
-    public Document getSampleXml(final String rootTagName) 
-    {
-	XmlOptions xmlOptions = new XmlOptions();
-	xmlOptions = xmlOptions.setLoadLineNumbers().setLoadMessageDigest();
-	final XmlObject[] schemas = new XmlObject[1];
-	try
-	{
-	    schemas[0] = XmlObject.Factory.parse(this.getSchema(), xmlOptions);
-	}
-	catch (XmlException xmle)
-	{
-	    LOGGER.error(xmle);
-	}
-
-	final XmlOptions compileOptions = new XmlOptions();
-	compileOptions.setCompileDownloadUrls();
-	compileOptions.setCompileNoPvrRule();
-	compileOptions.setCompileNoUpaRule();
-
-	SchemaTypeSystem sts = null;
-	try
-	{
-	    sts = XmlBeans.compileXsd(schemas, 
-				      XmlBeans.getBuiltinTypeSystem(), 
-				      compileOptions);
-	}
-	catch (XmlException xmle)
-        {
-	    LOGGER.error(xmle);
-	}
-	    
-	if (sts == null)
-	{
-	    throw new NullPointerException("No Schemas to process.");
-	}
-	final SchemaType[] globalElems = sts.documentTypes();
-	SchemaType elem = null;
-	for (int i = 0; i < globalElems.length; i++)
-	{
-	    if (rootTagName.equals(globalElems[i].getDocumentElementName().getLocalPart()))
-	    {
-		elem = globalElems[i];
-		break;
-	    }
-	}
-
-	if (elem == null)
-	    throw new NullPointerException("Could not find a global element with name \"" + rootTagName + "\"");
-        
-	final String xmlString = SampleXmlUtil.createSampleForType(elem);
-	try
-	{
-	    final TemplatingService ts = TemplatingService.getInstance();
-	    final Document d = ts.parseXML(new ByteArrayInputStream(xmlString.getBytes()));
-	    LOGGER.debug("sample xml:");
-	    LOGGER.debug(ts.writeXMLToString(d));
-
-	    TemplateTypeImpl.cleanUpSampleXml(d.getDocumentElement());
-	    LOGGER.debug("cleaned up xml:");
-	    LOGGER.debug(ts.writeXMLToString(d));
-	    return d;
-	}
-	catch (ParserConfigurationException pce)
-	{
-	    assert false : pce.getMessage();
-	    return null;
-	}
-	catch (SAXException saxe)
-        {
-	    assert false : saxe.getMessage();
-	    return null;
-	}
-	catch (IOException ioe)
-	{
-	    assert false : ioe.getMessage();
-	    return null;
-	}
-    }
-
-    private static void cleanUpSampleXml(final Node n)
-    {
-	if (n instanceof CharacterData)
-	{
-	    //	    System.out.println("replacing data " + ((CharacterData)n).getData());
-	    ((CharacterData)n).setData(" ");
-	}
-	else if (n instanceof Element)
-	{
-	    final NamedNodeMap attrs = n.getAttributes();
-	    for (int i = 0; i < attrs.getLength(); i++)
-	    {
-		//		System.out.println("not replacing data " + ((Attr)n).getValue());
-		//		((Attr)attrs.item(i)).setValue("");
-	    }
-	}
-	final NodeList nl = n.getChildNodes();
-	for (int i = 0; i < nl.getLength(); i++)
-        {
-	    TemplateTypeImpl.cleanUpSampleXml(nl.item(i));
-	}
     }
 
     public List<TemplateInputMethod> getInputMethods()

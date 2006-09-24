@@ -119,32 +119,27 @@ public class XFormsInputMethod
     public Document getXForm(Document xmlContent, final TemplateType tt) 
 	throws FormBuilderException
     {
-	if (xmlContent == null)
-	    xmlContent = tt.getSampleXml(tt.getName());
 	final TemplatingService ts = TemplatingService.getInstance();
 	final FacesContext fc = FacesContext.getCurrentInstance();
 	final HttpServletRequest request = (HttpServletRequest)
 	    fc.getExternalContext().getRequest();
 	final String baseUrl = (request.getScheme() + "://" + 
 				request.getServerName() + ':' + 
-				request.getServerPort());
+				request.getServerPort() + 
+				request.getContextPath());
 	LOGGER.debug("using baseUrl " + baseUrl + " for schemaformbuilder");
 
 	final SchemaFormBuilder builder = 
 	    new BaseSchemaFormBuilder(tt.getName(),
 				      xmlContent,
-				      request.getContextPath() + "/ajax/invoke/XFormsBean.handleAction",
+				      "/ajax/invoke/XFormsBean.handleAction",
 				      SchemaFormBuilder.SUBMIT_METHOD_POST,
 				      new XHTMLWrapperElementsBuilder(),
-				      null,
-				      baseUrl,
-				      true);
+				      baseUrl);
 	LOGGER.debug("building xform for schema " + tt.getName());
-	final Document result = builder.buildForm(tt); //schemaFile.getPath());
-	LOGGER.debug("generated xform:");
-	LOGGER.debug(ts.writeXMLToString(result));
-	//	xmlContentFile.delete();
-	//	schemaFile.delete();
+	final Document result = builder.buildForm(tt);
+	LOGGER.debug("generated xform: " + result);
+	//	LOGGER.debug(ts.writeXMLToString(result));
 	return result;
     }
 }

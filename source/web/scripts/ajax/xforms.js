@@ -145,7 +145,8 @@ dojo.declare("alfresco.xforms.DatePicker",
 	     },
 	     render: function(attach_point)
 	     {
-	       var initial_value = this.getInitialValue() || dojo.widget.DatePicker.util.toRfcDate();
+	       var initial_value = this.getInitialValue();
+
 	       var dateTextBoxDiv = document.createElement("div");
 	       attach_point.appendChild(dateTextBoxDiv);
 	       this.dateTextBox = dojo.widget.createWidget("DateTextBox", 
@@ -160,12 +161,17 @@ dojo.declare("alfresco.xforms.DatePicker",
 				  "onfocus", 
 				  this, 
 				  this._dateTextBox_focusHandler);
+
 	       var datePickerDiv = document.createElement("div");
 	       attach_point.appendChild(datePickerDiv);
+
+	       var dp_initial_value = (initial_value
+				       ? initial_value
+				       : dojo.widget.DatePicker.util.toRfcDate(new Date()));
 	       this.dateTextBox.picker = dojo.widget.createWidget("DatePicker", 
 								  { 
 								  isHidden: true, 
-								  value : initial_value 
+								  storedDate: dp_initial_value
 								  }, 
 								  datePickerDiv);
 	       this.dateTextBox.picker.hide();
@@ -355,7 +361,7 @@ dojo.declare("alfresco.xforms.Select1",
 	     }
 	     });
 
-dojo.declare("alfresco.xforms.CheckBox",
+dojo.declare("alfresco.xforms.Checkbox",
 	     alfresco.xforms.Widget,
 	     {
 	     initializer: function(xform, node) 
@@ -366,8 +372,8 @@ dojo.declare("alfresco.xforms.CheckBox",
 	     {
 	       var nodeRef = document.createElement("div");
 	       attach_point.appendChild(nodeRef);
-	       var initial_value = this.getInitialValue() || false;
-	       this.widget = dojo.widget.createWidget("CheckBox", 
+	       var initial_value = this.getInitialValue() == "true";
+	       this.widget = dojo.widget.createWidget("Checkbox", 
 						      { 
 						      widgetId: this.id + "-widget",
 						      checked: initial_value 
@@ -1070,7 +1076,7 @@ function create_widget(xform, node)
     }
   case "xforms:select1":
     return (xform.getType(node) == "boolean"
-	    ? new alfresco.xforms.CheckBox(xform, node)
+	    ? new alfresco.xforms.Checkbox(xform, node)
 	    : new alfresco.xforms.Select1(xform, node));
   case "xforms:submit":
     return  new alfresco.xforms.Submit(xform, node);

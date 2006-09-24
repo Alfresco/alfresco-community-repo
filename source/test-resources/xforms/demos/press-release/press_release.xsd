@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="pr"
+           elementFormDefault="qualified">
+  <xs:element name="press-release">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="to" type="xs:string"/>
+        <xs:element name="from" type="xs:string" minOccurs="0"/>
+        <xs:element name="subject" type="xs:string" maxOccurs="unbounded"/>
+        <xs:element name="body" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="note2" type="xs:string"/>
+</xs:schema>

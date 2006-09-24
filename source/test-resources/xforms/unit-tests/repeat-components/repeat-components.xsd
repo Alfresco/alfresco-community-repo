@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:simpleType name="five_string_values">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="one"/>
+      <xs:enumeration value="two"/>
+      <xs:enumeration value="three"/>
+      <xs:enumeration value="four"/>
+      <xs:enumeration value="five"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ten_string_values">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="one"/>
+      <xs:enumeration value="two"/>
+      <xs:enumeration value="three"/>
+      <xs:enumeration value="four"/>
+      <xs:enumeration value="five"/>
+      <xs:enumeration value="six"/>
+      <xs:enumeration value="seven"/>
+      <xs:enumeration value="eight"/>
+      <xs:enumeration value="nine"/>
+      <xs:enumeration value="ten"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="multi-input">
+    <xs:sequence>
+      <xs:element name="string" type="xs:string"/>
+      <xs:element name="int" type="xs:anyType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="repeat-components">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="zero-to-one" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="one-to-one" type="xs:anyType" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="one-to-inf" type="xs:date" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="zero-to-inf" type="xs:integer" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="one-to-five" type="five_string_values" minOccurs="1" maxOccurs="5"/>
+        <xs:element name="zero-to-five" type="ten_string_values" minOccurs="0" maxOccurs="5"/>
+        <xs:element name="one-to-five-multi" type="multi-input" minOccurs="1" maxOccurs="5"/>
+        <xs:element name="zero-to-five-multi" type="multi-input" minOccurs="0" maxOccurs="5"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

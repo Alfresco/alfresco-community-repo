@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:simpleType name="five_string_values">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="one"/>
+      <xs:enumeration value="two"/>
+      <xs:enumeration value="three"/>
+      <xs:enumeration value="four"/>
+      <xs:enumeration value="five"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ten_string_values">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="one"/>
+      <xs:enumeration value="two"/>
+      <xs:enumeration value="three"/>
+      <xs:enumeration value="four"/>
+      <xs:enumeration value="five"/>
+      <xs:enumeration value="six"/>
+      <xs:enumeration value="seven"/>
+      <xs:enumeration value="eight"/>
+      <xs:enumeration value="nine"/>
+      <xs:enumeration value="ten"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="components">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="required_textfield" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="optional_textfield" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="prefilled_textfield" type="xs:string" minOccurs="0" maxOccurs="1" default="i am the default value"/>
+        <xs:element name="integer" type="xs:integer"/>
+        <xs:element name="positiveInteger" type="xs:positiveInteger"/>
+        <xs:element name="double" type="xs:double"/>
+        <xs:element name="date" type="xs:date"/>
+        <xs:element name="radio" type="five_string_values"/>
+        <xs:element name="combobox" type="ten_string_values"/>
+        <xs:element name="textarea" type="xs:anyType"/>
+        <xs:element name="checkbox_default_true" type="xs:boolean" default="true"/>
+        <xs:element name="checkbox_default_false" type="xs:boolean" default="false"/>
+        <xs:element name="checkbox_no_default" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

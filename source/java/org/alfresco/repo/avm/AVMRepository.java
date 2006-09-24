@@ -1558,22 +1558,31 @@ public class AVMRepository
     /**
      * Remove name without leaving behind a deleted node. Dangerous 
      * if used unwisely.
-     * @param lDir The layered directory node.
+     * @param path The path to the layered directory.
      * @param name The name of the child.
      */
-    public void flatten(AVMNodeDescriptor lDir, String name)
+    public void flatten(String path, String name)
     {
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(lDir.getId());
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store not found.");
+        }
+        Lookup lPath = store.lookup(-1, pathParts[1], true, false);
+        AVMNode node = lPath.getCurrentNode();
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Path not found.");
+        }
         if (!(node instanceof LayeredDirectoryNode))
         {
             throw new AVMWrongTypeException("Not a Layered Directory.");
         }
         LayeredDirectoryNode dir = (LayeredDirectoryNode)node;
-        if (!dir.getIsNew())
-        {
-            throw new AVMException("Directory has not already been copied.");
-        }
         dir.flatten(name);
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
     }
     
     /**

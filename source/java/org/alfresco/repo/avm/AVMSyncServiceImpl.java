@@ -461,12 +461,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // Otherwise make a directory in the target parent, and recursiveCopy all the source
         // children into it.
         AVMNodeDescriptor newParentDesc = fAVMRepository.createDirectory(parent, name);
-        fgLogger.error(newParentDesc);
         Map<String, AVMNodeDescriptor> children = 
             fAVMService.getDirectoryListing(toCopy, true);
         for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
         {
-            fgLogger.error(entry.getKey());
             recursiveCopy(newParentDesc, entry.getKey(), entry.getValue());
         }
     }
@@ -629,13 +627,13 @@ public class AVMSyncServiceImpl implements AVMSyncService
             throw new AVMWrongTypeException("Underlying is not a directory: " + underlying);
         }
         Map<String, AVMNodeDescriptor> layerListing =
-            fAVMService.getDirectoryListingDirect(layer, true);
+            fAVMService.getDirectoryListingDirect(-1, layer.getPath(), true);
         // If the layer is empty (directly, that is) we're done.
         if (layerListing.size() == 0)
         {
             return true;
         }
-        layer = fAVMService.forceCopy(layer.getPath());
+//        layer = fAVMService.forceCopy(layer.getPath());
         // Grab the listing 
         Map<String, AVMNodeDescriptor> underListing =
             fAVMService.getDirectoryListing(underlying, true);
@@ -644,7 +642,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             AVMNodeDescriptor topNode = layerListing.get(name);
             AVMNodeDescriptor bottomNode = underListing.get(name);
-            fgLogger.error("Trying to flatten out: " + name);
+//            fgLogger.error("Trying to flatten out: " + name);
             if (bottomNode == null)
             {
                 flattened = false;
@@ -653,16 +651,16 @@ public class AVMSyncServiceImpl implements AVMSyncService
             // We've found an identity so flatten it.
             if (topNode.getId() == bottomNode.getId())
             {
-                fAVMRepository.flatten(layer, name);
-                fgLogger.error("Identity flattened: " + name);
+                fAVMRepository.flatten(layer.getPath(), name);
+//                fgLogger.error("Identity flattened: " + name);
             }
             else
             {
                 // Otherwise recursively flatten the children.
                 if (flatten(topNode, bottomNode))
                 {
-                    fAVMRepository.flatten(layer, name);
-                    fgLogger.error("Recursively flattened: " + name);
+                    fAVMRepository.flatten(layer.getPath(), name);
+//                    fgLogger.error("Recursively flattened: " + name);
                 }
                 else
                 {
@@ -710,6 +708,5 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         mkdirs(pathParts[0]);
         fAVMService.createDirectory(pathParts[0], pathParts[1]);
-        fgLogger.error("mkdir " + pathParts[0] + " " + pathParts[1]);
     }
 }

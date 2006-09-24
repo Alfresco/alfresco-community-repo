@@ -115,14 +115,11 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         // Get the difference between source and destination.
         List<AVMDifference> diffs = 
             fAVMSyncService.compare(version, path, -1, avmDest);
-        for (AVMDifference diff : diffs)
-        {
-            fgLogger.error(diff);
-        }
         // Do the update.
         fAVMSyncService.update(diffs, true, true, false, false);
         // Cleanup by flattening the source relative to the destination.
-        //fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");
+        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");
     }
 
     /**

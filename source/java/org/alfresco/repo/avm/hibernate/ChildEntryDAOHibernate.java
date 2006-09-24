@@ -62,7 +62,6 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
                 "from ChildEntryImpl ce where ce.name = :name and ce.parent = :parent");
         query.setString("name", name);
         query.setEntity("parent", parent);
-        query.setCacheable(true);
         return (ChildEntry)query.uniqueResult();
     }
     
@@ -76,8 +75,6 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
     {
         Query query = getSession().getNamedQuery("ChildEntry.ByParent");
         query.setEntity("parent", parent);
-        query.setCacheable(true);
-        query.setCacheRegion("ChildEntry.ByParent");
         return (List<ChildEntry>)query.list();
     }
 
@@ -92,8 +89,6 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
         Query query = getSession().getNamedQuery("ChildEntry.ByParentChild");
         query.setEntity("parent", parent);
         query.setEntity("child", child);
-        query.setCacheable(true);
-        query.setCacheRegion("ChildEntry.ByParentChild");
         return (ChildEntry)query.uniqueResult();
     }
 

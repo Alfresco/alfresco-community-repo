@@ -64,6 +64,37 @@ import org.alfresco.util.GUID;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test partial flatten.
+     */
+    public void testPartialFlatten()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createAVMStore("layer");
+            fService.createLayeredDirectory("main:/a", "layer:/", "a");
+            fService.getFileOutputStream("layer:/a/b/c/foo").close();
+            fService.createFile("layer:/a/b", "bing").close();
+            List<AVMDifference> diffs = new ArrayList<AVMDifference>();
+            diffs.add(new AVMDifference(-1, "layer:/a/b/c/foo",
+                                        -1, "main:/a/b/c/foo",
+                                        AVMDifference.NEWER));
+            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.flatten("layer:/a", "main:/a");
+            AVMNodeDescriptor b = fService.lookup(-1, "layer:/a/b");
+            assertTrue(b.isLayeredDirectory());
+            AVMNodeDescriptor c = fService.lookup(-1, "layer:/a/b/c");
+            assertTrue(c.isPlainDirectory());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
+    
+    /**
      * Test getIndirection.
      */
     public void testGetIndirection()

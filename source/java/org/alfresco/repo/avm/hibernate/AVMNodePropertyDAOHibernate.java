@@ -29,8 +29,6 @@ class AVMNodePropertyDAOHibernate extends HibernateDaoSupport
                     "from AVMNodePropertyImpl anp where anp.node = :node and anp.name = :name");
         query.setEntity("node", node);
         query.setParameter("name", name);
-        query.setCacheable(true);
-        query.setCacheRegion("Property.Lookup");
         return (AVMNodeProperty)query.uniqueResult();
     }
 
@@ -46,8 +44,6 @@ class AVMNodePropertyDAOHibernate extends HibernateDaoSupport
             getSession().createQuery(
                     "from AVMNodePropertyImpl anp where anp.node = :node");
         query.setEntity("node", node);
-        query.setCacheable(true);
-        query.setCacheRegion("Properties.Lookup");
         return (List<AVMNodeProperty>)query.list();
     }
 

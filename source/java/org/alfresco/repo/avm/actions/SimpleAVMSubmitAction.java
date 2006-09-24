@@ -20,6 +20,7 @@ package org.alfresco.repo.avm.actions;
 import java.util.List;
 
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.avm.AVMContext;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.action.Action;
@@ -91,6 +92,7 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
         int version = (Integer)avmVersionPath[0];
         String path = (String)avmVersionPath[1];
+        fgLogger.error(path);
         // Get store name and path parts.
         String [] storePath = path.split(":");
         if (storePath.length != 2)
@@ -113,10 +115,14 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         // Get the difference between source and destination.
         List<AVMDifference> diffs = 
             fAVMSyncService.compare(version, path, -1, avmDest);
+        for (AVMDifference diff : diffs)
+        {
+            fgLogger.error(diff);
+        }
         // Do the update.
         fAVMSyncService.update(diffs, true, true, false, false);
         // Cleanup by flattening the source relative to the destination.
-        fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");
+        //fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");
     }
 
     /**

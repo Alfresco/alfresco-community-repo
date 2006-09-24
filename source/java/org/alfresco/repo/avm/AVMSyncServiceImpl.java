@@ -599,7 +599,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             throw new AVMNotFoundException("Not found: " + layerPath);
         }
-        AVMNodeDescriptor underlyingNode = fAVMService.lookup(-1, underlyingPath);
+        AVMNodeDescriptor underlyingNode = fAVMService.lookup(-1, underlyingPath, true);
         if (underlyingNode == null)
         {
             throw new AVMNotFoundException("Not found: " + underlyingPath);
@@ -644,14 +644,17 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             AVMNodeDescriptor topNode = layerListing.get(name);
             AVMNodeDescriptor bottomNode = underListing.get(name);
+            fgLogger.error("Trying to flatten out: " + name);
             if (bottomNode == null)
             {
+                flattened = false;
                 continue;
             }
             // We've found an identity so flatten it.
             if (topNode.getId() == bottomNode.getId())
             {
                 fAVMRepository.flatten(layer, name);
+                fgLogger.error("Identity flattened: " + name);
             }
             else
             {
@@ -659,6 +662,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 if (flatten(topNode, bottomNode))
                 {
                     fAVMRepository.flatten(layer, name);
+                    fgLogger.error("Recursively flattened: " + name);
                 }
                 else
                 {
@@ -706,5 +710,6 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         mkdirs(pathParts[0]);
         fAVMService.createDirectory(pathParts[0], pathParts[1]);
+        fgLogger.error("mkdir " + pathParts[0] + " " + pathParts[1]);
     }
 }

@@ -1,0 +1,90 @@
+/***********************************************/
+/* Learn                                */
+/***********************************************/
+ /* set millions of background images */
+.obroundbox { background:  url("../images/features/new_boxes/nt.gif") repeat; height: 100%; }
+.obtop div { background:  url("../images/features/new_boxes/tl.gif") no-repeat top left; }
+.obtop { background:  url("../images/features/new_boxes/tr.gif") no-repeat top right; }
+.obbot div { background:  url("../images/features/new_boxes/bl.gif") no-repeat bottom left; }
+.obbot { background:  url("../images/features/new_boxes/br.gif") no-repeat bottom right; }
+
+/* height and width stuff, width not really nessisary. */
+.obtop div, .obtop, .obbot div, .obbot {
+width: 100%;
+height: 10px;
+font-size: 1px;
+}
+
+/***********************************************/
+/* Products                             */
+/***********************************************/
+ /* set millions of background images */
+.pbroundbox { background:  url("../images/features/new_boxes/nt.gif") repeat; }
+.pbtop div { background:  url("../images/features/new_boxes/tl.gif") no-repeat top left; }
+.pbtop { background:  url("../images/features/new_boxes/tr.gif") no-repeat top right; }
+.pbbot div { background:  url("../images/features/new_boxes/bl.gif") no-repeat bottom left; }
+.pbbot { background:  url("../images/features/new_boxes/br.gif") no-repeat bottom right; }
+
+/* height and width stuff, width not really nessisary. */
+.pbtop div, .pbtop, .pbbot div, .pbbot {
+width: 100%;
+height: 10px;
+font-size: 1px;
+}
+
+/***********************************************/
+/* News                             */
+/***********************************************/
+ /* set millions of background images */
+.nbroundbox { background:  url("../images/features/new_boxes_wide/nt.gif") repeat; }
+.nbtop div { background:  url("../images/features/new_boxes_wide/tl.gif") no-repeat top left; }
+.nbtop { background:  url("../images/features/new_boxes_wide/tr.gif") no-repeat top right; }
+.nbbot div { background:  url("../images/features/new_boxes_wide/bl.gif") no-repeat bottom left; }
+.nbbot { background:  url("../images/features/new_boxes_wide/br.gif") no-repeat bottom right; }
+
+/* height and width stuff, width not really nessisary. */
+.nbtop div, .nbtop, .nbbot div, .nbbot {
+width: 100%;
+height: 10px;
+font-size: 1px;
+}
+
+.nbroundbox { float:left; width:317px;}
+.obroundbox { float:left; width:201px; margin-left:8px;}
+.pbroundbox { float:left; width:201px; margin-left:8px;}
+
+/***********************************************/
+/* Features                                    */
+/***********************************************/
+
+#fout { margin-top:10px; padding-top:10px; background: #f1f1f1 url("../images/features/tg.gif") no-repeat top left;}
+#fin { padding-left:10px; margin-bottom:0px; background: #f1f1f1 url("../images/features/bg.gif") no-repeat bottom left;}
+#fin h1 {padding-left:10px;}
+#fin p {font-size:1.1em;padding-left:10px;padding-top:0px;}
+
+.obroundbox ul, .nbroundbox ul, .pbroundbox ul {list-style-type:none; width:100%; margin:0; padding:0; }
+.obroundbox li {list-style-type:none;background: url("../images/icons/l_arrow.gif") no-repeat;background-position: 0px 0px;margin-left:8px; margin-right:8px; margin-top:4px; margin-bottom:4px; padding-left:18px;padding-bottom:6px;border-bottom: solid #FFC253 1px;}
+.pbroundbox li {list-style-type:none;background: url("../images/icons/p_arrow.gif") no-repeat;background-position: 0px 0px;margin-left:8px; margin-right:8px; margin-top:4px; margin-bottom:4px; padding-left:18px;padding-bottom:6px;border-bottom: solid #92DDFF 1px;}
+.nbroundbox li {list-style-type:none;background: url("../images/icons/n_arrow.gif") no-repeat;background-position: 0px 0px;margin-left:8px; margin-right:8px; margin-top:4px; margin-bottom:4px; padding-left:18px;padding-bottom:6px;border-bottom: solid #9ADC4E 1px;}
+
+.obroundbox h1 {/*color:#FFA300*/}
+.pbroundbox h1 {/*color:#00ACFF*/}
+.nbroundbox h1 {/*color:#00B600*/}
+.obroundbox h2, .pbroundbox h2, .nbroundbox h2 {}
+
+.obroundbox h2, .pbcontent h2, .nbcontent h2 { 
+	font-size: 1.3em;
+	font-weight: bold;
+	float: left;
+	margin-top: 0;
+	margin-bottom: 1em;
+	color:#017dff;
+}
+.nbcontent, .obcontent, .pbcontent {
+	padding: 0 12px; font-size: 1.2em;
+}
+
+li.pdf {list-style-type:none;background: url("../images/icons/pdf.gif") no-repeat;background-position: 0px 0px;margin:8px;padding-left:22px;padding-bottom:6px;border-bottom: solid #cccccc 1px;}
+li.nicon {list-style-type:none;background: url("../images/icons/nicon.gif") no-repeat;background-position: 272px 0px;margin-top:3px;height:15px;border-bottom: solid #fff 1px;}
+li.licon {list-style-type:none;background: url("../images/icons/licon.gif") no-repeat;background-position: 158px 0px;margin-top:3px;height:15px;border-bottom: solid #fff 1px;}
+li.picon {list-style-type:none;background: url("../images/icons/picon.gif") no-repeat;background-position: 158px 0px;margin-top:3px;height:15px;border-bottom: solid #fff 1px;}

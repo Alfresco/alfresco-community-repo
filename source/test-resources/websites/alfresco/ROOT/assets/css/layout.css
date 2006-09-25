@@ -1,0 +1,45 @@
+#main_content {
+	font-size: 1.2em;
+	width:519px;
+	float:left;
+	margin-top:20px;
+	padding-left:10px;
+}
+#right_content {
+	font-size: 1.2em;
+	float:left;
+	width:202px;
+	margin-top:20px;
+	margin-left:25px;
+	margin-bottom:20px;
+}
+#right_content .box_blue, #right_content .box_green, #right_content .box_orange {
+	padding: 0.5em 1em 0.2em 1em;
+	margin-bottom: 2em;
+	border: 0px solid #999999;
+}
+
+/* This code needs to go into main.css */
+
+#right_content h2 {
+	font-size: 1.25em;
+	font-weight: 400;
+	padding-bottom: 0.2em;
+	border-bottom: 1px solid #666666;
+	color: #333333;
+}
+#right_content .box_blue {
+	background-color: #9bccff;
+}
+#right_content .box_green {
+	background-color: #8dea64;
+}
+#right_content .box_orange {
+	background-color: #f3bd56;
+}
+#right_content ul {
+	/*list-style-image: url("../images/icons/arrow_b.gif");*/
+	list-style: square;
+	margin-left: 1.25em;
+	padding-left: 0;
+}

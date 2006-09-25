@@ -33,6 +33,7 @@ public class FreeMarkerOutputMethod
 
     public void generate(final Document xmlContent,
 			 final TemplateType tt,
+			 final String sandBoxUrl,
 			 final Writer out)
     {
     }

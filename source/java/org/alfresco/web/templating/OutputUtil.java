@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -39,8 +40,6 @@ import org.w3c.dom.Document;
 public class OutputUtil
 {
    private static final Log LOGGER = LogFactory.getLog(OutputUtil.class);
-   private static final String PARENT_AVM_PATH = 
-      "repo-1:/repo-1/alice/appBase/avm_webapps/ROOT";
    
    private static String stripExtension(String s)
    {
@@ -64,6 +63,9 @@ public class OutputUtil
          OutputStream fileOut = avmService.createFile(parentPath, generatedFileName);
          
          String fullAvmPath = parentPath + '/' + generatedFileName;
+
+	 String avmStore = parentPath.substring(0, parentPath.indexOf(":/"));
+	 String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + 
@@ -71,7 +73,7 @@ public class OutputUtil
          
          TemplateOutputMethod tom = tt.getOutputMethods().get(0);
          OutputStreamWriter out = new OutputStreamWriter(fileOut);
-         tom.generate(xml, tt, out);
+         tom.generate(xml, tt, sandBoxUrl, out);
          out.close();
          
          NodeRef outputNodeRef = AVMNodeConverter.ToNodeRef(-1, fullAvmPath);
@@ -117,10 +119,14 @@ public class OutputUtil
          String generatedFileName = (String)
          nodeService.getProperty(generatedNodeRef, 
                ContentModel.PROP_NAME);
-         
+	 String avmPath = (String)AVMNodeConverter.ToAVMVersionPath(nodeRef)[1];
+	 String avmStore = avmPath.substring(0, avmPath.indexOf(":/"));
+	 String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
+	 
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("regenerating file node for : " + fileName + " (" +
                   nodeRef.toString() + ") to " + generatedNodeRef.toString());
+
          
          // get a writer for the content and put the file
          ContentWriter writer = contentService.getWriter(generatedNodeRef, 
@@ -132,7 +138,7 @@ public class OutputUtil
          // put a loop to generate all output methods
          TemplateOutputMethod tom = tt.getOutputMethods().get(0);
          OutputStreamWriter out = new OutputStreamWriter(writer.getContentOutputStream());
-         tom.generate(xml, tt, out);
+         tom.generate(xml, tt, sandBoxUrl, out);
          out.close();
          
          LOGGER.debug("generated " + fileName + " using " + tom);

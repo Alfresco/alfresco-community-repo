@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	   xmlns:alfresco="http://www.alfresco.org/alfresco"
-           targetNamespace="http://www.alfresco.org/aflresco"
+           targetNamespace="http://www.alfresco.org/alfresco"
            elementFormDefault="qualified">
   <xs:simpleType name="category">
     <xs:restriction base="xs:string">
@@ -14,6 +14,7 @@
   </xs:simpleType>
   <xs:simpleType name="about-blurb">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="Activiti"/>
       <xs:enumeration value="Alfresco"/>
       <xs:enumeration value="Kofax"/>
       <xs:enumeration value="Aarden Ringcroft"/>

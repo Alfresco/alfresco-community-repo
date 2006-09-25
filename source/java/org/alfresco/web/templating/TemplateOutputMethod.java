@@ -32,10 +32,12 @@ public interface TemplateOutputMethod
      *
      * @param xmlContent the xml content to serialize
      * @param tt the template type that collected the xml content.
+     * @param sandBoxUrl the url of the current sandbox
      * @param out the writer to serialize to.
      */
     public void generate(final Document xmlContent,
 			 final TemplateType tt,
+			 final String sandBoxUrl,
 			 final Writer out)
 	throws Exception;
 }

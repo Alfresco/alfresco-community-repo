@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	   xmlns:alfresco="http://www.alfresco.org/alfresco"
-           targetNamespace="http://www.alfresco.org/aflresco"
+           targetNamespace="http://www.alfresco.org/alfresco"
            elementFormDefault="qualified">
   <xs:element name="about-blurb">
     <xs:complexType>

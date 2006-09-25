@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<alfresco:about-blurb xmlns:alfresco="http://www.alfresco.org/alfresco">
+  <alfresco:name>Activiti</alfresco:name>
+  <alfresco:body>Alfresco used to be called Activiti.  See About Alfresco.</alfresco:body>
+</alfresco:about-blurb>

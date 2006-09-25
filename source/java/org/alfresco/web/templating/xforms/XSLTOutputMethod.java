@@ -17,6 +17,8 @@
 package org.alfresco.web.templating.xforms;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.alfresco.web.templating.*;
 import org.chiba.xml.util.DOMUtil;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,7 +32,10 @@ import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -41,6 +46,8 @@ public class XSLTOutputMethod
     implements TemplateOutputMethod
 {
 
+    private static final Log LOGGER = LogFactory.getLog(XSLTOutputMethod.class);
+
     private final NodeRef nodeRef;
 
     public XSLTOutputMethod(final NodeRef nodeRef)
@@ -50,6 +57,7 @@ public class XSLTOutputMethod
 
     public void generate(final Document xmlContent,
 			 final TemplateType tt,
+			 final String sandBoxUrl,
 			 final Writer out)
 	throws ParserConfigurationException,
 	       TransformerConfigurationException,
@@ -58,11 +66,49 @@ public class XSLTOutputMethod
 	       IOException
     {
 	TransformerFactory tf = TransformerFactory.newInstance();
-	TemplatingService ts = TemplatingService.getInstance();
+	final TemplatingService ts = TemplatingService.getInstance();
 	DOMSource source = new DOMSource(ts.parseXML(this.nodeRef));
 	final Templates templates = tf.newTemplates(source);
 	final Transformer t = templates.newTransformer();
+	t.setURIResolver(new URIResolver()
+	{
+	    public Source resolve(final String href, final String base)
+	        throws TransformerException
+	    {
+	        URI uri = null;
+	        try
+	        {
+		    uri = new URI(sandBoxUrl + href);
+	        }
+	        catch (URISyntaxException e)
+	        {
+		    throw new TransformerException("unable to create uri " + sandBoxUrl + href, e);
+	        }
+	        try
+	        {
+		    LOGGER.debug("loading " + uri);
+		    final Document d = ts.parseXML(uri.toURL().openStream());
+		    LOGGER.debug("loaded " + ts.writeXMLToString(d));
+		    return new DOMSource(d);
+	        }
+	        catch (Exception e)
+	        {
+		    LOGGER.warn(e);
+		    throw new TransformerException("unable to load " + uri, e);
+	        }
+	    }
+	});
+	t.setParameter("avm_store_url", sandBoxUrl);
+	LOGGER.debug("setting parameter avm_store_url=" + sandBoxUrl);
 	final StreamResult result = new StreamResult(out);
-	t.transform(new DOMSource(xmlContent), result);
+	try
+	{
+	    t.transform(new DOMSource(xmlContent), result);
+	}
+	catch (TransformerException e)
+	{
+	    LOGGER.error(e.getMessageAndLocation());
+	    throw e;
+	}
     }
 }

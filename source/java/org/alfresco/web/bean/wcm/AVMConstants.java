@@ -16,6 +16,18 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.text.MessageFormat;
+import java.util.Map;
+
+import javax.faces.context.FacesContext;
+
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.config.ClientConfigElement;
+
 /**
  * @author Kevin Roast
  */
@@ -53,6 +65,23 @@ public final class AVMConstants
       return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS;
    }
    
+   public static String buildAVMStoreUrl(String store)
+   {
+      String url = null;;
+      
+      FacesContext fc = FacesContext.getCurrentInstance();
+      AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
+      ClientConfigElement config = Application.getClientConfig(fc);
+      Map<QName, PropertyValue> props = avmService.queryStorePropertyKey(store, QName.createQName(null, PROP_DNS + '%'));
+      if (props.size() == 1)
+      {
+         String dns = props.entrySet().iterator().next().getKey().getLocalName().substring(PROP_DNS.length());
+         url = MessageFormat.format(PREVIEW_SANDBOX_URL, dns, config.getWCMDomain(), config.getWCMPort());
+      }
+      
+      return url;
+   }
+   
    // names of the stores representing the layers for an AVM website
    public final static String STORE_STAGING = "-staging";
    public final static String STORE_MAIN = "-main";
@@ -72,4 +101,8 @@ public final class AVMConstants
    public final static String PROP_WEBSITE_NAME = ".website.name";
    public final static String PROP_SANDBOX_STORE_PREFIX = ".sandbox.store.";
    public final static String SPACE_ICON_WEBSITE = "space-icon-website";
+   
+   // URLs for preview of sandboxes and assets
+   public final static String PREVIEW_SANDBOX_URL = "http://www-{0}.avm.{1}:{2}";
+   public final static String PREVIEW_ASSET_URL = "http://www-{0}.avm.{1}:{2}/{3}";
 }

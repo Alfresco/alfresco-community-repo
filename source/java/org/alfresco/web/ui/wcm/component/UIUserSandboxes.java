@@ -213,7 +213,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                // this is currently identical to the sandbox_browse action as below
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_icon", WebResources.IMAGE_USERSANDBOX_32,
-                     "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
+                     "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
                out.write("</td><td width=100%>");
                out.write("<b>");
                out.write(bundle.getString(MSG_USERNAME));
@@ -222,24 +222,25 @@ public class UIUserSandboxes extends SelfRenderingComponent
                out.write("</td><td><nobr>");
                
                // direct actions for a sandbox
+               String sandboxUrl = AVMConstants.buildAVMStoreUrl(mainStore);
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_preview", "/images/icons/preview_website.gif",
-                     null, null));
+                     null, null, sandboxUrl));
                out.write("&nbsp;");
                
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_create", "/images/icons/new_content.gif",
-                     "#{AVMBrowseBean.setupSandboxAction}", "wizard:createWebContent"));
+                     "#{AVMBrowseBean.setupSandboxAction}", "wizard:createWebContent", null));
                out.write("&nbsp;");
                
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_submitall", "/images/icons/submit.gif",
-                     "#{AVMBrowseBean.submitAll}", null));
+                     "#{AVMBrowseBean.submitAll}", null, null));
                out.write("&nbsp;");
                
                Utils.encodeRecursive(context, aquireAction(
                      context, mainStore, username, "sandbox_browse", "/images/icons/space_small.gif",
-                     "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
+                     "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
                out.write("</nobr></td></tr>");
                
                // modified items panel
@@ -505,19 +506,20 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * @param store            Root store name for the user sandbox
     * @param username         Username of the user for the action
     * @param name             Action name - will be used for I18N message lookup
-    * @param icon             Icon to display for the actio n
+    * @param icon             Icon to display for the action
     * @param actionListener   Actionlistener for the action
     * @param outcome          Navigation outcome for the action
+    * @param url              HREF URL for the action
     * 
     * @return UIActionLink component
     */
    private UIActionLink aquireAction(FacesContext fc, String store, String username,
-         String name, String icon, String actionListener, String outcome)
+         String name, String icon, String actionListener, String outcome, String url)
    {
       UIActionLink action = findAction(name, username);
       if (action == null)
       {
-         action = createAction(fc, store, username, name, icon, actionListener, outcome);
+         action = createAction(fc, store, username, name, icon, actionListener, outcome, url);
       }
       return action;
    }
@@ -555,11 +557,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * @param icon             Icon to display for the actio n
     * @param actionListener   Actionlistener for the action
     * @param outcome          Navigation outcome for the action
+    * @param url              HREF URL for the action
     * 
     * @return UIActionLink child component
     */
    private UIActionLink createAction(FacesContext fc, String store, String username,
-         String name, String icon, String actionListener, String outcome)
+         String name, String icon, String actionListener, String outcome, String url)
    {
       javax.faces.application.Application facesApp = fc.getApplication();
       UIActionLink control = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
@@ -574,7 +577,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       {
          control.setActionListener(facesApp.createMethodBinding(
                actionListener, UIActions.ACTION_CLASS_ARGS));
-      
+         
          UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
          param.setName("store");
          param.setValue(store);
@@ -587,6 +590,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
       if (outcome != null)
       {
          control.setAction(new ConstantMethodBinding(outcome));
+      }
+      if (url != null)
+      {
+         control.setHref(url);
+         control.setTarget("new");
       }
       
       this.getChildren().add(control);

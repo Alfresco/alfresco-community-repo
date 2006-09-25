@@ -359,7 +359,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with the DNS name property
-      tagStoreDNSPath(userStore, name, username, "main");
+      tagStoreDNSPath(userStore, name, username);
       
       
       // create the user 'preview' store

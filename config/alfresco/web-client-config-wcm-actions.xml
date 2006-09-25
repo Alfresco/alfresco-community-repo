@@ -45,17 +45,35 @@
             </params>
          </action>
          
+         <!-- Preview folder -->
+         <action id="preview_folder">
+            <label-id>folder_preview</label-id>
+            <image>/images/icons/preview_website.gif</image>
+            <href>#{actionContext.previewUrl}</href>
+            <target>new</target>
+         </action>
+         
+         <!-- Preview file -->
+         <action id="preview_file">
+            <label-id>file_preview</label-id>
+            <image>/images/icons/preview_website.gif</image>
+            <href>#{actionContext.previewUrl}</href>
+            <target>new</target>
+         </action>
+         
          
          <!-- Actions for a document in the AVM Browse screen -->
          <action-group id="avm_file_browse">
             <show-link>false</show-link>
             <action idref="edit_file" />
+            <action idref="preview_file" />
             <action idref="delete_file" />
          </action-group>
          
          <!-- Actions for a folder in the AVM Browse screen -->
          <action-group id="avm_folder_browse">
             <show-link>false</show-link>
+            <action idref="preview_folder" />
             <action idref="delete_folder" />
          </action-group>
          
@@ -64,6 +82,7 @@
             <show-link>false</show-link>
             <action idref="edit_file" />
             <action idref="submit" />
+            <action idref="preview_file" />
             <action idref="delete_file" />
          </action-group>
          
@@ -71,6 +90,7 @@
          <action-group id="avm_folder_modified">
             <show-link>false</show-link>
             <action idref="submit" />
+            <action idref="preview_folder" />
             <action idref="delete_folder" />
          </action-group>
          

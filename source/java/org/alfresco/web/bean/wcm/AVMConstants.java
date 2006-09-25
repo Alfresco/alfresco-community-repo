@@ -67,19 +67,28 @@ public final class AVMConstants
    
    public static String buildAVMStoreUrl(String store)
    {
-      String url = null;;
+      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
+      return MessageFormat.format(PREVIEW_SANDBOX_URL, lookupStoreDNS(store), config.getWCMDomain(), config.getWCMPort());
+   }
+   
+   public static String buildAVMAssetUrl(String store, String assetPath)
+   {
+      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
+      return MessageFormat.format(PREVIEW_ASSET_URL, lookupStoreDNS(store), config.getWCMDomain(), config.getWCMPort(), assetPath);
+   }
+   
+   public static String lookupStoreDNS(String store)
+   {
+      String dns = null;
       
-      FacesContext fc = FacesContext.getCurrentInstance();
-      AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
-      ClientConfigElement config = Application.getClientConfig(fc);
+      AVMService avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
       Map<QName, PropertyValue> props = avmService.queryStorePropertyKey(store, QName.createQName(null, PROP_DNS + '%'));
       if (props.size() == 1)
       {
-         String dns = props.entrySet().iterator().next().getKey().getLocalName().substring(PROP_DNS.length());
-         url = MessageFormat.format(PREVIEW_SANDBOX_URL, dns, config.getWCMDomain(), config.getWCMPort());
+         dns = props.entrySet().iterator().next().getKey().getLocalName().substring(PROP_DNS.length());
       }
       
-      return url;
+      return dns;
    }
    
    // names of the stores representing the layers for an AVM website

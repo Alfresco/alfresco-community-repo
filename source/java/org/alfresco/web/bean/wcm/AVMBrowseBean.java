@@ -29,7 +29,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.action.Action;
@@ -52,7 +51,6 @@ import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
-import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -517,6 +515,9 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
+         String dns = AVMConstants.lookupStoreDNS(getSandbox());
+         int rootPathIndex = AVMConstants.buildAVMStoreRootPath(getSandbox()).length() + 1;
+         
          Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(-1, getCurrentPath());
          this.files = new ArrayList<Map>(nodes.size());
          this.folders = new ArrayList<Map>(nodes.size());
@@ -526,6 +527,7 @@ public class AVMBrowseBean implements IContextListener
             
             // build the client representation of the AVM node
             AVMNode node = new AVMNode(avmRef);
+            String path = avmRef.getPath();
             
             // properties specific to folders or files
             if (avmRef.isDirectory())
@@ -537,9 +539,15 @@ public class AVMBrowseBean implements IContextListener
             {
                node.getProperties().put("fileType16", Utils.getFileTypeImage(name, true));
                node.getProperties().put("url", DownloadContentServlet.generateBrowserURL(
-                     AVMNodeConverter.ToNodeRef(-1, avmRef.getPath()), name));
+                     AVMNodeConverter.ToNodeRef(-1, path), name));
                this.files.add(node);
             }
+            
+            // common properties
+            String assetPath = path.substring(rootPathIndex);
+            String previewUrl = MessageFormat.format(
+                  AVMConstants.PREVIEW_ASSET_URL, dns, this.wcmDomain, this.wcmPort, assetPath);
+            node.getProperties().put("previewUrl", previewUrl);
          }
          
          // commit the transaction

@@ -165,7 +165,7 @@
                               </h:outputText>
                            </a:column>
                            
-                           <%-- Space Actions column --%>
+                           <%-- Folder Actions column --%>
                            <a:column id="col9" actions="true" style="text-align:left">
                               <f:facet name="header">
                                  <h:outputText id="col9-txt" value="#{msg.actions}"/>

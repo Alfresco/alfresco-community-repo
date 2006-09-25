@@ -18,6 +18,7 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +47,7 @@ import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.PanelGenerator;
@@ -317,6 +319,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
       String userStore = userStorePrefix + ":/";
       String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot) + ":/";
       
+      // info we need to calculate preview paths for assets
+      String dns = AVMConstants.lookupStoreDNS(userStorePrefix);
+      int rootPathIndex = AVMConstants.buildAVMStoreRootPath(userStorePrefix).length() + 1;
+      ClientConfigElement config = Application.getClientConfig(fc);
+      
       // get the UIActions component responsible for rendering context related user actions
       // TODO: we may need a component per user instance? (or use evaluators for roles...)
       UIActions uiFileActions = aquireUIActions(ACTIONS_FILE, userStorePrefix);
@@ -384,6 +391,13 @@ public class UIUserSandboxes extends SelfRenderingComponent
                out.write(df.format(new Date(node.getModDate())));
                out.write("</td><td>");
                
+               // build node context required for actions
+               AVMNode avmNode = new AVMNode(node);
+               String assetPath = sourcePath.substring(rootPathIndex);
+               String previewUrl = MessageFormat.format(
+                  AVMConstants.PREVIEW_ASSET_URL, dns, config.getWCMDomain(), config.getWCMPort(), assetPath);
+               avmNode.getProperties().put("previewUrl", previewUrl);
+               
                // size of files
                if (node.isFile())
                {
@@ -391,7 +405,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("</td><td>");
                
                   // add UI actions for this item
-                  uiFileActions.setContext(new AVMNode(node));
+                  uiFileActions.setContext(avmNode);
                   Utils.encodeRecursive(fc, uiFileActions);
                }
                else
@@ -399,7 +413,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("</td><td>");
                
                   // add UI actions for this item
-                  uiFolderActions.setContext(new AVMNode(node));
+                  uiFolderActions.setContext(avmNode);
                   Utils.encodeRecursive(fc, uiFolderActions);
                }
                out.write("</td></tr>");

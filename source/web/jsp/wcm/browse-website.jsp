@@ -105,9 +105,9 @@
                                  <td align=left width=32><a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" /></td>
                                  <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
                                  <td align=right>
-                                    <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" href="#{AVMBrowseBean.previewUrl}" target="new" />
-                                    <a:actionLink value="#{msg.sandbox_create}" image="/images/icons/new_content.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="wizard:createWebContent" />
-                                    <a:actionLink value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
+                                    <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" showLink="false" href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
+                                    <a:actionLink id="actCreate" value="#{msg.sandbox_create}" image="/images/icons/new_content.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="wizard:createWebContent" />
+                                    <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
                                  </td>
                               </tr>
                               <tr>
@@ -133,7 +133,7 @@
                      <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
                         
                         <%-- User Sandboxes List --%>
-                        <w:userSandboxes binding="#{AVMBrowseBean.userSandboxes}" value="#{NavigationBean.currentNode.nodeRef}" />
+                        <w:userSandboxes id="sandboxes" binding="#{AVMBrowseBean.userSandboxes}" value="#{NavigationBean.currentNode.nodeRef}" />
                         
                      </a:panel>
                      

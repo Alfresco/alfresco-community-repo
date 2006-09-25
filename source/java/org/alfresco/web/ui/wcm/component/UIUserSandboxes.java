@@ -55,6 +55,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.converter.ByteSizeConverter;
 import org.alfresco.web.ui.repo.component.UIActions;
 import org.alfresco.web.ui.wcm.WebResources;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
@@ -62,12 +64,14 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 public class UIUserSandboxes extends SelfRenderingComponent
 {
+   private static Log logger = LogFactory.getLog(UIUserSandboxes.class);
+   
    private static final String ACTIONS_FILE = "avm_file_modified";
    private static final String ACTIONS_FOLDER = "avm_folder_modified";
    private static final String ACTIONS_DELETED = "avm_deleted_modified";
-
+   
    private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
-
+   
    private static final String MSG_MODIFIED_ITEMS = "modified_items";
    private static final String MSG_SIZE = "size";
    private static final String MSG_CREATED = "created_date";
@@ -201,6 +205,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
             // check it exists before we render the view
             if (avmService.getAVMStore(mainStore) != null)
             {
+               if (logger.isDebugEnabled())
+                  logger.debug("Building sandbox view for user store: " + mainStore);
+               
                // for each user sandbox, generate an outer panel table
                PanelGenerator.generatePanelStart(out,
                      context.getExternalContext().getRequestContextPath(),
@@ -306,14 +313,15 @@ public class UIUserSandboxes extends SelfRenderingComponent
       ResourceBundle bundle = Application.getBundle(fc);
       
       // build the paths to the stores to compare
-      String userStore  = AVMConstants.buildAVMUserMainStoreName(storeRoot, username) + ":/";
+      String userStorePrefix = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
+      String userStore = userStorePrefix + ":/";
       String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot) + ":/";
       
       // get the UIActions component responsible for rendering context related user actions
       // TODO: we may need a component per user instance? (or use evaluators for roles...)
-      UIActions uiFileActions = aquireUIActions(ACTIONS_FILE);
-      UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER);
-      UIActions uiDeletedActions = aquireUIActions(ACTIONS_DELETED);
+      UIActions uiFileActions = aquireUIActions(ACTIONS_FILE, userStorePrefix);
+      UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER, userStorePrefix);
+      UIActions uiDeletedActions = aquireUIActions(ACTIONS_DELETED, userStorePrefix);
       
       // use the sync service to get the list of diffs between the stores
       List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore);
@@ -473,24 +481,31 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * 
     * @return UIActions component
     */
-   private UIActions aquireUIActions(String id)
+   private UIActions aquireUIActions(String id, String store)
    {
       UIActions uiActions = null;
+      String componentId = id + '_' + store;
+      if (logger.isDebugEnabled())
+         logger.debug("Find UIActions component id: " + componentId);
       for (UIComponent component : (List<UIComponent>)getChildren())
       {
-         if (id.equals(component.getId()))
+         if (componentId.equals(component.getId()))
          {
+            if (logger.isDebugEnabled())
+               logger.debug("...found UIActions component id: " + componentId);
             uiActions = (UIActions)component;
             break;
          }
       }
       if (uiActions == null)
       {
+         if (logger.isDebugEnabled())
+               logger.debug("...creating UIActions component id: " + componentId);
          javax.faces.application.Application facesApp = FacesContext.getCurrentInstance().getApplication();
          uiActions = (UIActions)facesApp.createComponent(COMPONENT_ACTIONS);
          uiActions.setShowLink(false);
          uiActions.getAttributes().put("styleClass", "inlineAction");
-         uiActions.setId(id);
+         uiActions.setId(componentId);
          uiActions.setParent(this);
          uiActions.setValue(id);
          
@@ -516,7 +531,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private UIActionLink aquireAction(FacesContext fc, String store, String username,
          String name, String icon, String actionListener, String outcome, String url)
    {
-      UIActionLink action = findAction(name, username);
+      UIActionLink action = findAction(name, store, username);
       if (action == null)
       {
          action = createAction(fc, store, username, name, icon, actionListener, outcome, url);
@@ -528,19 +543,24 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * Locate a child UIActionLink component by name.
     * 
     * @param name       Of the action component to find
+    * @param store      Store the action component is tied to
     * @param username   Username of the user owner of the action
     * 
     * @return UIActionLink component if found, else null if not created yet
     */
-   private UIActionLink findAction(String name, String username)
+   private UIActionLink findAction(String name, String store, String username)
    {
       UIActionLink action = null;
-      String actionId = getId() + name + username;
+      String actionId = name + '_' + store;
+      if (logger.isDebugEnabled())
+         logger.debug("Finding action Id: " + actionId);
       for (UIComponent component : (List<UIComponent>)getChildren())
       {
          if (actionId.equals(component.getId()))
          {
             action = (UIActionLink)component;
+            if (logger.isDebugEnabled())
+               logger.debug("...found action Id: " + actionId);
             break;
          }
       }
@@ -567,8 +587,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
       javax.faces.application.Application facesApp = fc.getApplication();
       UIActionLink control = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
       
+      String id = name + '_' + store;
+      if (logger.isDebugEnabled())
+         logger.debug("...creating action Id: " + id);
       control.setRendererType(UIActions.RENDERER_ACTIONLINK);
-      control.setId(getId() + name + username);
+      control.setId(id);
       control.setValue(Application.getMessage(fc, name));
       control.setShowLink(false);
       control.setImage(icon);
@@ -579,10 +602,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
                actionListener, UIActions.ACTION_CLASS_ARGS));
          
          UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+         param.setId(id + "_1");
          param.setName("store");
          param.setValue(store);
          control.getChildren().add(param);
          param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+         param.setId(id + "_2");
          param.setName("username");
          param.setValue(username);
          control.getChildren().add(param);

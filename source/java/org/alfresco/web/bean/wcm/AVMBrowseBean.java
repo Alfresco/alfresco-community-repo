@@ -225,13 +225,6 @@ public class AVMBrowseBean implements IContextListener
    {
       this.actionService = actionService;
    }
-   
-   public String getStagingStore()
-   {
-      Node websiteNode = this.navigator.getCurrentNode();
-      String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
-      return AVMConstants.buildAVMStagingStoreName(storeRoot);
-   }
 
    /**
     * Summary text for the staging store:
@@ -268,9 +261,30 @@ public class AVMBrowseBean implements IContextListener
       return summary.toString();
    }
    
-   public String getPreviewUrl()
+   /**
+    * @return the current staging store name
+    */
+   public String getStagingStore()
+   {
+      Node websiteNode = this.navigator.getCurrentNode();
+      String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
+      return AVMConstants.buildAVMStagingStoreName(storeRoot);
+   }
+   
+   /**
+    * @return Preview URL for the current Staging store
+    */
+   public String getStagingPreviewUrl()
    {
       return AVMConstants.buildAVMStoreUrl(getStagingStore());
+   }
+   
+   /**
+    * @return Preview URL for the current User Sandbox store
+    */
+   public String getSandboxPreviewUrl()
+   {
+      return AVMConstants.buildAVMStoreUrl(getSandbox());
    }
    
    /**

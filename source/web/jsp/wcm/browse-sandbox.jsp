@@ -75,6 +75,8 @@
                               <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
                            </td>
                            <td align=right>
+                              <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.sandboxPreviewUrl}" target="new" />
+                              &nbsp;
                               <a:actionLink value="#{msg.sandbox_create}" image="/images/icons/new_content.gif" action="wizard:createWebContent" />
                            </td>
                         </tr>

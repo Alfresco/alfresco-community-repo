@@ -130,8 +130,7 @@ public class XFormsInputMethod
 	LOGGER.debug("using baseUrl " + baseUrl + " for schemaformbuilder");
 
 	final SchemaFormBuilder builder = 
-	    new BaseSchemaFormBuilder(tt.getName(),
-				      xmlContent,
+	    new BaseSchemaFormBuilder(xmlContent,
 				      "/ajax/invoke/XFormsBean.handleAction",
 				      SchemaFormBuilder.SUBMIT_METHOD_POST,
 				      new XHTMLWrapperElementsBuilder(),

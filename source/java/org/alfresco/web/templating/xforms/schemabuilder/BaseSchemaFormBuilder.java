@@ -46,21 +46,18 @@ public class BaseSchemaFormBuilder
     /**
      * Creates a new BaseSchemaFormBuilder object.
      *
-     * @param rootTagName    __UNDOCUMENTED__
      * @param instanceSource __UNDOCUMENTED__
      * @param action         __UNDOCUMENTED__
      * @param submitMethod   __UNDOCUMENTED__
      * @param wrapper        __UNDOCUMENTED__
      */
-    public BaseSchemaFormBuilder(final String rootTagName,
-                                 final Document instanceDocument,
+    public BaseSchemaFormBuilder(final Document instanceDocument,
                                  final String action,
                                  final String submitMethod,
                                  final WrapperElementsBuilder wrapper,
                                  final String base) 
     {
-        super(rootTagName,
-	      instanceDocument,
+        super(instanceDocument,
 	      action,
 	      submitMethod,
 	      wrapper,

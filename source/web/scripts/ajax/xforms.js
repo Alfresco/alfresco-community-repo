@@ -67,7 +67,7 @@ dojo.declare("alfresco.xforms.Widget",
 	       chibaData = chibaData[chibaData.length - 1];
 	       var xpath = "/" + chibaData.getAttribute("chiba:xpath");
 	       var d = this.node.ownerDocument;
-	       var nsResolver = d.createNSResolver(d);
+	       var nsResolver = d.createNSResolver(d.documentElement);
 	       var contextNode = this.xform.getInstance();
 	       dojo.debug("locating " + xpath + 
 			  " from " + chibaData.nodeName + 
@@ -289,7 +289,7 @@ dojo.declare("alfresco.xforms.Select1",
 		     var d = this.node.ownerDocument;
 		     valid = d.evaluate(binding.constraint,
 					value,
-					d.createNSResolver(d),
+					d.createNSResolver(d.documentElement),
 					XPathResult.ANY_TYPE,
 					null);
 		     dojo.debug("valid " + dojo.dom.textContent(value) + "? " + valid);

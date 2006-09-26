@@ -89,7 +89,7 @@ public List<PressRelease> getPressReleases(HttpServletRequest request, ServletCo
 <title>Alfresco Press Releases - Open Source Content Management</title>
 <meta name="description" lang="en" content="News and press releases about Alfresco's enterprise content management system and document management software." />
 <meta name="keywords" lang="en" content="open source ecms, enterprise content management system, cms, document management system, dms, documentum" />
-<link href="http://www.alfresco.com/assets/css/screen.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="/assets/css/screen.css" rel="stylesheet" type="text/css" media="screen" />
 <link rel="alternate" type="application/rss+xml" title="RSS" href="http://www.nooked.com/news/feed/alfresco" />
 <style type="text/css">
 #main_content .headline {
@@ -109,18 +109,18 @@ public List<PressRelease> getPressReleases(HttpServletRequest request, ServletCo
 </style>
 </head>
 <body>
-<script language="JavaScript" type="text/javascript" src="http://www.alfresco.com/assets/js/controls.js"></script>
-<script language="JavaScript" type="text/javascript" src="http://www.alfresco.com/assets/js/search.js" ></script>
+<script language="JavaScript" type="text/javascript" src="/assets/js/controls.js"></script>
+<script language="JavaScript" type="text/javascript" src="/assets/js/search.js" ></script>
 <div id="container">
 <div id="masthead">
 <!-- Search -->
 <div id="top_links">
 <ul>
-<li><a href="http://www.alfresco.com/accessibility/">Accessibility</a> |</li>
-<li><a href="http://www.alfresco.com/sitemap/">Site Map</a> |</li>
-<li><a href="http://www.alfresco.com/about/contact/">Contact Us</a> |</li>
-<li><a href="http://www.alfresco.com/store/">Store</a> |</li>
-<li><a href="http://www.alfresco.com/rss/?feed=all">RSS</a> <img src="http://www.alfresco.com/assets/images/icons/feedicon10.gif" alt="RSS" title="RSS" width="10" height="10" /></li>
+<li><a href="/accessibility/index.html">Accessibility</a> |</li>
+<li><a href="/sitemap/index.html">Site Map</a> |</li>
+<li><a href="/about/contact/index.html">Contact Us</a> |</li>
+<li><a href="/store/index.html">Store</a> |</li>
+<li><a href="/rss/?feed=all">RSS</a> <img src="/assets/images/icons/feedicon10.gif" alt="RSS" title="RSS" width="10" height="10" /></li>
 </ul>
 <form action="http://www.google.com/search" method="get"><br />
 <input type="hidden" name="sitesearch" value="www.alfresco.com" />
@@ -134,12 +134,12 @@ public List<PressRelease> getPressReleases(HttpServletRequest request, ServletCo
 </div>
 <div id="topnav">
   <ul id="nav">
-    <li id="home"><a href="http://www.alfresco.com/" accesskey="h"  ><span>Home</span></a></li>
-    <li id="products"><a href="http://www.alfresco.com/products/" accesskey="p"  ><span>Products</span></a></li>
-    <li id="services"><a href="http://www.alfresco.com/services/support/" accesskey="s"  ><span>Services</span></a></li>
-    <li id="customers"><a href="http://www.alfresco.com/customers/" accesskey="c"  ><span>Customers</span></a></li>
- 	<li id="partners"><a href="http://www.alfresco.com/partners/" accesskey="r"  ><span>Partners</span></a></li>
-    <li id="about"><a href="http://www.alfresco.com/about/" accesskey="a"  class="selected" ><span>About us</span></a></li>
+    <li id="home"><a href="/index.html" accesskey="h"  ><span>Home</span></a></li>
+    <li id="products"><a href="/products/index.html" accesskey="p"  ><span>Products</span></a></li>
+    <li id="services"><a href="/services/support/index.html" accesskey="s"  ><span>Services</span></a></li>
+    <li id="customers"><a href="/customers/index.html" accesskey="c"  ><span>Customers</span></a></li>
+ 	<li id="partners"><a href="/partners/index.html" accesskey="r"  ><span>Partners</span></a></li>
+    <li id="about"><a href="/about/index.html" accesskey="a"  class="selected" ><span>About us</span></a></li>
 	<li id="developers"><a href="http://dev.alfresco.com/" accesskey="v"  ><span>Developers</span></a></li>
 	<li id="blogs"><a href="http://blogs.alfresco.com/" accesskey="b"  ><span>Blogs</span></a></li>
 	<li id="end"></li>
@@ -148,7 +148,7 @@ public List<PressRelease> getPressReleases(HttpServletRequest request, ServletCo
 <div id="outer">
   <div id="inner">
 <div id="sabout">
-<p><a href="http://www.alfresco.com/about/">Company</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://www.alfresco.com/about/contact/">Contact</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://www.alfresco.com/about/news/">News</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://www.alfresco.com/about/events/">Events</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://www.alfresco.com/about/people/">People</a></p>
+<p><a href="/about/index.html">Company</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/about/contact/index.html">Contact</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/media/releases/index.jsp">News</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/about/events/index.html">Events</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/about/people/index.html">People</a></p>
 </div>
 </div>
 </div>
@@ -179,7 +179,7 @@ for (PressRelease pr : pressReleases)
 <div class="box_blue">
 <h2>Press Release Archive</h2>
 <ul>
-<li><a href="http://www.alfresco.com/media/releases/archives/">View Archived Releases</a></li>
+<li><a href="/media/releases/archives/index.html">View Archived Releases</a></li>
 </ul>
 </div>
 </div>
@@ -190,31 +190,31 @@ for (PressRelease pr : pressReleases)
 <div id="footer">
   <div id="site">
     <div id="footer-logos">
-    <a href="http://www.mysql.com/"><img src="http://www.alfresco.com/assets/images/footer/mysql.gif" alt="MySQL" title="MySQL" border="0" /></a>
-    <a href="http://www.jboss.org"><img src="http://www.alfresco.com/assets/images/footer/jboss.gif" alt="JBoss Certified Partner" title="JBoss Certified Partner" border="0" width="74" height="34" /></a>
-    <a href="http://www.springframework.org/"><img src="http://www.alfresco.com/assets/images/footer/spring.gif" alt="Spring Framework" title="Spring Framework" border="0" width="67" height="34" /></a>
-    <a href="http://www.hibernate.org/"><img src="http://www.alfresco.com/assets/images/footer/hibernate.gif" alt="Hibernate" title="Hibernate" border="0" width="111" height="34" /></a>
-    <a href="http://tomcat.apache.org"><img src="http://www.alfresco.com/assets/images/footer/tomcat.gif" alt="Tomcat" title="Tomcat" border="0" width="44" height="34" /></a>
-    <a href="http://lucene.apache.org/"><img src="http://www.alfresco.com/assets/images/footer/lucene.gif" alt="Lucene" title="Lucene" border="0" width="143" height="34" /></a>
-    <a href="http://myfaces.apache.org/"><img src="http://www.alfresco.com/assets/images/footer/myfaces.gif" alt="My Faces" title="My Faces" border="0" width="37" height="34" /></a></div>
+    <a href="http://www.mysql.com/"><img src="/assets/images/footer/mysql.gif" alt="MySQL" title="MySQL" border="0" /></a>
+    <a href="http://www.jboss.org"><img src="/assets/images/footer/jboss.gif" alt="JBoss Certified Partner" title="JBoss Certified Partner" border="0" width="74" height="34" /></a>
+    <a href="http://www.springframework.org/"><img src="/assets/images/footer/spring.gif" alt="Spring Framework" title="Spring Framework" border="0" width="67" height="34" /></a>
+    <a href="http://www.hibernate.org/"><img src="/assets/images/footer/hibernate.gif" alt="Hibernate" title="Hibernate" border="0" width="111" height="34" /></a>
+    <a href="http://tomcat.apache.org"><img src="/assets/images/footer/tomcat.gif" alt="Tomcat" title="Tomcat" border="0" width="44" height="34" /></a>
+    <a href="http://lucene.apache.org/"><img src="/assets/images/footer/lucene.gif" alt="Lucene" title="Lucene" border="0" width="143" height="34" /></a>
+    <a href="http://myfaces.apache.org/"><img src="/assets/images/footer/myfaces.gif" alt="My Faces" title="My Faces" border="0" width="37" height="34" /></a></div>
     <div id="footer-links">
     <p>
-    <a href="http://www.alfresco.com/">Home</a> | 
-    <a href="http://www.alfresco.com/legal/">Legal</a> | 
-    <a href="http://www.alfresco.com/privacy/">Privacy</a> | 
-	<a href="http://www.alfresco.com/accessibility/">Accessibility</a> | 
-	<a href="http://www.alfresco.com/sitemap/">Site Map</a> | 
-	<a href="http://www.alfresco.com/rss/?feed=all/">RSS</a>
-	<img src="http://www.alfresco.com/assets/images/icons/feedicon12.gif" alt="RSS" title="RSS" width="12" height="12" />
+    <a href="/index.html">Home</a> | 
+    <a href="/legal/index.html">Legal</a> | 
+    <a href="/privacy/index.html">Privacy</a> | 
+	<a href="/accessibility/index.html">Accessibility</a> | 
+	<a href="/sitemap/index.html">Site Map</a> | 
+	<a href="/rss/?feed=all/">RSS</a>
+	<img src="/assets/images/icons/feedicon12.gif" alt="RSS" title="RSS" width="12" height="12" />
 	</p>
     <p>
-    <a href="http://www.alfresco.com/about/">Open Source ECMS</a> | 
-    <a href="http://www.alfresco.com/products/">CMS Products</a> | 
-    <a href="http://www.alfresco.com/services/support/">Management Services</a> | 
-    <a href="http://www.alfresco.com/resources/">EMS Resources</a>
+    <a href="/about/index.html">Open Source ECMS</a> | 
+    <a href="/products/index.html">CMS Products</a> | 
+    <a href="/services/support/index.html">Management Services</a> | 
+    <a href="/resources/index.html">EMS Resources</a>
     </p>
 	<p>&copy; 2005-2006 Alfresco Software, Inc., All Rights Reserved</p>
-	<p><img src="http://www.alfresco.com/assets/images/icons/powered_by_alfresco.gif" alt="Powered by Alfresco" width="88" height="32" /></p>
+	<p><img src="/assets/images/icons/powered_by_alfresco.gif" alt="Powered by Alfresco" width="88" height="32" /></p>
 	</div>
   </div>
   <div style="clear:both; padding-bottom: 10px;"></div>

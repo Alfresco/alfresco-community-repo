@@ -102,5 +102,10 @@
          <fileset dir="${dir.assemble}/WEB-INF/lib" includes="${webinf.lib.delete.jboss}" />
       </delete>
    </target>
-  
+   
+   <target name="sample-website">
+     <zip destfile="alfresco-sample-website.zip" 
+	  basedir="source/test-resources/websites/alfresco/" 
+	  excludes="**/.svn"/>
+   </target>
 </project>

@@ -152,10 +152,10 @@ urchinTracker();
 <div id="top_links">
 <ul>
 <li><a href="/login/?returnpath=/">Sign In</a> |</li>
-<li><a href="/accessibility/">Accessibility</a> |</li>
-<li><a href="/sitemap/">Site Map</a> |</li>
-<li><a href="/about/contact/">Contact Us</a> |</li>
-<li><a href="/store/">Store</a> |</li>
+<li><a href="/accessibility/index.html">Accessibility</a> |</li>
+<li><a href="/sitemap/index.html">Site Map</a> |</li>
+<li><a href="/about/contact/index.html">Contact Us</a> |</li>
+<li><a href="/store/index.html">Store</a> |</li>
 <li><a href="/rss/?feed=all">RSS</a> <img src="/assets/images/icons/feedicon10.gif" alt="RSS" title="RSS" width="10" height="10" /></li>
 </ul>
 <form action="http://www.google.com/search" method="get"><br />
@@ -171,12 +171,12 @@ urchinTracker();
 </div>
 <div id="topnav">
   <ul id="nav">
-    <li id="home"><a href="/" accesskey="h"  class="selected" ><span>Home</span></a></li>
-    <li id="products"><a href="/products/" accesskey="p"  ><span>Products</span></a></li>
-    <li id="services"><a href="/services/" accesskey="s"  ><span>Services</span></a></li>
-    <li id="customers"><a href="/customers/" accesskey="c"  ><span>Customers</span></a></li>
- 	<li id="partners"><a href="/partners/" accesskey="r"  ><span>Partners</span></a></li>
-    <li id="about"><a href="/about/" accesskey="a"  ><span>About us</span></a></li>
+    <li id="home"><a href="/index.html" accesskey="h"  class="selected" ><span>Home</span></a></li>
+    <li id="products"><a href="/products/index.html" accesskey="p"  ><span>Products</span></a></li>
+    <li id="services"><a href="/services/index.html" accesskey="s"  ><span>Services</span></a></li>
+    <li id="customers"><a href="/customers/index.html" accesskey="c"  ><span>Customers</span></a></li>
+ 	<li id="partners"><a href="/partners/index.html" accesskey="r"  ><span>Partners</span></a></li>
+    <li id="about"><a href="/about/index.html" accesskey="a"  ><span>About us</span></a></li>
 	<li id="developers"><a href="http://dev.alfresco.com/" accesskey="v"  ><span>Developers</span></a></li>
 	<li id="blogs"><a href="http://blogs.alfresco.com/" accesskey="b"  ><span>Blogs</span></a></li>
 	<li id="end"></li>
@@ -196,45 +196,45 @@ urchinTracker();
 </map>
 <div class="frontpanel">
 <div id="tagline">
-<p>Alfresco offers true Open Source Enterprise Content Management (ECM) - Document Management, Collaboration, Records Management, Knowledge Management, Web Content Management and Imaging. <a href="products/ecm/fivesteps/discover/">More...</a></p>
+<p>Alfresco offers true Open Source Enterprise Content Management (ECM) - Document Management, Collaboration, Records Management, Knowledge Management, Web Content Management and Imaging. <a href="/products/ecm/fivesteps/discover/index.html">More...</a></p>
 </div>
 <div class="frontpanel-icons">
 <div class="frontpanel-icon">
-<a href="products/ecm/fivesteps/discover/"><img src="assets/images/frontpanel/icon_discover.gif" border="0" alt="Discover" width="142" height="142" /></a>
+<a href="/products/ecm/fivesteps/discover/index.html"><img src="/assets/images/frontpanel/icon_discover.gif" border="0" alt="Discover" width="142" height="142" /></a>
 <ul>
-<li><a href="products/ecm/presentations/">Presentations</a></li>
-<li><a href="products/ecm/demonstrations/">Demonstrations</a></li>
-<li><a href="products/ecm/tour/">Feature Tour</a></li>
+<li><a href="/products/ecm/presentations/index.html">Presentations</a></li>
+<li><a href="products/ecm/demonstrations/index.html">Demonstrations</a></li>
+<li><a href="products/ecm/tour/index.html">Feature Tour</a></li>
 </ul>
 </div>
 <div class="frontpanel-icon">
-<a href="products/ecm/fivesteps/learnmore/"><img src="assets/images/frontpanel/icon_learnmore.gif" border="0" alt="Learn More" width="142" height="142" /></a>
+<a href="/products/ecm/fivesteps/learnmore/index.html"><img src="assets/images/frontpanel/icon_learnmore.gif" border="0" alt="Learn More" width="142" height="142" /></a>
 <ul>
-<li><a href="products/">Products</a></li>
-<li><a href="media/whitepapers/">White Papers</a></li>
+<li><a href="products/index.html">Products</a></li>
+<li><a href="media/whitepapers/index.html">White Papers</a></li>
 <li><a href="http://blogs.alfresco.com/">Blogs</a></li>
 </ul>
 </div>
 <div class="frontpanel-icon">
-<a href="products/ecm/fivesteps/try/"><img src="assets/images/frontpanel/icon_try.gif" border="0" alt="Try" width="142" height="142" /></a>
+<a href="products/ecm/fivesteps/try/index.html"><img src="assets/images/frontpanel/icon_try.gif" border="0" alt="Try" width="142" height="142" /></a>
 <ul>
-<li><a href="products/ecm/hostedtrials/">Hosted Trials</a></li>
-<li><a href="products/ecm/enttrial/">Enterprise Trial</a></li>
+<li><a href="products/ecm/hostedtrials/index.html">Hosted Trials</a></li>
+<li><a href="products/ecm/enttrial/index.html">Enterprise Trial</a></li>
 <li><a href="http://dev.alfresco.com/downloads/">Open Source</a></li>
 </ul>
 </div>
 <div class="frontpanel-icon">
-<a href="products/ecm/fivesteps/buy/"><img src="assets/images/frontpanel/icon_buy.gif" border="0" alt="Buy" width="142" height="142" /></a>
+<a href="products/ecm/fivesteps/buy/index.html"><img src="assets/images/frontpanel/icon_buy.gif" border="0" alt="Buy" width="142" height="142" /></a>
 <ul>
-<li><a href="store/">Store</a></li>
+<li><a href="store/index.html">Store</a></li>
 </ul>
 </div>
 <div class="frontpanel-icon">
-<a href="products/ecm/fivesteps/use/"><img src="assets/images/frontpanel/icon_use.gif" border="0" alt="Use" width="142" height="142" /></a>
+<a href="products/ecm/fivesteps/use/index.html"><img src="assets/images/frontpanel/icon_use.gif" border="0" alt="Use" width="142" height="142" /></a>
 <ul>
-<li><a href="services/training/">Training</a></li>
-<li><a href="services/consulting/">Consulting</a></li>
-<li><a href="services/support/">Support</a></li>
+<li><a href="services/training/index.html">Training</a></li>
+<li><a href="services/consulting/index.html">Consulting</a></li>
+<li><a href="services/support/index.html">Support</a></li>
 </ul>
 </div>
 </div>
@@ -260,7 +260,7 @@ urchinTracker();
 <h3><a href="http://opensource.sys-con.com/read/269540.htm">Alfresco Unveils New Version Of Open Source Enterprise CMS</a></h3>
 <p class="date">Sep 07, 2006 (Enterprise Open Source)</p>
 
-<p><a href="http://www.alfresco.com/rss/?feed=coverage">More Coverage</a> | <a href="http://www.alfresco.com/media/releases/">Press Releases</a></p>
+<p><a href="/rss/?feed=coverage">More Coverage</a> | <a href="/media/releases/index.jsp">Press Releases</a></p>
 </div>
 </div>
 <div class="front_column">
@@ -269,15 +269,15 @@ urchinTracker();
 
 <h3><a href="https://optaros.webex.com/optaros/mywebex/epmainframe.php?rlink=https%3A%2F%2Foptaros.webex.com%2Foptaros%2Fonstage%2Fmainframe.php%3Fmainurl%3D%2Foptaros%2Fonstage%2Ftool%2Fevent%2Fevent_detail.php%3FEventID%3D299966243%26FirstEnter%3D1%26GuestTimeZone%3D%26SourceId%3D">Optaros Open Source Content Management Solutions Webinar</a></h3>
 <p class="date">Sep 26, 2006 (Online WebEx)</p>
-<h3><a href="http://www.alfresco.com/services/training/">US Training - Alfresco for Developers</a></h3>
+<h3><a href="/services/training/index.html">US Training - Alfresco for Developers</a></h3>
 <p class="date">Sep 26-28, 2006 (Washington, DC)</p>
-<h3><a href="http://www.alfresco.com/services/training/">Australia Training - Alfresco for Users and Administrators</a></h3>
+<h3><a href="/services/training/index.html">Australia Training - Alfresco for Users and Administrators</a></h3>
 <p class="date">Sep 26-28, 2006 (Melbourne)</p>
-<h3><a href="http://www.alfresco.com/services/training/">Alfresco at Gartner Open Source</a></h3>
+<h3><a href="/services/training/index.html">Alfresco at Gartner Open Source</a></h3>
 <p class="date">Sep 27-29, 2006 (Phoenix)</p>
 <h3><a href="http://www.forum-geide.com/">Alfresco at Forum de la Geide</a></h3>
 <p class="date">Oct 03-05, 2006 (Paris)</p>
-<p><a href="about/events/">More Events</a> | <a href="services/training/">More Training</a></p>
+<p><a href="about/events/index.html">More Events</a> | <a href="services/training/index.html">More Training</a></p>
 </div>
 </div>
 <div class="front_column" style="margin-right: 0;">
@@ -302,13 +302,13 @@ urchinTracker();
 </div>
 <div class="front-links-bot-right">
 <ul class="front-links-top">
-<li><a href="http://www.alfresco.com/products/ecm/docs/1.3_draft/" title="Documentation"><img src="document.gif" alt="Documentation" align="top" /><br />Documentation</a></li>
+<li><a href="/products/ecm/docs/1.3_draft/index.html" title="Documentation"><img src="document.gif" alt="Documentation" align="top" /><br />Documentation</a></li>
 <li><a href="http://blogs.alfresco.com/" title="Alfresco Blogs"><img src="http://dev.alfresco.com/community/newsletters/2006/05/blogs.gif" alt="Alfresco Blogs" align="top" /><br />Blogs</a></li>
 </ul>
 <ul class="front-links-bot">
 <li><a href="http://dev.alfresco.com/downloads/" title="Alfresco Downloads">Downloads</a></li>
-<li><a href="http://www.alfresco.com/media/whitepapers/" title="Alfresco White Papers">White Papers</a></li>
-<li><a href="http://www.alfresco.com/about/careers/" title="Alfresco Careers">Careers</a></li>
+<li><a href="/media/whitepapers/index.html" title="Alfresco White Papers">White Papers</a></li>
+<li><a href="/about/careers/index.html" title="Alfresco Careers">Careers</a></li>
 </ul>
 </div>
 <div style="clear: both;"></div></div>
@@ -329,19 +329,19 @@ urchinTracker();
     <a href="http://myfaces.apache.org/"><img src="/assets/images/footer/myfaces.gif" alt="My Faces" title="My Faces" border="0" width="37" height="34" /></a></div>
     <div id="footer-links">
     <p>
-    <a href="/">Home</a> | 
-    <a href="/legal/">Legal</a> | 
-    <a href="/privacy/">Privacy</a> | 
-	<a href="/accessibility/">Accessibility</a> | 
-	<a href="/sitemap/">Site Map</a> | 
+    <a href="/index.html">Home</a> | 
+    <a href="/legal/index.html">Legal</a> | 
+    <a href="/privacy/index.html">Privacy</a> | 
+	<a href="/accessibility/index.html">Accessibility</a> | 
+	<a href="/sitemap/index.html">Site Map</a> | 
 	<a href="/rss/?feed=all/">RSS</a>
 	<img src="/assets/images/icons/feedicon12.gif" alt="RSS" title="RSS" width="12" height="12" />
 	</p>
     <p>
-    <a href="/about/">Open Source ECMS</a> | 
+    <a href="/about/index.html">Open Source ECMS</a> | 
     <a href="/products/">CMS Products</a> | 
-    <a href="/services/support/">Management Services</a> | 
-    <a href="/resources/">EMS Resources</a>
+    <a href="/services/support/index.html">Management Services</a> | 
+    <a href="/resources/index.html">EMS Resources</a>
     </p>
 	<p>&copy; 2005-2006 Alfresco Software, Inc., All Rights Reserved</p>
 	<p><img src="/assets/images/icons/powered_by_alfresco.gif" alt="Powered by Alfresco" width="88" height="32" /><img src="http://alfresco.sourceforge.net/image.php" alt="" width="1" height="1" /></p>

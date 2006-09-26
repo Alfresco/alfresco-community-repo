@@ -2,9 +2,6 @@ dojo.require("dojo.widget.DebugConsole");
 dojo.require("dojo.widget.DatePicker");
 dojo.require("dojo.widget.Button");
 dojo.require("dojo.widget.validate");
-dojo.require("dojo.widget.ComboBox");
-dojo.require("dojo.widget.Checkbox");
-dojo.require("dojo.widget.Editor");
 dojo.require("dojo.widget.Spinner");
 dojo.require("dojo.lfx.html");
 dojo.hostenv.writeIncludes();
@@ -17,6 +14,7 @@ tinyMCE.init({
       mode: "exact",
       width: -1,
       auto_resize: false,
+      force_p_newlines: false,
       encoding: null,
       save_callback: "document.xform.setXFormsValue",
       add_unload_trigger: false,
@@ -375,20 +373,6 @@ dojo.declare("alfresco.xforms.Checkbox",
 	     render: function(attach_point)
 	     {
 	       var initial_value = this.getInitialValue() == "true";
-//	       var nodeRef = document.createElement("div");
-//	       attach_point.appendChild(nodeRef);
-
-//	       this.widget = dojo.widget.createWidget("Checkbox", 
-//						      { 
-//						      widgetId: this.id + "-widget",
-//						      checked: initial_value 
-//						      },
-//						      nodeRef);
-//
-//	       dojo.event.connect(this.widget, 
-//				  "onMouseUp", 
-//				  this, 
-//				  this._checkBox_mouseUpHandler);
 	       this.widget = document.createElement("input");
 	       this.widget.setAttribute("type", "checkbox");
 	       this.widget.setAttribute("id", this.id + "-widget");
@@ -489,10 +473,6 @@ dojo.declare("alfresco.xforms.Group",
 		 child.domContainer.style.height = Math.max(contentDiv.offsetHeight, 20) + "px";
 		 child.domContainer.style.lineHeight = child.domContainer.style.height;
 	       }
-
-//	       contentDiv.appendChild(document.createTextNode("ot " + contentDiv.offsetTop + 
-//							      "st " + contentDiv.style.top));
-
 	       contentDiv.style.top = "-" + contentDiv.offsetTop + "px";
 
 

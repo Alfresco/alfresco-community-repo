@@ -5,8 +5,8 @@
 		xmlns:alfresco="http://www.alfresco.org/alfresco"
 		exclude-result-prefixes="xhtml">
   <xsl:output method="html"  encoding="UTF-8" indent="yes"
-                doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
-                doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
+              doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
+              doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
 
   <xsl:preserve-space elements="*"/>
   <xsl:param name="avm_store_url" select="'not_specified'"/>
@@ -31,15 +31,15 @@
 	<script language="JavaScript" type="text/javascript" src="/assets/js/controls.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/assets/js/search.js" ></script>
 
-	<div id="container">
+        <div id="container">
 	  <div id="masthead">
 	    <!-- Search -->
 	    <div id="top_links">
 	      <ul>
-		<li><a href="/accessibility/">Accessibility</a> |</li>
-		<li><a href="/sitemap/">Site Map</a> |</li>
-		<li><a href="/about/contact/">Contact Us</a> |</li>
-		<li><a href="/store/">Store</a> |</li>
+		<li><a href="/accessibility/index.html">Accessibility</a> |</li>
+		<li><a href="/sitemap/index.html">Site Map</a> |</li>
+		<li><a href="/about/contact/index.html">Contact Us</a> |</li>
+		<li><a href="/store/index.html">Store</a> |</li>
 		<li><a href="/rss/?feed=all">RSS</a> <img src="/assets/images/icons/feedicon10.gif" alt="RSS" title="RSS" width="10" height="10" /></li>
 	      </ul>
 	      <form action="http://www.google.com/search" method="get"><br />
@@ -54,21 +54,21 @@
 	  </div>
 	  <div id="topnav">
 	    <ul id="nav">
-	      <li id="home"><a href="/" accesskey="h"  ><span>Home</span></a></li>
-	      <li id="products"><a href="/products/" accesskey="p"  ><span>Products</span></a></li>
-	      <li id="services"><a href="/services/support/" accesskey="s"  ><span>Services</span></a></li>
-	      <li id="customers"><a href="/customers/" accesskey="c"  ><span>Customers</span></a></li>
- 	      <li id="partners"><a href="/partners/" accesskey="r"  ><span>Partners</span></a></li>
-	      <li id="about"><a href="/about/" accesskey="a"  class="selected" ><span>About us</span></a></li>
+	      <li id="home"><a href="/index.html" accesskey="h"  ><span>Home</span></a></li>
+	      <li id="products"><a href="/products/index.html" accesskey="p"  ><span>Products</span></a></li>
+	      <li id="services"><a href="/services/support/index.html" accesskey="s"  ><span>Services</span></a></li>
+	      <li id="customers"><a href="/customers/index.html" accesskey="c"  ><span>Customers</span></a></li>
+ 	      <li id="partners"><a href="/partners/index.html" accesskey="r"  ><span>Partners</span></a></li>
+	      <li id="about"><a href="/about/index.html" accesskey="a"  class="selected" ><span>About us</span></a></li>
 	      <li id="developers"><a href="http://dev.alfresco.com/" accesskey="v"  ><span>Developers</span></a></li>
 	      <li id="blogs"><a href="http://blogs.alfresco.com/" accesskey="b"  ><span>Blogs</span></a></li>
 	      <li id="end"></li>
 	    </ul>
 	  </div>
-	  <div id="outer">
+          <div id="outer">
 	    <div id="inner">
 	      <div id="sabout">
-		<p><a href="/about/">Company</a>&#160;&#160;|&#160;&#160;<a href="/about/contact/">Contact</a>&#160;&#160;|&#160;&#160;<a href="/about/news/">News</a>&#160;&#160;|&#160;&#160;<a href="/about/events/">Events</a>&#160;&#160;|&#160;&#160;<a href="/about/people/">People</a></p>
+		<p><a href="/about/index.html">Company</a>&#160;&#160;|&#160;&#160;<a href="/about/contact/index.html">Contact</a>&#160;&#160;|&#160;&#160;<a href="/media/releases/index.jsp">News</a>&#160;&#160;|&#160;&#160;<a href="/about/events/index.html">Events</a>&#160;&#160;|&#160;&#160;<a href="/about/people/index.html">People</a></p>
 	      </div>
 	    </div>
 	  </div>
@@ -82,14 +82,14 @@
 	    <p></p>
 	    <xsl:for-each select="/alfresco:press-release/alfresco:body">
 	      <p>
-	        <xsl:if test="position()=1"><xsl:value-of select="normalize-space(/alfresco:press-release/alfresco:location)"/>&#8212;<xsl:value-of select="normalize-space(/alfresco:press-release/alfresco:launch_date)"/>&#8212;</xsl:if><xsl:value-of select="." disable-output-escaping="yes"/>
+	        <xsl:if test="position()=1"><xsl:value-of select="normalize-space(/alfresco:press-release/alfresco:location)"/>&#8212;<xsl:value-of select="normalize-space(/alfresco:press-release/alfresco:launch_date)"/>&#8212;</xsl:if><xsl:value-of select="normalize-space(.)" disable-output-escaping="yes"/>
 	      </p>
 	    </xsl:for-each>
-	    <xsl:for-each select="/alfresco:press-release/alfresco:include_about_blurb">
-              <xsl:variable name="blurb-id"><xsl:value-of select="."/></xsl:variable>
-	      <xsl:variable name="blurb-url"><xsl:value-of select="concat('/media/releases/content/about_blurbs/', concat($blurb-id, '.xml'))"/></xsl:variable>
-              <h2>About <xsl:value-of select="document($blurb-url)/alfresco:about-blurb/alfresco:name"/></h2>
-	      <xsl:for-each select="document($blurb-url)/alfresco:about-blurb/alfresco:body">
+	    <xsl:for-each select="/alfresco:press-release/alfresco:include_company_footer">
+              <xsl:variable name="cf-id"><xsl:value-of select="."/></xsl:variable>
+	      <xsl:variable name="cf-url"><xsl:value-of select="concat('/media/releases/content/company_footers/', concat($cf-id, '.xml'))"/></xsl:variable>
+              <h2>About <xsl:value-of select="document($cf-url)/alfresco:company-footer/alfresco:name"/></h2>
+	      <xsl:for-each select="document($cf-url)/alfresco:company-footer/alfresco:body">
 		<p><xsl:value-of select="." disable-output-escaping="yes"/></p>
 	      </xsl:for-each>
 	    </xsl:for-each>
@@ -102,7 +102,7 @@
 	  </div>
 	  <!-- Feature Content -->
 	  <div id="right_content">&#160;</div>
-	  <div id="clear"></div>
+	  <div id="clear">&#160;</div>
 	</div>
 	<!--All Three End -->
 	<!-- Footer -->
@@ -115,30 +115,31 @@
 	      <a href="http://www.hibernate.org/"><img src="/assets/images/footer/hibernate.gif" alt="Hibernate" title="Hibernate" border="0" width="111" height="34" /></a>
 	      <a href="http://tomcat.apache.org"><img src="/assets/images/footer/tomcat.gif" alt="Tomcat" title="Tomcat" border="0" width="44" height="34" /></a>
 	      <a href="http://lucene.apache.org/"><img src="/assets/images/footer/lucene.gif" alt="Lucene" title="Lucene" border="0" width="143" height="34" /></a>
-	      <a href="http://myfaces.apache.org/"><img src="/assets/images/footer/myfaces.gif" alt="My Faces" title="My Faces" border="0" width="37" height="34" /></a></div>
+	      <a href="http://myfaces.apache.org/"><img src="/assets/images/footer/myfaces.gif" alt="My Faces" title="My Faces" border="0" width="37" height="34" /></a>
+	    </div>
 	    <div id="footer-links">
 	      <p>
-		<a href="/">Home</a> | 
-		<a href="/legal/">Legal</a> | 
-		<a href="/privacy/">Privacy</a> | 
-		<a href="/accessibility/">Accessibility</a> | 
-		<a href="/sitemap/">Site Map</a> | 
+		<a href="/index.html">Home</a> | 
+		<a href="/legal/index.html">Legal</a> | 
+		<a href="/privacy/index.html">Privacy</a> | 
+		<a href="/accessibility/index.html">Accessibility</a> | 
+		<a href="/sitemap/index.html">Site Map</a> | 
 		<a href="/rss/?feed=all/">RSS</a>
 		<img src="/assets/images/icons/feedicon12.gif" alt="RSS" title="RSS" width="12" height="12" />
 	      </p>
 	      <p>
-		<a href="/about/">Open Source ECMS</a> | 
-		<a href="/products/">CMS Products</a> | 
-		<a href="/services/support/">Management Services</a> | 
-		<a href="/resources/">EMS Resources</a>
+		<a href="/about/index.html">Open Source ECMS</a> | 
+		<a href="/products/index.html">CMS Products</a> | 
+		<a href="/services/support/index.html">Management Services</a> | 
+		<a href="/resources/index.html">EMS Resources</a>
 	      </p>
 	      <p>&#169; 2005-2006 Alfresco Software, Inc., All Rights Reserved</p>
 	      <p><img src="/assets/images/icons/powered_by_alfresco.gif" alt="Powered by Alfresco" width="88" height="32" /></p>
 	    </div>
 	  </div>
-	  <div style="clear:both; padding-bottom: 10px;"></div>
+	  <div style="clear:both; padding-bottom: 10px;">&#160;</div>
 	</div>
-	<div style="clear:both; padding-bottom: 20px;"></div>
+	<div style="clear:both; padding-bottom: 20px;">&#160;</div>
 	<!-- End Footer -->
       </body>
     </html>

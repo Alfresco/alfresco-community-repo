@@ -3,7 +3,7 @@
 	   xmlns:alfresco="http://www.alfresco.org/alfresco"
            targetNamespace="http://www.alfresco.org/alfresco"
            elementFormDefault="qualified">
-  <xs:element name="about-blurb">
+  <xs:element name="company-footer">
     <xs:complexType>
       <xs:sequence>
         <xs:element name="name" type="xs:string"/>

@@ -9,7 +9,7 @@
   <alfresco:body>b2</alfresco:body>
   <alfresco:body>b2</alfresco:body>
   <alfresco:body>b55</alfresco:body>
-  <alfresco:include_about_blurb>Alfresco</alfresco:include_about_blurb>
+  <alfresco:include_company_footer>Alfresco</alfresco:include_company_footer>
   <alfresco:include_media_contacts>true</alfresco:include_media_contacts>
   <alfresco:keywords>k</alfresco:keywords>
   <alfresco:category>Event</alfresco:category>

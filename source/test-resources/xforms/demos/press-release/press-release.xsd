@@ -12,7 +12,7 @@
       <xs:enumeration value="Training"/>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="about-blurb">
+  <xs:simpleType name="company-footer">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Activiti"/>
       <xs:enumeration value="Alfresco"/>
@@ -35,7 +35,7 @@
         <xs:element name="abstract" type="xs:string"/>
         <xs:element name="location" type="xs:string"/>
         <xs:element name="body" type="xs:anyType" minOccurs="1" maxOccurs="unbounded"/>
-	<xs:element name="include_about_blurb" type="alfresco:about-blurb" minOccurs="1" maxOccurs="unbounded" default="Alfresco"/>
+	<xs:element name="include_company_footer" type="alfresco:company-footer" minOccurs="1" maxOccurs="unbounded" default="Alfresco"/>
 	<xs:element name="include_media_contacts" type="xs:boolean" default="true"/>
 	<xs:element name="keywords" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
 	<xs:element name="category" type="alfresco:category" default="Company"/>

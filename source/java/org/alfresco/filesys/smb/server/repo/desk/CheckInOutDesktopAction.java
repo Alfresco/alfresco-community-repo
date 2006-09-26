@@ -27,6 +27,7 @@ import org.alfresco.filesys.smb.server.repo.DesktopParams;
 import org.alfresco.filesys.smb.server.repo.DesktopResponse;
 import org.alfresco.filesys.smb.server.repo.DesktopTarget;
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -38,6 +39,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class CheckInOutDesktopAction extends DesktopAction {
 
+	// Check in/out service
+	
+	private CheckOutCheckInService m_checkInOutService;
+	
 	/**
 	 * Class constructor
 	 */
@@ -46,6 +51,11 @@ public class CheckInOutDesktopAction extends DesktopAction {
 		super( DesktopAction.AttrAnyFiles, DesktopAction.PreConfirmAction + DesktopAction.PreCopyToTarget + DesktopAction.PreLocalToWorkingCopy);
 	}
 	
+	/**
+	 * Return the confirmation string to be displayed by the client
+	 * 
+	 * @return String
+	 */
 	@Override
 	public String getConfirmationString() {
 		return "Run check in/out action";
@@ -60,7 +70,7 @@ public class CheckInOutDesktopAction extends DesktopAction {
 	@Override
 	public DesktopResponse runAction(DesktopParams params) {
 
-		// check if there are any files/folders to process
+		// Check if there are any files/folders to process
 		
 		if ( params.numberOfTargetNodes() == 0)
 			return new DesktopResponse(StsSuccess);
@@ -187,5 +197,24 @@ public class CheckInOutDesktopAction extends DesktopAction {
 		// Return a success status for now
 		
 		return response; 
+	}
+	
+	/**
+	 * Get the check in/out service
+	 * 
+	 * @return CheckOutCheckInService
+	 */
+	protected final CheckOutCheckInService getCheckInOutService()
+	{
+		// Check if the service has been cached
+		
+		if ( m_checkInOutService == null)
+		{
+			m_checkInOutService = getServiceRegistry().getCheckOutCheckInService();
+		}
+		
+		// Return the check in/out service
+		
+		return m_checkInOutService;
 	}
 }

@@ -133,29 +133,6 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         return sb.toString();
     }
 
-    public boolean equals(Object obj)
-    {
-        if (obj == null)
-        {
-            return false;
-        }
-        else if (obj == this)
-        {
-            return true;
-        }
-        else if (!(obj instanceof ChildAssoc))
-        {
-            return false;
-        }
-        ChildAssoc that = (ChildAssoc) obj;
-        return EqualsHelper.nullSafeEquals(id, that.getId());
-    }
-    
-    public int hashCode()
-    {
-        return (id == null ? 0 : id.hashCode());
-    }
-
     /**
      * Orders the child associations by ID.  A smaller ID has a higher priority.
      * This may change once we introduce a changeable index against which to order.

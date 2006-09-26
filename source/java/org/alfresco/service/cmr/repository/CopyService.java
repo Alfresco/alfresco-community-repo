@@ -39,6 +39,10 @@ public interface CopyService
      * If the new node resides in a different workspace the new node will
      * have the same id.  
      * <p>
+     * <b>NOTE:</b> It is up to the client code to set the name of the newly created node.
+     *              Use the {@link NodeService node service} and catch the
+     *              {@link DuplicateChildNodeNameException}
+     * <p>
      * If the new node resides in the same workspace then
      * the new node will have the Copy aspect applied to it which will 
      * reference the original node.     

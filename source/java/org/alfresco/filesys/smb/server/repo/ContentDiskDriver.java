@@ -57,6 +57,7 @@ import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -99,9 +100,12 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     private SearchService searchService;
     private ContentService contentService;
     private PermissionService permissionService;
-    private CheckOutCheckInService checkOutInService;
     
     private AuthenticationComponent authComponent;
+    
+    // Service registry for desktop actions
+    
+    private ServiceRegistry serviceRegistry;
     
     /**
      * Class constructor
@@ -173,13 +177,13 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
 
     /**
-     * Return the check in/out service
+     * Return the service registry
      * 
-     * @return CheckOutInService
+     * @return ServiceRegistry
      */
-    public final CheckOutCheckInService getCheckInOutService()
+    public final ServiceRegistry getServiceRegistry()
     {
-    	return this.checkOutInService;
+    	return this.serviceRegistry;
     }
     
     /**
@@ -233,13 +237,13 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
     
     /**
-     * Set the check in/out service
+     * Set the service registry
      * 
-     * @param checkInService CheckOutInService
+     * @param serviceRegistry
      */
-    public void setCheckInOutService(CheckOutCheckInService checkInService)
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-    	this.checkOutInService = checkInService;
+    	this.serviceRegistry = serviceRegistry;
     }
     
     /**

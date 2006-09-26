@@ -42,10 +42,10 @@
         <property name="fail" column="fail" type="boolean" not-null="true"/>
         <!-- TODO: Check the URL length ...-->
         <property name="serialisedURL" column="serialized_url" type="string" length="1024" not-null="false"/>
-        <property name="exception" column="exception" type="string" length="1024" not-null="false"/>
+        <property name="exception" column="exception_message" type="string" length="1024" not-null="false"/>
         <property name="hostInetAddress" column="host_address" type="string" length="1024" not-null="false"/>
         <property name="clientInetAddress" column="client_address" type="string" length="1024" not-null="false"/>
-        <property name="message" column="message" type="string" length="1024" not-null="false"/>
+        <property name="message" column="message_text" type="string" length="1024" not-null="false"/>
         
         <!-- Links to dimensions -->
         

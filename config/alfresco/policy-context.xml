@@ -18,6 +18,12 @@
 			<ref bean="dictionaryService"/>
 	    </property>
     </bean>
+    
+     <bean id="unboundPolicyBehaviourFilter" class="org.alfresco.repo.policy.BehaviourFilterImpl">
+		<property name="dictionaryService">
+			<ref bean="dictionaryService"/>
+	    </property>
+    </bean>
 
     <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl">
         <constructor-arg index="0">

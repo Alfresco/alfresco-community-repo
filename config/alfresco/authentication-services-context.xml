@@ -204,8 +204,12 @@
     
     <!--
     <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl">
+        <property name="accept">
+            <value>true</value>
+        </property>    
     </bean>
     -->
+    
 
 
 
@@ -237,12 +241,6 @@
         <property name="storeUrl">
            <value>${spaces.store}</value>
         </property>
-        <!-- The path to the company home space, used to set the      -->
-        <!-- default home space for users that are created if         -->
-        <!-- missing.                                                 --> 
-        <property name="companyHomePath">
-           <value>/${spaces.company_home.childname}</value>
-        </property>
         <!-- Some authentication mechanisms may need to create people -->
         <!-- in the repository on demand. This enables that feature.  -->
         <!-- If dsiabled an error will be generated for missing       -->
@@ -260,6 +258,88 @@
         </property>
     </bean>
 
+    <bean name="homeFolderManager" class="org.alfresco.repo.security.person.HomeFolderManager">
+        <property name="nodeService">
+		    <ref bean="nodeService" />
+		</property>
+        <property name="policyComponent">
+		    <ref bean="policyComponent" />
+		</property>
+        <property name="defaultProvider">
+		    <ref bean="personalHomeFolderProvider" />
+		</property>
+    </bean>
+    
+    <bean name="companyHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider">
+        <property name="serviceRegistry">
+		    <ref bean="ServiceRegistry" />
+		</property>
+        <property name="path">
+           <value>/${spaces.company_home.childname}</value>
+        </property>
+        <property name="storeUrl">
+           <value>${spaces.store}</value>
+        </property>
+        <property name="homeFolderManager">
+			<ref bean="homeFolderManager" />
+		</property>
+    </bean>
+    
+    <bean name="guestHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider">
+        <property name="serviceRegistry">
+		    <ref bean="ServiceRegistry" />
+		</property>
+        <property name="path">
+           <value>/${spaces.company_home.childname}/${spaces.guest_home.childname}</value>
+        </property>
+        <property name="storeUrl">
+           <value>${spaces.store}</value>
+        </property>
+        <property name="homeFolderManager">
+			<ref bean="homeFolderManager" />
+		</property>
+        <property name="userPemissions">
+            <set>
+                <value>Consumer</value>
+            </set>
+        </property>
+    </bean>
+    
+    <bean name="bootstrapHomeFolderProvider" class="org.alfresco.repo.security.person.BootstrapHomeFolderProvider">
+        <property name="homeFolderManager">
+			<ref bean="homeFolderManager" />
+		</property>
+    </bean>
+    
+    <bean name="personalHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider">
+        <property name="serviceRegistry">
+		    <ref bean="ServiceRegistry" />
+		</property>
+        <property name="path">
+           <value>/${spaces.company_home.childname}</value>
+        </property>
+        <property name="storeUrl">
+           <value>${spaces.store}</value>
+        </property>
+        <property name="homeFolderManager">
+			<ref bean="homeFolderManager" />
+		</property>
+        <property name="inheritsPermissionsOnCreate">
+            <value>false</value>
+        </property>
+        <property name="ownerPemissionsToSetOnCreate">
+            <set>
+                <value>All</value>
+            </set>
+        </property>
+        <property name="userPemissions">
+            <set>
+                <value>All</value>
+            </set>
+        </property>
+    </bean>
+    
+    
     <!-- The ticket component.                                              -->
     <!-- Used for reauthentication                                          -->
     <bean id="ticketComponent" class="org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl">

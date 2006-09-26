@@ -66,7 +66,7 @@ public class LDAPPersonExportSource implements ExportSource
 
     private NamespaceService namespaceService;
 
-    private String defaultHomeFolder;
+    private Map<String, String> attributeDefaults;
     
     private boolean errorOnMissingUID;
 
@@ -100,9 +100,9 @@ public class LDAPPersonExportSource implements ExportSource
         this.personService = personService;
     }
 
-    public void setDefaultHomeFolder(String defaultHomeFolder)
+    public void setAttributeDefaults(Map<String, String> attributeDefaults)
     {
-        this.defaultHomeFolder = defaultHomeFolder;
+        this.attributeDefaults = attributeDefaults;
     }
 
     public void setNamespaceService(NamespaceService namespaceService)
@@ -231,33 +231,26 @@ public class LDAPPersonExportSource implements ExportSource
                                     writer.characters(value.toCharArray(), 0, value.length());
                                 }
                             }
+                            else
+                            {
+                                String defaultValue = attributeDefaults.get(key);
+                                if(defaultValue != null)
+                                {
+                                    writer.characters(defaultValue.toCharArray(), 0, defaultValue.length());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            String defaultValue = attributeDefaults.get(key);
+                            if(defaultValue != null)
+                            {
+                                writer.characters(defaultValue.toCharArray(), 0, defaultValue.length());
+                            }
                         }
 
                         writer.endElement(keyQName.getNamespaceURI(), keyQName.getLocalName(), keyQName
                                 .toPrefixString(namespaceService));
-                    }
-
-                    // Default home folder
-
-                    if (!(attributeMapping.keySet().contains(ContentModel.PROP_HOMEFOLDER.toString()) || attributeMapping
-                            .keySet().contains(ContentModel.PROP_HOMEFOLDER.toPrefixString(namespaceService))))
-                    {
-                        // Only if we are creating the person for the first time
-                        if (!personService.personExists(uid))
-                        {
-                            writer.startElement(ContentModel.PROP_HOMEFOLDER.getNamespaceURI(),
-                                    ContentModel.PROP_HOMEFOLDER.getLocalName(), ContentModel.PROP_HOMEFOLDER
-                                            .toPrefixString(namespaceService), new AttributesImpl());
-
-                            if (defaultHomeFolder != null)
-                            {
-                                writer.characters(defaultHomeFolder.toCharArray(), 0, defaultHomeFolder.length());
-                            }
-
-                            writer.endElement(ContentModel.PROP_HOMEFOLDER.getNamespaceURI(),
-                                    ContentModel.PROP_HOMEFOLDER.getLocalName(), ContentModel.PROP_HOMEFOLDER
-                                            .toPrefixString(namespaceService));
-                        }
                     }
 
                     if (personService.personExists(uid))

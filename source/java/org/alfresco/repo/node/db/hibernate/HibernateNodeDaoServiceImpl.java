@@ -530,10 +530,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         assoc.setChildNodeNameCrc(-1L);         // random names compete only with each other
         assoc.setQname(qname);
         assoc.setIsPrimary(isPrimary);
-        // persist it, catching the duplicate child name
-        getHibernateTemplate().save(assoc);
         // maintain inverse sets
         assoc.buildAssociation(parentNode, childNode);
+        // persist it
+        getHibernateTemplate().save(assoc);
         // done
         return assoc;
     }

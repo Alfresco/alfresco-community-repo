@@ -570,7 +570,9 @@ public class DataBuffer
             // Check if there is enough space in the buffer
 
             int bytLen = str.length() * 2;
-            if (m_data.length - m_pos < bytLen)
+            if ( nulTerm)
+            	bytLen += 2;
+            if ((m_data.length - m_pos) < (bytLen + 4))
                 extendBuffer(bytLen + 4);
 
             // Word align the buffer position, pack the Unicode string

@@ -114,7 +114,7 @@
       <!-- The properties of a node may ony be read if there is read access to the parent -->
       <!-- node. ReadChildren access to the parent node is recursive for all nodes from   -->
       <!-- which the node inherits permissions. Access is required down the permission    -->
-      <!-- tree at all pioints.                                                           -->
+      <!-- tree at all points.                                                           -->
       <!--                                                                                -->
       
       <permission name="_ReadProperties" expose="false" >

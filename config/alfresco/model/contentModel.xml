@@ -167,6 +167,12 @@
             <property name="cm:organizationId">
                <type>d:text</type>
             </property>
+            <property name="cm:homeFolderProvider">
+               <type>d:text</type>
+            </property>
+            <property name="cm:defaultHomeFolderPath">
+               <type>d:text</type>
+            </property>
          </properties>
       </type>
 

@@ -151,7 +151,11 @@ public interface ContentModel
     static final QName PROP_LASTNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lastName");
     static final QName PROP_EMAIL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "email");
     static final QName PROP_ORGID = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "organizationId");
+    static final QName PROP_HOME_FOLDER_PROVIDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "homeFolderProvider");
+    static final QName PROP_DEFAULT_HOME_FOLDER_PATH = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "defaultHomeFolderPath");
 
+    
+    
     // Ownable aspect  
     static final QName ASPECT_OWNABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "ownable");
     static final QName PROP_OWNER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "owner");

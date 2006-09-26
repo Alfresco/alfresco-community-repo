@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -126,7 +127,7 @@ public class AuditableAspect
     public void onAddAudit(NodeRef nodeRef, QName aspect)
     {
         // Get the current properties
-        Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
+        PropertyMap properties = new PropertyMap();
         
         // Set created / updated date
         Date now = new Date(System.currentTimeMillis());
@@ -167,7 +168,7 @@ public class AuditableAspect
         // Get the current properties
         try
         {
-            Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
+            PropertyMap properties = new PropertyMap();
             
             // Set updated date
             Date now = new Date(System.currentTimeMillis());
@@ -249,7 +250,11 @@ public class AuditableAspect
          */
         public Boolean doWork() throws Exception
         {
-            nodeService.setProperties(nodeRef, properties);
+            for (QName propertyQName : properties.keySet())
+            {
+                Serializable property = properties.get(propertyQName);
+                nodeService.setProperty(nodeRef, propertyQName, property);
+            }
             return Boolean.TRUE;
         }
     }

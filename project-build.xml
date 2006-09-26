@@ -103,8 +103,8 @@
       </delete>
    </target>
    
-   <target name="sample-website">
-     <zip destfile="alfresco-sample-website.zip" 
+   <target name="sample-website" depends="init">
+     <zip destfile="${dir.dist}/alfresco-sample-website.zip" 
 	  basedir="source/test-resources/websites/alfresco/" 
 	  excludes="**/.svn"/>
    </target>

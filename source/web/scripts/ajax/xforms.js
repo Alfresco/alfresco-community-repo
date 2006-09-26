@@ -251,18 +251,8 @@ dojo.declare("alfresco.xforms.TextArea",
 	       this.domNode.setAttribute("style", "height: 200px; border: solid 1px black;");
 	       this.domNode.setAttribute("id", this.id);
 	       this.domNode.innerHTML = this.getInitialValue() || "";
-	       //	       dojo.event.connect(this.domNode, "onclick", this, this._clickHandler);
-	       //	       dojo.event.connect(this.domNode, "onblur", this, this._blurHandler);
 	       tinyMCE.addMCEControl(this.domNode, this.id);
 	     },
-             _clickHandler: function(event)
-	     {
-
-	     },
-	     _blurHandler: function(event)
-	     {
-	       alert('blurry');
-	     }
 	     });
 
 dojo.declare("alfresco.xforms.Select1",
@@ -735,32 +725,32 @@ dojo.declare("alfresco.xforms.Repeat",
 	       this._updateDisplay();
 	     },
 	     handlePrototypeCloned: function(prototypeId)
-	       {
-		 dojo.debug(this.id + ".handlePrototypeCloned("+ prototypeId +")");
-		 var chibaData = this.node.getElementsByTagName("data");
-		 dojo.debug("repeat node == " +dojo.dom.innerXML(this.node));
-		 dojo.debug(chibaData + " l = " + chibaData.length);
-		 chibaData = chibaData[chibaData.length - 1];
-		 dojo.debug("chiba:data == " + dojo.dom.innerXML(chibaData));
-		 var prototypeToClone = dojo.dom.firstElement(chibaData);
-		 if (prototypeToClone.getAttribute("id") != prototypeId)
-		   throw new Error("unable to locate " + prototypeId +
-				   " in " + this.id);
-		 return prototypeToClone.cloneNode(true);
-	       },
+	     {
+	       dojo.debug(this.id + ".handlePrototypeCloned("+ prototypeId +")");
+	       var chibaData = this.node.getElementsByTagName("data");
+	       dojo.debug("repeat node == " +dojo.dom.innerXML(this.node));
+	       dojo.debug(chibaData + " l = " + chibaData.length);
+	       chibaData = chibaData[chibaData.length - 1];
+	       dojo.debug("chiba:data == " + dojo.dom.innerXML(chibaData));
+	       var prototypeToClone = dojo.dom.firstElement(chibaData);
+	       if (prototypeToClone.getAttribute("id") != prototypeId)
+		 throw new Error("unable to locate " + prototypeId +
+				 " in " + this.id);
+	       return prototypeToClone.cloneNode(true);
+	     },
 	     handleItemInserted: function(clonedPrototype, position)
-	       {
-		 dojo.debug(this.id + ".handleItemInserted(" + clonedPrototype.nodeName +
-			    ", " + position + ")");
-		 var w = create_widget(this.xform, clonedPrototype);
-		 this.insertChildAt(w, position);
-		 load_body(this.xform, w.node, w);
-	       },
+	     {
+	       dojo.debug(this.id + ".handleItemInserted(" + clonedPrototype.nodeName +
+			  ", " + position + ")");
+	       var w = this.xform.createWidget(clonedPrototype);
+	       this.insertChildAt(w, position);
+	       this.xform.loadWidgets(w.node, w);
+	     },
 	     handleItemDeleted: function(position)
-	       {
-		 dojo.debug(this.id + ".handleItemDeleted(" + position + ")");
-		 this.removeChildAt(position);
-	       }
+	     {
+	       dojo.debug(this.id + ".handleItemDeleted(" + position + ")");
+	       this.removeChildAt(position);
+	     }
 	     });
 
 dojo.declare("alfresco.xforms.Trigger",
@@ -865,12 +855,79 @@ dojo.declare("alfresco.xforms.XForm",
 	       
 	       var root = new alfresco.xforms.Group(this, alfUI);
 	       root.render(alfUI);
-	       load_body(this, this.getBody(), root);
+	       this.loadWidgets(this.getBody(), root);
 	     },
-	     addLoadHandler: function(handler)
-	     {
-	       this.load_handlers.push(handler);
+             createWidget: function(node)
+             {
+	       switch (node.nodeName.toLowerCase())
+	       {
+	       case "xforms:group":
+		 return new alfresco.xforms.Group(this, node);
+	       case "xforms:repeat":
+		 return new alfresco.xforms.Repeat(this, node);
+	       case "xforms:textarea":
+		 return new alfresco.xforms.TextArea(this, node);
+	       case "xforms:input":
+		 var type = this.getType(node);
+		 switch (type)
+		 {
+		 case "date":
+		   return new alfresco.xforms.DatePicker(this, node);
+		 case "byte":
+		 case "double":
+		 case "float":
+		 case "int":
+		 case "integer":
+		 case "long":
+		 case "negativeInteger":
+		 case "nonNegativeInteger":
+		 case "nonPositiveInteger":
+		 case "short":
+		 case "unsignedByte":
+		 case "unsignedInt":
+		 case "unsignedLong":
+		 case "unsignedShort":
+		 case "positiveInteger":
+		   return new alfresco.xforms.NumericStepper(this, node, type);
+		 case "string":
+		 default:
+		   return new alfresco.xforms.TextField(this, node);
+		 }
+	       case "xforms:select1":
+		 return (this.getType(node) == "boolean"
+			 ? new alfresco.xforms.Checkbox(this, node)
+			 : new alfresco.xforms.Select1(this, node));
+	       case "xforms:submit":
+		 return  new alfresco.xforms.Submit(this, node);
+	       case "xforms:trigger":
+		 return new alfresco.xforms.Trigger(this, node);
+	       case "chiba:data":
+	       case "xforms:label":
+	       case "xforms:alert":
+		 return null;
+	       default:
+		 throw new Error("unknown type " + node.nodeName);
+	       }
 	     },
+	     loadWidgets: function(modelNode, parentWidget)
+             {
+               for (var i = 0; i < modelNode.childNodes.length; i++)
+               {
+                 if (modelNode.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
+                 {
+                   dojo.debug("loading " + modelNode.childNodes[i] + 
+			      " nodeName " + modelNode.childNodes[i].nodeName + 
+			      " into " + parentWidget);
+                   var w = this.createWidget(modelNode.childNodes[i]);
+                   if (w != null)
+		   {
+		     parentWidget.addChild(w);
+		     if (w instanceof alfresco.xforms.Group)
+		       this.loadWidgets(modelNode.childNodes[i], w);
+                   }
+                 }
+               }
+             },
 	     getModel: function()
 	     {
 	       return this.node.getElementsByTagName("model")[0];
@@ -1034,77 +1091,6 @@ dojo.declare("alfresco.xforms.XForm",
 	     }
 	     });
 
-function create_widget(xform, node)
-{
-  switch (node.nodeName.toLowerCase())
-  {
-  case "xforms:group":
-    return new alfresco.xforms.Group(xform, node);
-  case "xforms:repeat":
-    return new alfresco.xforms.Repeat(xform, node);
-  case "xforms:textarea":
-    return new alfresco.xforms.TextArea(xform, node);
-  case "xforms:input":
-    var type = xform.getType(node);
-    switch (type)
-    {
-    case "date":
-      return new alfresco.xforms.DatePicker(xform, node);
-    case "byte":
-    case "double":
-    case "float":
-    case "int":
-    case "integer":
-    case "long":
-    case "negativeInteger":
-    case "nonNegativeInteger":
-    case "nonPositiveInteger":
-    case "short":
-    case "unsignedByte":
-    case "unsignedInt":
-    case "unsignedLong":
-    case "unsignedShort":
-    case "positiveInteger":
-      return new alfresco.xforms.NumericStepper(xform, node, type);
-      case "string":
-    default:
-      return new alfresco.xforms.TextField(xform, node);
-    }
-  case "xforms:select1":
-    return (xform.getType(node) == "boolean"
-	    ? new alfresco.xforms.Checkbox(xform, node)
-	    : new alfresco.xforms.Select1(xform, node));
-  case "xforms:submit":
-    return  new alfresco.xforms.Submit(xform, node);
-  case "xforms:trigger":
-    return new alfresco.xforms.Trigger(xform, node);
-  case "chiba:data":
-  case "xforms:label":
-  case "xforms:alert":
-    return null;
-  default:
-    throw new Error("unknown type " + node.nodeName);
-  }
-}
-
-function load_body(xform, currentNode, parentWidget)
-{
-  dojo.lang.forEach(currentNode.childNodes, function(o)
-  {
-    if (o.nodeType == dojo.dom.ELEMENT_NODE)
-    {
-      dojo.debug("loading " + o + " NN " + o.nodeName + " into " + parentWidget);
-      var w = create_widget(xform, o);
-      if (w != null)
-      {
-	parentWidget.addChild(w);
-	if (w instanceof alfresco.xforms.Group)
-	  load_body(xform, o, w);
-      }
-    }
-  });
-}
-
 function addSubmitHandlerToButton(b)
 {
   var baseOnClick = b.onclick;
@@ -1231,27 +1217,13 @@ function ajax_loader_update_display()
 					 ? " (" + _ajax_requests.length + ")"
 					 : "..."));
   dojo.debug(ajaxLoader.innerHTML);
-  if (/*dojo.style.isVisible(ajaxLoader) && */ _ajax_requests.length == 0)
+  if (/* djConfig.isDebug && */ _ajax_requests.length != 0)
   {
-//    dojo.fx.html.fadeOut(ajaxLoader,
-//			 200,
-//			 function(node)
-//			 {
-			   dojo.style.hide(ajaxLoader);
-//			 });
-  }
-  else if (/*!dojo.style.isVisible(ajaxLoader) && */ _ajax_requests.length != 0)
-  {
-//    dojo.fx.html.fadeIn(ajaxLoader,
-//			100,
-//			function(node)
-//			{
-			  dojo.style.show(ajaxLoader);
-//			});
+    dojo.style.show(ajaxLoader);
   }
   else
   {
-    alert("v " + dojo.style.isVisible(ajaxLoader) + " l " + _ajax_requests.length);
+    dojo.style.hide(ajaxLoader);
   }
 }
 

@@ -79,21 +79,25 @@
 	    <!-- BEGIN MAIN CONTENT -->
 	    <h1><xsl:value-of select="/alfresco:press-release/alfresco:title"/></h1>  
 	    <p><strong><xsl:value-of select="/alfresco:press-release/alfresco:abstract"/></strong></p>
-	    <p><xsl:value-of select="/alfresco:press-release/alfresco:location"/>&#8212;<xsl:value-of select="/alfresco:press-release/alfresco:launch_date"/>&#8212;</p>
+	    <p></p>
 	    <xsl:for-each select="/alfresco:press-release/alfresco:body">
-	      <p><xsl:value-of select="." disable-output-escaping="yes"/></p>
+	      <p>
+	        <xsl:if test="position()=1"><xsl:value-of select="normalize-space(/alfresco:press-release/alfresco:location)"/>&#8212;<xsl:value-of select="normalize-space(/alfresco:press-release/alfresco:launch_date)"/>&#8212;</xsl:if><xsl:value-of select="." disable-output-escaping="yes"/>
+	      </p>
 	    </xsl:for-each>
 	    <xsl:for-each select="/alfresco:press-release/alfresco:include_about_blurb">
               <xsl:variable name="blurb-id"><xsl:value-of select="."/></xsl:variable>
 	      <xsl:variable name="blurb-url"><xsl:value-of select="concat('/media/releases/content/about_blurbs/', concat($blurb-id, '.xml'))"/></xsl:variable>
-              <h2><xsl:value-of select="document($blurb-url)/alfresco:about-blurb/alfresco:name"/></h2>
+              <h2>About <xsl:value-of select="document($blurb-url)/alfresco:about-blurb/alfresco:name"/></h2>
 	      <xsl:for-each select="document($blurb-url)/alfresco:about-blurb/alfresco:body">
 		<p><xsl:value-of select="." disable-output-escaping="yes"/></p>
 	      </xsl:for-each>
 	    </xsl:for-each>
-            <h2>Media Contacts</h2>  
-	    <div><p>John Newton<br />Alfresco Software Inc.<br />+44 1628 860639<br />press@alfresco.com</p></div>
-	    <div><p>Chuck Tanowitz<br />Schwartz Communications<br />+1 781 684-0770<br />alfresco@schwartz-pr.com</p></div>
+	    <xsl:if test="/alfresco:press-release/alfresco:include_media_contacts='true'">
+              <h2>Media Contacts</h2>  
+              <div><p>John Newton<br />Alfresco Software Inc.<br />+44 1628 860639<br />press@alfresco.com</p></div>
+              <div><p>Chuck Tanowitz<br />Schwartz Communications<br />+1 781 684-0770<br />alfresco@schwartz-pr.com</p></div>
+	    </xsl:if>
 	    <!-- END MAIN CONTENT -->
 	  </div>
 	  <!-- Feature Content -->

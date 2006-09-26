@@ -546,3 +546,16 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    padding-right: 9px;
    padding-top: 4px;
 }
+
+.nodeWorkflowInfoTitle
+{
+	font-weight: bold;
+	color: #003366;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.nodeWorkflowInfoText
+{
+	padding-bottom: 8px;
+}

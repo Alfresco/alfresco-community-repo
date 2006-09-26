@@ -18,6 +18,7 @@
 package org.alfresco.web.ui.repo.component.property;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,9 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
@@ -701,7 +704,12 @@ public abstract class BaseAssociationEditor extends UIInput
 
       if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetRef)))
       {
-         out.write((String)nodeService.getProperty(targetRef, ContentModel.PROP_USERNAME));
+         //out.write((String)nodeService.getProperty(targetRef, ContentModel.PROP_USERNAME));
+         Map<QName, Serializable> props = nodeService.getProperties(targetRef);
+         String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
+         String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
+         String fullName = firstName + " " + (lastName != null ? lastName : "");
+         out.write(fullName);
       }
       else
       {
@@ -821,21 +829,33 @@ public abstract class BaseAssociationEditor extends UIInput
                 item.getId().equals(currentNode.getId()) == false) || 
                 this.removed.containsKey(item.getId())) 
             {
-               out.write("<option value='");
-               out.write(item.getId());
-               out.write("'>");
                // if the node represents a person, show the username instead of the name
                if (ContentModel.TYPE_PERSON.equals(nodeService.getType(item)))
                {
-                  out.write((String)nodeService.getProperty(item, ContentModel.PROP_USERNAME));
+                  Map<QName, Serializable> props = nodeService.getProperties(item);
+                  String userName = (String)props.get(ContentModel.PROP_USERNAME);
+                  if (userName != null && (userName.equals(PermissionService.GUEST_AUTHORITY) == false))
+                  {
+                     out.write("<option value='");
+                     out.write(item.getId());
+                     out.write("'>");
+                     String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
+                     String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
+                     String fullName = firstName + " " + (lastName != null ? lastName : "");
+                     out.write(fullName);
+                     out.write("</option>");
+                  }
                }
                else
                {
+                  out.write("<option value='");
+                  out.write(item.getId());
+                  out.write("'>");
                   out.write(Repository.getDisplayPath(nodeService.getPath(item)));
                   out.write("/");
                   out.write(Repository.getNameForNode(nodeService, item));
+                  out.write("</option>");
                }
-               out.write("</option>");
             }
          }
       }
@@ -877,34 +897,52 @@ public abstract class BaseAssociationEditor extends UIInput
          if (contains != null && contains.length() > 0)
          {
             String safeContains = Utils.remove(contains.trim(), "\"");
-            query.append(" AND +@");
             
             // if the association's target is the person type search on the 
-            // username instead of the name property
+            // firstName and lastName properties instead of the name property
             if (type.equals(ContentModel.TYPE_PERSON.toString()))
             {
-               String userName = Repository.escapeQName(QName.createQName(
-                     NamespaceService.CONTENT_MODEL_1_0_URI, "userName"));
-               query.append(userName);
+               query.append(" AND (@");
+               String firstName = Repository.escapeQName(QName.createQName(
+                     NamespaceService.CONTENT_MODEL_1_0_URI, "firstName"));
+               query.append(firstName);
+               query.append(":*" + safeContains + "*");
+               query.append(" OR @");
+               String lastName = Repository.escapeQName(QName.createQName(
+                     NamespaceService.CONTENT_MODEL_1_0_URI, "lastName"));
+               query.append(lastName);
+               query.append(":*" + safeContains + "*)");
             }
             else
             {
+               query.append(" AND +@");
                String nameAttr = Repository.escapeQName(QName.createQName(
                      NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
                query.append(nameAttr);
+               query.append(":*" + safeContains + "*");
             }
-            
-            query.append(":*" + safeContains + "*");
          }
          
          if (logger.isDebugEnabled())
             logger.debug("Query: " + query.toString());
          
+         SearchParameters searchParams = new SearchParameters();
+         searchParams.addStore(Repository.getStoreRef());
+         searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
+         searchParams.setQuery(query.toString());
+         
+         if (type.equals(ContentModel.TYPE_PERSON.toString()))
+         {
+            searchParams.addSort("@" + ContentModel.PROP_LASTNAME, true);
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Added lastname as sort column to query for people");
+         }
+         
          ResultSet results = null;
          try
          {
-            results = Repository.getServiceRegistry(context).getSearchService().query(
-                  Repository.getStoreRef(), SearchService.LANGUAGE_LUCENE, query.toString());
+            results = Repository.getServiceRegistry(context).getSearchService().query(searchParams);
             this.availableOptions = results.getNodeRefs();
          }
          finally

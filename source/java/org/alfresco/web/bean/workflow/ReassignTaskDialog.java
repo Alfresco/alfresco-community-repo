@@ -15,6 +15,10 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -137,12 +141,13 @@ public class ReassignTaskDialog extends BaseDialogBean
       {
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
-         
+
          // build xpath to match available User/Person objects
          NodeRef peopleRef = personService.getPeopleContainer();
          // NOTE: see SearcherComponentTest
-         String xpath = "*[like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + "%', false)" +
-                 " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "lastName, '%" + contains + "%', false)]";
+         String xpath = "*[not(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "userName='guest') and " +
+               "(like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + "%', false)" +
+               " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "lastName, '%" + contains + "%', false))]";
          
          List<NodeRef> nodes = searchService.selectNodes(
                peopleRef,

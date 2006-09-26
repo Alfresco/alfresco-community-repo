@@ -71,6 +71,8 @@ public class SpaceDetailsBean extends BaseDetailsBean
     */
    public SpaceDetailsBean()
    {
+      super();
+      
       // initial state of some panels that don't use the default
       panels.put("rules-panel", false);
       panels.put("dashboard-panel", false);

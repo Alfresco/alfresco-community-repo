@@ -1120,6 +1120,10 @@
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>copyService</property-name>
+         <value>#{CopyService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

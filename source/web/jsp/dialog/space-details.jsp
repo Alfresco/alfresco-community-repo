@@ -161,7 +161,7 @@
                               <h:panelGroup id="props-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
-                                       <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif"
+                                       <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif"
                                              action="dialog:editSpace" />
                                     </r:permissionEvaluator>
                                  </f:facet>
@@ -197,6 +197,23 @@
                                        </td>
                                     </tr>
                                  </table>
+                              </a:panel>
+                              
+                              <div style="padding:4px"></div>
+                              
+                              <h:panelGroup id="workflow-panel-facets">
+                                 <f:facet name="title">
+                                    <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
+                                       <a:actionLink id="titleLink4" value="#{msg.title_edit_simple_workflow}" showLink="false" 
+                                                     image="/images/icons/Change_details.gif" action="editSimpleWorkflow"
+                                                     rendered="#{SpaceDetailsBean.approveStepName != null}" />
+                                    </r:permissionEvaluator>
+                                 </f:facet>
+                              </h:panelGroup>
+                              <a:panel label="#{msg.workflows}" id="workflow-panel" facetsId="workflow-panel-facets" progressive="true"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{SpaceDetailsBean.panels["workflow-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
+                                 <r:nodeWorkflowInfo id="workflow-info" value="#{SpaceDetailsBean.space}" /> 
                               </a:panel>
                               
                               <div style="padding:4px"></div>

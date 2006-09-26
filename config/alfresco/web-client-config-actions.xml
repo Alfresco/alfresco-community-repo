@@ -254,6 +254,54 @@
             </params>
          </action>
          
+         <!-- 'Approve' workflow step for space -->
+         <action id="approve_space">
+            <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
+            <label>#{actionContext["app:approveStep"]}</label>
+            <image>/images/icons/approve.gif</image>
+            <action-listener>#{SpaceDetailsBean.approve}</action-listener>
+            <action>browse</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- 'Reject' workflow step for space -->
+         <action id="reject_space">
+            <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
+            <label>#{actionContext["app:rejectStep"]}</label>
+            <image>/images/icons/reject.gif</image>
+            <action-listener>#{SpaceDetailsBean.reject}</action-listener>
+            <action>browse</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- 'Approve' workflow step for space details page -->
+         <action id="approve_space_details">
+            <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
+            <label>#{actionContext.properties["app:approveStep"]}</label>
+            <image>/images/icons/approve.gif</image>
+            <action-listener>#{SpaceDetailsBean.approve}</action-listener>
+            <action>browse</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- 'Reject' workflow step for space details page-->
+         <action id="reject_space_details">
+            <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
+            <label>#{actionContext.properties["app:rejectStep"]}</label>
+            <image>/images/icons/reject.gif</image>
+            <action-listener>#{SpaceDetailsBean.reject}</action-listener>
+            <action>browse</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
          <!-- Cut a document or space to the clipboard, from browse or doc details screens -->
          <action id="cut_node">
             <permissions>
@@ -361,7 +409,7 @@
          <!-- Manage Space Rules -->
          <action id="manage_space_rules">
             <permissions>
-               <permission allow="true">Write</permission>
+               <permission allow="true">CreateChildren</permission>
             </permissions>
             <label-id>manage_rules</label-id>
             <image>/images/icons/rule.gif</image>
@@ -555,6 +603,8 @@
          <!-- Actions Menu for a space in the Browse screen -->
          <action-group id="space_browse_menu">
             <action idref="delete_space" />
+            <action idref="approve_space" />
+            <action idref="reject_space" />
          </action-group>
          
          <!-- Actions Menu for Create in Browse screen -->
@@ -603,6 +653,8 @@
          
          <!-- Actions Menu for Space Details screen -->
          <action-group id="space_details_actions">
+            <action idref="approve_space_details" />
+            <action idref="reject_space_details" />
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="delete_space" />

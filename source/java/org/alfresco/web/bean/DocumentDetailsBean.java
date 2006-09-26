@@ -29,13 +29,11 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.version.Version;
@@ -43,9 +41,7 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
-import org.alfresco.web.bean.actions.handlers.SimpleWorkflowHandler;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -68,17 +64,12 @@ public class DocumentDetailsBean extends BaseDetailsBean
    private static final String MSG_ERROR_ASPECT_INLINEEDITABLE = "error_aspect_inlineeditable";
    private static final String MSG_ERROR_ASPECT_VERSIONING = "error_aspect_versioning";
    private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify";
-   private static final String MSG_ERROR_WORKFLOW_REJECT = "error_workflow_reject";
-   private static final String MSG_ERROR_WORKFLOW_APPROVE = "error_workflow_approve";
-   private static final String MSG_ERROR_UPDATE_SIMPLEWORKFLOW = "error_update_simpleworkflow";
    private static final String MSG_ERROR_UPDATE_CATEGORY = "error_update_category";
    
    protected LockService lockService;
-   protected CopyService copyService;
    protected VersionService versionService;
    protected CheckOutCheckInService cociService;
    
-   private Map<String, Serializable> workflowProperties;
    private NodeRef addedCategory;
    private List categories;
 
@@ -91,9 +82,9 @@ public class DocumentDetailsBean extends BaseDetailsBean
     */
    public DocumentDetailsBean()
    {
+      super();
+      
       // initial state of some panels that don't use the default
-      panels.put("workflow-panel", false);
-      panels.put("category-panel", false);
       panels.put("version-history-panel", false);
    }
    
@@ -367,391 +358,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
       }
       
       return outcome;
-   }
-   
-   /**
-    * Returns an overview summary of the current state of the attached
-    * workflow (if any)
-    * 
-    * @return Summary HTML
-    */
-   public String getWorkflowOverviewHTML()
-   {
-      String html = null;
-      
-      if (getDocument().hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW))
-      {
-         // get the simple workflow aspect properties
-         Map<String, Object> props = getDocument().getProperties();
-
-         String approveStepName = (String)props.get(
-               ContentModel.PROP_APPROVE_STEP.toString());
-         String rejectStepName = (String)props.get(
-               ContentModel.PROP_REJECT_STEP.toString());
-         
-         Boolean approveMove = (Boolean)props.get(
-               ContentModel.PROP_APPROVE_MOVE.toString());
-         Boolean rejectMove = (Boolean)props.get(
-               ContentModel.PROP_REJECT_MOVE.toString());
-         
-         NodeRef approveFolder = (NodeRef)props.get(
-               ContentModel.PROP_APPROVE_FOLDER.toString());
-         NodeRef rejectFolder = (NodeRef)props.get(
-               ContentModel.PROP_REJECT_FOLDER.toString());
-         
-         String approveFolderName = null;
-         String rejectFolderName = null;
-         
-         // get the approve folder name
-         if (approveFolder != null)
-         {
-            Node node = new Node(approveFolder);
-            approveFolderName = node.getName();
-         }
-         
-         // get the reject folder name
-         if (rejectFolder != null)
-         {
-            Node node = new Node(rejectFolder);
-            rejectFolderName = node.getName();
-         }
-         
-         StringBuilder builder = new StringBuilder();
-         
-         // calculate the approve action string
-         String action = null;
-         if (approveMove.booleanValue())
-         {
-            action = Application.getMessage(FacesContext.getCurrentInstance(), "moved");
-         }
-         else
-         {
-            action = Application.getMessage(FacesContext.getCurrentInstance(), "copied");
-         }
-         
-         String docActionPattern = Application.getMessage(FacesContext.getCurrentInstance(), "document_action");
-         Object[] params = new Object[] {action, approveFolderName, approveStepName};
-         builder.append(MessageFormat.format(docActionPattern, params));
-         
-         // add details of the reject step if there is one
-         if (rejectStepName != null && rejectMove != null && rejectFolderName != null)
-         {
-            if (rejectMove.booleanValue())
-            {
-               action = Application.getMessage(FacesContext.getCurrentInstance(), "moved");
-            }
-            else
-            {
-               action = Application.getMessage(FacesContext.getCurrentInstance(), "copied");
-            }
-            
-            builder.append("<p>");
-            params = new Object[] {action, rejectFolderName, rejectStepName};
-            builder.append(MessageFormat.format(docActionPattern, params));
-            builder.append("</p>");
-         }
-         
-         html = builder.toString();
-      }
-         
-      return html;
-   }
-   
-   /**
-    * Returns the properties for the attached workflow as a map
-    * 
-    * @return Properties of the attached workflow, null if there is no workflow
-    */
-   public Map<String, Serializable> getWorkflowProperties()
-   {
-      if (this.workflowProperties == null && 
-          getDocument().hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW))
-      {
-         // get the exisiting properties for the document
-         Map<String, Object> props = getDocument().getProperties();
-         
-         String approveStepName = (String)props.get(
-               ContentModel.PROP_APPROVE_STEP.toString());
-         String rejectStepName = (String)props.get(
-               ContentModel.PROP_REJECT_STEP.toString());
-         
-         Boolean approveMove = (Boolean)props.get(
-               ContentModel.PROP_APPROVE_MOVE.toString());
-         Boolean rejectMove = (Boolean)props.get(
-               ContentModel.PROP_REJECT_MOVE.toString());
-         
-         NodeRef approveFolder = (NodeRef)props.get(
-               ContentModel.PROP_APPROVE_FOLDER.toString());
-         NodeRef rejectFolder = (NodeRef)props.get(
-               ContentModel.PROP_REJECT_FOLDER.toString());
-
-         // put the workflow properties in a separate map for use by the JSP
-         this.workflowProperties = new HashMap<String, Serializable>(7);
-         this.workflowProperties.put(SimpleWorkflowHandler.PROP_APPROVE_STEP_NAME, 
-               approveStepName);
-         this.workflowProperties.put(SimpleWorkflowHandler.PROP_APPROVE_ACTION, 
-               approveMove ? "move" : "copy");
-         this.workflowProperties.put(SimpleWorkflowHandler.PROP_APPROVE_FOLDER, approveFolder);
-         
-         if (rejectStepName == null || rejectMove == null || rejectFolder == null)
-         {
-            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_STEP_PRESENT, "no");
-         }
-         else
-         {
-            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_STEP_PRESENT, 
-                  "yes");
-            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_STEP_NAME, 
-                  rejectStepName);
-            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_ACTION, 
-                  rejectMove ? "move" : "copy");
-            this.workflowProperties.put(SimpleWorkflowHandler.PROP_REJECT_FOLDER, 
-                  rejectFolder);
-         }
-      }
-      
-      return this.workflowProperties;
-   }
-   
-   /**
-    * Cancel Workflow Edit dialog
-    */
-   public String cancelWorkflowEdit()
-   {
-      // resets the workflow properties map so any changes made
-      // don't appear to be persisted
-      this.workflowProperties.clear();
-      this.workflowProperties = null;
-      return "cancel";
-   }
-   
-   /**
-    * Saves the details of the workflow stored in workflowProperties
-    * to the current document
-    *  
-    * @return The outcome string
-    */
-   public String saveWorkflow()
-   {
-      String outcome = "cancel";
-      
-      UserTransaction tx = null;
-      
-      try
-      {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // firstly retrieve all the properties for the current node
-         Map<QName, Serializable> updateProps = this.nodeService.getProperties(
-               getDocument().getNodeRef());
-         
-         // update the simple workflow properties
-         
-         // set the approve step name
-         updateProps.put(ContentModel.PROP_APPROVE_STEP,
-               this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_STEP_NAME));
-         
-         // specify whether the approve step will copy or move the content
-         boolean approveMove = true;
-         String approveAction = (String)this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_ACTION);
-         if (approveAction != null && approveAction.equals("copy"))
-         {
-            approveMove = false;
-         }
-         updateProps.put(ContentModel.PROP_APPROVE_MOVE, Boolean.valueOf(approveMove));
-         
-         // create node ref representation of the destination folder
-         updateProps.put(ContentModel.PROP_APPROVE_FOLDER,
-               this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_FOLDER));
-         
-         // determine whether there should be a reject step
-         boolean requireReject = true;
-         String rejectStepPresent = (String)this.workflowProperties.get(
-               SimpleWorkflowHandler.PROP_REJECT_STEP_PRESENT);
-         if (rejectStepPresent != null && rejectStepPresent.equals("no"))
-         {
-            requireReject = false;
-         }
-         
-         if (requireReject)
-         {
-            // set the reject step name
-            updateProps.put(ContentModel.PROP_REJECT_STEP,
-                  this.workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_STEP_NAME));
-         
-            // specify whether the reject step will copy or move the content
-            boolean rejectMove = true;
-            String rejectAction = (String)this.workflowProperties.get(
-                  SimpleWorkflowHandler.PROP_REJECT_ACTION);
-            if (rejectAction != null && rejectAction.equals("copy"))
-            {
-               rejectMove = false;
-            }
-            updateProps.put(ContentModel.PROP_REJECT_MOVE, Boolean.valueOf(rejectMove));
-
-            // create node ref representation of the destination folder
-            updateProps.put(ContentModel.PROP_REJECT_FOLDER,
-                  this.workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_FOLDER));
-         }
-         else
-         {
-            // set all the reject properties to null to signify there should
-            // be no reject step
-            updateProps.put(ContentModel.PROP_REJECT_STEP, null);
-            updateProps.put(ContentModel.PROP_REJECT_MOVE, null);
-            updateProps.put(ContentModel.PROP_REJECT_FOLDER, null);
-         }
-         
-         // set the properties on the node
-         this.nodeService.setProperties(getDocument().getNodeRef(), updateProps);
-         
-         // commit the transaction
-         tx.commit();
-         
-         // reset the state of the current document so it reflects the changes just made
-         getDocument().reset();
-         
-         outcome = "finish";
-      }
-      catch (Throwable e)
-      {
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE_SIMPLEWORKFLOW), e.getMessage()), e);
-      }
-      
-      return outcome;
-   }
-   
-   /**
-    * Returns the name of the approve step of the attached workflow
-    * 
-    * @return The name of the approve step or null if there is no workflow
-    */
-   public String getApproveStepName()
-   {
-      String approveStepName = null;
-      
-      if (getDocument().hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW))
-      {
-         approveStepName = (String)getDocument().getProperties().get(
-               ContentModel.PROP_APPROVE_STEP.toString());
-      }
-      
-      return approveStepName; 
-   }
-   
-   /**
-    * Event handler called to handle the approve step of the simple workflow
-    * 
-    * @param event The event that was triggered
-    */
-   public void approve(ActionEvent event)
-   {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String id = params.get("id");
-      if (id == null || id.length() == 0)
-      {
-         throw new AlfrescoRuntimeException("approve called without an id");
-      }
-      
-      NodeRef docNodeRef = new NodeRef(Repository.getStoreRef(), id);
-      
-      UserTransaction tx = null;
-      try
-      {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // call the service to perform the approve
-         WorkflowUtil.approve(docNodeRef, this.nodeService, this.copyService);
-         
-         // commit the transaction
-         tx.commit();
-         
-         // if this was called via the document details dialog we need to reset the document node
-         if (getDocument() != null)
-         {
-            getDocument().reset();
-         }
-         
-         // also make sure the UI will get refreshed
-         UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), MSG_ERROR_WORKFLOW_APPROVE), e.getMessage()), e);
-      }
-   }
-   
-   /**
-    * Returns the name of the reject step of the attached workflow
-    * 
-    * @return The name of the reject step or null if there is no workflow
-    */
-   public String getRejectStepName()
-   {
-      String approveStepName = null;
-      
-      if (getDocument().hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW))
-      {
-         approveStepName = (String)getDocument().getProperties().get(
-               ContentModel.PROP_REJECT_STEP.toString());
-      }
-      
-      return approveStepName;
-   }
-   
-   /**
-    * Event handler called to handle the approve step of the simple workflow
-    * 
-    * @param event The event that was triggered
-    */
-   public void reject(ActionEvent event)
-   {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String id = params.get("id");
-      if (id == null || id.length() == 0)
-      {
-         throw new AlfrescoRuntimeException("reject called without an id");
-      }
-      
-      NodeRef docNodeRef = new NodeRef(Repository.getStoreRef(), id);
-      
-      UserTransaction tx = null;
-      try
-      {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
-         tx.begin();
-         
-         // call the service to perform the reject
-         WorkflowUtil.reject(docNodeRef, this.nodeService, this.copyService);
-         
-         // commit the transaction
-         tx.commit();
-         
-         // if this was called via the document details dialog we need to reset the document node
-         if (getDocument() != null)
-         {
-            getDocument().reset();
-         }
-         
-         // also make sure the UI will get refreshed
-         UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), MSG_ERROR_WORKFLOW_REJECT), e.getMessage()), e);
-      }
    }
    
    /**
@@ -1097,16 +703,6 @@ public class DocumentDetailsBean extends BaseDetailsBean
    public void setVersionService(VersionService versionService)
    {
       this.versionService = versionService;
-   }
-   
-   /**
-    * Sets the copy service instance the bean should use
-    * 
-    * @param copyService The CopyService
-    */
-   public void setCopyService(CopyService copyService)
-   {
-      this.copyService = copyService;
    }
    
    /**

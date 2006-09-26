@@ -55,7 +55,7 @@ public class WorkflowUtil
       
       if (docNode.hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW) == false)
       {
-         throw new AlfrescoRuntimeException("Cannot approve a document that is not part of a workflow.");
+         throw new AlfrescoRuntimeException("Cannot approve a node that is not part of a workflow.");
       }
       
       // get the simple workflow aspect properties
@@ -69,23 +69,28 @@ public class WorkflowUtil
       
       if (approveMove.booleanValue())
       {
-         // move the document to the specified folder
+         // move the node to the specified folder
          String qname = QName.createValidLocalName(docNode.getName());
          nodeService.moveNode(ref, approveFolder, ContentModel.ASSOC_CONTAINS,
                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname));
       }
       else
       {
-         // copy the document to the specified folder
-         String qname = QName.createValidLocalName(docNode.getName());
-         copyService.copy(ref, approveFolder, ContentModel.ASSOC_CONTAINS,
-               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname));
+         // copy the node to the specified folder
+         String name = docNode.getName();
+         String qname = QName.createValidLocalName(name);
+         NodeRef newNode = copyService.copy(ref, approveFolder, ContentModel.ASSOC_CONTAINS,
+               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname), true);
+         
+         // the copy service does not copy the name of the node so we
+         // need to update the property on the copied item
+         nodeService.setProperty(newNode, ContentModel.PROP_NAME, name);
       }
       
       if (logger.isDebugEnabled())
       {
          String movedCopied = approveMove ? "moved" : "copied";
-         logger.debug("Document has been approved and " + movedCopied + " to folder with id of " + 
+         logger.debug("Node has been approved and " + movedCopied + " to folder with id of " + 
                approveFolder.getId());
       }
    }
@@ -106,7 +111,7 @@ public class WorkflowUtil
       
       if (docNode.hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW) == false)
       {
-         throw new AlfrescoRuntimeException("Cannot reject a document that is not part of a workflow.");
+         throw new AlfrescoRuntimeException("Cannot reject a node that is not part of a workflow.");
       }
       
       // get the simple workflow aspect properties
@@ -118,7 +123,7 @@ public class WorkflowUtil
       
       if (rejectStep == null && rejectMove == null && rejectFolder == null)
       {
-         throw new AlfrescoRuntimeException("The workflow does not have a reject step defined,");
+         throw new AlfrescoRuntimeException("The workflow does not have a reject step defined.");
       }
       
       // first we need to take off the simpleworkflow aspect
@@ -142,7 +147,7 @@ public class WorkflowUtil
       if (logger.isDebugEnabled())
       {
          String movedCopied = rejectMove ? "moved" : "copied";
-         logger.debug("Document has been rejected and " + movedCopied + " to folder with id of " + 
+         logger.debug("Node has been rejected and " + movedCopied + " to folder with id of " + 
                rejectFolder.getId());
       }
    }

@@ -159,6 +159,12 @@
       </property-sheet>
    </config>
    
+   <config evaluator="aspect-name" condition="cm:ownable">
+      <property-sheet>
+         <show-property name="cm:owner" />
+      </property-sheet>
+   </config>
+    
    <config evaluator="aspect-name" condition="app:inlineeditable">
       <property-sheet>
          <show-property name="app:editInline" converter="org.alfresco.faces.BooleanLabelConverter" />
@@ -182,7 +188,7 @@
          <show-property name="subjectline"  show-in-edit-mode="false"/>
       </property-sheet>
    </config>
-
+    
    <!-- ********************************** -->
    <!-- Configuration for discussion types -->
    <!-- ********************************** -->

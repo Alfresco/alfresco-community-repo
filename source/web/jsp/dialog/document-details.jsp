@@ -180,7 +180,7 @@
                               <h:panelGroup id="props-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
-                                       <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif"
+                                       <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif"
                                                      action="dialog:editContentProperties" />
                                     </r:permissionEvaluator>
                                  </f:facet>
@@ -263,19 +263,16 @@
                               <h:panelGroup id="workflow-panel-facets">
                                  <f:facet name="title">
                                     <r:permissionEvaluator value="#{DocumentDetailsBean.document}" allow="Write">
-                                       <a:actionLink id="titleLink2" value="#{msg.workflow}" showLink="false" image="/images/icons/Change_details.gif" action="editSimpleWorkflow" />
+                                       <a:actionLink id="titleLink2" value="#{msg.title_edit_simple_workflow}" showLink="false" 
+                                                     image="/images/icons/Change_details.gif" action="editSimpleWorkflow"
+                                                     rendered="#{DocumentDetailsBean.approveStepName != null}" />
                                     </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>
-                              <a:panel label="#{msg.workflow}" id="workflow-panel" facetsId="workflow-panel-facets" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" rendered="#{DocumentDetailsBean.approveStepName != null}"
+                              <a:panel label="#{msg.workflows}" id="workflow-panel" facetsId="workflow-panel-facets" progressive="true"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
                                        expanded='#{DocumentDetailsBean.panels["workflow-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
-                                 <h:outputText id="workflow-overview" value="#{DocumentDetailsBean.workflowOverviewHTML}" escape="false" />
-                              </a:panel>
-                              <a:panel label="#{msg.workflow}" id="no-workflow-panel" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" rendered="#{DocumentDetailsBean.approveStepName == null}"
-                                       expanded='#{DocumentDetailsBean.panels["workflow-panel"]}' expandedActionListener="#{DocumentDetailsBean.expandPanel}">
-                                 <h:outputText id="no-workflow-msg" value="#{msg.not_in_workflow}" />
+                                 <r:nodeWorkflowInfo id="workflow-info" value="#{DocumentDetailsBean.document}" /> 
                               </a:panel>
                               
                               <div style="padding:4px"></div>

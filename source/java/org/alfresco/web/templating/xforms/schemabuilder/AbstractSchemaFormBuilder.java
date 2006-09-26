@@ -700,28 +700,27 @@ public abstract class AbstractSchemaFormBuilder
      * @param choicesElement __UNDOCUMENTED__
      * @param choiceValues   __UNDOCUMENTED__
      */
-    protected void addChoicesForSelectControl(Document xForm,
-                                              Element choicesElement,
-                                              Vector choiceValues) {
+    protected void addChoicesForSelectControl(final Document xForm,
+                                              final Element choicesElement,
+                                              final List<String> choiceValues) {
         // sort the enums values and then add them as choices
         //
         // TODO: Should really put the default value (if any) at the top of the list.
         //
-        List sortedList = choiceValues.subList(0, choiceValues.size());
-        Collections.sort(sortedList);
+	//        List sortedList = choiceValues.subList(0, choiceValues.size());
+	//        Collections.sort(sortedList);
 
-        Iterator iterator = sortedList.iterator();
+	//        Iterator iterator = sortedList.iterator();
 
-        while (iterator.hasNext()) 
+        for (String textValue : choiceValues) 
 	{
-            String textValue = (String) iterator.next();
-            Element item =
-                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
+            Element item = xForm.createElementNS(XFORMS_NS, 
+						 SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
             this.setXFormsId(item);
             choicesElement.appendChild(item);
 
-            Element captionElement =
-                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+            Element captionElement = xForm.createElementNS(XFORMS_NS, 
+							   SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
             this.setXFormsId(captionElement);
             item.appendChild(captionElement);
             captionElement.appendChild(xForm.createTextNode(createCaption(textValue)));
@@ -735,20 +734,16 @@ public abstract class AbstractSchemaFormBuilder
     }
 
     //protected void addChoicesForSelectSwitchControl(Document xForm, Element choicesElement, Vector choiceValues, String bindIdPrefix) {
-    protected void addChoicesForSelectSwitchControl(Document xForm,
-                                                    Element choicesElement,
-                                                    Vector choiceValues,
-                                                    HashMap case_types) 
+    protected Map<String, Element> addChoicesForSelectSwitchControl(final Document xForm,
+								    final Element choicesElement,
+								    final List<XSTypeDefinition> choiceValues) 
     {
         if (LOGGER.isDebugEnabled()) 
 	{
             LOGGER.debug("addChoicesForSelectSwitchControl, values=");
-            Iterator it = choiceValues.iterator();
-            while (it.hasNext()) 
+            for (XSTypeDefinition type : choiceValues) 
 	    {
-                XSTypeDefinition type = (XSTypeDefinition) it.next();
-                String name = type.getName();
-                LOGGER.debug("  - " + name);
+                LOGGER.debug("  - " + type.getName());
             }
         }
 
@@ -761,38 +756,36 @@ public abstract class AbstractSchemaFormBuilder
         Collections.sort(sortedList);
         Iterator iterator = sortedList.iterator();*/
 	// -> no, already sorted
-        Iterator iterator = choiceValues.iterator();
-        while (iterator.hasNext()) 
+	final Map<String, Element> result = new HashMap<String, Element>();
+        for (XSTypeDefinition type : choiceValues)
 	{
-            XSTypeDefinition type = (XSTypeDefinition) iterator.next();
             String textValue = type.getName();
             //String textValue = (String) iterator.next();
 
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("addChoicesForSelectSwitchControl, processing " + textValue);
 
-            Element item =
-                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
+            Element item = xForm.createElementNS(XFORMS_NS, 
+						 SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
             this.setXFormsId(item);
             choicesElement.appendChild(item);
 
-            Element captionElement =
-                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+            Element captionElement = xForm.createElementNS(XFORMS_NS, 
+							   SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
             this.setXFormsId(captionElement);
             item.appendChild(captionElement);
             captionElement.appendChild(xForm.createTextNode(createCaption(textValue)));
 
-            Element value =
-                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
+	    Element value = xForm.createElementNS(XFORMS_NS, 
+						  SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
             this.setXFormsId(value);
             item.appendChild(value);
             value.appendChild(xForm.createTextNode(textValue));
 
-/// action in the case
+	    /// action in the case
 
-            Element action =
-                    xForm.createElementNS(XFORMS_NS,
-                            SchemaFormBuilder.XFORMS_NS_PREFIX + "action");
+            Element action = xForm.createElementNS(XFORMS_NS,
+						   SchemaFormBuilder.XFORMS_NS_PREFIX + "action");
             this.setXFormsId(action);
             item.appendChild(action);
 
@@ -805,10 +798,10 @@ public abstract class AbstractSchemaFormBuilder
             this.setXFormsId(toggle);
 
             //build the case element
-            Element caseElement =
-                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "case");
+            Element caseElement = xForm.createElementNS(XFORMS_NS, 
+							SchemaFormBuilder.XFORMS_NS_PREFIX + "case");
             String case_id = this.setXFormsId(caseElement);
-            case_types.put(textValue, caseElement);
+            result.put(textValue, caseElement);
 
             toggle.setAttributeNS(XFORMS_NS,
 				  SchemaFormBuilder.XFORMS_NS_PREFIX + "case",
@@ -817,6 +810,7 @@ public abstract class AbstractSchemaFormBuilder
             //toggle.setAttributeNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX + "case",bindIdPrefix + "_" + textValue +"_case");
             action.appendChild(toggle);
         }
+	return result;
     }
 
     /**
@@ -1375,27 +1369,22 @@ public abstract class AbstractSchemaFormBuilder
 		    this.setXFormsId(choices);
 		    
 		    //get possible values
-		    Vector enumValues = new Vector();
+		    List<XSTypeDefinition> enumValues = new LinkedList<XSTypeDefinition>();
 		    //add the type (if not abstract)
 		    if (!((XSComplexTypeDefinition) controlType).getAbstract())
 			enumValues.add(controlType);
-		    //enumValues.add(typeName);
 		    
 		    //add compatible types
-		    Iterator it = compatibleTypes.iterator();
-		    while (it.hasNext()) 
-		    {
-			enumValues.add(it.next());
-		    }
+		    enumValues.addAll(compatibleTypes);
 		    
 		    if (enumValues.size() == 1) 
 		    {
 			// only one compatible type, set the controlType value
 			// and fall through
 			//
-			//controlType = getSchema().getComplexType((String)enumValues.get(0));
-			controlType = schema.getTypeDefinition((String)enumValues.get(0),
-							       this.targetNamespace);
+			//controlType = schema.getTypeDefinition((String)enumValues.get(0),
+			//				       this.targetNamespace);
+			controlType = enumValues.get(0);
 		    }
 		    else if (enumValues.size() > 1) 
 		    {
@@ -1410,11 +1399,9 @@ public abstract class AbstractSchemaFormBuilder
 			// multiple compatible types for this element exist
 			// in the schema - allow the user to choose from
 			// between compatible non-abstract types
-			Element bindElement =
-			    xForm.createElementNS(XFORMS_NS,
-						  SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");
-			String bindId =
-			    this.setXFormsId(bindElement);
+			Element bindElement = xForm.createElementNS(XFORMS_NS,
+								    SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");
+			String bindId = this.setXFormsId(bindElement);
 			
 			bindElement.setAttributeNS(XFORMS_NS,
 						   SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
@@ -1428,48 +1415,39 @@ public abstract class AbstractSchemaFormBuilder
 			//add the "element" bind, in addition
 			Element bindElement2 = xForm.createElementNS(XFORMS_NS,
 								     SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");
-			String bindId2 =
-			    this.setXFormsId(bindElement2);
+			String bindId2 = this.setXFormsId(bindElement2);
 			bindElement2.setAttributeNS(XFORMS_NS,
 						    SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
 						    pathToRoot);
 			
 			modelSection.appendChild(bindElement2);
 			
-			if (enumValues.size() < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))) 
+			control.setAttributeNS(XFORMS_NS,
+					       SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+					       (enumValues.size() < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))
+						? getProperty(SELECTONE_UI_CONTROL_SHORT_PROP)
+						: getProperty(SELECTONE_UI_CONTROL_LONG_PROP)));
+
+			if (enumValues.size() >= Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP)))
 			{
-			    control.setAttributeNS(XFORMS_NS,
-						   SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
-						   getProperty(SELECTONE_UI_CONTROL_SHORT_PROP));
-			} 
-			else 
-			{
-			    control.setAttributeNS(XFORMS_NS,
-						   SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
-						   getProperty(SELECTONE_UI_CONTROL_LONG_PROP));
-			    
 			    // add the "Please select..." instruction item for the combobox
 			    // and set the isValid attribute on the bind element to check for the "Please select..."
 			    // item to indicate that is not a valid value
 			    //
-			    String pleaseSelect =
-				"[Select1 " + caption + "]";
-			    Element item =
-				xForm.createElementNS(XFORMS_NS,
-						      SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
+			    String pleaseSelect = "[Select1 " + caption + "]";
+			    Element item = xForm.createElementNS(XFORMS_NS,
+								 SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
 			    this.setXFormsId(item);
 			    choices.appendChild(item);
 			    
-			    Element captionElement =
-				xForm.createElementNS(XFORMS_NS,
-						      SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+			    Element captionElement = xForm.createElementNS(XFORMS_NS,
+									   SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
 			    this.setXFormsId(captionElement);
 			    item.appendChild(captionElement);
 			    captionElement.appendChild(xForm.createTextNode(pleaseSelect));
 			    
-			    Element value =
-				xForm.createElementNS(XFORMS_NS,
-						      SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
+			    Element value = xForm.createElementNS(XFORMS_NS,
+								  SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
 			    this.setXFormsId(value);
 			    item.appendChild(value);
 			    value.appendChild(xForm.createTextNode(pleaseSelect));
@@ -1480,9 +1458,7 @@ public abstract class AbstractSchemaFormBuilder
 			    String isValidExpr = "not( . = '" + pleaseSelect + "')";
 			    
 			    //check if there was a constraint
-			    String constraint =
-				bindElement.getAttributeNS(XFORMS_NS,
-							   "constraint");
+			    String constraint = bindElement.getAttributeNS(XFORMS_NS, "constraint");
 			    
 			    constraint = (constraint != null && constraint.length() != 0
 					  ? constraint + " && " + isValidExpr
@@ -1494,21 +1470,16 @@ public abstract class AbstractSchemaFormBuilder
 						       constraint);
 			}
 
-			Element choicesControlWrapper =
-			    _wrapper.createControlsWrapper(choices);
+			Element choicesControlWrapper = _wrapper.createControlsWrapper(choices);
 			control.appendChild(choicesControlWrapper);
 			
-			Element controlWrapper =
-			    _wrapper.createControlsWrapper(control);
+			Element controlWrapper = _wrapper.createControlsWrapper(control);
 			formSection.appendChild(controlWrapper);
 			
 			/////////////////                                      ///////////////
 			// add content to select1
-			HashMap case_types = new HashMap();
-			addChoicesForSelectSwitchControl(xForm,
-							 choices,
-							 enumValues,
-							 case_types);
+			final Map<String, Element> caseTypes = 
+			    this.addChoicesForSelectSwitchControl(xForm, choices, enumValues);
 			
 			/////////////////
 			//add a trigger for this control (is there a way to not need it ?)
@@ -1549,7 +1520,7 @@ public abstract class AbstractSchemaFormBuilder
 			//formSection.appendChild(switchElement);
 			
 			/////////////// add this type //////////////
-			Element firstCaseElement = (Element) case_types.get(controlType.getName());
+			Element firstCaseElement = caseTypes.get(controlType.getName());
 			switchElement.appendChild(firstCaseElement);
 			this.addComplexType(xForm,
 					    modelSection,
@@ -1563,17 +1534,15 @@ public abstract class AbstractSchemaFormBuilder
 					    false);
 			
 			/////////////// add sub types //////////////
-			it = compatibleTypes.iterator();
 			// add each compatible type within
 			// a case statement
-			while (it.hasNext()) 
+			for (XSTypeDefinition type : compatibleTypes) 
 			{
 			    /*String compatibleTypeName = (String) it.next();
 			    //WARNING: order of parameters inversed from the doc for 2.6.0 !!!
 			    XSTypeDefinition type =getSchema().getTypeDefinition(
 			    compatibleTypeName,
 			    targetNamespace);*/
-			    XSTypeDefinition type = (XSTypeDefinition) it.next();
 			    String compatibleTypeName = type.getName();
 			    
 			    if (LOGGER.isDebugEnabled()) 
@@ -1589,7 +1558,7 @@ public abstract class AbstractSchemaFormBuilder
 				//Element caseElement = (Element) xForm.createElementNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX + "case");
 				//caseElement.setAttributeNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX + "id",bindId + "_" + type.getName() +"_case");
 				//String case_id=this.setXFormsId(caseElement);
-				Element caseElement = (Element)case_types.get(type.getName());
+				Element caseElement = caseTypes.get(type.getName());
 				switchElement.appendChild(caseElement);
 				
 				this.addComplexType(xForm,
@@ -2247,6 +2216,8 @@ public abstract class AbstractSchemaFormBuilder
 					SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
 					".");
             bindElement.appendChild(bindElement2);
+
+	    bindElement = bindElement2;
             bindId = bindId2;
         }
 
@@ -2614,7 +2585,7 @@ public abstract class AbstractSchemaFormBuilder
             }
         } 
 	else if (controlType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE && 
-		 controlType.getName().equals("anyType")) 
+		 "anyType".equals(controlType.getName())) 
 	{
             formControl = createControlForAnyType(xForm, caption, controlType);
         }

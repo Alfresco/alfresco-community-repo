@@ -15,14 +15,17 @@ dojo.addOnLoad(function()
 tinyMCE.init({
       theme: "advanced",
       mode: "exact",
+      width: -1,
+      auto_resize: false,
       encoding: null,
       save_callback: "document.xform.setXFormsValue",
       add_unload_trigger: false,
       add_form_submit_trigger: false,
       theme_advanced_toolbar_location: "top",
       theme_advanced_toolbar_align: "left",
-      theme_advanced_buttons1: "fontselect,fontsizeselect",
-      theme_advanced_buttons2: "separator,forecolor,backcolor"
+      theme_advanced_buttons1: "bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect",
+      theme_advanced_buttons2: "link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bulllist,numlist,separator,undo,redo,separator,forecolor,backcolor",
+      theme_advanced_buttons3: ""
 });
 
 dojo.declare("alfresco.xforms.Widget",
@@ -250,12 +253,13 @@ dojo.declare("alfresco.xforms.TextArea",
 	       this.domNode.setAttribute("style", "height: 200px; border: solid 1px black;");
 	       this.domNode.setAttribute("id", this.id);
 	       this.domNode.innerHTML = this.getInitialValue() || "";
-	       dojo.event.connect(this.domNode, "onclick", this, this._clickHandler);
-	       dojo.event.connect(this.domNode, "onblur", this, this._blurHandler);
+	       //	       dojo.event.connect(this.domNode, "onclick", this, this._clickHandler);
+	       //	       dojo.event.connect(this.domNode, "onblur", this, this._blurHandler);
+	       tinyMCE.addMCEControl(this.domNode, this.id);
 	     },
              _clickHandler: function(event)
 	     {
-	       tinyMCE.addMCEControl(this.domNode, this.id);
+
 	     },
 	     _blurHandler: function(event)
 	     {
@@ -370,25 +374,32 @@ dojo.declare("alfresco.xforms.Checkbox",
 	     },
 	     render: function(attach_point)
 	     {
-	       var nodeRef = document.createElement("div");
-	       attach_point.appendChild(nodeRef);
 	       var initial_value = this.getInitialValue() == "true";
-	       this.widget = dojo.widget.createWidget("Checkbox", 
-						      { 
-						      widgetId: this.id + "-widget",
-						      checked: initial_value 
-						      },
-						      nodeRef);
+//	       var nodeRef = document.createElement("div");
+//	       attach_point.appendChild(nodeRef);
 
-	       dojo.event.connect(this.widget, 
-				  "onMouseUp", 
-				  this, 
-				  this._checkBox_mouseUpHandler);
+//	       this.widget = dojo.widget.createWidget("Checkbox", 
+//						      { 
+//						      widgetId: this.id + "-widget",
+//						      checked: initial_value 
+//						      },
+//						      nodeRef);
+//
+//	       dojo.event.connect(this.widget, 
+//				  "onMouseUp", 
+//				  this, 
+//				  this._checkBox_mouseUpHandler);
+	       this.widget = document.createElement("input");
+	       this.widget.setAttribute("type", "checkbox");
+	       this.widget.setAttribute("id", this.id + "-widget");
+	       if (initial_value)
+		 this.widget.setAttribute("checked", true);
+	       attach_point.appendChild(this.widget);
+	       dojo.event.connect(this.widget, "onclick", this, this._checkbox_clickHandler);
 	     },
-             _checkBox_mouseUpHandler: function(event)
+             _checkbox_clickHandler: function(event)
 	     {
-	       this.xform.setXFormsValue(this.id, 
-					 this.widget.checked);
+	       this.xform.setXFormsValue(this.id, this.widget.checked);
 	     }
 	     });
 
@@ -464,12 +475,18 @@ dojo.declare("alfresco.xforms.Group",
 	       contentDiv.setAttribute("id", child.id + "-content");
 	       child.domContainer.appendChild(contentDiv);
 	       contentDiv.style.position = "relative";
-//	       contentDiv.style.width = (d.offsetWidth - contentDiv.offsetLeft) + "px";
+	       contentDiv.style.left = (child instanceof alfresco.xforms.Group 
+					? "0px" 
+					: "30%");
+	       if (!(child instanceof alfresco.xforms.Group))
+	       {
+		 contentDiv.style.width = (child.domContainer.offsetWidth * .55) + "px";
+		 //		 contentDiv.style.width = ((child.domContainer.offsetWidth - contentDiv.offsetLeft) - 10) + "px";
+	       }
 	       child.render(contentDiv);
 	       if (!(child instanceof alfresco.xforms.Group))
 	       {
-		 contentDiv.style.width = (child.domContainer.offsetWidth * .7) + "px";
-		 child.domContainer.style.height = contentDiv.offsetHeight + "px";
+		 child.domContainer.style.height = Math.max(contentDiv.offsetHeight, 20) + "px";
 		 child.domContainer.style.lineHeight = child.domContainer.style.height;
 	       }
 
@@ -477,13 +494,8 @@ dojo.declare("alfresco.xforms.Group",
 //							      "st " + contentDiv.style.top));
 
 	       contentDiv.style.top = "-" + contentDiv.offsetTop + "px";
-	       contentDiv.style.left = (child instanceof alfresco.xforms.Group 
-					? "0px" 
-					: "30%");
 
 
-	       child.domContainer.style.borderColor = "pink";
-	       child.domContainer.style.borderWidth = "0px";
 	       this._updateDisplay();
 	       return child.domContainer;
 	     },
@@ -547,7 +559,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	       var controls = document.createElement("div");
 	       result.appendChild(controls);
 	       controls.style.position = "absolute";
-	       controls.style.left = "80%";
+	       controls.style.right = "5px";
 	       controls.style.bottom = "0px";
 
 	       var images = [ 
@@ -584,9 +596,9 @@ dojo.declare("alfresco.xforms.Repeat",
 	       for (var i = 0; i < this.children.length; i++)
 	       {
 		 this.children[i].domContainer.style.backgroundColor = 
-		   i % 2 ? "#cccc99" : "#ffffff"; 
-		 if (i == this.getSelectedIndex())
-		   this.children[i].domContainer.style.backgroundColor = "orange";
+		   i % 2 ? "#f0f0ee" : "#ffffff"; 
+		 //		 if (i == this.getSelectedIndex())
+		 //		   this.children[i].domContainer.style.backgroundColor = "orange";
 //		   dojo.lfx.html.highlight(this.children[i].domContainer, 
 //					   "orange", 
 //					   200,
@@ -730,7 +742,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	       addElement.style.height = "16px";
 	       addElement.style.position = "absolute";
 	       addElement.style.top = "0px";
-	       addElement.style.left = "80%";
+	       addElement.style.right = 5 + (16 * 4) + "px";
 	       
 	       dojo.event.connect(addElement, "onclick", this, this._insertRepeatItemBefore_handler);
 	       
@@ -874,6 +886,10 @@ dojo.declare("alfresco.xforms.XForm",
 	       var root = new alfresco.xforms.Group(this, alfUI);
 	       root.render(alfUI);
 	       load_body(this, this.getBody(), root);
+	     },
+	     addLoadHandler: function(handler)
+	     {
+	       this.load_handlers.push(handler);
 	     },
 	     getModel: function()
 	     {

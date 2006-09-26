@@ -36,10 +36,11 @@ public List<PressRelease> getPressReleases(HttpServletRequest request, ServletCo
     //
     String real_path = servletContext.getRealPath("/media/releases/content");
 
-    // The avm_path to the root of the context will look soemthign like this:
+    // The avm_path to the root of the context will look something like this:
     //    alfreco-guest-main:/appBase/avm_webapps/my_webapp
     //
     String avm_path = real_path.substring( real_path.indexOf('$', real_path.indexOf('$') + 1)  + 1 );
+    avm_path = avm_path.replace('\\','/');
 
     AVMRemote  avm_remote = AVMFileDirContext.getAVMRemote();
     Map< String, AVMNodeDescriptor> entries = avm_remote.getDirectoryListing(-1, avm_path);

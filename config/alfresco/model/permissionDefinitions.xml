@@ -19,6 +19,7 @@
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <namespace uri="http://www.alfresco.org/model/application/1.0" prefix="app"/>
    </namespaces>
 
    <!--                                                                                   -->
@@ -302,6 +303,31 @@
       
    </permissionSet>
    
+   <!-- ========================================== -->
+   <!-- Permissions specific to avm website folder -->
+   <!-- ========================================== -->
+   
+   <permissionSet type="app:webfolder" expose="selected">
+
+      <!-- AVM website specific roles.                                                   -->
+      <permissionGroup name="ContentManager" allowFullControl="true" expose="true">
+         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
+      </permissionGroup>
+      
+      <permissionGroup name="ContentPublisher" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />
+      </permissionGroup>
+      
+      <permissionGroup name="ContentContributor" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
+      </permissionGroup>
+      
+      <permissionGroup name="ContentReviewer" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Consumer" type="cm:cmobject" />
+      </permissionGroup>
+      
+   </permissionSet>
+   
    <!-- ============================================== -->
    <!-- Permissions associated with the Ownable aspect -->
    <!-- ============================================== -->
@@ -322,7 +348,6 @@
       </permission>
       
    </permissionSet>
-   
    
    <!-- =================================================== -->
    <!-- Permission related to lock, check out and check in. -->

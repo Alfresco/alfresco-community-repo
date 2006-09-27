@@ -51,6 +51,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateWebsiteWizard extends BaseWizardBean
 {
+   private static final String ROLE_CONTENT_MANAGER = "ContentManager";
+
    private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
    
    protected String name;
@@ -113,24 +115,40 @@ public class CreateWebsiteWizard extends BaseWizardBean
       outcome = wiz.finish();
       if (outcome != null)
       {       
-         // create the AVM stores (layers) to represent the newly created location website
+         // create the AVM stores to represent the newly created location website
          createStagingSandbox(this.name);
          
-         // create a sandbox for each user
-         // TODO: create sandbox appropriately based on role
-         List<String> invitedUsers = getInvitedUsernames(wiz);
+         // create a sandbox for each user appropriately with permissions based on role
+         boolean foundCurrentUser = false;
+         List<UserGroupRole> invitedUserRoles = (List<UserGroupRole>)wiz.getUserRolesDataModel().getWrappedData();
          String currentUser = Application.getCurrentUser(context).getUserName();
-         if (invitedUsers.contains(currentUser) == false)
+         for (UserGroupRole userRole : invitedUserRoles)
          {
-            invitedUsers.add(Application.getCurrentUser(context).getUserName());
+            if (currentUser.equals(userRole.getAuthority()))
+            {
+               foundCurrentUser = true;
+            }
+            createUserSandbox(this.name, userRole.getAuthority(), userRole.getRole());
          }
-         for (String username : invitedUsers)
+         if (foundCurrentUser == false)
          {
-            createUserSandbox(this.name, username);
+            createUserSandbox(this.name, currentUser, ROLE_CONTENT_MANAGER);
+            invitedUserRoles.add(new UserGroupRole(currentUser, ROLE_CONTENT_MANAGER, null));
          }
          
          // save the list of invited users against the store
-         this.nodeService.setProperty(nodeRef, ContentModel.PROP_USERSANDBOXES, (Serializable)invitedUsers);
+         for (UserGroupRole userRole : invitedUserRoles)
+         {
+            // create an app:webuser instance for each authority and assoc to the website node
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+            props.put(ContentModel.PROP_WEBUSERNAME, userRole.getAuthority());
+            props.put(ContentModel.PROP_WEBUSERROLE, userRole.getRole());
+            this.nodeService.createNode(nodeRef,
+                  ContentModel.ASSOC_WEBUSER,
+                  ContentModel.ASSOC_WEBUSER,
+                  ContentModel.TYPE_WEBUSER,
+                  props);
+         }
          
          // set the property on the node to reference the AVM store
          this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, this.name);
@@ -327,8 +345,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
     * 
     * @param name       The store name to create the sandbox for
     * @param username   Username of the user to create the sandbox for
+    * @param role       Role permission for the user
     */
-   private void createUserSandbox(String name, String username)
+   private void createUserSandbox(String name, String username, String role)
    {
       // create the user 'main' store
       String userStore = AVMConstants.buildAVMUserMainStoreName(name, username);
@@ -408,20 +427,5 @@ public class CreateWebsiteWizard extends BaseWizardBean
       String dnsProp = AVMConstants.PROP_DNS + DNSNameMangler.MakeDNSName(components);
       this.avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
             new PropertyValue(DataTypeDefinition.TEXT, path));
-   }
-   
-   /**
-    * @return The list of invited usernames
-    */
-   private List<String> getInvitedUsernames(InviteWebsiteUsersWizard wizard)
-   {
-      // add the list of invited users here
-      List<UserGroupRole> users = (List<UserGroupRole>)wizard.getUserRolesDataModel().getWrappedData();
-      List<String> invited = new ArrayList<String>(users.size());
-      for (UserGroupRole u : users)
-      {
-         invited.add(u.getAuthority());
-      }
-      return invited;
    }
 }

@@ -52,8 +52,8 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
    {
       if (this.folderPermissions == null)
       {
-         // TODO: get permissions for a website folder type
-         this.folderPermissions = this.permissionService.getSettablePermissions(ContentModel.TYPE_FOLDER);
+         // get permissions and roles for a website folder type
+         this.folderPermissions = this.permissionService.getSettablePermissions(ContentModel.TYPE_AVMWEBFOLDER);
       }
        
       return this.folderPermissions;

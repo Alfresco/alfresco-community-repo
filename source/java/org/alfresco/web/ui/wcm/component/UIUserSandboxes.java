@@ -39,8 +39,10 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
@@ -195,13 +197,17 @@ public class UIUserSandboxes extends SelfRenderingComponent
          }
          String storeRoot = (String)nodeService.getProperty(websiteRef, ContentModel.PROP_AVMSTORE);
          
-         // find the list of users who have a sandbox in the website
-         List<String> users = (List<String>)nodeService.getProperty(websiteRef, ContentModel.PROP_USERSANDBOXES);
-         for (int i=0; i<users.size(); i++)
+         // get the list of users who have a sandbox in the website
+         int index = 0;
+         List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+               websiteRef, ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+         for (ChildAssociationRef ref : userInfoRefs)
          {
-            String username = users.get(i);
+            NodeRef userInfoRef = ref.getChildRef();
+            String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
+            String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
             
-            // build the name of the main store for the user
+            // build the name of the main store for this user
             String mainStore = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
             
             // check it exists before we render the view
@@ -227,8 +233,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
                out.write("<b>");
                out.write(bundle.getString(MSG_USERNAME));
                out.write(":</b>&nbsp;");
-               out.write(username); // TODO: convert to full name?
-               out.write("</td><td><nobr>");
+               out.write(username);
+               out.write(" (");
+               out.write(bundle.getString(userrole));
+               out.write(")</td><td><nobr>");
                
                // direct actions for a sandbox
                String sandboxUrl = AVMConstants.buildAVMStoreUrl(mainStore);
@@ -279,7 +287,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                      "white");
                
                // spacer row
-               if (i < users.size() - 1)
+               if (index++ < userInfoRefs.size() - 1)
                {
                   out.write("<div style='padding:4px'></div>");
                }

@@ -125,6 +125,10 @@
          <dialog name="deleteAvmFolder" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFolderDialog"
                  icon="/images/icons/delete_large.gif" title-id="delete_folder" 
                  description-id="delete_avm_folder_info" />
+         
+         <dialog name="createAvmFolder" page="/jsp/wcm/create-folder-dialog.jsp" managed-bean="CreateFolderDialog"
+                 icon="/images/icons/create_space_large.gif" title-id="create_folder" 
+                 description-id="create_avm_folder_info" />
       </dialogs>
    </config>
    

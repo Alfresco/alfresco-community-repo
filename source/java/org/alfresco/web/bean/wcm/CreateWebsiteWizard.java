@@ -272,6 +272,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     * Identifier for store-types: .sandbox.staging.main and .sandbox.staging.preview
     * Store-id: .sandbox-id.<guid> (unique across all stores in the sandbox)
     * DNS: .dns.<store> = <path-to-webapps-root>
+    * Website Name: .website.name = website name
     * 
     * @param name       The store name to create the sandbox for
     */
@@ -328,6 +329,12 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.avmService.setStoreProperty(previewStore,
             QName.createQName(null, sandboxIdProp),
             new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      if (logger.isDebugEnabled())
+      {
+         dumpStoreProperties(stagingStore);
+         dumpStoreProperties(previewStore);
+      }
    }
    
    /**
@@ -412,6 +419,12 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new PropertyValue(DataTypeDefinition.TEXT, null));
       this.avmService.setStoreProperty(previewStore, QName.createQName(null, sandboxIdProp),
             new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      if (logger.isDebugEnabled())
+      {
+         dumpStoreProperties(userStore);
+         dumpStoreProperties(previewStore);
+      }
    }
    
    /**
@@ -427,5 +440,19 @@ public class CreateWebsiteWizard extends BaseWizardBean
       String dnsProp = AVMConstants.PROP_DNS + DNSNameMangler.MakeDNSName(components);
       this.avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
             new PropertyValue(DataTypeDefinition.TEXT, path));
+   }
+   
+   /**
+    * Debug helper method to dump the properties of a store
+    *  
+    * @param store   Store name to dump properties for
+    */
+   private void dumpStoreProperties(String store)
+   {
+      Map<QName, PropertyValue> props = avmService.getStoreProperties(store);
+      for (QName name : props.keySet())
+      {
+         logger.debug("   " + name + ": " + props.get(name));
+      }
    }
 }

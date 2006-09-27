@@ -26,6 +26,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
@@ -95,7 +96,7 @@ public class AVMNode implements Map<String, Object>
             for (QName qname: props.keySet())
             {
                PropertyValue propValue = props.get(qname);
-               this.properties.put(qname.toString(), propValue.getSerializableValue());
+               this.properties.put(qname.toString(), propValue.getValue(DataTypeDefinition.ANY));
             }
          }
          

@@ -61,6 +61,20 @@
             <target>new</target>
          </action>
          
+         <!-- Create AVM Content -->
+         <action id="create_content">
+            <label-id>sandbox_create</label-id>
+            <image>/images/icons/new_content.gif</image>
+            <action>wizard:createWebContent</action>
+         </action>
+         
+         <!-- Create AVM folder -->
+         <action id="create_folder">
+            <label-id>create_folder</label-id>
+            <image>/images/icons/create_space.gif</image>
+            <action>dialog:createAvmFolder</action>
+         </action>
+         
          
          <!-- Actions for a document in the AVM Browse screen -->
          <action-group id="avm_file_browse">
@@ -98,6 +112,13 @@
          <action-group id="avm_deleted_modified">
             <show-link>false</show-link>
             <action idref="submit" />
+         </action-group>
+         
+         <!-- Actions for the Create menu in the sandbox browse screen -->
+         <action-group id="avm_create_menu">
+            <show-link>false</show-link>
+            <action idref="create_content" />
+            <action idref="create_folder" />
          </action-group>
          
       </actions>

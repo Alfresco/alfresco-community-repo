@@ -76,8 +76,12 @@
                            </td>
                            <td align=right>
                               <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.sandboxPreviewUrl}" target="new" />
-                              &nbsp;
-                              <a:actionLink value="#{msg.sandbox_create}" image="/images/icons/new_content.gif" action="wizard:createWebContent" />
+                           </td>
+                           <td width=80 style="padding-left:4px">
+                              <%-- Create actions menu --%>
+                              <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                 <r:actions id="acts_create" value="avm_create_menu" context="#{AVMBrowseBean.avmNode}" />
+                              </a:menu>
                            </td>
                         </tr>
                      </table>

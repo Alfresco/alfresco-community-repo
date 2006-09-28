@@ -77,10 +77,16 @@
                            <td align=right>
                               <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.sandboxPreviewUrl}" target="new" />
                            </td>
-                           <td width=80 style="padding-left:4px">
+                           <td style="padding-left:4px" width=52>
                               <%-- Create actions menu --%>
                               <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                  <r:actions id="acts_create" value="avm_create_menu" context="#{AVMBrowseBean.avmNode}" />
+                              </a:menu>
+                           </td>
+                           <td style="padding-left:4px" width=80>
+                              <%-- More actions menu --%>
+                              <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                 <r:actions id="acts_more" value="avm_more_menu" context="#{AVMBrowseBean.avmNode}" />
                               </a:menu>
                            </td>
                         </tr>

@@ -877,6 +877,10 @@
          <to-view-id>/jsp/wcm/import-content-dialog.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>addAvmContent</from-outcome>
+         <to-view-id>/jsp/wcm/add-content-dialog.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>browseSandbox</from-outcome>
          <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
       </navigation-case>
@@ -895,6 +899,10 @@
       <navigation-case>
          <from-outcome>editAvmXmlInline</from-outcome>
          <to-view-id>/jsp/wcm/edit-xml-inline.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

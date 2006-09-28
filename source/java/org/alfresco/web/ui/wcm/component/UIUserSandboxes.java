@@ -329,7 +329,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       
       // info we need to calculate preview paths for assets
       String dns = AVMConstants.lookupStoreDNS(userStorePrefix);
-      int rootPathIndex = AVMConstants.buildAVMStoreRootPath(userStorePrefix).length() + 1;
+      int rootPathIndex = AVMConstants.buildAVMStoreRootPath(userStorePrefix).length();
       ClientConfigElement config = Application.getClientConfig(fc);
       
       // get the UIActions component responsible for rendering context related user actions

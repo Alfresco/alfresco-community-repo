@@ -53,7 +53,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
    protected List<SelectItem> objectTypes;
    protected ContentService contentService;
    
-   private static Log logger = LogFactory.getLog(BaseContentWizard.class);
+   protected static Log logger = LogFactory.getLog(BaseContentWizard.class);
+   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation

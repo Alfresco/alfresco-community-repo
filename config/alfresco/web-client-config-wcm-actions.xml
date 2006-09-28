@@ -75,6 +75,14 @@
             <action>dialog:createAvmFolder</action>
          </action>
          
+         <!-- Upload Content -->
+         <action id="add_content">
+            <label-id>add_content</label-id>
+            <image>/images/icons/add.gif</image>
+            <action>addAvmContent</action>
+            <action-listener>#{AddAvmContentDialog.start}</action-listener>
+         </action>
+         
          
          <!-- Actions for a document in the AVM Browse screen -->
          <action-group id="avm_file_browse">
@@ -117,8 +125,14 @@
          <!-- Actions for the Create menu in the sandbox browse screen -->
          <action-group id="avm_create_menu">
             <show-link>false</show-link>
+            <action idref="add_content" />
             <action idref="create_content" />
             <action idref="create_folder" />
+         </action-group>
+         
+         <!-- Actions for the More Actions menu in the sandbox browse screen -->
+         <action-group id="avm_more_menu">
+            <show-link>false</show-link>
          </action-group>
          
       </actions>

@@ -67,8 +67,10 @@ public final class AVMConstants
    
    public static String buildAVMStoreUrl(String store)
    {
-      if (store.indexOf(":") > 0)
-	 store = store.substring(0, store.indexOf(':'));
+      if (store.indexOf(':') != -1)
+      {
+         store = store.substring(0, store.indexOf(':'));
+      }
       ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
       return MessageFormat.format(PREVIEW_SANDBOX_URL, lookupStoreDNS(store), config.getWCMDomain(), config.getWCMPort());
    }
@@ -76,22 +78,28 @@ public final class AVMConstants
    public static String buildAVMAssetUrl(String store, String assetPath)
    {
       if (assetPath.startsWith('/' + DIR_APPBASE + '/' + DIR_WEBAPPS))
-          assetPath = assetPath.substring(('/' + DIR_APPBASE + '/' + DIR_WEBAPPS).length());
+      {
+         assetPath = assetPath.substring(('/' + DIR_APPBASE + '/' + DIR_WEBAPPS).length());
+      }
       if (assetPath.length() == 0 || assetPath.charAt(0) != '/')
-	  assetPath = '/' + assetPath;
-
+      {
+         assetPath = '/' + assetPath;
+      }
+      
       ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
       return MessageFormat.format(PREVIEW_ASSET_URL, lookupStoreDNS(store), config.getWCMDomain(), config.getWCMPort(), assetPath);
    }
-
+   
    public static String buildAVMAssetUrl(final String avmPath)
    {
-       final String[] s = avmPath.split(":");
-       if (s.length != 2)
-	   throw new IllegalArgumentException("expected exactly one ':' in " + avmPath); 
-       return AVMConstants.buildAVMAssetUrl(s[0], s[1]);
+      final String[] s = avmPath.split(":");
+      if (s.length != 2)
+      {
+         throw new IllegalArgumentException("expected exactly one ':' in " + avmPath);
+      }
+      return AVMConstants.buildAVMAssetUrl(s[0], s[1]);
    }
-
+   
    public static String lookupStoreDNS(String store)
    {
       String dns = null;

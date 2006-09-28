@@ -516,7 +516,7 @@ public class AVMBrowseBean implements IContextListener
          tx.begin();
          
          String dns = AVMConstants.lookupStoreDNS(getSandbox());
-         int rootPathIndex = AVMConstants.buildAVMStoreRootPath(getSandbox()).length() + 1;
+         int rootPathIndex = AVMConstants.buildAVMStoreRootPath(getSandbox()).length();
          
          Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(-1, getCurrentPath());
          this.files = new ArrayList<Map>(nodes.size());

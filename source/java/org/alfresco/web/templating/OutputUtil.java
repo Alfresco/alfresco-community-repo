@@ -63,9 +63,9 @@ public class OutputUtil
          OutputStream fileOut = avmService.createFile(parentPath, generatedFileName);
          
          String fullAvmPath = parentPath + '/' + generatedFileName;
-
-	 String avmStore = parentPath.substring(0, parentPath.indexOf(":/"));
-	 String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
+         
+         String avmStore = parentPath.substring(0, parentPath.indexOf(":/"));
+         String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + 
@@ -119,14 +119,13 @@ public class OutputUtil
          String generatedFileName = (String)
          nodeService.getProperty(generatedNodeRef, 
                ContentModel.PROP_NAME);
-	 String avmPath = (String)AVMNodeConverter.ToAVMVersionPath(nodeRef)[1];
-	 String avmStore = avmPath.substring(0, avmPath.indexOf(":/"));
-	 String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
-	 
+         String avmPath = (String)AVMNodeConverter.ToAVMVersionPath(nodeRef)[1];
+         String avmStore = avmPath.substring(0, avmPath.indexOf(":/"));
+         String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
+         
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("regenerating file node for : " + fileName + " (" +
                   nodeRef.toString() + ") to " + generatedNodeRef.toString());
-
          
          // get a writer for the content and put the file
          ContentWriter writer = contentService.getWriter(generatedNodeRef, 

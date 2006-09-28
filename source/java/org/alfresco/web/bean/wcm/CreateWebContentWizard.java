@@ -88,12 +88,14 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String finishImpl(FacesContext context, String outcome)
       throws Exception
    {
-      logger.debug("saving file content to " + this.fileName);
+      if (logger.isDebugEnabled())
+         logger.debug("saving file content to " + this.fileName);
       saveContent(null, this.content);
       
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.templateTypeName != null)
       {
-         logger.debug("generating template output for " + this.templateTypeName);
+         if (logger.isDebugEnabled())
+            logger.debug("generating template output for " + this.templateTypeName);
          this.nodeService.setProperty(AVMNodeConverter.ToNodeRef(-1, this.createdPath), 
                TemplatingService.TT_QNAME, 
                this.templateTypeName);

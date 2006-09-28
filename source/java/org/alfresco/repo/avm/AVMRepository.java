@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
 /**
@@ -921,6 +922,76 @@ public class AVMRepository
         }
         DirectoryNode dirNode = (DirectoryNode)node;
         return dirNode.lookupChild(dir, name, includeDeleted);
+    }
+    
+    /**
+     * Get all the paths to a particular node.
+     * @param desc The node descriptor.
+     * @return The list of version, paths.
+     */
+    public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc)
+    {
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
+        List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>>();
+        List<String> components = new ArrayList<String>();
+        recursiveGetPaths(node, components, paths);
+        return paths;
+    }
+    
+    private void recursiveGetPaths(AVMNode node, List<String> components, 
+                                   List<Pair<Integer, String>> paths)
+    {
+        if (node.getIsRoot())
+        {
+            AVMStore store = AVMContext.fgInstance.fAVMStoreDAO.getByRoot(node);
+            if (store != null)
+            {
+                addPath(components, -1, store.getName(), paths);
+                return;
+            }
+            VersionRoot vr = AVMContext.fgInstance.fVersionRootDAO.getByRoot(node);
+            if (vr != null)
+            {
+                addPath(components, vr.getVersionID(), vr.getAvmStore().getName(), paths);
+            }
+            return;
+        }
+        List<ChildEntry> entries = AVMContext.fgInstance.fChildEntryDAO.getByChild(node);
+        for (ChildEntry entry : entries)
+        {
+            String name = entry.getName();
+            components.add(name);
+            AVMNode parent = entry.getParent();
+            recursiveGetPaths(parent, components, paths);
+            components.remove(components.size() - 1);
+        }
+    }
+    
+    /**
+     * Add a path to the list.
+     * @param components The path name components.
+     * @param version The version id.
+     * @param storeName The name of the 
+     * @param paths The List to add to.
+     */
+    private void addPath(List<String> components, int version, String storeName, 
+                         List<Pair<Integer, String>> paths)
+    {
+        StringBuilder pathBuilder = new StringBuilder();
+        pathBuilder.append(storeName);
+        pathBuilder.append(":");
+        if (components.size() == 0)
+        {
+            pathBuilder.append("/");
+            paths.add(new Pair<Integer, String>(version, pathBuilder.toString()));
+            return;
+        }
+        for (int i = components.size() - 1; i >= 0; i--)
+        {
+            pathBuilder.append("/");
+            pathBuilder.append(components.get(i));
+        }
+        paths.add(new Pair<Integer, String>(version, pathBuilder.toString()));
     }
     
     /**

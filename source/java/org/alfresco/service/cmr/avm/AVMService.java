@@ -27,6 +27,7 @@ import java.util.SortedMap;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * This is the service interface for the [Alfresco|Addled|Advanced|Aleatoric|Apotheosed|Awful] 
@@ -406,6 +407,13 @@ public interface AVMService
      * @throws AVMWrongTypeException If <code>dir</code> does not refer to a directory.
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted);
+    
+    /**
+     * Get a list of all paths that a given node has.
+     * @param desc The node descriptor to get paths for.
+     * @return A List of version, path Pairs.
+     */
+    public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc);
     
     /**
      * Get the indirection path for a node in a layered context.

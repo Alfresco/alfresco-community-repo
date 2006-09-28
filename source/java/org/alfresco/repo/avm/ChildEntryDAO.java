@@ -55,6 +55,13 @@ public interface ChildEntryDAO
     public ChildEntry getByParentChild(DirectoryNode parent, AVMNode child);
     
     /**
+     * Get all the ChildEntries corresponding to the given child.
+     * @param child The child for which to look up entries.
+     * @return The matching entries.
+     */
+    public List<ChildEntry> getByChild(AVMNode child);
+    
+    /**
      * Update a dirty ChildEntry.
      * @param child The dirty entry.
      */

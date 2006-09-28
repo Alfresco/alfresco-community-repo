@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.log4j.Logger;
 
@@ -566,6 +567,21 @@ public class AVMServiceImpl implements AVMService
             return null;
         }
     }
+    
+    /**
+     * Get a list of all paths that a given node has.
+     * @param desc The node descriptor to get paths for.
+     * @return A List of version, path Pairs.
+     */
+    public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc)
+    {
+    	if (desc == null)
+    	{
+    		throw new AVMBadArgumentException("Descriptor is null.");
+    	}
+    	return fAVMRepository.getPaths(desc);
+    }
+
     
     /**
      * Purge an AVMStore.  Permanently delete everything that 

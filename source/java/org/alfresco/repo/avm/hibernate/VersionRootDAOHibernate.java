@@ -20,6 +20,7 @@ package org.alfresco.repo.avm.hibernate;
 import java.util.Date;
 import java.util.List;
 
+import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.VersionRoot;
 import org.alfresco.repo.avm.VersionRootDAO;
@@ -128,7 +129,20 @@ class VersionRootDAOHibernate extends HibernateDaoSupport implements
         query.setInteger("version", id);
         return (VersionRoot)query.uniqueResult();
     }
-    
+
+    /**
+     * Get one from its root.
+     * @param root The root to match.
+     * @return The version root or null.
+     */
+    public VersionRoot getByRoot(AVMNode root)
+    {
+        Query query = getSession().createQuery("from VersionRootImpl vr " +
+                                               "where vr.root = :root");
+        query.setEntity("root", root);
+        return (VersionRoot)query.uniqueResult();
+    }
+
     /**
      * Get the highest numbered version in a repository.
      * @param rep The repository.

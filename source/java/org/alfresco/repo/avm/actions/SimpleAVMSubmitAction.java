@@ -92,7 +92,6 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
         int version = (Integer)avmVersionPath[0];
         String path = (String)avmVersionPath[1];
-        fgLogger.error(path);
         // Get store name and path parts.
         String [] storePath = path.split(":");
         if (storePath.length != 2)

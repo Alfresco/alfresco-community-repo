@@ -51,6 +51,13 @@ public interface AVMStoreDAO
     public AVMStore getByName(String name);
     
     /**
+     * Get the AVM Store that has the given root as HEAD.
+     * @param root The root to query.
+     * @return The matching store or null.
+     */
+    public AVMStore getByRoot(AVMNode root);
+    
+    /**
      * Update the given AVMStore record.
      * @param rep The dirty AVMStore.
      */

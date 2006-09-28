@@ -56,6 +56,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 
 /**
  * Big test of AVM behavior.
@@ -63,6 +64,31 @@ import org.alfresco.util.GUID;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Test getting all paths for a node.
+     *
+     */
+    public void testGetPaths()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createBranch(-1, "main:/a", "main:/", "abranch");
+            fService.createSnapshot("main");
+            fService.createBranch(-1, "main:/a/b", "main:/", "bbranch");
+            List<Pair<Integer, String>> paths = fService.getPaths(fService.lookup(-1, "main:/a/b/c/foo"));
+            for (Pair<Integer, String> path : paths)
+            {
+                System.out.println(path.getFirst() + " " + path.getSecond());
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
     /**
      * Test partial flatten.
      */
@@ -85,6 +111,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertTrue(b.isLayeredDirectory());
             AVMNodeDescriptor c = fService.lookup(-1, "layer:/a/b/c");
             assertTrue(c.isPlainDirectory());
+            assertEquals(1, fSyncService.compare(-1, "layer:/a", -1, "main:/a").size());
         }
         catch (Exception e)
         {

@@ -19,6 +19,7 @@ package org.alfresco.repo.avm.hibernate;
 
 import java.util.List;
 
+import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.AVMStoreDAO;
 import org.alfresco.repo.avm.AVMStoreImpl;
@@ -78,7 +79,20 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     {
         return (AVMStore)getSession().get(AVMStoreImpl.class, name);
     }
-    
+
+    /**
+     * Get the AVM Store that has the given root as HEAD.
+     * @param root The root to query.
+     * @return The matching store or null.
+     */
+    public AVMStore getByRoot(AVMNode root)
+    {
+        Query query = getSession().createQuery("from AVMStoreImpl st " +
+                                               "where st.root = :root");
+        query.setEntity("root", root);
+        return (AVMStore)query.uniqueResult();
+    }
+
     /**
      * Update the given AVMStore record.
      * @param store The dirty AVMStore.

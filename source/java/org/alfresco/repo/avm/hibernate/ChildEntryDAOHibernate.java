@@ -93,6 +93,20 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
     }
 
     /**
+     * Get all the ChildEntries corresponding to the given child.
+     * @param child The child for which to look up entries.
+     * @return The matching entries.
+     */
+    @SuppressWarnings("unchecked")
+    public List<ChildEntry> getByChild(AVMNode child)
+    {
+        Query query = getSession().createQuery("from ChildEntryImpl ce " +
+                                               "where ce.child = :child");
+        query.setEntity("child", child);
+        return (List<ChildEntry>)query.list();
+    }
+
+    /**
      * Update a dirty ChildEntry.
      * @param child The dirty entry.
      */

@@ -54,6 +54,13 @@ public interface VersionRootDAO
     public VersionRoot getByVersionID(AVMStore store, int id);
     
     /**
+     * Get one from its root.
+     * @param root The root to match.
+     * @return The version root or null.
+     */
+    public VersionRoot getByRoot(AVMNode root);
+    
+    /**
      * Get the version of a store by dates.
      * @param store The store.
      * @param from The starting date.  May be null but not with to null also.

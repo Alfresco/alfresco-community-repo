@@ -901,6 +901,10 @@
          <to-view-id>/jsp/wcm/edit-xml-inline.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
+         <from-outcome>updateAvmFile</from-outcome>
+         <to-view-id>/jsp/wcm/update-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>cancel</from-outcome>
          <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
       </navigation-case>

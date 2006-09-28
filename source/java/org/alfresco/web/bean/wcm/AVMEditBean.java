@@ -16,6 +16,9 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.File;
+import java.text.MessageFormat;
+
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
@@ -33,6 +36,8 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.CheckinCheckoutBean;
+import org.alfresco.web.bean.FileUploadBean;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.templating.OutputUtil;
 import org.alfresco.web.templating.TemplatingService;
@@ -44,10 +49,15 @@ import org.alfresco.web.ui.common.Utils;
  * @author Kevin Roast
  */
 public class AVMEditBean
-{   
-   private String documentContent = null;
+{
+   private static final String MSG_ERROR_UPDATE = "error_update";
+   private static final String MSG_UPLOAD_SUCCESS = "file_upload_success";
    
+   private String documentContent = null;
    private String editorOutput = null;
+   
+   private File file;
+   private String fileName;
    
    /** AVM service bean reference */
    protected AVMService avmService;
@@ -159,6 +169,34 @@ public class AVMEditBean
    public void setEditorOutput(String editorOutput)
    {
       this.editorOutput = editorOutput;
+   }
+   
+   /**
+    * @return Returns the name of the file
+    */
+   public String getFileName()
+   {
+      // try and retrieve the file and filename from the file upload bean
+      // representing the file we previously uploaded.
+      FacesContext ctx = FacesContext.getCurrentInstance();
+      FileUploadBean fileBean = (FileUploadBean)ctx.getExternalContext().getSessionMap().
+         get(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
+      if (fileBean != null)
+      {
+         this.file = fileBean.getFile();
+         this.fileName = fileBean.getFileName();
+      }
+      
+      return this.fileName;
+   }
+   
+   /**
+    * @return Returns the message to display when a file has been uploaded
+    */
+   public String getFileUploadSuccessMsg()
+   {
+      String msg = Application.getMessage(FacesContext.getCurrentInstance(), MSG_UPLOAD_SUCCESS);
+      return MessageFormat.format(msg, new Object[] {getFileName()});
    }
    
    
@@ -288,12 +326,89 @@ public class AVMEditBean
       return outcome;
    }
    
+   /**
+    * Action called upon completion of the Update File page
+    */
+   public String updateFileOK()
+   {
+      String outcome = null;
+      
+      UserTransaction tx = null;
+      
+      AVMNode node = getAvmNode();
+      if (node != null && this.getFileName() != null)
+      {
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context);
+            tx.begin();
+            
+            // get an updating writer that we can use to modify the content on the current node
+            ContentWriter writer = this.contentService.getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
+            
+            // also update the mime type in case a different type of file is uploaded
+            String mimeType = Repository.getMimeTypeForFileName(context, this.fileName);
+            writer.setMimetype(mimeType);
+            
+            writer.putContent(this.file);            
+            
+            // commit the transaction
+            tx.commit();
+            
+            // clear action context
+            resetState();
+            
+            outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+         }
+         catch (Throwable err)
+         {
+            // rollback the transaction
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            Utils.addErrorMessage(Application.getMessage(
+                  FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE) + err.getMessage(), err);
+         }
+      }
+      
+      return outcome;
+   }
+   
+   /**
+    * Deals with the cancel button being pressed on the upload file page
+    */
+   public String cancel()
+   {
+      // reset the state
+      resetState();
+      
+      return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
+   }
+   
    private void resetState()
    {
       // clean up and clear action context
-      //clearUpload();
+      clearUpload();
       this.avmBrowseBean.setAvmNode(null);
       setDocumentContent(null);
       setEditorOutput(null);
+   }
+   
+   /**
+    * Clear form state and upload file bean
+    */
+   private void clearUpload()
+   {
+      // delete the temporary file we uploaded earlier
+      if (this.file != null)
+      {
+         this.file.delete();
+      }
+      
+      this.file = null;
+      this.fileName = null;
+      
+      // remove the file upload bean from the session
+      FacesContext ctx = FacesContext.getCurrentInstance();
+      ctx.getExternalContext().getSessionMap().remove(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
    }
 }

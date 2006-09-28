@@ -83,11 +83,23 @@
             <action-listener>#{AddAvmContentDialog.start}</action-listener>
          </action>
          
+         <!-- Update document -->
+         <action id="update_file">
+            <label-id>update</label-id>
+            <image>/images/icons/update.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:updateAvmFile</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
          
-         <!-- Actions for a document in the AVM Browse screen -->
+         
+         <!-- Actions for a file in the AVM Browse screen -->
          <action-group id="avm_file_browse">
             <show-link>false</show-link>
             <action idref="edit_file" />
+            <action idref="update_file" />
             <action idref="preview_file" />
             <action idref="delete_file" />
          </action-group>
@@ -99,10 +111,11 @@
             <action idref="delete_folder" />
          </action-group>
          
-         <!-- Actions for a document in Modified Files list -->
+         <!-- Actions for a file in Modified Files list -->
          <action-group id="avm_file_modified">
             <show-link>false</show-link>
             <action idref="edit_file" />
+            <action idref="update_file" />
             <action idref="submit" />
             <action idref="preview_file" />
             <action idref="delete_file" />

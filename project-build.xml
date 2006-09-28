@@ -104,6 +104,13 @@
    </target>
    
    <target name="sample-website" depends="init">
+     <javac srcdir="source/test-resources/websites/alfresco/ROOT/WEB-INF/classes"
+	    classpathref="classpath.compile"/>
+     <mkdir dir="source/test-resources/websites/alfresco/ROOT/WEB-INF/lib"/>
+     <jar basedir="source/test-resources/websites/alfresco/ROOT/WEB-INF/classes"
+	  destfile="source/test-resources/websites/alfresco/ROOT/WEB-INF/lib/alfresco-sample-website.jar"
+	  includes="**/*.class"/>
+     <mkdir dir="${dir.dist}"/>
      <zip destfile="${dir.dist}/alfresco-sample-website.zip" 
 	  basedir="source/test-resources/websites/alfresco/" 
 	  excludes="**/.svn"/>

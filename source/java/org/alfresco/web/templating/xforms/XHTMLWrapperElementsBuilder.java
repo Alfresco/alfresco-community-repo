@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms.schemabuilder;
+package org.alfresco.web.templating.xforms;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

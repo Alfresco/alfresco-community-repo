@@ -18,6 +18,7 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ page import="org.alfresco.web.bean.wcm.AVMConstants" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.templating.*" %>
 <%@ page import="org.alfresco.web.bean.wcm.CreateWebContentWizard" %>
@@ -25,7 +26,7 @@
 
 <%
 final CreateWebContentWizard wiz = (CreateWebContentWizard)
-      Application.getWizardManager().getBean();
+    Application.getWizardManager().getBean();
 TemplateType tt = wiz.getTemplateType();
 TemplateInputMethod tim = tt.getInputMethods().get(0);
 final TemplatingService ts = TemplatingService.getInstance();
@@ -57,25 +58,4 @@ dojo.addOnLoad(function()
 addSubmitHandlerToButton(document.getElementById("wizard:next-button"));
 addSubmitHandlerToButton(document.getElementById("wizard:finish-button"));
 });
-//
-//var baseOnClick = b.onclick;
-//b.onclick = function()
-//{
-// if (!document.submitTrigger.done)
-// {
-//   document.submitTrigger.buttonClick(); 
-//   return false;
-// }
-// else
-// {	
-//   return baseOnClick();
-// }
-//}
-//});
-//function doSubmit()
-//{
-//var b = document.getElementById("wizard:next-button");
-//b.click();
-//}
-	
 </script>

@@ -3,6 +3,7 @@
 	   xmlns:alfresco="http://www.alfresco.org/alfresco"
            targetNamespace="http://www.alfresco.org/alfresco"
            elementFormDefault="qualified">
+  <xs:include schemaLocation="/media/releases/get_company_footer_simple_type.jsp"/>
   <xs:simpleType name="category">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Product"/>
@@ -10,22 +11,6 @@
       <xs:enumeration value="Company"/>
       <xs:enumeration value="Event"/>
       <xs:enumeration value="Training"/>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="company-footer">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Activiti"/>
-      <xs:enumeration value="Alfresco"/>
-      <xs:enumeration value="Kofax"/>
-      <xs:enumeration value="Aarden Ringcroft"/>
-      <xs:enumeration value="PreVisor"/>
-      <xs:enumeration value="FileMark"/>
-      <xs:enumeration value="Red Herring"/>
-      <xs:enumeration value="Rivet Logic Corp."/>
-      <xs:enumeration value="Mayfield Fund"/>
-      <xs:enumeration value="Accel Partners"/>
-      <xs:enumeration value="BitRock"/>
-      <xs:enumeration value="aegif"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:element name="press-release">

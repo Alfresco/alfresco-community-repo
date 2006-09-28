@@ -35,7 +35,7 @@ public interface TemplateType
     /** the xml schema for this template type */
     public Document getSchema();
 
-    public String /* URI */ getSchemaURI();
+    //    public String /* URI */ getSchemaURI();
 
 //    public void setSchemaNodeRef(final NodeRef nodeRef);
 //    

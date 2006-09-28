@@ -80,7 +80,8 @@ public class TemplateTypeImpl
 	    final TemplatingService ts = TemplatingService.getInstance();
 	    try
 	    {
-		this.schema = ts.parseXML(this.schemaNodeRef);
+		//XXXarielb maybe cloneNode instead?
+		return /* this.schema = */ ts.parseXML(this.schemaNodeRef);
 	    }
 	    catch (Exception e)
 	    {

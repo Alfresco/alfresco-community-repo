@@ -9,11 +9,7 @@
     
    <description>Alfresco Website</description>
 
-   <context-param>
-      <param-name>foor</param-name>
-      <param-value>bar</param-value>
-      <description>foo bar</description>
-   </context-param>
+   <!-- Faces Servlet -->
 
    <welcome-file-list>
       <welcome-file>index.jsp</welcome-file>

@@ -22,8 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletContext;
 
 import org.alfresco.web.templating.*;
-import org.alfresco.web.templating.xforms.schemabuilder.*;
-import org.alfresco.web.bean.ajax.XFormsBean;
 import org.chiba.xml.util.DOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -100,45 +98,5 @@ public class XFormsInputMethod
 	}
  
 	ts.writeXML(result, out);
-    }
-
-    private static String getDocumentElementNameNoNS(final Document d)
-    {
-	final Node n = d.getDocumentElement();
-	String name = n.getNodeName();
-	return name;
-//	String prefix = n.getPrefix();
-//	String namespace = n.getNamespaceURI();
-//	System.out.println("name " + name + " prefix " + prefix + " ns uri " + namespace);
-//	return name.replaceAll(".+\\:", "");
-    }
- 
-    /**
-     * Generates the xforms based on the schema.
-     */
-    public Document getXForm(Document xmlContent, final TemplateType tt) 
-	throws FormBuilderException
-    {
-	final TemplatingService ts = TemplatingService.getInstance();
-	final FacesContext fc = FacesContext.getCurrentInstance();
-	final HttpServletRequest request = (HttpServletRequest)
-	    fc.getExternalContext().getRequest();
-	final String baseUrl = (request.getScheme() + "://" + 
-				request.getServerName() + ':' + 
-				request.getServerPort() + 
-				request.getContextPath());
-	LOGGER.debug("using baseUrl " + baseUrl + " for schemaformbuilder");
-
-	final SchemaFormBuilder builder = 
-	    new BaseSchemaFormBuilder(xmlContent,
-				      "/ajax/invoke/XFormsBean.handleAction",
-				      SchemaFormBuilder.SUBMIT_METHOD_POST,
-				      new XHTMLWrapperElementsBuilder(),
-				      baseUrl);
-	LOGGER.debug("building xform for schema " + tt.getName());
-	final Document result = builder.buildForm(tt);
-	LOGGER.debug("generated xform: " + result);
-	//	LOGGER.debug(ts.writeXMLToString(result));
-	return result;
     }
 }

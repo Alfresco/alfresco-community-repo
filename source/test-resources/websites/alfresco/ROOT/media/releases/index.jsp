@@ -1,88 +1,7 @@
-<jsp:directive.page import="java.io.*"/>
-<jsp:directive.page import="java.util.*"/>
-<jsp:directive.page import="org.alfresco.jndi.*"/>
-<jsp:directive.page import="org.alfresco.repo.avm.AVMRemote"/>
-<jsp:directive.page import="org.alfresco.service.cmr.avm.AVMNodeDescriptor"/>
-<jsp:directive.page import="org.w3c.dom.*"/>
-<jsp:directive.page import="javax.xml.parsers.*"/>
+<jsp:directive.page language="java" contentType="text/html; charset=UTF-8"/>
 <jsp:directive.page import="java.text.*"/>
-<%!
-class PressRelease
-{
-    public final String title;
-    public final String theAbstract;
-    public final Date date;
-    public final String href;
-
-    public PressRelease(String title, String theAbstract, Date d, String href)
-    {
-        this.title = title;
-        this.theAbstract = theAbstract;
-        this.date = d;
-        this.href = href;
-    }
-}
-
-public List<PressRelease> getPressReleases(HttpServletRequest request, ServletContext servletContext, JspWriter out)
-   throws Exception
-{
-    final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    dbf.setNamespaceAware(true);
-    dbf.setValidating(false);
-    final DocumentBuilder db = dbf.newDocumentBuilder();
-
-    // The real_path will look somethign like this:
-    //   /alfresco.avm/avm.alfresco.localhost/$-1$alfreco-guest-main:/appBase/avm_webapps/my_webapp
-    //
-    String real_path = servletContext.getRealPath("/media/releases/content");
-
-    // The avm_path to the root of the context will look something like this:
-    //    alfreco-guest-main:/appBase/avm_webapps/my_webapp
-    //
-    String avm_path = real_path.substring( real_path.indexOf('$', real_path.indexOf('$') + 1)  + 1 );
-    avm_path = avm_path.replace('\\','/');
-
-    AVMRemote  avm_remote = AVMFileDirContext.getAVMRemote();
-    Map< String, AVMNodeDescriptor> entries = avm_remote.getDirectoryListing(-1, avm_path);
-
-    List<PressRelease> result = new LinkedList<PressRelease>();
-    for ( Map.Entry<String, AVMNodeDescriptor> entry : entries.entrySet() )
-    {
-        String entry_name = entry.getKey();
-        AVMNodeDescriptor entry_node = entry.getValue();
-        if (entry_node.isFile())
-        {
-             InputStream istream = new AVMRemoteInputStream(  avm_remote.getInputHandle( -1, avm_path + '/' + entry_name ), avm_remote );
-             try
-             {
-                 Document d = db.parse(istream);
-                 if ("alfresco:press-release".equals(d.getDocumentElement().getNodeName()))
-                 {
-                     Element t = (Element)d.getElementsByTagName("alfresco:title").item(0);
-                     Element a = (Element)d.getElementsByTagName("alfresco:abstract").item(0);
-                     Element dateEl = (Element)d.getElementsByTagName("alfresco:launch_date").item(0);
-                     Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dateEl.getFirstChild().getNodeValue());
-                     String href = "/media/releases/content/" + entry_name;
-                     href = href.replaceAll(".xml$", ".shtml");
-                     result.add(new PressRelease(t.getFirstChild().getNodeValue(),
-                                                 a.getFirstChild().getNodeValue(),
-                                                 date,
-                                                 href));
-                 }
-             }
-             catch (Throwable t)
-             {
-                 t.printStackTrace();
-             }
-             finally
-             {
-                 istream.close();
-             }
-         }
-     }
-     return result;
-}
-%>
+<jsp:directive.page import="java.util.*"/>
+<jsp:directive.page import="org.alfresco.web.pr.*"/>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -162,12 +81,12 @@ public List<PressRelease> getPressReleases(HttpServletRequest request, ServletCo
 <h1>Alfresco Press Releases</h1>
 
 <%
-List<PressRelease> pressReleases = getPressReleases(request, application, out);
-for (PressRelease pr : pressReleases)
+List<PressReleaseBean> pressReleases = Util.getPressReleases(request, application);
+for (PressReleaseBean pr : pressReleases)
 {
 %>
-<h2 class="headline"><a href="<%= pr.href %>"><%= pr.title %></a></h2>
-<p class="date"><%= DateFormat.getDateInstance(DateFormat.LONG).format(pr.date) %></p><p class="abstract"><%= pr.theAbstract %></p>
+<h2 class="headline"><a href="<%= pr.getHref() %>"><%= pr.getTitle() %></a></h2>
+<p class="date"><%= DateFormat.getDateInstance(DateFormat.LONG).format(pr.getLaunchDate()) %></p><p class="abstract"><%= pr.getAbstract() %></p>
 <%
 }
 %>

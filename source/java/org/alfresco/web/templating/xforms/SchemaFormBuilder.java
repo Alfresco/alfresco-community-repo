@@ -14,37 +14,28 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms.schemabuilder;
+package org.alfresco.web.templating.xforms;
 
-import org.apache.commons.jxpath.JXPathContext;
-import org.apache.commons.jxpath.Pointer;
-import org.apache.xerces.xs.*;
-import org.chiba.xml.util.DOMUtil;
-import org.chiba.xml.xforms.NamespaceCtx;
-import org.w3c.dom.*;
-import org.w3c.dom.ls.*;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.xml.sax.InputSource;
-import org.alfresco.web.templating.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
-
-/*
- * Search for TODO for things remaining to-do in this implementation.
- *
- * TODO: Support configuration mechanism to allow properties to be set without programming.
- * TODO: i18n/l10n of messages, hints, captions. Possibly leverage org.chiba.i18n classes.
- * TODO: When Chiba supports itemset, use schema keyref and key constraints for validation.
- * TODO: Support namespaces in instance documents. Currently can't do this due to Chiba bugs.
- * TODO: Place default values for list and enumeration types at the beginning of the item list.
- *
- */
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import org.alfresco.web.templating.*;
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.Pointer;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.xerces.xs.*;
+import org.chiba.xml.util.DOMUtil;
+import org.chiba.xml.xforms.NamespaceCtx;
+import org.w3c.dom.*;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.*;
+import org.xml.sax.InputSource;
 
 /**
  * An abstract implementation of the SchemaFormBuilder interface allowing
@@ -54,10 +45,9 @@ import java.util.*;
  * required interface methods (createXXX, startXXX, and endXXX methods).
  *
  * @author $Author: unl $
- * @version $Id: AbstractSchemaFormBuilder.java,v 1.25 2005/03/29 14:12:06 unl Exp $
  */
-public abstract class AbstractSchemaFormBuilder 
-    implements SchemaFormBuilder {
+public class SchemaFormBuilder 
+{
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -94,6 +84,160 @@ public abstract class AbstractSchemaFormBuilder
 	    }
 	}
     };
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public static class Occurs
+    {
+	public final static int UNBOUNDED = -1;
+	
+	public final int minimum;
+	public final int maximum;
+
+	public Occurs(final XSParticle particle)
+	{
+	    if (particle == null)
+	    {
+		this.minimum = 1;
+		this.maximum = 1;
+	    }
+	    else
+	    {
+		this.minimum = particle.getMinOccurs();
+		this.maximum = (particle.getMaxOccursUnbounded()
+				? Occurs.UNBOUNDED
+				: particle.getMaxOccurs());
+	    }
+	}
+
+	public Occurs(final int minimum)
+	{
+	    this(minimum, UNBOUNDED);
+	}
+
+	public Occurs(final int minimum, final int maximum)
+	{
+	    this.minimum = minimum;
+	    this.maximum = maximum;
+	}
+
+	public boolean isUnbounded()
+	{
+	    return this.maximum == UNBOUNDED;
+	}
+
+	public String toString()
+	{
+	    return "minimum=" + minimum + ", maximum=" + maximum;
+	}
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public final static Log LOGGER = 
+	LogFactory.getLog(SchemaFormBuilder.class);
+
+    /**
+     * XMLSchema Namespace declaration
+     */
+    public static final String XMLSCHEMA_NS =
+	"http://www.w3.org/2001/XMLSchema";
+
+    /**
+     * XMLSchema prefix
+     */
+    public static final String XMLSCHEMA_NS_PREFIX = "xs:";
+
+    /**
+     * XMLSchema Instance Namespace declaration
+     */
+    public static final String XMLSCHEMA_INSTANCE_NS = 
+	"http://www.w3.org/2001/XMLSchema-instance";
+
+    /**
+     * XMLSchema instance prefix
+     */
+    public static final String XMLSCHEMA_INSTANCE_NS_PREFIX = "xsi:";
+
+    /**
+     * XMLNS Namespace declaration.
+     */
+    public static final String XMLNS_NAMESPACE_URI =
+	"http://www.w3.org/2000/xmlns/";
+
+    /**
+     * XML Namespace declaration
+     */
+    public static final String XML_NAMESPACE_URI =
+	"http://www.w3.org/XML/1998/namespace";
+
+    /**
+     * XForms namespace declaration.
+     */
+    public static final String XFORMS_NS = 
+	"http://www.w3.org/2002/xforms";
+
+    /**
+     * XForms prefix
+     */
+    public static final String XFORMS_NS_PREFIX = "xforms:";
+
+    /**
+     * Chiba namespace declaration.
+     */
+    public static final String CHIBA_NS =
+	"http://chiba.sourceforge.net/xforms";
+
+    /**
+     * Chiba prefix
+     */
+    public static final String CHIBA_NS_PREFIX = "chiba:";
+
+    /**
+     * XLink namespace declaration.
+     */
+    public static final String XLINK_NS = "http://www.w3.org/1999/xlink";
+
+    /**
+     * Xlink prefix
+     */
+    public static final String XLINK_NS_PREFIX = "xlink:";
+
+    /**
+     * XML Events namsepace declaration.
+     */
+    public static final String XMLEVENTS_NS = "http://www.w3.org/2001/xml-events";
+
+    /**
+     * XML Events prefix
+     */
+    public static final String XMLEVENTS_NS_PREFIX = "ev:";
+
+    /**
+     * Prossible values of the "@method" on the "submission" element
+     */
+    public static final String SUBMIT_METHOD_POST = "post";
+
+    /**
+     * __UNDOCUMENTED__
+     */
+    public static final String SUBMIT_METHOD_PUT = "put";
+
+    /**
+     * __UNDOCUMENTED__
+     */
+    public static final String SUBMIT_METHOD_GET = "get";
+
+    /**
+     * __UNDOCUMENTED__
+     */
+    public static final String SUBMIT_METHOD_FORM_DATA_POST = "form-data-post";
+
+    /**
+     * __UNDOCUMENTED__
+     */
+    public static final String SUBMIT_METHOD_URLENCODED_POST =
+	"urlencoded-post";
 
     private static final String PROPERTY_PREFIX =
             "http://www.chiba.org/properties/schemaFormBuilder/";
@@ -161,30 +305,10 @@ public abstract class AbstractSchemaFormBuilder
             "compact";
     private static final String DEFAULT_LONG_LIST_MAX_SIZE = "6";
 
-    /**
-     * __UNDOCUMENTED__
-     */
-    protected Document _instanceDocument;
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    protected String _action;
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    protected String _submitMethod;
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    protected String _base;
-
-    /**
-     * __UNDOCUMENTED__
-     */
-    protected WrapperElementsBuilder _wrapper = new XHTMLWrapperElementsBuilder();
+    private final String action;
+    private final String submitMethod;
+    private final String base;
+    protected WrapperElementsBuilder wrapper = new XHTMLWrapperElementsBuilder();
 
     /**
      * generic counter -> replaced by an hashMap with:
@@ -194,7 +318,6 @@ public abstract class AbstractSchemaFormBuilder
     private HashMap counter;
     private final Properties properties = new Properties();
     private String targetNamespace;
-
     private final Map namespacePrefixes = new HashMap();
 
     // typeTree
@@ -209,7 +332,7 @@ public abstract class AbstractSchemaFormBuilder
 	new TreeMap<String, TreeSet<XSTypeDefinition>>();
 
     /**
-     * Creates a new AbstractSchemaFormBuilder object.
+     * Creates a new SchemaFormBuilder object.
      *
      * @param rootElementName    __UNDOCUMENTED__
      * @param instanceSource __UNDOCUMENTED__
@@ -217,27 +340,23 @@ public abstract class AbstractSchemaFormBuilder
      * @param submitMethod   __UNDOCUMENTED__
      * @param wrapper        __UNDOCUMENTED__
      */
-    public AbstractSchemaFormBuilder(final Document instanceDocument,
-                                     final String action,
-                                     final String submitMethod,
-                                     final WrapperElementsBuilder wrapper,
-                                     final String base) 
+    public SchemaFormBuilder(final String action,
+			     final String submitMethod,
+			     final WrapperElementsBuilder wrapper,
+			     final String base) 
     {
         reset();
-        this._instanceDocument = instanceDocument;
 
-        this._action = action;
-        this._base = base;
-
-        //control if it is one of the SUBMIT_METHOD attributes?
-        this._submitMethod = submitMethod;
-        this._wrapper = wrapper;
+        this.action = action;
+        this.submitMethod = submitMethod;
+        this.wrapper = wrapper;
+        this.base = base;
     }
 
     /**
-     * __UNDOCUMENTED__
+     * Get the current set of properties used by implementations of SchemaFormBuilder.
      *
-     * @return __UNDOCUMENTED__
+     * @return The list of properties.
      */
     public Properties getProperties() 
     {
@@ -245,10 +364,10 @@ public abstract class AbstractSchemaFormBuilder
     }
 
     /**
-     * __UNDOCUMENTED__
+     * Sets the property to the specified value. If the property exists, its value is overwritten.
      *
-     * @param key   __UNDOCUMENTED__
-     * @param value __UNDOCUMENTED__
+     * @param key   The implementation defined property key.
+     * @param value The value for the property.
      */
     public void setProperty(String key, String value) 
     {
@@ -256,10 +375,10 @@ public abstract class AbstractSchemaFormBuilder
     }
 
     /**
-     * __UNDOCUMENTED__
+     * Gets the value for the specified property.
      *
-     * @param key __UNDOCUMENTED__
-     * @return __UNDOCUMENTED__
+     * @param key The implementation defined property key.
+     * @return The property value if found, or null if the property cannot be located.
      */
     public String getProperty(String key) 
     {
@@ -267,11 +386,11 @@ public abstract class AbstractSchemaFormBuilder
     }
 
     /**
-     * __UNDOCUMENTED__
+     * Gets the value for the specified property, with a default if the property cannot be located.
      *
-     * @param key          __UNDOCUMENTED__
-     * @param defaultValue __UNDOCUMENTED__
-     * @return __UNDOCUMENTED__
+     * @param key          The implementation defined property key.
+     * @param defaultValue This value will be returned if the property does not exists.
+     * @return The property value if found, or defaultValue if the property cannot be located.
      */
     public String getProperty(String key, String defaultValue) 
     {
@@ -279,17 +398,19 @@ public abstract class AbstractSchemaFormBuilder
     }
 
     /**
-     * builds a form from a XML schema.
+     * Generate the XForm based on a user supplied XML Schema.
      *
-     * @param inputURI the URI of the Schema to be used
-     * @return __UNDOCUMENTED__
-     * @throws FormBuilderException __UNDOCUMENTED__
+     * @param inputURI The document source for the XML Schema.
+     * @return The Document containing the XForm.
+     * @throws org.chiba.tools.schemabuilder.FormBuilderException
+     *          If an error occurs building the XForm.
      */
-    public Document buildForm(final TemplateType tt) 
+    public Document buildForm(final Document instanceDocument,
+			      final Document schemaDocument,
+			      String rootElementName) 
 	throws FormBuilderException 
     {
-	String rootElementName = tt.getName();
-	final XSModel schema = this.loadSchema(tt);
+	final XSModel schema = this.loadSchema(schemaDocument);
 	this.buildTypeTree(schema);
 	
 	//refCounter = 0;
@@ -298,8 +419,6 @@ public abstract class AbstractSchemaFormBuilder
 	final Document xForm = createFormTemplate(rootElementName);
 	final Element envelopeElement = xForm.getDocumentElement();
 	
-	//Element formSection = (Element) envelopeElement.getElementsByTagNameNS(CHIBA_NS, "form").item(0);
-	//Element formSection =(Element) envelopeElement.getElementsByTagName("body").item(0);
 	//find form element: last element created
 	final NodeList children = xForm.getDocumentElement().getChildNodes();
 	
@@ -308,20 +427,16 @@ public abstract class AbstractSchemaFormBuilder
 	    envelopeElement.getElementsByTagNameNS(XFORMS_NS, "model").item(0);
 	
 	//add XMLSchema if we use schema types
-	if (modelSection != null)
-	{
-	    final String schemaURI = this._base + tt.getSchemaURI();
-	    LOGGER.debug("schema url is " + schemaURI);
-	    modelSection.setAttributeNS(XFORMS_NS,
-					SchemaFormBuilder.XFORMS_NS_PREFIX + "schema",
-					schemaURI);
-	}
+	modelSection.setAttributeNS(XFORMS_NS, "schema", "#schema-1");
+	final Element importedSchemaRootElement = (Element)
+	    xForm.importNode(schemaDocument.getDocumentElement(), true);
+        importedSchemaRootElement.setAttributeNS(SchemaFormBuilder.XFORMS_NS,
+						 "id",
+						 "schema-1");
 
-	//xxx XSDNode node = findXSDNodeByName(rootElementTagName,schemaNode.getElementSet());
+	modelSection.appendChild(importedSchemaRootElement);
 	
 	//check if target namespace
-	//no way to do this with XS API ? load DOM document ?
-	//TODO: find a better way to find the targetNamespace
 	final StringList targetNamespaces = schema.getNamespaces();
 	if (targetNamespaces.getLength() != 0)
 	{
@@ -374,11 +489,11 @@ public abstract class AbstractSchemaFormBuilder
 			  XMLSCHEMA_INSTANCE_NS_PREFIX, 
 			  XMLSCHEMA_INSTANCE_NS);
 	
-	if (this._instanceDocument == null)
+	if (instanceDocument == null)
 	    instanceElement.appendChild(defaultInstanceRootElement);
 	else
 	{
-	    Element instanceDocumentElement = this._instanceDocument.getDocumentElement();
+	    Element instanceDocumentElement = instanceDocument.getDocumentElement();
 	    if (!instanceDocumentElement.getNodeName().equals(rootElementName))
 		throw new IllegalArgumentException("instance document root tag name invalid.  " +
 						   "expected " + rootElementName +
@@ -393,7 +508,7 @@ public abstract class AbstractSchemaFormBuilder
 	    instanceElement.appendChild(importedInstanceRootElement);
 	}
 
-	Element formContentWrapper = this._wrapper.createGroupContentWrapper(formSection);
+	Element formContentWrapper = this.wrapper.createGroupContentWrapper(formSection);
 	this.addElement(xForm,
 			modelSection,
 			defaultInstanceRootElement,
@@ -414,20 +529,19 @@ public abstract class AbstractSchemaFormBuilder
 	//action
 	submitInfoElement.setAttributeNS(XFORMS_NS,
 					 SchemaFormBuilder.XFORMS_NS_PREFIX + "action",
-					 _action == null ? "" : this._base + _action);
+					 this.action == null ? "" : this.base + this.action);
 
 	//method
 	submitInfoElement.setAttributeNS(XFORMS_NS,
 					 SchemaFormBuilder.XFORMS_NS_PREFIX + "method",
-					 (_submitMethod != null && _submitMethod.length() != 0
-					  ? _submitMethod
-					  :  AbstractSchemaFormBuilder.SUBMIT_METHOD_POST));
+					 (this.submitMethod != null && this.submitMethod.length() != 0
+					  ? this.submitMethod
+					  :  SchemaFormBuilder.SUBMIT_METHOD_POST));
 
 	//Element submitButton = (Element) formSection.appendChild(xForm.createElementNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX+"submit"));
 	Element submitButton =
 	    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "submit");
-	Element submitControlWrapper =
-	    _wrapper.createControlsWrapper(submitButton);
+	Element submitControlWrapper = this.wrapper.createControlsWrapper(submitButton);
 	formContentWrapper.appendChild(submitControlWrapper);
 	submitButton.setAttributeNS(XFORMS_NS,
 				    SchemaFormBuilder.XFORMS_NS_PREFIX + "submission",
@@ -443,21 +557,7 @@ public abstract class AbstractSchemaFormBuilder
     }
 
     /**
-     * This method is invoked after the form builder is finished creating and processing
-     * a form control. Implementations may choose to use this method to add/inspect/modify
-     * the controlElement prior to the builder moving onto the next control.
-     *
-     * @param controlElement The form control element that was created.
-     * @param controlType    The XML Schema type for which <b>controlElement</b> was created.
-     */
-    public void endFormControl(Element controlElement,
-                               XSTypeDefinition controlType,
-                               Occurs occurs)
-    {
-    }
-
-    /**
-     * __UNDOCUMENTED__
+     * Reset the SchemaFormBuilder to default values.
      */
     public void reset() 
     {
@@ -702,7 +802,7 @@ public abstract class AbstractSchemaFormBuilder
      */
     protected void addChoicesForSelectControl(final Document xForm,
                                               final Element choicesElement,
-                                              final List<String> choiceValues) {
+                                              final Map<String, XSAnnotation> choiceValues) {
         // sort the enums values and then add them as choices
         //
         // TODO: Should really put the default value (if any) at the top of the list.
@@ -712,7 +812,7 @@ public abstract class AbstractSchemaFormBuilder
 
 	//        Iterator iterator = sortedList.iterator();
 
-        for (String textValue : choiceValues) 
+        for (Map.Entry<String, XSAnnotation> choice : choiceValues.entrySet()) 
 	{
             Element item = xForm.createElementNS(XFORMS_NS, 
 						 SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
@@ -723,13 +823,14 @@ public abstract class AbstractSchemaFormBuilder
 							   SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
             this.setXFormsId(captionElement);
             item.appendChild(captionElement);
-            captionElement.appendChild(xForm.createTextNode(createCaption(textValue)));
+	    final String label = createCaption(choice.getKey(), choice.getValue());
+            captionElement.appendChild(xForm.createTextNode(label));
 
-            Element value =
-                    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
+            Element value = xForm.createElementNS(XFORMS_NS, 
+						  SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
             this.setXFormsId(value);
             item.appendChild(value);
-            value.appendChild(xForm.createTextNode(textValue));
+            value.appendChild(xForm.createTextNode(choice.getKey()));
         }
     }
 
@@ -820,46 +921,47 @@ public abstract class AbstractSchemaFormBuilder
      * @param annotation __UNDOCUMENTED__
      * @return __UNDOCUMENTED__
      */
-    protected Element addHintFromDocumentation(Document xForm,
-                                               XSAnnotation annotation) {
+    protected Element addHintFromDocumentation(final Document xForm,
+                                               final XSAnnotation annotation) 
+    {
         if (annotation == null)
 	    return null;
-	Element hintElement =
-	    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "hint");
+	final Text text = this.extractDocumentation(annotation);
+	if (text == null)
+	    return null;
+	final Element hintElement = 
+	    xForm.createElementNS(XFORMS_NS, 
+				  SchemaFormBuilder.XFORMS_NS_PREFIX + "hint");
 	this.setXFormsId(hintElement);
-	
-	Text hintText = (Text)
-	    hintElement.appendChild(xForm.createTextNode(""));
-	
-	//write annotation to empty doc
-	Document doc = DOMUtil.newDocument(true, false);
+	hintElement.appendChild(xForm.importNode(text, true));
+	return hintElement;
+    }
+
+    private Text extractDocumentation(final XSAnnotation annotation)
+    {
+	if (annotation == null)
+	    return null;
+	// write annotation to empty doc
+	final Document doc = DOMUtil.newDocument(true, false);
 	annotation.writeAnnotation(doc, XSAnnotation.W3C_DOM_DOCUMENT);
 	
-	//get "annotation" element
-	NodeList annots = doc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema",
-						     "annotation");
-	if (annots.getLength() > 0) 
-	{
-	    Element annotEl = (Element) annots.item(0);
-	    
-	    //documentation
-	    NodeList docos =
-		annotEl.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema",
-					       "documentation");
-	    for (int j = 0; j < docos.getLength(); j++) 
-	    {
-		Element doco = (Element) docos.item(j);
+	final NodeList d = doc.getElementsByTagNameNS(SchemaFormBuilder.XMLSCHEMA_NS,
+						     "documentation");
+	if (d.getLength() == 0) 
+	    return null;
 
-		//get text value
-		String text = DOMUtil.getTextNodeAsString(doco);
-		hintText.appendData(text);
+	final Text result = doc.createTextNode("");
+
+	for (int i = 0; i < d.getLength(); i++) 
+	{
+	    //get text value
+	    final String text = DOMUtil.getTextNodeAsString((Element)d.item(i));
+	    result.appendData(text);
 		
-		if (j < docos.getLength() - 1) 
-		    hintText.appendData(" ");
-	    }
-	    return hintElement;
+	    if (i < d.getLength() - 1) 
+		result.appendData(" ");
 	}
-        return null;
+	return result;
     }
 
     public XSParticle findCorrespondingParticleInComplexType(final XSElementDeclaration elDecl) 
@@ -1062,7 +1164,7 @@ public abstract class AbstractSchemaFormBuilder
 	Element groupWrapper = groupElement;
 	
 	if (groupElement != modelSection) 
-	    groupWrapper = _wrapper.createGroupContentWrapper(groupElement);
+	    groupWrapper = this.wrapper.createGroupContentWrapper(groupElement);
 	
 	final Occurs o = this.getOccurance(owner);
 	final Element repeatSection = this.addRepeatIfNecessary(xForm,
@@ -1076,8 +1178,7 @@ public abstract class AbstractSchemaFormBuilder
 	if (repeatSection != groupWrapper) 
 	{ 
 	    // we have a repeat
-	    repeatContentWrapper =
-		_wrapper.createGroupContentWrapper(repeatSection);
+	    repeatContentWrapper = this.wrapper.createGroupContentWrapper(repeatSection);
 	    relative = true;
 	}
 	
@@ -1470,10 +1571,10 @@ public abstract class AbstractSchemaFormBuilder
 						       constraint);
 			}
 
-			Element choicesControlWrapper = _wrapper.createControlsWrapper(choices);
+			Element choicesControlWrapper = this.wrapper.createControlsWrapper(choices);
 			control.appendChild(choicesControlWrapper);
 			
-			Element controlWrapper = _wrapper.createControlsWrapper(control);
+			Element controlWrapper = this.wrapper.createControlsWrapper(control);
 			formSection.appendChild(controlWrapper);
 			
 			/////////////////                                      ///////////////
@@ -1515,7 +1616,7 @@ public abstract class AbstractSchemaFormBuilder
 			this.setXFormsId(switchElement);
 			
 			Element switchControlWrapper =
-			    _wrapper.createControlsWrapper(switchElement);
+			    this.wrapper.createControlsWrapper(switchElement);
 			formSection.appendChild(switchControlWrapper);
 			//formSection.appendChild(switchElement);
 			
@@ -1932,7 +2033,7 @@ public abstract class AbstractSchemaFormBuilder
 	    //this.addSelector(xForm, repeatSection);
 	    //group wrapper
 	    repeatContentWrapper =
-		_wrapper.createGroupContentWrapper(repeatSection);
+		this.wrapper.createGroupContentWrapper(repeatSection);
 	}
 
 	if (LOGGER.isDebugEnabled())
@@ -2136,7 +2237,7 @@ public abstract class AbstractSchemaFormBuilder
 				  bindId);
 	    
 	final Element controlWrapper =
-	    _wrapper.createControlsWrapper(repeatSection);
+	    this.wrapper.createControlsWrapper(repeatSection);
 	formSection.appendChild(controlWrapper);
 
 	//add a group inside the repeat?
@@ -2186,7 +2287,7 @@ public abstract class AbstractSchemaFormBuilder
             //set content
             Element groupWrapper = groupElement;
             if (groupElement != modelSection)
-                groupWrapper = _wrapper.createGroupContentWrapper(groupElement);
+                groupWrapper = this.wrapper.createGroupContentWrapper(groupElement);
             formSection = groupWrapper;
         }
 
@@ -2205,7 +2306,7 @@ public abstract class AbstractSchemaFormBuilder
         if (repeatSection != formSection) 
 	{
             //content of repeat
-            contentWrapper = _wrapper.createGroupContentWrapper(repeatSection);
+            contentWrapper = this.wrapper.createGroupContentWrapper(repeatSection);
 
             //if there is a repeat -> create another bind with "."
             Element bindElement2 =
@@ -2228,7 +2329,7 @@ public abstract class AbstractSchemaFormBuilder
 						     bindId,
 						     bindElement,
 						     o);
-        Element controlWrapper = _wrapper.createControlsWrapper(formControl);
+        Element controlWrapper = this.wrapper.createControlsWrapper(formControl);
         contentWrapper.appendChild(controlWrapper);
 
         // if this is a repeatable then set ref to point to current element
@@ -2424,7 +2525,7 @@ public abstract class AbstractSchemaFormBuilder
 
         //add the triggers
         final Element wrapper_triggers =
-	    _wrapper.createControlsWrapper(trigger_insert_before);
+	    this.wrapper.createControlsWrapper(trigger_insert_before);
 
         if (wrapper_triggers == trigger_insert_before) 
 	{
@@ -2560,8 +2661,7 @@ public abstract class AbstractSchemaFormBuilder
 
         if (controlType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) 
 	{
-            XSSimpleTypeDefinition simpleType =
-                    (XSSimpleTypeDefinition) controlType;
+            XSSimpleTypeDefinition simpleType = (XSSimpleTypeDefinition)controlType;
             if (simpleType.getItemType() != null)
             {
 		//list
@@ -2578,10 +2678,10 @@ public abstract class AbstractSchemaFormBuilder
                 // use the selectOne control
                 //
                 if (simpleType.isDefinedFacet(XSSimpleTypeDefinition.FACET_ENUMERATION)) 
-                    formControl = createControlForEnumerationType(xForm,
-								  simpleType,
-								  caption,
-								  bindElement);
+                    formControl = this.createControlForEnumerationType(xForm,
+								       simpleType,
+								       caption,
+								       bindElement);
             }
         } 
 	else if (controlType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE && 
@@ -2677,7 +2777,7 @@ public abstract class AbstractSchemaFormBuilder
 	final TemplatingService ts = TemplatingService.getInstance();
         final Document xForm = ts.newDocument();
 
-        final Element envelopeElement = _wrapper.createEnvelope(xForm);
+        final Element envelopeElement = this.wrapper.createEnvelope(xForm);
 
 	final Map<String, String> namespaces = new HashMap<String, String>();
 	namespaces.put(SchemaFormBuilder.CHIBA_NS_PREFIX, SchemaFormBuilder.CHIBA_NS);
@@ -2692,20 +2792,20 @@ public abstract class AbstractSchemaFormBuilder
 	}
 
 	//base
-        if (_base != null && _base.length() != 0)
-            envelopeElement.setAttributeNS(XML_NAMESPACE_URI, "xml:base", _base);
+        if (this.base != null && this.base.length() != 0)
+            envelopeElement.setAttributeNS(XML_NAMESPACE_URI, "xml:base", this.base);
 
         //model element
         Element modelElement = xForm.createElementNS(XFORMS_NS, 
 						     SchemaFormBuilder.XFORMS_NS_PREFIX + "model");
         this.setXFormsId(modelElement);
-        Element modelWrapper = _wrapper.createModelWrapper(modelElement);
+        Element modelWrapper = this.wrapper.createModelWrapper(modelElement);
         envelopeElement.appendChild(modelWrapper);
 
         //form control wrapper -> created by wrapper
         //Element formWrapper = xForm.createElement("body");
         //envelopeElement.appendChild(formWrapper);
-        Element formWrapper = _wrapper.createFormWrapper(envelopeElement);
+        Element formWrapper = this.wrapper.createFormWrapper(envelopeElement);
 
         return xForm;
     }
@@ -2726,7 +2826,7 @@ public abstract class AbstractSchemaFormBuilder
 	{
             this.setXFormsId(groupElement);
 
-            Element controlsWrapper = _wrapper.createControlsWrapper(groupElement);
+            Element controlsWrapper = this.wrapper.createControlsWrapper(groupElement);
 
             //groupElement = (Element) formSection.appendChild(groupElement);
             formSection.appendChild(controlsWrapper);
@@ -2738,6 +2838,577 @@ public abstract class AbstractSchemaFormBuilder
             this.setXFormsId(captionElement);
             captionElement.appendChild(xForm.createTextNode(createCaption(owner)));
         }
+        return groupElement;
+    }
+
+    public String createCaption(final String text, 
+				final XSAnnotation annotation)
+    {
+	final Text t = this.extractDocumentation(annotation);
+	return (t != null ? t.getNodeValue() : text);
+    }
+
+    /**
+     * Creates a caption for the provided text extracted from the XML Schema.
+     * The implementation is responsible for reformatting the provided string to make it
+     * suitable to be displayed to users of the XForm. This typically includes translating
+     * XML tag name style identifiers (e.g. customerStreetAddress) into more reader friendly
+     * captions (e.g. Customer Street Address).
+     *
+     * @param text The string value to be reformatted for use as a caption.
+     * @return The caption.
+     */
+    public String createCaption(String text) 
+    {
+        // if the word is all upper case, then set to lower case and continue
+        if (text.equals(text.toUpperCase()))
+            text = text.toLowerCase();
+	final String[] s = text.split("[-_\\ ]");
+	final StringBuffer result = new StringBuffer();
+	for (int i = 0; i < s.length; i++)
+        {
+	    if (i != 0)
+		result.append(' ');
+	    if (s[i].length() > 1)
+		result.append(Character.toUpperCase(s[i].charAt(0)) +  
+			      s[i].substring(1, s[i].length()));
+	    else
+		result.append(s[i]);
+	}
+        return result.toString();
+    }
+
+    /**
+     * Creates a caption for the provided XML Schema attribute.
+     * The implementation is responsible for providing an appropriate caption
+     * suitable to be displayed to users of the XForm. This typically includes translating
+     * XML tag name style identifiers (e.g. customerStreetAddress) into more reader friendly
+     * captions (e.g. Customer Street Address).
+     *
+     * @param attribute The XML schema attribute for which a caption is required.
+     * @return The caption.
+     */
+    public String createCaption(XSAttributeDeclaration attribute) 
+    {
+        // TODO: Improve i18n/l10n of caption - may have to use
+        //       a custom <appinfo> element in the XML Schema to do this.
+        //
+        return createCaption(attribute.getName());
+    }
+
+    public String createCaption(XSAttributeUse attribute) 
+    {
+        // TODO: Improve i18n/l10n of caption - may have to use
+        //       a custom <appinfo> element in the XML Schema to do this.
+        //
+        return createCaption(attribute.getAttrDeclaration().getName());
+    }
+
+    /**
+     * Creates a caption for the provided XML Schema element.
+     * The implementation is responsible for providing an appropriate caption
+     * suitable to be displayed to users of the XForm. This typically includes translating
+     * XML tag name style identifiers (e.g. customerStreetAddress) into more reader friendly
+     * captions (e.g. Customer Street Address).
+     *
+     * @param element The XML schema element for which a caption is required.
+     * @return The caption.
+     */
+    public String createCaption(XSElementDeclaration element) 
+    {
+        // TODO: Improve i18n/l10n of caption - may have to use
+        //       a custom <appinfo> element in the XML Schema to do this.
+        //
+        return createCaption(element.getName());
+    }
+
+    /**
+     * __UNDOCUMENTED__
+     *
+     * @param element __UNDOCUMENTED__
+     * @return __UNDOCUMENTED__
+     */
+    public String createCaption(XSObject element) 
+    {
+        // TODO: Improve i18n/l10n of caption - may have to use
+        //       a custom <appinfo> element in the XML Schema to do this.
+        //
+        if (element instanceof XSElementDeclaration) {
+            return createCaption(((XSElementDeclaration) element).getName());
+        } else if (element instanceof XSAttributeDeclaration) {
+            return createCaption(((XSAttributeDeclaration) element).getName());
+        } else if (element instanceof XSAttributeUse) {
+            return createCaption(((XSAttributeUse) element).getAttrDeclaration().getName());
+        } else
+            LOGGER.warn("WARNING: createCaption: element is not an attribute nor an element: "
+                    + element.getClass().getName());
+
+        return null;
+    }
+
+    /**
+     * Creates a form control for an XML Schema any type.
+     * <br/>
+     * This method is called when the form builder determines a form control is required for
+     * an any type.
+     * The implementation of this method is responsible for creating an XML element of the
+     * appropriate type to receive a value for <b>controlType</b>. The caller is responsible
+     * for adding the returned element to the form and setting caption, bind, and other
+     * standard elements and attributes.
+     *
+     * @param xForm       The XForm document.
+     * @param controlType The XML Schema type for which the form control is to be created.
+     * @return The element for the form control.
+     */
+    public Element createControlForAnyType(Document xForm,
+                                           String caption,
+                                           XSTypeDefinition controlType) 
+    {
+        Element control = xForm.createElementNS(SchemaFormBuilder.XFORMS_NS, 
+						SchemaFormBuilder.XFORMS_NS_PREFIX + "textarea");
+        this.setXFormsId(control);
+        control.setAttributeNS(SchemaFormBuilder.CHIBA_NS, 
+			       SchemaFormBuilder.CHIBA_NS_PREFIX + "height", 
+			       "3");
+
+        //label
+        Element captionElement = xForm.createElementNS(SchemaFormBuilder.XFORMS_NS,
+						       SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+	control.appendChild(captionElement);
+        this.setXFormsId(captionElement);
+        captionElement.appendChild(xForm.createTextNode(caption));
+
+        return control;
+    }
+
+    /**
+     * Creates a form control for an XML Schema simple atomic type.
+     * <p/>
+     * This method is called when the form builder determines a form control is required for
+     * an atomic type.
+     * The implementation of this method is responsible for creating an XML element of the
+     * appropriate type to receive a value for <b>controlType</b>. The caller is responsible
+     * for adding the returned element to the form and setting caption, bind, and other
+     * standard elements and attributes.
+     *
+     * @param xForm       The XForm document.
+     * @param controlType The XML Schema type for which the form control is to be created.
+     * @return The element for the form control.
+     */
+    public Element createControlForAtomicType(Document xForm,
+                                              String caption,
+                                              XSSimpleTypeDefinition controlType) 
+    {
+        Element control;
+
+        //remove while select1 do not work correctly in repeats
+        if ("boolean".equals(controlType.getName()))
+	{
+            control = xForm.createElementNS(XFORMS_NS,
+					    SchemaFormBuilder.XFORMS_NS_PREFIX + "select1");
+            control.setAttributeNS(XFORMS_NS,
+				   SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+				   "full");
+            this.setXFormsId(control);
+	    final String[] values = { "true", "false" };
+	    for (String v : values)
+	    {
+		Element item = xForm.createElementNS(XFORMS_NS, 
+						     SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
+		this.setXFormsId(item);
+		Element e = xForm.createElementNS(XFORMS_NS, 
+						      SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+		this.setXFormsId(e);
+		e.appendChild(xForm.createTextNode(v));
+		item.appendChild(e);
+		
+                e = xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
+		this.setXFormsId(e);
+		e.appendChild(xForm.createTextNode(v));
+		item.appendChild(e);
+		control.appendChild(item);
+	    }
+        } 
+	else 
+	{
+            control = xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "input");
+            this.setXFormsId(control);
+        }
+
+        //label
+        Element captionElement = xForm.createElementNS(XFORMS_NS,
+						       SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+	control.appendChild(captionElement);
+        this.setXFormsId(captionElement);
+        captionElement.appendChild(xForm.createTextNode(caption));
+
+        return control;
+    }
+
+    /**
+     * Creates a form control for an XML Schema simple type restricted by an enumeration.
+     * This method is called when the form builder determines a form control is required for
+     * an enumerated type.
+     * The implementation of this method is responsible for creating an XML element of the
+     * appropriate type to receive a value for <b>controlType</b>. The caller is responsible
+     * for adding the returned element to the form and setting caption, bind, and other
+     * standard elements and attributes.
+     *
+     * @param xForm       The XForm document.
+     * @param controlType The XML Schema type for which the form control is to be created.
+     * @param caption     The caption for the form control. The caller The purpose of providing the caption
+     *                    is to permit the implementation to add a <b>[Select1 .... ]</b> message that involves the caption.
+     * @param bindElement The bind element for this control. The purpose of providing the bind element
+     *                    is to permit the implementation to add a isValid attribute to the bind element that prevents
+     *                    the <b>[Select1 .... ]</b> item from being selected.
+     * @return The element for the form control.
+     */
+    public Element createControlForEnumerationType(Document xForm,
+                                                   XSSimpleTypeDefinition controlType,
+                                                   String caption,
+                                                   Element bindElement) 
+    {
+        // TODO: Figure out an intelligent or user determined way to decide between
+        // selectUI style (listbox, menu, combobox, radio) (radio and listbox best apply)
+        // Possibly look for special appInfo section in the schema and if not present default to comboBox...
+        //
+        // For now, use radio if enumValues < DEFAULT_LONG_LIST_MAX_SIZE otherwise use combobox
+        //
+        final StringList enumFacets = controlType.getLexicalEnumeration();
+        if (enumFacets.getLength() <= 0)
+	    return null;
+
+        Element control = xForm.createElementNS(XFORMS_NS,
+						SchemaFormBuilder.XFORMS_NS_PREFIX + "select1");
+        this.setXFormsId(control);
+
+        //label
+        Element captionElement1 = xForm.createElementNS(XFORMS_NS,
+							SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+	control.appendChild(captionElement1);
+        this.setXFormsId(captionElement1);
+        captionElement1.appendChild(xForm.createTextNode(caption));
+
+        Element choices = xForm.createElementNS(XFORMS_NS,
+						SchemaFormBuilder.XFORMS_NS_PREFIX + "choices");
+        this.setXFormsId(choices);
+
+	final XSObjectList mvFacets = controlType.getMultiValueFacets();
+	if (mvFacets.getLength() != 1)
+	    throw new RuntimeException("expected exactly one MultiValueFacet for " + controlType);
+
+	final XSObjectList annotations = 
+	    ((XSMultiValueFacet)mvFacets.item(0)).getAnnotations();
+
+        final Map<String, XSAnnotation> enumValues = 
+	    new HashMap<String, XSAnnotation>(enumFacets.getLength());
+        for (int i = 0; i < enumFacets.getLength(); i++) 
+	{
+            enumValues.put(enumFacets.item(i), 
+			   (annotations.getLength() == enumFacets.getLength()
+			    ? (XSAnnotation)annotations.item(i)
+			    : null));
+        }
+
+	control.setAttributeNS(XFORMS_NS,
+			       SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+			       (enumFacets.getLength() < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))
+				? getProperty(SELECTONE_UI_CONTROL_SHORT_PROP)
+				: getProperty(SELECTONE_UI_CONTROL_LONG_PROP)));
+
+	if (enumFacets.getLength() >= Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))) 
+	{
+            // add the "Please select..." instruction item for the combobox
+            // and set the isValid attribute on the bind element to check for the "Please select..."
+            // item to indicate that is not a valid value
+            //
+	    String pleaseSelect = "[Select1 " + caption + "]";
+	    Element item = xForm.createElementNS(XFORMS_NS,
+						 SchemaFormBuilder.XFORMS_NS_PREFIX + "item");
+	    this.setXFormsId(item);
+	    choices.appendChild(item);
+
+	    Element captionElement = 
+		xForm.createElementNS(XFORMS_NS,
+				      SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+	    this.setXFormsId(captionElement);
+	    item.appendChild(captionElement);
+	    captionElement.appendChild(xForm.createTextNode(pleaseSelect));
+
+	    Element value =
+		xForm.createElementNS(XFORMS_NS,
+				      SchemaFormBuilder.XFORMS_NS_PREFIX + "value");
+	    this.setXFormsId(value);
+	    item.appendChild(value);
+	    value.appendChild(xForm.createTextNode(pleaseSelect));
+
+	    // not(purchaseOrder/state = '[Choose State]')
+	    //String isValidExpr = "not(" + bindElement.getAttributeNS(XFORMS_NS,"nodeset") + " = '" + pleaseSelect + "')";
+	    // ->no, not(. = '[Choose State]')
+	    String isValidExpr = "not( . = '" + pleaseSelect + "')";
+
+	    //check if there was a constraint
+	    String constraint = bindElement.getAttributeNS(XFORMS_NS, "constraint");
+
+	    constraint = (constraint != null && constraint.length() != 0
+			  ? constraint + " and " + isValidExpr
+			  : isValidExpr);
+
+	    bindElement.setAttributeNS(XFORMS_NS,
+				       SchemaFormBuilder.XFORMS_NS_PREFIX + "constraint",
+				       constraint);
+	}
+
+        control.appendChild(choices);
+
+        this.addChoicesForSelectControl(xForm, choices, enumValues);
+
+        return control;
+    }
+
+    /**
+     * Creates a form control for an XML Schema simple list type.
+     * <p/>
+     * This method is called when the form builder determines a form control is required for
+     * a list type.
+     * The implementation of this method is responsible for creating an XML element of the
+     * appropriate type to receive a value for <b>controlType</b>. The caller is responsible
+     * for adding the returned element to the form and setting caption, bind, and other
+     * standard elements and attributes.
+     *
+     * @param xForm       The XForm document.
+     * @param listType    The XML Schema list type for which the form control is to be created.
+     * @param caption     The caption for the form control. The caller The purpose of providing the caption
+     *                    is to permit the implementation to add a <b>[Select1 .... ]</b> message that involves the caption.
+     * @param bindElement The bind element for this control. The purpose of providing the bind element
+     *                    is to permit the implementation to add a isValid attribute to the bind element that prevents
+     *                    the <b>[Select1 .... ]</b> item from being selected.
+     * @return The element for the form control.
+     */
+    public Element createControlForListType(final Document xForm,
+                                            final XSSimpleTypeDefinition listType,
+                                            final String caption,
+                                            final Element bindElement) 
+    {
+        XSSimpleTypeDefinition controlType = listType.getItemType();
+
+        final StringList enumFacets = controlType.getLexicalEnumeration();
+        if (enumFacets.getLength() <= 0) 
+	    return null;
+        Element control = xForm.createElementNS(XFORMS_NS,
+						SchemaFormBuilder.XFORMS_NS_PREFIX + "select");
+        this.setXFormsId(control);
+
+        //label
+        Element captionElement = xForm.createElementNS(XFORMS_NS,
+						       SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+	control.appendChild(captionElement);
+        this.setXFormsId(captionElement);
+        captionElement.appendChild(xForm.createTextNode(caption));
+
+	final XSObjectList mvFacets = controlType.getMultiValueFacets();
+	if (mvFacets.getLength() != 1)
+	    throw new RuntimeException("expected exactly one MultiValueFacet for " + controlType);
+
+	final XSObjectList annotations = 
+	    ((XSMultiValueFacet)mvFacets.item(0)).getAnnotations();
+
+        final Map<String, XSAnnotation> enumValues = 
+	    new HashMap<String, XSAnnotation>(enumFacets.getLength());
+        for (int i = 0; i < enumFacets.getLength(); i++) 
+	{
+            enumValues.put(enumFacets.item(i), 
+			   (annotations.getLength() == enumFacets.getLength()
+			    ? (XSAnnotation)annotations.item(i)
+			    : null));
+        }
+
+        // TODO: Figure out an intelligent or user determined way to decide between
+        // selectUI style (listbox, menu, combobox, radio) (radio and listbox best apply)
+        // Possibly look for special appInfo section in the schema and if not present default to checkBox...
+        //
+        // For now, use checkbox if there are < DEFAULT_LONG_LIST_MAX_SIZE items, otherwise use long control
+        //
+	control.setAttributeNS(XFORMS_NS,
+			       SchemaFormBuilder.XFORMS_NS_PREFIX + "appearance",
+			       (enumValues.size() < Long.parseLong(getProperty(SELECTMANY_LONG_LIST_SIZE_PROP))
+				? getProperty(SELECTMANY_UI_CONTROL_SHORT_PROP)
+				: getProperty(SELECTMANY_UI_CONTROL_LONG_PROP)));
+        Element choices = xForm.createElementNS(XFORMS_NS,
+						SchemaFormBuilder.XFORMS_NS_PREFIX + "choices");
+        this.setXFormsId(choices);
+        control.appendChild(choices);
+
+        this.addChoicesForSelectControl(xForm, choices, enumValues);
+
+        return control;
+    }
+
+    /**
+     * Creates a hint XML Schema annotated node (AttributeDecl or ElementDecl).
+     * The implementation is responsible for providing an xforms:hint element for the
+     * specified schemaNode suitable to be dsipalayed to users of the XForm. The caller
+     * is responsible for adding the returned element to the form.
+     * This typically includes extracting documentation from the element/attribute's
+     * annotation/documentation elements and/or extracting the same information from the
+     * element/attribute's type annotation/documentation.
+     *
+     * @param schemaNode The string value to be reformatted for use as a caption.
+     * @return The xforms:hint element. If a null value is returned a hint is not added.
+     */
+    public Element createHint(Document xForm, XSObject node) 
+    {
+        XSAnnotation annotation = null;
+        if (node instanceof XSElementDeclaration)
+            annotation = ((XSElementDeclaration)node).getAnnotation();
+        else if (node instanceof XSAttributeDeclaration)
+            annotation = ((XSAttributeDeclaration)node).getAnnotation();
+        else if (node instanceof XSAttributeUse)
+            annotation = ((XSAttributeUse)node).getAttrDeclaration().getAnnotation();
+
+        return (annotation != null
+		? addHintFromDocumentation(xForm, annotation)
+		: null);
+    }
+
+    /**
+     * This method is invoked after the form builder is finished creating and processing
+     * a bind element. Implementations may choose to use this method to add/inspect/modify
+     * the bindElement prior to the builder moving onto the next bind element.
+     *
+     * @param bindElement The bind element being processed.
+     */
+    public void endBindElement(Element bindElement) 
+    {
+    }
+
+    /**
+     * This method is invoked after the form builder is finished creating and processing
+     * a form control. Implementations may choose to use this method to add/inspect/modify
+     * the controlElement prior to the builder moving onto the next control.
+     *
+     * @param controlElement The form control element that was created.
+     * @param controlType    The XML Schema type for which <b>controlElement</b> was created.
+     */
+    public void endFormControl(Element controlElement,
+                               XSTypeDefinition controlType,
+                               Occurs occurs)
+    {
+    }
+
+    /**
+     * __UNDOCUMENTED__
+     *
+     * @param groupElement __UNDOCUMENTED__
+     */
+    public void endFormGroup(final Element groupElement,
+                             final XSTypeDefinition controlType,
+                             final Occurs o,
+                             final Element modelSection) 
+    {
+    }
+
+    /**
+     * This method is invoked after an xforms:bind element is created for the specified SimpleType.
+     * The implementation is responsible for setting setting any/all bind attributes
+     * except for <b>id</b> and <b>ref</b> - these have been automatically set
+     * by the caller (and should not be touched by implementation of startBindElement)
+     * prior to invoking startBindElement.
+     * The caller automatically adds the returned element to the model section of
+     * the form.
+     *
+     * @param bindElement The bindElement being processed.
+     * @param controlType XML Schema type of the element/attribute this bind is for.
+     * @param minOccurs   The minimum number of occurences for this element/attribute.
+     * @param maxOccurs   The maximum number of occurences for this element/attribute.
+     * @return The bind Element to use in the XForm - bindElement or a replacement.
+     */
+    public Element startBindElement(final Element bindElement,
+				    final XSModel schema,
+                                    final XSTypeDefinition controlType,
+                                    final Occurs o)
+    {
+        // START WORKAROUND
+        // Due to a Chiba bug, anyType is not a recognized type name.
+        // so, if this is an anyType, then we'll just skip the type
+        // setting.
+        //
+        // type.getName() may be 'null' for anonymous types, so compare against
+        // static string (see bug #1172541 on sf.net)
+        if (!"anyType".equals(controlType.getName())) 
+	{
+            Element enveloppe = bindElement.getOwnerDocument().getDocumentElement();
+            String typeName = this.getXFormsTypeName(enveloppe, schema, controlType);
+            if (typeName != null && typeName.length() != 0)
+                bindElement.setAttributeNS(XFORMS_NS,
+					   SchemaFormBuilder.XFORMS_NS_PREFIX + "type",
+					   typeName);
+        }
+
+	bindElement.setAttributeNS(XFORMS_NS,
+				   SchemaFormBuilder.XFORMS_NS_PREFIX + "required",
+				   o.minimum == 0 ? "false()" : "true()");
+	
+
+        //no more minOccurs & maxOccurs element: add a constraint if maxOccurs>1:
+        //count(.) <= maxOccurs && count(.) >= minOccurs
+        String minConstraint = null;
+        String maxConstraint = null;
+
+        if (o.minimum > 1) 
+            //if 0 or 1 -> no constraint (managed by "required")
+            minConstraint = "count(.) >= " + o.minimum;
+
+        if (o.maximum > 1) 
+            //if 1 or unbounded -> no constraint
+            maxConstraint = "count(.) <= " + o.maximum;
+
+        final String constraint = (minConstraint != null && maxConstraint != null
+				   ? minConstraint + " and " + maxConstraint
+				   : (minConstraint != null
+				      ? minConstraint
+				      : maxConstraint));
+        if (constraint != null && constraint.length() != 0)
+            bindElement.setAttributeNS(XFORMS_NS,
+				       SchemaFormBuilder.XFORMS_NS_PREFIX + "constraint",
+				       constraint);
+        return bindElement;
+    }
+
+    /**
+     * This method is invoked after the form builder creates a form control
+     * via a createControlForXXX() method but prior to decorating the form control
+     * with common attributes such as a caption, hint, help text elements,
+     * bind attributes, etc.
+     * The returned element is used in the XForm in place of controlElement.
+     * Implementations may choose to use this method to substitute controlElement
+     * with a different element, or perform any other processing on controlElement
+     * prior to it being added to the form.
+     *
+     * @param controlElement The form control element that was created.
+     * @param controlType    The XML Schema type for which <b>controlElement</b> was created.
+     * @return The Element to use in the XForm - controlElement or a replacement.
+     */
+    public Element startFormControl(Element controlElement,
+                                    XSTypeDefinition controlType) 
+    {
+        return controlElement;
+    }
+
+    /**
+     * This method is invoked after an xforms:group element is created for the specified
+     * ElementDecl. A group is created whenever an element is encountered in the XML Schema
+     * that contains other elements and attributes (complex types or mixed content types).
+     * The caller automatically adds the returned element to the XForm.
+     *
+     * @param groupElement  The groupElement being processed.
+     * @param schemaElement The schemaElement for the group.
+     * @return The group Element to use in the XForm - groupElement or a replacement. If a null
+     *         value is returned, the group is not created.
+     */
+    public Element startFormGroup(Element groupElement,
+                                  XSElementDeclaration schemaElement) 
+    {
         return groupElement;
     }
 
@@ -2775,7 +3446,7 @@ public abstract class AbstractSchemaFormBuilder
         return elementName;
     }
 
-    private XSModel loadSchema(final TemplateType tt)
+    private XSModel loadSchema(final Document schemaDocument)
 	throws FormBuilderException
     {
 	try
@@ -2791,7 +3462,7 @@ public abstract class AbstractSchemaFormBuilder
 		registry.getDOMImplementation("XML 1.0 LS 3.0");
 	    final TemplatingService ts = TemplatingService.getInstance();
 	    final LSInput in = lsImpl.createLSInput();
-	    in.setStringData(ts.writeXMLToString(tt.getSchema()));
+	    in.setStringData(ts.writeXMLToString(schemaDocument));
 
 	    final XSImplementation xsImpl = (XSImplementation)
 		registry.getDOMImplementation("XS-Loader");

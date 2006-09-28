@@ -87,9 +87,8 @@
 	    </xsl:for-each>
 	    <xsl:for-each select="/alfresco:press-release/alfresco:include_company_footer">
               <xsl:variable name="cf-id"><xsl:value-of select="."/></xsl:variable>
-	      <xsl:variable name="cf-url"><xsl:value-of select="concat('/media/releases/content/company_footers/', concat($cf-id, '.xml'))"/></xsl:variable>
-              <h2>About <xsl:value-of select="document($cf-url)/alfresco:company-footer/alfresco:name"/></h2>
-	      <xsl:for-each select="document($cf-url)/alfresco:company-footer/alfresco:body">
+              <h2>About <xsl:value-of select="document($cf-id)/alfresco:company-footer/alfresco:name"/></h2>
+	      <xsl:for-each select="document($cf-id)/alfresco:company-footer/alfresco:body">
 		<p><xsl:value-of select="." disable-output-escaping="yes"/></p>
 	      </xsl:for-each>
 	    </xsl:for-each>

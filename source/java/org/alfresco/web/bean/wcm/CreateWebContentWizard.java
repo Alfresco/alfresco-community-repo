@@ -81,7 +81,6 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.avmBrowseBean = avmBrowseBean;
    }
    
-   
    // ------------------------------------------------------------------------------
    // Wizard implementation
    

@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.bean.ajax;
+package org.alfresco.web.templating.xforms;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,14 +27,16 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.context.ExternalContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.templating.*;
 import org.alfresco.web.templating.xforms.*;
-import org.alfresco.web.templating.xforms.schemabuilder.FormBuilderException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.chiba.xml.xforms.ChibaBean;
 import org.chiba.xml.xforms.exception.XFormsException;
@@ -42,6 +44,8 @@ import org.chiba.xml.xforms.events.XFormsEvent;
 import org.chiba.xml.xforms.events.XFormsEventFactory;
 
 import org.w3c.dom.*;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.*;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
@@ -85,20 +89,26 @@ public class XFormsBean
     public void init()
 	throws XFormsException
     {
+	LOGGER.debug("initializing " + this + " with tt " + tt.getName());
 	this.chibaBean = new ChibaBean();
 	final FacesContext facesContext = FacesContext.getCurrentInstance();
 	final ExternalContext externalContext = facesContext.getExternalContext();
 	final HttpServletRequest request = (HttpServletRequest)
 	    externalContext.getRequest();
+	final HttpSession session = (HttpSession)
+	    externalContext.getSession(true);
+	final AVMBrowseBean browseBean = (AVMBrowseBean)
+	    session.getAttribute("AVMBrowseBean");
+	LOGGER.debug("avm cwd is " + browseBean.getCurrentPath());
+	
 	XFormsBean.storeCookies(request.getCookies(), this.chibaBean);
+
 	try
         {
-	    LOGGER.debug("initializing " + this + 
-			 " with tt " + tt.getName());
-	    //XXXarielb generalize this
-	    final XFormsInputMethod tim = (XFormsInputMethod)
-		tt.getInputMethods().get(0);
-	    final Document form = tim.getXForm(instanceData.getContent(), tt);
+	    final Document form = this.buildXForm(instanceData.getContent(), 
+						  tt,
+						  browseBean.getCurrentPath(),
+						  request);
 	    this.chibaBean.setXMLContainer(form);
 
 	    final EventTarget et = (EventTarget)
@@ -242,6 +252,59 @@ public class XFormsBean
 	final ResponseWriter out = context.getResponseWriter();
 	ts.writeXML(result, out);
 	out.close();
+    }
+
+
+    private void rewriteInlineURIs(final Document schemaDocument,
+				   final String cwdAvmPath)
+    {
+	final NodeList includes = 
+	    schemaDocument.getElementsByTagNameNS(SchemaFormBuilder.XMLSCHEMA_NS, "include");
+	LOGGER.debug("rewriting " + includes.getLength() + " includes");
+	for (int i = 0; i < includes.getLength(); i++)
+	{
+	    final Element includeEl = (Element)includes.item(i);
+	    if (includeEl.hasAttribute("schemaLocation"))
+	    {
+		String uri = includeEl.getAttribute("schemaLocation");
+		final String baseURI = (uri.charAt(0) == '/'
+					? AVMConstants.buildAVMStoreUrl(cwdAvmPath)
+					: AVMConstants.buildAVMAssetUrl(cwdAvmPath));
+
+		LOGGER.debug("rewriting " + uri + " as " + (baseURI + uri));
+		includeEl.setAttribute("schemaLocation", baseURI + uri);
+	    }
+	}
+    }
+
+    /**
+     * Generates the xforms based on the schema.
+     */
+    private Document buildXForm(Document xmlContent, 
+				final TemplateType tt,
+				final String cwdAvmPath,
+				final HttpServletRequest request) 
+	throws FormBuilderException
+    {
+	final Document schemaDocument = tt.getSchema();
+	this.rewriteInlineURIs(schemaDocument, cwdAvmPath);
+	final String baseUrl = (request.getScheme() + "://" + 
+				request.getServerName() + ':' + 
+				request.getServerPort() + 
+				request.getContextPath());
+	LOGGER.debug("using baseUrl " + baseUrl + " for schemaformbuilder");
+	final SchemaFormBuilder builder = 
+	    new SchemaFormBuilder("/ajax/invoke/XFormsBean.handleAction",
+				  SchemaFormBuilder.SUBMIT_METHOD_POST,
+				  new XHTMLWrapperElementsBuilder(),
+				  baseUrl);
+	LOGGER.debug("building xform for schema " + tt.getName());
+	final Document result = builder.buildForm(xmlContent, 
+						  schemaDocument, 
+						  tt.getName());
+	LOGGER.debug("generated xform: " + result);
+	//	LOGGER.debug(ts.writeXMLToString(result));
+	return result;
     }
 
     private Node getEventLog()

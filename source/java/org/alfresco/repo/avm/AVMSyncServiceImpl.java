@@ -624,7 +624,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // The underlying thing must be a directory.
         if (!underlying.isDirectory())
         {
-            throw new AVMWrongTypeException("Underlying is not a directory: " + underlying);
+            return false;
         }
         Map<String, AVMNodeDescriptor> layerListing =
             fAVMService.getDirectoryListingDirect(-1, layer.getPath(), true);

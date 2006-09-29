@@ -129,6 +129,10 @@
          <dialog name="createAvmFolder" page="/jsp/wcm/create-folder-dialog.jsp" managed-bean="CreateFolderDialog"
                  icon="/images/icons/create_space_large.gif" title-id="create_folder" 
                  description-id="create_avm_folder_info" />
+                 
+         <dialog name="editAvmFileProperties" page="/jsp/content/edit-content-properties.jsp" 
+                 managed-bean="EditFilePropertiesDialog" icon="/images/icons/details_large.gif"
+                 title-id="modify_content_properties" description-id="edit_content_description" />
       </dialogs>
    </config>
    

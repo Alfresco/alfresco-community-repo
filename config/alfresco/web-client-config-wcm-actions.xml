@@ -177,11 +177,15 @@
          <!-- Actions for the File Details action menu -->
          <action-group id="avm_file_details">
             <show-link>false</show-link>
+            <action idref="edit_file" />
+            <action idref="update_file" />
+            <action idref="delete_file" />
          </action-group>
          
          <!-- Actions for the Folder Details action menu -->
          <action-group id="avm_folder_details">
             <show-link>false</show-link>
+            <action idref="delete_folder" />
          </action-group>
          
       </actions>

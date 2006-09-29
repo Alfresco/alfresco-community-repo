@@ -856,6 +856,31 @@
    
    <managed-bean>
       <description>
+         The bean that backs up the Edit AVM File Properties Dialog
+      </description>
+      <managed-bean-name>EditFilePropertiesDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.EditFilePropertiesDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          The bean that backs up the Set Content Properties Dialog
       </description>
       <managed-bean-name>SetContentPropertiesDialog</managed-bean-name>

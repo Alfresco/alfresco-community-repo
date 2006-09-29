@@ -78,6 +78,13 @@
                   <cm:title>${spaces.scripts.name}</cm:title>
                   <cm:description>${spaces.scripts.description}</cm:description>
                </cm:folder>
+               <cm:folder view:childName="${spaces.content_forms.childname}">
+                  <app:uifacets />
+                  <cm:name>${spaces.content_forms.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.content_forms.name}</cm:title>
+                  <cm:description>${spaces.content_forms.description}</cm:description>
+               </cm:folder>
             </cm:contains>
             </cm:folder>
             <cm:folder view:childName="${spaces.guest_home.childname}">

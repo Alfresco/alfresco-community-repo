@@ -264,6 +264,7 @@
                 <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
                 <prop key="spaces.scripts.childname">${spaces.scripts.childname}</prop>
                 <prop key="spaces.wcm.childname">${spaces.wcm.childname}</prop>
+                <prop key="spaces.content_forms.childname">${spaces.content_forms.childname}</prop>
             </props>
         </property>
     </bean>

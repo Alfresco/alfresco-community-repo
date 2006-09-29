@@ -311,7 +311,7 @@
 
       <!-- AVM website specific roles.                                                   -->
       <permissionGroup name="ContentManager" allowFullControl="true" expose="true">
-         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
+         <includePermissionGroup permissionGroup="Coordinator" type="cm:cmobject" />
       </permissionGroup>
       
       <permissionGroup name="ContentPublisher" allowFullControl="false" expose="true">

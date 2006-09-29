@@ -908,6 +908,14 @@
          <from-outcome>cancel</from-outcome>
          <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>showFileDetails</from-outcome>
+         <to-view-id>/jsp/wcm/file-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showFolderDetails</from-outcome>
+         <to-view-id>/jsp/wcm/folder-details.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
 </faces-config>

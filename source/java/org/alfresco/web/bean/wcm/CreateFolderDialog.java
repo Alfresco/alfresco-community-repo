@@ -16,6 +16,8 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
@@ -44,6 +46,17 @@ public class CreateFolderDialog extends BaseDialogBean
    private String description;
    
    
+   /**
+    * @see org.alfresco.web.bean.dialog.BaseDialogBean#init(java.util.Map)
+    */
+   @Override
+   public void init(Map<String, String> parameters)
+   {
+      super.init(parameters);
+      this.name = null;
+      this.description = null;
+   }
+
    /**
     * @param avmBrowseBean The avmBrowseBean to set.
     */

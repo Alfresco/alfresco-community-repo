@@ -256,6 +256,9 @@ public class AVMBrowseBean implements IContextListener
          summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), users));
       }
       
+      // reset the current path so the context for the Modified File list actions is cleared
+      this.currentPath = null;
+      
       return summary.toString();
    }
    
@@ -622,6 +625,11 @@ public class AVMBrowseBean implements IContextListener
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String path = params.get("id");
+      setupContentAction(path, true);
+   }
+   
+   /*package*/ void setupContentAction(String path, boolean refresh)
+   {
       if (path != null && path.length() != 0)
       {
          AVMNodeDescriptor node = avmService.lookup(-1, path, true);
@@ -633,7 +641,10 @@ public class AVMBrowseBean implements IContextListener
       }
       
       // update UI state ready for return after dialog close
-      UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+      if (refresh)
+      {
+         UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+      }
    }
    
    /**
@@ -715,6 +726,11 @@ public class AVMBrowseBean implements IContextListener
    
    // ------------------------------------------------------------------------------
    // Private helpers
+   
+   /*package*/ boolean isCurrentPathNull()
+   {
+      return (this.currentPath == null);
+   }
    
    /**
     * Update the breadcrumb with the clicked Group location

@@ -94,6 +94,28 @@
             </params>
          </action>
          
+         <!-- View File details -->
+         <action id="file_details">
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:showFileDetails</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- View Folder details -->
+         <action id="folder_details">
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:showFolderDetails</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
          
          <!-- Actions for a file in the AVM Browse screen -->
          <action-group id="avm_file_browse">
@@ -101,6 +123,7 @@
             <action idref="edit_file" />
             <action idref="update_file" />
             <action idref="preview_file" />
+            <action idref="file_details" />
             <action idref="delete_file" />
          </action-group>
          
@@ -108,6 +131,7 @@
          <action-group id="avm_folder_browse">
             <show-link>false</show-link>
             <action idref="preview_folder" />
+            <action idref="folder_details" />
             <action idref="delete_folder" />
          </action-group>
          
@@ -118,6 +142,7 @@
             <action idref="update_file" />
             <action idref="submit" />
             <action idref="preview_file" />
+            <action idref="file_details" />
             <action idref="delete_file" />
          </action-group>
          
@@ -126,6 +151,7 @@
             <show-link>false</show-link>
             <action idref="submit" />
             <action idref="preview_folder" />
+            <action idref="folder_details" />
             <action idref="delete_folder" />
          </action-group>
          
@@ -145,6 +171,16 @@
          
          <!-- Actions for the More Actions menu in the sandbox browse screen -->
          <action-group id="avm_more_menu">
+            <show-link>false</show-link>
+         </action-group>
+         
+         <!-- Actions for the File Details action menu -->
+         <action-group id="avm_file_details">
+            <show-link>false</show-link>
+         </action-group>
+         
+         <!-- Actions for the Folder Details action menu -->
+         <action-group id="avm_folder_details">
             <show-link>false</show-link>
          </action-group>
          

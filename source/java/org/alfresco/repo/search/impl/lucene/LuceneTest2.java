@@ -381,6 +381,10 @@ public class LuceneTest2 extends TestCase
         super(arg0);
     }
 
+    public void firstTest() throws Exception
+    {
+        testSort();
+    }
     
     public void test0() throws Exception
     {
@@ -1060,6 +1064,17 @@ public class LuceneTest2 extends TestCase
             }
             i = currentBun;
         }
+        results.close();
+        
+        luceneFTS.resume();
+        
+        
+        SearchParameters sp17 = new SearchParameters();
+        sp17.addStore(rootNodeRef.getStoreRef());
+        sp17.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp17.setQuery("PATH:\"//.\"");
+        sp17.addSort("cabbage", false);
+        results = searcher.query(sp17);
         results.close();
         
         luceneFTS.resume();

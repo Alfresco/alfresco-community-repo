@@ -2,9 +2,25 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    <!--                -->
-    <!-- Scheduled jobs -->
-    <!--                -->
+
+    <!-- Task scheduler -->
+    <!-- Triggers should not appear here - the scheduler should be injected into the trigger definition -->
+    <!-- This bean should not need to apear else where in extension configuration -->
+    <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="waitForJobsToCompleteOnShutdown">
+            <value>true</value>
+        </property>
+        <property name="configLocation">
+            <value>classpath:alfresco/domain/quartz.properties</value>
+        </property>
+        <property name="schedulerName">
+            <value>DefaultScheduler</value>
+        </property>
+    </bean>
+
+    <!--                 -->
+    <!-- Scheduled tasks -->
+    <!--                 -->
 
     <bean id="ftsIndexerTrigger" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
@@ -21,15 +37,73 @@
                 </property>
             </bean>
         </property>
-        <!-- Try and do some indexing every minute after starting up -->
-        <property name="startDelay">
-            <value>60000</value>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
         </property>
-        <property name="repeatInterval">
-            <value>60000</value>
+        <!-- Try and do some indexing every minute after starting up -->
+        <property name="startDelayMinutes">
+            <value>1</value>
+        </property>
+        <property name="repeatIntervalMinutes">
+            <value>1</value>
+        </property>
+    </bean>
+
+    <!-- Forces the reindexing of nodes where content may have been missing before -->
+    <!--
+       This component can be triggered at intervals where asynchronous content sharing
+       between clustered servers has been set up
+    -->
+    <bean id="missingContentReindexTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="indexRecoveryComponent">
+                            <ref bean="missingContentReindexComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
         </property>
         <property name="scheduler">
             <ref bean="schedulerFactory" />
+        </property>
+        <!-- Give the server 5 minutes and then check for missing content -->
+        <property name="startDelayMinutes">
+            <value>5</value>
+        </property>
+        <property name="repeatCount">
+            <value>0</value>
+        </property>
+    </bean>
+
+    <bean id="indexRecoveryTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="indexRecoveryComponent">
+                            <ref bean="indexRecoveryComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="startDelayMinutes">
+            <value>1</value>
+        </property>
+        <property name="repeatCount">
+            <value>0</value>
         </property>
     </bean>
     
@@ -48,14 +122,15 @@
                 </property>
             </bean>
         </property>
-        <property name="startDelay">
-            <value>1800000</value><!-- start after half an hour -->
-        </property>
-        <property name="repeatInterval">
-            <value>3600000</value><!-- repeat every hour -->
-        </property>
         <property name="scheduler">
             <ref bean="schedulerFactory" />
+        </property>
+        <!-- start after half an hour and repeat hourly -->
+        <property name="startDelayMinutes">
+            <value>30</value>
+        </property>
+        <property name="repeatIntervalMinutes">
+            <value>60</value>
         </property>
     </bean>
 
@@ -81,33 +156,6 @@
         <!-- trigger at 4am each day -->
         <property name="cronExpression">
             <value>0 0 4 * * ?</value>
-        </property>
-    </bean>
-
-    
-    <bean id="indexRecoveryTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <bean id="IndexRecoveryJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                        <entry key="indexRecoveryComponent">
-                            <ref bean="indexRecoveryComponent" />
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
-        <property name="startDelay">
-            <value>60000</value>       <!-- start after 1 minute -->
-        </property>
-        <property name="repeatCount">
-            <value>0</value>           <!-- DO NOT REPEAT !!!!! -->
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
         </property>
     </bean>
 
@@ -150,26 +198,12 @@
             <ref bean="schedulerFactory" />
         </property>
         -->
-        <property name="startDelay">
-            <value>3600000</value><!-- start after an hour -->
+        <!-- start after an hour and repeat hourly -->
+        <property name="startDelayMinutes">
+            <value>60</value>
         </property>
-        <property name="repeatInterval">
-            <value>3600000</value><!-- repeat every hour -->
-        </property>
-    </bean>
-
-    <!-- Scheduled tasks -->
-    <!-- Triggers should not appear here - the scheduler should be injected into the trigger definition -->
-    <!-- This bean should not need to apear else where in extension configuration -->
-    <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <property name="waitForJobsToCompleteOnShutdown">
-            <value>true</value>
-        </property>
-        <property name="configLocation">
-            <value>classpath:alfresco/domain/quartz.properties</value>
-        </property>
-        <property name="schedulerName">
-            <value>DefaultScheduler</value>
+        <property name="repeatIntervalMinutes">
+            <value>60</value>
         </property>
     </bean>
     

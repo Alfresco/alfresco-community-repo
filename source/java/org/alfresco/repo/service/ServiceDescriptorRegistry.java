@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -340,6 +341,13 @@ public class ServiceDescriptorRegistry
     {
         return (OwnableService)getService(OWNABLE_SERVICE);
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getPersonService()
+     */
+    public PersonService getPersonService()
+    {
+        return (PersonService)getService(PERSON_SERVICE);
+    }
     
 }

@@ -201,7 +201,6 @@ public class RepositoryImpl implements Repository
         {
             // construct the session
             SessionImpl sessionImpl = new SessionImpl(this);
-            registerSession(sessionImpl);
             
             // authenticate user
             AuthenticationService authenticationService = getServiceRegistry().getAuthenticationService();
@@ -211,7 +210,6 @@ public class RepositoryImpl implements Repository
             }
             catch(AuthenticationException e)
             {
-                deregisterSession();
                 throw new LoginException("Alfresco Repository failed to authenticate credentials", e);
             }
             
@@ -222,11 +220,11 @@ public class RepositoryImpl implements Repository
 
             // session is now ready
             Session session = sessionImpl.getProxy();
+            registerSession(sessionImpl);
             return session;
         }
         catch(AlfrescoRuntimeException e)
         {
-            deregisterSession();
             throw new RepositoryException(e);
         }
     }

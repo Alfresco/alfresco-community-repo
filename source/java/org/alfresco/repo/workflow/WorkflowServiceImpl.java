@@ -210,6 +210,8 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public WorkflowInstance cancelWorkflow(String workflowId)
     {
+        WorkflowInstance instance = getWorkflowById(workflowId);
+        workflowPackageComponent.deletePackage(instance.workflowPackage);
         String engineId = BPMEngineRegistry.getEngineId(workflowId);
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.cancelWorkflow(workflowId);
@@ -319,7 +321,7 @@ public class WorkflowServiceImpl implements WorkflowService
             String engineId = BPMEngineRegistry.getEngineId(workflowId);
             WorkflowComponent component = getWorkflowComponent(engineId);
             WorkflowInstance instance = component.getWorkflowById(workflowId);
-            if (instance.active == active)
+            if (instance != null && instance.active == active)
             {
                 workflowInstances.add(instance);
             }

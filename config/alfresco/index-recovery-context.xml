@@ -4,10 +4,10 @@
 <beans>
    
    <bean id="indexRecoveryComponentBase" abstract="true" >
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
+      <property name="authenticationComponent">
+         <ref bean="authenticationComponentImpl" />
       </property>
-      <property name="transactionService">
+      <property name="transactionComponent">
          <ref bean="transactionComponent" />
       </property>
       <property name="indexer">
@@ -22,62 +22,33 @@
       <property name="nodeService">
           <ref bean="nodeService" />
       </property>
+      <property name="nodeDaoService">
+          <ref bean="nodeDaoService" />
+      </property>
    </bean>
    
-   <!-- full node index recovery -->
-   <bean id="indexRecoveryComponent" class="org.alfresco.repo.node.index.FullIndexRecoveryComponent" parent="indexRecoveryComponentBase">
-      <!-- Properties controlling full index rebuilding / tracking -->
-      <property name="executeFullRecovery">
-          <value>false</value>                 <!-- enable this to start the full index recovery -->
-      </property>
-      <property name="runContinuously">
-          <value>false</value>                  <!-- ensure the index is up to date and then stop -->
-      </property>
-      <property name="waitTime">
-          <value>1000</value>                   <!-- milliseconds to wait between checks for new transactions -->
-      </property>
-      <property name="l2CacheMode">
-          <value>NORMAL</value>                 <!-- normal L2 cache usage (database is changed by this server only) -->
-      </property>
-   </bean>
-
-   <!-- attempt to reindex content that was missing before -->
+   <!-- index recovery and validation -->
    <!--
-   <bean id="missingContentReindexComponent" class="org.alfresco.repo.node.index.MissingContentReindexComponent" parent="indexRecoveryComponentBase">
-      <property name="runContinuously">
-          <value>false</value>
-      </property>
-      <property name="waitTime">
-          <value>300000</value>
+      Recovery types are:
+         NONE:     Ignore
+         VALIDATE: Checks that the last transaction for each store is represented in the indexes
+         AUTO:     Validates and auto-recovers if validation fails
+         FULL:     Full index rebuild, processing all transactions in order.  The server is temporarily suspended.
+   -->
+   <bean
+         id="indexRecoveryComponent"
+         class="org.alfresco.repo.node.index.FullIndexRecoveryComponent"
+         parent="indexRecoveryComponentBase">
+      <property name="recoveryMode">
+          <value>${index.recovery.mode}</value>
       </property>
    </bean>
 
-    <bean id="missingContentReindexTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <bean id="IndexRecoveryJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                        <entry key="missingContentReindexComponent">
-                            <ref bean="missingContentReindexComponent" />
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
-        <property name="startDelay">
-            <value>60000</value>
-        </property>
-        <property name="repeatCount">
-            <value>0</value>
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-    </bean>
-   -->
-
+   <!-- Bean that attempts to index content that was previously missing -->
+   <bean
+         id="missingContentReindexComponent"
+         class="org.alfresco.repo.node.index.MissingContentReindexComponent"
+         parent="indexRecoveryComponentBase">
+   </bean>
 
 </beans>

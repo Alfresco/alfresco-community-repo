@@ -25,10 +25,12 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.Store;
+import org.alfresco.repo.domain.Transaction;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -233,4 +235,12 @@ public interface NodeDaoService
      * @return Returns the values for the given type definition
      */
     public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition);
+    
+    public Transaction getLastTxn(final StoreRef storeRef);
+    public int getTxnUpdateCountForStore(final StoreRef storeRef, final long txnId);
+    public int getTxnDeleteCountForStore(final StoreRef storeRef, final long txnId);
+    public int getTransactionCount();
+    public List<Transaction> getNextTxns(final Transaction lastTxn, final int count);
+    public List<NodeRef> getTxnChangesForStore(final StoreRef storeRef, final long txnId);
+    public List<NodeRef> getTxnChanges(final long txnId);
 }

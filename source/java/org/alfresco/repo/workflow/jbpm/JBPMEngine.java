@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.hibernate.Query;
@@ -67,7 +68,6 @@ import org.hibernate.proxy.HibernateProxy;
 import org.jbpm.JbpmContext;
 import org.jbpm.JbpmException;
 import org.jbpm.context.exe.ContextInstance;
-import org.jbpm.context.exe.TokenVariableMap;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
 import org.jbpm.graph.def.Node;
@@ -260,8 +260,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve process definition
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessDefinition processDefinition = graphSession.loadProcessDefinition(getJbpmId(workflowDefinitionId));
-                    // NOTE: if not found, should throw an exception
+                    ProcessDefinition processDefinition = getProcessDefinition(graphSession, workflowDefinitionId);
                     
                     // undeploy
                     // NOTE: jBPM deletes all "in-flight" processes too
@@ -332,7 +331,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     GraphSession graphSession = context.getGraphSession();
                     ProcessDefinition processDef = graphSession.findLatestProcessDefinition(createLocalId(workflowName));
-                    return createWorkflowDefinition(processDef);
+                    return processDef == null ? null : createWorkflowDefinition(processDef);
                 }
             });
         }
@@ -340,6 +339,23 @@ public class JBPMEngine extends BPMEngine
         {
             throw new WorkflowException("Failed to retrieve workflow definition '" + workflowName + "'", e);
         }
+    }
+    
+    /**
+     * Gets a jBPM process definition
+     * 
+     * @param graphSession  jBPM graph session
+     * @param workflowDefinitionId  workflow definition id
+     * @return  process definition
+     */
+    private ProcessDefinition getProcessDefinition(GraphSession graphSession, String workflowDefinitionId)
+    {
+        ProcessDefinition processDefinition = graphSession.getProcessDefinition(getJbpmId(workflowDefinitionId));
+        if (processDefinition == null)
+        {
+            throw new WorkflowException("Workflow definition '" + workflowDefinitionId + "' does not exist");
+        }
+        return processDefinition;
     }
     
     
@@ -367,7 +383,7 @@ public class JBPMEngine extends BPMEngine
 
                     // construct a new process
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessDefinition processDefinition = graphSession.loadProcessDefinition(getJbpmId(workflowDefinitionId));
+                    ProcessDefinition processDefinition = getProcessDefinition(graphSession, workflowDefinitionId);
                     ProcessInstance processInstance = new ProcessInstance(processDefinition);
                  
                     // assign initial process context
@@ -399,7 +415,7 @@ public class JBPMEngine extends BPMEngine
             throw new WorkflowException("Failed to start workflow " + workflowDefinitionId, e);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowComponent#getActiveWorkflows(java.lang.String)
      */    
@@ -447,7 +463,7 @@ public class JBPMEngine extends BPMEngine
                     // retrieve workflow
                     GraphSession graphSession = context.getGraphSession();
                     ProcessInstance processInstance = graphSession.getProcessInstance(getJbpmId(workflowId));
-                    return createWorkflowInstance(processInstance);
+                    return processInstance == null ? null : createWorkflowInstance(processInstance);
                 }
             });
         }
@@ -455,6 +471,22 @@ public class JBPMEngine extends BPMEngine
         {
             throw new WorkflowException("Failed to retrieve workflow instance '" + workflowId + "'", e);
         }        
+    }
+    
+    /**
+     * Gets a jBPM Process Instance
+     * @param graphSession  jBPM graph session
+     * @param workflowId  workflow id
+     * @return  process instance
+     */
+    private ProcessInstance getProcessInstance(GraphSession graphSession, String workflowId)
+    {
+        ProcessInstance processInstance = graphSession.getProcessInstance(getJbpmId(workflowId));
+        if (processInstance == null)
+        {
+            throw new WorkflowException("Workflow instance '" + workflowId + "' does not exist");
+        }
+        return processInstance;
     }
     
     /* (non-Javadoc)
@@ -471,7 +503,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve process instance
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessInstance processInstance = graphSession.loadProcessInstance(getJbpmId(workflowId));
+                    ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
                     
                     // convert jBPM tokens to workflow posisitons
                     List<Token> tokens = processInstance.findAllTokens();
@@ -509,37 +541,10 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve and cancel process instance
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessInstance processInstance = graphSession.loadProcessInstance(getJbpmId(workflowId));
+                    ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
                     // TODO: Determine if this is the most appropriate way to cancel workflow...
                     //       It might be useful to record point at which it was cancelled etc
                     WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
-
-                    //
-                    // TODO: remove - workaround for JBPM variable mapping constraint exception
-                    //
-                    Collection<TaskInstance> tasks = processInstance.getTaskMgmtInstance().getTaskInstances();
-                    for (TaskInstance task : tasks)
-                    {
-                        Map<String, Serializable> taskVariables = task.getVariablesLocally();
-                        for (String varName : taskVariables.keySet())
-                        {
-                            task.deleteVariableLocally(varName);
-                        }
-                    }
-                    ContextInstance processContext = processInstance.getContextInstance();
-                    Map<Token, TokenVariableMap> tokenVarMaps = processContext.getTokenVariableMaps();
-                    for (Map.Entry<Token, TokenVariableMap> mapEntry : tokenVarMaps.entrySet())
-                    {
-                        TokenVariableMap tokenVarMap = mapEntry.getValue();
-                        Map<String, Serializable> variables = tokenVarMap.getVariables();
-                        for (String name : variables.keySet())
-                        {
-                            tokenVarMap.deleteVariable(name);
-                        }
-                    }
-                    //
-                    // end TODO
-                    //
                     
                     // delete the process instance
                     graphSession.deleteProcessInstance(processInstance, true, true, true);
@@ -738,6 +743,22 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
+    /**
+     * Gets a jBPM Task Instance
+     * @param taskSession  jBPM task session
+     * @param taskId  task id
+     * @return  task instance
+     */
+    private TaskInstance getTaskInstance(TaskMgmtSession taskSession, String taskId)
+    {
+        TaskInstance taskInstance = taskSession.getTaskInstance(getJbpmId(taskId));
+        if (taskInstance == null)
+        {
+            throw new WorkflowException("Task instance '" + taskId + "' does not exist");
+        }
+        return taskInstance;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.TaskComponent#updateTask(java.lang.String, java.util.Map, java.util.Map, java.util.Map)
      */
@@ -751,7 +772,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve task
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
-                    TaskInstance taskInstance = taskSession.loadTaskInstance(getJbpmId(taskId));
+                    TaskInstance taskInstance = getTaskInstance(taskSession, taskId);
 
                     // create properties to set on task instance
                     Map<QName, Serializable> newProperties = properties;
@@ -871,13 +892,8 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve task
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
-                    TaskInstance taskInstance = taskSession.loadTaskInstance(getJbpmId(taskId));
+                    TaskInstance taskInstance = getTaskInstance(taskSession, taskId);
 
-                    // set status to complete
-                    Map<QName, Serializable> taskProperties = new HashMap<QName, Serializable>();
-                    taskProperties.put(WorkflowModel.PROP_STATUS, "Completed");
-                    setTaskProperties(taskInstance, taskProperties);
-                    
                     // signal the transition on the task
                     if (transition == null)
                     {
@@ -922,8 +938,8 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve task
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
-                    TaskInstance taskInstance = taskSession.loadTaskInstance(getJbpmId(taskId));
-                    return createWorkflowTask(taskInstance);
+                    TaskInstance taskInstance = taskSession.getTaskInstance(getJbpmId(taskId));
+                    return taskInstance == null ? null : createWorkflowTask(taskInstance);
                 }
             });
         }
@@ -1134,7 +1150,7 @@ public class JBPMEngine extends BPMEngine
         }
 
         // retrieve jBPM token for workflow position
-        ProcessInstance processInstance = session.loadProcessInstance(getJbpmId(path[0]));
+        ProcessInstance processInstance = getProcessInstance(session, path[0]);
         String tokenId = path[1].replace(WORKFLOW_TOKEN_SEPERATOR, "/");
         Token token = processInstance.findToken(tokenId);
         if (token == null)
@@ -1166,8 +1182,7 @@ public class JBPMEngine extends BPMEngine
         for (Entry<String, Object> entry : vars.entrySet())
         {
             String key = entry.getKey();
-            String name = key.replace("_", ":");
-            QName qname = QName.createQName(name, this.namespaceService);
+            QName qname = mapNameToQName(key);
 
             // add variable, only if part of task definition or locally defined on task
             if (taskProperties.containsKey(qname) || taskAssocs.containsKey(qname) || instance.hasVariableLocally(key))
@@ -1356,8 +1371,7 @@ public class JBPMEngine extends BPMEngine
                     else if (key.equals(WorkflowModel.ASSOC_PACKAGE))
                     {
                         // Attach workflow definition & instance id to Workflow Package in Repository
-                        String name = key.toPrefixString(this.namespaceService);
-                        name = name.replace(':', '_');
+                        String name = mapQNameToName(key);
                         JBPMNode existingWorkflowPackage = (JBPMNode)instance.getVariable(name);
                         
                         // first check if provided workflow package has already been associated with another workflow instance
@@ -1401,8 +1415,7 @@ public class JBPMEngine extends BPMEngine
             
             // no specific mapping to jBPM task has been established, so place into
             // the generic task variable bag
-            String name = key.toPrefixString(this.namespaceService);
-            name = name.replace(':', '_');
+            String name = mapQNameToName(key);
             instance.setVariableLocally(name, value);
         }
     }
@@ -1414,7 +1427,7 @@ public class JBPMEngine extends BPMEngine
      */
     protected void setDefaultTaskProperties(TaskInstance instance)
     {
-        Map<QName, Serializable> existingValues = null;
+        Map<QName, Serializable> existingValues = getTaskProperties(instance, true);
         Map<QName, Serializable> defaultValues = new HashMap<QName, Serializable>();
 
         // construct an anonymous type that flattens all mandatory aspects
@@ -1427,10 +1440,6 @@ public class JBPMEngine extends BPMEngine
             String defaultValue = entry.getValue().getDefaultValue();
             if (defaultValue != null)
             {
-                if (existingValues == null)
-                {
-                    existingValues = getTaskProperties(instance, true);
-                }
                 if (existingValues.get(entry.getKey()) == null)
                 {
                     defaultValues.put(entry.getKey(), defaultValue);
@@ -1442,7 +1451,7 @@ public class JBPMEngine extends BPMEngine
         String description = (String)existingValues.get(WorkflowModel.PROP_DESCRIPTION);
         if (description == null || description.length() == 0)
         {
-            description = (String)instance.getContextInstance().getVariable("bpm_workflowDescription");
+            description = (String)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
             if (description != null && description.length() > 0)
             {
                 defaultValues.put(WorkflowModel.PROP_DESCRIPTION, description);
@@ -1453,7 +1462,7 @@ public class JBPMEngine extends BPMEngine
                 defaultValues.put(WorkflowModel.PROP_DESCRIPTION, task.title);
             }
         }
-        
+
         // assign the default values to the task
         if (defaultValues.size() > 0)
         {
@@ -1462,16 +1471,62 @@ public class JBPMEngine extends BPMEngine
     }
 
     /**
-     * Set Task Outcome based on specified Transition
+     * Sets default description for the Task
      * 
      * @param instance  task instance
-     * @param transition  transition
      */
-    protected void setTaskOutcome(TaskInstance instance, Transition transition)
+    public void setDefaultStartTaskDescription(TaskInstance instance)
     {
-        Map<QName, Serializable> outcome = new HashMap<QName, Serializable>();
-        outcome.put(WorkflowModel.PROP_OUTCOME, transition.getName());
-        setTaskProperties(instance, outcome);
+        String description = instance.getTask().getDescription();
+        if (description == null || description.length() == 0)
+        {
+            description = (String)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
+            if (description != null && description.length() > 0)
+            {
+                Map<QName, Serializable> defaultValues = new HashMap<QName, Serializable>();
+                defaultValues.put(WorkflowModel.PROP_DESCRIPTION, description);
+                setTaskProperties(instance, defaultValues);
+            }
+        }
+    }
+
+    /**
+     * Initialise Workflow Instance properties
+     * 
+     * @param startTask  start task instance
+     */
+    protected void setDefaultWorkflowProperties(TaskInstance startTask)
+    {
+        Map<QName, Serializable> taskProperties = getTaskProperties(startTask, true);
+        
+        ContextInstance processContext = startTask.getContextInstance();
+        String workflowDescriptionName = mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
+        if (!processContext.hasVariable(workflowDescriptionName))
+        {
+            processContext.setVariable(workflowDescriptionName, taskProperties.get(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
+        }
+        String workflowDueDateName = mapQNameToName(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
+        if (!processContext.hasVariable(workflowDueDateName))
+        {
+            processContext.setVariable(workflowDueDateName, taskProperties.get(WorkflowModel.PROP_WORKFLOW_DUE_DATE));
+        }
+        String workflowPriorityName = mapQNameToName(WorkflowModel.PROP_WORKFLOW_PRIORITY);
+        if (!processContext.hasVariable(workflowPriorityName))
+        {
+            processContext.setVariable(workflowPriorityName, taskProperties.get(WorkflowModel.PROP_WORKFLOW_PRIORITY));
+        }
+        String workflowPackageName = mapQNameToName(WorkflowModel.ASSOC_PACKAGE);
+        if (!processContext.hasVariable(workflowPackageName))
+        {
+            Serializable packageNodeRef = taskProperties.get(WorkflowModel.ASSOC_PACKAGE);
+            processContext.setVariable(workflowPackageName, convertNodeRefs(packageNodeRef instanceof List, packageNodeRef));
+        }
+        String workflowContextName = mapQNameToName(WorkflowModel.PROP_CONTEXT);
+        if (!processContext.hasVariable(workflowContextName))
+        {
+            Serializable contextRef = taskProperties.get(WorkflowModel.PROP_CONTEXT);
+            processContext.setVariable(workflowContextName, convertNodeRefs(contextRef instanceof List, contextRef));
+        }
     }
     
     /**
@@ -1538,6 +1593,39 @@ public class JBPMEngine extends BPMEngine
         return authority;
     }
 
+    /**
+     * Map jBPM variable name to QName
+     * 
+     * @param name  jBPM variable name
+     * @return  qname
+     */
+    private QName mapNameToQName(String name)
+    {
+        QName qname = null;
+        String qnameStr = name.replaceFirst("_", ":");
+        try
+        {
+            qname = QName.createQName(qnameStr, this.namespaceService);
+        }
+        catch(NamespaceException e)
+        {
+            qname = QName.createQName(name, this.namespaceService);
+        }
+        return qname;
+    }
+
+    /**
+     * Map QName to jBPM variable name
+     * 
+     * @param name  QName
+     * @return  jBPM variable name
+     */
+    private String mapQNameToName(QName name)
+    {
+        String nameStr = name.toPrefixString(this.namespaceService);
+        return nameStr.replace(':', '_');
+    }
+    
     /**
      * Get an I18N Label for a workflow item
      * 
@@ -1651,12 +1739,23 @@ public class JBPMEngine extends BPMEngine
     {
         WorkflowInstance workflowInstance = new WorkflowInstance();
         workflowInstance.id = createGlobalId(new Long(instance.getId()).toString());
+        workflowInstance.description = (String)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
         workflowInstance.definition = createWorkflowDefinition(instance.getProcessDefinition());
         workflowInstance.active = !instance.hasEnded();
         JBPMNode initiator = (JBPMNode)instance.getContextInstance().getVariable("initiator");
         if (initiator != null)
         {
             workflowInstance.initiator = initiator.getNodeRef(); 
+        }
+        JBPMNode context = (JBPMNode)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_CONTEXT));
+        if (context != null)
+        {
+            workflowInstance.context = context.getNodeRef(); 
+        }
+        JBPMNode workflowPackage = (JBPMNode)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.ASSOC_PACKAGE));
+        if (workflowPackage != null)
+        {
+            workflowInstance.workflowPackage = workflowPackage.getNodeRef(); 
         }
         workflowInstance.startDate = instance.getStart();
         workflowInstance.endDate = instance.getEnd();

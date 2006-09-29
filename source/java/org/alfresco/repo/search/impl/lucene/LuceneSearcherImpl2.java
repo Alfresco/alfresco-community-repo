@@ -59,17 +59,13 @@ import org.saxpath.SAXPathException;
 import com.werken.saxpath.XPathReader;
 
 /**
- * The Lucene implementation of Searcher At the moment we support only lucene
- * based queries.
- * 
- * TODO: Support for other query languages
+ * The Lucene implementation of Searcher At the moment we support only lucene based queries. TODO: Support for other query languages
  * 
  * @author andyh
- * 
  */
 public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
 {
-    
+
     /**
      * Default field name
      */
@@ -90,9 +86,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
      */
 
     /**
-     * Get an initialised searcher for the store and transaction Normally we do
-     * not search against a a store and delta. Currently only gets the searcher
-     * against the main index.
+     * Get an initialised searcher for the store and transaction Normally we do not search against a a store and delta. Currently only gets the searcher against the main index.
      * 
      * @param storeRef
      * @param deltaId
@@ -115,9 +109,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
     }
 
     /**
-     * Get an intialised searcher for the store. No transactional ammendsmends
-     * are searched.
-     * 
+     * Get an intialised searcher for the store. No transactional ammendsmends are searched.
      * 
      * @param storeRef
      * @return
@@ -134,7 +126,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
 
     public boolean indexExists()
     {
-        //return mainIndexExists();
+        // return mainIndexExists();
         return true;
     }
 
@@ -220,7 +212,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
 
                 Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, new LuceneAnalyser(
                         dictionaryService), namespacePrefixResolver, dictionaryService, defaultOperator);
-                Searcher searcher = getSearcher(indexer);
+                ClosingIndexSearcher searcher = getSearcher(indexer);
                 if (searcher == null)
                 {
                     // no index return an empty result set
@@ -238,7 +230,14 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
                         switch (sd.getSortType())
                         {
                         case FIELD:
-                            fields[index++] = new SortField(sd.getField(), !sd.isAscending());
+                            if (searcher.getReader().getFieldNames().contains(sd.getField()))
+                            {
+                                fields[index++] = new SortField(sd.getField(), !sd.isAscending());
+                            }
+                            else
+                            {
+                                fields[index++] = new SortField(null, SortField.DOC, !sd.isAscending());
+                            }
                             break;
                         case DOCUMENT:
                             fields[index++] = new SortField(null, SortField.DOC, !sd.isAscending());
@@ -348,8 +347,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
     }
 
     /**
-     * The definitions must provide a default value, or of not there must be a
-     * parameter to provide the value
+     * The definitions must provide a default value, or of not there must be a parameter to provide the value
      * 
      * @param definition
      * @param queryParameters
@@ -396,12 +394,9 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
     }
 
     /*
-     * Parameterise the query string - not sure if it is required to escape
-     * lucence spacials chars The parameters could be used to build the query -
-     * the contents of parameters should alread have been escaped if required.
-     * ... mush better to provide the parameters and work out what to do TODO:
-     * conditional query escapement - may be we should have a parameter type
-     * that is not escaped
+     * Parameterise the query string - not sure if it is required to escape lucence spacials chars The parameters could be used to build the query - the contents of parameters
+     * should alread have been escaped if required. ... mush better to provide the parameters and work out what to do TODO: conditional query escapement - may be we should have a
+     * parameter type that is not escaped
      */
     private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map,
             QueryParameter[] queryParameters, NamespacePrefixResolver nspr) throws QueryParameterisationException
@@ -567,7 +562,6 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
 
     /**
      * @return Returns true if the pattern is present, otherwise false.
-     * 
      * @see #setIndexer(Indexer)
      * @see #setSearcher(SearchService)
      */

@@ -57,7 +57,7 @@
         <event type="node-enter">
             <script>
                 System.out.println("javascript: " + alfrescoScriptResult);
-                System.out.println("bpm_workflowDescription: " + bpm_description);
+                System.out.println("bpm_workflowDescription: " + bpm_workflowDescription);
             </script>
         </event>
     </end-state>

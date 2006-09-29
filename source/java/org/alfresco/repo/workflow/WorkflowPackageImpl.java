@@ -89,6 +89,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     public NodeRef createPackage(NodeRef container)
     {
         // create a container, if one is not specified
+        boolean isSystemPackage = false;
         if (container == null)
         {
             // create simple folder in workflow system folder
@@ -112,6 +113,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
             QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName);
             ChildAssociationRef childRef = nodeService.createNode(packages, ContentModel.ASSOC_CONTAINS, qname, ContentModel.TYPE_SYSTEM_FOLDER);
             container = childRef.getChildRef();
+            isSystemPackage = true;
         }
         
         // attach workflow package
@@ -120,11 +122,31 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
             throw new WorkflowException("Container '" + container + "' is already a workflow package.");
         }
         nodeService.addAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE, null);
+        nodeService.setProperty(container, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, isSystemPackage);
         
         // return container
         return container;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowPackageComponent#deletePackage(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void deletePackage(NodeRef container)
+    {
+        if (container != null && nodeService.exists(container) && nodeService.hasAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE))
+        {
+            Boolean isSystemPackage = (Boolean)nodeService.getProperty(container, WorkflowModel.PROP_IS_SYSTEM_PACKAGE);
+            if (isSystemPackage != null && isSystemPackage.booleanValue())
+            {
+                nodeService.deleteNode(container);
+            }
+            else
+            {
+                nodeService.removeAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE);
+            }
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowPackageComponent#getWorkflowIdsForContent(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
@@ -150,7 +172,6 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         }
         return workflowIds;
     }
-
     
     /**
      * Gets the system workflow container for storing workflow related items
@@ -170,7 +191,6 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         }
         return systemWorkflowContainer;
     }
-
     
     /**
      * Finds the system workflow container
@@ -193,7 +213,6 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         return systemWorkflowContainer;
     }
 
-
     /**
      * Finds the system container
      * 
@@ -214,7 +233,6 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         }
         return nodeRefs.get(0);
     }
-    
 
     /**
      * Creates the System Workflow Container

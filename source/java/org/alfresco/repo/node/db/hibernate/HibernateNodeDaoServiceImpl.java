@@ -990,4 +990,176 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         return convertedValues;
     }
+    
+    /*
+     * Queries for transactions
+     */
+    private static final String QUERY_GET_LAST_TXN_ID_FOR_STORE = "txn.GetLastTxnIdForStore";
+    private static final String QUERY_GET_TXN_UPDATE_COUNT_FOR_STORE = "txn.GetTxnUpdateCountForStore";
+    private static final String QUERY_GET_TXN_DELETE_COUNT_FOR_STORE = "txn.GetTxnDeleteCountForStore";
+    private static final String QUERY_COUNT_TRANSACTIONS = "txn.CountTransactions";
+    private static final String QUERY_GET_NEXT_TXNS = "txn.GetNextTxns";
+    private static final String QUERY_GET_TXN_CHANGES_FOR_STORE = "txn.GetTxnChangesForStore";
+    private static final String QUERY_GET_TXN_CHANGES = "txn.GetTxnChanges";
+    
+    @SuppressWarnings("unchecked")
+    public Transaction getLastTxn(final StoreRef storeRef)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_LAST_TXN_ID_FOR_STORE);
+                query.setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Long txnId = (Long) getHibernateTemplate().execute(callback);
+        Transaction txn = null;
+        if (txnId != null)
+        {
+            txn = (Transaction) getSession().get(TransactionImpl.class, txnId);
+        }
+        // done
+        return txn;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public int getTxnUpdateCountForStore(final StoreRef storeRef, final long txnId)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_UPDATE_COUNT_FOR_STORE);
+                query.setLong("txnId", txnId)
+                     .setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        // done
+        return count;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public int getTxnDeleteCountForStore(final StoreRef storeRef, final long txnId)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_DELETE_COUNT_FOR_STORE);
+                query.setLong("txnId", txnId)
+                     .setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        // done
+        return count;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public int getTransactionCount()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_COUNT_TRANSACTIONS);
+                query.setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        // done
+        return count.intValue();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Transaction> getNextTxns(final Transaction lastTxn, final int count)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                long lastTxnId = (lastTxn == null) ? -1L : lastTxn.getId();
+                
+                Query query = session.getNamedQuery(QUERY_GET_NEXT_TXNS);
+                query.setLong("lastTxnId", lastTxnId)
+                     .setMaxResults(count)
+                     .setReadOnly(true);
+                return query.list();
+            }
+        };
+        List<Transaction> results = (List<Transaction>) getHibernateTemplate().execute(callback);
+        // done
+        return results;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<NodeRef> getTxnChangesForStore(final StoreRef storeRef, final long txnId)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_CHANGES_FOR_STORE);
+                query.setLong("txnId", txnId)
+                     .setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setReadOnly(true);
+                return query.list();
+            }
+        };
+        List<NodeStatus> results = (List<NodeStatus>) getHibernateTemplate().execute(callback);
+        // transform into a simpler form
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(results.size());
+        for (NodeStatus nodeStatus : results)
+        {
+            NodeRef nodeRef = new NodeRef(storeRef, nodeStatus.getKey().getGuid());
+            nodeRefs.add(nodeRef);
+        }
+        // done
+        return nodeRefs;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<NodeRef> getTxnChanges(final long txnId)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_CHANGES);
+                query.setLong("txnId", txnId)
+                     .setReadOnly(true);
+                return query.list();
+            }
+        };
+        List<NodeStatus> results = (List<NodeStatus>) getHibernateTemplate().execute(callback);
+        // transform into a simpler form
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(results.size());
+        for (NodeStatus nodeStatus : results)
+        {
+            NodeRef nodeRef = new NodeRef(
+                    nodeStatus.getKey().getProtocol(),
+                    nodeStatus.getKey().getIdentifier(),
+                    nodeStatus.getKey().getGuid());
+            nodeRefs.add(nodeRef);
+        }
+        // done
+        return nodeRefs;
+    }
 }

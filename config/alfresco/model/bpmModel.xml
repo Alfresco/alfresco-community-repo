@@ -291,6 +291,11 @@
         <aspect name="bpm:workflowPackage">
             <properties>
 
+                <!--  Created by Workflow Service (true), or provided from outside (false) -->                
+                <property name="bpm:isSystemPackage">
+                    <type>d:boolean</type>
+                </property>
+
                 <!--                        -->
                 <!--  Associated Workflow   -->
                 <!--                        -->

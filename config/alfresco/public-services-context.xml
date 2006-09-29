@@ -1018,7 +1018,7 @@
                 <idref local="WorkflowService_transaction"/>
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
-                 <idref bean="WorkflowService_security"/>
+                <idref bean="WorkflowService_security"/>
                 <idref local="WorkflowService_descriptor"/>
             </list>
         </property>

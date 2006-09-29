@@ -100,7 +100,7 @@ public interface WorkflowService
      * Gets a Workflow Definition by unique Id
      * 
      * @param workflowDefinitionId  the workflow definition id
-     * @return  the deployed workflow definition
+     * @return  the deployed workflow definition (or null if not found)
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public WorkflowDefinition getDefinitionById(String workflowDefinitionId);
@@ -109,7 +109,7 @@ public interface WorkflowService
      * Gets a Workflow Definition by unique name
      * 
      * @param workflowName  workflow name e.g. jbpm://review
-     * @return  the deployed workflow definition
+     * @return  the deployed workflow definition (or null if not found)
      */
     @Auditable(parameters = {"workflowName"})
     public WorkflowDefinition getDefinitionByName(String workflowName);
@@ -153,7 +153,7 @@ public interface WorkflowService
      * Gets a specific workflow instances
      *
      * @param workflowId  the id of the workflow to retrieve
-     * @return  the workflow instance 
+     * @return  the workflow instance (or null if not found)
      */
     @Auditable(parameters = {"workflowId"})
     public WorkflowInstance getWorkflowById(String workflowId);
@@ -204,7 +204,7 @@ public interface WorkflowService
      * Gets a Task by unique Id
      * 
      * @param taskId  the task id
-     * @return  the task
+     * @return  the task (or null, if not found)
      */
     @Auditable(parameters = {"taskId"})
     public WorkflowTask getTaskById(String taskId);

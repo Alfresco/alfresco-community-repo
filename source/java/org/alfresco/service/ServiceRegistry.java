@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -88,6 +89,7 @@ public interface ServiceRegistry
     static final QName WORKFLOW_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WorkflowService");
     static final QName AUDIT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AuditService");
     static final QName OWNABLE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "OwnableService");
+    static final QName PERSON_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PersonService");
     
     /**
      * Get the list of services provided by the Repository
@@ -280,4 +282,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     OwnableService getOwnableService();
+    
+    /**
+     * Get the person service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    PersonService getPersonService();
 }

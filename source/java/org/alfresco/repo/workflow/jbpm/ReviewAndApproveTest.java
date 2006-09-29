@@ -100,6 +100,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, reviewDueDate);
         NodeRef reviewer = personService.getPerson("admin");
         params.put(WorkflowModel.ASSOC_ASSIGNEE, reviewer);
+        params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "Test review");
         
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
         assertNotNull(path);
@@ -113,6 +114,8 @@ public class ReviewAndApproveTest extends BaseSpringTest
         assertNotNull(endedTask);
         assertTrue(endedTask.properties.containsKey(WorkflowModel.PROP_OUTCOME));
         assertEquals("", endedTask.properties.get(WorkflowModel.PROP_OUTCOME));
+        assertEquals("Test review", endedTask.properties.get(WorkflowModel.PROP_DESCRIPTION));
+        assertEquals("Test review", endedTask.path.instance.description);
         
         List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
         assertNotNull(assignedTasks);

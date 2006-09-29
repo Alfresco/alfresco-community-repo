@@ -40,6 +40,16 @@ public interface WorkflowPackageComponent
      */
     public NodeRef createPackage(NodeRef container);
     
+    /**
+     * Deletes a Workflow Package
+     * 
+     * The workflow package aspect is removed, and if the container was previously created by the workflow
+     * service (i.e. not provided from elsewhere), it will be deleted.
+     * 
+     * @param container
+     */
+    public void deletePackage(NodeRef container);
+    
     // TODO: Further support for finding packages via meta-data of WorkflowPackage aspect
     
     /**

@@ -30,7 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Bean implementation for the AVM "Create Folder" dialog
+ * Bean implementation for the AVM "Create Folder" dialog.
  * 
  * @author Kevin Roast
  */

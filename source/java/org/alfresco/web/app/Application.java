@@ -76,6 +76,7 @@ public class Application
    private static String scriptsFolderName;
    private static String guestHomeFolderName;
    private static String websitesFolderName;
+   private static String contentFormsFolderName;
    
    /**
     * Private constructor to prevent instantiation of this class 
@@ -456,6 +457,22 @@ public class Application
    public static String getWebsitesFolderName(FacesContext context)
    {
       return getWebsitesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the WCM Content Forms folder name
+    */
+   public static String getContentFormsFolderName(ServletContext context)
+   {
+      return getContentFormsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the WCM Content Forms folder name
+    */
+   public static String getContentFormsFolderName(FacesContext context)
+   {
+      return getContentFormsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
@@ -877,6 +894,24 @@ public class Application
       }
       
       return websitesFolderName;
+   }
+   
+   /**
+    * Returns the WCM Content Forms folder name
+    * 
+    * @param context The Spring context
+    * @return The WCM Content Forms folder name
+    */
+   private static String getContentFormsFolderName(WebApplicationContext context)
+   {
+      if (contentFormsFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         contentFormsFolderName = configuration.getProperty("spaces.content_forms.childname");
+      }
+      
+      return contentFormsFolderName;
    }
    
    /**

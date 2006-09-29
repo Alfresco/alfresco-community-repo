@@ -1057,6 +1057,20 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Set all metadata on a node from another node. Aspects, properties, ACLs.
+     * @param path The path to the node to set.
+     * @param from The descriptor for the node to get metadata from.
+     */
+    public void setMetaDataFrom(String path, AVMNodeDescriptor from)
+    {
+        if (path == null || from == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        fAVMRepository.setMetaDataFrom(path, from);
+    }
+
+    /**
      * Add an aspect to an AVM node.
      * @param path The path to the node.
      * @param aspectName The QName of the aspect.

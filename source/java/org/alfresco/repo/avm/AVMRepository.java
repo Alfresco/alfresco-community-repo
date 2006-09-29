@@ -181,7 +181,7 @@ public class AVMRepository
         DirectoryNode child = null;
         if (dir instanceof LayeredDirectoryNode)
         {
-            child = new LayeredDirectoryNodeImpl((String)null, store);
+            child = new LayeredDirectoryNodeImpl((String)null, store, null);
             ((LayeredDirectoryNode)child).setPrimaryIndirection(false);
             ((LayeredDirectoryNode)child).setLayerID(parent.getLayerID());
         }
@@ -1579,6 +1579,23 @@ public class AVMRepository
     public static AVMRepository GetInstance()
     {
         return fgInstance;
+    }
+    
+    public void setMetaDataFrom(String path, AVMNodeDescriptor from)
+    {
+        fLookupCount.set(1);
+        String [] pathParts = SplitPath(path);
+        AVMStore store = getAVMStoreByName(pathParts[0]);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store not found: " + pathParts[0]);
+        }
+        AVMNode fromNode = AVMContext.fgInstance.fAVMNodeDAO.getByID(from.getId());
+        if (fromNode == null)
+        {
+            throw new AVMNotFoundException("Node not found: " + from.getPath());
+        }
+        store.setMetaDataFrom(pathParts[1], fromNode);
     }
     
     /**

@@ -74,7 +74,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param indirection The indirection path to set.
      * @param store The store that owns this node.
      */
-    public LayeredDirectoryNodeImpl(String indirection, AVMStore store)
+    public LayeredDirectoryNodeImpl(String indirection, AVMStore store, AVMNode toCopy)
     {
         super(store.getAVMRepository().issueID(), store);
         fLayerID = -1;
@@ -83,6 +83,12 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fOpacity = false;
         AVMContext.fgInstance.fAVMNodeDAO.save(this);
         AVMContext.fgInstance.fAVMNodeDAO.flush();
+        if (toCopy != null)
+        {
+            copyProperties(toCopy);
+            copyACLs(toCopy);
+            copyAspects(toCopy);
+        }
     }
     
     /**
@@ -253,7 +259,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             // layer.  The following creates a node that will inherit its
             // indirection from its parent.
             newMe = new LayeredDirectoryNodeImpl((String)null, 
-                                                 store);
+                                                 store, this);
             newMe.setPrimaryIndirection(false);
             newMe.setLayerID(lPath.getTopLayer().getLayerID());
         }

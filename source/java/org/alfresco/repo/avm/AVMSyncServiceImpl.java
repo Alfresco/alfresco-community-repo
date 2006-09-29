@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -32,6 +33,7 @@ import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 
 /**
@@ -412,7 +414,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private void linkIn(String parentPath, String name, AVMNodeDescriptor toLink, boolean removeFirst)
     {
-        mkdirs(parentPath);
+        mkdirs(parentPath, AVMNodeConverter.SplitBase(toLink.getPath())[0]);
         if (removeFirst)
         {
             fAVMService.removeNode(parentPath, name);
@@ -435,6 +437,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
     {
         fAVMService.createDirectory(parentPath, name);
         String newParentPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
+        fAVMService.setMetaDataFrom(newParentPath, toCopy);
         AVMNodeDescriptor parentDesc = fAVMService.lookup(-1, newParentPath, true);
         Map<String, AVMNodeDescriptor> children =
             fAVMService.getDirectoryListing(toCopy, true);
@@ -461,6 +464,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // Otherwise make a directory in the target parent, and recursiveCopy all the source
         // children into it.
         AVMNodeDescriptor newParentDesc = fAVMRepository.createDirectory(parent, name);
+        fAVMService.setMetaDataFrom(newParentDesc.getPath(), toCopy);
         Map<String, AVMNodeDescriptor> children = 
             fAVMService.getDirectoryListing(toCopy, true);
         for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
@@ -692,8 +696,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
     /**
      * Make sure this entire directory path exists.
      * @param path
+     * @param sourcePath
      */
-    private void mkdirs(String path)
+    private void mkdirs(String path, String sourcePath)
     {
         if (fAVMService.lookup(-1, path) != null)
         {
@@ -706,7 +711,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
             // Something else is going on.
             throw new AVMSyncException("No corresponding destination path: " + path);
         }
-        mkdirs(pathParts[0]);
+        mkdirs(pathParts[0], AVMNodeConverter.SplitBase(sourcePath)[0]);
         fAVMService.createDirectory(pathParts[0], pathParts[1]);
+        fAVMService.setMetaDataFrom(path, fAVMService.lookup(-1, sourcePath));
     }
 }

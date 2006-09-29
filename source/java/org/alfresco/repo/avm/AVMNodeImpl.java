@@ -338,6 +338,17 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     }
     
     /**
+     * Copy out metadata from another node.
+     * @param other The other node.
+     */
+    public void copyMetaDataFrom(AVMNode other)
+    {
+        copyAspects(other);
+        copyACLs(other);
+        copyProperties(other);
+    }
+    
+    /**
      * Set a property on a node. Overwrite it if it exists.
      * @param name The name of the property.
      * @param value The value to set.

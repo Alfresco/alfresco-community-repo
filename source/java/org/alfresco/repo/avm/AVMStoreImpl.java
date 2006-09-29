@@ -194,7 +194,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                 // a LayeredDirectoryNode that gets its indirection from
                                 // its parent.
         {
-            newDir = new LayeredDirectoryNodeImpl((String)null, this);
+            newDir = new LayeredDirectoryNodeImpl((String)null, this, null);
             ((LayeredDirectoryNodeImpl)newDir).setPrimaryIndirection(false);
             ((LayeredDirectoryNodeImpl)newDir).setLayerID(lPath.getTopLayer().getLayerID());
         }
@@ -227,7 +227,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMExistsException("Child exists: " +  name);
         }
         LayeredDirectoryNode newDir =
-            new LayeredDirectoryNodeImpl(srcPath, this);
+            new LayeredDirectoryNodeImpl(srcPath, this, null);
         if (lPath.isLayered())
         {
             // When a layered directory is made inside of a layered context,
@@ -1142,7 +1142,23 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         ((FileNode)node).setContentData(data);
     }
-    
+
+    /**
+     * Set meta data, aspects, properties, acls, from another node.
+     * @param path The path to the node to set metadata on.
+     * @param from The node to get the metadata from.
+     */
+    public void setMetaDataFrom(String path, AVMNode from)
+    {
+        Lookup lPath = lookup(-1, path, true, false);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found: " + path);
+        }
+        AVMNode node = lPath.getCurrentNode();
+        node.copyMetaDataFrom(from);
+    }
+
     /**
      * Add an aspect to a node.
      * @param path The path to the node.

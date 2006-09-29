@@ -360,6 +360,13 @@ public interface AVMStore
     public void setContentData(String path, ContentData data);
     
     /**
+     * Set meta data, aspects, properties, acls, from another node.
+     * @param path The path to the node to set metadata on.
+     * @param from The node to get the metadata from.
+     */
+    public void setMetaDataFrom(String path, AVMNode from);
+    
+    /**
      * Add an aspect to a node.
      * @param path The path to the node.
      * @param aspectName The name of the aspect.

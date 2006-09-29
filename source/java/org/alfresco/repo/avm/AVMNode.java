@@ -197,4 +197,10 @@ public interface AVMNode
      * @return The store that we're new in.
      */
     public AVMStore getStoreNew();
+    
+    /**
+     * Copy metadata from another node.
+     * @param other The other node.
+     */
+    public void copyMetaDataFrom(AVMNode other);
 }

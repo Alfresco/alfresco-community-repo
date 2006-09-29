@@ -81,6 +81,18 @@ public class AVMServiceTest extends AVMServiceTestBase
             {
                 System.out.println(path.getFirst() + " " + path.getSecond());
             }
+            paths = fService.getHeadPaths(fService.lookup(-1, "main:/a/b/c/foo"));
+            System.out.println("------------------------------");
+            for (Pair<Integer, String> path : paths)
+            {
+                System.out.println(path.getFirst() + " " + path.getSecond());
+            }
+            paths = fService.getPathsInStoreHead(fService.lookup(-1, "main:/a/b/c/foo"), "main");
+            System.out.println("------------------------------");
+            for (Pair<Integer, String> path : paths)
+            {
+                System.out.println(path.getFirst() + " " + path.getSecond());
+            }
         }
         catch (Exception e)
         {

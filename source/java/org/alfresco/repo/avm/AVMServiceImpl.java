@@ -582,6 +582,34 @@ public class AVMServiceImpl implements AVMService
     	return fAVMRepository.getPaths(desc);
     }
 
+    /**
+     * Get all paths that a given node has that are in the head version.
+     * @param desc The node descriptor to get paths for.
+     * @return A List of version, path Pairs.
+     */
+    public List<Pair<Integer, String>> getHeadPaths(AVMNodeDescriptor desc)
+    {
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Descriptor is null.");
+        }
+        return fAVMRepository.getHeadPaths(desc);
+    }
+
+    /**
+     * Get all paths to a node starting at the HEAD version of a store.
+     * @param desc The node descriptor.
+     * @param store The store.
+     * @return A List of all paths meeting the criteria.
+     */
+    public List<Pair<Integer, String>> getPathsInStoreHead(AVMNodeDescriptor desc, String store)
+    {
+        if (desc == null || store == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        return fAVMRepository.getPathsInStoreHead(desc, store);
+    }
     
     /**
      * Purge an AVMStore.  Permanently delete everything that 

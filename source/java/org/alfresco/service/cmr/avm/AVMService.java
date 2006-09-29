@@ -416,6 +416,21 @@ public interface AVMService
     public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc);
     
     /**
+     * Get all paths that a given node has that are in the head version.
+     * @param desc The node descriptor to get paths for.
+     * @return A List of version, path Pairs.
+     */
+    public List<Pair<Integer, String>> getHeadPaths(AVMNodeDescriptor desc);
+    
+    /**
+     * Get all paths to a node starting at the HEAD version of a store.
+     * @param desc The node descriptor.
+     * @param store The store.
+     * @return A List of all paths meeting the criteria.
+     */
+    public List<Pair<Integer, String>> getPathsInStoreHead(AVMNodeDescriptor desc, String store);
+    
+    /**
      * Get the indirection path for a node in a layered context.
      * @param version The version number to get.
      * @param path The path to the node of interest.

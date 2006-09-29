@@ -932,12 +932,58 @@ public class AVMRepository
     public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc)
     {
         AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Not found: " + desc.getPath());
+        }
         List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>>();
         List<String> components = new ArrayList<String>();
         recursiveGetPaths(node, components, paths);
         return paths;
     }
     
+    /**
+     * Get all paths for a node reachable by HEAD.
+     * @param desc The node descriptor.
+     * @return A List of all the version, path Pairs that match.
+     */
+    public List<Pair<Integer, String>> getHeadPaths(AVMNodeDescriptor desc)
+    {
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Not found: " + desc.getPath());
+        }
+        List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>>();
+        List<String> components = new ArrayList<String>();
+        recursiveGetHeadPaths(node, components, paths);
+        return paths;
+    }
+    
+    public List<Pair<Integer, String>> getPathsInStoreHead(AVMNodeDescriptor desc, String store)
+    {
+        AVMStore st = getAVMStoreByName(store);
+        if (st == null)
+        {
+            throw new AVMNotFoundException("Store not found: " + store);
+        }
+        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Not found: " + desc.getPath());
+        }
+        List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>>();
+        List<String> components = new ArrayList<String>();
+        recursiveGetPathsInStoreHead(node, components, paths, st.getRoot(), store);
+        return paths;
+    }
+    
+    /**
+     * Do the actual work.
+     * @param node The current node.
+     * @param components The currently accumulated path components.
+     * @param paths The list to put full paths in.
+     */
     private void recursiveGetPaths(AVMNode node, List<String> components, 
                                    List<Pair<Integer, String>> paths)
     {
@@ -966,7 +1012,63 @@ public class AVMRepository
             components.remove(components.size() - 1);
         }
     }
-    
+
+    /**
+     * Do the actual work.
+     * @param node The current node.
+     * @param components The currently accumulated path components.
+     * @param paths The list to put full paths in.
+     */
+    private void recursiveGetHeadPaths(AVMNode node, List<String> components, 
+                                       List<Pair<Integer, String>> paths)
+    {
+        if (node.getIsRoot())
+        {
+            AVMStore store = AVMContext.fgInstance.fAVMStoreDAO.getByRoot(node);
+            if (store != null)
+            {
+                addPath(components, -1, store.getName(), paths);
+                return;
+            }
+            return;
+        }
+        List<ChildEntry> entries = AVMContext.fgInstance.fChildEntryDAO.getByChild(node);
+        for (ChildEntry entry : entries)
+        {
+            String name = entry.getName();
+            components.add(name);
+            AVMNode parent = entry.getParent();
+            recursiveGetHeadPaths(parent, components, paths);
+            components.remove(components.size() - 1);
+        }
+    }
+
+    /**
+     * Do the actual work.
+     * @param node The current node.
+     * @param components The currently accumulated path components.
+     * @param paths The list to put full paths in.
+     */
+    private void recursiveGetPathsInStoreHead(AVMNode node, List<String> components, 
+                                              List<Pair<Integer, String>> paths, DirectoryNode root,
+                                              String storeName)
+    {
+        if (node.equals(root))
+        {
+            addPath(components, -1, storeName, paths);
+            return;
+        }
+        List<ChildEntry> entries = AVMContext.fgInstance.fChildEntryDAO.getByChild(node);
+        for (ChildEntry entry : entries)
+        {
+            String name = entry.getName();
+            components.add(name);
+            AVMNode parent = entry.getParent();
+            recursiveGetHeadPaths(parent, components, paths);
+            components.remove(components.size() - 1);
+        }
+    }
+
     /**
      * Add a path to the list.
      * @param components The path name components.

@@ -56,13 +56,27 @@ public final class WizardManager
     */
    public void setCurrentWizard(WizardConfig config)
    {
+      // make sure the managed bean is present
       String beanName = config.getManagedBean();
-      IWizardBean wizard = (IWizardBean)FacesHelper.getManagedBean(
-            FacesContext.getCurrentInstance(), beanName);
       
-      if (wizard == null)
+      Object bean = FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), beanName);
+
+      if (bean == null)
       {
-         throw new AlfrescoRuntimeException("Failed to find managed bean '" + beanName + "'");
+         throw new AlfrescoRuntimeException("Failed to start wizard as managed bean '" + beanName + 
+               "' has not been defined");
+      }
+      
+      // make sure the bean implements the IWizardBean interface
+      IWizardBean wizard = null;
+      if (bean instanceof IWizardBean)
+      {
+         wizard = (IWizardBean)bean;
+      }
+      else
+      {
+         throw new AlfrescoRuntimeException("Failed to start wizard as managed bean '" + beanName + 
+               "' does not implement the required IWizardBean interface");
       }
       
       // initialise the managed bean

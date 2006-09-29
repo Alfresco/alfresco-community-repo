@@ -18,7 +18,6 @@
 package org.alfresco.web.ui.repo.component.property;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +46,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.DataDictionary;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -704,12 +704,7 @@ public abstract class BaseAssociationEditor extends UIInput
 
       if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetRef)))
       {
-         //out.write((String)nodeService.getProperty(targetRef, ContentModel.PROP_USERNAME));
-         Map<QName, Serializable> props = nodeService.getProperties(targetRef);
-         String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
-         String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
-         String fullName = firstName + " " + (lastName != null ? lastName : "");
-         out.write(fullName);
+         out.write(User.getFullName(nodeService, targetRef));
       }
       else
       {
@@ -832,17 +827,13 @@ public abstract class BaseAssociationEditor extends UIInput
                // if the node represents a person, show the username instead of the name
                if (ContentModel.TYPE_PERSON.equals(nodeService.getType(item)))
                {
-                  Map<QName, Serializable> props = nodeService.getProperties(item);
-                  String userName = (String)props.get(ContentModel.PROP_USERNAME);
+                  String userName = (String)nodeService.getProperty(item, ContentModel.PROP_USERNAME);
                   if (userName != null && (userName.equals(PermissionService.GUEST_AUTHORITY) == false))
                   {
                      out.write("<option value='");
                      out.write(item.getId());
                      out.write("'>");
-                     String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
-                     String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
-                     String fullName = firstName + " " + (lastName != null ? lastName : "");
-                     out.write(fullName);
+                     out.write(User.getFullName(nodeService, item));
                      out.write("</option>");
                   }
                }

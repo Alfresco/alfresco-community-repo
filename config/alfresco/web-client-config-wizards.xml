@@ -184,8 +184,7 @@
          
          <!-- Definition of the Start Workflow wizard -->
          <wizard name="startWorkflow" managed-bean="StartWorkflowWizard"
-                 title-id="start_workflow_wizard" description-id="start_workflow_desc"
-                 icon="/images/icons/new_workflow_large.gif">
+                 description-id="start_workflow_desc" icon="/images/icons/new_workflow_large.gif">
             <step name="choose-workflow" title-id="step_choose_workflow" 
                   description-id="start_workflow_choose_desc">
                <page path="/jsp/workflow/start-workflow-wizard/choose-workflow.jsp" 

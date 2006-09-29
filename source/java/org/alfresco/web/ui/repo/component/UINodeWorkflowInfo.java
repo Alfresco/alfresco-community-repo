@@ -21,6 +21,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 
 /**
@@ -305,27 +306,25 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
             {
                out.write("<li>");
                out.write(wi.definition.title);
-               if (wi.definition.description != null && wi.definition.description.length() > 0)
+               if (wi.description != null && wi.description.length() > 0)
                {
-                  out.write(" (");
-                  out.write(wi.definition.description);
+                  out.write("&nbsp;(");
+                  out.write(wi.description);
                   out.write(")");
                }
-               out.write("&nbsp;");
+               out.write(" ");
                if (wi.startDate != null)
                {
                   out.write(bundle.getString("started_on").toLowerCase());
                   out.write("&nbsp;");
                   out.write(format.format(wi.startDate));
-                  out.write("&nbsp;");
+                  out.write(" ");
                }
                if (wi.initiator != null)
                {
                   out.write(bundle.getString("by"));
                   out.write("&nbsp;");
-                  String userName = (String)nodeService.getProperty(wi.initiator, 
-                        ContentModel.PROP_USERNAME);
-                  out.write(userName);
+                  out.write(User.getFullName(nodeService, wi.initiator));
                   out.write(".");
                }
                out.write("</li>");

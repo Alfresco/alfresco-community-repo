@@ -48,13 +48,27 @@ public final class DialogManager
     */
    public void setCurrentDialog(DialogConfig config)
    {
+      // make sure the managed bean is present
       String beanName = config.getManagedBean();
-      IDialogBean dialog = (IDialogBean)FacesHelper.getManagedBean(
-            FacesContext.getCurrentInstance(), beanName);
       
-      if (dialog == null)
+      Object bean = FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), beanName);
+
+      if (bean == null)
       {
-         throw new AlfrescoRuntimeException("Failed to find managed bean '" + beanName + "'");
+         throw new AlfrescoRuntimeException("Failed to start dialog as managed bean '" + beanName + 
+               "' has not been defined");
+      }
+      
+      // make sure the bean implements the IDialogBean interface
+      IDialogBean dialog = null;
+      if (bean instanceof IDialogBean)
+      {
+         dialog = (IDialogBean)bean;
+      }
+      else
+      {
+         throw new AlfrescoRuntimeException("Failed to start dialog as managed bean '" + beanName + 
+               "' does not implement the required IDialogBean interface");
       }
       
       // initialise the managed bean

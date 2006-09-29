@@ -535,6 +535,9 @@ public class BrowseBean implements IContextListener
          // push the view mode into the lists
          setBrowseViewMode(viewMode);
          
+         // setup dispatch context for custom views
+         this.navigator.setupDispatchContext(this.navigator.getCurrentNode());
+         
          navigateBrowseScreen();
       }
       else
@@ -666,7 +669,7 @@ public class BrowseBean implements IContextListener
       catch (InvalidNodeRefException refErr)
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {refErr.getNodeRef()}) );
+               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {refErr.getNodeRef()}), refErr );
          this.containerNodes = Collections.<Node>emptyList();
          this.contentNodes = Collections.<Node>emptyList();
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
@@ -840,7 +843,7 @@ public class BrowseBean implements IContextListener
       catch (InvalidNodeRefException refErr)
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {refErr.getNodeRef()}) );
+               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {refErr.getNodeRef()}), refErr );
          this.containerNodes = Collections.<Node>emptyList();
          this.contentNodes = Collections.<Node>emptyList();
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}

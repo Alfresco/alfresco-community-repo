@@ -260,7 +260,6 @@ public class WorkflowBean
          
          // add the workflow instance id and name this taks belongs to
          node.getProperties().put("workflowInstanceId", task.path.instance.id);
-         node.getProperties().put("workflowInstanceName", task.path.instance.definition.title);
       }
       
       return node;

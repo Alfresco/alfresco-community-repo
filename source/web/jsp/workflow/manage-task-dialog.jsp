@@ -41,7 +41,7 @@
                rendered="#{not empty DialogManager.bean.resources}">
       
       <%-- Name column --%>
-      <a:column id="col1" primary="true" width="200" style="padding:2px; text-align:left">
+      <a:column id="col1" primary="true" width="200" style="padding:2px;text-align:left">
          <f:facet name="header">
             <a:sortLink id="col1-sort" label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
          </f:facet>
@@ -54,7 +54,7 @@
       </a:column>
       
       <%-- Description column --%>
-      <a:column id="col2" style="text-align:left">
+      <a:column id="col2" style="padding:2px;text-align:left">
          <f:facet name="header">
             <a:sortLink id="col2-sort" label="#{msg.description}" value="description" styleClass="header"/>
          </f:facet>
@@ -62,7 +62,7 @@
       </a:column>
       
       <%-- Path column --%>
-      <a:column id="col3" style="text-align:left">
+      <a:column id="col3" style="padding:2px;text-align:left">
          <f:facet name="header">
             <a:sortLink id="col3-sort" label="#{msg.path}" value="path" styleClass="header"/>
          </f:facet>
@@ -71,7 +71,7 @@
       </a:column>
       
       <%-- Created Date column --%>
-      <a:column id="col4" style="text-align:left">
+      <a:column id="col4" style="padding:2px;text-align:left">
          <f:facet name="header">
             <a:sortLink id="col4-sort" label="#{msg.created}" value="created" styleClass="header"/>
          </f:facet>
@@ -81,7 +81,7 @@
       </a:column>
       
       <%-- Modified Date column --%>
-      <a:column id="col5" style="text-align:left">
+      <a:column id="col5" style="padding:2px;text-align:left">
          <f:facet name="header">
             <a:sortLink id="col5-sort" label="#{msg.modified}" value="modified" styleClass="header"/>
          </f:facet>
@@ -91,25 +91,13 @@
       </a:column>
                         
       <%-- Actions column --%>
-      <a:column id="col6" actions="true" style="text-align:left">
+      <a:column id="col6" actions="true" style="padding:2px;text-align:left">
          <f:facet name="header">
             <h:outputText id="col6-txt" value="#{msg.actions}"/>
          </f:facet>
          <r:actions id="col6-actions" value="#{DialogManager.bean.packageItemActionGroup}" 
                     context="#{r}" showLink="false" styleClass="inlineAction" />
       </a:column>
-      
-      <%-- Completed column --%>
-      <%--
-      <a:column style="text-align:left">
-         <f:facet name="header">
-            <h:outputText value="#{msg.completed}" />
-         </f:facet>
-         <a:actionLink value="#{r.completed}" actionListener="#{DialogManager.bean.togglePackageItemComplete}">
-            <f:param name="id" value="#{r.id}" />
-         </a:actionLink>
-      </a:column>
-      --%>
    </a:richList>
 
    <h:panelGrid id="package-actions-group" columns="1" styleClass="paddingRow">

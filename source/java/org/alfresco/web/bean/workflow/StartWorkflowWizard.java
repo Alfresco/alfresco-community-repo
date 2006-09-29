@@ -233,9 +233,31 @@ public class StartWorkflowWizard extends BaseWizardBean
       return this.nextButtonDisabled;
    }
    
+   @Override
+   public String getContainerTitle()
+   {
+      String wizTitle = null;
+      
+      ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+      String stepName = Application.getWizardManager().getCurrentStepName();
+      
+      if ("choose-workflow".equals(stepName) == false && this.selectedWorkflow != null)
+      {
+         String titlePattern = bundle.getString("start_named_workflow_wizard");
+         WorkflowDefinition workflowDef = this.workflows.get(this.selectedWorkflow);
+         wizTitle = MessageFormat.format(titlePattern, new Object[] {workflowDef.title});
+      }
+      else
+      {
+         wizTitle = bundle.getString("start_workflow_wizard");
+      }
+         
+      return wizTitle;
+   }
+   
    // ------------------------------------------------------------------------------
    // Event Handlers
-   
+
    /**
     * Prepares the dialog to allow the user to add an item to the workflow package
     * 

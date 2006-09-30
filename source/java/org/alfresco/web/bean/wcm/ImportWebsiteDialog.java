@@ -395,7 +395,7 @@ public class ImportWebsiteDialog
          {
             if (file.isFile())
             {
-               String avmPath = (String)AVMNodeConverter.ToAVMVersionPath(root)[1];
+               String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
                avmService.createFile(avmPath, file.getName(), new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE));
                // create content node based on the filename
                /*FileInfo contentFile = fileFolderService.create(root, fileName, ContentModel.TYPE_AVM_PLAIN_CONTENT);
@@ -418,7 +418,7 @@ public class ImportWebsiteDialog
             else
             {
                //FileInfo fileInfo = fileFolderService.create(root, file.getName(), ContentModel.TYPE_AVM_PLAIN_FOLDER);
-               String avmPath = (String)AVMNodeConverter.ToAVMVersionPath(root)[1];
+               String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
                avmService.createDirectory(avmPath, file.getName());
                
                importDirectory(file.getPath(), AVMNodeConverter.ToNodeRef(-1, avmPath + '/' + file.getName()));//fileInfo.getNodeRef()

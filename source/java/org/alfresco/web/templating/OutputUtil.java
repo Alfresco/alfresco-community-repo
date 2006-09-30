@@ -119,7 +119,7 @@ public class OutputUtil
          String generatedFileName = (String)
          nodeService.getProperty(generatedNodeRef, 
                ContentModel.PROP_NAME);
-         String avmPath = (String)AVMNodeConverter.ToAVMVersionPath(nodeRef)[1];
+         String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
          String avmStore = avmPath.substring(0, avmPath.indexOf(":/"));
          String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
          

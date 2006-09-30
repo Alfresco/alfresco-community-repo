@@ -369,7 +369,7 @@ public class AVMRepository
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode srcDir = (DirectoryNode)sPath.getCurrentNode();
-        AVMNode srcNode = srcDir.lookupChild(sPath, srcName, -1, true, false);
+        AVMNode srcNode = srcDir.lookupChild(sPath, srcName, false);
         if (srcNode == null)
         {
             throw new AVMNotFoundException("Not found: " + srcName);
@@ -387,7 +387,7 @@ public class AVMRepository
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
-        AVMNode dstNode = dstDir.lookupChild(dPath, dstName, -1, true, false);
+        AVMNode dstNode = dstDir.lookupChild(dPath, dstName, false);
         if (dstNode != null)
         {
             throw new AVMExistsException("Node exists: " + dstName);

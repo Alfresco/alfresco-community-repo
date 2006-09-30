@@ -186,7 +186,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1, true, false) != null)
+        if (dir.lookupChild(lPath, name, false) != null)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -223,7 +223,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1, true, false) != null)
+        if (dir.lookupChild(lPath, name, false) != null)
         {
             throw new AVMExistsException("Child exists: " +  name);
         }
@@ -261,7 +261,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1, true, false) != null)
+        if (dir.lookupChild(lPath, name, false) != null)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -291,7 +291,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1, true, false) != null)
+        if (dir.lookupChild(lPath, name, false) != null)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -321,7 +321,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1, true, false) != null)
+        if (dir.lookupChild(lPath, name, false) != null)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -479,7 +479,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, -1, true, false) == null)
+        if (dir.lookupChild(lPath, name, false) == null)
         {
             throw new AVMNotFoundException("Does not exist: " + name);
         }
@@ -612,7 +612,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         // before the end.
         for (int i = 0; i < pathElements.length - 1; i++)
         {
-            AVMNode child = dir.lookupChild(result, pathElements[i], version, write, includeDeleted);
+            AVMNode child = dir.lookupChild(result, pathElements[i], includeDeleted);
             if (child == null)
             {
                 return null;
@@ -627,7 +627,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             dir = (DirectoryNode)result.getCurrentNode();
         }
         // Now look up the last element.
-        AVMNode child = dir.lookupChild(result, pathElements[pathElements.length - 1], version, write,
+        AVMNode child = dir.lookupChild(result, pathElements[pathElements.length - 1],
                                         includeDeleted);
         if (child == null)
         {

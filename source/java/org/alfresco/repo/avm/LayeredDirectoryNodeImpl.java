@@ -465,8 +465,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @return The child or null if not found.
      */
     @SuppressWarnings("unchecked")
-    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write,
-                               boolean includeDeleted)
+    public AVMNode lookupChild(Lookup lPath, String name, boolean includeDeleted)
     {
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
         if (entry != null)
@@ -487,7 +486,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         if (lookup != null)
         {
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            AVMNode retVal = dir.lookupChild(lookup, name, -1, false, includeDeleted);
+            AVMNode retVal = dir.lookupChild(lookup, name, includeDeleted);
             lPath.setFinalStore(lookup.getFinalStore());
             return retVal;
         }
@@ -529,7 +528,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         if (lookup != null)
         {
             DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-            AVMNode child = dir.lookupChild(lookup, name, -1, false, includeDeleted);
+            AVMNode child = dir.lookupChild(lookup, name, includeDeleted);
             if (child == null)
             {
                 return null;
@@ -563,7 +562,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         else
         {
-            child = lookupChild(lPath, name, -1, false, false);
+            child = lookupChild(lPath, name, false);
         }
         AVMNode ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
                 lPath.getAVMStore());
@@ -798,7 +797,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             throw new AVMBadArgumentException("Non primary layered directories cannot be linked.");
         }
         // Look for an existing child of that name.
-        AVMNode existing = lookupChild(lPath, name, -1, false, true);
+        AVMNode existing = lookupChild(lPath, name, true);
         if (existing != null)
         {
             if (existing.getType() != AVMNodeType.DELETED_NODE)

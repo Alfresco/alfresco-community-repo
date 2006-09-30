@@ -170,13 +170,11 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      * Lookup a child by name.
      * @param lPath The lookup path so far.
      * @param name The name to lookup.
-     * @param version The version to look under.
-     * @param write Whether this is in a write context.
+     * @param includeDeleted Whether to lookup deleted nodes.
      * @return The child or null.
      */
     @SuppressWarnings("unchecked")
-    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write,
-                               boolean includeDeleted)
+    public AVMNode lookupChild(Lookup lPath, String name, boolean includeDeleted)
     {
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
         if (entry == null || 

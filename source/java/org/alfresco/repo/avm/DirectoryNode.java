@@ -46,11 +46,9 @@ public interface DirectoryNode extends AVMNode
      * Lookup a child node.
      * @param lPath The Lookup so far.
      * @param name The name of the child to lookup.
-     * @param version The version to look under.
-     * @param write Whether this is occuring in a write context.
+     * @param includeDeleted Include deleted nodes or not.
      */
-    public AVMNode lookupChild(Lookup lPath, String name, int version, boolean write, 
-                               boolean includeDeleted);
+    public AVMNode lookupChild(Lookup lPath, String name, boolean includeDeleted);
     
     /**
      * Lookup a child node using an AVMNodeDescriptor as context.

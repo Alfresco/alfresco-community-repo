@@ -104,15 +104,29 @@
    </target>
    
    <target name="sample-website" depends="init">
+     <mkdir dir="${dir.build}/sample-website/alfresco"/>
+     <copy todir="${dir.build}/sample-website/alfresco">
+       <fileset dir="source/test-resources/websites/alfresco" excludes="**/.svn"/>
+     </copy>
      <javac srcdir="source/test-resources/websites/alfresco/ROOT/WEB-INF/classes"
+	    destdir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/classes"
+            deprecation="on" debug="on" target="1.5" source="1.5"
 	    classpathref="classpath.compile"/>
-     <mkdir dir="source/test-resources/websites/alfresco/ROOT/WEB-INF/lib"/>
-     <jar basedir="source/test-resources/websites/alfresco/ROOT/WEB-INF/classes"
-	  destfile="source/test-resources/websites/alfresco/ROOT/WEB-INF/lib/alfresco-sample-website.jar"
+     <mkdir dir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib"/>
+     <jar basedir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/classes"
+	  destfile="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib/alfresco-sample-website.jar"
 	  includes="**/*.class"/>
+     <delete>
+       <fileset dir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/classes" includes="**/*.class"/>
+     </delete>
+     <copy todir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib">
+       <fileset dir="${dir.common.lib}">
+	 <include name="standard.jar"/>
+	 <include name="jstl.jar"/>
+       </fileset>
+     </copy>
      <mkdir dir="${dir.dist}"/>
      <zip destfile="${dir.dist}/alfresco-sample-website.zip" 
-	  basedir="source/test-resources/websites/alfresco/" 
-	  excludes="**/.svn"/>
+	  basedir="${dir.build}/sample-website/alfresco"/>
    </target>
 </project>

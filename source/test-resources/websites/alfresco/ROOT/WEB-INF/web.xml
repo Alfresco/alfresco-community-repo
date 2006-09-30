@@ -5,13 +5,16 @@
   "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-   <display-name>Alfresco Website</display-name>
-    
-   <description>Alfresco Website</description>
+    <display-name>Alfresco Website</display-name>
+    <description>Alfresco Website</description>
 
    <!-- Faces Servlet -->
+    <taglib>
+        <taglib-uri>http://www.alfresco.org/pr</taglib-uri>
+        <taglib-location>/WEB-INF/pr.tld</taglib-location>
+    </taglib>
 
-   <welcome-file-list>
-      <welcome-file>index.jsp</welcome-file>
-   </welcome-file-list>
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
 </web-app>

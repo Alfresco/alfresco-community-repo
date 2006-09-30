@@ -119,4 +119,9 @@ public class RawServices implements ApplicationContextAware
         }
         return fContentStore;
     }
+    
+    public ApplicationContext getContext()
+    {
+        return fContext;
+    }
 }

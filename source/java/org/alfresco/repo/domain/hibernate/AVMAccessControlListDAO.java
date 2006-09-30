@@ -24,6 +24,7 @@ import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 /**
  * The AVM implementation for getting and setting ACLs.
@@ -56,9 +57,9 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
      */
     public DbAccessControlList getAccessControlList(NodeRef nodeRef)
     {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
-        String path = (String)avmVersionPath[1];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
+        String path = avmVersionPath.getSecond();
         try
         {
             return fAVMRepository.getACL(version, path);
@@ -77,13 +78,13 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
      */
     public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
     {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
         if (version >= 0)
         {
             throw new InvalidNodeRefException("Read Only Node.", nodeRef);
         }
-        String path = (String)avmVersionPath[1];
+        String path = avmVersionPath.getSecond();
         try
         {
             fAVMRepository.setACL(path, acl);

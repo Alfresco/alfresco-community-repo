@@ -20,6 +20,7 @@ package org.alfresco.repo.avm;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
 /**
@@ -69,7 +70,7 @@ public class AVMNodeConverter
      * @param nodeRef The NodeRef to convert.
      * @return An Integer, String array.
      */
-    public static Object[] ToAVMVersionPath(NodeRef nodeRef)
+    public static Pair<Integer, String> ToAVMVersionPath(NodeRef nodeRef)
     {
         StoreRef store = nodeRef.getStoreRef();
         String translated = nodeRef.getId();
@@ -82,10 +83,7 @@ public class AVMNodeConverter
         }
         int version = Integer.parseInt(translated.substring(0, off));
         String path = translated.substring(off);
-        Object [] result = new Object[2];
-        result[0] = new Integer(version);
-        result[1] = store.getIdentifier() + ":" + path;
-        return result;
+        return new Pair<Integer, String>(version, store.getIdentifier() + ":" + path);
     }
 
     /**

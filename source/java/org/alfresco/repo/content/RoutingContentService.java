@@ -53,6 +53,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -336,8 +337,8 @@ public class RoutingContentService implements ContentService
         Serializable contentValue = null;
         if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
         {
-            Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-            contentValue = avmService.getContentDataForWrite((String)avmVersionPath[1]);
+            Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+            contentValue = avmService.getContentDataForWrite(avmVersionPath.getSecond());
         }
         else
         {

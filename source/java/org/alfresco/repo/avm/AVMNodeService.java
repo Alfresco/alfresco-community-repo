@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
 /**
@@ -150,9 +151,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public boolean exists(NodeRef nodeRef)
     {
-        Object [] avmInfo = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmInfo[0];
-        String avmPath = (String)avmInfo[1];
+        Pair<Integer, String> avmInfo = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmInfo.getFirst();
+        String avmPath = avmInfo.getSecond();
         return fAVMService.lookup(version, avmPath) != null;
     }
     
@@ -235,13 +236,13 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             throw new InvalidTypeException(assocTypeQName);
         }
         String nodeName = assocQName.getLocalName();
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
-        int version = ((Integer)avmVersionPath[0]);
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
+        int version = avmVersionPath.getFirst();
         if (version >= 0)
         {
             throw new InvalidNodeRefException("Read only store.", parentRef);
         }
-        String avmPath = (String)avmVersionPath[1];
+        String avmPath = avmVersionPath.getSecond();
         // Invoke policy behavior.
         // invokeBeforeUpdateNode(parentRef);
         // invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
@@ -267,8 +268,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 {
                     throw new InvalidTypeException("No Indirection Property", nodeTypeQName);
                 }
-                Object [] indVersionPath = AVMNodeConverter.ToAVMVersionPath(indirection);
-                fAVMService.createLayeredFile((String)indVersionPath[1], avmPath, nodeName);
+                Pair<Integer, String> indVersionPath = AVMNodeConverter.ToAVMVersionPath(indirection);
+                fAVMService.createLayeredFile(indVersionPath.getSecond(), avmPath, nodeName);
             }
             else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_LAYERED_FOLDER))
             {
@@ -277,8 +278,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 {
                     throw new InvalidTypeException("No Indirection Property.", nodeTypeQName);
                 }
-                Object [] indVersionPath = AVMNodeConverter.ToAVMVersionPath(indirection);
-                fAVMService.createLayeredDirectory((String)indVersionPath[1], avmPath, nodeName);
+                Pair<Integer, String> indVersionPath = AVMNodeConverter.ToAVMVersionPath(indirection);
+                fAVMService.createLayeredDirectory(indVersionPath.getSecond(), avmPath, nodeName);
             }
             else
             {
@@ -359,13 +360,13 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             throw new InvalidTypeException(assocTypeQName);
         }
         // Extract the parts from the source.
-        Object [] src = AVMNodeConverter.ToAVMVersionPath(nodeToMoveRef);
-        int srcVersion = (Integer)src[0];
+        Pair<Integer, String> src = AVMNodeConverter.ToAVMVersionPath(nodeToMoveRef);
+        int srcVersion = src.getFirst();
         if (srcVersion >= 0)
         {
             throw new InvalidNodeRefException("Read Only Store.", nodeToMoveRef);
         }
-        String srcPath = (String)src[0];
+        String srcPath = src.getSecond();
         String [] splitSrc = null;
         try
         {
@@ -382,12 +383,12 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         String srcName = splitSrc[1];
         // Extract and setup the parts of the destination.
-        Object[] dst = AVMNodeConverter.ToAVMVersionPath(newParentRef);
-        if ((Integer)dst[0] >= 0)
+        Pair<Integer, String> dst = AVMNodeConverter.ToAVMVersionPath(newParentRef);
+        if (dst.getFirst() >= 0)
         {
             throw new InvalidNodeRefException("Read Only Store.", newParentRef);
         }
-        String dstParent = (String)dst[1];
+        String dstParent = dst.getSecond();
         String dstName = assocQName.getLocalName();
         // TODO Invoke policy behavior. Not quite sure how to translate this.
 //        NodeRef oldParentRef = AVMNodeConverter.ToNodeRef(-1, srcParent);
@@ -467,9 +468,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        AVMNodeDescriptor desc = fAVMService.lookup((Integer)avmVersionPath[0],
-                (String)avmVersionPath[1]);
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        AVMNodeDescriptor desc = fAVMService.lookup(avmVersionPath.getFirst(),
+                avmVersionPath.getSecond());
         if (desc == null)
         {
             throw new InvalidNodeRefException("Not Found.", nodeRef);
@@ -540,13 +541,13 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
 //        invokeBeforeUpdateNode(nodeRef);
 //        invokeBeforeAddAspect(nodeRef, aspectTypeQName);
         // Crack the nodeRef.
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
         if (version >= 0)
         {
             throw new InvalidNodeRefException("Read Only node.", nodeRef);
         }
-        String avmPath = (String)avmVersionPath[1];
+        String avmPath = avmVersionPath.getSecond();
         // Get the current node properties.
         Map<QName, Serializable> properties = getProperties(nodeRef);
         // Add the supplied properties.
@@ -627,13 +628,13 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             // TODO shouldn't we be throwing some kind of exception here.
             return;
         }
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
         if (version >= 0)
         {
             throw new InvalidNodeRefException("Read Only Node.", nodeRef);
         }
-        String path = (String)avmVersionPath[1];
+        String path = avmVersionPath.getSecond();
         try
         {
             if (fAVMService.hasAspect(-1, path, aspectTypeQName))
@@ -669,9 +670,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public boolean hasAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
-        String path = (String)avmVersionPath[1];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
+        String path = avmVersionPath.getSecond();
         if (isBuiltinAspect(aspectTypeQName))
         {
             return true;
@@ -709,9 +710,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
-        String path = (String)avmVersionPath[1];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
+        String path = avmVersionPath.getSecond();
         Set<QName> result = new HashSet<QName>();
         // Add the builtin ones.
         for (QName name : fgBuiltinAspects)
@@ -747,12 +748,12 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     {
         // Invoke policy behaviors.
 //        invokeBeforeDeleteNode(nodeRef);
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        if ((Integer)avmVersionPath[0] != -1)
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        if (avmVersionPath.getFirst() != -1)
         {
             throw new InvalidNodeRefException("Read only store.", nodeRef);
         }
-        String [] avmPathBase = AVMNodeConverter.SplitBase((String)avmVersionPath[1]);
+        String [] avmPathBase = AVMNodeConverter.SplitBase(avmVersionPath.getSecond());
         if (avmPathBase[0] == null)
         {
             throw new InvalidNodeRefException("Cannot delete root node.", nodeRef);
@@ -794,9 +795,31 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             QName assocTypeQName,
             QName qname) throws InvalidNodeRefException
     {
-        // TODO This can be supported theoretically.  I'm not sure if
-        // the link operation is semantically equivalent.
-        throw new UnsupportedOperationException("addChild: unsupported");
+        Pair<Integer, String> childVersionPath = AVMNodeConverter.ToAVMVersionPath(childRef);
+        AVMNodeDescriptor child = fAVMService.lookup(childVersionPath.getFirst(), 
+                                                     childVersionPath.getSecond());
+        if (child == null)
+        {
+            throw new InvalidNodeRefException("Not Found.", childRef);
+        }
+        Pair<Integer, String> parentVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
+        if (parentVersionPath.getFirst() >= 0)
+        {
+            throw new InvalidNodeRefException("Read Only.", parentRef);
+        }
+        try
+        {
+            fAVMService.link(parentVersionPath.getSecond(), qname.getLocalName(), child);
+            ChildAssociationRef newChild =
+                new ChildAssociationRef(assocTypeQName, parentRef, qname, 
+                    AVMNodeConverter.ToNodeRef(-1,
+                       AVMNodeConverter.ExtendAVMPath(parentVersionPath.getSecond(), qname.getLocalName())));
+            return newChild;
+        }
+        catch (AVMException e)
+        {
+            throw new InvalidNodeRefException("Could not link.", childRef);
+        }
     }
     
     /**
@@ -811,20 +834,18 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
-        // Invoke policy behaviors.
-        // TODO Have to fake up ChildAssocRef.
-        Object [] parentVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
-        if ((Integer)parentVersionPath[0] >= 0)
+        Pair<Integer, String> parentVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
+        if (parentVersionPath.getFirst() >= 0)
         {
             throw new InvalidNodeRefException("Read only store.", parentRef);
         }
-        Object [] childVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
-        if ((Integer)childVersionPath[0] >= 0)
+        Pair<Integer, String> childVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
+        if (childVersionPath.getFirst() >= 0)
         {
             throw new InvalidNodeRefException("Read only store.", childRef);
         }
-        String parentPath = (String)parentVersionPath[1];
-        String childPath = (String)childVersionPath[1];
+        String parentPath = parentVersionPath.getSecond();
+        String childPath = childVersionPath.getSecond();
         String [] childPathBase = AVMNodeConverter.SplitBase(childPath);
         if (childPathBase[0] == null || !childPathBase[0].equals(parentPath))
         {
@@ -856,14 +877,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         Map<QName, PropertyValue> props = null;
-        AVMNodeDescriptor desc = fAVMService.lookup((Integer)avmVersionPath[0],
-                (String)avmVersionPath[1]);
+        AVMNodeDescriptor desc = fAVMService.lookup(avmVersionPath.getFirst(),
+                avmVersionPath.getSecond());
         try
         {
-            props = fAVMService.getNodeProperties((Integer)avmVersionPath[0], 
-                                                  (String)avmVersionPath[1]);
+            props = fAVMService.getNodeProperties(avmVersionPath.getFirst(), 
+                                                  avmVersionPath.getSecond());
         }
         catch (AVMNotFoundException e)
         {
@@ -901,8 +922,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             try
             {
-                ContentData contentData = fAVMService.getContentDataForRead((Integer)avmVersionPath[0],
-                                                                            (String)avmVersionPath[1]);
+                ContentData contentData = fAVMService.getContentDataForRead(avmVersionPath.getFirst(),
+                                                                            avmVersionPath.getSecond());
                 result.put(ContentModel.PROP_CONTENT, contentData);
             }
             catch (AVMException e)
@@ -921,15 +942,15 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         if (isBuiltInProperty(qname))
         {
             return getBuiltInProperty(avmVersionPath, qname, nodeRef);
         }
         try
         {
-            PropertyValue value = fAVMService.getNodeProperty((Integer)avmVersionPath[0],
-                                                              (String)avmVersionPath[1],
+            PropertyValue value = fAVMService.getNodeProperty(avmVersionPath.getFirst(),
+                                                              avmVersionPath.getSecond(),
                                                               qname);
             if (value == null)
             {
@@ -951,7 +972,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      * @param nodeRef The original NodeRef (for error reporting).
      * @return The property value.
      */
-    private Serializable getBuiltInProperty(Object [] avmVersionPath,
+    private Serializable getBuiltInProperty(Pair<Integer, String> avmVersionPath,
                                             QName qName,
                                             NodeRef nodeRef)
     {
@@ -960,8 +981,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             try
             {
                 ContentData contentData = 
-                    fAVMService.getContentDataForRead((Integer)avmVersionPath[0],
-                                                      (String)avmVersionPath[1]);
+                    fAVMService.getContentDataForRead(avmVersionPath.getFirst(),
+                                                      avmVersionPath.getSecond());
                 return contentData;
             }
             catch (AVMException e)
@@ -971,8 +992,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 return null;
             }
         }
-        AVMNodeDescriptor desc = fAVMService.lookup((Integer)avmVersionPath[0],
-                                      (String)avmVersionPath[1]);
+        AVMNodeDescriptor desc = fAVMService.lookup(avmVersionPath.getFirst(),
+                                                    avmVersionPath.getSecond());
         if (desc == null)
         {
             throw new InvalidNodeRefException("Not Found.", nodeRef);
@@ -1053,8 +1074,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        if ((Integer)avmVersionPath[0] >= 0)
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        if (avmVersionPath.getFirst() >= 0)
         {
             throw new InvalidNodeRefException("Read only store.", nodeRef);
         }
@@ -1064,7 +1085,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             // Invoke policy behaviors.
 //            invokeBeforeUpdateNode(nodeRef);
 //            Map<QName, Serializable> oldProps = getProperties(nodeRef);
-            fAVMService.deleteNodeProperties((String)avmVersionPath[1]);
+            fAVMService.deleteNodeProperties(avmVersionPath.getSecond());
             Map<QName, PropertyValue> values = new HashMap<QName, PropertyValue>();
             for (QName qName : properties.keySet())
             {
@@ -1073,21 +1094,21 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 {
                     if (qName.equals(ContentModel.PROP_CONTENT))
                     {
-                        AVMNodeDescriptor desc = fAVMService.lookup(-1, (String)avmVersionPath[1]);
+                        AVMNodeDescriptor desc = fAVMService.lookup(-1, avmVersionPath.getSecond());
                         if (desc == null)
                         {
                             throw new InvalidNodeRefException("Not Found.", nodeRef);
                         }
                         if (desc.isPlainFile())
                         {
-                            fAVMService.setContentData((String)avmVersionPath[1], 
+                            fAVMService.setContentData(avmVersionPath.getSecond(), 
                                     (ContentData)properties.get(qName));
                         }
                     }
                 }
                 values.put(qName, new PropertyValue(null, properties.get(qName)));
             }
-            fAVMService.setNodeProperties((String)avmVersionPath[1], values);
+            fAVMService.setNodeProperties(avmVersionPath.getSecond(), values);
             // Invoke policy behaviors.
 //            invokeOnUpdateNode(nodeRef);
 //            invokeOnUpdateProperties(nodeRef, oldProps, properties);
@@ -1148,8 +1169,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     {
         // Invoke policy behaviors.
         // invokeBeforeUpdateNode(nodeRef);
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        if ((Integer)avmVersionPath[0] >= 0)
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        if (avmVersionPath.getFirst() >= 0)
         {
             throw new InvalidNodeRefException("Read only store.", nodeRef);
         }
@@ -1159,7 +1180,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             {
                 try
                 {
-                    fAVMService.setContentData((String)avmVersionPath[1], (ContentData)value);
+                    fAVMService.setContentData(avmVersionPath.getSecond(), (ContentData)value);
                 }
                 catch (ClassCastException e)
                 {
@@ -1171,7 +1192,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         try
         {
             // Map<QName, Serializable> propsBefore = getProperties(nodeRef);
-            fAVMService.setNodeProperty((String)avmVersionPath[1], qname, new PropertyValue(null, value));
+            fAVMService.setNodeProperty(avmVersionPath.getSecond(), qname, new PropertyValue(null, value));
             // Map<QName, Serializable> propsAfter = getProperties(nodeRef);
             // Invoke policy behaviors.
             // invokeOnUpdateNode(nodeRef);
@@ -1195,8 +1216,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     {
         // TODO OK, for now we'll simply return the single parent that corresponds
         // to the path stuffed in the NodeRef.
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        String path = (String)avmVersionPath[1];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        String path = avmVersionPath.getSecond();
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
         String [] splitPath = AVMNodeConverter.SplitBase(path);
         if (splitPath[0] == null)
@@ -1204,7 +1225,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             return result;
         }
         result.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
-                                           AVMNodeConverter.ToNodeRef((Integer)avmVersionPath[0],
+                                           AVMNodeConverter.ToNodeRef(avmVersionPath.getFirst(),
                                                                       splitPath[0]),
                                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
                                                              splitPath[1]),
@@ -1268,9 +1289,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException
     {
         
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
-        String path = (String)avmVersionPath[1];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
+        String path = avmVersionPath.getSecond();
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
         SortedMap<String, AVMNodeDescriptor> children = null;
         try
@@ -1347,16 +1368,16 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             return null;
         }
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         try
         {
-            AVMNodeDescriptor child = fAVMService.lookup((Integer)avmVersionPath[0],
-                                                         (String)avmVersionPath[1]);
+            AVMNodeDescriptor child = fAVMService.lookup(avmVersionPath.getFirst(),
+                                                         avmVersionPath.getSecond());
             if (child == null)
             {
                 return null;
             }
-            return AVMNodeConverter.ToNodeRef((Integer)avmVersionPath[0],
+            return AVMNodeConverter.ToNodeRef(avmVersionPath.getFirst(),
                                               child.getPath());
         }
         catch (AVMException e)
@@ -1465,9 +1486,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     {
         // TODO Review later. This may be wrong.
         Path path = new Path();
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = (Integer)avmVersionPath[0];
-        String currPath = (String)avmVersionPath[1];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
+        String currPath = avmVersionPath.getSecond();
         while (!currPath.endsWith("/"))
         {
             String [] splitPath = AVMNodeConverter.SplitBase(currPath);

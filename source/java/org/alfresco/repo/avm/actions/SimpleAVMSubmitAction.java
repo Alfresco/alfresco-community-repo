@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
 /**
@@ -89,9 +90,9 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         // Crack the NodeRef.
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
-        int version = (Integer)avmVersionPath[0];
-        String path = (String)avmVersionPath[1];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
+        int version = avmVersionPath.getFirst();
+        String path = avmVersionPath.getSecond();
         // Get store name and path parts.
         String [] storePath = path.split(":");
         if (storePath.length != 2)

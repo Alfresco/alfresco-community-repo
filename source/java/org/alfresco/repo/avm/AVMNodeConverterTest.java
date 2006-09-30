@@ -18,6 +18,7 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 import junit.framework.TestCase;
 
@@ -36,15 +37,15 @@ public class AVMNodeConverterTest extends TestCase
         int version = 2;
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, avmPath);
         System.out.println(nodeRef);
-        Object [] backOut = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        assertEquals(2, ((Integer)backOut[0]).intValue());
-        assertEquals(avmPath, (String)backOut[1]);
+        Pair<Integer, String> backOut = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        assertEquals(2, backOut.getFirst().intValue());
+        assertEquals(avmPath, backOut.getSecond());
         avmPath = "main:/fista/mista/wisticuff";
         version = -1;
         nodeRef = AVMNodeConverter.ToNodeRef(version, avmPath);
         System.out.println(nodeRef);
         backOut = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        assertEquals(-1, ((Integer)backOut[0]).intValue());
-        assertEquals(avmPath, (String)backOut[1]);
+        assertEquals(-1, backOut.getFirst().intValue());
+        assertEquals(avmPath, backOut.getSecond());
     }
 }

@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 /**
  * An ActionExecuter that promotes content from one store to another.
@@ -75,9 +76,9 @@ public class SimpleAVMPromoteAction extends ActionExecuterAbstractBase
     {
         String targetStoreName = (String)action.getParameterValue(PARAM_TARGET_STORE);
         // Crack the NodeRef.
-        Object [] avmVersionPath = AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
-        int version = (Integer)avmVersionPath[0];
-        String path = (String)avmVersionPath[1];
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
+        int version = avmVersionPath.getFirst();
+        String path = avmVersionPath.getSecond();
         // Get store name and path parts.
         String [] storePath = path.split(":");
         if (storePath.length != 2)

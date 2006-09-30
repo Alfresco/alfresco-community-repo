@@ -199,7 +199,7 @@ class Lookup
             {
                 // Inform the store of a new root.
                 fAVMStore.setNewRoot((DirectoryNode)node);
-                AVMContext.fgInstance.fAVMStoreDAO.update(fAVMStore);
+                AVMDAOs.Instance().fAVMStoreDAO.update(fAVMStore);
                 return;
             }
             // Not the root. Check if we are the top layer and insert this into it's parent.

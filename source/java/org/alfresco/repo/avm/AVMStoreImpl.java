@@ -30,6 +30,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -104,11 +105,11 @@ public class AVMStoreImpl implements AVMStore, Serializable
         fName = name;
         fNextVersionID = 0;
         fRoot = null;
-        AVMContext.fgInstance.fAVMStoreDAO.save(this);
-        String creator = AVMContext.fgInstance.getAuthenticationComponent().getCurrentUserName();
+        AVMDAOs.Instance().fAVMStoreDAO.save(this);
+        String creator = RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
         if (creator == null)
         {
-            creator = AVMContext.fgInstance.getAuthenticationComponent().getSystemUserName();
+            creator = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
         }
         setProperty(ContentModel.PROP_CREATOR, new PropertyValue(null, creator));
         setProperty(ContentModel.PROP_CREATED, new PropertyValue(null, new Date(System.currentTimeMillis())));
@@ -116,14 +117,14 @@ public class AVMStoreImpl implements AVMStore, Serializable
         long time = System.currentTimeMillis();
         fRoot = new PlainDirectoryNodeImpl(this);
         fRoot.setIsRoot(true);
-        AVMContext.fgInstance.fAVMNodeDAO.save(fRoot);
+        AVMDAOs.Instance().fAVMNodeDAO.save(fRoot);
         VersionRoot versionRoot = new VersionRootImpl(this,
                                                       fRoot,
                                                       fNextVersionID,
                                                       time,
                                                       creator);
         fNextVersionID++;
-        AVMContext.fgInstance.fVersionRootDAO.save(versionRoot);
+        AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
     }
     
     /**
@@ -147,26 +148,26 @@ public class AVMStoreImpl implements AVMStore, Serializable
         if (!fRoot.getIsNew())
         {
             // So we just return the most recent snapshot.
-            return AVMContext.fgInstance.fVersionRootDAO.getMaxVersionID(this);
+            return AVMDAOs.Instance().fVersionRootDAO.getMaxVersionID(this);
         }
         // Clear out the new nodes.
-        List<AVMNode> newInRep = AVMContext.fgInstance.fAVMNodeDAO.getNewInStore(this);
+        List<AVMNode> newInRep = AVMDAOs.Instance().fAVMNodeDAO.getNewInStore(this);
         for (AVMNode newGuy : newInRep)
         {
             newGuy.setStoreNew(null);
         }
         // Make up a new version record.
-        String user = AVMContext.fgInstance.getAuthenticationComponent().getCurrentUserName();
+        String user = RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
         if (user == null)
         {
-            user = AVMContext.fgInstance.getAuthenticationComponent().getSystemUserName();
+            user = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
         }
         VersionRoot versionRoot = new VersionRootImpl(this,
                                                       fRoot,
                                                       fNextVersionID,
                                                       System.currentTimeMillis(),
                                                       user);
-        AVMContext.fgInstance.fVersionRootDAO.save(versionRoot);
+        AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
         // Increment the version id.
         fNextVersionID++;
         return fNextVersionID - 1;
@@ -269,7 +270,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         dir.putChild(name, file);
         dir.updateModTime();
         file.setContentData(new ContentData(null, 
-                AVMContext.fgInstance.getMimetypeService().guessMimetype(name),
+                RawServices.Instance().getMimetypeService().guessMimetype(name),
                 -1,
                 "UTF-8"));
         ContentWriter writer = getWriter(AVMNodeConverter.ExtendAVMPath(path, name));
@@ -299,7 +300,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         dir.putChild(name, file);
         dir.updateModTime();
         file.setContentData(new ContentData(null, 
-                AVMContext.fgInstance.getMimetypeService().guessMimetype(name),
+                RawServices.Instance().getMimetypeService().guessMimetype(name),
                 -1,
                 "UTF-8"));
         ContentWriter writer = getWriter(AVMNodeConverter.ExtendAVMPath(path, name));
@@ -359,7 +360,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
     private ContentReader getReader(int version, String path)
     {
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, fName + ":" + path);
-        return AVMContext.fgInstance.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT);
+        return RawServices.Instance().getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT);
     }
 
     /**
@@ -371,7 +372,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
     {
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, fName + ":" + path);
         ContentWriter writer = 
-            AVMContext.fgInstance.getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            RawServices.Instance().getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         return writer;
     }
     
@@ -518,7 +519,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
     @SuppressWarnings("unchecked")
     public List<VersionDescriptor> getVersions()
     {
-        List<VersionRoot> versions = AVMContext.fgInstance.fVersionRootDAO.getAllInAVMStore(this);
+        List<VersionRoot> versions = AVMDAOs.Instance().fVersionRootDAO.getAllInAVMStore(this);
         List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
         for (VersionRoot vr : versions)
         {
@@ -542,7 +543,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
     @SuppressWarnings("unchecked")
     public List<VersionDescriptor> getVersions(Date from, Date to)
     {
-        List<VersionRoot> versions = AVMContext.fgInstance.fVersionRootDAO.getByDates(this, from, to);
+        List<VersionRoot> versions = AVMDAOs.Instance().fVersionRootDAO.getByDates(this, from, to);
         List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
         for (VersionRoot vr : versions)
         {
@@ -598,7 +599,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         else
         {
-            dir = AVMContext.fgInstance.fAVMNodeDAO.getAVMStoreRoot(this, version);
+            dir = AVMDAOs.Instance().fAVMNodeDAO.getAVMStoreRoot(this, version);
         }
         // Add an entry for the root.
         result.add(dir, "", write);
@@ -650,7 +651,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         else
         {
-            root = AVMContext.fgInstance.fAVMNodeDAO.getAVMStoreRoot(this, version);
+            root = AVMDAOs.Instance().fAVMNodeDAO.getAVMStoreRoot(this, version);
         }            
         return root.getDescriptor("main:", "", null);
     }
@@ -863,22 +864,22 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMBadArgumentException("Cannot purge initial version");
         }
-        VersionRoot vRoot = AVMContext.fgInstance.fVersionRootDAO.getByVersionID(this, version);
+        VersionRoot vRoot = AVMDAOs.Instance().fVersionRootDAO.getByVersionID(this, version);
         if (vRoot == null)
         {
             throw new AVMNotFoundException("Version not found.");
         }
         AVMNode root = vRoot.getRoot();
         root.setIsRoot(false);
-        AVMContext.fgInstance.fAVMNodeDAO.update(root);
-        AVMContext.fgInstance.fVersionRootDAO.delete(vRoot);
+        AVMDAOs.Instance().fAVMNodeDAO.update(root);
+        AVMDAOs.Instance().fVersionRootDAO.delete(vRoot);
         if (root.equals(fRoot))
         {
             // We have to set a new current root.
             // TODO More hibernate goofiness to compensate for: fSuper.getSession().flush();
-            vRoot = AVMContext.fgInstance.fVersionRootDAO.getMaxVersion(this);
+            vRoot = AVMDAOs.Instance().fVersionRootDAO.getMaxVersion(this);
             fRoot = vRoot.getRoot();
-            AVMContext.fgInstance.fAVMStoreDAO.update(this);
+            AVMDAOs.Instance().fAVMStoreDAO.update(this);
         }
     }
 
@@ -1026,7 +1027,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         prop.setStore(this);
         prop.setName(name);
         prop.setValue(value);
-        AVMContext.fgInstance.fAVMStorePropertyDAO.save(prop);
+        AVMDAOs.Instance().fAVMStorePropertyDAO.save(prop);
     }
     
     /**
@@ -1048,7 +1049,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public PropertyValue getProperty(QName name)
     {
-        AVMStoreProperty prop = AVMContext.fgInstance.fAVMStorePropertyDAO.get(this, name);
+        AVMStoreProperty prop = AVMDAOs.Instance().fAVMStorePropertyDAO.get(this, name);
         if (prop == null)
         {
             return null;
@@ -1063,7 +1064,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public Map<QName, PropertyValue> getProperties()
     {
         List<AVMStoreProperty> props = 
-            AVMContext.fgInstance.fAVMStorePropertyDAO.get(this);
+            AVMDAOs.Instance().fAVMStorePropertyDAO.get(this);
         Map<QName, PropertyValue> retVal = new HashMap<QName, PropertyValue>();
         for (AVMStoreProperty prop : props)
         {
@@ -1078,7 +1079,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void deleteProperty(QName name)
     {
-        AVMContext.fgInstance.fAVMStorePropertyDAO.delete(this, name);
+        AVMDAOs.Instance().fAVMStorePropertyDAO.delete(this, name);
     }
     
     /**
@@ -1172,7 +1173,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (AVMContext.fgInstance.fAVMAspectNameDAO.exists(node, aspectName))
+        if (AVMDAOs.Instance().fAVMAspectNameDAO.exists(node, aspectName))
         {
             throw new AVMExistsException("Aspect exists.");
         }
@@ -1180,7 +1181,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             new AVMAspectNameImpl();
         newName.setNode(node);
         newName.setName(aspectName);
-        AVMContext.fgInstance.fAVMAspectNameDAO.save(newName);
+        AVMDAOs.Instance().fAVMAspectNameDAO.save(newName);
     }
     
     /**
@@ -1198,7 +1199,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         List<AVMAspectName> names = 
-            AVMContext.fgInstance.fAVMAspectNameDAO.get(node);
+            AVMDAOs.Instance().fAVMAspectNameDAO.get(node);
         ArrayList<QName> result = new ArrayList<QName>();
         for (AVMAspectName name : names)
         {
@@ -1220,13 +1221,13 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        AVMContext.fgInstance.fAVMAspectNameDAO.delete(node, aspectName);
-        AspectDefinition def = AVMContext.fgInstance.getDictionaryService().getAspect(aspectName);
+        AVMDAOs.Instance().fAVMAspectNameDAO.delete(node, aspectName);
+        AspectDefinition def = RawServices.Instance().getDictionaryService().getAspect(aspectName);
         Map<QName, PropertyDefinition> properties =
             def.getProperties();
         for (QName name : properties.keySet())
         {
-            AVMContext.fgInstance.fAVMNodePropertyDAO.delete(node, name);
+            AVMDAOs.Instance().fAVMNodePropertyDAO.delete(node, name);
         }
     }
     
@@ -1245,7 +1246,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        return AVMContext.fgInstance.fAVMAspectNameDAO.exists(node, aspectName);
+        return AVMDAOs.Instance().fAVMAspectNameDAO.exists(node, aspectName);
     }
     
     /**

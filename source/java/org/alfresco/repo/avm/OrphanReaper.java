@@ -20,6 +20,7 @@ package org.alfresco.repo.avm;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.transaction.TransactionService;
@@ -239,7 +240,7 @@ public class OrphanReaper implements Runnable
             {
                 if (fPurgeQueue == null)
                 {
-                    List<AVMNode> nodes = AVMContext.fgInstance.fAVMNodeDAO.getOrphans(fQueueLength);
+                    List<AVMNode> nodes = AVMDAOs.Instance().fAVMNodeDAO.getOrphans(fQueueLength);
                     if (nodes.size() == 0)
                     {
                         fActive = false;
@@ -259,25 +260,25 @@ public class OrphanReaper implements Runnable
                         fPurgeQueue = null;
                         return null;
                     }
-                    AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(fPurgeQueue.removeFirst());
+                    AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(fPurgeQueue.removeFirst());
                     // Save away the ancestor and merged from fields from this node.
-                    HistoryLink hlink = AVMContext.fgInstance.fHistoryLinkDAO.getByDescendent(node);
+                    HistoryLink hlink = AVMDAOs.Instance().fHistoryLinkDAO.getByDescendent(node);
                     AVMNode ancestor = null;
                     if (hlink != null)
                     {
                         ancestor = hlink.getAncestor();
-                        AVMContext.fgInstance.fHistoryLinkDAO.delete(hlink);
+                        AVMDAOs.Instance().fHistoryLinkDAO.delete(hlink);
                     }
-                    MergeLink mlink = AVMContext.fgInstance.fMergeLinkDAO.getByTo(node);
+                    MergeLink mlink = AVMDAOs.Instance().fMergeLinkDAO.getByTo(node);
                     AVMNode mergedFrom = null;
                     if (mlink != null)
                     {
                         mergedFrom = mlink.getMfrom();
-                        AVMContext.fgInstance.fMergeLinkDAO.delete(mlink);
+                        AVMDAOs.Instance().fMergeLinkDAO.delete(mlink);
                     }
-                    AVMContext.fgInstance.fAVMNodeDAO.flush();
+                    AVMDAOs.Instance().fAVMNodeDAO.flush();
                     // Get all the nodes that have this node as ancestor.
-                    List<HistoryLink> links = AVMContext.fgInstance.fHistoryLinkDAO.getByAncestor(node);
+                    List<HistoryLink> links = AVMDAOs.Instance().fHistoryLinkDAO.getByAncestor(node);
                     for (HistoryLink link : links)
                     {
                         AVMNode desc = link.getDescendent();
@@ -286,19 +287,19 @@ public class OrphanReaper implements Runnable
                         {
                             desc.setMergedFrom(mergedFrom);
                         }
-                        AVMContext.fgInstance.fHistoryLinkDAO.delete(link);
+                        AVMDAOs.Instance().fHistoryLinkDAO.delete(link);
                     }
                     // Get all the nodes that have this node as mergedFrom
-                    List<MergeLink> mlinks = AVMContext.fgInstance.fMergeLinkDAO.getByFrom(node);
+                    List<MergeLink> mlinks = AVMDAOs.Instance().fMergeLinkDAO.getByFrom(node);
                     for (MergeLink link : mlinks)
                     {
                         link.getMto().setMergedFrom(ancestor);
-                        AVMContext.fgInstance.fMergeLinkDAO.delete(link);
+                        AVMDAOs.Instance().fMergeLinkDAO.delete(link);
                     }
                     // Get rid of all properties belonging to this node.
-                    AVMContext.fgInstance.fAVMNodePropertyDAO.deleteAll(node);
+                    AVMDAOs.Instance().fAVMNodePropertyDAO.deleteAll(node);
                     // Get rid of all aspects belonging to this node.
-                    AVMContext.fgInstance.fAVMAspectNameDAO.delete(node);
+                    AVMDAOs.Instance().fAVMAspectNameDAO.delete(node);
                     // Get rid of ACL.
                     DbAccessControlList acl = node.getAcl();
                     node.setAcl(null);
@@ -312,7 +313,7 @@ public class OrphanReaper implements Runnable
                         node.getType() == AVMNodeType.LAYERED_DIRECTORY)
                     {
                         // First get rid of all child entries for the node.
-                        AVMContext.fgInstance.fChildEntryDAO.deleteByParent(node);
+                        AVMDAOs.Instance().fChildEntryDAO.deleteByParent(node);
                     }
                     else if (node.getType() == AVMNodeType.PLAIN_FILE)
                     {
@@ -320,10 +321,10 @@ public class OrphanReaper implements Runnable
                         String url = file.getContentData(null).getContentUrl();
                         if (url != null)
                         {
-                            AVMContext.fgInstance.getContentStore().delete(url);
+                            RawServices.Instance().getContentStore().delete(url);
                         }
                     }
-                    AVMContext.fgInstance.fAVMNodeDAO.delete(node);
+                    AVMDAOs.Instance().fAVMNodeDAO.delete(node);
                 }
                 return null;
             }

@@ -52,7 +52,7 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
      */
     public void link(String name, AVMNodeDescriptor toLink)
     {
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(toLink.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(toLink.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Child node not found.");
@@ -64,6 +64,6 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
         }
         // Make the new ChildEntry and save.
         ChildEntry newChild = new ChildEntryImpl(name, this, node);
-        AVMContext.fgInstance.fChildEntryDAO.save(newChild);
+        AVMDAOs.Instance().fChildEntryDAO.save(newChild);
     }    
 }

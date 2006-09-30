@@ -161,7 +161,7 @@ public class AVMRepository
      */
     public AVMNodeDescriptor createDirectory(AVMNodeDescriptor parent, String name)
     {
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(parent.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(parent.getId());
         if (node == null)
         {
             throw new AVMNotFoundException(parent.getId() + " not found.");
@@ -562,7 +562,7 @@ public class AVMRepository
         }
         AVMNode root = store.getRoot();
         root.setIsRoot(false);
-        VersionRootDAO vrDAO = AVMContext.fgInstance.fVersionRootDAO;
+        VersionRootDAO vrDAO = AVMDAOs.Instance().fVersionRootDAO;
         List<VersionRoot> vRoots = vrDAO.getAllInAVMStore(store);
         for (VersionRoot vr : vRoots)
         {
@@ -570,13 +570,13 @@ public class AVMRepository
             node.setIsRoot(false);
             vrDAO.delete(vr);
         }
-        List<AVMNode> newGuys = AVMContext.fgInstance.fAVMNodeDAO.getNewInStore(store);
+        List<AVMNode> newGuys = AVMDAOs.Instance().fAVMNodeDAO.getNewInStore(store);
         for (AVMNode newGuy : newGuys)
         {
             newGuy.setStoreNew(null);
         }
-        AVMContext.fgInstance.fAVMStorePropertyDAO.delete(store);
-        AVMContext.fgInstance.fAVMStoreDAO.delete(store);
+        AVMDAOs.Instance().fAVMStorePropertyDAO.delete(store);
+        AVMDAOs.Instance().fAVMStoreDAO.delete(store);
     }
     
     /**
@@ -660,7 +660,7 @@ public class AVMRepository
     public SortedMap<String, AVMNodeDescriptor> 
         getListingDirect(AVMNodeDescriptor dir, boolean includeDeleted)
     {
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(dir.getId());
         if (node == null)
         {
             throw new AVMBadArgumentException("Invalid Node.");
@@ -685,7 +685,7 @@ public class AVMRepository
     public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, boolean includeDeleted)
     {
         fLookupCount.set(1);
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(dir.getId());
         if (node == null)
         {
             throw new AVMBadArgumentException("Invalid Node.");
@@ -724,7 +724,7 @@ public class AVMRepository
     @SuppressWarnings("unchecked")
     public List<AVMStoreDescriptor> getAVMStores()
     {
-        List<AVMStore> l = AVMContext.fgInstance.fAVMStoreDAO.getAll();
+        List<AVMStore> l = AVMDAOs.Instance().fAVMStoreDAO.getAll();
         List<AVMStoreDescriptor> result = new ArrayList<AVMStoreDescriptor>();
         for (AVMStore store : l)
         {
@@ -839,7 +839,7 @@ public class AVMRepository
      */
     private AVMStore getAVMStoreByName(String name)
     {
-        return AVMContext.fgInstance.fAVMStoreDAO.getByName(name);
+        return AVMDAOs.Instance().fAVMStoreDAO.getByName(name);
     }
 
     /**
@@ -910,7 +910,7 @@ public class AVMRepository
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name, boolean includeDeleted)
     {
         fLookupCount.set(0);
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(dir.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(dir.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Not found: " + dir.getId());
@@ -931,7 +931,7 @@ public class AVMRepository
      */
     public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc)
     {
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Not found: " + desc.getPath());
@@ -949,7 +949,7 @@ public class AVMRepository
      */
     public List<Pair<Integer, String>> getHeadPaths(AVMNodeDescriptor desc)
     {
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Not found: " + desc.getPath());
@@ -967,7 +967,7 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Store not found: " + store);
         }
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Not found: " + desc.getPath());
@@ -989,20 +989,20 @@ public class AVMRepository
     {
         if (node.getIsRoot())
         {
-            AVMStore store = AVMContext.fgInstance.fAVMStoreDAO.getByRoot(node);
+            AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByRoot(node);
             if (store != null)
             {
                 addPath(components, -1, store.getName(), paths);
                 return;
             }
-            VersionRoot vr = AVMContext.fgInstance.fVersionRootDAO.getByRoot(node);
+            VersionRoot vr = AVMDAOs.Instance().fVersionRootDAO.getByRoot(node);
             if (vr != null)
             {
                 addPath(components, vr.getVersionID(), vr.getAvmStore().getName(), paths);
             }
             return;
         }
-        List<ChildEntry> entries = AVMContext.fgInstance.fChildEntryDAO.getByChild(node);
+        List<ChildEntry> entries = AVMDAOs.Instance().fChildEntryDAO.getByChild(node);
         for (ChildEntry entry : entries)
         {
             String name = entry.getName();
@@ -1024,7 +1024,7 @@ public class AVMRepository
     {
         if (node.getIsRoot())
         {
-            AVMStore store = AVMContext.fgInstance.fAVMStoreDAO.getByRoot(node);
+            AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByRoot(node);
             if (store != null)
             {
                 addPath(components, -1, store.getName(), paths);
@@ -1032,7 +1032,7 @@ public class AVMRepository
             }
             return;
         }
-        List<ChildEntry> entries = AVMContext.fgInstance.fChildEntryDAO.getByChild(node);
+        List<ChildEntry> entries = AVMDAOs.Instance().fChildEntryDAO.getByChild(node);
         for (ChildEntry entry : entries)
         {
             String name = entry.getName();
@@ -1058,7 +1058,7 @@ public class AVMRepository
             addPath(components, -1, storeName, paths);
             return;
         }
-        List<ChildEntry> entries = AVMContext.fgInstance.fChildEntryDAO.getByChild(node);
+        List<ChildEntry> entries = AVMDAOs.Instance().fChildEntryDAO.getByChild(node);
         for (ChildEntry entry : entries)
         {
             String name = entry.getName();
@@ -1198,7 +1198,7 @@ public class AVMRepository
      */
     public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count)
     {
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(desc.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
             throw new AVMNotFoundException("Not found.");
@@ -1408,7 +1408,7 @@ public class AVMRepository
             throw new AVMNotFoundException("Store not found.");
         }
         List<AVMStoreProperty> matches =
-            AVMContext.fgInstance.fAVMStorePropertyDAO.queryByKeyPattern(st,
+            AVMDAOs.Instance().fAVMStorePropertyDAO.queryByKeyPattern(st,
                                                                          keyPattern);
         Map<QName, PropertyValue> results = new HashMap<QName, PropertyValue>();
         for (AVMStoreProperty prop : matches)
@@ -1427,7 +1427,7 @@ public class AVMRepository
         queryStoresPropertyKeys(QName keyPattern)
     {
         List<AVMStoreProperty> matches = 
-            AVMContext.fgInstance.fAVMStorePropertyDAO.queryByKeyPattern(keyPattern);
+            AVMDAOs.Instance().fAVMStorePropertyDAO.queryByKeyPattern(keyPattern);
         Map<String, Map<QName, PropertyValue>> results = 
             new HashMap<String, Map<QName, PropertyValue>>();
         for (AVMStoreProperty prop : matches)
@@ -1493,8 +1493,8 @@ public class AVMRepository
     public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
                                                AVMNodeDescriptor right)
     {
-        AVMNode lNode = AVMContext.fgInstance.fAVMNodeDAO.getByID(left.getId());
-        AVMNode rNode = AVMContext.fgInstance.fAVMNodeDAO.getByID(right.getId());
+        AVMNode lNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(left.getId());
+        AVMNode rNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(right.getId());
         if (lNode == null || rNode == null)
         {
             throw new AVMNotFoundException("Node not found.");
@@ -1590,7 +1590,7 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Store not found: " + pathParts[0]);
         }
-        AVMNode fromNode = AVMContext.fgInstance.fAVMNodeDAO.getByID(from.getId());
+        AVMNode fromNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(from.getId());
         if (fromNode == null)
         {
             throw new AVMNotFoundException("Node not found: " + from.getPath());
@@ -1732,7 +1732,7 @@ public class AVMRepository
      */
     public void link(AVMNodeDescriptor parent, String name, AVMNodeDescriptor child)
     {
-        AVMNode node = AVMContext.fgInstance.fAVMNodeDAO.getByID(parent.getId());
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(parent.getId());
         if (!(node instanceof DirectoryNode))
         {
             throw new AVMWrongTypeException("Not a Directory.");
@@ -1772,7 +1772,7 @@ public class AVMRepository
         }
         LayeredDirectoryNode dir = (LayeredDirectoryNode)node;
         dir.flatten(name);
-        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
     }
     
     /**

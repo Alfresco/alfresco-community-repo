@@ -71,7 +71,7 @@ public class Issuer
         {
             public Long doWork() throws Exception
             {
-                return AVMContext.fgInstance.fIssuerDAO.getIssuerValue(fName);
+                return AVMDAOs.Instance().fIssuerDAO.getIssuerValue(fName);
             }
         }
         Long result = TransactionUtil.executeInUserTransaction(fTransactionService,

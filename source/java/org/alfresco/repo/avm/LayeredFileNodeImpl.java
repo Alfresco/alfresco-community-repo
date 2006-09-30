@@ -51,8 +51,8 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     {
         super(store.getAVMRepository().issueID(), store);
         fIndirection = other.getIndirection();
-        AVMContext.fgInstance.fAVMNodeDAO.save(this);
-        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
         copyACLs(other);
@@ -67,8 +67,8 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
     {
         super(store.getAVMRepository().issueID(), store);
         fIndirection = indirection;
-        AVMContext.fgInstance.fAVMNodeDAO.save(this);
-        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
     }
     
     /**
@@ -94,7 +94,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                                         getBasicAttributes(),
                                                         getContentData(lPath),
                                                         indirect.getProperties(),
-                                                        AVMContext.fgInstance.fAVMAspectNameDAO.get(indirect),
+                                                        AVMDAOs.Instance().fAVMAspectNameDAO.get(indirect),
                                                         indirect.getAcl());
         newMe.setAncestor(this);
         return newMe;

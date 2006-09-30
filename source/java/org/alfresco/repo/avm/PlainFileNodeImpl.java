@@ -20,6 +20,7 @@ package org.alfresco.repo.avm;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -73,8 +74,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     {
         super(store.getAVMRepository().issueID(), store);
         // AVMContext.fgInstance.fAVMNodeDAO.flush();
-        AVMContext.fgInstance.fAVMNodeDAO.save(this);
-        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
     }
     
     /**
@@ -89,8 +90,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         // The null is OK because the Lookup argument is only use by
         // layered files.
         setContentData(other.getContentData(null));
-        AVMContext.fgInstance.fAVMNodeDAO.save(this);
-        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
         copyACLs(other);
@@ -113,8 +114,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         super(store.getAVMRepository().issueID(), store);
         setContentData(content);
         setBasicAttributes(attrs);
-        AVMContext.fgInstance.fAVMNodeDAO.save(this);
-        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
         setProperties(props);
         for (AVMAspectName name : aspects)
         {
@@ -122,7 +123,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                 new AVMAspectNameImpl();
             newName.setName(name.getName());
             newName.setNode(this);
-            AVMContext.fgInstance.fAVMAspectNameDAO.save(newName);
+            AVMDAOs.Instance().fAVMAspectNameDAO.save(newName);
         }
         if (acl != null)
         {
@@ -307,7 +308,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         {
             return 0L;
         }
-        ContentReader reader = AVMContext.fgInstance.getContentStore().getReader(fContentURL);
+        ContentReader reader = RawServices.Instance().getContentStore().getReader(fContentURL);
         return reader.getSize();
     }
 

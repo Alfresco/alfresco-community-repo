@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.namespace.QName;
@@ -87,10 +88,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         fIsRoot = false;
         long time = System.currentTimeMillis();
         String user = 
-            AVMContext.fgInstance.getAuthenticationComponent().getCurrentUserName();
+            RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
         if (user == null)
         {
-            user = AVMContext.fgInstance.getAuthenticationComponent().getSystemUserName();
+            user = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
         }
         fBasicAttributes = new BasicAttributesImpl(user,
                                                    user,
@@ -114,7 +115,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         HistoryLinkImpl link = new HistoryLinkImpl();
         link.setAncestor(ancestor);
         link.setDescendent(this);
-        AVMContext.fgInstance.fHistoryLinkDAO.save(link);
+        AVMDAOs.Instance().fHistoryLinkDAO.save(link);
     }
 
     /**
@@ -123,7 +124,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public AVMNode getAncestor()
     {
-        return AVMContext.fgInstance.fAVMNodeDAO.getAncestor(this);
+        return AVMDAOs.Instance().fAVMNodeDAO.getAncestor(this);
     }
     
     /**
@@ -139,7 +140,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         MergeLinkImpl link = new MergeLinkImpl();
         link.setMfrom(mergedFrom);
         link.setMto(this);
-        AVMContext.fgInstance.fMergeLinkDAO.save(link);
+        AVMDAOs.Instance().fMergeLinkDAO.save(link);
     }
     
     /**
@@ -148,7 +149,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public AVMNode getMergedFrom()
     {
-        return AVMContext.fgInstance.fAVMNodeDAO.getMergedFrom(this);
+        return AVMDAOs.Instance().fAVMNodeDAO.getMergedFrom(this);
     }
     
     /**
@@ -284,10 +285,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     public void updateModTime()
     {
         String user = 
-            AVMContext.fgInstance.getAuthenticationComponent().getCurrentUserName();
+            RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
         if (user == null)
         {
-            user = AVMContext.fgInstance.getAuthenticationComponent().getSystemUserName();
+            user = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
         }
         fBasicAttributes.setModDate(System.currentTimeMillis());
         fBasicAttributes.setLastModifier(user);
@@ -306,7 +307,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
             newProp.setNode(this);
             newProp.setName(name);
             newProp.setValue(properties.get(name));
-            AVMContext.fgInstance.fAVMNodePropertyDAO.save(newProp);
+            AVMDAOs.Instance().fAVMNodePropertyDAO.save(newProp);
         }
     }
     
@@ -317,14 +318,14 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     protected void copyAspects(AVMNode other)
     {
         List<AVMAspectName> aspects =
-            AVMContext.fgInstance.fAVMAspectNameDAO.get(other);
+            AVMDAOs.Instance().fAVMAspectNameDAO.get(other);
         for (AVMAspectName name : aspects)
         {
             AVMAspectName newName = 
                 new AVMAspectNameImpl();
             newName.setName(name.getName());
             newName.setNode(this);
-            AVMContext.fgInstance.fAVMAspectNameDAO.save(newName);
+            AVMDAOs.Instance().fAVMAspectNameDAO.save(newName);
         }
     }
     
@@ -355,18 +356,18 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void setProperty(QName name, PropertyValue value)
     {
-        AVMNodeProperty prop = AVMContext.fgInstance.fAVMNodePropertyDAO.get(this, name);
+        AVMNodeProperty prop = AVMDAOs.Instance().fAVMNodePropertyDAO.get(this, name);
         if (prop != null)
         {
             prop.setValue(value);
-            AVMContext.fgInstance.fAVMNodePropertyDAO.update(prop);
+            AVMDAOs.Instance().fAVMNodePropertyDAO.update(prop);
             return;
         }
         prop = new AVMNodePropertyImpl();
         prop.setNode(this);
         prop.setName(name);
         prop.setValue(value);
-        AVMContext.fgInstance.fAVMNodePropertyDAO.save(prop);
+        AVMDAOs.Instance().fAVMNodePropertyDAO.save(prop);
     }
     
     /**
@@ -388,7 +389,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public PropertyValue getProperty(QName name)
     {
-        AVMNodeProperty prop = AVMContext.fgInstance.fAVMNodePropertyDAO.get(this, name);
+        AVMNodeProperty prop = AVMDAOs.Instance().fAVMNodePropertyDAO.get(this, name);
         if (prop == null)
         {
             return null;
@@ -403,7 +404,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     public Map<QName, PropertyValue> getProperties()
     {
         Map<QName, PropertyValue> retVal = new HashMap<QName, PropertyValue>();
-        List<AVMNodeProperty> props = AVMContext.fgInstance.fAVMNodePropertyDAO.get(this);
+        List<AVMNodeProperty> props = AVMDAOs.Instance().fAVMNodePropertyDAO.get(this);
         for (AVMNodeProperty prop : props)
         {
             retVal.put(prop.getName(), prop.getValue());
@@ -417,7 +418,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void deleteProperty(QName name)
     {
-        AVMContext.fgInstance.fAVMNodePropertyDAO.delete(this, name);
+        AVMDAOs.Instance().fAVMNodePropertyDAO.delete(this, name);
     }
     
     /**
@@ -425,7 +426,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void deleteProperties()
     {
-        AVMContext.fgInstance.fAVMNodePropertyDAO.deleteAll(this);
+        AVMDAOs.Instance().fAVMNodePropertyDAO.deleteAll(this);
     }
     
     /**

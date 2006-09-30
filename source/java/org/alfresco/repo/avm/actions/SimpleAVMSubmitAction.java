@@ -20,7 +20,7 @@ package org.alfresco.repo.avm.actions;
 import java.util.List;
 
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
-import org.alfresco.repo.avm.AVMContext;
+import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.action.Action;
@@ -117,7 +117,7 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         // Do the update.
         fAVMSyncService.update(diffs, true, true, false, false);
         // Cleanup by flattening the source relative to the destination.
-        AVMContext.fgInstance.fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
         fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");
     }
 

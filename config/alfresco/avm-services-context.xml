@@ -7,7 +7,7 @@
 	<!-- ID Issuers. -->
 	
 	<bean id="nodeIssuer" class="org.alfresco.repo.avm.Issuer"
-		depends-on="avmContext" init-method="init">
+		depends-on="avmDAOs" init-method="init">
 		<property name="name">
 			<value>node</value>
 		</property>
@@ -17,7 +17,7 @@
 	</bean>
 
 	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer"
-		depends-on="avmContext" init-method="init">
+		depends-on="avmDAOs" init-method="init">
 		<property name="name">
 			<value>layer</value>
 		</property>
@@ -90,7 +90,7 @@
 		</property>
 	</bean>
 	
-	<bean id="avmContext" class="org.alfresco.repo.avm.AVMContext">
+	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs">
 		<property name="issuerDAO">
 			<ref bean="issuerDAO"/>
 		</property>
@@ -122,6 +122,8 @@
 			<ref bean="avmAspectNameDAO"/>
 		</property>
 	</bean>
+	
+	<bean id="rawServices" class="org.alfresco.repo.avm.util.RawServices"/>
 	
 	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
 		init-method="init" destroy-method="shutDown" depends-on="AVMService">

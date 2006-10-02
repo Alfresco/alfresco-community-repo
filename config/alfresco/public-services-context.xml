@@ -1045,6 +1045,7 @@
     			<prop key="hasAspect">${server.transaction.mode.readOnly}</prop>
     			<prop key="getContentDataForWrite">${server.transaction.mode.default}</prop>
     			<prop key="getFileOutputStream">${server.transaction.mode.default}</prop>
+    			<prop key="getAVMSystemStore">${server.transaction.mode.default}</prop>
     			<prop key="get*">${server.transaction.mode.readOnly}</prop>
     			<prop key="lookup">${server.transaction.mode.readOnly}</prop>
     			<prop key="*">${server.transaction.mode.default}</prop>

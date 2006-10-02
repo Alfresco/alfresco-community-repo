@@ -100,10 +100,7 @@
 			</subclass>
 		</subclass>
 	</class>
-	<!-- A store is the what we used to call a virtual repository. 
-		 Each store has it's own branch ids and layer ids but shares node ids
-		 with other repositories.  The physical repository is structured this way
-		 for better scaling. -->
+	<!-- A store is the what we used to call a virtual repository. -->
 	<class table="avm_stores" name="AVMStoreImpl"
 		proxy="AVMStore" optimistic-lock="version">
 		<cache usage="read-write"/>

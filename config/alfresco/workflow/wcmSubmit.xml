@@ -12,7 +12,8 @@
             <controller>
                 <variable name="assignee" access="write" mapped-name="wcmwf:assignee"/>
                 <variable name="description" access="write" mapped-name="wcmwf:description"/>
-                <variable name="sourcePath" access="write" mapped-name="wcmwf:sourcePath"/>
+                <variable name="storeName" access="write" mapped-name="wcmwf:storeName"/>
+                <variable name="package" access="write" mapped-name="bpm:package"/>
                 <variable name="workflowcontext" access="write" mapped-name="bpm:context"/>
             </controller>
         </task>
@@ -27,7 +28,8 @@
         <task name="wcmwf:review" swimlane="assignee">
             <controller>
                 <variable name="description" access="read,required" mapped-name="wcmwf:description"/>
-                <variable name="sourcePath" access="read,required" mapped-name="wcmwf:sourcePath"/>
+                <variable name="storeName" access="read,required" mapped-name="wcmwf:storeName"/>
+                <variable name="package" access="read,required" mapped-name="bpm:package"/>
                 <variable name="workflowcontext" access="read,required" mapped-name="bpm:context"/>
             </controller>
         </task>

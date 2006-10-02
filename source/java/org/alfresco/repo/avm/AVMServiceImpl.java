@@ -51,6 +51,8 @@ import org.apache.log4j.Logger;
  */
 public class AVMServiceImpl implements AVMService
 {
+    public static final String SYSTEM = "system";
+    
     private static Logger fgLogger = Logger.getLogger(AVMServiceImpl.class);
     
     /**
@@ -741,6 +743,22 @@ public class AVMServiceImpl implements AVMService
         }
     }
 
+    /**
+     * Get (and create if necessary) the system store. This store houses things
+     * like workflow packages.
+     * @return The descriptor.
+     */
+    public AVMStoreDescriptor getAVMSystemStore()
+    {
+        AVMStoreDescriptor store = getAVMStore(SYSTEM);
+        if (store == null)
+        {
+            createAVMStore(SYSTEM);
+            return getAVMStore(SYSTEM);
+        }
+        return store;
+    }
+    
     /**
      * Get a descriptor for the specified AVMStore root.
      * @param version The version to get.

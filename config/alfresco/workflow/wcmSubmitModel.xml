@@ -22,8 +22,8 @@
                    <type>d:text</type>
                </property>
                
-                <property name="wcmwf:sourcePath">
-                    <title>Source Sandbox Path</title>
+                <property name="wcmwf:storeName">
+                    <title>Sandbox Store Name</title>
                     <type>d:text</type>
                 </property>
             </properties>

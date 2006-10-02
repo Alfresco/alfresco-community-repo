@@ -347,6 +347,13 @@ public interface AVMService
     public List<AVMStoreDescriptor> getAVMStores();
 
     /**
+     * Get (and create if necessary) the system store. This store houses things
+     * like workflow packages.
+     * @return The descriptor.
+     */
+    public AVMStoreDescriptor getAVMSystemStore();
+    
+    /**
      * Get a descriptor for an AVMStore.
      * @param name The AVMStore's name.
      * @return A Descriptor.

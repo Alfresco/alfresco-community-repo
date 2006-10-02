@@ -200,6 +200,8 @@ public class ImportWebsiteDialog
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
+            // TODO: explicit permission check for WRITE on website node for this user
+            
             // import the content into the appropriate store for the website
             String storeRoot = (String)this.navigationBean.getCurrentNode().getProperties().get(
                   ContentModel.PROP_AVMSTORE);
@@ -395,7 +397,6 @@ public class ImportWebsiteDialog
    private void importDirectory(String dir, NodeRef root)
    {
       ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      NodeService nodeService = services.getNodeService();
       MimetypeService mimetypeService = services.getMimetypeService();
       File topdir = new File(dir);
       for (File file : topdir.listFiles())
@@ -404,6 +405,7 @@ public class ImportWebsiteDialog
          {
             if (file.isFile())
             {
+               // Create a file in the AVM store
                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
                String fileName = file.getName();
                this.avmService.createFile(
@@ -412,10 +414,12 @@ public class ImportWebsiteDialog
                String filePath = avmPath + '/' + fileName;
                NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, filePath);
                
+               // TODO: restore this code once performance is acceptable
+               //       see AVMBrowseBean.setAVMNodeDescriptor
                // add titled aspect for the read/edit properties screens
-               Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-               titledProps.put(ContentModel.PROP_TITLE, fileName);
-               this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
+               //Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+               //titledProps.put(ContentModel.PROP_TITLE, fileName);
+               //this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
                
                // create content node based on the filename
                /*FileInfo contentFile = fileFolderService.create(root, fileName, ContentModel.TYPE_AVM_PLAIN_CONTENT);
@@ -433,15 +437,18 @@ public class ImportWebsiteDialog
             {
                //FileInfo fileInfo = fileFolderService.create(root, file.getName(), ContentModel.TYPE_AVM_PLAIN_FOLDER);
                
+               // Create a directory in the AVM store 
                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
-               avmService.createDirectory(avmPath, file.getName());
+               this.avmService.createDirectory(avmPath, file.getName());
                
                String folderPath = avmPath + '/' + file.getName();
                NodeRef folderRef = AVMNodeConverter.ToNodeRef(-1, folderPath);
                importDirectory(file.getPath(), folderRef);
                
+               // TODO: restore this code once performance is acceptable
+               //       see AVMBrowseBean.setAVMNodeDescriptor
                // add the uifacets aspect for the read/edit properties screens
-               this.nodeService.addAspect(folderRef, ContentModel.ASPECT_UIFACETS, null);
+               //this.nodeService.addAspect(folderRef, ContentModel.ASPECT_UIFACETS, null);
             }
          }
          catch (FileNotFoundException e)

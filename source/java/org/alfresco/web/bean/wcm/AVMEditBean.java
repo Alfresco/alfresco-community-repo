@@ -388,7 +388,6 @@ public class AVMEditBean
    {
       // clean up and clear action context
       clearUpload();
-      this.avmBrowseBean.setAvmNode(null);
       setDocumentContent(null);
       setEditorOutput(null);
    }

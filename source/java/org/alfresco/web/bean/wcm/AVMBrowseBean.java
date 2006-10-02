@@ -16,10 +16,12 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -433,7 +435,26 @@ public class AVMBrowseBean implements IContextListener
     */
    public void setAVMNodeDescriptor(AVMNodeDescriptor avmRef)
    {
-      this.avmNode = new AVMNode(avmRef);
+      AVMNode avmNode = new AVMNode(avmRef);
+      // TODO: remove this once we can add the aspect quickly in the ImportWebsiteDialog!
+      if (avmNode.isDirectory())
+      {
+         if (this.nodeService.hasAspect(avmNode.getNodeRef(), ContentModel.ASPECT_UIFACETS) == false)
+         {
+            this.nodeService.addAspect(avmNode.getNodeRef(), ContentModel.ASPECT_UIFACETS, null);
+         }
+      }
+      else
+      {
+         if (this.nodeService.hasAspect(avmNode.getNodeRef(), ContentModel.ASPECT_TITLED) == false)
+         {
+            // add titled aspect for the read/edit properties screens
+            Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+            titledProps.put(ContentModel.PROP_TITLE, avmNode.getName());
+            this.nodeService.addAspect(avmNode.getNodeRef(), ContentModel.ASPECT_TITLED, titledProps);
+         }
+      }
+      this.avmNode = avmNode;
    }
    
    /**

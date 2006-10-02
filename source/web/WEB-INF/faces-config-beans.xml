@@ -617,7 +617,7 @@
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
+         <value>#{nodeService}</value>
       </managed-property>
       <managed-property>
          <property-name>fileFolderService</property-name>

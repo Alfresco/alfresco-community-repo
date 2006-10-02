@@ -80,6 +80,16 @@ public class AVMNode implements Map<String, Object>
    {
       return AVMNodeConverter.ToNodeRef(this.version, this.path);
    }
+   
+   public boolean isDirectory()
+   {
+      return this.avmRef.isDirectory();
+   }
+   
+   public boolean isFile()
+   {
+      return this.avmRef.isFile();
+   }
 
    /**
     * @return All the properties known about this node.

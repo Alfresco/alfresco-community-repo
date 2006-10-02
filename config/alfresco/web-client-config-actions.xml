@@ -361,7 +361,7 @@
             <image>/images/icons/paste.gif</image>
             <action-listener>#{ClipboardBean.pasteAll}</action-listener>
          </action>
-         
+
          <!-- Create content -->
          <action id="create_content">
             <permissions>
@@ -385,7 +385,7 @@
          <!-- Create Advanced Space Wizard -->
          <action id="create_space_wizard">
             <permissions>
-               <permission allow="true">CreateChildren</permission>
+               <permission allow="true">ChangePermissions</permission>
             </permissions>
             <label-id>advanced_space_wizard</label-id>
             <image>/images/icons/create_space.gif</image>

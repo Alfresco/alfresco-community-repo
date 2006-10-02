@@ -26,10 +26,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.workflow.WorkflowComponent;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
@@ -117,10 +118,9 @@ public class JBPMDeployProcessServlet extends HttpServlet
      */
     private WorkflowDefinition deployArchive(InputStream deploymentArchive)
     {
-        // NOTE: retrieve jbpm engine directly as this servlet only serves JBPM process designer deployments
         WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        WorkflowComponent jbpmEngine = (WorkflowComponent)wc.getBean("jbpm_engine");
-        WorkflowDeployment deployment = jbpmEngine.deployDefinition(deploymentArchive, MimetypeMap.MIMETYPE_ZIP); 
+        WorkflowService workflowService = (WorkflowService)wc.getBean(ServiceRegistry.WORKFLOW_SERVICE.getLocalName());
+        WorkflowDeployment deployment = workflowService.deployDefinition("jbpm", deploymentArchive, MimetypeMap.MIMETYPE_ZIP); 
         return deployment.definition; 
     }
 

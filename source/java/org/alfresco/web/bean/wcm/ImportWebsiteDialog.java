@@ -39,8 +39,10 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -412,15 +414,17 @@ public class ImportWebsiteDialog
                      avmPath, fileName,new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE));
                
                String filePath = avmPath + '/' + fileName;
-               NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, filePath);
+               // NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, filePath);
                
                // TODO: restore this code once performance is acceptable
                //       see AVMBrowseBean.setAVMNodeDescriptor
                // add titled aspect for the read/edit properties screens
-               //Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-               //titledProps.put(ContentModel.PROP_TITLE, fileName);
-               //this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
-               
+               // Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+               // titledProps.put(ContentModel.PROP_TITLE, fileName);
+               // this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
+               this.avmService.addAspect(filePath, ContentModel.ASPECT_TITLED);
+               this.avmService.setNodeProperty(filePath, ContentModel.PROP_TITLE,
+                                               new PropertyValue(DataTypeDefinition.TEXT, fileName));
                // create content node based on the filename
                /*FileInfo contentFile = fileFolderService.create(root, fileName, ContentModel.TYPE_AVM_PLAIN_CONTENT);
                NodeRef content = contentFile.getNodeRef();
@@ -448,7 +452,8 @@ public class ImportWebsiteDialog
                // TODO: restore this code once performance is acceptable
                //       see AVMBrowseBean.setAVMNodeDescriptor
                // add the uifacets aspect for the read/edit properties screens
-               //this.nodeService.addAspect(folderRef, ContentModel.ASPECT_UIFACETS, null);
+               // this.nodeService.addAspect(folderRef, ContentModel.ASPECT_UIFACETS, null);
+               this.avmService.addAspect(folderPath, ContentModel.ASPECT_UIFACETS);
             }
          }
          catch (FileNotFoundException e)

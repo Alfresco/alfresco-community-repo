@@ -31,8 +31,16 @@ public class EditSpaceDialog extends CreateSpaceDialog
       super.init(parameters);
       
       // setup the space being edited
-      this.editableNode = new Node(this.browseBean.getActionSpace().getNodeRef());
+      this.editableNode = initEditableNode();
       this.spaceType = this.editableNode.getType().toString();
+   }
+   
+   /**
+    * Init the editable Node
+    */
+   protected Node initEditableNode()
+   {
+      return new Node(this.browseBean.getActionSpace().getNodeRef());
    }
    
    @Override
@@ -61,7 +69,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // update the existing node in the repository
-      NodeRef nodeRef = this.browseBean.getActionSpace().getNodeRef();
+      NodeRef nodeRef = this.editableNode.getNodeRef();
       Map<String, Object> editedProps = this.editableNode.getProperties();
       
       // handle the name property separately, perform a rename in case it changed

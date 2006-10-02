@@ -16,23 +16,23 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.service.cmr.model.FileExistsException;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.content.EditContentPropertiesDialog;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.spaces.EditSpaceDialog;
+import org.alfresco.web.ui.common.component.UIListItem;
 
 /**
- * Backing bean for the Edit File Properties dialog.
+ * Backing bean for the Edit Folder Properties dialog.
  * 
  * @author Kevin Roast
  */
-public class EditFilePropertiesDialog extends EditContentPropertiesDialog
+public class EditFolderPropertiesDialog extends EditSpaceDialog
 {
    protected AVMBrowseBean avmBrowseBean;
    
@@ -51,9 +51,9 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
-
+   
    /**
-    * @see org.alfresco.web.bean.content.EditContentPropertiesDialog#initEditableNode()
+    * @see org.alfresco.web.bean.spaces.EditSpaceDialog#initEditableNode()
     */
    @Override
    protected Node initEditableNode()
@@ -67,30 +67,15 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       return outcome;
    }
    
-   /**
-    * Formats the error message to display if an error occurs during finish processing
-    * 
-    * @param The exception
-    * @return The formatted message
-    */
-   @Override
-   protected String formatErrorMessage(Throwable exception)
+   public List<UIListItem> getIcons()
    {
-      if (exception instanceof FileExistsException)
-      {
-         return MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_EXISTS), 
-               ((FileExistsException)exception).getName());
-      }
-      else if (exception instanceof InvalidNodeRefException)
-      {
-         return MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), 
-               new Object[] {this.avmBrowseBean.getAvmNode().getPath()});
-      }
-      else
-      {
-         return super.formatErrorMessage(exception);
-      }
+      List<UIListItem> icons = new ArrayList<UIListItem>(1);
+      
+      UIListItem item = new UIListItem();
+      item.setValue(DEFAULT_SPACE_ICON_NAME);
+      item.getAttributes().put("image", "/images/icons/" + DEFAULT_SPACE_ICON_NAME + ".gif");
+      icons.add(item);
+      
+      return icons;
    }
 }

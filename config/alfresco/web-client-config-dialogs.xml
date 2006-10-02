@@ -132,7 +132,11 @@
                  
          <dialog name="editAvmFileProperties" page="/jsp/content/edit-content-properties.jsp" 
                  managed-bean="EditFilePropertiesDialog" icon="/images/icons/details_large.gif"
-                 title-id="modify_content_properties" description-id="edit_content_description" />
+                 title-id="edit_file_properties" description-id="edit_file_description" />
+                 
+         <dialog name="editAvmFolderProperties" page="/jsp/wcm/edit-folder-properties.jsp" 
+                 managed-bean="EditFolderPropertiesDialog" icon="/images/icons/details_large.gif"
+                 title-id="edit_folder_properties" description-id="edit_folder_description" />
       </dialogs>
    </config>
    

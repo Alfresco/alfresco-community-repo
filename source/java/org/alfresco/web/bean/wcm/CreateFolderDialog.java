@@ -125,10 +125,12 @@ public class CreateFolderDialog extends BaseDialogBean
    {
       String parent = this.avmBrowseBean.getCurrentPath();
       this.avmService.createDirectory(parent, this.name);
+      
       String path = parent + '/' + this.name;
+      NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+      this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, null);
       if (this.description != null && this.description.length() != 0)
       {
-         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
          this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
       }
       

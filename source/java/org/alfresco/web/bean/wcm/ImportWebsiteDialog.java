@@ -82,6 +82,7 @@ public class ImportWebsiteDialog
    protected ContentService contentService;
    protected NavigationBean navigationBean;
    protected AVMService avmService;
+   protected NodeService nodeService;
    
    
    /**
@@ -114,6 +115,14 @@ public class ImportWebsiteDialog
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   /**
+    * @param nodeService         The NodeService to set.
+    */
+   public void setNodeService(NodeService nodeService)
+   {
+      this.nodeService = nodeService;
    }
 
    /**
@@ -396,16 +405,21 @@ public class ImportWebsiteDialog
             if (file.isFile())
             {
                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
-               avmService.createFile(avmPath, file.getName(), new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE));
+               String fileName = file.getName();
+               this.avmService.createFile(
+                     avmPath, fileName,new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE));
+               
+               String filePath = avmPath + '/' + fileName;
+               NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, filePath);
+               
+               // add titled aspect for the read/edit properties screens
+               Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+               titledProps.put(ContentModel.PROP_TITLE, fileName);
+               this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
+               
                // create content node based on the filename
                /*FileInfo contentFile = fileFolderService.create(root, fileName, ContentModel.TYPE_AVM_PLAIN_CONTENT);
                NodeRef content = contentFile.getNodeRef();
-               
-               // add titled aspect (for Web Client display)
-               //Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
-               //titledProps.put(ContentModel.PROP_TITLE, fileName);
-               //titledProps.put(ContentModel.PROP_DESCRIPTION, fileName);
-               //nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
                
                InputStream contentStream = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE);
                
@@ -418,10 +432,16 @@ public class ImportWebsiteDialog
             else
             {
                //FileInfo fileInfo = fileFolderService.create(root, file.getName(), ContentModel.TYPE_AVM_PLAIN_FOLDER);
+               
                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
                avmService.createDirectory(avmPath, file.getName());
                
-               importDirectory(file.getPath(), AVMNodeConverter.ToNodeRef(-1, avmPath + '/' + file.getName()));//fileInfo.getNodeRef()
+               String folderPath = avmPath + '/' + file.getName();
+               NodeRef folderRef = AVMNodeConverter.ToNodeRef(-1, folderPath);
+               importDirectory(file.getPath(), folderRef);
+               
+               // add the uifacets aspect for the read/edit properties screens
+               this.nodeService.addAspect(folderRef, ContentModel.ASPECT_UIFACETS, null);
             }
          }
          catch (FileNotFoundException e)

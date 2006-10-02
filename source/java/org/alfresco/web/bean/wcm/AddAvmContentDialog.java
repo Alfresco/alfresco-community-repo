@@ -81,11 +81,6 @@ public class AddAvmContentDialog extends AddContentDialog
       if (logger.isDebugEnabled())
          logger.debug("Created AVM file: " + path);
       
-      // set the author aspect
-      Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
-      authorProps.put(ContentModel.PROP_AUTHOR, this.author);
-      this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
-      
       // apply the titled aspect - title and description
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
       titledProps.put(ContentModel.PROP_TITLE, this.title);

@@ -54,6 +54,9 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       }
    }
    
+   /**
+    * Init the editable Node
+    */
    protected Node initEditableNode()
    {
       return new Node(this.browseBean.getDocument().getNodeRef());

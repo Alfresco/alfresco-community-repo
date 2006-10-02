@@ -20,8 +20,10 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -33,9 +35,12 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
 import org.alfresco.web.data.IDataContainer;
@@ -80,6 +85,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       this.avmBrowseBean = avmBrowseBean;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -140,6 +146,12 @@ public class CreateWebContentWizard extends BaseContentWizard
       
       // remember the created path
       this.createdPath = path + '/' + this.fileName;
+      
+      // add titled aspect for the read/edit properties screens
+      NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, this.createdPath);
+      Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+      titledProps.put(ContentModel.PROP_TITLE, this.fileName);
+      this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
    }
    
    @Override

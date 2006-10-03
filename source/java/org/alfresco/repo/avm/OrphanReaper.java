@@ -315,15 +315,16 @@ public class OrphanReaper implements Runnable
                         // First get rid of all child entries for the node.
                         AVMDAOs.Instance().fChildEntryDAO.deleteByParent(node);
                     }
-                    else if (node.getType() == AVMNodeType.PLAIN_FILE)
-                    {
-                        PlainFileNode file = (PlainFileNode)node;
-                        String url = file.getContentData(null).getContentUrl();
-                        if (url != null)
-                        {
-                            RawServices.Instance().getContentStore().delete(url);
-                        }
-                    }
+                    // This is not on, since content urls can be shared.
+//                    else if (node.getType() == AVMNodeType.PLAIN_FILE)
+//                    {
+//                        PlainFileNode file = (PlainFileNode)node;
+//                        String url = file.getContentData(null).getContentUrl();
+//                        if (url != null)
+//                        {
+//                            RawServices.Instance().getContentStore().delete(url);
+//                        }
+//                    }
                     AVMDAOs.Instance().fAVMNodeDAO.delete(node);
                 }
                 return null;

@@ -255,7 +255,7 @@ dojo.declare("alfresco.xforms.TextArea",
 	     },
 	     });
 
-dojo.declare("alfresco.xforms.Select1",
+dojo.declare("alfresco.xforms.AbstractSelectWidget",
 	     alfresco.xforms.Widget,
 	     {
 	     initializer: function(xform, node) 
@@ -298,6 +298,88 @@ dojo.declare("alfresco.xforms.Select1",
 		 }
 	       }
 	       return result;
+	     },
+	     });
+
+dojo.declare("alfresco.xforms.Select",
+	     alfresco.xforms.AbstractSelectWidget,
+	     {
+	     initializer: function(xform, node) 
+	     {
+	       this.inherited("initializer", [ xform, node ]);
+	     },
+	     render: function(attach_point)
+             {
+	       var values = this.getValues();
+	       for (var i in values)
+	       {
+		 dojo.debug("values["+ i + "] = " + values[i].id + 
+			    ", " + values[i].label + ", " + values[i].value);
+	       }
+	       var initial_value = this.getInitialValue();
+	       if (values.length <= 5)
+	       {
+		 for (var i in values)
+		 {
+		   var checkbox = document.createElement("input");
+		   checkbox.setAttribute("id", this.id + "_" + i + "-widget");
+		   checkbox.setAttribute("name", this.id + "_" + i + "-widget");
+		   checkbox.setAttribute("type", "checkbox");
+		   checkbox.setAttribute("value", values[i].value);
+		   if (values[i].value == initial_value)
+		     checkbox.setAttribute("checked", "true");
+		   dojo.event.connect(checkbox, "onclick", this, this._checkbox_clickHandler);
+		   attach_point.appendChild(checkbox);
+		   attach_point.appendChild(document.createTextNode(values[i].label));
+		 }
+	       }
+	       else
+	       {
+		 var list = document.createElement("select");
+		 list.setAttribute("id", this.id + "-widget");
+		 list.setAttribute("multiple", true);
+		 attach_point.appendChild(list);
+		 for (var i in values)
+		 {
+		   var option = document.createElement("option");
+		   option.appendChild(document.createTextNode(values[i].label));
+		   option.setAttribute("value", values[i].value);
+		   if (values[i].value == initial_value)
+		     option.setAttribute("selected", "true");
+		   list.appendChild(option);
+		 }
+		 dojo.event.connect(list, "onchange", this, this._list_changeHandler);
+	       }
+	     },
+             _list_changeHandler: function(event) 
+	     { 
+		 var selected = [];
+		 for (var i = 0; i < event.target.options.length; i++)
+		 {
+		   if (event.target.options[i].selected)
+		     selected.push(event.target.options[i].value);
+		 }
+		 this.xform.setXFormsValue(this.id, selected.join(" "));
+	     },
+	     _checkbox_clickHandler: function(event)
+	     { 
+	       var selected = [];
+	       for (var i = 0; i < 5; i++)
+	       {
+		 var checkbox = document.getElementById(this.id + "_" + i + "-widget");
+		 if (checkbox && checkbox.checked)
+		   selected.push(checkbox.value);
+	       }
+	       this.xform.setXFormsValue(this.id, selected.join(" "));
+	     }
+	     });
+
+dojo.declare("alfresco.xforms.Select1",
+	     alfresco.xforms.AbstractSelectWidget,
+	     {
+	     initializer: function(xform, node) 
+	     {
+	       this.inherited("initializer", [ xform, node ]);
 	     },
 	     render: function(attach_point)
              {
@@ -567,16 +649,6 @@ dojo.declare("alfresco.xforms.Repeat",
 	       {
 		 this.children[i].domContainer.style.backgroundColor = 
 		   i % 2 ? "#f0f0ee" : "#ffffff"; 
-		 //		 if (i == this.getSelectedIndex())
-		 //		   this.children[i].domContainer.style.backgroundColor = "orange";
-//		   dojo.lfx.html.highlight(this.children[i].domContainer, 
-//					   "orange", 
-//					   200,
-//					   0,
-//					   function(node)
-//					   {
-//					     node.style.backgroundColor = "orange";
-//					   }).play();
 	       }
 	     },
 	     _insertRepeatItemAfter_handler: function(event)
@@ -893,6 +965,8 @@ dojo.declare("alfresco.xforms.XForm",
 		 default:
 		   return new alfresco.xforms.TextField(this, node);
 		 }
+	       case "xforms:select":
+		 return new alfresco.xforms.Select(this, node);
 	       case "xforms:select1":
 		 return (this.getType(node) == "boolean"
 			 ? new alfresco.xforms.Checkbox(this, node)

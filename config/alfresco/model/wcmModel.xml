@@ -1,0 +1,70 @@
+<model name="wcm:wcmmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>WCM Specific Types</description>
+   <author>Alfresco</author>
+   <published>2006-10-06</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/wcmmodel/1.0" prefix="wcm"/>
+   </namespaces>
+   
+   <types>
+   </types>
+   
+   <aspects>
+   	   
+   	  <!-- An XForms capture template aspect. -->
+   	  
+      <aspect name="wcm:template">
+   	     <title>XForms Template</title>
+   	     <properties>
+   	        <property name="wcm:roottagname">
+   	           <title>Root Tag Name</title>
+   	           <type>d:text</type>
+   	           <mandatory>true</mandatory>
+   	        </property>
+   	     </properties>
+   	     <associations>
+   	        <association name="wcm:templateoutputmethods">
+   	           <title>Template Output Methods</title>
+   	           <source>
+   	              <role>wcm:capture</role>
+   	              <mandatory>false</mandatory>
+   	              <many>false</many>
+   	           </source>
+   	           <target>
+   	           	  <class>wcm:templateoutputmethod</class>
+   	              <role>wcm:presentation</role>
+   	              <mandatory>false</mandatory>
+   	              <many>true</many>
+   	           </target>
+   	     	</association>
+   	     </associations>
+      </aspect>
+      
+      <!-- An XML to something else transformer. -->
+      
+      <aspect name="wcm:templateoutputmethod">
+         <title>XML Transformer</title>
+         <properties>
+            <property name="wcm:outputtype">
+               <title>Type</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wcm:templatesource">
+               <title>Template Source</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+          
+   </aspects>
+
+</model>

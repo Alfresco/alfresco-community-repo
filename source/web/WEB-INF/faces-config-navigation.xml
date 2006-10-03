@@ -871,6 +871,14 @@
    </navigation-rule>
    
    <navigation-rule>
+      <from-view-id>/jsp/*</from-view-id>
+      <navigation-case>
+         <from-outcome>browseSandbox</from-outcome>
+         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
       <from-view-id>/jsp/wcm/*</from-view-id>
       <navigation-case>
          <from-outcome>importContent</from-outcome>
@@ -879,10 +887,6 @@
       <navigation-case>
          <from-outcome>addAvmContent</from-outcome>
          <to-view-id>/jsp/wcm/add-content-dialog.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>browseSandbox</from-outcome>
-         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>editAvmFile</from-outcome>

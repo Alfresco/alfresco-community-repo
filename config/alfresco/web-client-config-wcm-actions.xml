@@ -24,12 +24,34 @@
             </params>
          </action>
          
+         <!-- Delete AVM file, with a return navigation outcome parameter -->
+         <action id="delete_file_browse">
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteAvmFileBrowse</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
          <!-- Delete AVM folder -->
          <action id="delete_folder">
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:deleteAvmFolder</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Delete AVM folder, with a return navigation outcome parameter -->
+         <action id="delete_folder_browse">
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteAvmFolderBrowse</action>
             <params>
                <param name="id">#{actionContext.path}</param>
             </params>
@@ -124,7 +146,7 @@
             <action idref="update_file" />
             <action idref="preview_file" />
             <action idref="file_details" />
-            <action idref="delete_file" />
+            <action idref="delete_file_browse" />
          </action-group>
          
          <!-- Actions for a folder in the AVM Browse screen -->
@@ -132,7 +154,7 @@
             <show-link>false</show-link>
             <action idref="preview_folder" />
             <action idref="folder_details" />
-            <action idref="delete_folder" />
+            <action idref="delete_folder_browse" />
          </action-group>
          
          <!-- Actions for a file in Modified Files list -->
@@ -179,13 +201,13 @@
             <show-link>false</show-link>
             <action idref="edit_file" />
             <action idref="update_file" />
-            <action idref="delete_file" />
+            <action idref="delete_file_browse" />
          </action-group>
          
          <!-- Actions for the Folder Details action menu -->
          <action-group id="avm_folder_details">
             <show-link>false</show-link>
-            <action idref="delete_folder" />
+            <action idref="delete_folder_browse" />
          </action-group>
          
       </actions>

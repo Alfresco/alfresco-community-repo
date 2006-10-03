@@ -69,16 +69,17 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       NodeRef nodeRef = this.editableNode.getNodeRef();
       Map<String, Object> editedProps = this.editableNode.getProperties();
       
-      // get the name and move the node as necessary
-      String name = (String) editedProps.get(ContentModel.PROP_NAME);
+      // we deal with 'name' as a rename/move operation later
+      String name = (String)editedProps.get(ContentModel.PROP_NAME);
       if (name != null)
       {
-         fileFolderService.rename(nodeRef, name);
+         editedProps.remove(ContentModel.PROP_NAME);
       }
       
-      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
       // we need to put all the properties from the editable bag back into 
       // the format expected by the repository
+      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
+      repoProps.remove(ContentModel.PROP_NAME);
       
       // but first extract and deal with the special mimetype property for ContentData
       String mimetype = (String)editedProps.get(TEMP_PROP_MIMETYPE);
@@ -180,7 +181,14 @@ public class EditContentPropertiesDialog extends BaseDialogBean
             this.nodeService.removeChild(assoc.getParentRef(), assoc.getChildRef());
          }
       }
-         
+      
+      // get the name and move the node as necessary
+      if (name != null)
+      {
+         this.fileFolderService.rename(nodeRef, name);
+         this.editableNode.getProperties().put(ContentModel.PROP_NAME.toString(), name);
+      }
+      
       return outcome;
    }
    

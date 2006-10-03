@@ -8,7 +8,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.bean.repository.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -72,9 +71,6 @@ public class DeleteFolderDialog extends BaseDialogBean
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {
-      // clear action context
-      this.avmBrowseBean.setAvmNode(null);
-      
       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
    }
    

@@ -42,6 +42,8 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.templating.OutputUtil;
 import org.alfresco.web.templating.TemplatingService;
 import org.alfresco.web.ui.common.Utils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Bean backing the edit pages for a AVM node content.
@@ -50,6 +52,8 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class AVMEditBean
 {
+   private static Log logger = LogFactory.getLog(AVMEditBean.class);
+   
    private static final String MSG_ERROR_UPDATE = "error_update";
    private static final String MSG_UPLOAD_SUCCESS = "file_upload_success";
    
@@ -213,6 +217,8 @@ public class AVMEditBean
       
       // retrieve the content reader for this node
       NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath());
+      if (logger.isDebugEnabled())
+         logger.debug("Editing AVM node: " + avmRef.toString());
       ContentReader reader = contentService.getReader(avmRef, ContentModel.PROP_CONTENT);
       if (reader != null)
       {

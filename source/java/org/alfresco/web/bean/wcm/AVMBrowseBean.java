@@ -635,6 +635,8 @@ public class AVMBrowseBean implements IContextListener
    {
       if (path != null && path.length() != 0)
       {
+         if (logger.isDebugEnabled())
+            logger.debug("Setup content action for path: " + path);
          AVMNodeDescriptor node = avmService.lookup(-1, path, true);
          setAVMNodeDescriptor(node);
       }

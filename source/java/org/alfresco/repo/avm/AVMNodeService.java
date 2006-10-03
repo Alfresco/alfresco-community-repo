@@ -548,8 +548,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             throw new InvalidNodeRefException("Read Only node.", nodeRef);
         }
         String avmPath = avmVersionPath.getSecond();
-        // Get the current node properties.
-        Map<QName, Serializable> properties = getProperties(nodeRef);
+        // Accumulate properties.
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         // Add the supplied properties.
         if (aspectProperties != null)
         {
@@ -560,7 +560,21 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // Now add any cascading aspects.
         addDefaultAspects(aspectDef, avmPath, properties);
         // Set the property values on the AVM Node.
-        setProperties(nodeRef, properties);
+        if (properties.size() != 0)
+        {
+            Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
+            for (Map.Entry<QName, Serializable> entry : properties.entrySet())
+            {
+                if (!isBuiltInProperty(entry.getKey()))
+                {
+                    props.put(entry.getKey(), new PropertyValue(null, entry.getValue()));
+                }
+            }
+            if (props.size() != 0)
+            {
+                fAVMService.setNodeProperties(avmPath, props);
+            }
+        }
         if (isBuiltinAspect(aspectTypeQName))
         {
             // No more work to do in this case.

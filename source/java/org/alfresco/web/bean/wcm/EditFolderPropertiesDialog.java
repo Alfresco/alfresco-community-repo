@@ -16,15 +16,23 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.spaces.EditSpaceDialog;
 import org.alfresco.web.ui.common.component.UIListItem;
@@ -70,6 +78,72 @@ public class EditFolderPropertiesDialog extends EditSpaceDialog
    protected Node initEditableNode()
    {
       return new Node(this.avmBrowseBean.getAvmNode().getNodeRef());
+   }
+   
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      // update the existing node in the repository
+      NodeRef nodeRef = this.editableNode.getNodeRef();
+      Map<String, Object> editedProps = this.editableNode.getProperties();
+      
+      // handle the name property separately, it is a special case for AVM nodes
+      String name = (String)editedProps.get(ContentModel.PROP_NAME);
+      if (name != null)
+      {
+         editedProps.remove(ContentModel.PROP_NAME);
+      }
+      
+      // get the current set of properties from the repository
+      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
+      
+      // add the "uifacets" aspect if required, properties will get set below
+      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_UIFACETS) == false)
+      {
+         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, null);
+      }
+      
+      // overwrite the current properties with the edited ones
+      Iterator<String> iterProps = editedProps.keySet().iterator();
+      while (iterProps.hasNext())
+      {
+         String propName = iterProps.next();
+         QName qname = QName.createQName(propName);
+         
+         // make sure the property is represented correctly
+         Serializable propValue = (Serializable)editedProps.get(propName);
+         
+         // check for empty strings when using number types, set to null in this case
+         if ((propValue != null) && (propValue instanceof String) && 
+             (propValue.toString().length() == 0))
+         {
+            PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
+            if (propDef != null)
+            {
+               if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
+                   propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
+                   propDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
+                   propDef.getDataType().getName().equals(DataTypeDefinition.LONG))
+               {
+                  propValue = null;
+               }
+            }
+         }
+         
+         repoProps.put(qname, propValue);
+      }
+      
+      // send the properties back to the repository
+      this.nodeService.setProperties(nodeRef, repoProps);
+      
+      // perform the rename last as for an AVM it changes the NodeRef
+      if (name != null)
+      {
+         this.fileFolderService.rename(nodeRef, name);
+         editedProps.put(ContentModel.PROP_NAME.toString(), name);
+      }
+      
+      return outcome;
    }
    
    @Override

@@ -72,16 +72,15 @@ public class EditSpaceDialog extends CreateSpaceDialog
       NodeRef nodeRef = this.editableNode.getNodeRef();
       Map<String, Object> editedProps = this.editableNode.getProperties();
       
-      // we deal with 'name' as a rename/move operation later
+      // handle the name property separately, perform a rename in case it changed
       String name = (String)editedProps.get(ContentModel.PROP_NAME);
       if (name != null)
       {
-         editedProps.remove(ContentModel.PROP_NAME);
+         this.fileFolderService.rename(nodeRef, name);
       }
       
       // get the current set of properties from the repository
       Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
-      repoProps.remove(ContentModel.PROP_NAME);
       
       // add the "uifacets" aspect if required, properties will get set below
       if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_UIFACETS) == false)
@@ -164,13 +163,6 @@ public class EditSpaceDialog extends CreateSpaceDialog
          }
       }
       
-      // get the name and move the node as necessary
-      if (name != null)
-      {
-         this.fileFolderService.rename(nodeRef, name);
-         this.editableNode.getProperties().put(ContentModel.PROP_NAME.toString(), name);
-      }
-            
       return outcome;
    }
    

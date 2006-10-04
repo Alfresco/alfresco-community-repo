@@ -36,11 +36,12 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.search.*;
 import org.alfresco.service.cmr.model.*;
 import org.alfresco.service.namespace.NamespaceService;
 import javax.faces.context.FacesContext;
@@ -52,121 +53,6 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public final class TemplatingService implements Serializable
 {
-   ////////////////////////////////////////////////////////////////////////////
-   
-   /**
-    * Encapsulation of configuration file management.
-    */
-   private static class Configuration
-   {
-      /** indicates whether or not the configuration file has been loaded */
-      public static boolean loaded = false;
-      private static NodeRef configFileNodeRef = null;
-      
-      /**
-       * locate the configuration file.  currently it is stored as 
-       * <tt>templating_config.xml</tt> at the root of the data dictionary.
-       *
-       * @return the configuration file, which is currently all the
-       * <tt>TemplateTypes</tt> serialized using object serialization.
-       */
-      private static NodeRef getConfigFile()
-      {
-         if (configFileNodeRef == null)
-         {
-            final TemplatingService ts = TemplatingService.INSTANCE;
-            LOGGER.debug("loading config file");
-            // get the template from the special Email Templates folder
-            FacesContext fc = FacesContext.getCurrentInstance();
-            String xpath = (Application.getRootPath(fc) + "/" + 
-                  Application.getGlossaryFolderName(fc));
-            NodeRef rootNodeRef = ts.nodeService.getRootNode(Repository.getStoreRef());
-            List<NodeRef> results = ts.searchService.selectNodes(rootNodeRef, xpath, null, ts.namespaceService, false);
-            if (results.size() != 1)
-               throw new RuntimeException("expected one result for " + xpath);
-            NodeRef dataDictionaryNodeRef =  results.get(0);
-            LOGGER.debug("loaded data dictionary " + dataDictionaryNodeRef);
-            try
-            {
-               Configuration.configFileNodeRef = 
-                  ts.fileFolderService.create(dataDictionaryNodeRef,
-                        "templating_configuration.xml",
-                        ContentModel.TYPE_CONTENT).getNodeRef();
-            }
-            catch (FileExistsException fee)
-            {
-               Configuration.configFileNodeRef = 
-                  ts.fileFolderService.searchSimple(dataDictionaryNodeRef, "templating_configuration.xml");
-            }
-            LOGGER.debug("loaded config file " + configFileNodeRef);
-            assert Configuration.configFileNodeRef != null : "unable to load templating_configuration.xml";
-         }
-         return Configuration.configFileNodeRef;
-      }
-      
-      /**
-       * Load the configuration file into the templating service.
-       */
-      public static void load()
-         throws IOException
-      {
-         final TemplatingService ts = TemplatingService.INSTANCE;
-         final NodeRef configFileNodeRef = getConfigFile();
-         FacesContext fc = FacesContext.getCurrentInstance();
-         final ContentReader contentReader = ts.contentService.getReader(configFileNodeRef, 
-               ContentModel.TYPE_CONTENT);
-         if (contentReader == null)
-            LOGGER.debug("templating_config.xml is empty");
-         else
-         {
-            LOGGER.debug("parsing templating_config.xml");
-            final InputStream contentIn = contentReader.getContentInputStream();
-            final ObjectInputStream in = new ObjectInputStream(contentIn);
-            try
-            {
-               while (true)
-               {
-                  try
-                  {
-                     final TemplateType tt = (TemplateType)in.readObject();
-                     TemplatingService.INSTANCE.registerTemplateType(tt);
-                  }
-                  catch (EOFException eof)
-                  {
-                     break;
-                  }
-                  
-               }
-               in.close();
-            }
-            catch (ClassNotFoundException cnfe)
-            {
-               TemplatingService.LOGGER.error(cnfe);
-            }
-         }
-         loaded = true;
-      }
-      
-      /**
-       * Save the current state of the templating service to the configuration file.
-       */
-      public static void save()
-         throws IOException
-      {
-         final TemplatingService ts = TemplatingService.INSTANCE;
-         FacesContext fc = FacesContext.getCurrentInstance();
-         final NodeRef configFileNodeRef = getConfigFile();
-         final OutputStream contentOut = ts.contentService.getWriter(configFileNodeRef, ContentModel.TYPE_CONTENT, true).getContentOutputStream();
-         final ObjectOutputStream out = new ObjectOutputStream(contentOut);
-         for (TemplateType tt : TemplatingService.INSTANCE.getTemplateTypes())
-         {
-            out.writeObject(tt);
-         }
-         out.close();
-      }
-   }
-   
-   ////////////////////////////////////////////////////////////////////////////
    
    /**
     * temporary location of the property on nodes that are xml files created
@@ -196,14 +82,16 @@ public final class TemplatingService implements Serializable
    private final DictionaryService dictionaryService;
    private final NamespaceService namespaceService;
    private final SearchService searchService;
+
+   private NodeRef contentFormsNodeRef;
    
    /** instantiated using spring */
    public TemplatingService(final ContentService contentService,
-         final NodeService nodeService,
-         final FileFolderService fileFolderService,
-         final DictionaryService dictionaryService,
-         final NamespaceService namespaceService,
-         final SearchService searchService)
+                            final NodeService nodeService,
+                            final FileFolderService fileFolderService,
+                            final DictionaryService dictionaryService,
+                            final NamespaceService namespaceService,
+                            final SearchService searchService)
    {
       this.contentService = contentService;
       this.nodeService = nodeService;
@@ -218,46 +106,78 @@ public final class TemplatingService implements Serializable
    /** Provides the templating service instance, loads config if necessary */
    public static TemplatingService getInstance()
    {
-      if (!Configuration.loaded)
-      {
-         LOGGER.debug("loading configuration");
-         try
-         {
-            Configuration.load();
-         }
-         catch (Throwable t)
-         {
-            LOGGER.error(t);
-            t.printStackTrace();
-         }
-      }
-      
       return TemplatingService.INSTANCE;
+   }
+
+   /**
+    * @return the cached reference to the WCM Content Forms folder
+    */
+   public NodeRef getContentFormsNodeRef()
+   {
+      if (this.contentFormsNodeRef == null)
+      {
+         final FacesContext fc = FacesContext.getCurrentInstance();
+         final String xpath = (Application.getRootPath(fc) + "/" +
+                               Application.getGlossaryFolderName(fc) + "/" +
+                               Application.getContentFormsFolderName(fc));
+         LOGGER.debug("locating content forms at " + xpath);
+         final List<NodeRef> results = 
+            searchService.selectNodes(nodeService.getRootNode(Repository.getStoreRef()),
+                                      xpath,
+                                      null,
+                                      namespaceService,
+                                      false);
+         this.contentFormsNodeRef = (results != null && results.size() == 1 ? results.get(0) : null);
+      }
+      return this.contentFormsNodeRef;
    }
    
    /** returns all registered template types */
    public Collection<TemplateType> getTemplateTypes()
    {
-      return this.templateTypes.values();
+      try
+      {
+         final SearchParameters sp = new SearchParameters();
+         sp.addStore(Repository.getStoreRef());
+         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+         final String q = "ASPECT:\"" + WCMModel.ASPECT_TEMPLATE + "\"";
+         sp.setQuery(q);
+         LOGGER.debug("running query [" + q + "]");
+         final ResultSet rs = this.searchService.query(sp);
+         LOGGER.debug("received " + rs.length() + " results");
+         final Collection<TemplateType> result = new LinkedList<TemplateType>();
+         for (ResultSetRow row : rs)
+         {
+            final NodeRef nodeRef = row.getNodeRef();
+            result.add(this.newTemplateType(nodeRef));
+         }
+         return result;
+      }
+      catch (RuntimeException re)
+      {
+         LOGGER.error(re);
+         throw re;
+      }
    }
    
    /** return the template type by name or <tt>null</tt> if not found */
    public TemplateType getTemplateType(final String name)
    {
-      return this.templateTypes.get(name);
-   }
-   
-   /** registers a template type.  if one exists with the same name, it is replaced */
-   public void registerTemplateType(final TemplateType tt)
-   {
-      this.templateTypes.put(tt.getName(), tt);
       try
       {
-         Configuration.save();
+         final SearchParameters sp = new SearchParameters();
+         sp.addStore(Repository.getStoreRef());
+         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+         sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_TEMPLATE + 
+                     "\" AND @" + Repository.escapeQName(ContentModel.PROP_TITLE) + 
+                     ":\"" + name + "\"");
+         final ResultSet rs = this.searchService.query(sp);
+         return (rs.length() == 1 ? this.newTemplateType(rs.getNodeRef(0)) : null);
       }
-      catch (IOException ioe)
+      catch (RuntimeException re)
       {
-         LOGGER.error(ioe);
+         LOGGER.error(re);
+         throw re;
       }
    }
    
@@ -267,10 +187,21 @@ public final class TemplatingService implements Serializable
     * the template type implementation can be configured for the system,
     * or specified in the gui.
     */
-   public TemplateType newTemplateType(final String name,
-         final NodeRef schemaNodeRef)
+   private TemplateType newTemplateType(final NodeRef schemaNodeRef)
    {
-      return new TemplateTypeImpl(name, schemaNodeRef);
+      LOGGER.debug("creating template type for " + schemaNodeRef);
+      final String title = (String)
+         this.nodeService.getProperty(schemaNodeRef, ContentModel.PROP_TITLE);
+      LOGGER.debug("title is " + title);
+      final String schemaRootTagName = (String)
+         this.nodeService.getProperty(schemaNodeRef, WCMModel.PROP_SCHEMA_ROOT_TAG_NAME);
+      LOGGER.debug("root tag name is " + schemaRootTagName);
+      TemplateType tt = new TemplateTypeImpl(title, schemaNodeRef, schemaRootTagName);
+      final NodeRef xslNodeRef = (NodeRef)
+         this.nodeService.getProperty(schemaNodeRef, WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS);
+      LOGGER.debug("xsl noderef is " + xslNodeRef);
+      tt.addOutputMethod(new XSLTOutputMethod(xslNodeRef));
+      return tt;
    }
    
    /** utility function for creating a document */

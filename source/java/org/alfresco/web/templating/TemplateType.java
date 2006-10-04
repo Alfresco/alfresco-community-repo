@@ -20,7 +20,6 @@ import org.w3c.dom.Document;
 import java.util.List;
 import java.net.URI;
 import java.io.Serializable;
-//import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Encapsulation of a template type.
@@ -32,14 +31,11 @@ public interface TemplateType
     /** the name of the template, which must be unique within the TemplatingService */
     public String getName();
 
+    /** the root tag to use within the schema */
+    public String getRootTagName();
+
     /** the xml schema for this template type */
     public Document getSchema();
-
-    //    public String /* URI */ getSchemaURI();
-
-//    public void setSchemaNodeRef(final NodeRef nodeRef);
-//    
-//    public NodeRef getSchemaNodeRef();
 
     //XXXarielb not used currently and not sure if it's necessary...
     //    public void addInputMethod(final TemplateInputMethod in);

@@ -31,83 +31,76 @@ import org.xml.sax.SAXException;
 public class TemplateTypeImpl 
     implements TemplateType
 {
-    private static final Log LOGGER = LogFactory.getLog(TemplateTypeImpl.class);
+   private static final Log LOGGER = LogFactory.getLog(TemplateTypeImpl.class);
+   
+   private transient Document schema;
+   private final NodeRef schemaNodeRef;
+   private final String name;
+   private final String rootTagName;
+   private final LinkedList<TemplateOutputMethod> outputMethods = 
+      new LinkedList<TemplateOutputMethod>();
+   private final static LinkedList<TemplateInputMethod> INPUT_METHODS = 
+      new LinkedList<TemplateInputMethod>();
+   
+   static 
+   {
+      INPUT_METHODS.add(new XFormsInputMethod());
+   }
+   
+   public TemplateTypeImpl(final String name,
+                           final NodeRef schemaNodeRef,
+                           final String rootTagName) 
+   {
+      this.name = name;
+      this.schemaNodeRef = schemaNodeRef;
+      this.rootTagName = rootTagName;
+   }
+   
+   public String getName()
+   {
+      return this.name;
+   }
 
-    private transient Document schema;
-    private final NodeRef schemaNodeRef;
-    private final String name;
-    private final LinkedList<TemplateOutputMethod> outputMethods = 
-	new LinkedList<TemplateOutputMethod>();
-    private final static LinkedList<TemplateInputMethod> INPUT_METHODS = 
-	new LinkedList<TemplateInputMethod>();
+   public String getRootTagName()
+   {
+      return this.rootTagName;
+   }
 
-    static 
-    {
-	INPUT_METHODS.add(new XFormsInputMethod());
-    }
-    
-    public TemplateTypeImpl(final String name,
-			    final NodeRef schemaNodeRef) 
-    {
-	this.name = name;
-	this.schemaNodeRef = schemaNodeRef;
-    }
+   public Document getSchema()
+   {
+      if (this.schema == null)
+      {
+         final TemplatingService ts = TemplatingService.getInstance();
+         try
+         {
+            //XXXarielb maybe cloneNode instead?
+            return /* this.schema = */ ts.parseXML(this.schemaNodeRef);
+         }
+         catch (Exception e)
+         {
+            LOGGER.error(e);
+         }
+      }
+      return this.schema;
+   }
 
-    public String getName()
-    {
-	return this.name;
-    }
+   public List<TemplateInputMethod> getInputMethods()
+   {
+      return INPUT_METHODS;
+   }
 
-    public String /* URI */ getSchemaURI()
-    {
-	final javax.faces.context.FacesContext fc = 
-	    javax.faces.context.FacesContext.getCurrentInstance();
-	final javax.servlet.http.HttpSession session = (javax.servlet.http.HttpSession)
-	    fc.getExternalContext().getSession(true);
-	
-	org.alfresco.web.bean.repository.User user = (org.alfresco.web.bean.repository.User)
-	    session.getAttribute(org.alfresco.web.app.servlet.AuthenticationHelper.AUTHENTICATION_USER);
+   public void addOutputMethod(TemplateOutputMethod output)
+   {
+      this.outputMethods.add(output);
+   }
 
-	String result = DownloadContentServlet.generateDownloadURL(this.schemaNodeRef, this.name + ".xsd");
-	result += "?ticket=" + user.getTicket();
-	return result;
-    }
+   public List<TemplateOutputMethod> getOutputMethods()
+   {
+      return this.outputMethods;
+   }
 
-    public Document getSchema()
-    {
-	if (this.schema == null)
-	{
-	    final TemplatingService ts = TemplatingService.getInstance();
-	    try
-	    {
-		//XXXarielb maybe cloneNode instead?
-		return /* this.schema = */ ts.parseXML(this.schemaNodeRef);
-	    }
-	    catch (Exception e)
-	    {
-		LOGGER.error(e);
-	    }
-	}
-	return this.schema;
-    }
-
-    public List<TemplateInputMethod> getInputMethods()
-    {
-	return INPUT_METHODS;
-    }
-
-    public void addOutputMethod(TemplateOutputMethod output)
-    {
-	this.outputMethods.add(output);
-    }
-
-    public List<TemplateOutputMethod> getOutputMethods()
-    {
-	return this.outputMethods;
-    }
-
-    public int hashCode() 
-    {
-	return this.getName().hashCode();
-    }
+   public int hashCode() 
+   {
+      return this.getName().hashCode();
+   }
 }

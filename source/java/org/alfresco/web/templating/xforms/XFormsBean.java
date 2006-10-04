@@ -301,7 +301,7 @@ public class XFormsBean
 	LOGGER.debug("building xform for schema " + tt.getName());
 	final Document result = builder.buildForm(xmlContent, 
 						  schemaDocument, 
-						  tt.getName());
+						  tt.getRootTagName());
 	LOGGER.debug("generated xform: " + result);
 	//	LOGGER.debug(ts.writeXMLToString(result));
 	return result;

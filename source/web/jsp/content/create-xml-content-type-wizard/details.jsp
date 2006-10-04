@@ -84,10 +84,10 @@
 
 <h:panelGrid id="panel_grid_2"
              columns="3" cellpadding="3" cellspacing="3" border="0">
-   <h:graphicImage id="required_image_schema"
+   <h:graphicImage id="graphic_image_schema"
                    value="/images/icons/required_field.gif" alt="Required Field" />
    <h:outputText id="output_text_schema"
-                 value="Schema:"/>
+                 value="#{msg.schema}:"/>
    <h:column id="column_schema">
 <%
 FileUploadBean upload = (FileUploadBean)
@@ -111,11 +111,20 @@ if (upload == null || upload.getFile() == null)
    <a:actionLink id="action_link_remove_schema"
                  image="/images/icons/delete.gif" 
                  value="#{msg.remove}" 
-                 action="#{WizardManager.bean.removeUploadedFile}"
+                 action="#{WizardManager.bean.removeUploadedSchemaFile}"
                  showLink="false" 
 		 target="top"/>
 <%
 }
 %>
    </h:column>
+   <h:graphicImage id="graphic_image_root_tag_name"
+		   value="/images/icons/required_field.gif" alt="Required Field" />
+   <h:outputText id="output_text_root_tag_name" value="#{msg.schema_root_tag_name}:"/>
+   <h:inputText id="schema-root-tag-name" value="#{WizardManager.bean.schemaRootTagName}" 
+                maxlength="1024" size="35"/>
+   <h:graphicImage id="graphic_image_name" value="/images/icons/required_field.gif" alt="Required Field" />
+   <h:outputText id="output_text_name" value="#{msg.name}:"/>
+   <h:inputText id="file-name" value="#{WizardManager.bean.templateName}" 
+                maxlength="1024" size="35"/>
 </h:panelGrid>

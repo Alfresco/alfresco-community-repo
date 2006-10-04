@@ -27,6 +27,7 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -60,6 +61,8 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    private final static Log LOGGER = 
       LogFactory.getLog(CreateXmlContentTypeWizard.class);
    
+   private String schemaRootTagName;
+   private String templateName;
    private String presentationTemplateType;
    protected ContentService contentService;
    
@@ -70,66 +73,71 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    protected String finishImpl(FacesContext context, String outcome)
       throws Exception
    {
+      final TemplatingService ts = TemplatingService.getInstance();
       // get the node ref of the node that will contain the content
-      NodeRef containerNodeRef;
-      String nodeId = this.navigator.getCurrentNodeId();
-      if (nodeId == null)
-      {
-         containerNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-      }
-      else
-      {
-         containerNodeRef = new NodeRef(Repository.getStoreRef(), nodeId);
-      }
-      
-      FileInfo fileInfo = this.fileFolderService.create(containerNodeRef,
-               this.getSchemaFileName(),
-               ContentModel.TYPE_CONTENT);
+      final NodeRef contentFormsNodeRef = ts.getContentFormsNodeRef();
+
+      final FileInfo folderInfo = 
+         this.fileFolderService.create(contentFormsNodeRef,
+                                       this.getTemplateName(),
+                                       ContentModel.TYPE_FOLDER);
+      FileInfo fileInfo = 
+         this.fileFolderService.create(folderInfo.getNodeRef(),
+                                       this.getSchemaFileName(),
+                                       ContentModel.TYPE_CONTENT);
       final NodeRef schemaFileNodeRef = fileInfo.getNodeRef();
       
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("Created file node for file: " + 
-               this.getSchemaFileName());
-      
+                      this.getSchemaFileName());
+
       // get a writer for the content and put the file
-      ContentWriter writer = contentService.getWriter(schemaFileNodeRef, 
-            ContentModel.PROP_CONTENT, true);
+      ContentWriter writer = this.contentService.getWriter(schemaFileNodeRef, 
+                                                           ContentModel.PROP_CONTENT,
+                                                           true);
       // set the mimetype and encoding
       writer.setMimetype("text/xml");
       writer.setEncoding("UTF-8");
       writer.putContent(this.getSchemaFile());
       
-      fileInfo = this.fileFolderService.create(containerNodeRef,
-            this.getPresentationTemplateFileName(),
-            ContentModel.TYPE_CONTENT);
+      fileInfo = this.fileFolderService.create(folderInfo.getNodeRef(),
+                                               this.getPresentationTemplateFileName(),
+                                               ContentModel.TYPE_CONTENT);
       final NodeRef presentationTemplateFileNodeRef = fileInfo.getNodeRef();
       
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("Created file node for file: " + 
-               this.getPresentationTemplateFileName());
+                      this.getPresentationTemplateFileName());
       
       // get a writer for the content and put the file
-      writer = contentService.getWriter(presentationTemplateFileNodeRef, 
-            ContentModel.PROP_CONTENT, true);
+      writer = this.contentService.getWriter(presentationTemplateFileNodeRef, 
+                                             ContentModel.PROP_CONTENT, 
+                                             true);
       // set the mimetype and encoding
       writer.setMimetype("text/xml");
       writer.setEncoding("UTF-8");
       writer.putContent(this.getPresentationTemplateFile());
+
+      Map<QName, Serializable> props = new HashMap<QName, Serializable>(3, 1.0f);
+      props.put(WCMModel.PROP_SCHEMA_ROOT_TAG_NAME, this.getSchemaRootTagName());
+      props.put(WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS, presentationTemplateFileNodeRef);
+      this.nodeService.addAspect(schemaFileNodeRef, WCMModel.ASPECT_TEMPLATE, props);
+
+      // apply the titled aspect - title and description
+      props = new HashMap<QName, Serializable>(3, 1.0f);
+      props.put(ContentModel.PROP_TITLE, this.getTemplateName());
+      props.put(ContentModel.PROP_DESCRIPTION, "");
+      this.nodeService.addAspect(schemaFileNodeRef, ContentModel.ASPECT_TITLED, props);
       
-      final TemplatingService ts = TemplatingService.getInstance();
-      final String rootTagName = 
-         this.getSchemaFileName().replaceAll("([^\\.])\\..+", "$1");
-      final TemplateType tt = ts.newTemplateType(rootTagName, schemaFileNodeRef);
-      if (this.getPresentationTemplateFile() != null)
-      {
-         tt.addOutputMethod(new XSLTOutputMethod(presentationTemplateFileNodeRef));
-      }
-      ts.registerTemplateType(tt);
+      props = new HashMap<QName, Serializable>(3, 1.0f);
+      props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE, this.getPresentationTemplateType());
+      props.put(WCMModel.PROP_TEMPLATE_SOURCE, schemaFileNodeRef);
+      this.nodeService.addAspect(presentationTemplateFileNodeRef, WCMModel.ASPECT_TEMPLATE_OUTPUT_METHOD, props);
       
       // return the default outcome
       return outcome;
    }
-   
+
    @Override
    public void init(Map<String, String> parameters)
    {
@@ -137,6 +145,8 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       
       this.removeUploadedSchemaFile();
       this.removeUploadedPresentationTemplateFile();
+      this.schemaRootTagName = null;
+      this.templateName = null;
    }
    
    @Override
@@ -299,7 +309,43 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    {
       return this.getFile("pt");
    }
+
+   /**
+    * Sets the root tag name to use when processing the schema.
+    */
+   public void setSchemaRootTagName(final String schemaRootTagName)
+   {
+      this.schemaRootTagName = schemaRootTagName;
+   }
    
+   /**
+    * @return the root tag name to use when processing the schema.
+    */
+   public String getSchemaRootTagName()
+   {
+      return (this.schemaRootTagName == null && this.getSchemaFileName() != null
+              ? this.getSchemaFileName().replaceAll("([^\\.])\\..+", "$1")
+              : this.schemaRootTagName);
+   }
+   
+   /**
+    * Sets the human friendly name for this template.
+    */
+   public void setTemplateName(final String templateName)
+   {
+      this.templateName = templateName;
+   }
+
+   /**
+    * @return the human friendly name for this template.
+    */
+   public String getTemplateName()
+   {
+      return (this.templateName == null && this.getSchemaFileName() != null
+              ? this.getSchemaFileName().replaceAll("(.+)\\..*", "$1")
+              : this.templateName);
+   }
+
    /**
     * @return Returns a list of mime types to allow the user to select from
     */

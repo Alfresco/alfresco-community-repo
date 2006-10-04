@@ -7,6 +7,7 @@
 
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
    </imports>
 
    <namespaces>
@@ -14,41 +15,84 @@
    </namespaces>
    
    <types>
+      <!-- Consider this an abstract type for most purposes. -->
+      <type name="wcm:avmcontent">
+         <title>AVM Content</title>
+         <parent>cm:content</parent>
+      </type>
+      
+      <type name="wcm:avmplaincontent">
+         <title>AVM Plain content</title>
+         <parent>wcm:avmcontent</parent>
+      </type>
+      
+      <type name="wcm:avmlayeredcontent">
+         <title>AVM Layered Content</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="wcm:avmfileindirection">
+               <title>File Layer Indirection</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </type>
+      
+      <!-- Consider this abstract for most purposes. -->
+      <type name="wcm:avmfolder">
+         <title>AVM Folder</title>
+         <parent>cm:folder</parent>
+      </type>
+          
+      <type name="wcm:avmplainfolder">
+         <title>AVM Plain Folder</title>
+         <parent>wcm:avmfolder</parent>
+      </type>
+          
+      <type name="wcm:avmlayeredfolder">
+         <title>AVM Layered Folder</title>
+         <parent>wcm:avmfolder</parent>
+         <properties>
+            <property name="wcm:avmdirindirection">
+               <title>Directory Layer Indirection</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+             </property>
+          </properties>
+      </type>
    </types>
    
    <aspects>
-   	   
-   	  <!-- An XForms capture template aspect. -->
-   	  
+   	
+   	<!-- An XForms capture template aspect. -->
       <aspect name="wcm:template">
-   	     <title>XForms Template</title>
-   	     <properties>
-   	        <property name="wcm:schemaroottagname">
-   	           <title>Schema Root Tag Name</title>
-   	           <type>d:text</type>
-   	           <mandatory>true</mandatory>
-   	        </property>
-   	     </properties>
-   	     <associations>
-   	        <association name="wcm:templateoutputmethods">
-   	           <title>Template Output Methods</title>
-   	           <source>
-   	              <role>wcm:capture</role>
-   	              <mandatory>false</mandatory>
-   	              <many>false</many>
-   	           </source>
-   	           <target>
-		      <class>wcm:templateoutputmethod</class>
-   	              <role>wcm:presentation</role>
-   	              <mandatory>false</mandatory>
-   	              <many>true</many>
-   	           </target>
-   	     	</association>
-   	     </associations>
+         <title>XForms Template</title>
+         <properties>
+            <property name="wcm:schemaroottagname">
+               <title>Schema Root Tag Name</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <association name="wcm:templateoutputmethods">
+               <title>Template Output Methods</title>
+               <source>
+                  <role>wcm:capture</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wcm:templateoutputmethod</class>
+                  <role>wcm:presentation</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+              </target>
+            </association>
+         </associations>
       </aspect>
       
       <!-- An XML to something else transformer. -->
-      
       <aspect name="wcm:templateoutputmethod">
          <title>XML Transformer</title>
          <properties>

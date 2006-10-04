@@ -92,6 +92,12 @@ public interface NamespaceService extends NamespacePrefixResolver
     /** Alfresco security Prefix */
     public static final String SECURITY_MODEL_PREFIX = "security";
     
+    /** Alfresco WCM URI */
+    public static final String WCM_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmmodel/1.0";
+    
+    /** Alfresco WCM Prefix */
+    public static final String WCM_MODEL_PREFIX = "wcm";
+    
     
     /**
      * Register a prefix for namespace uri. 

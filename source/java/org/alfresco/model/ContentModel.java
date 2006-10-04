@@ -97,13 +97,6 @@ public interface ContentModel
     // content type and aspect constants
     static final QName TYPE_CONTENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "content");
     static final QName PROP_CONTENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "content");
-    static final QName TYPE_AVM_CONTENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmcontent");
-    static final QName TYPE_AVM_PLAIN_CONTENT = 
-        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmplaincontent");
-    static final QName TYPE_AVM_LAYERED_CONTENT =
-        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmlayeredcontent");
-    static final QName PROP_AVM_FILE_INDIRECTION = 
-        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmfileindirection");
     
     // title aspect
     static final QName ASPECT_TITLED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "titled");
@@ -149,10 +142,6 @@ public interface ContentModel
     static final QName TYPE_FOLDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "folder");
     /** child association type supported by {@link #TYPE_FOLDER} */
     static final QName ASSOC_CONTAINS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "contains");
-    static final QName TYPE_AVM_FOLDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmfolder");
-    static final QName TYPE_AVM_PLAIN_FOLDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmplainfolder");
-    static final QName TYPE_AVM_LAYERED_FOLDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmlayeredfolder");
-    static final QName PROP_AVM_DIR_INDIRECTION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "avmdirindirection");
     
     // person
     static final QName TYPE_PERSON = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "person");

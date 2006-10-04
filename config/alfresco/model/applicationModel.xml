@@ -9,6 +9,7 @@
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
       <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <import uri="http://www.alfresco.org/model/wcmmodel/1.0" prefix="wcm"/>
    </imports>
    
    <namespaces>
@@ -53,7 +54,7 @@
       
       <type name="app:webfolder">
          <title>AVM Website Folder</title>
-         <parent>cm:avmfolder</parent>
+         <parent>wcm:avmfolder</parent>
          <properties>
             <!-- root name of the avm staging stores for this web folder -->
             <property name="app:avmstore">

@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.avm.actions.SimpleAVMPromoteAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
@@ -3019,32 +3020,32 @@ public class AVMServiceTest extends AVMServiceTestBase
             AuthenticationComponent ac = (AuthenticationComponent)fContext.getBean("authenticationComponent");
             ac.authenticate("admin", "admin".toCharArray());
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/"), 
-                    "banana", ContentModel.TYPE_AVM_PLAIN_CONTENT) != null);
+                    "banana", WCMModel.TYPE_AVM_PLAIN_CONTENT) != null);
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main://"), 
-                    "banana", ContentModel.TYPE_AVM_PLAIN_CONTENT) != null);
+                    "banana", WCMModel.TYPE_AVM_PLAIN_CONTENT) != null);
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c"),
-                       "apples", ContentModel.TYPE_AVM_PLAIN_FOLDER) != null);
+                       "apples", WCMModel.TYPE_AVM_PLAIN_FOLDER) != null);
             NodeService ns = (NodeService)fContext.getBean("NodeService");
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-            properties.put(ContentModel.PROP_AVM_DIR_INDIRECTION, 
+            properties.put(WCMModel.PROP_AVM_DIR_INDIRECTION, 
                            AVMNodeConverter.ToNodeRef(-1, "main:/a"));
             assertTrue(ns.createNode(AVMNodeConverter.ToNodeRef(-1, "main:/"), 
                                      ContentModel.ASSOC_CONTAINS, 
                                      QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "layer"),
-                                     ContentModel.TYPE_AVM_LAYERED_FOLDER,
+                                     WCMModel.TYPE_AVM_LAYERED_FOLDER,
                                      properties) != null);
             assertTrue(ns.getProperty(AVMNodeConverter.ToNodeRef(-1, "main:/layer"),
-                                      ContentModel.PROP_AVM_DIR_INDIRECTION) != null);
+                                      WCMModel.PROP_AVM_DIR_INDIRECTION) != null);
             properties.clear();
-            properties.put(ContentModel.PROP_AVM_FILE_INDIRECTION,
+            properties.put(WCMModel.PROP_AVM_FILE_INDIRECTION,
                            AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"));
             assertTrue(ns.createNode(AVMNodeConverter.ToNodeRef(-1, "main:/"), 
                                      ContentModel.ASSOC_CONTAINS, 
                                      QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "foo"),
-                                     ContentModel.TYPE_AVM_LAYERED_CONTENT,
+                                     WCMModel.TYPE_AVM_LAYERED_CONTENT,
                                      properties) != null);
             assertTrue(ns.getProperty(AVMNodeConverter.ToNodeRef(-1, "main:/foo"),
-                                      ContentModel.PROP_AVM_FILE_INDIRECTION) != null);
+                                      WCMModel.PROP_AVM_FILE_INDIRECTION) != null);
             fService.createSnapshot("main");
             System.out.println(recursiveList("main", -1, true));
         }

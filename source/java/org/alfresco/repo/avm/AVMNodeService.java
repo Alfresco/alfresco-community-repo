@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -251,19 +252,19 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // Do the creates for supported types, or error out.
         try
         {
-            if (nodeTypeQName.equals(ContentModel.TYPE_AVM_PLAIN_FOLDER) ||
+            if (nodeTypeQName.equals(WCMModel.TYPE_AVM_PLAIN_FOLDER) ||
                 nodeTypeQName.equals(ContentModel.TYPE_FOLDER))
             {
                 fAVMService.createDirectory(avmPath, nodeName);
             }
-            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_PLAIN_CONTENT)
-                     ||nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
+            else if (nodeTypeQName.equals(WCMModel.TYPE_AVM_PLAIN_CONTENT) ||
+                     nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
             {
                 fAVMService.createFile(avmPath, nodeName);
             }
-            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_LAYERED_CONTENT))
+            else if (nodeTypeQName.equals(WCMModel.TYPE_AVM_LAYERED_CONTENT))
             {
-                NodeRef indirection = (NodeRef)properties.get(ContentModel.PROP_AVM_FILE_INDIRECTION);
+                NodeRef indirection = (NodeRef)properties.get(WCMModel.PROP_AVM_FILE_INDIRECTION);
                 if (indirection == null)
                 {
                     throw new InvalidTypeException("No Indirection Property", nodeTypeQName);
@@ -271,9 +272,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 Pair<Integer, String> indVersionPath = AVMNodeConverter.ToAVMVersionPath(indirection);
                 fAVMService.createLayeredFile(indVersionPath.getSecond(), avmPath, nodeName);
             }
-            else if (nodeTypeQName.equals(ContentModel.TYPE_AVM_LAYERED_FOLDER))
+            else if (nodeTypeQName.equals(WCMModel.TYPE_AVM_LAYERED_FOLDER))
             {
-                NodeRef indirection = (NodeRef)properties.get(ContentModel.PROP_AVM_DIR_INDIRECTION);
+                NodeRef indirection = (NodeRef)properties.get(WCMModel.PROP_AVM_DIR_INDIRECTION);
                 if (indirection == null)
                 {
                     throw new InvalidTypeException("No Indirection Property.", nodeTypeQName);
@@ -477,19 +478,19 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         if (desc.isPlainDirectory())
         {
-            return ContentModel.TYPE_AVM_PLAIN_FOLDER;
+            return WCMModel.TYPE_AVM_PLAIN_FOLDER;
         }
         else if (desc.isPlainFile())
         {
-            return ContentModel.TYPE_AVM_PLAIN_CONTENT;
+            return WCMModel.TYPE_AVM_PLAIN_CONTENT;
         }
         else if (desc.isLayeredDirectory())
         {
-            return ContentModel.TYPE_AVM_LAYERED_FOLDER;
+            return WCMModel.TYPE_AVM_LAYERED_FOLDER;
         }
         else
         {
-            return ContentModel.TYPE_AVM_LAYERED_CONTENT;
+            return WCMModel.TYPE_AVM_LAYERED_CONTENT;
         }
     }
     
@@ -924,12 +925,12 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         result.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
         if (desc.isLayeredDirectory())
         {
-            result.put(ContentModel.PROP_AVM_DIR_INDIRECTION,
+            result.put(WCMModel.PROP_AVM_DIR_INDIRECTION,
                        AVMNodeConverter.ToNodeRef(-1, desc.getIndirection()));
         }
         if (desc.isLayeredFile())
         {
-            result.put(ContentModel.PROP_AVM_FILE_INDIRECTION,
+            result.put(WCMModel.PROP_AVM_FILE_INDIRECTION,
                        AVMNodeConverter.ToNodeRef(-1, desc.getIndirection()));
         }
         if (desc.isFile())
@@ -1052,7 +1053,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             return nodeRef.getStoreRef().getIdentifier();
         }
-        else if (qName.equals(ContentModel.PROP_AVM_DIR_INDIRECTION))
+        else if (qName.equals(WCMModel.PROP_AVM_DIR_INDIRECTION))
         {
             if (desc.isLayeredDirectory())
             {
@@ -1060,7 +1061,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             }
             return null;
         }
-        else if (qName.equals(ContentModel.PROP_AVM_FILE_INDIRECTION))
+        else if (qName.equals(WCMModel.PROP_AVM_FILE_INDIRECTION))
         {
             if (desc.isLayeredFile())
             {
@@ -1146,8 +1147,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         ContentModel.PROP_NODE_DBID,
         ContentModel.PROP_STORE_PROTOCOL,
         ContentModel.PROP_STORE_IDENTIFIER,
-        ContentModel.PROP_AVM_FILE_INDIRECTION,
-        ContentModel.PROP_AVM_DIR_INDIRECTION
+        WCMModel.PROP_AVM_FILE_INDIRECTION,
+        WCMModel.PROP_AVM_DIR_INDIRECTION
     };
     
     /**

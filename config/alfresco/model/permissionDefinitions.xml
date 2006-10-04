@@ -323,7 +323,7 @@
       </permissionGroup>
       
       <permissionGroup name="ContentReviewer" allowFullControl="false" expose="true">
-         <includePermissionGroup permissionGroup="Consumer" type="cm:cmobject" />
+         <includePermissionGroup permissionGroup="Editor" type="cm:cmobject" />
       </permissionGroup>
       
    </permissionSet>

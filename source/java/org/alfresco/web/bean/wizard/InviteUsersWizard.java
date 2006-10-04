@@ -405,25 +405,13 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                      if (authType == AuthorityType.GUEST || this.personService.personExists(authority) == true)
                      {
                         // found a User authority
-                        NodeRef ref = this.personService.getPerson(authority);
-                        String firstName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
-                        String lastName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
-                        
-                        label.append(firstName)
-                             .append(" ")
-                             .append(lastName != null ? lastName : "")
-                             .append(" (")
-                             .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
-                             .append(")");
+                        label.append(buildLabelForUserAuthorityRole(authority, role));
                      }
                   }
                   else
                   {
                      // found a group authority
-                     label.append(authority.substring(PermissionService.GROUP_PREFIX.length()))
-                          .append(" (")
-                          .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
-                          .append(")");
+                     label.append(buildLabelForGroupAuthorityRole(authority, role));
                   }
                   
                   this.userGroupRoles.add(new UserGroupRole(authority, role, label.toString()));
@@ -659,6 +647,44 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    {
       return this.mailHelper;
    }
+   
+   /**
+    * Helper to build a label of the form:
+    *    Firstname Lastname (Role)
+    */
+   public String buildLabelForUserAuthorityRole(String authority, String role)
+   {
+      // found a User authority
+      NodeRef ref = this.personService.getPerson(authority);
+      String firstName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
+      String lastName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
+      
+      StringBuilder buf = new StringBuilder(100);
+      buf.append(firstName)
+         .append(" ")
+         .append(lastName != null ? lastName : "")
+         .append(" (")
+         .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
+         .append(")");
+      
+      return buf.toString();
+   }
+   
+   /**
+    * Helper to build a label for a Group authority of the form:
+    *    Groupname (role)
+    */
+   public String buildLabelForGroupAuthorityRole(String authority, String role)
+   {
+      StringBuilder buf = new StringBuilder(100);
+      buf.append(authority.substring(PermissionService.GROUP_PREFIX.length()))
+         .append(" (")
+         .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
+         .append(")");
+      
+      return buf.toString();
+   }
+   
    
    /**
     * Simple wrapper class to represent a user/group and a role combination

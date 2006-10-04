@@ -63,7 +63,7 @@ public abstract class BaseWizardBean extends BaseDialogBean implements IWizardBe
       String msg = Application.getMessage(FacesContext.getCurrentInstance(), MSG_NOT_SET);
       String notSetMsg = "&lt;" + msg + "&gt;";
       
-      StringBuilder buf = new StringBuilder(256);
+      StringBuilder buf = new StringBuilder(512);
       
       buf.append("<table cellspacing='4' cellpadding='2' border='0' class='summary'>");
       for (int i=0; i<labels.length; i++)

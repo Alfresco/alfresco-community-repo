@@ -179,4 +179,12 @@
                  description-id="delete_post_info" />
       </dialogs>
    </config>
+   
+   <config evaluator="node-type" condition="app:webfolder">
+      <dialogs>
+         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteWebsiteDialog"
+                 icon="/images/icons/delete_website_large.gif" title-id="delete_website" 
+                 description-id="delete_website_info" />
+      </dialogs>
+   </config>
 </alfresco-config>

@@ -81,7 +81,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       return new Node(this.avmBrowseBean.getAvmNode().getNodeRef());
    }
    
-@Override
+   @Override
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {

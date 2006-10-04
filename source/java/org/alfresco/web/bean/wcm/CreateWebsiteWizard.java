@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -51,6 +52,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateWebsiteWizard extends BaseWizardBean
 {
+   private static final String MSG_DESCRIPTION = "description";
+   private static final String MSG_NAME = "name";
+   private static final String MSG_USERROLES = "create_website_summary_users";
+
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
 
    private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
@@ -79,8 +84,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.description = null;
       
       // init the dependant bean we are using for the invite users pages
-      InviteWebsiteUsersWizard wiz = (InviteWebsiteUsersWizard)FacesHelper.getManagedBean(
-            FacesContext.getCurrentInstance(), "InviteWebsiteUsersWizard");
+      InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
       wiz.init();
    }
    
@@ -108,9 +112,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
       this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
       
-      // invite users with appropriate permissions into this folder
-      InviteWebsiteUsersWizard wiz = (InviteWebsiteUsersWizard)FacesHelper.getManagedBean(
-            FacesContext.getCurrentInstance(), "InviteWebsiteUsersWizard");
+      InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
       wiz.setNode(new Node(nodeRef));
       outcome = wiz.finish();
       if (outcome != null)
@@ -222,14 +224,45 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public String getSummary()
    {
-      ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ResourceBundle bundle = Application.getBundle(fc);
+      
+      // build a summary section to list the invited users and there roles
+      StringBuilder buf = new StringBuilder(128);
+      List<UserGroupRole> invitedUserRoles =
+         (List<UserGroupRole>)getInviteUsersWizard().getUserRolesDataModel().getWrappedData();
+      String currentUser = Application.getCurrentUser(fc).getUserName();
+      boolean foundCurrentUser = false;
+      for (UserGroupRole userRole : invitedUserRoles)
+      {
+         if (currentUser.equals(userRole.getAuthority()))
+         {
+            foundCurrentUser = true;
+         }
+         buf.append(userRole.getLabel());
+         buf.append("<br>");
+      }
+      if (foundCurrentUser == false)
+      {
+         buf.append(getInviteUsersWizard().buildLabelForUserAuthorityRole(currentUser, ROLE_CONTENT_MANAGER));
+      }
       
       return buildSummary(
-            new String[] {bundle.getString("name"), 
-                          bundle.getString("description")},
-            new String[] {this.name, this.description});
+            new String[] {bundle.getString(MSG_NAME), 
+                          bundle.getString(MSG_DESCRIPTION),
+                          bundle.getString(MSG_USERROLES)},
+            new String[] {this.name, this.description, buf.toString()});
    }
    
+   
+   /**
+    * @return the InviteWebsiteUsersWizard delegate bean
+    */
+   private InviteWebsiteUsersWizard getInviteUsersWizard()
+   {
+      return (InviteWebsiteUsersWizard)FacesHelper.getManagedBean(
+            FacesContext.getCurrentInstance(), "InviteWebsiteUsersWizard");
+   }
    
    /**
     * Helper to get the ID of the 'Websites' system folder
@@ -286,11 +319,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // create the system directories 'appBase' and 'avm_webapps'
       String path = stagingStore + ":/";
-      //this.avmService.createDirectory(path, AVMConstants.DIR_APPBASE);
-      this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
+      this.avmService.createDirectory(path, AVMConstants.DIR_APPBASE);
+      //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
       path += AVMConstants.DIR_APPBASE;
-      //this.avmService.createDirectory(path, AVMConstants.DIR_WEBAPPS);
-      this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_WEBAPPS, ContentModel.TYPE_AVM_PLAIN_FOLDER);
+      this.avmService.createDirectory(path, AVMConstants.DIR_WEBAPPS);
+      //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_WEBAPPS, ContentModel.TYPE_AVM_PLAIN_FOLDER);
       
       // tag the store with the store type
       this.avmService.setStoreProperty(stagingStore,

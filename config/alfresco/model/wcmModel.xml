@@ -23,8 +23,8 @@
       <aspect name="wcm:template">
    	     <title>XForms Template</title>
    	     <properties>
-   	        <property name="wcm:roottagname">
-   	           <title>Root Tag Name</title>
+   	        <property name="wcm:schemaroottagname">
+   	           <title>Schema Root Tag Name</title>
    	           <type>d:text</type>
    	           <mandatory>true</mandatory>
    	        </property>
@@ -38,7 +38,7 @@
    	              <many>false</many>
    	           </source>
    	           <target>
-   	           	  <class>wcm:templateoutputmethod</class>
+		      <class>wcm:templateoutputmethod</class>
    	              <role>wcm:presentation</role>
    	              <mandatory>false</mandatory>
    	              <many>true</many>
@@ -52,7 +52,7 @@
       <aspect name="wcm:templateoutputmethod">
          <title>XML Transformer</title>
          <properties>
-            <property name="wcm:outputtype">
+            <property name="wcm:templateoutputmethodtype">
                <title>Type</title>
                <type>d:text</type>
                <mandatory>true</mandatory>

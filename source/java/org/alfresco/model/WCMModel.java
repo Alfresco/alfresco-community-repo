@@ -16,11 +16,11 @@ public interface WCMModel
     
     // The XForms data capture template aspect.
     public static final QName ASPECT_TEMPLATE = QName.createQName(WCM_MODEL_URI, "template");
-    public static final QName PROP_ROOT_TAG_NAME = QName.createQName(WCM_MODEL_URI, "roottagname");
+    public static final QName PROP_SCHEMA_ROOT_TAG_NAME = QName.createQName(WCM_MODEL_URI, "schemaroottagname");
     public static final QName ASSOC_TEMPLATE_OUTPUT_METHODS = QName.createQName(WCM_MODEL_URI, "templateoutputmethods");
     
     // An XML to something else tranformer aspect.
     public static final QName ASPECT_TEMPLATE_OUTPUT_METHOD = QName.createQName(WCM_MODEL_URI, "templateoutputmethod");
-    public static final QName PROP_OUTPUT_TYPE = QName.createQName(WCM_MODEL_URI, "outputtype");
+    public static final QName PROP_TEMPLATE_OUTPUT_METHOD_TYPE = QName.createQName(WCM_MODEL_URI, "templateoutputmethodtype");
     public static final QName PROP_TEMPLATE_SOURCE = QName.createQName(WCM_MODEL_URI, "templatesource");
 }

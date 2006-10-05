@@ -48,11 +48,13 @@ dojo.declare("alfresco.xforms.Widget",
                {
                  this.modified = b;
                  this._updateDisplay();
+                 this.hideAlert();
                },
                setValid: function(b)
                {
                  this.valid = b;
                  this._updateDisplay();
+                 this.hideAlert();
                },
                setRequired: function(b)
                {
@@ -143,6 +145,24 @@ dojo.declare("alfresco.xforms.Widget",
                {
                  var node = this._getAlertNode();
                  return node ? dojo.dom.textContent(node) : "";
+               },
+               showAlert: function()
+               {
+                 if (this.alertDiv)
+                   return;
+                 this.alertDiv = document.createElement("div");
+                 this.alertDiv.setAttribute("id", this.id + "-alert");
+                 this.alertDiv.appendChild(document.createTextNode(this.getAlert()));
+                 this.domContainer.parentNode.insertBefore(this.alertDiv, this.domContainer);
+                 this.alertDiv.setAttribute("style", "color:red; position: relative; top: 0px; left: 0px;");
+               },
+               hideAlert: function()
+               {
+                 if (this.alertDiv)
+                 {
+                   dojo.dom.removeNode(this.alertDiv);
+                   this.alertDiv = null;
+                 }
                },
                _updateDisplay: function()
                {
@@ -1220,12 +1240,13 @@ dojo.declare("alfresco.xforms.XForm",
 	             case "xforms-submit-error":
 	               var invalid = this.rootWidget.getWidgetsInvalidForSubmit();
 	               var msg = "Please provide values for all required fields.";
-	               msg += "<br/><ul>";
+//	               msg += "<br/><ul>";
 	               for (var j = 0; j < invalid.length; j++)
 	               {
-	                 msg += "<li>" + invalid[j].getAlert() + "</li>";
+                         invalid[j].showAlert();
+//	                 msg += "<li>" + invalid[j].getAlert() + "</li>";
 	               }
-	               msg += "</ul>";
+//	               msg += "</ul>";
 	               _show_error(msg);
 	               break;
 	             default:

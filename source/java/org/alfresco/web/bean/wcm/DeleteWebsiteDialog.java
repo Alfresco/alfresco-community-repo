@@ -38,6 +38,9 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
    // ------------------------------------------------------------------------------
    // Dialog implementation
    
+   /**
+    * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
+    */
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
@@ -47,7 +50,6 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
       String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
       
       // get the list of users who have a sandbox in the website
-      int index = 0;
       List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
             websiteNode.getNodeRef(), ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
       for (ChildAssociationRef ref : userInfoRefs)
@@ -69,6 +71,11 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
       return super.finishImpl(context, outcome);
    }
    
+   /**
+    * Delete a store, checking for its existance first.
+    * 
+    * @param store
+    */
    private void deleteStore(String store)
    {
       // check it exists before we try to remove it

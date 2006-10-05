@@ -309,10 +309,8 @@
    
    <permissionSet type="app:webfolder" expose="selected">
 
-      <!-- AVM website specific roles.                                                   -->
-      <permissionGroup name="ContentManager" allowFullControl="true" expose="true">
-         <includePermissionGroup permissionGroup="Coordinator" type="cm:cmobject" />
-      </permissionGroup>
+      <!-- AVM website specific roles.                                               -->
+      <permissionGroup name="ContentManager" allowFullControl="true" expose="true" />
       
       <permissionGroup name="ContentPublisher" allowFullControl="false" expose="true">
          <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />

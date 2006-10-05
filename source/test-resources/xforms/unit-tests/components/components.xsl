@@ -43,7 +43,7 @@ body
     <xsl:template match="/components/integer">
       <div style="line-height: 25px;"><span class="name">Integer:</span> <xsl:value-of select="/components/integer"/></div>
     </xsl:template>
-    <xsl:template match="/components/positiveInteger">
+    <xsl:template match="/components/positive_integer">
       <div style="line-height: 25px;"><span class="name">Positive Integer:</span> <xsl:value-of select="/components/positiveInteger"/></div>
     </xsl:template>
     <xsl:template match="/components/double">

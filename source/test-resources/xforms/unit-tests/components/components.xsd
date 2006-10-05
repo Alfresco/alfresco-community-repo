@@ -42,7 +42,7 @@
         <xs:element name="optional_textfield" type="xs:string" minOccurs="0" maxOccurs="1"/>
         <xs:element name="prefilled_textfield" type="xs:string" minOccurs="0" maxOccurs="1" default="i am the default value"/>
         <xs:element name="integer" type="xs:integer"/>
-        <xs:element name="positiveInteger" type="xs:positiveInteger"/>
+        <xs:element name="positive_integer" type="xs:positiveInteger"/>
         <xs:element name="double" type="xs:double"/>
         <xs:element name="date" type="xs:date"/>
         <xs:element name="radio" type="five_string_values"/>

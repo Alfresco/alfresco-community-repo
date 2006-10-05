@@ -538,19 +538,19 @@ public class SchemaFormBuilder
 					  ? this.submitMethod
 					  :  SchemaFormBuilder.SUBMIT_METHOD_POST));
 
-	//Element submitButton = (Element) formSection.appendChild(xForm.createElementNS(XFORMS_NS,SchemaFormBuilder.XFORMS_NS_PREFIX+"submit"));
-	Element submitButton =
+	final Element submitButton =
 	    xForm.createElementNS(XFORMS_NS, SchemaFormBuilder.XFORMS_NS_PREFIX + "submit");
-	Element submitControlWrapper = this.wrapper.createControlsWrapper(submitButton);
+	final Element submitControlWrapper = this.wrapper.createControlsWrapper(submitButton);
 	formContentWrapper.appendChild(submitControlWrapper);
 	submitButton.setAttributeNS(XFORMS_NS,
 				    SchemaFormBuilder.XFORMS_NS_PREFIX + "submission",
 				    submissionId);
 	this.setXFormsId(submitButton);
 
-	Element submitButtonCaption = (Element)
-	    submitButton.appendChild(xForm.createElementNS(XFORMS_NS,
-							   SchemaFormBuilder.XFORMS_NS_PREFIX + "label"));
+	final Element submitButtonCaption = 
+           xForm.createElementNS(XFORMS_NS,
+                                 SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
+        submitButton.appendChild(submitButtonCaption);
 	submitButtonCaption.appendChild(xForm.createTextNode("Submit"));
 	this.setXFormsId(submitButtonCaption);
 	return xForm;
@@ -2407,9 +2407,6 @@ public class SchemaFormBuilder
 				  SchemaFormBuilder.XFORMS_NS_PREFIX + "label");
         this.setXFormsId(triggerLabel);
         trigger.appendChild(triggerLabel);
-        //triggerLabel_insert.setAttributeNS(SchemaFormBuilder.XLINK_NS,
-	//				   SchemaFormBuilder.XLINK_NS_PREFIX + "href",
-	//				   "images/add_new.gif");
 
         triggerLabel.appendChild(xForm.createTextNode(label));
 

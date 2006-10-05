@@ -132,6 +132,8 @@ public class XFormsBean
 	    et.addEventListener(XFormsEventFactory.SUBMIT_DONE, el, true);
 	    et.addEventListener(XFormsEventFactory.SUBMIT_ERROR, el, true);
 	    et.addEventListener(XFormsEventFactory.REQUIRED, el, true);
+	    et.addEventListener(XFormsEventFactory.OPTIONAL, el, true);
+	    et.addEventListener(XFormsEventFactory.VALID, el, true);
 	    et.addEventListener(XFormsEventFactory.INVALID, el, true);
 	    et.addEventListener(XFormsEventFactory.OUT_OF_RANGE, el, true);
             et.addEventListener(XFormsEventFactory.CHIBA_STATE_CHANGED, el, true);

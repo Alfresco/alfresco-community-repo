@@ -122,9 +122,26 @@ dojo.declare("alfresco.xforms.Widget",
                  }
                  return null;
                },
+    	       _getAlertNode: function()
+               {
+                 var labels = this.node.getElementsByTagName("alert");
+                 for (var i = 0; i < labels.length; i++)
+                 {
+                   dojo.debug("parent " + labels[i].parentNode.nodeName + 
+                              " o " + this.node.nodeName);
+                   if (labels[i].parentNode == this.node)
+                     return labels[i];
+                 }
+                 return null;
+               },
                getLabel: function()
                {
                  var node = this._getLabelNode();
+                 return node ? dojo.dom.textContent(node) : "";
+               },
+               getAlert: function()
+               {
+                 var node = this._getAlertNode();
                  return node ? dojo.dom.textContent(node) : "";
                },
                _updateDisplay: function()
@@ -1206,7 +1223,7 @@ dojo.declare("alfresco.xforms.XForm",
 	               msg += "<br/><ul>";
 	               for (var j = 0; j < invalid.length; j++)
 	               {
-	                 msg += "<li>" + invalid[j].getLabel() + "</li>";
+	                 msg += "<li>" + invalid[j].getAlert() + "</li>";
 	               }
 	               msg += "</ul>";
 	               _show_error(msg);

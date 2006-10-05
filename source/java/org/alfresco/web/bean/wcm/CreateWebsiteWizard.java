@@ -67,6 +67,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private String websitesFolderId = null;
    
    protected AVMService avmService;
+   protected PermissionService permissionService;
    
    
    // ------------------------------------------------------------------------------
@@ -116,27 +117,39 @@ public class CreateWebsiteWizard extends BaseWizardBean
       wiz.setNode(new Node(nodeRef));
       outcome = wiz.finish();
       if (outcome != null)
-      {       
-         // create the AVM stores to represent the newly created location website
-         createStagingSandbox(this.name);
-         
+      {
          // create a sandbox for each user appropriately with permissions based on role
+         // build a list of managers who will have full permissions on ALL staging areas
+         List<String> managers = new ArrayList<String>(4);
          boolean foundCurrentUser = false;
          List<UserGroupRole> invitedUserRoles = (List<UserGroupRole>)wiz.getUserRolesDataModel().getWrappedData();
          String currentUser = Application.getCurrentUser(context).getUserName();
          for (UserGroupRole userRole : invitedUserRoles)
          {
-            if (currentUser.equals(userRole.getAuthority()))
+            String authority = userRole.getAuthority();
+            if (currentUser.equals(authority))
             {
                foundCurrentUser = true;
             }
-            createUserSandbox(this.name, userRole.getAuthority(), userRole.getRole());
+            if (ROLE_CONTENT_MANAGER.equals(userRole))
+            {
+               managers.add(authority);
+            }
          }
          if (foundCurrentUser == false)
          {
-            createUserSandbox(this.name, currentUser, ROLE_CONTENT_MANAGER);
             invitedUserRoles.add(new UserGroupRole(currentUser, ROLE_CONTENT_MANAGER, null));
+            managers.add(currentUser);
          }
+         
+         // build the sandboxes now we have the manager list and complete user list
+         for (UserGroupRole userRole : invitedUserRoles)
+         {
+            createUserSandbox(this.name, managers, userRole.getAuthority(), userRole.getRole());
+         }
+         
+         // create the AVM stores to represent the newly created location website
+         createStagingSandbox(this.name, managers);
          
          // save the list of invited users against the store
          for (UserGroupRole userRole : invitedUserRoles)
@@ -169,6 +182,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   /**
+    * @param permissionService The permissionService to set.
+    */
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
    }
 
    /**
@@ -308,8 +329,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
     * Website Name: .website.name = website name
     * 
     * @param name       The store name to create the sandbox for
+    * @param managers   The list of authorities who have ContentManager role in the website 
     */
-   private void createStagingSandbox(String name)
+   private void createStagingSandbox(String name, List<String> managers)
    {
       // create the 'staging' store for the website
       String stagingStore = AVMConstants.buildAVMStagingStoreName(name);
@@ -319,11 +341,16 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // create the system directories 'appBase' and 'avm_webapps'
       String path = stagingStore + ":/";
-      this.avmService.createDirectory(path, AVMConstants.DIR_APPBASE);
       //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
+      this.avmService.createDirectory(path, AVMConstants.DIR_APPBASE);
+      NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
+      for (String manager : managers)
+      {
+         this.permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
+      }
       path += AVMConstants.DIR_APPBASE;
-      this.avmService.createDirectory(path, AVMConstants.DIR_WEBAPPS);
       //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_WEBAPPS, ContentModel.TYPE_AVM_PLAIN_FOLDER);
+      this.avmService.createDirectory(path, AVMConstants.DIR_WEBAPPS);
       
       // tag the store with the store type
       this.avmService.setStoreProperty(stagingStore,
@@ -342,8 +369,13 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // create a layered directory pointing to 'appBase' in the staging area
       path = previewStore + ":/";
       String targetPath = name + AVMConstants.STORE_STAGING + ":/" + AVMConstants.DIR_APPBASE;
-      this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
       //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
+      this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
+      dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
+      for (String manager : managers)
+      {
+         this.permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
+      }
       
       // tag the store with the store type
       this.avmService.setStoreProperty(previewStore,
@@ -384,10 +416,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
     * Website Name: .website.name = website name
     * 
     * @param name       The store name to create the sandbox for
+    * @param managers   The list of authorities who have ContentManager role in the website
     * @param username   Username of the user to create the sandbox for
     * @param role       Role permission for the user
     */
-   private void createUserSandbox(String name, String username, String role)
+   private void createUserSandbox(String name, List<String> managers, String username, String role)
    {
       // create the user 'main' store
       String userStore = AVMConstants.buildAVMUserMainStoreName(name, username);
@@ -399,12 +432,18 @@ public class CreateWebsiteWizard extends BaseWizardBean
       String path = userStore + ":/";
       String targetPath = name + AVMConstants.STORE_STAGING + ":/" + AVMConstants.DIR_APPBASE;
       this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
+      NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
+      this.permissionService.setPermission(dirRef, username, role, true);
+      for (String manager : managers)
+      {
+         this.permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
+      }
       
       // tag the store with the store type
       this.avmService.setStoreProperty(userStore,
             QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_MAIN),
             new PropertyValue(DataTypeDefinition.TEXT, null));
-
+      
       // tag the store with the base name of the website so that corresponding
       // staging areas can be found.
       this.avmService.setStoreProperty(userStore,
@@ -431,6 +470,12 @@ public class CreateWebsiteWizard extends BaseWizardBean
       path = previewStore + ":/";
       targetPath = userStore + ":/" + AVMConstants.DIR_APPBASE;
       this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
+      dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
+      this.permissionService.setPermission(dirRef, username, role, true);
+      for (String manager : managers)
+      {
+         this.permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
+      }
       
       // tag the store with the store type
       this.avmService.setStoreProperty(previewStore,

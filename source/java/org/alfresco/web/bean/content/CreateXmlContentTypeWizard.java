@@ -18,6 +18,7 @@ package org.alfresco.web.bean.content;
 
 import java.io.*;
 import java.util.*;
+
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
@@ -52,7 +53,7 @@ import org.xml.sax.SAXException;
 
 
 /**
- * Bean implementation for the "Create Content Wizard" dialog
+ * Bean implementation for the "Create XML Form" dialog
  * 
  * @author arielb
  */
@@ -65,6 +66,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    private String templateName;
    private String presentationTemplateType;
    protected ContentService contentService;
+   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -118,18 +120,18 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       writer.setEncoding("UTF-8");
       writer.putContent(this.getPresentationTemplateFile());
 
-      Map<QName, Serializable> props = new HashMap<QName, Serializable>(3, 1.0f);
+      Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(WCMModel.PROP_SCHEMA_ROOT_TAG_NAME, this.getSchemaRootTagName());
       props.put(WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS, presentationTemplateFileNodeRef);
       this.nodeService.addAspect(schemaFileNodeRef, WCMModel.ASPECT_TEMPLATE, props);
 
       // apply the titled aspect - title and description
-      props = new HashMap<QName, Serializable>(3, 1.0f);
+      props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(ContentModel.PROP_TITLE, this.getTemplateName());
       props.put(ContentModel.PROP_DESCRIPTION, "");
       this.nodeService.addAspect(schemaFileNodeRef, ContentModel.ASPECT_TITLED, props);
       
-      props = new HashMap<QName, Serializable>(3, 1.0f);
+      props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE, this.getPresentationTemplateType());
       props.put(WCMModel.PROP_TEMPLATE_SOURCE, schemaFileNodeRef);
       this.nodeService.addAspect(presentationTemplateFileNodeRef, WCMModel.ASPECT_TEMPLATE_OUTPUT_METHOD, props);
@@ -147,6 +149,8 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       this.removeUploadedPresentationTemplateFile();
       this.schemaRootTagName = null;
       this.templateName = null;
+      clearUpload("schema");
+      clearUpload("pt");
    }
    
    @Override
@@ -178,26 +182,6 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       
       return disabled;
    }
-   
-// @Override
-// protected String doPostCommitProcessing(FacesContext context, String outcome)
-// {
-// // as we were successful, go to the set properties dialog if asked
-// // to otherwise just return
-// if (this.showOtherProperties)
-// {
-// // we are going to immediately edit the properties so we need
-// // to setup the BrowseBean context appropriately
-// this.browseBean.setDocument(new Node(this.createdNode));
-// 
-// return getDefaultFinishOutcome() + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
-// "dialog:setContentProperties";
-// }
-// else
-// {
-// return outcome;
-// }
-// }
    
    /**
     * Action handler called when the user wishes to remove an uploaded file
@@ -377,8 +361,6 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       });
    }
    
-   // ------------------------------------------------------------------------------
-   // Action event handlers
    
    // ------------------------------------------------------------------------------
    // Service Injection
@@ -396,6 +378,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    // Helper Methods
    
    /**
+    * Clear the uploaded form, clearing the specific Upload component by Id
     */
    protected void clearUpload(final String id)
    {
@@ -405,6 +388,8 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       ctx.getExternalContext().getSessionMap().
       get(FileUploadBean.getKey(id));
       if (fileBean != null)
+      {
          fileBean.setFile(null);
+      }
    }
 }

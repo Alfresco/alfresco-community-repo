@@ -32,5 +32,6 @@ public interface WCMModel
     // An XML to something else tranformer aspect.
     public static final QName ASPECT_TEMPLATE_OUTPUT_METHOD = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templateoutputmethod");
     public static final QName PROP_TEMPLATE_OUTPUT_METHOD_TYPE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templateoutputmethodtype");
+    public static final QName PROP_TEMPLATE_OUTPUT_METHOD_DERIVED_FILE_EXTENSION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templateoutputmethodderivedfileextension");
     public static final QName PROP_TEMPLATE_SOURCE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templatesource");
 }

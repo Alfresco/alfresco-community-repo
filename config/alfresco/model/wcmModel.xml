@@ -101,6 +101,11 @@
                <type>d:text</type>
                <mandatory>true</mandatory>
             </property>
+            <property name="wcm:templateoutputmethodderivedfileextension">
+               <title>Type</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
             <property name="wcm:templatesource">
                <title>Template Source</title>
                <type>d:noderef</type>

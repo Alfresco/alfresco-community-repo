@@ -111,7 +111,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    protected ContentService contentService;
    private DataModel templateOutputMethodsDataModel;
    private List<TemplateOutputMethodData> templateOutputMethods = null;
-   private String fileExtension = "shtml";
+   private String fileExtension = null;
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -200,6 +200,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       this.schemaRootTagName = null;
       this.templateName = null;
       this.templateOutputMethods = new ArrayList<TemplateOutputMethodData>();
+      this.fileExtension = "shtml";
    }
    
    @Override

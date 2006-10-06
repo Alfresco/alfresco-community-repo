@@ -141,9 +141,8 @@ public final class TemplatingService implements Serializable
          final SearchParameters sp = new SearchParameters();
          sp.addStore(Repository.getStoreRef());
          sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-         final String q = "ASPECT:\"" + WCMModel.ASPECT_TEMPLATE + "\"";
-         sp.setQuery(q);
-         LOGGER.debug("running query [" + q + "]");
+         sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_TEMPLATE + "\"");
+         LOGGER.debug("running query [" + sp.getQuery() + "]");
          final ResultSet rs = this.searchService.query(sp);
          LOGGER.debug("received " + rs.length() + " results");
          final Collection<TemplateType> result = new LinkedList<TemplateType>();
@@ -172,8 +171,21 @@ public final class TemplatingService implements Serializable
          sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_TEMPLATE + 
                      "\" AND @" + Repository.escapeQName(ContentModel.PROP_TITLE) + 
                      ":\"" + name + "\"");
+         LOGGER.debug("running query [" + sp.getQuery() + "]");
          final ResultSet rs = this.searchService.query(sp);
-         return (rs.length() == 1 ? this.newTemplateType(rs.getNodeRef(0)) : null);
+         NodeRef result = null;
+         for (ResultSetRow row : rs)
+         {
+            final NodeRef nr = row.getNodeRef();
+            if (this.nodeService.getProperty(nr, ContentModel.PROP_TITLE).equals(name))
+            {
+               result = nr;
+               break;
+            }
+         }
+         if (result == null && LOGGER.isDebugEnabled())
+            LOGGER.debug("unable to find tempalte type " + name);
+         return result != null ? this.newTemplateType(result) : null;
       }
       catch (RuntimeException re)
       {

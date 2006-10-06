@@ -228,11 +228,6 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
                         this.getSchemaFileName().length() == 0);
             break;
          }
-         case 2:
-         {
-            disabled = (this.templateOutputMethods.size() == 0);
-            break;
-         }
       }
       
       return disabled;

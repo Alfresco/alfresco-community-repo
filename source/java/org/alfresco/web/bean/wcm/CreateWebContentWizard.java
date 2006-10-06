@@ -189,6 +189,16 @@ public class CreateWebContentWizard extends BaseContentWizard
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
+
+   /**
+    * @param fileName The name of the file
+    */
+   public void setFileName(String fileName)
+   {
+      super.setFileName(fileName != null && fileName.indexOf('.') == -1 
+                        ? fileName + ".xml" 
+                        : fileName);
+   }
    
    /**
     * @return Returns the content from the edited form.

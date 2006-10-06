@@ -2251,8 +2251,8 @@ public class SchemaFormBuilder
                       " (owningElementName=" + owningElementName + ")");
 
       if (owner != null)
-         LOGGER.debug("*************** owner is " + owner.getClass() +
-                      " name is " + owner.getName() + "   ****************");
+         LOGGER.debug("owner is " + owner.getClass() +
+                      ", name is " + owner.getName());
       // create the <xforms:bind> element and add it to the model.
       Element bindElement = xForm.createElementNS(XFORMS_NS, 
                                                   SchemaFormBuilder.XFORMS_NS_PREFIX + "bind");

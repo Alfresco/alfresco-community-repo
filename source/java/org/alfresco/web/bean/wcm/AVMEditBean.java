@@ -312,8 +312,9 @@ public class AVMEditBean
             if (nodeService.getProperty(avmRef, TemplatingService.TT_QNAME) != null)
             {
                OutputUtil.regenerate(avmRef,
-                     this.contentService,
-                     this.nodeService);
+                                     this.contentService,
+                                     this.nodeService,
+                                     this.avmService);
             }
             
             resetState();

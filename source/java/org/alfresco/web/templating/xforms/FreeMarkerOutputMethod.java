@@ -24,17 +24,22 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public class FreeMarkerOutputMethod
-    implements TemplateOutputMethod
+   implements TemplateOutputMethod
 {
 
-    public FreeMarkerOutputMethod()
-    {
-    }
+   public FreeMarkerOutputMethod()
+   {
+   }
 
-    public void generate(final Document xmlContent,
-			 final TemplateType tt,
-			 final String sandBoxUrl,
-			 final Writer out)
-    {
-    }
+   public void generate(final Document xmlContent,
+                        final TemplateType tt,
+                        final String sandBoxUrl,
+                        final Writer out)
+   {
+   }
+
+   public String getFileExtension()
+   {
+      return "unimpleemnted";
+   }
 }

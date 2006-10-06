@@ -24,20 +24,29 @@ import org.w3c.dom.Document;
  * Serializes the xml data to a writer.
  */
 public interface TemplateOutputMethod
-    extends Serializable
+   extends Serializable
 {
 
-    /**
-     * Serializes the xml data in to a presentation format.
-     *
-     * @param xmlContent the xml content to serialize
-     * @param tt the template type that collected the xml content.
-     * @param sandBoxUrl the url of the current sandbox
-     * @param out the writer to serialize to.
-     */
-    public void generate(final Document xmlContent,
-			 final TemplateType tt,
-			 final String sandBoxUrl,
-			 final Writer out)
-	throws Exception;
+   /**
+    * Serializes the xml data in to a presentation format.
+    *
+    * @param xmlContent the xml content to serialize
+    * @param tt the template type that collected the xml content.
+    * @param sandBoxUrl the url of the current sandbox
+    * @param out the writer to serialize to.
+    */
+   public void generate(final Document xmlContent,
+                        final TemplateType tt,
+                        final String sandBoxUrl,
+                        final Writer out)
+      throws Exception;
+
+   /**
+    * Returns the file extension to use when generating content for this
+    * output method.
+    *
+    * @return the file extension to use when generating content for this
+    * output method, such as html, rss, pdf.
+    */
+   public String getFileExtension();
 }

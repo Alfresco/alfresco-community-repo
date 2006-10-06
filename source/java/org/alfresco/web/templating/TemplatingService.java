@@ -40,6 +40,7 @@ import org.alfresco.model.WCMModel;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.*;
 import org.alfresco.service.cmr.model.*;
@@ -196,11 +197,15 @@ public final class TemplatingService implements Serializable
       final String schemaRootTagName = (String)
          this.nodeService.getProperty(schemaNodeRef, WCMModel.PROP_SCHEMA_ROOT_TAG_NAME);
       LOGGER.debug("root tag name is " + schemaRootTagName);
-      TemplateType tt = new TemplateTypeImpl(title, schemaNodeRef, schemaRootTagName);
-      final NodeRef xslNodeRef = (NodeRef)
-         this.nodeService.getProperty(schemaNodeRef, WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS);
-      LOGGER.debug("xsl noderef is " + xslNodeRef);
-      tt.addOutputMethod(new XSLTOutputMethod(xslNodeRef));
+      final TemplateType tt = new TemplateTypeImpl(title, schemaNodeRef, schemaRootTagName);
+      for (AssociationRef assoc : this.nodeService.getTargetAssocs(schemaNodeRef, 
+                                                                   WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS))
+      {
+         final NodeRef xslNodeRef = assoc.getTargetRef();
+         final TemplateOutputMethod tom = new XSLTOutputMethod(xslNodeRef, this.nodeService);
+         LOGGER.debug("loaded template output method " + tom.getFileExtension() + ", " + xslNodeRef);
+         tt.addOutputMethod(tom);
+      }
       return tt;
    }
    

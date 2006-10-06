@@ -21,6 +21,7 @@ import java.io.OutputStreamWriter;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -47,46 +48,44 @@ public class OutputUtil
    }
    
    public static void generate(String parentPath,
-         Document xml, 
-         TemplateType tt, 
-         String fileName,
-         ContentService contentService,
-         NodeService nodeService,
-         AVMService avmService)
+                               Document xml, 
+                               TemplateType tt, 
+                               String fileName,
+                               ContentService contentService,
+                               NodeService nodeService,
+                               AVMService avmService)
       throws Exception 
    {
       try 
       {
-         // get the node ref of the node that will contain the content
-         String generatedFileName = stripExtension(fileName) + ".shtml";
+         for (TemplateOutputMethod tom : tt.getOutputMethods())
+         {
+            // get the node ref of the node that will contain the content
+            final String generatedFileName = stripExtension(fileName) + "." + tom.getFileExtension();
+            final OutputStream fileOut = avmService.createFile(parentPath, generatedFileName);
+            final String fullAvmPath = parentPath + '/' + generatedFileName;
+            final String avmStore = parentPath.substring(0, parentPath.indexOf(":/"));
+            final String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
          
-         OutputStream fileOut = avmService.createFile(parentPath, generatedFileName);
-         
-         String fullAvmPath = parentPath + '/' + generatedFileName;
-         
-         String avmStore = parentPath.substring(0, parentPath.indexOf(":/"));
-         String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
-         
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Created file node for file: " + 
-                  fullAvmPath);
-         
-         TemplateOutputMethod tom = tt.getOutputMethods().get(0);
-         OutputStreamWriter out = new OutputStreamWriter(fileOut);
-         tom.generate(xml, tt, sandBoxUrl, out);
-         out.close();
-         
-         NodeRef outputNodeRef = AVMNodeConverter.ToNodeRef(-1, fullAvmPath);
-         nodeService.setProperty(outputNodeRef,
-               TemplatingService.TT_QNAME,
-               tt.getName());
-         
-         LOGGER.debug("generated " + generatedFileName + " using " + tom);
-         
-         NodeRef createdNodeRef = AVMNodeConverter.ToNodeRef(-1, parentPath + '/' + fileName);
-         nodeService.setProperty(createdNodeRef,
-               TemplatingService.TT_GENERATED_OUTPUT_QNAME,
-               outputNodeRef.toString());
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("Created file node for file: " + 
+                            fullAvmPath);
+            final OutputStreamWriter out = new OutputStreamWriter(fileOut);
+            tom.generate(xml, tt, sandBoxUrl, out);
+            out.close();
+            
+            NodeRef outputNodeRef = AVMNodeConverter.ToNodeRef(-1, fullAvmPath);
+            nodeService.setProperty(outputNodeRef,
+                                    TemplatingService.TT_QNAME,
+                                    tt.getName());
+            
+            LOGGER.debug("generated " + generatedFileName + " using " + tom);
+            
+            NodeRef createdNodeRef = AVMNodeConverter.ToNodeRef(-1, parentPath + '/' + fileName);
+            nodeService.setProperty(createdNodeRef,
+                                    TemplatingService.TT_GENERATED_OUTPUT_QNAME,
+                                    outputNodeRef.toString());
+         }
       }
       catch (Exception e)
       {
@@ -97,50 +96,50 @@ public class OutputUtil
    }
    
    public static void regenerate(final NodeRef nodeRef, 
-         final ContentService contentService,
-         final NodeService nodeService)
+                                 final ContentService contentService,
+                                 final NodeService nodeService,
+                                 final AVMService avmService)
       throws Exception 
    {
       try 
       {
          final TemplatingService ts = TemplatingService.getInstance();
          final String templateTypeName = (String)
-         nodeService.getProperty(nodeRef, TemplatingService.TT_QNAME);
+            nodeService.getProperty(nodeRef, TemplatingService.TT_QNAME);
          final TemplateType tt = ts.getTemplateType(templateTypeName);
          
          final ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
          final Document xml = ts.parseXML(reader.getContentInputStream());
-         String fileName = (String)
-         nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-         NodeRef generatedNodeRef = 
-            new NodeRef((String)
-                  nodeService.getProperty(nodeRef,
-                        TemplatingService.TT_GENERATED_OUTPUT_QNAME));
-         String generatedFileName = (String)
-         nodeService.getProperty(generatedNodeRef, 
-               ContentModel.PROP_NAME);
-         String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
-         String avmStore = avmPath.substring(0, avmPath.indexOf(":/"));
-         String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
-         
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("regenerating file node for : " + fileName + " (" +
-                  nodeRef.toString() + ") to " + generatedNodeRef.toString());
-         
-         // get a writer for the content and put the file
-         ContentWriter writer = contentService.getWriter(generatedNodeRef, 
-               ContentModel.PROP_CONTENT,
-               true);
-         // set the mimetype and encoding
-         writer.setMimetype("text/html");
-         writer.setEncoding("UTF-8");
-         // put a loop to generate all output methods
-         TemplateOutputMethod tom = tt.getOutputMethods().get(0);
-         OutputStreamWriter out = new OutputStreamWriter(writer.getContentOutputStream());
-         tom.generate(xml, tt, sandBoxUrl, out);
-         out.close();
-         
-         LOGGER.debug("generated " + fileName + " using " + tom);
+         final String fileName = (String)
+            nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+         final String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+         final String avmStore = avmPath.substring(0, avmPath.indexOf(":/"));
+         final String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
+         final String parentPath = AVMNodeConverter.SplitBase(avmPath)[0];
+         for (TemplateOutputMethod tom : tt.getOutputMethods())
+         {
+            final String generatedFileName = stripExtension(fileName) + "." + tom.getFileExtension();
+
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("regenerating file node for : " + fileName + " (" +
+                            nodeRef.toString() + ") to " + parentPath + "/" + generatedFileName);
+            
+            // get a writer for the content and put the file
+            OutputStream out = null;
+            try
+            {
+               out = avmService.getFileOutputStream(parentPath + "/" + generatedFileName);
+            }
+            catch (AVMNotFoundException e)
+            {
+               out = avmService.createFile(parentPath, generatedFileName);
+            }
+
+            final OutputStreamWriter writer = new OutputStreamWriter(out);
+            tom.generate(xml, tt, sandBoxUrl, writer);
+            writer.close();
+            LOGGER.debug("generated " + fileName + " using " + tom);
+         }
       }
       catch (Exception e)
       {

@@ -19,6 +19,10 @@ package org.alfresco.web.bean.content;
 import java.io.*;
 import java.util.*;
 
+import javax.faces.component.UIOutput;
+import javax.faces.event.ActionEvent;
+import javax.faces.model.DataModel;
+import javax.faces.model.ListDataModel;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
@@ -59,6 +63,50 @@ import org.xml.sax.SAXException;
  */
 public class CreateXmlContentTypeWizard extends BaseWizardBean
 {
+
+   /////////////////////////////////////////////////////////////////////////////
+   
+   /**
+    * Simple wrapper class to represent a template output method
+    */
+   public static class TemplateOutputMethodData
+   {
+      private final String fileName;
+      private final File file;
+      private final String fileExtension;
+
+      public TemplateOutputMethodData(final String fileName, 
+                                      final File file,
+                                      final String fileExtension)
+      {
+         this.fileName = fileName;
+         this.file = file;
+         this.fileExtension = fileExtension;
+      }
+      
+      public String getFileExtension()
+      {
+         return this.fileExtension;
+      }
+      
+      public String getFileName()
+      {
+         return this.fileName;
+      }
+
+      public File getFile()
+      {
+         return this.file;
+      }
+      
+      public String getLabel()
+      {
+         return this.getFileExtension().toUpperCase() + " (" + this.getFileName() + ")";
+      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
    private final static Log LOGGER = 
       LogFactory.getLog(CreateXmlContentTypeWizard.class);
    
@@ -66,8 +114,9 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    private String templateName;
    private String presentationTemplateType;
    protected ContentService contentService;
-   
-   
+   private DataModel templateOutputMethodsDataModel;
+   private List<TemplateOutputMethodData> templateOutputMethods = null;
+
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -101,41 +150,46 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       writer.setMimetype("text/xml");
       writer.setEncoding("UTF-8");
       writer.putContent(this.getSchemaFile());
-      
-      fileInfo = this.fileFolderService.create(folderInfo.getNodeRef(),
-                                               this.getPresentationTemplateFileName(),
-                                               ContentModel.TYPE_CONTENT);
-      final NodeRef presentationTemplateFileNodeRef = fileInfo.getNodeRef();
-      
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Created file node for file: " + 
-                      this.getPresentationTemplateFileName());
-      
-      // get a writer for the content and put the file
-      writer = this.contentService.getWriter(presentationTemplateFileNodeRef, 
-                                             ContentModel.PROP_CONTENT, 
-                                             true);
-      // set the mimetype and encoding
-      writer.setMimetype("text/xml");
-      writer.setEncoding("UTF-8");
-      writer.putContent(this.getPresentationTemplateFile());
-
-      Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(WCMModel.PROP_SCHEMA_ROOT_TAG_NAME, this.getSchemaRootTagName());
-      props.put(WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS, presentationTemplateFileNodeRef);
-      this.nodeService.addAspect(schemaFileNodeRef, WCMModel.ASPECT_TEMPLATE, props);
 
       // apply the titled aspect - title and description
-      props = new HashMap<QName, Serializable>(2, 1.0f);
+      Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(ContentModel.PROP_TITLE, this.getTemplateName());
       props.put(ContentModel.PROP_DESCRIPTION, "");
       this.nodeService.addAspect(schemaFileNodeRef, ContentModel.ASPECT_TITLED, props);
+
+      props = new HashMap<QName, Serializable>(1, 1.0f);
+      props.put(WCMModel.PROP_SCHEMA_ROOT_TAG_NAME, this.getSchemaRootTagName());
+      this.nodeService.addAspect(schemaFileNodeRef, WCMModel.ASPECT_TEMPLATE, props);
+         
+      for (TemplateOutputMethodData tomd : this.templateOutputMethods)
+      {
+         fileInfo = this.fileFolderService.create(folderInfo.getNodeRef(),
+                                                  tomd.getFileName(),
+                                                  ContentModel.TYPE_CONTENT);
+         final NodeRef presentationTemplateFileNodeRef = fileInfo.getNodeRef();
       
-      props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE, this.getPresentationTemplateType());
-      props.put(WCMModel.PROP_TEMPLATE_SOURCE, schemaFileNodeRef);
-      this.nodeService.addAspect(presentationTemplateFileNodeRef, WCMModel.ASPECT_TEMPLATE_OUTPUT_METHOD, props);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Created file node for file: " + tomd.getFileName());
       
+         // get a writer for the content and put the file
+         writer = this.contentService.getWriter(presentationTemplateFileNodeRef, 
+                                                ContentModel.PROP_CONTENT, 
+                                                true);
+         // set the mimetype and encoding
+         writer.setMimetype("text/xml");
+         writer.setEncoding("UTF-8");
+         writer.putContent(tomd.getFile());
+
+         this.nodeService.createAssociation(schemaFileNodeRef,
+                                            presentationTemplateFileNodeRef,
+                                            WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS);                         
+      
+         props = new HashMap<QName, Serializable>(3, 1.0f);
+         props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE, this.getTemplateOutputMethodType());
+         props.put(WCMModel.PROP_TEMPLATE_SOURCE, schemaFileNodeRef);
+         props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_DERIVED_FILE_EXTENSION, tomd.getFileExtension());
+         this.nodeService.addAspect(presentationTemplateFileNodeRef, WCMModel.ASPECT_TEMPLATE_OUTPUT_METHOD, props);
+      }
       // return the default outcome
       return outcome;
    }
@@ -146,18 +200,19 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       super.init(parameters);
       
       this.removeUploadedSchemaFile();
-      this.removeUploadedPresentationTemplateFile();
+      this.removeUploadedTemplateOutputMethodFile();
       this.schemaRootTagName = null;
       this.templateName = null;
+      this.templateOutputMethods = new ArrayList<TemplateOutputMethodData>();
       clearUpload("schema");
-      clearUpload("pt");
+      clearUpload("template-output-method");
    }
    
    @Override
    public String cancel()
    {
       this.removeUploadedSchemaFile();
-      this.removeUploadedPresentationTemplateFile();
+      this.removeUploadedTemplateOutputMethodFile();
       return super.cancel();
    }
    
@@ -182,6 +237,38 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       
       return disabled;
    }
+
+   public void addSelectedTemplateOutputMethod(ActionEvent event)
+   {
+      final UIOutput fileNameComponent = (UIOutput)
+         event.getComponent().findComponent("template-output-method-file-name");
+      final UIOutput fileExtensionComponent = (UIOutput)
+         event.getComponent().findComponent("file-extension");
+      final String fileName = (String)fileNameComponent.getValue();
+      assert fileName != null;
+      assert this.getTemplateOutputMethodFileName() != null;
+      assert this.getTemplateOutputMethodFileName().equals(fileName);
+      final TemplateOutputMethodData data = 
+         new TemplateOutputMethodData(fileName,
+                                      this.getTemplateOutputMethodFile(),
+                                      (String)fileExtensionComponent.getValue());
+      this.templateOutputMethods.add(data);
+      this.removeUploadedTemplateOutputMethodFile();
+   }
+   
+   /**
+    * Action handler called when the Remove button is pressed to remove a 
+    * template output method
+    */
+   public void removeSelectedTemplateOutputMethod(ActionEvent event)
+   {
+      final TemplateOutputMethodData wrapper = (TemplateOutputMethodData)
+         this.templateOutputMethodsDataModel.getRowData();
+      if (wrapper != null)
+      {
+         this.templateOutputMethods.remove(wrapper);
+      }
+   }
    
    /**
     * Action handler called when the user wishes to remove an uploaded file
@@ -197,9 +284,9 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    /**
     * Action handler called when the user wishes to remove an uploaded file
     */
-   public String removeUploadedPresentationTemplateFile()
+   public String removeUploadedTemplateOutputMethodFile()
    {
-      clearUpload("pt");
+      clearUpload("template-output-method");
       
       // refresh the current page
       return null;
@@ -208,15 +295,32 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
+
+   /**
+    * Returns the properties for current configured output methods JSF DataModel
+    * 
+    * @return JSF DataModel representing the current configured output methods
+    */
+   public DataModel getTemplateOutputMethodsDataModel()
+   {
+      if (this.templateOutputMethodsDataModel == null)
+      {
+         this.templateOutputMethodsDataModel = new ListDataModel();
+      }
+      
+      this.templateOutputMethodsDataModel.setWrappedData(this.templateOutputMethods);
+      
+      return this.templateOutputMethodsDataModel;
+   }
    
    /**
     * @return Returns the mime type currenty selected
     */
-   public String getPresentationTemplateType()
+   public String getTemplateOutputMethodType()
    {
-      if (this.getPresentationTemplateFileName() != null)
+      if (this.getTemplateOutputMethodFileName() != null)
       {
-         //	    String s = this.getPresentationTemplateFileName();
+         //	    String s = this.getTemplateOutputMethodFileName();
          //	    String extension = 
          this.presentationTemplateType = "XSL";
       }
@@ -226,7 +330,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    /**
     * @param presentationTemplateType Sets the currently selected mime type
     */
-   public void setPresentationTemplateType(String presentationTemplateType)
+   public void setTemplateOutputMethodType(String presentationTemplateType)
    {
       this.presentationTemplateType = presentationTemplateType;
    }
@@ -281,17 +385,17 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    /**
     * @return Returns the schema file or <tt>null</tt>
     */
-   public String getPresentationTemplateFileName()
+   public String getTemplateOutputMethodFileName()
    {
-      return this.getFileName("pt");
+      return this.getFileName("template-output-method");
    }
    
    /**
     * @return Returns the presentationTemplate file or <tt>null</tt>
     */
-   public File getPresentationTemplateFile()
+   public File getTemplateOutputMethodFile()
    {
-      return this.getFile("pt");
+      return this.getFile("template-output-method");
    }
 
    /**
@@ -333,7 +437,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    /**
     * @return Returns a list of mime types to allow the user to select from
     */
-   public List<SelectItem> getCreatePresentationTemplateTypes()
+   public List<SelectItem> getCreateTemplateOutputMethodTypes()
    {
       return (List<SelectItem>)Arrays.asList(new SelectItem[] {
             new SelectItem("freemarker", "FreeMarker"),
@@ -346,19 +450,21 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     */
    public String getSummary()
    {
-      ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      
-      // TODO: show first few lines of content here?
-      return buildSummary(new String[] {
-            "Schema File", 
-            "Presentation Template Type",
-            "Presentation Template"
-      },
-      new String[] {
-            this.getSchemaFileName(),
-            this.getPresentationTemplateType(),
-            this.getPresentationTemplateFileName()
-      });
+      final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+      final String[] labels = new String[2 + this.templateOutputMethods.size()];
+      final String[] values = new String[2 + this.templateOutputMethods.size()];
+      labels[0] = "Schema File";
+      values[0] = this.getSchemaFileName();
+      labels[1] = "Template output method type";
+      values[1] = this.getTemplateOutputMethodType();
+      for (int i = 0; i < this.templateOutputMethods.size(); i++)
+      {
+         final TemplateOutputMethodData tomd = this.templateOutputMethods.get(i);
+         labels[2 + i] = "Template output method for " + tomd.getFileExtension();
+         values[2 + i] = tomd.getFileName();
+      }
+
+      return this.buildSummary(labels, values);
    }
    
    

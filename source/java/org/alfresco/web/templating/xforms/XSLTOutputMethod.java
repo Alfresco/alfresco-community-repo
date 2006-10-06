@@ -43,6 +43,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import java.util.Map;
 
 public class XSLTOutputMethod
     implements TemplateOutputMethod
@@ -62,7 +63,7 @@ public class XSLTOutputMethod
 
    public void generate(final Document xmlContent,
                         final TemplateType tt,
-                        final String sandBoxUrl,
+                        final Map<String, String> parameters,
                         final Writer out)
       throws ParserConfigurationException,
       TransformerConfigurationException,
@@ -70,6 +71,8 @@ public class XSLTOutputMethod
       SAXException,
       IOException
    {
+      // XXXarielb - dirty - fix this
+      final String sandBoxUrl = (String)parameters.get("avm_store_url");
       final TransformerFactory tf = TransformerFactory.newInstance();
       final TemplatingService ts = TemplatingService.getInstance();
       final DOMSource source = new DOMSource(ts.parseXML(this.nodeRef));
@@ -103,7 +106,12 @@ public class XSLTOutputMethod
             }
          }
       });
-      t.setParameter("avm_store_url", sandBoxUrl);
+
+      for (Map.Entry<String, String> e : parameters.entrySet())
+      {
+         t.setParameter(e.getKey(), e.getValue());
+      }
+      
       LOGGER.debug("setting parameter avm_store_url=" + sandBoxUrl);
       final StreamResult result = new StreamResult(out);
       try

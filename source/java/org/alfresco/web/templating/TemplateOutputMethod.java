@@ -18,6 +18,7 @@ package org.alfresco.web.templating;
 
 import java.io.Serializable;
 import java.io.Writer;
+import java.util.Map;
 import org.w3c.dom.Document;
 
 /**
@@ -37,7 +38,7 @@ public interface TemplateOutputMethod
     */
    public void generate(final Document xmlContent,
                         final TemplateType tt,
-                        final String sandBoxUrl,
+                        final Map<String, String> parameters,
                         final Writer out)
       throws Exception;
 

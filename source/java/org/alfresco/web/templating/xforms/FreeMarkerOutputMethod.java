@@ -17,6 +17,7 @@
 package org.alfresco.web.templating.xforms;
 
 import java.io.*;
+import java.util.Map;
 import org.alfresco.web.templating.*;
 import org.chiba.xml.util.DOMUtil;
 
@@ -33,7 +34,7 @@ public class FreeMarkerOutputMethod
 
    public void generate(final Document xmlContent,
                         final TemplateType tt,
-                        final String sandBoxUrl,
+                        final Map<String, String> parameters,
                         final Writer out)
    {
    }

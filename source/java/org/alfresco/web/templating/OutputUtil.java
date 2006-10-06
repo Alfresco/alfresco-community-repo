@@ -18,6 +18,8 @@ package org.alfresco.web.templating;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -71,7 +73,10 @@ public class OutputUtil
                LOGGER.debug("Created file node for file: " + 
                             fullAvmPath);
             final OutputStreamWriter out = new OutputStreamWriter(fileOut);
-            tom.generate(xml, tt, sandBoxUrl, out);
+
+            final HashMap<String, String> parameters =
+               getOutputMethodParameters(sandBoxUrl, fileName, generatedFileName);
+            tom.generate(xml, tt, parameters, out);
             out.close();
             
             NodeRef outputNodeRef = AVMNodeConverter.ToNodeRef(-1, fullAvmPath);
@@ -136,7 +141,9 @@ public class OutputUtil
             }
 
             final OutputStreamWriter writer = new OutputStreamWriter(out);
-            tom.generate(xml, tt, sandBoxUrl, writer);
+            final HashMap<String, String> parameters =
+               getOutputMethodParameters(sandBoxUrl, fileName, generatedFileName);
+            tom.generate(xml, tt, parameters, writer);
             writer.close();
             LOGGER.debug("generated " + fileName + " using " + tom);
          }
@@ -147,5 +154,16 @@ public class OutputUtil
          e.printStackTrace();
          throw e;
       }
+   }
+
+   private static HashMap<String, String> getOutputMethodParameters(final String sandBoxUrl,
+                                                                    final String fileName,
+                                                                    final String generatedFileName)
+   {
+      final HashMap<String, String> parameters = new HashMap<String, String>();      
+      parameters.put("avm_store_url", sandBoxUrl);
+      parameters.put("derived_from_file_name", fileName);
+      parameters.put("generated_file_name", generatedFileName);
+      return parameters;
    }
 }

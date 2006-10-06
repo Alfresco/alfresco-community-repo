@@ -3,6 +3,7 @@
 		xmlns:xhtml="http://www.w3.org/1999/xhtml"
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 		xmlns:alfresco="http://www.alfresco.org/alfresco"
+		xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
 		exclude-result-prefixes="xhtml">
   <xsl:output method="html"  encoding="UTF-8" indent="yes"
               doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -10,6 +11,7 @@
 
   <xsl:preserve-space elements="*"/>
   <xsl:param name="avm_store_url" select="'not_specified'"/>
+  <xsl:param name="derived_from_file_name" select="'not_specified'"/>
 
   <xsl:template match="/">
     <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -98,6 +100,10 @@
               <div><p>Chuck Tanowitz<br />Schwartz Communications<br />+1 781 684-0770<br />alfresco@schwartz-pr.com</p></div>
 	    </xsl:if>
 	    <!-- END MAIN CONTENT -->
+	    <xsl:element name="a">
+	      <xsl:attribute name="href"><xsl:value-of select="fn:replaceAll($derived_from_file_name, '.xml', '.txt')"/></xsl:attribute>
+	      <xsl:text>view plain text version</xsl:text>
+	    </xsl:element>
 	  </div>
 	  <!-- Feature Content -->
 	  <div id="right_content">&#160;</div>

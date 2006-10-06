@@ -34,7 +34,7 @@
 <%@ page import="org.w3c.dom.Document" %>
 <%
 final AVMBrowseBean browseBean = (AVMBrowseBean)session.getAttribute("AVMBrowseBean");
-NodeRef nr = browseBean.getAvmNode().getNodeRef();
+NodeRef nr = browseBean.getAvmActionNode().getNodeRef();
 final AVMEditBean editBean = (AVMEditBean)session.getAttribute("AVMEditBean");
 String ttName = (String)browseBean.getNodeService().getProperty(nr, TemplatingService.TT_QNAME);
 final TemplatingService ts = TemplatingService.getInstance();

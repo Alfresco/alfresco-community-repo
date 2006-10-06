@@ -82,25 +82,25 @@ if (upload == null || upload.getFile() == null)
                   value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="file_extension_output_text"
                   value="#{msg.extension_for_generated_assets}:"/>
-    <h:inputText id="file-extension" value="shtml"
+    <h:inputText id="file-extension" value="#{WizardManager.bean.fileExtension}"
                   maxlength="10" size="10"/>
   </h:panelGrid>
 
   <h:panelGroup id="step-2-panel-group" styleClass="mainSubText">
     <h:outputText id="step-2-output-text" value="2." />
     <h:commandButton id="add-to-list-button" value="#{msg.add_to_list_button}" 
-		     actionListener="#{CreateXmlContentTypeWizard.addSelectedTemplateOutputMethod}" 
-		     styleClass="wizardButton" />
+		     actionListener="#{WizardManager.bean.addSelectedTemplateOutputMethod}" 
+		     styleClass="wizardButton" disabled="#{WizardManager.bean.addToListDisabled}" />
   </h:panelGroup>
   <h:outputText id="selected_template_output_methods_output_text"
                 styleClass="mainSubText" value="#{msg.selected_templateoutputmethods}" />
   <h:panelGroup id="data-table-panel-group">
     <h:dataTable id="template_output_method_data_table"
-                 value="#{CreateXmlContentTypeWizard.templateOutputMethodsDataModel}" var="row" 
+                 value="#{WizardManager.bean.templateOutputMethodsDataModel}" var="row" 
                  rowClasses="selectedItemsRow,selectedItemsRowAlt"
                  styleClass="selectedItems" headerClass="selectedItemsHeader"
                  cellspacing="0" cellpadding="4" 
-                 rendered="#{CreateXmlContentTypeWizard.templateOutputMethodsDataModel.rowCount != 0}">
+                 rendered="#{WizardManager.bean.templateOutputMethodsDataModel.rowCount != 0}">
       <h:column id="data-table-column-1">
         <f:facet name="header">
           <h:outputText id="data-table-name" value="#{msg.name}" />
@@ -109,13 +109,13 @@ if (upload == null || upload.getFile() == null)
       </h:column>
       <h:column id="data-table-column-2">
         <a:actionLink id="remove-select-template-output-method-action-link"
-		      actionListener="#{CreateXmlContentTypeWizard.removeSelectedTemplateOutputMethod}" 
+		      actionListener="#{WizardManager.bean.removeSelectedTemplateOutputMethod}" 
 	              image="/images/icons/delete.gif"
                       value="#{msg.remove}" showLink="false" style="padding-left:6px" />
       </h:column>
     </h:dataTable>
     
-    <a:panel id="no-items" rendered="#{CreateXmlContentTypeWizard.templateOutputMethodsDataModel.rowCount == 0}">
+    <a:panel id="no-items" rendered="#{WizardManager.bean.templateOutputMethodsDataModel.rowCount == 0}">
       <h:panelGrid id="no-items-panel-grid" columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
         <h:outputText styleClass="selectedItemsHeader" id="no-items-name" value="#{msg.name}" />
         <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />

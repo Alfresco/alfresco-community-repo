@@ -35,20 +35,6 @@
       document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
    }
    
-   function checkButtonState()
-   {
-      if (document.getElementById("wizard:wizard-body:file-input").value.length == 0 )
-      {
-         document.getElementById("wizard:next-button").disabled = true;
-         document.getElementById("wizard:finish-button").disabled = true;
-      }
-      else
-      {
-         document.getElementById("wizard:next-button").disabled = false;
-         document.getElementById("wizard:finish-button").disabled = false;
-      }
-   }
-   
    function validate()
    {
 //      if (finishButtonPressed)

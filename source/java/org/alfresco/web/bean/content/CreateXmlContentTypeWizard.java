@@ -16,44 +16,34 @@
  */
 package org.alfresco.web.bean.content;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 
-import javax.faces.component.UIOutput;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.ServletContext;
-import javax.xml.parsers.ParserConfigurationException;
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
-import org.alfresco.web.data.IDataContainer;
-import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.templating.*;
-import org.alfresco.web.templating.xforms.*;
-import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.templating.TemplatingService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 
 /**
@@ -121,6 +111,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    protected ContentService contentService;
    private DataModel templateOutputMethodsDataModel;
    private List<TemplateOutputMethodData> templateOutputMethods = null;
+   private String fileExtension = "shtml";
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -233,28 +224,52 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
          case 1:
          {
             disabled = (this.getSchemaFileName() == null || 
-                  this.getSchemaFileName().length() == 0);
+                        this.getSchemaFileName().length() == 0);
+            break;
+         }
+         case 2:
+         {
+            disabled = (this.templateOutputMethods.size() == 0);
             break;
          }
       }
       
       return disabled;
    }
+   
+   /**
+    * @return true if the Add To List button on the Template Output Methods should be disabled
+    */
+   public boolean getAddToListDisabled()
+   {
+      return (getTemplateOutputMethodFileName() == null || fileExtension == null || fileExtension.length() == 0);
+   }
 
+   /**
+    * @return Returns the fileExtension.
+    */
+   public String getFileExtension()
+   {
+      return this.fileExtension;
+   }
+
+   /**
+    * @param fileExtension The fileExtension to set.
+    */
+   public void setFileExtension(String fileExtension)
+   {
+      this.fileExtension = fileExtension;
+   }
+
+   /**
+    * Add the selected template output method to the list
+    */
    public void addSelectedTemplateOutputMethod(ActionEvent event)
    {
-      final UIOutput fileNameComponent = (UIOutput)
-         event.getComponent().findComponent("template-output-method-file-name");
-      final UIOutput fileExtensionComponent = (UIOutput)
-         event.getComponent().findComponent("file-extension");
-      final String fileName = (String)fileNameComponent.getValue();
-      assert fileName != null;
-      assert this.getTemplateOutputMethodFileName() != null;
-      assert this.getTemplateOutputMethodFileName().equals(fileName);
       final TemplateOutputMethodData data = 
-         new TemplateOutputMethodData(fileName,
+         new TemplateOutputMethodData(this.getTemplateOutputMethodFileName(),
                                       this.getTemplateOutputMethodFile(),
-                                      (String)fileExtensionComponent.getValue());
+                                      this.fileExtension);
       this.templateOutputMethods.add(data);
       this.removeUploadedTemplateOutputMethodFile();
    }

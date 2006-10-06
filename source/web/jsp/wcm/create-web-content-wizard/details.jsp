@@ -98,16 +98,3 @@
       <f:selectItems value="#{WizardManager.bean.createTemplateTypes}" />
    </h:selectOneMenu>
 </h:panelGrid>
-
-<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" style="padding-top: 4px;"
-             width="100%" rowClasses="wizardSectionHeading, paddingRow"
-             rendered="#{WizardManager.bean.otherPropertiesChoiceVisible}">
-   <h:outputText value="&nbsp;#{msg.other_properties}" escape="false" />
-   <h:outputText value="#{msg.modify_props_help_text}" />
-</h:panelGrid>
-
-<h:panelGrid style="padding-top: 2px;" columns="2"
-             rendered="#{WizardManager.bean.otherPropertiesChoiceVisible}">
-   <h:selectBooleanCheckbox value="#{WizardManager.bean.showOtherProperties}" />
-   <h:outputText value="#{msg.modify_props_when_wizard_closes}" />
-</h:panelGrid>

@@ -39,11 +39,13 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -85,6 +87,9 @@ public class AVMBrowseBean implements IContextListener
    
    /** Action bean Id for the AVM Submit action*/
    private static final String ACTION_AVM_SUBMIT = "simple-avm-submit";
+   
+   /** Content Manager role name */
+   private static final String ROLE_CONTENT_MANAGER = "ContentManager";
    
    private String sandbox;
    private String username;
@@ -466,6 +471,32 @@ public class AVMBrowseBean implements IContextListener
       
       // update UI state ready for screen refresh
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+   }
+   
+   /**
+    * @return true if the current user has the manager role in the current website
+    */
+   public boolean getIsManagerRole()
+   {
+      boolean isManager = false;
+      
+      String currentUser = Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
+      Node websiteNode = this.navigator.getCurrentNode();
+      List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
+            websiteNode.getNodeRef(), ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+      for (ChildAssociationRef ref : userInfoRefs)
+      {
+         NodeRef userInfoRef = ref.getChildRef();
+         String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
+         String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+         if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
+         {
+            isManager = true;
+            break;
+         }
+      }
+      
+      return isManager;
    }
    
    /**

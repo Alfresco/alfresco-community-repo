@@ -76,9 +76,7 @@
                            </td>
                            <td align=right>
                               <%-- Import website content action --%>
-                              <r:permissionEvaluator value="#{NavigationBean.currentNode}" allow="CreateChildren" id="eval1">
-                                 <a:actionLink value="#{msg.import_website_content}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
-                              </r:permissionEvaluator>
+                              <a:actionLink value="#{msg.import_website_content}" rendered="#{AVMBrowseBean.isManagerRole}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
                            </td>
                         </tr>
                      </table>

@@ -148,6 +148,9 @@
          
          <!-- View File details -->
          <action id="file_details">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
             <label-id>view_details</label-id>
             <image>/images/icons/View_details.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -159,6 +162,9 @@
          
          <!-- View Folder details -->
          <action id="folder_details">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
             <label-id>view_details</label-id>
             <image>/images/icons/View_details.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>

@@ -20,25 +20,23 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.context.FacesContext;
-
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNameMap;
-import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.Node;
 
 /**
+ * Node class representing an AVM specific Node.
+ * 
+ * Handles AVM related notions such as Path and Version. Provides the usual properties and
+ * property resolving functions, and appropriate method overrides for the AVM world.
+ * 
  * @author Kevin Roast
  */
-public class AVMNode implements Map<String, Object>
+public class AVMNode extends Node implements Map<String, Object>
 {
-   private QNameMap<String, Object> properties = null;
-   private ServiceRegistry services = null;
    private AVMNodeDescriptor avmRef;
    private String path;
    private int version;
@@ -47,46 +45,51 @@ public class AVMNode implements Map<String, Object>
    
    /**
     * Constructor
+    * 
+    * @param avmRef     The AVMNodeDescriptor that describes this node
     */
    public AVMNode(AVMNodeDescriptor avmRef)
    {
+      super(AVMNodeConverter.ToNodeRef(-1, avmRef.getPath()));
       this.avmRef = avmRef;
       this.version = -1;      // TODO: always -1 for now...
       this.path = avmRef.getPath();
+      this.id = this.path;
    }
    
+   /**
+    * Constructor
+    * 
+    * @param avmRef     The AVMNodeDescriptor that describes this node
+    * @param deleted    True if the node represents a ghosted deleted node
+    */
    public AVMNode(AVMNodeDescriptor avmRef, boolean deleted)
    {
       this(avmRef);
       this.deleted = deleted;
    }
    
-   public String getPath()
+   public final String getPath()
    {
       return this.path;
    }
    
-   public int getVersion()
+   public final int getVersion()
    {
       return this.version;
    }
    
-   public String getName()
+   public final String getName()
    {
       return this.avmRef.getName();
    }
    
-   public NodeRef getNodeRef()
-   {
-      return AVMNodeConverter.ToNodeRef(this.version, this.path);
-   }
-   
-   public boolean isDirectory()
+   public final boolean isDirectory()
    {
       return this.avmRef.isDirectory();
    }
    
-   public boolean isFile()
+   public final boolean isFile()
    {
       return this.avmRef.isFile();
    }
@@ -96,10 +99,8 @@ public class AVMNode implements Map<String, Object>
     */
    public final Map<String, Object> getProperties()
    {
-      if (this.properties == null)
+      if (this.propsRetrieved == false)
       {
-         this.properties = new QNameMap<String, Object>(getServiceRegistry().getNamespaceService());
-         
          if (this.deleted == false)
          {
             Map<QName, PropertyValue> props = getServiceRegistry().getAVMService().getNodeProperties(this.version, this.path);
@@ -117,29 +118,11 @@ public class AVMNode implements Map<String, Object>
          this.properties.put("created", this.avmRef.getCreateDate());
          this.properties.put("modified", this.avmRef.getModDate());
          this.properties.put("creator", this.avmRef.getCreator());
+         
+         this.propsRetrieved = true;
       }
       
       return this.properties;
-   }
-   
-   /**
-    * Determines whether the given property name is held by this node 
-    * 
-    * @param propertyName Property to test existence of
-    * @return true if property exists, false otherwise
-    */
-   public final boolean hasProperty(String propertyName)
-   {
-      return getProperties().containsKey(propertyName);
-   }
-   
-   private ServiceRegistry getServiceRegistry()
-   {
-      if (this.services == null)
-      {
-          this.services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      }
-      return this.services;
    }
    
    

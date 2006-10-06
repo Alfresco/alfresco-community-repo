@@ -18,6 +18,7 @@ package org.alfresco.web.templating;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,6 +85,9 @@ public class OutputUtil
             nodeService.setProperty(outputNodeRef,
                                     TemplatingService.TT_QNAME,
                                     tt.getName());
+            Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+            titledProps.put(ContentModel.PROP_TITLE, fileName);
+            nodeService.addAspect(outputNodeRef, ContentModel.ASPECT_TITLED, titledProps);
             
             LOGGER.debug("generated " + generatedFileName + " using " + tom);
             

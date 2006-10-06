@@ -132,9 +132,9 @@
                               
                               <h:panelGroup id="props-panel-facets">
                                  <f:facet name="title">
-                                    <%--<r:permissionEvaluator value="#{FileDetailsBean.document}" allow="Write">--%>
+                                    <r:permissionEvaluator value="#{FileDetailsBean.document}" allow="Write">
                                        <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editAvmFileProperties" />
-                                    <%--</r:permissionEvaluator>--%>
+                                    </r:permissionEvaluator>
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.properties}" id="properties-panel" facetsId="props-panel-facets" progressive="true"

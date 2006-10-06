@@ -90,6 +90,7 @@ public class AVMBrowseBean implements IContextListener
    private String username;
    private String sandboxTitle = null;
    private String currentPath = null;
+   private AVMNode currentPathNode = null;
    
    /* component references */
    private UIRichList foldersRichList;
@@ -100,7 +101,7 @@ public class AVMBrowseBean implements IContextListener
    private List<Map> files = null;
    private List<Map> folders = null;
    
-   /** Current AVM Node context*/
+   /** Current AVM Node action context */
    private AVMNode avmNode = null;
    
    private String wcmDomain;
@@ -415,25 +416,25 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * @return Returns the current AVM node context.
+    * @return Returns the current AVM node action context.
     */
-   public AVMNode getAvmNode()
+   public AVMNode getAvmActionNode()
    {
       return this.avmNode;
    }
 
    /**
-    * @param avmNode       The AVM node context to set.
+    * @param avmNode       The AVM node action context to set.
     */
-   public void setAvmNode(AVMNode avmNode)
+   public void setAvmActionNode(AVMNode avmNode)
    {
       this.avmNode = avmNode;
    }
    
    /**
-    * @param avmRef        The AVMNodeDescriptor context to set.
+    * @param avmRef        The AVMNodeDescriptor action context to set.
     */
-   public void setAVMNodeDescriptor(AVMNodeDescriptor avmRef)
+   public void setAVMActionNodeDescriptor(AVMNodeDescriptor avmRef)
    {
       AVMNode avmNode = new AVMNode(avmRef);
       this.avmNode = avmNode;
@@ -457,9 +458,27 @@ public class AVMBrowseBean implements IContextListener
    public void setCurrentPath(String path)
    {
       this.currentPath = path;
+      if (path == null)
+      {
+         // clear dependant objects (recreated when the path is reinitialised) 
+         this.currentPathNode = null; 
+      }
       
       // update UI state ready for screen refresh
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+   }
+   
+   /**
+    * @return the AVMNode that represents the current browsing path
+    */
+   public AVMNode getCurrentPathNode()
+   {
+      if (this.currentPathNode == null)
+      {
+         AVMNodeDescriptor node = this.avmService.lookup(-1, getCurrentPath(), true);
+         this.currentPathNode = new AVMNode(node);
+      }
+      return this.currentPathNode;
    }
    
    /**
@@ -638,11 +657,11 @@ public class AVMBrowseBean implements IContextListener
          if (logger.isDebugEnabled())
             logger.debug("Setup content action for path: " + path);
          AVMNodeDescriptor node = avmService.lookup(-1, path, true);
-         setAVMNodeDescriptor(node);
+         setAVMActionNodeDescriptor(node);
       }
       else
       {
-         setAvmNode(null);
+         setAvmActionNode(null);
       }
       
       // update UI state ready for return after dialog close
@@ -667,14 +686,14 @@ public class AVMBrowseBean implements IContextListener
          tx.begin();
          
          Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
-         this.actionService.executeAction(action, getAvmNode().getNodeRef());
+         this.actionService.executeAction(action, getAvmActionNode().getNodeRef());
          
          // commit the transaction
          tx.commit();
          
          // if we get here, all was well - output friendly status message to the user
          String msg = MessageFormat.format(Application.getMessage(
-               context, MSG_SUBMIT_SUCCESS), getAvmNode().getName());
+               context, MSG_SUBMIT_SUCCESS), getAvmActionNode().getName());
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
          String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
          context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);

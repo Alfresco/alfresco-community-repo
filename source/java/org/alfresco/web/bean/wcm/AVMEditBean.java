@@ -116,7 +116,7 @@ public class AVMEditBean
     */
    public AVMNode getAvmNode()
    {
-      return this.avmBrowseBean.getAvmNode();
+      return this.avmBrowseBean.getAvmActionNode();
    }
    
    /**

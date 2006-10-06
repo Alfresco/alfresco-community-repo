@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
@@ -184,6 +186,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       ResourceBundle bundle = Application.getBundle(context);
       AVMService avmService = getAVMService(context);
       NodeService nodeService = getNodeService(context);
+      PermissionService permissionService = getPermissionService(context);
       UserTransaction tx = null;
       try
       {
@@ -191,13 +194,14 @@ public class UIUserSandboxes extends SelfRenderingComponent
          tx.begin();
          
          NodeRef websiteRef = getValue();
-         if (value == null)
+         if (websiteRef == null)
          {
             throw new IllegalArgumentException("Website NodeRef must be specified.");
          }
          String storeRoot = (String)nodeService.getProperty(websiteRef, ContentModel.PROP_AVMSTORE);
          
          // get the list of users who have a sandbox in the website
+         String currentUser = Application.getCurrentUser(context).getUserName();
          int index = 0;
          List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
                websiteRef, ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
@@ -213,83 +217,92 @@ public class UIUserSandboxes extends SelfRenderingComponent
             // check it exists before we render the view
             if (avmService.getAVMStore(mainStore) != null)
             {
+               // check the permissions on this store for the current user
                if (logger.isDebugEnabled())
-                  logger.debug("Building sandbox view for user store: " + mainStore);
-               
-               // for each user sandbox, generate an outer panel table
-               PanelGenerator.generatePanelStart(out,
-                     context.getExternalContext().getRequestContextPath(),
-                     "white",
-                     "white");
-               
-               // components for the current username, preview, browse and modified items inner list
-               out.write("<table cellspacing=2 cellpadding=2 border=0 width=100%><tr><td>");
-               // show the icon for the sandbox as a clickable browse link image
-               // this is currently identical to the sandbox_browse action as below
-               Utils.encodeRecursive(context, aquireAction(
-                     context, mainStore, username, "sandbox_icon", WebResources.IMAGE_USERSANDBOX_32,
-                     "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
-               out.write("</td><td width=100%>");
-               out.write("<b>");
-               out.write(bundle.getString(MSG_USERNAME));
-               out.write(":</b>&nbsp;");
-               out.write(username);
-               out.write(" (");
-               out.write(bundle.getString(userrole));
-               out.write(")</td><td><nobr>");
-               
-               // direct actions for a sandbox
-               String sandboxUrl = AVMConstants.buildAVMStoreUrl(mainStore);
-               Utils.encodeRecursive(context, aquireAction(
-                     context, mainStore, username, "sandbox_preview", "/images/icons/preview_website.gif",
-                     null, null, sandboxUrl));
-               out.write("&nbsp;");
-               
-               Utils.encodeRecursive(context, aquireAction(
-                     context, mainStore, username, "sandbox_create", "/images/icons/new_content.gif",
-                     "#{AVMBrowseBean.setupSandboxAction}", "wizard:createWebContent", null));
-               out.write("&nbsp;");
-               
-               Utils.encodeRecursive(context, aquireAction(
-                     context, mainStore, username, "sandbox_submitall", "/images/icons/submit.gif",
-                     "#{AVMBrowseBean.submitAll}", null, null));
-               out.write("&nbsp;");
-               
-               Utils.encodeRecursive(context, aquireAction(
-                     context, mainStore, username, "sandbox_browse", "/images/icons/space_small.gif",
-                     "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
-               out.write("</nobr></td></tr>");
-               
-               // modified items panel
-               out.write("<tr><td></td><td colspan=2>");
-               String panelImage = WebResources.IMAGE_COLLAPSED;
-               if (this.expandedPanels.contains(username))
+                     logger.debug("Checking user permissions for store: " + mainStore);
+               if (permissionService.hasPermission(
+                     AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildAVMStoreRootPath(mainStore)),
+                     PermissionService.READ) == AccessStatus.ALLOWED)
                {
-                  panelImage = WebResources.IMAGE_EXPANDED;
-               }
-               out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
-                     Utils.generateFormSubmit(context, this, getClientId(context), username)));
-               out.write("&nbsp;<b>");
-               out.write(bundle.getString(MSG_MODIFIED_ITEMS));
-               out.write("</b>");
-               if (this.expandedPanels.contains(username))
-               {
-                  out.write("<div style='padding:2px'></div>");
-
-                  // list the modified docs for this sandbox user
-                  renderUserFiles(context, out, username, storeRoot);
-               }
-               out.write("</td></tr></table>");
-               
-               // end the outer panel for this sandbox
-               PanelGenerator.generatePanelEnd(out,
-                     context.getExternalContext().getRequestContextPath(),
-                     "white");
-               
-               // spacer row
-               if (index++ < userInfoRefs.size() - 1)
-               {
-                  out.write("<div style='padding:4px'></div>");
+                  if (logger.isDebugEnabled())
+                     logger.debug("Building sandbox view for user store: " + mainStore);
+                  
+                  // for each user sandbox, generate an outer panel table
+                  PanelGenerator.generatePanelStart(out,
+                        context.getExternalContext().getRequestContextPath(),
+                        "white",
+                        "white");
+                  
+                  // components for the current username, preview, browse and modified items inner list
+                  out.write("<table cellspacing=2 cellpadding=2 border=0 width=100%><tr><td>");
+                  // show the icon for the sandbox as a clickable browse link image
+                  // this is currently identical to the sandbox_browse action as below
+                  Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, "sandbox_icon", WebResources.IMAGE_USERSANDBOX_32,
+                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
+                  out.write("</td><td width=100%>");
+                  out.write("<b>");
+                  out.write(bundle.getString(MSG_USERNAME));
+                  out.write(":</b>&nbsp;");
+                  out.write(username);
+                  out.write(" (");
+                  out.write(bundle.getString(userrole));
+                  out.write(")</td><td><nobr>");
+                  
+                  // direct actions for a sandbox
+                  String sandboxUrl = AVMConstants.buildAVMStoreUrl(mainStore);
+                  Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, "sandbox_preview", "/images/icons/preview_website.gif",
+                        null, null, sandboxUrl));
+                  out.write("&nbsp;");
+                  
+                  // TODO: add this action back once we can create in a specific sub-folder
+                  /*Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, "sandbox_create", "/images/icons/new_content.gif",
+                        "#{AVMBrowseBean.setupSandboxAction}", "wizard:createWebContent", null));
+                  out.write("&nbsp;");*/
+                  
+                  Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, "sandbox_submitall", "/images/icons/submit.gif",
+                        "#{AVMBrowseBean.submitAll}", null, null));
+                  out.write("&nbsp;");
+                  
+                  Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, "sandbox_browse", "/images/icons/space_small.gif",
+                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
+                  out.write("</nobr></td></tr>");
+                  
+                  // modified items panel
+                  out.write("<tr><td></td><td colspan=2>");
+                  String panelImage = WebResources.IMAGE_COLLAPSED;
+                  if (this.expandedPanels.contains(username))
+                  {
+                     panelImage = WebResources.IMAGE_EXPANDED;
+                  }
+                  out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
+                        Utils.generateFormSubmit(context, this, getClientId(context), username)));
+                  out.write("&nbsp;<b>");
+                  out.write(bundle.getString(MSG_MODIFIED_ITEMS));
+                  out.write("</b>");
+                  if (this.expandedPanels.contains(username))
+                  {
+                     out.write("<div style='padding:2px'></div>");
+   
+                     // list the modified docs for this sandbox user
+                     renderUserFiles(context, out, username, storeRoot);
+                  }
+                  out.write("</td></tr></table>");
+                  
+                  // end the outer panel for this sandbox
+                  PanelGenerator.generatePanelEnd(out,
+                        context.getExternalContext().getRequestContextPath(),
+                        "white");
+                  
+                  // spacer row
+                  if (index++ < userInfoRefs.size() - 1)
+                  {
+                     out.write("<div style='padding:4px'></div>");
+                  }
                }
             }
          }
@@ -662,6 +675,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private AVMSyncService getAVMSyncService(FacesContext fc)
    {
       return (AVMSyncService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("AVMSyncService");
+   }
+   
+   private PermissionService getPermissionService(FacesContext fc)
+   {
+      return Repository.getServiceRegistry(fc).getPermissionService();
    }
    
    

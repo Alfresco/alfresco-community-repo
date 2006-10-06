@@ -5,6 +5,9 @@
          
          <!-- Edit WCM document -->
          <action id="edit_file">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
             <label-id>edit</label-id>
             <image>/images/icons/edit_icon.gif</image>
             <action-listener>#{AVMEditBean.setupEditAction}</action-listener>
@@ -15,6 +18,9 @@
          
          <!-- Delete AVM file -->
          <action id="delete_file">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -26,6 +32,9 @@
          
          <!-- Delete AVM file, with a return navigation outcome parameter -->
          <action id="delete_file_browse">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -37,6 +46,9 @@
          
          <!-- Delete AVM folder -->
          <action id="delete_folder">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -48,6 +60,9 @@
          
          <!-- Delete AVM folder, with a return navigation outcome parameter -->
          <action id="delete_folder_browse">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -59,6 +74,9 @@
          
          <!-- Submit AVM node -->
          <action id="submit">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
             <label-id>submit</label-id>
             <image>/images/icons/submit.gif</image>
             <action-listener>#{AVMBrowseBean.submitNode}</action-listener>
@@ -85,6 +103,9 @@
          
          <!-- Create AVM Content -->
          <action id="create_content">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
             <label-id>sandbox_create</label-id>
             <image>/images/icons/new_content.gif</image>
             <action>wizard:createWebContent</action>
@@ -92,6 +113,9 @@
          
          <!-- Create AVM folder -->
          <action id="create_folder">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
             <label-id>create_folder</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>dialog:createAvmFolder</action>
@@ -99,6 +123,9 @@
          
          <!-- Upload Content -->
          <action id="add_content">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
             <label-id>add_content</label-id>
             <image>/images/icons/add.gif</image>
             <action>addAvmContent</action>
@@ -107,6 +134,9 @@
          
          <!-- Update document -->
          <action id="update_file">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
             <label-id>update</label-id>
             <image>/images/icons/update.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>

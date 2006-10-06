@@ -78,7 +78,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
    @Override
    protected Node initEditableNode()
    {
-      return new Node(this.avmBrowseBean.getAvmNode().getNodeRef());
+      return new Node(this.avmBrowseBean.getAvmActionNode().getNodeRef());
    }
    
    @Override
@@ -170,7 +170,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       String name = this.editableNode.getName();
       String oldPath = AVMNodeConverter.ToAVMVersionPath(this.editableNode.getNodeRef()).getSecond();
       String newPath = oldPath.substring(0, oldPath.lastIndexOf('/') + 1) + name;
-      this.avmBrowseBean.setAvmNode(new AVMNode(this.avmService.lookup(-1, newPath)));
+      this.avmBrowseBean.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, newPath)));
       
       return outcome;
    }
@@ -194,7 +194,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       {
          return MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), 
-               new Object[] {this.avmBrowseBean.getAvmNode().getPath()});
+               new Object[] {this.avmBrowseBean.getAvmActionNode().getPath()});
       }
       else
       {

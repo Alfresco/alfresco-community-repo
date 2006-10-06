@@ -10,7 +10,7 @@
             <!-- a list of permissions to evaluate action against before checking other preconditions -->
             <permissions>
                <!-- each permission can be an Allow or Deny check -->
-               <permission allow="te">Write</permission>
+               <permission allow="true">Write</permission>
                <permission allow="false">AddChildren</permission>
             </permissions>
             <!-- the evaluator is a class implementing the org.alfresco.web.action.ActionEvaluator contract,
@@ -326,9 +326,6 @@
          
          <!-- Create XML content type -->
          <action id="create_form">
-            <permissions>
-               <permission allow="true">CreateChildren</permission>
-            </permissions>
             <label-id>create_form</label-id>
             <image>/images/icons/new_content.gif</image>
             <action>wizard:createForm</action>
@@ -356,9 +353,6 @@
          
          <!-- Create Website Wizard -->
          <action id="create_website_wizard">
-            <permissions>
-               <permission allow="true">CreateChildren</permission>
-            </permissions>
             <!-- TODO: check for role and in Websites folder --> 
             <label-id>create_website</label-id>
             <image>/images/icons/create_website.gif</image>

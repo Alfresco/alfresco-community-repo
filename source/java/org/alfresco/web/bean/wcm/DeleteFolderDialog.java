@@ -49,7 +49,7 @@ public class DeleteFolderDialog extends BaseDialogBean
          throws Exception
    {
       // get the content to delete
-      AVMNode node = this.avmBrowseBean.getAvmNode();
+      AVMNode node = this.avmBrowseBean.getAvmActionNode();
       if (node != null)
       {
          if (logger.isDebugEnabled())
@@ -101,6 +101,6 @@ public class DeleteFolderDialog extends BaseDialogBean
                "delete_avm_folder_confirm");
       
       return MessageFormat.format(fileConfirmMsg, 
-            new Object[] {this.avmBrowseBean.getAvmNode().getName()});
+            new Object[] {this.avmBrowseBean.getAvmActionNode().getName()});
    }
 }

@@ -28,11 +28,11 @@
   <script type="text/javascript">
     function upload_file(el)
     {
-    el.form.method = "post";
-    el.form.enctype = "multipart/form-data";
-    el.form.action = "<%= request.getContextPath() %>/uploadFileServlet";
-    el.form.submit();
-    return false;
+       el.form.method = "post";
+       el.form.enctype = "multipart/form-data";
+       el.form.action = "<%= request.getContextPath() %>/uploadFileServlet";
+       el.form.submit();
+       return false;
     }
   </script>
 </f:verbatim>
@@ -79,17 +79,16 @@ if (upload == null || upload.getFile() == null)
 }
 %>
     <h:graphicImage id="required_image_file_extension"
-                    value="/images/icons/required_field.gif" alt="Required Field" />
+                  value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="file_extension_output_text"
                   value="#{msg.extension_for_generated_assets}:"/>
-    <h:inputText id="file-extension" value="" 
-                 maxlength="10" size="10"/>
+    <h:inputText id="file-extension" value="shtml"
+                  maxlength="10" size="10"/>
   </h:panelGrid>
 
   <h:panelGroup id="step-2-panel-group" styleClass="mainSubText">
     <h:outputText id="step-2-output-text" value="2." />
-    <h:commandButton id="add-to-list-button" 
-	             value="#{msg.add_to_list_button}" 
+    <h:commandButton id="add-to-list-button" value="#{msg.add_to_list_button}" 
 		     actionListener="#{CreateXmlContentTypeWizard.addSelectedTemplateOutputMethod}" 
 		     styleClass="wizardButton" />
   </h:panelGroup>

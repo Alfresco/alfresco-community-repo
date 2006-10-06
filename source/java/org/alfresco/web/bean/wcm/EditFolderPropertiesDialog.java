@@ -77,7 +77,7 @@ public class EditFolderPropertiesDialog extends EditSpaceDialog
    @Override
    protected Node initEditableNode()
    {
-      return new Node(this.avmBrowseBean.getAvmNode().getNodeRef());
+      return new Node(this.avmBrowseBean.getAvmActionNode().getNodeRef());
    }
    
    @Override
@@ -154,7 +154,7 @@ public class EditFolderPropertiesDialog extends EditSpaceDialog
       String name = this.editableNode.getName();
       String oldPath = AVMNodeConverter.ToAVMVersionPath(this.editableNode.getNodeRef()).getSecond();
       String newPath = oldPath.substring(0, oldPath.lastIndexOf('/') + 1) + name;
-      this.avmBrowseBean.setAvmNode(new AVMNode(this.avmService.lookup(-1, newPath)));
+      this.avmBrowseBean.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, newPath)));
       
       return outcome;
    }

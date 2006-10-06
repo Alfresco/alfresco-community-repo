@@ -35,7 +35,7 @@ public class FolderDetailsBean extends AVMDetailsBean
    @Override
    public AVMNode getAvmNode()
    {
-      return this.avmBrowseBean.getAvmNode();
+      return this.avmBrowseBean.getAvmActionNode();
    }
    
    /**

@@ -66,6 +66,11 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
 
    /////////////////////////////////////////////////////////////////////////////
    
+   private static final String FILE_TEMPLATEOUTPUT = "template-output-method";
+
+   private static final String FILE_SCHEMA = "schema";
+
+
    /**
     * Simple wrapper class to represent a template output method
     */
@@ -204,8 +209,6 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
       this.schemaRootTagName = null;
       this.templateName = null;
       this.templateOutputMethods = new ArrayList<TemplateOutputMethodData>();
-      clearUpload("schema");
-      clearUpload("template-output-method");
    }
    
    @Override
@@ -275,7 +278,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     */
    public String removeUploadedSchemaFile()
    {
-      clearUpload("schema");
+      clearUpload(FILE_SCHEMA);
       
       // refresh the current page
       return null;
@@ -286,7 +289,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     */
    public String removeUploadedTemplateOutputMethodFile()
    {
-      clearUpload("template-output-method");
+      clearUpload(FILE_TEMPLATEOUTPUT);
       
       // refresh the current page
       return null;
@@ -369,7 +372,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     */
    public File getSchemaFile()
    {
-      return this.getFile("schema");
+      return this.getFile(FILE_SCHEMA);
    }
    
    /**
@@ -379,7 +382,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    {
       // try and retrieve the file and filename from the file upload bean
       // representing the file we previously uploaded.
-      return this.getFileName("schema");
+      return this.getFileName(FILE_SCHEMA);
    }
    
    /**
@@ -387,7 +390,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     */
    public String getTemplateOutputMethodFileName()
    {
-      return this.getFileName("template-output-method");
+      return this.getFileName(FILE_TEMPLATEOUTPUT);
    }
    
    /**
@@ -395,7 +398,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     */
    public File getTemplateOutputMethodFile()
    {
-      return this.getFile("template-output-method");
+      return this.getFile(FILE_TEMPLATEOUTPUT);
    }
 
    /**
@@ -490,12 +493,12 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    {
       // remove the file upload bean from the session
       FacesContext ctx = FacesContext.getCurrentInstance();
-      FileUploadBean fileBean = (FileUploadBean)
-      ctx.getExternalContext().getSessionMap().
-      get(FileUploadBean.getKey(id));
+      FileUploadBean fileBean =
+         (FileUploadBean)ctx.getExternalContext().getSessionMap().get(FileUploadBean.getKey(id));
       if (fileBean != null)
       {
          fileBean.setFile(null);
+         fileBean.setFileName(null);
       }
    }
 }

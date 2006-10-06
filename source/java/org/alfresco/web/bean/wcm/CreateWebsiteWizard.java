@@ -131,7 +131,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             {
                foundCurrentUser = true;
             }
-            if (ROLE_CONTENT_MANAGER.equals(userRole))
+            if (ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
             {
                managers.add(authority);
             }

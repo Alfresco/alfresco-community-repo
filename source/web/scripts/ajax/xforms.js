@@ -309,8 +309,8 @@ dojo.declare("alfresco.xforms.TextArea",
 	       {
 	         this.domNode = document.createElement("div");
 	         attach_point.appendChild(this.domNode);
-	         this.domNode.setAttribute("style", "height: 200px; border: solid 1px black;");
 	         this.domNode.setAttribute("id", this.id);
+	         this.domNode.style.height = "200px";
 	         this.domNode.innerHTML = this.getInitialValue() || "";
 	         tinyMCE.addMCEControl(this.domNode, this.id);
                  this.widget = this.domNode;
@@ -366,45 +366,45 @@ dojo.declare("alfresco.xforms.Select",
 	         var values = this.getValues();
 	         for (var i in values)
 	         {
-	       	 dojo.debug("values["+ i + "] = " + values[i].id + 
-	       		    ", " + values[i].label + ", " + values[i].value);
+                   dojo.debug("values["+ i + "] = " + values[i].id + 
+                              ", " + values[i].label + ", " + values[i].value);
 	         }
 	         var initial_value = this.getInitialValue();
 	         if (values.length <= 5)
 	         {
-	       	 for (var i in values)
-	       	 {
+                   for (var i = 0; i < values.length; i++)
+                   {
                      this.widget = document.createElement("span");
                      attach_point.appendChild(this.widget);
-	       	   var checkbox = document.createElement("input");
-	       	   checkbox.setAttribute("id", this.id + "_" + i + "-widget");
-	       	   checkbox.setAttribute("name", this.id + "_" + i + "-widget");
-	       	   checkbox.setAttribute("type", "checkbox");
-	       	   checkbox.setAttribute("value", values[i].value);
-	       	   if (values[i].value == initial_value)
-	       	     checkbox.setAttribute("checked", "true");
-	       	   dojo.event.connect(checkbox, "onclick", this, this._checkbox_clickHandler);
-	       	   this.widget.appendChild(checkbox);
-	       	   this.widget.appendChild(document.createTextNode(values[i].label));
-	       	 }
+                     var checkbox = document.createElement("input");
+                     checkbox.setAttribute("id", this.id + "_" + i + "-widget");
+                     checkbox.setAttribute("name", this.id + "_" + i + "-widget");
+                     checkbox.setAttribute("type", "checkbox");
+                     checkbox.setAttribute("value", values[i].value);
+                     if (values[i].value == initial_value)
+                       checkbox.setAttribute("checked", "true");
+                     dojo.event.connect(checkbox, "onclick", this, this._checkbox_clickHandler);
+                     this.widget.appendChild(checkbox);
+                     this.widget.appendChild(document.createTextNode(values[i].label));
+                   }
 	         }
 	         else
 	         {
-	       	 initial_value = initial_value ? initial_value.split(' ') : [];
-	       	 this.widget = document.createElement("select");
-	       	 this.widget.setAttribute("id", this.id + "-widget");
-	       	 this.widget.setAttribute("multiple", true);
-	       	 attach_point.appendChild(this.widget);
-	       	 for (var i in values)
-	       	 {
-	       	   var option = document.createElement("option");
-	       	   option.appendChild(document.createTextNode(values[i].label));
-	       	   option.setAttribute("value", values[i].value);
-	       	   if (initial_value.indexOf(values[i].value) != -1)
-	       	     option.setAttribute("selected", "true");
-	       	   this.widget.appendChild(option);
-	       	 }
-	       	 dojo.event.connect(this.widget, "onchange", this, this._list_changeHandler);
+                   initial_value = initial_value ? initial_value.split(' ') : [];
+                   this.widget = document.createElement("select");
+                   this.widget.setAttribute("id", this.id + "-widget");
+                   this.widget.setAttribute("multiple", true);
+                   attach_point.appendChild(this.widget);
+                   for (var i = 0; i < values.length; i++)
+                   {
+                     var option = document.createElement("option");
+                     option.appendChild(document.createTextNode(values[i].label));
+                     option.setAttribute("value", values[i].value);
+                     if (initial_value.indexOf(values[i].value) != -1)
+                       option.setAttribute("selected", "true");
+                     this.widget.appendChild(option);
+                   }
+                   dojo.event.connect(this.widget, "onchange", this, this._list_changeHandler);
 	         }
 	       },
                _list_changeHandler: function(event) 
@@ -448,38 +448,38 @@ dojo.declare("alfresco.xforms.Select1",
 	         var initial_value = this.getInitialValue();
 	         if (values.length <= 5)
 	         {
-	       	 for (var i in values)
-	       	 {
+                   for (var i = 0; i < values.length; i++)
+                   {
                      this.widget = document.createElement("span");
                      this.widget.style.width = "100%";
                      attach_point.appendChild(this.widget);
-	       	   var radio = document.createElement("input");
-	       	   radio.setAttribute("id", this.id + "-widget");
-	       	   radio.setAttribute("name", this.id + "-widget");
-	       	   radio.setAttribute("type", "radio");
-	       	   radio.setAttribute("value", values[i].value);
-	       	   if (values[i].value == initial_value)
-	       	     radio.setAttribute("checked", "true");
-	       	   dojo.event.connect(radio, "onclick", this, this._radio_clickHandler);
-	       	   this.widget.appendChild(radio);
-	       	   this.widget.appendChild(document.createTextNode(values[i].label));
-	       	 }
+                     var radio = document.createElement("input");
+                     radio.setAttribute("id", this.id + "-widget");
+                     radio.setAttribute("name", this.id + "-widget");
+                     radio.setAttribute("type", "radio");
+                     radio.setAttribute("value", values[i].value);
+                     if (values[i].value == initial_value)
+                       radio.setAttribute("checked", "true");
+                     dojo.event.connect(radio, "onclick", this, this._radio_clickHandler);
+                     this.widget.appendChild(radio);
+                     this.widget.appendChild(document.createTextNode(values[i].label));
+                   }
 	         }
 	         else
 	         {
                    this.widget = document.createElement("select");
-	       	 this.widget.setAttribute("id", this.id + "-widget");
-	       	 attach_point.appendChild(this.widget);
-	       	 for (var i in values)
-	       	 {
-	       	   var option = document.createElement("option");
-	       	   option.appendChild(document.createTextNode(values[i].label));
-	       	   option.setAttribute("value", values[i].value);
-	       	   if (values[i].value == initial_value)
-	       	     option.setAttribute("selected", "true");
-	       	   this.widget.appendChild(option);
-	       	 }
-	       	 dojo.event.connect(this.widget, "onchange", this, this._combobox_changeHandler);
+                   this.widget.setAttribute("id", this.id + "-widget");
+                   attach_point.appendChild(this.widget);
+                   for (var i = 0; i < values.length; i++)
+                   {
+                     var option = document.createElement("option");
+                     option.appendChild(document.createTextNode(values[i].label));
+                     option.setAttribute("value", values[i].value);
+                     if (values[i].value == initial_value)
+                       option.setAttribute("selected", "true");
+                     this.widget.appendChild(option);
+                   }
+                   dojo.event.connect(this.widget, "onchange", this, this._combobox_changeHandler);
 	         }
 	       },
                _combobox_changeHandler: function(event) 
@@ -507,9 +507,10 @@ dojo.declare("alfresco.xforms.Checkbox",
 	         this.widget = document.createElement("input");
 	         this.widget.setAttribute("type", "checkbox");
 	         this.widget.setAttribute("id", this.id + "-widget");
-	         if (initial_value)
-	       	 this.widget.setAttribute("checked", true);
 	         attach_point.appendChild(this.widget);
+
+	         if (initial_value)
+                   this.widget.setAttribute("checked", true);
 	         dojo.event.connect(this.widget, "onclick", this, this._checkbox_clickHandler);
 	       },
                _checkbox_clickHandler: function(event)
@@ -704,7 +705,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	           { src: "arrow_down", action: this._moveRepeatItemDown_handler }, 
 	           { src: "minus", action: this._removeRepeatItem_handler }
 	         ];
-	         for (var i in images)
+	         for (var i = 0; i < images.length; i++)
 	         {
 	           var img = document.createElement("img");
 	           img.setAttribute("src", (WEBAPP_CONTEXT + "/images/icons/" + 
@@ -1401,7 +1402,11 @@ function _get_ajax_loader_element()
     return result;
   result = document.createElement("div");
   result.setAttribute("id", "alf-ajax-loader");
-  result.setAttribute("style", "position: absolute; background-color: red; color: white; top: 0px; right: 0px;");
+  result.style.position = "absolute";
+  result.style.right = "0px";
+  result.style.top = "0px";
+  result.style.color = "white";
+  result.style.backgroundColor = "red";
   dojo.style.hide(result);
   document.body.appendChild(result);
   return result;

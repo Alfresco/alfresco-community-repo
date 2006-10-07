@@ -24,6 +24,13 @@
 <%@ page import="org.alfresco.web.bean.wcm.CreateWebContentWizard" %>
 <%@ page import="org.w3c.dom.Document" %>
 
+<script type="text/javascript">
+function _xforms_getSubmitButtons()
+{
+  return [ document.getElementById("wizard:next-button"),
+           document.getElementById("wizard:finish-button") ];
+}
+</script>
 <%
 final CreateWebContentWizard wiz = (CreateWebContentWizard)
     Application.getWizardManager().getBean();
@@ -45,17 +52,10 @@ final InstanceData instanceData = new InstanceData()
       }
    }
     
-    public void setContent(final Document d)
-    {
-        wiz.setContent(ts.writeXMLToString(d));
-    }
+   public void setContent(final Document d)
+   {
+      wiz.setContent(ts.writeXMLToString(d));
+   }
 };
 tim.generate(instanceData, tt, out);
 %>
-<script type="text/javascript">
-dojo.addOnLoad(function()
-{
-addSubmitHandlerToButton(document.getElementById("wizard:next-button"));
-addSubmitHandlerToButton(document.getElementById("wizard:finish-button"));
-});
-</script>

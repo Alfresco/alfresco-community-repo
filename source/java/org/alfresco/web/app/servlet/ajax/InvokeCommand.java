@@ -64,7 +64,6 @@ public class InvokeCommand extends BaseAjaxCommand
       // therefore, for now we will always return a content type of text/html.
       // In the future we may use annotations on the method to be called to specify what content
       // type should be used for the response.
-      
       final OutputStream os = response.getOutputStream();
       final UIViewRoot viewRoot = facesContext.getViewRoot();
       final RenderKitFactory renderFactory = (RenderKitFactory)FactoryFinder.
@@ -74,7 +73,8 @@ public class InvokeCommand extends BaseAjaxCommand
       final ResponseWriter writer = renderKit.createResponseWriter(
             new OutputStreamWriter(os), MimetypeMap.MIMETYPE_XML, "UTF-8");
       facesContext.setResponseWriter(writer);
-      response.setContentType(writer.getContentType());
+      // must be text/xml otherwise IE doesn't parse the response properly into responseXML
+      response.setContentType(MimetypeMap.MIMETYPE_XML);
       
       // create the JSF binding expression
       final String bindingExpr = makeBindingExpression(expression);

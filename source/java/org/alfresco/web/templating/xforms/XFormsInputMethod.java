@@ -76,14 +76,19 @@ public class XFormsInputMethod
 
 	// a script with config information and globals.
 	Element e = result.createElement("script");
-	e.appendChild(result.createTextNode("djConfig = { isDebug: " + LOGGER.isDebugEnabled() +
+        e.setAttribute("type", "text/javascript");
+	e.appendChild(result.createTextNode("\ndjConfig = { isDebug: " + LOGGER.isDebugEnabled() +
 					    " };\n" +
 					    "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
 	div.appendChild(e);
 	final String[] scripts = 
 	{
-	    "/scripts/tiny_mce/tiny_mce_src.js",
-	    "/scripts/ajax/dojo/dojo.js",
+           "/scripts/tiny_mce/" + (LOGGER.isDebugEnabled() 
+                                   ? "tiny_mce_src.js" 
+                                   : "tiny_mce.js"),
+	    "/scripts/ajax/dojo/" + (LOGGER.isDebugEnabled() 
+                                     ? "dojo.js.uncompressed.js" 
+                                     : "dojo.js"),
 	    "/scripts/ajax/xforms.js"
 	};
 	    

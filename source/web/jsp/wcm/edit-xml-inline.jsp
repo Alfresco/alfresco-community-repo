@@ -63,6 +63,12 @@ final InstanceData instanceData = new InstanceData()
 %>
 
 <r:page titleId="title_edit_text_inline">
+<script type="text/javascript">
+function _xforms_getSubmitButtons()
+{
+  return [ document.getElementById("edit-file:save-button") ];
+}
+</script>
 
 <f:view>
    
@@ -186,12 +192,4 @@ final InstanceData instanceData = new InstanceData()
     </h:form>
     
 </f:view>
-<script type="text/javascript">
-dojo.addOnLoad(function()
-{
-  addSubmitHandlerToButton(document.getElementById("edit-file:save-button"));
-});
-	
-</script>
-
 </r:page>

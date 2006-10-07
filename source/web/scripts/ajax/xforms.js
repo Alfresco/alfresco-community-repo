@@ -567,7 +567,8 @@ dojo.declare("alfresco.xforms.Group",
 	       
 	         child.domContainer = document.createElement("div");
 		 child.domContainer.setAttribute("id", child.id + "-domContainer");
-	         child.domContainer.setAttribute("style", "border: 0px solid green; margin-top: 2px; margin-bottom: 2px;");
+	         child.domContainer.style.marginTop = "2px";
+	         child.domContainer.style.marginBottom = "2px";
 		 child.domContainer.style.position = "relative";
 		 child.domContainer.style.left = "0px";
 		 child.domContainer.style.top = "0px";
@@ -591,7 +592,8 @@ dojo.declare("alfresco.xforms.Group",
 	         {
 		   var requiredImage = document.createElement("img");
 		   requiredImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/required_field.gif");
-		   requiredImage.setAttribute("style", "margin: 0px 5px 0px 5px;");
+                   requiredImage.style.marginLeft = "5px";
+                   requiredImage.style.marginRight = "5px";
 		   child.domContainer.appendChild(requiredImage);
 	       	 
 		   if (!child.isRequired())
@@ -859,7 +861,9 @@ dojo.declare("alfresco.xforms.Repeat",
 	         //used only for positioning the label accurately
 	         var requiredImage = document.createElement("img");
 	         requiredImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/required_field.gif");
-	         requiredImage.setAttribute("style", "margin: 0px 5px 0px 5px;");
+	         requiredImage.style.marginLeft = "5px";
+                 requiredImage.style.marginRight = "5px";
+                 
 	         d.appendChild(requiredImage);
 //	         requiredImage.style.position = "relative";
 //	         requiredImage.style.top = "0px";
@@ -1376,7 +1380,10 @@ function _show_error(msg)
       errorDiv = document.createElement("div");
       errorDiv.setAttribute("id", "alf-xforms-error");
       errorDiv.setAttribute("class", "infoText statusErrorText");
-      errorDiv.setAttribute("style", "padding: 2px; border: 1px solid #003366");
+      errorDiv.style.padding = "2px";
+      errorDiv.style.borderColor = "#003366";
+      errorDiv.style.borderWidth = "1px";
+      errorDiv.style.borderStyle = "solid";
       var alfUI = document.getElementById("alf-ui");
       dojo.dom.prependChild(errorDiv, alfUI);
     }

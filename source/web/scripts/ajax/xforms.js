@@ -1379,7 +1379,7 @@ function _show_error(msg)
     {
       errorDiv = document.createElement("div");
       errorDiv.setAttribute("id", "alf-xforms-error");
-      errorDiv.setAttribute("class", "infoText statusErrorText");
+      errorDiv.setAttribute(document.all ? "className" : "class", "infoText statusErrorText");
       errorDiv.style.padding = "2px";
       errorDiv.style.borderColor = "#003366";
       errorDiv.style.borderWidth = "1px";

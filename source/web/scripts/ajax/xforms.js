@@ -448,21 +448,23 @@ dojo.declare("alfresco.xforms.Select1",
 	         var initial_value = this.getInitialValue();
 	         if (values.length <= 5)
 	         {
+                   this.widget = document.createElement("span");
+                   this.widget.style.width = "100%";
+                   attach_point.appendChild(this.widget);
                    for (var i = 0; i < values.length; i++)
                    {
-                     this.widget = document.createElement("span");
-                     this.widget.style.width = "100%";
-                     attach_point.appendChild(this.widget);
                      var radio = document.createElement("input");
                      radio.setAttribute("id", this.id + "-widget");
                      radio.setAttribute("name", this.id + "-widget");
                      radio.setAttribute("type", "radio");
+                     this.widget.appendChild(radio);
+                     this.widget.appendChild(document.createTextNode(values[i].label));
+
                      radio.setAttribute("value", values[i].value);
                      if (values[i].value == initial_value)
                        radio.setAttribute("checked", "true");
+
                      dojo.event.connect(radio, "onclick", this, this._radio_clickHandler);
-                     this.widget.appendChild(radio);
-                     this.widget.appendChild(document.createTextNode(values[i].label));
                    }
 	         }
 	         else
@@ -473,11 +475,12 @@ dojo.declare("alfresco.xforms.Select1",
                    for (var i = 0; i < values.length; i++)
                    {
                      var option = document.createElement("option");
+                     this.widget.appendChild(option);
                      option.appendChild(document.createTextNode(values[i].label));
                      option.setAttribute("value", values[i].value);
                      if (values[i].value == initial_value)
                        option.setAttribute("selected", "true");
-                     this.widget.appendChild(option);
+
                    }
                    dojo.event.connect(this.widget, "onchange", this, this._combobox_changeHandler);
 	         }
@@ -485,12 +488,20 @@ dojo.declare("alfresco.xforms.Select1",
                _combobox_changeHandler: function(event) 
 	       { 
 	         this.xform.setXFormsValue(this.id,
-	       				 event.target.options[event.target.selectedIndex].value);
+                                           event.target.options[event.target.selectedIndex].value);
 	       },
 	       _radio_clickHandler: function(event)
 	       { 
-	         this.xform.setXFormsValue(this.id,
-	       				 event.target.value);
+                 if (!event.target.checked)
+                 {
+                   var all_radios = event.target.parentNode.childNodes;
+                   for (var i = 0; i < all_radios.length; i++)
+                   {
+                     if (all_radios[i].name == event.target.name)
+                       all_radios[i].checked = event.target == all_radios[i];
+                   }
+                 }
+	         this.xform.setXFormsValue(this.id, event.target.value);
 	       }
 	     });
 

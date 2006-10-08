@@ -37,24 +37,15 @@
    
    function validate()
    {
-//      if (finishButtonPressed)
-//      {
-//         finishButtonPressed = false;
-//         return validateName(document.getElementById("wizard:wizard-body:file-name"), 
-//                             '</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>',
-//                             true);
-//      }
-//      else
-//      {
-//         return true;
-//      }
 	return true;
    }
 
    function upload_file(el)
    {
      el.form.method = "post";
-     el.form.enctype = "multipart/form-data";
+     el.form.encType = "multipart/form-data";
+     // for IE
+     el.form.encoding = "multipart/form-data";
      el.form.action = "<%= request.getContextPath() %>/uploadFileServlet";
      el.form.submit();
    }

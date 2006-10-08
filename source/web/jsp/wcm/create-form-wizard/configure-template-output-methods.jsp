@@ -30,6 +30,8 @@
     {
        el.form.method = "post";
        el.form.enctype = "multipart/form-data";
+       // for IE
+       el.form.encoding = "multipart/form-data";
        el.form.action = "<%= request.getContextPath() %>/uploadFileServlet";
        el.form.submit();
        return false;

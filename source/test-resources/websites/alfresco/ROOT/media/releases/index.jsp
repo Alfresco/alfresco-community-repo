@@ -36,8 +36,8 @@
   </style>
   </head>
   <body>
-  <script language="JavaScript" type="text/javascript" src="/assets/js/controls.js"></script>
-  <script language="JavaScript" type="text/javascript" src="/assets/js/search.js" ></script>
+  <script language="JavaScript" type="text/javascript" src="/assets/js/controls.js">&amp;nbsp;</script>
+  <script language="JavaScript" type="text/javascript" src="/assets/js/search.js">&amp;nbsp;</script>
   <div id="container">
   <div id="masthead">
   <!-- Search -->

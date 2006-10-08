@@ -185,6 +185,10 @@ dojo.declare("alfresco.xforms.Widget",
                {
 //                 this.domContainer.style.backgroundColor =  
 //                   (!this.valid ? "yellow" : this.modified ? "lightgreen" : "white");
+               },
+               _destroy: function()
+               {
+                 dojo.debug("destroying " + this.id);
                }
 	     });
 
@@ -314,7 +318,13 @@ dojo.declare("alfresco.xforms.TextArea",
 	         this.domNode.innerHTML = this.getInitialValue() || "";
 	         tinyMCE.addMCEControl(this.domNode, this.id);
                  this.widget = this.domNode;
-	       }
+	       },
+               _destroy: function()
+               {
+                 this.inherited("_destroy", []);
+                 dojo.debug("removing mce control " + this.id);
+                 tinyMCE.removeMCEControl(this.id);
+               }
 	     });
 
 dojo.declare("alfresco.xforms.AbstractSelectWidget",
@@ -646,19 +656,28 @@ dojo.declare("alfresco.xforms.Group",
 	       {
 	         var child = this.getChildAt(position);
 	         if (!child)
-                   throw new Error("unabled to find child at " + position);
+                   throw new Error("unable to find child at " + position);
 	         this.children.splice(position, 1);
 	         child.domContainer.group = this;
 	         var anim = dojo.lfx.html.fadeOut(child.domContainer, 500);
 	         anim.onEnd = function()
                    {
                      child.domContainer.style.display = "none";
+                     child._destroy();
                      dojo.dom.removeChildren(child.domContainer);
                      dojo.dom.removeNode(child.domContainer);
                      child.domContainer.group._updateDisplay();
                    };
 	         anim.play();
 	       },
+               _destroy: function()
+               {
+                 this.inherited("_destroy", []);
+                 for (var i = 0; i < this.children.length; i++)
+                 {
+                   this.children[i]._destroy();
+                 }
+               },
 	       isIndented: function()
                {
 	       	 return false && this.parent != null;
@@ -974,7 +993,7 @@ dojo.declare("alfresco.xforms.Submit",
 		     {
 		       dojo.debug("triggering submit from handler " + event.target.id);
 		       dojo.event.browser.stopEvent(event);
-		       tinyMCE.triggerSave();
+		       tinyMCE.triggerSave(true, false);
 		       _hide_errors();
 		       xform.submitWidget.currentButton = event.target;
 		       xform.submitWidget.widget.buttonClick(); 

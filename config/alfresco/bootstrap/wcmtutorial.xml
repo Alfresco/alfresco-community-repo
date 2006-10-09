@@ -1,0 +1,25 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+
+<!--
+	<cm:folder>
+		<app:uifacets />
+		<cm:name>${tutorial.space.name}</cm:name>
+		<cm:description>${tutorial.space.description}</cm:description>
+		<app:icon>space-icon-doc</app:icon>
+		<cm:contains>
+-->
+			<cm:content>
+				<app:uifacets />
+				<cm:name>WCM-Tutorial.pdf</cm:name>
+				<cm:title>WCM-Tutorial</cm:title>
+				<cm:description>Introduction to WCM capabilities.</cm:description>
+				<cm:content>contentUrl=classpath:alfresco/bootstrap/WCM-Tutorial.pdf|mimetype=application/pdf|size=|encoding=</cm:content>
+			</cm:content>
+<!--
+		</cm:contains>
+	</cm:folder>
+-->
+
+</view:view>

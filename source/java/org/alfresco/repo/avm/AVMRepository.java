@@ -879,10 +879,10 @@ public class AVMRepository
             {
                 fLookupCount.set(count + 1);
             }
-            if (fLookupCount.get() > 50)
-            {
-                throw new AVMCycleException("Cycle in lookup.");
-            }
+//            if (fLookupCount.get() > 50)
+//            {
+//                throw new AVMCycleException("Cycle in lookup.");
+//            }
             String [] pathParts = SplitPath(path);
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
@@ -1129,10 +1129,10 @@ public class AVMRepository
      */
     public Lookup lookupDirectory(int version, String path)
     {
-        if (fLookupCount.get() > 50)
-        {
-            throw new AVMCycleException("Cycle in lookup.");
-        }
+//        if (fLookupCount.get() > 50)
+//        {
+//            throw new AVMCycleException("Cycle in lookup.");
+//        }
         String [] pathParts = SplitPath(path);
         AVMStore store = getAVMStoreByName(pathParts[0]);
         if (store == null)

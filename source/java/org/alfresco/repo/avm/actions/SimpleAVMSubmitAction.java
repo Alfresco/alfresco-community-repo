@@ -116,7 +116,7 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         List<AVMDifference> diffs = 
             fAVMSyncService.compare(version, path, -1, avmDest);
         // Do the update.
-        fAVMSyncService.update(diffs, true, true, false, false);
+        fAVMSyncService.update(diffs, false, false, true, true);
         // Cleanup by flattening the source relative to the destination.
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");

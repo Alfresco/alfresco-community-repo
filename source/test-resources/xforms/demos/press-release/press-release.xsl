@@ -56,7 +56,7 @@
 	  </div>
 	  <div id="topnav">
 	    <ul id="nav">
-	      <li id="home"><a href="/index.html" accesskey="h"  ><span>Home</span></a></li>
+	      <li id="home"><a href="/index.jsp" accesskey="h"  ><span>Home</span></a></li>
 	      <li id="products"><a href="/products/index.html" accesskey="p"  ><span>Products</span></a></li>
 	      <li id="services"><a href="/services/support/index.html" accesskey="s"  ><span>Services</span></a></li>
 	      <li id="customers"><a href="/customers/index.html" accesskey="c"  ><span>Customers</span></a></li>
@@ -124,7 +124,7 @@
 	    </div>
 	    <div id="footer-links">
 	      <p>
-		<a href="/index.html">Home</a> | 
+		<a href="/index.jsp">Home</a> | 
 		<a href="/legal/index.html">Legal</a> | 
 		<a href="/privacy/index.html">Privacy</a> | 
 		<a href="/accessibility/index.html">Accessibility</a> | 

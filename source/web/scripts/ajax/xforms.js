@@ -44,13 +44,14 @@ dojo.declare("alfresco.xforms.Widget",
   	       {
 		 this.xform = xform;
 		 this.node = node;
-//XXXareibl this has to come back
+//XXXarielb this has to come back
 //		 this.node.widget = this;
 		 this.id = this.node.getAttribute("id");
 		 this.modified = false;
 		 this.valid = true;
 	       },
 	       node: null,
+               labelNode: null,
 	       parent: null,
 	       domContainer: null,
 	       _getBinding: function()
@@ -78,12 +79,12 @@ dojo.declare("alfresco.xforms.Widget",
                {
                  var result = true;
                  if (!this.valid)
-                   result = false;
-                 else if (!this.modified && 
-                          this.isRequired() && 
-                          this.getInitialValue() == null)
-                   result = false;
-                 return result;
+                   return false;
+                 if (!this.modified && this.isRequired() && this.getInitialValue() == null)
+                   return false;
+                 if (this.isRequired() && this.getValue() == null)
+                   return false;
+                 return true;
                },
                getDepth: function()
                {
@@ -141,7 +142,7 @@ dojo.declare("alfresco.xforms.Widget",
                },
     	       _getAlertNode: function()
                {
-                 var labels = this.node.getElementsByTagName("alert");
+                 var labels = _getElementsByTagNameNS(this.node, XFORMS_NS, XFORMS_NS_PREFIX, "alert");
                  for (var i = 0; i < labels.length; i++)
                  {
                    dojo.debug("parent " + labels[i].parentNode.nodeName + 
@@ -163,23 +164,14 @@ dojo.declare("alfresco.xforms.Widget",
                },
                showAlert: function()
                {
-                 if (this.alertDiv)
-                   return;
-                 this.alertDiv = document.createElement("div");
-                 this.alertDiv.setAttribute("id", this.id + "-alert");
-                 this.alertDiv.appendChild(document.createTextNode(this.getAlert()));
-                 this.domContainer.parentNode.insertBefore(this.alertDiv, this.domContainer);
-                 this.alertDiv.setAttribute("style", "color:red; position: relative; top: 0px; left: 0px;");
-                 this.widget.style.borderColor = "red";
+                 if (this.labelNode._backupColor != "red")
+                   this.labelNode._backupColor = this.labelNode.style.color;
+                 this.labelNode.style.color = "red";
                },
                hideAlert: function()
                {
-                 if (this.alertDiv)
-                 {
-                   dojo.dom.removeNode(this.alertDiv);
-                   this.alertDiv = null;
-                   this.widget.style.borderColor = "black";
-                 }
+                 if (this.labelNode.style.color == "red")
+                   this.labelNode.style.color = this.labelNode._backupColor;
                },
                _updateDisplay: function()
                {
@@ -232,7 +224,9 @@ dojo.declare("alfresco.xforms.DatePicker",
 	       },
 	       getValue: function()
 	       {
-	         return this.widget.value;
+	         return (this.widget.value == null || this.widget.value.length == 0
+                         ? null
+                         : this.widget.value);
 	       },
 	       _dateTextBox_focusHandler: function(event)
                {
@@ -259,15 +253,6 @@ dojo.declare("alfresco.xforms.TextField",
 	       {
 	         this.inherited("initializer", [ xform, node ]);
 	       },
-               isValidForSubmit: function()
-               {
-                 var result = this.inherited("isValidForSubmit", []);
-                 if (!result)
-                   return false;
-                 if (this.isRequired() && this.getValue() == null)
-                   return false;
-                 return true;
-               },
 	       render: function(attach_point)
                {
 	         var initial_value = this.getInitialValue() || "";
@@ -319,6 +304,10 @@ dojo.declare("alfresco.xforms.TextArea",
 	         tinyMCE.addMCEControl(this.domNode, this.id);
                  this.widget = this.domNode;
 	       },
+               getValue: function()
+               {
+                 return tinyMCE.getContent(this.id);
+               },
                _destroy: function()
                {
                  this.inherited("_destroy", []);
@@ -391,8 +380,11 @@ dojo.declare("alfresco.xforms.Select",
                      checkbox.setAttribute("name", this.id + "_" + i + "-widget");
                      checkbox.setAttribute("type", "checkbox");
                      checkbox.setAttribute("value", values[i].value);
-                     if (values[i].value == initial_value)
+                     if (initial_value.indexOf(values[i].value))
+                     {
+                       this._selectedValues.push(values[i].value);
                        checkbox.setAttribute("checked", "true");
+                     }
                      dojo.event.connect(checkbox, "onclick", this, this._checkbox_clickHandler);
                      this.widget.appendChild(checkbox);
                      this.widget.appendChild(document.createTextNode(values[i].label));
@@ -411,32 +403,39 @@ dojo.declare("alfresco.xforms.Select",
                      option.appendChild(document.createTextNode(values[i].label));
                      option.setAttribute("value", values[i].value);
                      if (initial_value.indexOf(values[i].value) != -1)
+                     {
+                       this._selectedValues.push(values[i].value);
                        option.setAttribute("selected", "true");
+                     }
                      this.widget.appendChild(option);
                    }
                    dojo.event.connect(this.widget, "onchange", this, this._list_changeHandler);
 	         }
 	       },
+               getValue: function()
+               {
+                 return this._selectedValues.join(" ");
+               },
                _list_changeHandler: function(event) 
 	       { 
-	       	 var selected = [];
+	       	 this._selectedValues = [];
 	       	 for (var i = 0; i < event.target.options.length; i++)
 	       	 {
 	       	   if (event.target.options[i].selected)
-	       	     selected.push(event.target.options[i].value);
+	       	     this._selectedValues.push(event.target.options[i].value);
 	       	 }
-	       	 this.xform.setXFormsValue(this.id, selected.join(" "));
+	       	 this.xform.setXFormsValue(this.id, this._selectedValues.join(" "));
 	       },
 	       _checkbox_clickHandler: function(event)
 	       { 
-	         var selected = [];
+	         this._selectedValues = [];
 	         for (var i = 0; i < 5; i++)
 	         {
-	       	 var checkbox = document.getElementById(this.id + "_" + i + "-widget");
-	       	 if (checkbox && checkbox.checked)
-	       	   selected.push(checkbox.value);
+                   var checkbox = document.getElementById(this.id + "_" + i + "-widget");
+                   if (checkbox && checkbox.checked)
+                     this._selectedValues.push(checkbox.value);
 	         }
-	         this.xform.setXFormsValue(this.id, selected.join(" "));
+	         this.xform.setXFormsValue(this.id, this._selectedValues.join(" "));
 	       }
 	     });
 
@@ -452,30 +451,36 @@ dojo.declare("alfresco.xforms.Select1",
 	         var values = this.getValues();
 	         for (var i in values)
 	         {
-	       	 dojo.debug("values["+ i + "] = " + values[i].id + 
-	       		    ", " + values[i].label + ", " + values[i].value);
+                   dojo.debug("values["+ i + "] = " + values[i].id + 
+                              ", " + values[i].label + ", " + values[i].value);
 	         }
 	         var initial_value = this.getInitialValue();
 	         if (values.length <= 5)
 	         {
-                   this.widget = document.createElement("span");
+                   this.widget = document.createElement("div");
                    this.widget.style.width = "100%";
                    attach_point.appendChild(this.widget);
                    for (var i = 0; i < values.length; i++)
                    {
+                     var radio_div = document.createElement("div");
+                     radio_div.style.lineHeight = "16px";
+                     this.widget.appendChild(radio_div);
                      var radio = document.createElement("input");
                      radio.setAttribute("id", this.id + "-widget");
                      radio.setAttribute("name", this.id + "-widget");
                      radio.setAttribute("type", "radio");
-                     this.widget.appendChild(radio);
-                     this.widget.appendChild(document.createTextNode(values[i].label));
+                     radio_div.appendChild(radio);
+                     radio_div.appendChild(document.createTextNode(values[i].label));
 
                      radio.setAttribute("value", values[i].value);
                      if (values[i].value == initial_value)
+                     {
+                       this._selectedValue = initial_value;
                        radio.setAttribute("checked", "true");
-
+                     }
                      dojo.event.connect(radio, "onclick", this, this._radio_clickHandler);
                    }
+                   this.widget.style.height = this.widget.offsetHeight + "px";
 	         }
 	         else
 	         {
@@ -489,28 +494,35 @@ dojo.declare("alfresco.xforms.Select1",
                      option.appendChild(document.createTextNode(values[i].label));
                      option.setAttribute("value", values[i].value);
                      if (values[i].value == initial_value)
+                     {
+                       this._selectedValue = initial_value;
                        option.setAttribute("selected", "true");
-
+                     }
                    }
                    dojo.event.connect(this.widget, "onchange", this, this._combobox_changeHandler);
 	         }
 	       },
+               getValue: function()
+               {
+                 return this._selectedValue;
+               },
                _combobox_changeHandler: function(event) 
 	       { 
-	         this.xform.setXFormsValue(this.id,
-                                           event.target.options[event.target.selectedIndex].value);
+                 this._selectedValue = event.target.options[event.target.selectedIndex].value;
+	         this.xform.setXFormsValue(this.id, this._selectedValue);
 	       },
 	       _radio_clickHandler: function(event)
 	       { 
                  if (!event.target.checked)
                  {
-                   var all_radios = event.target.parentNode.childNodes;
+                   var all_radios = this.widget.getElementsByTagName("input");
                    for (var i = 0; i < all_radios.length; i++)
                    {
                      if (all_radios[i].name == event.target.name)
                        all_radios[i].checked = event.target == all_radios[i];
                    }
                  }
+                 this._selectedValue = event.target.value;
 	         this.xform.setXFormsValue(this.id, event.target.value);
 	       }
 	     });
@@ -534,6 +546,10 @@ dojo.declare("alfresco.xforms.Checkbox",
                    this.widget.setAttribute("checked", true);
 	         dojo.event.connect(this.widget, "onclick", this, this._checkbox_clickHandler);
 	       },
+               getValue: function()
+               {
+                 return this.widget.checked;
+               },
                _checkbox_clickHandler: function(event)
 	       {
 	         this.xform.setXFormsValue(this.id, this.widget.checked);
@@ -622,8 +638,9 @@ dojo.declare("alfresco.xforms.Group",
 		   var label = child._getLabelNode();
 		   if (label)
 		   {
-		     var labelNode = document.createTextNode(dojo.dom.textContent(label));
-		     child.domContainer.appendChild(labelNode);
+                     child.labelNode = document.createElement("span");
+                     child.domContainer.appendChild(child.labelNode);
+                     child.labelNode.appendChild(document.createTextNode(dojo.dom.textContent(label)));
 		   }
 	         }
 	         var contentDiv = document.createElement("div");
@@ -704,7 +721,21 @@ dojo.declare("alfresco.xforms.Group",
 	         {
                    this.children[i]._updateDisplay();
 	         }
-	       }
+	       },
+               showAlert: function()
+               {
+                 for (var i = 0; i < this.children.length; i++)
+                 {
+                   this.children[i].showAlert();
+                 }
+               },
+               hideAlert: function()
+               {
+                 for (var i = 0; i < this.children.length; i++)
+                 {
+                   this.children[i].hideAlert();
+                 }
+               }
 	     });
 
 dojo.declare("alfresco.xforms.Repeat",
@@ -1016,6 +1047,7 @@ dojo.declare("alfresco.xforms.Submit",
 	       _clickHandler: function(event)
 	       {
 	         this.done = false;
+                 _hide_errors();
 	         this.xform.fireAction(this.id);
 	       }
 	     });
@@ -1335,15 +1367,16 @@ dojo.declare("alfresco.xforms.XForm",
 	               break;
 	             case "xforms-submit-error":
 	               var invalid = this.rootWidget.getWidgetsInvalidForSubmit();
-	               var msg = "Please provide values for all required fields.";
-//	               msg += "<br/><ul>";
+	               _show_error(document.createTextNode("Please provide values for all required fields."));
+                       var error_list = document.createElement("ul");
 	               for (var j = 0; j < invalid.length; j++)
 	               {
+                         var error_item = document.createElement("li");
+                         error_item.appendChild(document.createTextNode(invalid[j].getAlert()));
+                         error_list.appendChild(error_item);
                          invalid[j].showAlert();
-//	                 msg += "<li>" + invalid[j].getAlert() + "</li>";
 	               }
-//	               msg += "</ul>";
-	               _show_error(msg);
+	               _show_error(error_list);
 	               break;
 	             default:
 	             {
@@ -1389,7 +1422,7 @@ function create_ajax_request(xform, serverMethod, methodArgs, load, error)
   result.error = error || function(type, e)
   {
     dojo.debug("error [" + type + "] " + e.message);
-    _show_error(e.message);
+    _show_error(document.createTextNode(e.message));
     ajax_request_load_handler(this);
   };
   return result;
@@ -1399,7 +1432,10 @@ function _hide_errors()
 {
   var errorDiv = document.getElementById("alf-xforms-error");
   if (errorDiv)
+  {
+    dojo.dom.removeChildren(errorDiv);
     errorDiv.style.display = "none";
+  }
 }
 
 function _show_error(msg)
@@ -1418,12 +1454,10 @@ function _show_error(msg)
       dojo.dom.prependChild(errorDiv, alfUI);
     }
     if (errorDiv.style.display == "block")
-      errorDiv.innerHTML = errorDiv.innerHTML + "<br/>" + msg;
+      errorDiv.appendChild(document.createElement("br"));
     else
-    {
-      errorDiv.innerHTML = msg;
       errorDiv.style.display = "block";
-    }
+    errorDiv.appendChild(msg);
 }
 
 function send_ajax_request(req)

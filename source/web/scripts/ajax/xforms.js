@@ -77,7 +77,6 @@ dojo.declare("alfresco.xforms.Widget",
                },
                isValidForSubmit: function()
                {
-                 var result = true;
                  if (!this.valid)
                    return false;
                  if (!this.modified && this.isRequired() && this.getInitialValue() == null)
@@ -264,6 +263,9 @@ dojo.declare("alfresco.xforms.TextField",
                  this.widget.setAttribute("type", "text");
                  this.widget.setAttribute("id", this.id + "-widget");
                  this.widget.setAttribute("value", initial_value);
+                 if (this.xform.getType(this.node) == "string")
+                   this.widget.style.width = "100%";
+
                  this.domNode.appendChild(this.widget);
 //	         this.widget = dojo.widget.createWidget("ValidationTextBox", 
 //	          				      {
@@ -369,6 +371,8 @@ dojo.declare("alfresco.xforms.Select",
                               ", " + values[i].label + ", " + values[i].value);
 	         }
 	         var initial_value = this.getInitialValue();
+                 initial_value = initial_value ? initial_value.split(' ') : [];
+                 this._selectedValues = [];
 	         if (values.length <= 5)
 	         {
                    for (var i = 0; i < values.length; i++)
@@ -380,7 +384,7 @@ dojo.declare("alfresco.xforms.Select",
                      checkbox.setAttribute("name", this.id + "_" + i + "-widget");
                      checkbox.setAttribute("type", "checkbox");
                      checkbox.setAttribute("value", values[i].value);
-                     if (initial_value.indexOf(values[i].value))
+                     if (initial_value.indexOf(values[i].value) != -1)
                      {
                        this._selectedValues.push(values[i].value);
                        checkbox.setAttribute("checked", "true");
@@ -392,7 +396,6 @@ dojo.declare("alfresco.xforms.Select",
 	         }
 	         else
 	         {
-                   initial_value = initial_value ? initial_value.split(' ') : [];
                    this.widget = document.createElement("select");
                    this.widget.setAttribute("id", this.id + "-widget");
                    this.widget.setAttribute("multiple", true);
@@ -848,9 +851,9 @@ dojo.declare("alfresco.xforms.Repeat",
 	       swapChildren: function(fromIndex, toIndex)
 	       {
 	         dojo.debug(this.id + ".swapChildren(" + fromIndex + 
-	          	  ", " + toIndex + ")");
-	         var fromChild = this.getChildAt(fromIndex);
-	         var toChild = this.getChildAt(toIndex);
+                            ", " + toIndex + ")");
+                 var fromChild = this.getChildAt(fromIndex);
+                 var toChild = this.getChildAt(toIndex);
 //	         var toChildCoords = dojo.style.getAbsolutePosition(toChild.domContainer);
 //	         toChildCoords = [ toChildCoords.x, toChildCoords.y ];
 //	         alert("to coords [ " + toChildCoords[0] + ", " + toChildCoords[0] + "]");
@@ -860,18 +863,17 @@ dojo.declare("alfresco.xforms.Repeat",
 //	         dojo.lfx.html.slideTo(fromChild.domContainer, 5000, toChildCoords);
 //	         dojo.lfx.html.slideTo(toChild.domContainer, 5000, fromChildCoords);
                
-               
-	         var swapNode = document.createElement("div");
+                 var swapNode = document.createElement("div");
 //	         dojo.dom.removeNode(toChild.domContainer);
 //	         dojo.dom.removeNode(fromChild.domContainer);
-	         this.domNode.replaceChild(swapNode, fromChild.domContainer);
-	         this.domNode.replaceChild(fromChild.domContainer, toChild.domContainer);
-	         this.domNode.replaceChild(toChild.domContainer, swapNode);
-               
-	         this.children[fromIndex] = toChild;
-	         this.children[toIndex] = fromChild;
-	         this._selectedIndex = toIndex;
-	         this._updateDisplay();
+                 this.domNode.replaceChild(swapNode, fromChild.domContainer);
+                 this.domNode.replaceChild(fromChild.domContainer, toChild.domContainer);
+                 this.domNode.replaceChild(toChild.domContainer, swapNode);
+                 
+                 this.children[fromIndex] = toChild;
+                 this.children[toIndex] = fromChild;
+                 this._selectedIndex = toIndex;
+                 this._updateDisplay();
 	       },
 	       setFocusedChild: function(child)
 	       {

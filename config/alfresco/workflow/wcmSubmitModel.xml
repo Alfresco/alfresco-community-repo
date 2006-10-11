@@ -9,7 +9,7 @@
     </imports>
 
     <namespaces>
-        <namespace uri="http://www/alfresco.org/model/wcmwf/1.0" prefix="wcmwf"/>
+        <namespace uri="http://www.alfresco.org/model/wcmwf/1.0" prefix="wcmwf"/>
     </namespaces>
 
     <types>
@@ -21,40 +21,32 @@
                    <title>Description</title>
                    <type>d:text</type>
                </property>
-               
-                <property name="wcmwf:storeName">
-                    <title>Sandbox Store Name</title>
-                    <type>d:text</type>
-                </property>
             </properties>
         </type>
 
         <type name="wcmwf:startSubmit">
             <title>Submit Web Content</title>
             <parent>wcmwf:baseSubmitTask</parent>
-            
-            <properties>
-                <property name="wcmwf:submitDueDate">
-                    <title>Due Date</title>
-                    <type>d:date</type>
-                </property>
-            </properties>
-
-            <associations>
-                <association name="wcmwf:assignee">
-                    <title>Assignee</title>
-                    <source>
-                        <mandatory>false</mandatory>
-                        <many>false</many>
-                    </source>
-                    <target>
-                        <class>cm:person</class>
-                        <mandatory>true</mandatory>
-                        <many>false</many>
-                    </target>
-                </association>
-            </associations>
         </type>
+
+		<type name="wcmwf:setupSubmit">
+			<title>Submit Web Content</title>
+			<parent>wcmwf:baseSubmitTask</parent>
+			<associations>
+				<association name="wcmwf:assignee">
+					<title>The Reviewer</title>
+					<source>
+						<mandatory>false</mandatory>
+						<many>false</many>
+					</source>
+					<target>
+						<class>cm:person</class>
+						<mandatory>true</mandatory>
+						<many>false</many>
+					</target>
+				</association>
+			</associations>
+		</type>
 
         <type name="wcmwf:review">
             <title>Review</title>

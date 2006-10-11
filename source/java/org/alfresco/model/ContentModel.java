@@ -190,6 +190,9 @@ public interface ContentModel
     public static final QName PROP_HITS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "hits");
     public static final QName PROP_COUNTER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "counter");
     
+    // referencesnode aspect
+    public static final QName ASPECT_REFERENCES_NODE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "referencesnode");
+    public static final QName PROP_NODE_REF = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "noderef");
     
     //
     // Application Model Definitions

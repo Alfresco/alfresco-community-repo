@@ -2,12 +2,17 @@ package org.alfresco.repo.avm.wf;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,30 +60,37 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
      */
     public void execute(ExecutionContext executionContext) throws Exception 
     {
-        String srcStoreName = (String)executionContext.getContextInstance().getVariable("storeName");
-        NodeRef pkg = (NodeRef)executionContext.getContextInstance().getVariable("package");
-        String webSiteName = 
-            fAVMService.getStoreProperty(srcStoreName, QName.createQName(null, ".website.name")).getStringValue();
-        String stagingName = webSiteName + "-staging";
+        NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("package")).getNodeRef();
         List<ChildAssociationRef> children = fNodeService.getChildAssocs(pkg);
         List<AVMDifference> diffs = new ArrayList<AVMDifference>();
+        Map<String, String> storesHit = new HashMap<String, String>();
         for (ChildAssociationRef child : children)
         {
             NodeRef childRef = child.getChildRef();
-            Pair<Integer, String> childPath = AVMNodeConverter.ToAVMVersionPath(childRef);
-            List<Pair<Integer, String>> possiblePaths = 
-                fAVMService.getPathsInStoreHead(fAVMService.lookup(childPath.getFirst(), childPath.getSecond()), 
-                                                srcStoreName);
-            Pair<Integer, String> actualPath = possiblePaths.get(0);
-            String [] pathParts = actualPath.getSecond().split(":");
+            if (!fNodeService.hasAspect(childRef, ContentModel.ASPECT_REFERENCES_NODE))
+            {
+                throw new AVMSyncException("Package node does not have cm:referencesnode.");
+            }
+            NodeRef toSubmit = (NodeRef)fNodeService.getProperty(childRef, ContentModel.PROP_NODE_REF);
+            Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(toSubmit);
+            String avmPath = versionPath.getSecond();
+            String [] storePath = avmPath.split(":");
+            String websiteName = fAVMService.getStoreProperty(storePath[0], 
+                                                              QName.createQName(null, ".website.name")).
+                                                              getStringValue();
+            String stagingName = websiteName + "-staging";
             AVMDifference diff = 
-                new AVMDifference(-1, srcStoreName + ":" + pathParts[1],
-                                  -1, stagingName + ":" + pathParts[1],
+                new AVMDifference(-1, avmPath,
+                                  -1, stagingName + ":" + storePath[1],
                                   AVMDifference.NEWER);
             diffs.add(diff);
+            storesHit.put(storePath[0], stagingName);
         }
         fAVMSyncService.update(diffs, true, true, false, false);
-        fAVMSyncService.flatten(srcStoreName + ":/appBase",
-                                stagingName + ":/appBase");
+        for (Map.Entry<String, String> entry : storesHit.entrySet())
+        {
+            fAVMSyncService.flatten(entry.getKey() + ":/appBase", 
+                                    entry.getValue() + ":/appBase");
+        }
     }
 }

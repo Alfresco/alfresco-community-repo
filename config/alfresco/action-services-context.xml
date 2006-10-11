@@ -406,6 +406,15 @@
     	</property>
     </bean>
     
+    <bean id="start-avm-workflow" class="org.alfresco.repo.avm.actions.StartAVMWorkflowAction" parent="action-executer">
+        <property name="workflowService">
+        	<ref bean="WorkflowService"/>
+        </property>
+        <property name="personService">
+        	<ref bean="personService"/>
+        </property>
+    </bean>
+    
     <bean id="simple-avm-promote" class="org.alfresco.repo.avm.actions.SimpleAVMPromoteAction" parent="action-executer">
     	<property name="avmSyncService">
     	    <ref bean="avmSyncService"/>

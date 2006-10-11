@@ -33,6 +33,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.actions.StartAVMWorkflowAction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -43,8 +44,10 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -87,6 +90,7 @@ public class AVMBrowseBean implements IContextListener
    
    /** Action bean Id for the AVM Submit action*/
    private static final String ACTION_AVM_SUBMIT = "simple-avm-submit";
+   private static final String ACTION_AVM_WORKFLOW = "start-avm-workflow";
    
    /** Content Manager role name */
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
@@ -126,6 +130,9 @@ public class AVMBrowseBean implements IContextListener
    
    /** The NamespaceService bean reference. */
    protected NamespaceService namespaceService;
+   
+   /** The WorkflowService bean reference. */
+   protected WorkflowService workflowService;
    
    /** The browse bean */
    protected BrowseBean browseBean;
@@ -170,6 +177,15 @@ public class AVMBrowseBean implements IContextListener
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
+   }
+   
+   /**
+    * Set the workflow service
+    * @param service The workflow service instance.
+    */
+   public void setWorkflowService(WorkflowService service)
+   {
+      workflowService = service;
    }
    
    /**
@@ -713,11 +729,28 @@ public class AVMBrowseBean implements IContextListener
       try
       {
          FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context, true);
+         tx = Repository.getUserTransaction(context, false);
          tx.begin();
          
-         Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
-         this.actionService.executeAction(action, getAvmActionNode().getNodeRef());
+         NodeRef nodeRef = getAvmActionNode().getNodeRef();
+         String name = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+         NodeRef workflowPackage = this.workflowService.createPackage(null);
+         ChildAssociationRef childRef = 
+             this.nodeService.createNode(workflowPackage, ContentModel.ASSOC_CONTAINS,
+                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
+                                                           name), ContentModel.TYPE_CMOBJECT);
+         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
+         aspectProperties.put(ContentModel.PROP_NODE_REF, nodeRef);
+         NodeRef childNodeRef = childRef.getChildRef();
+         this.nodeService.addAspect(childNodeRef, ContentModel.ASPECT_REFERENCES_NODE, aspectProperties);
+             
+         Map<String, Serializable> actionParams = new HashMap<String, Serializable>();
+         actionParams.put(StartAVMWorkflowAction.PARAM_WORKFLOW_NAME, "jbpm$wcmwf:submit");
+         Action action = this.actionService.createAction(ACTION_AVM_WORKFLOW, actionParams);
+         this.actionService.executeAction(action, workflowPackage);
+
+         // Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
+         // this.actionService.executeAction(action, getAvmActionNode().getNodeRef());
          
          // commit the transaction
          tx.commit();
@@ -731,6 +764,7 @@ public class AVMBrowseBean implements IContextListener
       }
       catch (Throwable err)
       {
+         err.printStackTrace(System.err);
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}

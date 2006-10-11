@@ -53,7 +53,7 @@ body
     </xsl:template>
     <xsl:template match="/note/body">
       <div style="width: 50%; height: 250px; border: solid 1px black; margin-top: 15px;">
-        <tt><xsl:value-of select="/note/subject"/></tt>
+        <tt><xsl:value-of select="/note/body"/></tt>
       </div>
     </xsl:template>
     <xsl:template match="/note/important">

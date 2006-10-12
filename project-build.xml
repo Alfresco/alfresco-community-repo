@@ -20,10 +20,11 @@
       
       <echo level="info">isTomcat = ${isTomcat}</echo>
       <echo level="info">isJBoss = ${isJBoss}</echo>
-      
+
       <antcall target="assemble-war-common" />
       <antcall target="assemble-war-tomcat" />
       <antcall target="assemble-war-jboss" />
+      <antcall target="sample-website" />
    </target>
    
    <target name="assemble-war-common">
@@ -107,9 +108,9 @@
    <target name="sample-website" depends="init">
      <mkdir dir="${dir.build}/sample-website/alfresco"/>
      <copy todir="${dir.build}/sample-website/alfresco">
-       <fileset dir="source/test-resources/websites/alfresco" excludes="**/.svn"/>
+       <fileset dir="${dir.src}/test-resources/websites/alfresco" excludes="**/.svn"/>
      </copy>
-     <javac srcdir="source/test-resources/websites/alfresco/ROOT/WEB-INF/classes"
+     <javac srcdir="${dir.src}/test-resources/websites/alfresco/ROOT/WEB-INF/classes"
 	    destdir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/classes"
             deprecation="on" debug="on" target="1.5" source="1.5"
 	    classpathref="classpath.compile"/>

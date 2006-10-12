@@ -40,6 +40,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -65,6 +66,39 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Test cyclic lookup behavior.
+     */
+    public void testCyclicLookup()
+    {
+        try
+        {
+            fService.createDirectory("main:/", "a");
+            fService.createFile("main:/a", "foo").close();
+            for (int i = 0; i < 1000; i++)
+            {
+                fService.lookup(-1, "main:/a/bar");
+            }
+            fService.lookup(-1, "main:/a/foo");
+            fService.createLayeredDirectory("main:/c", "main:/", "b");
+            fService.createLayeredDirectory("main:/b", "main:/", "c");
+            try
+            {
+                fService.lookup(-1, "main:/b/bar");
+                fail();
+            }
+            catch (AVMCycleException ce)
+            {
+                // Do nothing; this means success.
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            fail();
+        }
+    }
+    
     /**
      * Test getting all paths for a node.
      *

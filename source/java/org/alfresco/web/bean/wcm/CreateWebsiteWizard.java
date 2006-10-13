@@ -60,8 +60,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
 
    private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
    
-   protected String name;
    protected String title;
+   protected String name;
    protected String description;
    
    private String websitesFolderId = null;
@@ -166,7 +166,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          }
          
          // set the property on the node to reference the AVM store
-         this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, this.name);
+         this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, DNSNameMangler.MakeDNSName(this.name));
          
          // navigate to the Websites folder so we can see the newly created folder
          this.navigator.setCurrentNodeId(websiteParentId);

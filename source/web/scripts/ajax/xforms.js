@@ -1,8 +1,6 @@
 dojo.require("dojo.widget.DebugConsole");
 dojo.require("dojo.widget.DatePicker");
 dojo.require("dojo.widget.Button");
-dojo.require("dojo.widget.validate");
-dojo.require("dojo.widget.Spinner");
 dojo.require("dojo.lfx.html");
 dojo.hostenv.writeIncludes();
 
@@ -99,8 +97,12 @@ dojo.declare("alfresco.xforms.Widget",
       	       isRequired: function()
                {
                  var binding = this._getBinding();
-                 var required = binding && binding.required == "true()";
-                 return required;
+                 return binding && binding.required == "true()";
+               },
+      	       isReadonly: function()
+               {
+                 var binding = this._getBinding();
+                 return binding && binding.readonly == "true()";
                },
                getInitialValue: function()
                {
@@ -274,7 +276,15 @@ dojo.declare("alfresco.xforms.TextField",
 //	          					value: initial_value 
 //	          				      }, 
 //	          				      this.domNode);
-	         dojo.event.connect(this.widget, "onkeyup", this, this._widget_keyUpHandler);
+                 if (this.isReadonly())
+                 {
+                   this.widget.setAttribute("readonly", this.isReadonly());
+                   this.widget.setAttribute("disabled", this.isReadonly());
+                 }
+                 else
+                 {
+                   dojo.event.connect(this.widget, "onkeyup", this, this._widget_keyUpHandler);
+                 }
 	       },
 	       getValue: function()
 	       {
@@ -387,7 +397,7 @@ dojo.declare("alfresco.xforms.Select",
                      if (initial_value.indexOf(values[i].value) != -1)
                      {
                        this._selectedValues.push(values[i].value);
-                       checkbox.setAttribute("checked", "true");
+                       checkbox.checked = true;
                      }
                      dojo.event.connect(checkbox, "onclick", this, this._checkbox_clickHandler);
                      this.widget.appendChild(checkbox);
@@ -408,7 +418,7 @@ dojo.declare("alfresco.xforms.Select",
                      if (initial_value.indexOf(values[i].value) != -1)
                      {
                        this._selectedValues.push(values[i].value);
-                       option.setAttribute("selected", "true");
+                       option.selected = true;
                      }
                      this.widget.appendChild(option);
                    }
@@ -479,7 +489,7 @@ dojo.declare("alfresco.xforms.Select1",
                      if (values[i].value == initial_value)
                      {
                        this._selectedValue = initial_value;
-                       radio.setAttribute("checked", "true");
+                       radio.checked = true;
                      }
                      dojo.event.connect(radio, "onclick", this, this._radio_clickHandler);
                    }
@@ -499,7 +509,7 @@ dojo.declare("alfresco.xforms.Select1",
                      if (values[i].value == initial_value)
                      {
                        this._selectedValue = initial_value;
-                       option.setAttribute("selected", "true");
+                       option.selected = true;
                      }
                    }
                    dojo.event.connect(this.widget, "onchange", this, this._combobox_changeHandler);
@@ -1232,13 +1242,15 @@ dojo.declare("alfresco.xforms.XForm",
 	           {
 	             var id = bind.childNodes[i].getAttribute("id");
 	             dojo.debug("loading binding " + id);
-	             result[id] = {
-	             id: bind.childNodes[i].getAttribute("id"),
-	             required: bind.childNodes[i].getAttribute("xforms:required"),
-	             nodeset: bind.childNodes[i].getAttribute("xforms:nodeset"),
-	             type: bind.childNodes[i].getAttribute("xforms:type"),
-	             constraint: bind.childNodes[i].getAttribute("xforms:constraint"),
-	             parent: parent
+	             result[id] = 
+                     {
+                       id: bind.childNodes[i].getAttribute("id"),
+                       readonly: bind.childNodes[i].getAttribute("xforms:readonly"),
+                       required: bind.childNodes[i].getAttribute("xforms:required"),
+                       nodeset: bind.childNodes[i].getAttribute("xforms:nodeset"),
+                       type: bind.childNodes[i].getAttribute("xforms:type"),
+                       constraint: bind.childNodes[i].getAttribute("xforms:constraint"),
+                       parent: parent
 	             };
 	             this._loadBindings(bind.childNodes[i], result[id], result);
 	           }

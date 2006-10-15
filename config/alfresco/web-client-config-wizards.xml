@@ -226,7 +226,7 @@
          </wizard>
          
          <!-- Definition of the Create XML Type wizard -->
-         <wizard name="createForm" managed-bean="CreateXmlContentTypeWizard"
+         <wizard name="createForm" managed-bean="CreateFormWizard"
                  title-id="create_form_title" description-id="create_form_desc"
                  icon="/images/icons/new_content_large.gif">
             <step name="details" title-id="details" description-id="create_form_step1_desc">

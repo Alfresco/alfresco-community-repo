@@ -98,8 +98,10 @@ if (upload == null || upload.getFile() == null)
    <h:graphicImage id="graphic_image_root_tag_name"
 		   value="/images/icons/required_field.gif" alt="Required Field" />
    <h:outputText id="output_text_root_tag_name" value="#{msg.schema_root_tag_name}:"/>
-   <h:inputText id="schema-root-tag-name" value="#{WizardManager.bean.schemaRootTagName}" 
-                maxlength="1024" size="35"/>
+   <h:selectOneMenu id="schema-root-tag-name" 
+                    value="#{WizardManager.bean.schemaRootTagName}">
+     <f:selectItems value="#{WizardManager.bean.schemaRootTagNameChoices}"/>
+   </h:selectOneMenu>
    <h:graphicImage id="graphic_image_name" value="/images/icons/required_field.gif" alt="Required Field" />
    <h:outputText id="output_text_name" value="#{msg.name}:"/>
    <h:inputText id="file-name" value="#{WizardManager.bean.templateName}" 

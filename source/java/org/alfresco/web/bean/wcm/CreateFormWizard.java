@@ -14,13 +14,14 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.bean.content;
+package org.alfresco.web.bean.wcm;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -31,6 +32,7 @@ import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -41,17 +43,19 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
+import org.alfresco.web.templating.xforms.SchemaFormBuilder;
 import org.alfresco.web.templating.TemplatingService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.apache.xerces.xs.*;
+import org.w3c.dom.Document;
 
 /**
  * Bean implementation for the "Create XML Form" dialog
  * 
  * @author arielb
  */
-public class CreateXmlContentTypeWizard extends BaseWizardBean
+public class CreateFormWizard extends BaseWizardBean
 {
 
    /////////////////////////////////////////////////////////////////////////////
@@ -103,7 +107,7 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    /////////////////////////////////////////////////////////////////////////////
 
    private final static Log LOGGER = 
-      LogFactory.getLog(CreateXmlContentTypeWizard.class);
+      LogFactory.getLog(CreateFormWizard.class);
    
    private String schemaRootTagName;
    private String templateName;
@@ -262,6 +266,15 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
     */
    public void addSelectedTemplateOutputMethod(ActionEvent event)
    {
+      for (TemplateOutputMethodData tomd : this.templateOutputMethods)
+      {
+         if (tomd.getFileExtension().equals(this.fileExtension))
+         {
+            throw new AlfrescoRuntimeException("template output method with extension " + this.fileExtension +
+                                               " already exists");
+         }
+      }
+
       final TemplateOutputMethodData data = 
          new TemplateOutputMethodData(this.getTemplateOutputMethodFileName(),
                                       this.getTemplateOutputMethodFile(),
@@ -419,15 +432,44 @@ public class CreateXmlContentTypeWizard extends BaseWizardBean
    {
       this.schemaRootTagName = schemaRootTagName;
    }
-   
+
    /**
-    * @return the root tag name to use when processing the schema.
+    * Returns the root tag name to use when processing the schema.
     */
    public String getSchemaRootTagName()
    {
-      return (this.schemaRootTagName == null && this.getSchemaFileName() != null
-              ? this.getSchemaFileName().replaceAll("([^\\.])\\..+", "$1")
-              : this.schemaRootTagName);
+      return this.schemaRootTagName;
+   }
+   
+   /**
+    * @return the possible root tag names for use with the schema based on 
+    * the element declarations it defines.
+    */
+   public List<SelectItem> getSchemaRootTagNameChoices()
+   {
+      final List<SelectItem> result = new LinkedList<SelectItem>();
+      if (this.getSchemaFile() != null)
+      {
+         try
+         {
+            final TemplatingService ts = TemplatingService.getInstance();
+            final Document d = ts.parseXML(this.getSchemaFile());
+            final XSModel xsm = SchemaFormBuilder.loadSchema(d);
+            final XSNamedMap elementsMap = xsm.getComponents(XSConstants.ELEMENT_DECLARATION);
+            for (int i = 0; i < elementsMap.getLength(); i++)
+            {
+               final XSElementDeclaration e = (XSElementDeclaration)elementsMap.item(i);
+               result.add(new SelectItem(e.getName(), e.getName()));
+            }
+         }
+         catch (Exception e)
+         {
+            final String msg = "unable to parse " + this.getSchemaFileName();
+            this.removeUploadedSchemaFile();
+            throw new AlfrescoRuntimeException(msg, e);
+         }
+      }
+      return result;
    }
    
    /**

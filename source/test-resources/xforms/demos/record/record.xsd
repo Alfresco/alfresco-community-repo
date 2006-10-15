@@ -23,7 +23,7 @@
       </xs:sequence>
       <xs:attribute name="name" type="xs:string"/>
       <xs:attribute name="artist" type="xs:string"/>
-      <xs:attribute name="genre" type="genre"/>
+      <xs:attribute name="genre" type="genre" default="classical"/>
       <xs:attribute name="year" type="xs:gYear"/>
     </xs:complexType>
   </xs:element>

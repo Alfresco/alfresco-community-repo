@@ -2065,8 +2065,8 @@
       <description>
          The bean that backs up the Create XML Content Type Wizard
       </description>
-      <managed-bean-name>CreateXmlContentTypeWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.content.CreateXmlContentTypeWizard</managed-bean-class>
+      <managed-bean-name>CreateFormWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.CreateFormWizard</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>

@@ -2260,8 +2260,8 @@ public class SchemaFormBuilder
       bindElement.setAttributeNS(XFORMS_NS,
                                  SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
                                  pathToRoot);
-      bindElement = (Element)modelSection.appendChild(bindElement);
-      bindElement = startBindElement(bindElement, schema, controlType, o);
+      modelSection.appendChild(bindElement);
+      bindElement = this.startBindElement(bindElement, schema, controlType, owner, o);
 
       // add a group if a repeat !
       if (owner instanceof XSElementDeclaration && o.maximum != 1) 
@@ -3331,6 +3331,7 @@ public class SchemaFormBuilder
    public Element startBindElement(final Element bindElement,
                                    final XSModel schema,
                                    final XSTypeDefinition controlType,
+                                   final XSObject owner,
                                    final Occurs o)
    {
       // START WORKAROUND
@@ -3350,11 +3351,23 @@ public class SchemaFormBuilder
                                        typeName);
       }
 
+      final short constraintType = 
+         (owner instanceof XSElementDeclaration 
+          ? ((XSElementDeclaration)owner).getConstraintType()
+          : (owner instanceof XSAttributeDeclaration
+             ? ((XSAttributeDeclaration)owner).getConstraintType()
+             : (owner instanceof XSAttributeUse
+                ? ((XSAttributeUse)owner).getConstraintType()
+                : XSConstants.VC_NONE)));
+              
+      bindElement.setAttributeNS(XFORMS_NS,
+                                 SchemaFormBuilder.XFORMS_NS_PREFIX + "readonly",
+                                 (constraintType == XSConstants.VC_FIXED) + "()");
+
       bindElement.setAttributeNS(XFORMS_NS,
                                  SchemaFormBuilder.XFORMS_NS_PREFIX + "required",
-                                 o.minimum == 0 ? "false()" : "true()");
+                                 (o.minimum != 0) + "()");
 	
-
       //no more minOccurs & maxOccurs element: add a constraint if maxOccurs>1:
       //count(.) <= maxOccurs && count(.) >= minOccurs
       String minConstraint = null;
@@ -3451,7 +3464,8 @@ public class SchemaFormBuilder
       return elementName;
    }
 
-   private XSModel loadSchema(final Document schemaDocument)
+   //XXXarielb factor out to a utility method...
+   public static XSModel loadSchema(final Document schemaDocument)
       throws FormBuilderException
    {
       try

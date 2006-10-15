@@ -29,7 +29,6 @@
 		 org.alfresco.web.templating.*" %>
 <%@ page import="java.io.*" %>
 <%@ page import="org.alfresco.web.app.Application" %>
-<%@ page import="org.alfresco.web.bean.content.CreateXmlContentTypeWizard" %>
 <%@ page import="org.alfresco.web.templating.*" %>
 <%@ page import="org.w3c.dom.Document" %>
 <%

@@ -43,7 +43,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
-import org.alfresco.web.templating.xforms.SchemaFormBuilder;
+import org.alfresco.web.templating.xforms.*;
 import org.alfresco.web.templating.TemplatingService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,28 +59,26 @@ public class CreateFormWizard extends BaseWizardBean
 {
 
    /////////////////////////////////////////////////////////////////////////////
-   
-   private static final String FILE_TEMPLATEOUTPUT = "template-output-method";
-
-   private static final String FILE_SCHEMA = "schema";
-
 
    /**
     * Simple wrapper class to represent a template output method
     */
-   public static class TemplateOutputMethodData
+   public class TemplateOutputMethodData
    {
       private final String fileName;
       private final File file;
       private final String fileExtension;
+      private final Class templateOutputMethodType;
 
       public TemplateOutputMethodData(final String fileName, 
                                       final File file,
-                                      final String fileExtension)
+                                      final String fileExtension,
+                                      final Class templateOutputMethodType)
       {
          this.fileName = fileName;
          this.file = file;
          this.fileExtension = fileExtension;
+         this.templateOutputMethodType = templateOutputMethodType;
       }
       
       public String getFileExtension()
@@ -97,21 +95,30 @@ public class CreateFormWizard extends BaseWizardBean
       {
          return this.file;
       }
-      
-      public String getLabel()
+
+      public Class getTemplateOutputMethodType()
       {
-         return this.getFileExtension().toUpperCase() + " (" + this.getFileName() + ")";
+         return this.templateOutputMethodType;
+      }
+      
+      public String getTemplateOutputMethodTypeName()
+      {
+         return CreateFormWizard.this.getTemplateOutputMethodTypeName(this.getTemplateOutputMethodType());
       }
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   
+   private static final String FILE_TEMPLATEOUTPUT = "template-output-method";
+
+   private static final String FILE_SCHEMA = "schema";
 
    private final static Log LOGGER = 
       LogFactory.getLog(CreateFormWizard.class);
    
    private String schemaRootTagName;
    private String templateName;
-   private String presentationTemplateType;
+   private Class templateOutputMethodType = null;
    protected ContentService contentService;
    private DataModel templateOutputMethodsDataModel;
    private List<TemplateOutputMethodData> templateOutputMethods = null;
@@ -136,14 +143,14 @@ public class CreateFormWizard extends BaseWizardBean
          this.fileFolderService.create(folderInfo.getNodeRef(),
                                        this.getSchemaFileName(),
                                        ContentModel.TYPE_CONTENT);
-      final NodeRef schemaFileNodeRef = fileInfo.getNodeRef();
+      final NodeRef schemaNodeRef = fileInfo.getNodeRef();
       
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("Created file node for file: " + 
                       this.getSchemaFileName());
 
       // get a writer for the content and put the file
-      ContentWriter writer = this.contentService.getWriter(schemaFileNodeRef, 
+      ContentWriter writer = this.contentService.getWriter(schemaNodeRef, 
                                                            ContentModel.PROP_CONTENT,
                                                            true);
       // set the mimetype and encoding
@@ -155,24 +162,24 @@ public class CreateFormWizard extends BaseWizardBean
       Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(ContentModel.PROP_TITLE, this.getTemplateName());
       props.put(ContentModel.PROP_DESCRIPTION, "");
-      this.nodeService.addAspect(schemaFileNodeRef, ContentModel.ASPECT_TITLED, props);
+      this.nodeService.addAspect(schemaNodeRef, ContentModel.ASPECT_TITLED, props);
 
       props = new HashMap<QName, Serializable>(1, 1.0f);
       props.put(WCMModel.PROP_SCHEMA_ROOT_TAG_NAME, this.getSchemaRootTagName());
-      this.nodeService.addAspect(schemaFileNodeRef, WCMModel.ASPECT_TEMPLATE, props);
+      this.nodeService.addAspect(schemaNodeRef, WCMModel.ASPECT_TEMPLATE, props);
          
       for (TemplateOutputMethodData tomd : this.templateOutputMethods)
       {
          fileInfo = this.fileFolderService.create(folderInfo.getNodeRef(),
                                                   tomd.getFileName(),
                                                   ContentModel.TYPE_CONTENT);
-         final NodeRef presentationTemplateFileNodeRef = fileInfo.getNodeRef();
+         final NodeRef templateOutputMethodNodeRef = fileInfo.getNodeRef();
       
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + tomd.getFileName());
       
          // get a writer for the content and put the file
-         writer = this.contentService.getWriter(presentationTemplateFileNodeRef, 
+         writer = this.contentService.getWriter(templateOutputMethodNodeRef, 
                                                 ContentModel.PROP_CONTENT, 
                                                 true);
          // set the mimetype and encoding
@@ -180,15 +187,15 @@ public class CreateFormWizard extends BaseWizardBean
          writer.setEncoding("UTF-8");
          writer.putContent(tomd.getFile());
 
-         this.nodeService.createAssociation(schemaFileNodeRef,
-                                            presentationTemplateFileNodeRef,
+         this.nodeService.createAssociation(schemaNodeRef,
+                                            templateOutputMethodNodeRef,
                                             WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS);                         
       
          props = new HashMap<QName, Serializable>(3, 1.0f);
-         props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE, this.getTemplateOutputMethodType());
-         props.put(WCMModel.PROP_TEMPLATE_SOURCE, schemaFileNodeRef);
+         props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE, tomd.getTemplateOutputMethodType().getName());
+         props.put(WCMModel.PROP_TEMPLATE_SOURCE, schemaNodeRef);
          props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_DERIVED_FILE_EXTENSION, tomd.getFileExtension());
-         this.nodeService.addAspect(presentationTemplateFileNodeRef, WCMModel.ASPECT_TEMPLATE_OUTPUT_METHOD, props);
+         this.nodeService.addAspect(templateOutputMethodNodeRef, WCMModel.ASPECT_TEMPLATE_OUTPUT_METHOD, props);
       }
       // return the default outcome
       return outcome;
@@ -203,8 +210,9 @@ public class CreateFormWizard extends BaseWizardBean
       this.removeUploadedTemplateOutputMethodFile();
       this.schemaRootTagName = null;
       this.templateName = null;
+      this.templateOutputMethodType = null;
       this.templateOutputMethods = new ArrayList<TemplateOutputMethodData>();
-      this.fileExtension = "shtml";
+      this.fileExtension = null;
    }
    
    @Override
@@ -242,7 +250,9 @@ public class CreateFormWizard extends BaseWizardBean
     */
    public boolean getAddToListDisabled()
    {
-      return (getTemplateOutputMethodFileName() == null || fileExtension == null || fileExtension.length() == 0);
+      return (getTemplateOutputMethodFileName() == null || 
+              fileExtension == null || 
+              fileExtension.length() == 0);
    }
 
    /**
@@ -276,11 +286,14 @@ public class CreateFormWizard extends BaseWizardBean
       }
 
       final TemplateOutputMethodData data = 
-         new TemplateOutputMethodData(this.getTemplateOutputMethodFileName(),
-                                      this.getTemplateOutputMethodFile(),
-                                      this.fileExtension);
+         this.new TemplateOutputMethodData(this.getTemplateOutputMethodFileName(),
+                                           this.getTemplateOutputMethodFile(),
+                                           this.fileExtension,
+                                           this.templateOutputMethodType);
       this.templateOutputMethods.add(data);
       this.removeUploadedTemplateOutputMethodFile();
+      this.templateOutputMethodType = null;
+      this.fileExtension = null;
    }
    
    /**
@@ -345,21 +358,53 @@ public class CreateFormWizard extends BaseWizardBean
     */
    public String getTemplateOutputMethodType()
    {
-      if (this.getTemplateOutputMethodFileName() != null)
+      if (this.templateOutputMethodType == null &&
+          this.getTemplateOutputMethodFileName() != null)
       {
-         //	    String s = this.getTemplateOutputMethodFileName();
-         //	    String extension = 
-         this.presentationTemplateType = "XSL";
+         this.templateOutputMethodType =
+            (this.getTemplateOutputMethodFileName().endsWith(".xsl")
+             ? XSLTOutputMethod.class
+             : (this.getTemplateOutputMethodFileName().endsWith(".ftl")
+                ? FreeMarkerOutputMethod.class
+                : null));
       }
-      return this.presentationTemplateType;
+      return (this.templateOutputMethodType == null
+              ? null
+              : this.templateOutputMethodType.getName());
    }
    
    /**
-    * @param presentationTemplateType Sets the currently selected mime type
+    * @param templateOutputMethodType Sets the currently selected mime type
     */
-   public void setTemplateOutputMethodType(String presentationTemplateType)
+   public void setTemplateOutputMethodType(final String templateOutputMethodType)
+      throws ClassNotFoundException
    {
-      this.presentationTemplateType = presentationTemplateType;
+      this.templateOutputMethodType = (templateOutputMethodType == null
+                                       ? null
+                                       : Class.forName(templateOutputMethodType));
+   }
+   
+   /**
+    * @return Returns a list of mime types to allow the user to select from
+    */
+   public List<SelectItem> getTemplateOutputMethodTypeChoices()
+   {
+      return (List<SelectItem>)Arrays.asList(new SelectItem[] 
+      {
+         new SelectItem(FreeMarkerOutputMethod.class.getName(), 
+                        getTemplateOutputMethodTypeName(FreeMarkerOutputMethod.class)),
+         new SelectItem(XSLTOutputMethod.class.getName(), 
+                        getTemplateOutputMethodTypeName(XSLTOutputMethod.class))
+      });
+   }
+
+   private String getTemplateOutputMethodTypeName(Class type)
+   {
+      return (FreeMarkerOutputMethod.class.equals(type)
+              ? "FreeMarker"
+              : (XSLTOutputMethod.class.equals(type)
+                 ? "XSLT"
+                 : null));
    }
    
    private FileUploadBean getFileUploadBean(final String id)
@@ -488,17 +533,6 @@ public class CreateFormWizard extends BaseWizardBean
       return (this.templateName == null && this.getSchemaFileName() != null
               ? this.getSchemaFileName().replaceAll("(.+)\\..*", "$1")
               : this.templateName);
-   }
-
-   /**
-    * @return Returns a list of mime types to allow the user to select from
-    */
-   public List<SelectItem> getCreateTemplateOutputMethodTypes()
-   {
-      return (List<SelectItem>)Arrays.asList(new SelectItem[] {
-            new SelectItem("freemarker", "FreeMarker"),
-            new SelectItem("xslt", "XSLT")
-      });
    }
    
    /**

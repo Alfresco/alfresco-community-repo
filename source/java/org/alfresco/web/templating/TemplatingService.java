@@ -17,6 +17,7 @@
 package org.alfresco.web.templating;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.util.*;
 
 import javax.xml.parsers.*;
@@ -37,7 +38,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
-import org.alfresco.util.TempFileProvider;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -213,10 +213,24 @@ public final class TemplatingService implements Serializable
       for (AssociationRef assoc : this.nodeService.getTargetAssocs(schemaNodeRef, 
                                                                    WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS))
       {
-         final NodeRef xslNodeRef = assoc.getTargetRef();
-         final TemplateOutputMethod tom = new XSLTOutputMethod(xslNodeRef, this.nodeService);
-         LOGGER.debug("loaded template output method " + tom.getFileExtension() + ", " + xslNodeRef);
-         tt.addOutputMethod(tom);
+         final NodeRef tomNodeRef = assoc.getTargetRef();
+         try
+         {
+            final Class templateOutputMethodType = 
+               Class.forName((String)this.nodeService.getProperty(tomNodeRef,
+                                                                  WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE));
+            
+            final Constructor c = templateOutputMethodType.getConstructor(NodeRef.class, NodeService.class, ContentService.class);
+            final TemplateOutputMethod tom = (TemplateOutputMethod)
+               c.newInstance(tomNodeRef, this.nodeService, this.contentService);
+            LOGGER.debug("loaded template output method type " + tom.getClass().getName() +
+                         " for extension " + tom.getFileExtension() + ", " + tomNodeRef);
+            tt.addOutputMethod(tom);
+         }
+         catch (Exception e)
+         {
+            LOGGER.error(e);
+         }
       }
       return tt;
    }

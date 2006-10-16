@@ -16,10 +16,38 @@
  */
 package org.alfresco.web.pr;
 
-import java.util.Date;
+import java.util.*;
+import java.text.*;
+import javax.servlet.jsp.PageContext;
+import org.w3c.dom.*;
 
 public class PressReleaseBean
 {
+    public static List<PressReleaseBean> getPressReleases(final PageContext pageContext)
+	throws Exception
+    {
+	final Map<String, Document> entries = Util.loadXMLDocuments(pageContext,
+								    "/media/releases/content",
+								    "alfresco:press-release");
+	final List<PressReleaseBean> result = new ArrayList<PressReleaseBean>(entries.size());
+	for (Map.Entry<String, Document> entry : entries.entrySet() )
+	{
+	    String fileName = entry.getKey();
+	    Document d = entry.getValue();
+	    Element t = (Element)d.getElementsByTagName("alfresco:title").item(0);
+	    Element a = (Element)d.getElementsByTagName("alfresco:abstract").item(0);
+	    Element dateEl = (Element)d.getElementsByTagName("alfresco:launch_date").item(0);
+	    Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dateEl.getFirstChild().getNodeValue());
+	    String href = "/media/releases/content/" + fileName;
+	    href = href.replaceAll(".xml$", ".shtml");
+	    result.add(new PressReleaseBean(t.getFirstChild().getNodeValue(),
+					    a.getFirstChild().getNodeValue(),
+					    date,
+					    href));
+	}
+	return result;
+    }
+
     private final String title;
     private final String theAbstract;
     private final Date launchDate;

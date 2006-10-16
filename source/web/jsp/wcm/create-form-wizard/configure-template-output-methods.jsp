@@ -46,22 +46,13 @@
   <h:panelGrid id="panel_grid_3"
                columns="3" cellpadding="3" cellspacing="3" border="0"
                width="100%">
-    <%--
-	<h:graphicImage id="required-image-type" value="/images/icons/required_field.gif" alt="Required Field" />
-	<h:outputText id="panel_grid_3_output_text_1"
-                      value="Presentation Template Type:" escape="false" />
-	<h:selectOneRadio value="#{WizardManager.bean.templateOutputMethodType}">
-	  <f:selectItems value="#{WizardManager.bean.createTemplateOutputMethodTypes}"/>
-	</h:selectOneRadio>
-	--%>
-
     <h:graphicImage id="required_image_pt"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="output_text_pt"
                   value="#{msg.template_output_method_file}:"/>
 <%
-FileUploadBean upload = (FileUploadBean)
-session.getAttribute(FileUploadBean.getKey("template-output-method"));
+final FileUploadBean upload = (FileUploadBean)
+   session.getAttribute(FileUploadBean.getKey("template-output-method"));
 if (upload == null || upload.getFile() == null)
 {
 %>
@@ -80,12 +71,22 @@ if (upload == null || upload.getFile() == null)
 <%
 }
 %>
+    <h:graphicImage id="required_image_template_output_method_type"
+                    value="/images/icons/required_field.gif" alt="Required Field" />
+    <h:outputText id="template_output_method_type_output_text"
+                  value="#{msg.type}:"/>
+    <h:selectOneRadio id="template_output_method_type" 
+		      value="#{WizardManager.bean.templateOutputMethodType}">
+     <f:selectItems id="template_output_method_type_choices"
+		    value="#{WizardManager.bean.templateOutputMethodTypeChoices}"/>
+    </h:selectOneRadio>
+
     <h:graphicImage id="required_image_file_extension"
-                  value="/images/icons/required_field.gif" alt="Required Field" />
+                    value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="file_extension_output_text"
                   value="#{msg.extension_for_generated_assets}:"/>
     <h:inputText id="file-extension" value="#{WizardManager.bean.fileExtension}"
-                  maxlength="10" size="10"/>
+                 maxlength="10" size="10"/>
   </h:panelGrid>
 
   <h:panelGroup id="step-2-panel-group" styleClass="mainSubText">
@@ -95,21 +96,37 @@ if (upload == null || upload.getFile() == null)
 		     styleClass="wizardButton" disabled="#{WizardManager.bean.addToListDisabled}" />
   </h:panelGroup>
   <h:outputText id="selected_template_output_methods_output_text"
-                styleClass="mainSubText" value="#{msg.selected_templateoutputmethods}" />
+                styleClass="mainSubText" 
+		value="#{msg.selected_templateoutputmethods}" />
   <h:panelGroup id="data-table-panel-group">
     <h:dataTable id="template_output_method_data_table"
-                 value="#{WizardManager.bean.templateOutputMethodsDataModel}" var="row" 
+                 value="#{WizardManager.bean.templateOutputMethodsDataModel}" 
+		 var="row" 
                  rowClasses="selectedItemsRow,selectedItemsRowAlt"
-                 styleClass="selectedItems" headerClass="selectedItemsHeader"
-                 cellspacing="0" cellpadding="4" 
+                 styleClass="selectedItems" 
+		 headerClass="selectedItemsHeader"
+                 cellspacing="0" 
+		 cellpadding="4" 
                  rendered="#{WizardManager.bean.templateOutputMethodsDataModel.rowCount != 0}">
       <h:column id="data-table-column-1">
         <f:facet name="header">
-          <h:outputText id="data-table-name" value="#{msg.name}" />
+          <h:outputText id="data-table-name-1" value="#{msg.file_name}" />
         </f:facet>
-        <h:outputText id="data-table-value" value="#{row.label}" />
+        <h:outputText id="data-table-value-1" value="#{row.fileName}" />
       </h:column>
       <h:column id="data-table-column-2">
+        <f:facet name="header">
+          <h:outputText id="data-table-name-2" value="#{msg.type}" />
+        </f:facet>
+        <h:outputText id="data-table-value-2" value="#{row.templateOutputMethodTypeName}" />
+      </h:column>
+      <h:column id="data-table-column-3">
+        <f:facet name="header">
+          <h:outputText id="data-table-name-3" value="#{msg.file_extension}" />
+        </f:facet>
+        <h:outputText id="data-table-value-3" value="#{row.fileExtension}" />
+      </h:column>
+      <h:column id="data-table-column-4">
         <a:actionLink id="remove-select-template-output-method-action-link"
 		      actionListener="#{WizardManager.bean.removeSelectedTemplateOutputMethod}" 
 	              image="/images/icons/delete.gif"
@@ -118,7 +135,11 @@ if (upload == null || upload.getFile() == null)
     </h:dataTable>
     
     <a:panel id="no-items" rendered="#{WizardManager.bean.templateOutputMethodsDataModel.rowCount == 0}">
-      <h:panelGrid id="no-items-panel-grid" columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
+      <h:panelGrid id="no-items-panel-grid" 
+		   columns="1" 
+		   cellpadding="2" 
+		   styleClass="selectedItems" 
+		   rowClasses="selectedItemsHeader,selectedItemsRow">
         <h:outputText styleClass="selectedItemsHeader" id="no-items-name" value="#{msg.name}" />
         <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />
       </h:panelGrid>

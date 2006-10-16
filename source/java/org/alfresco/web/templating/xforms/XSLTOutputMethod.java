@@ -19,8 +19,7 @@ package org.alfresco.web.templating.xforms;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.alfresco.web.templating.*;
-import org.chiba.xml.util.DOMUtil;
+import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -32,18 +31,19 @@ import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import org.alfresco.model.WCMModel;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.web.templating.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.alfresco.model.WCMModel;
-import org.alfresco.service.cmr.repository.NodeService;
-
+import org.chiba.xml.util.DOMUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import java.util.Map;
 
 public class XSLTOutputMethod
     implements TemplateOutputMethod
@@ -55,7 +55,8 @@ public class XSLTOutputMethod
    private final NodeService nodeService;
 
    public XSLTOutputMethod(final NodeRef nodeRef,
-                           final NodeService nodeService)
+                           final NodeService nodeService,
+                           final ContentService contentService)
    {
       this.nodeRef = nodeRef;
       this.nodeService = nodeService;

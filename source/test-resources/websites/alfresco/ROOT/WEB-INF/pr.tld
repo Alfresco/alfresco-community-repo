@@ -10,12 +10,12 @@
     <uri>http://www.alfresco.org/pr</uri>
     <function>
       <name>getPressReleases</name>
-      <function-class>org.alfresco.web.pr.Util</function-class>
+      <function-class>org.alfresco.web.pr.PressReleaseBean</function-class>
       <function-signature>java.util.List getPressReleases(javax.servlet.jsp.PageContext)</function-signature>
     </function>
     <function>
       <name>getCompanyFooters</name>
-      <function-class>org.alfresco.web.pr.Util</function-class>
+      <function-class>org.alfresco.web.pr.CompanyFooterBean</function-class>
       <function-signature>java.util.List getCompanyFooters(javax.servlet.jsp.PageContext)</function-signature>
     </function>
 </taglib>

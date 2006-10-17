@@ -250,9 +250,7 @@ public class CreateFormWizard extends BaseWizardBean
     */
    public boolean getAddToListDisabled()
    {
-      return (getTemplateOutputMethodFileName() == null || 
-              fileExtension == null || 
-              fileExtension.length() == 0);
+      return getTemplateOutputMethodFileName() == null;
    }
 
    /**
@@ -541,17 +539,15 @@ public class CreateFormWizard extends BaseWizardBean
    public String getSummary()
    {
       final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      final String[] labels = new String[2 + this.templateOutputMethods.size()];
-      final String[] values = new String[2 + this.templateOutputMethods.size()];
+      final String[] labels = new String[1 + this.templateOutputMethods.size()];
+      final String[] values = new String[1 + this.templateOutputMethods.size()];
       labels[0] = "Schema File";
       values[0] = this.getSchemaFileName();
-      labels[1] = "Template output method type";
-      values[1] = this.getTemplateOutputMethodType();
       for (int i = 0; i < this.templateOutputMethods.size(); i++)
       {
          final TemplateOutputMethodData tomd = this.templateOutputMethods.get(i);
-         labels[2 + i] = "Template output method for " + tomd.getFileExtension();
-         values[2 + i] = tomd.getFileName();
+         labels[1 + i] = "Template output method for " + tomd.getFileExtension();
+         values[1 + i] = tomd.getFileName();
       }
 
       return this.buildSummary(labels, values);

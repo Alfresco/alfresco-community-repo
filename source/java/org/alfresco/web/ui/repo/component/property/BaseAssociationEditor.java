@@ -36,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -914,13 +915,23 @@ public abstract class BaseAssociationEditor extends UIInput
             }
          }
          
+         int maxResults = Application.getClientConfig(context).getSelectorsSearchMaxResults();
+         
          if (logger.isDebugEnabled())
+         {
             logger.debug("Query: " + query.toString());
+            logger.debug("Max results size: " + maxResults);
+         }
          
          SearchParameters searchParams = new SearchParameters();
          searchParams.addStore(Repository.getStoreRef());
          searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
          searchParams.setQuery(query.toString());
+         if (maxResults > 0)
+         {
+            searchParams.setLimit(maxResults);
+            searchParams.setLimitBy(LimitBy.FINAL_SIZE);
+         }
          
          if (type.equals(ContentModel.TYPE_PERSON.toString()))
          {

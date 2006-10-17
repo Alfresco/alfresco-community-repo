@@ -36,6 +36,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_SEARCHMINIMUM = "search-minimum";
    public static final String ELEMENT_SEARCHANDTERMS = "search-and-terms";
    public static final String ELEMENT_SEARCHMAXRESULTS = "search-max-results";
+   public static final String ELEMENT_SELECTORSSEARCHMAXRESULTS = "selectors-search-max-results";
    public static final String ELEMENT_HOMESPACEPERMISSION = "home-space-permission";
    public static final String ELEMENT_FROMEMAILADDRESS = "from-email-address";
    public static final String ELEMENT_SHELFVISIBLE = "shelf-visible";
@@ -109,6 +110,14 @@ public class ClientElementReader implements ConfigElementReader
          if (searchMaxResults != null)
          {
             configElement.setSearchMaxResults(Integer.parseInt(searchMaxResults.getTextTrim()));
+         }
+         
+         // get the selectors search max results size
+         Element selectorsSearchMaxResults = element.element(ELEMENT_SELECTORSSEARCHMAXRESULTS);
+         if (selectorsSearchMaxResults != null)
+         {
+            configElement.setSelectorsSearchMaxResults(
+                  Integer.parseInt(selectorsSearchMaxResults.getTextTrim()));
          }
          
          // get the default permission for newly created users Home Spaces

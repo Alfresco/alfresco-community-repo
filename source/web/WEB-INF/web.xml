@@ -16,7 +16,7 @@
 
    <context-param>
       <param-name>javax.faces.CONFIG_FILES</param-name>
-      <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,WEB-INF/faces-config-custom.xml,/WEB-INF/faces-config-enterprise.xml,/WEB-INF/faces-config-jbpm.xml</param-value>
+      <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,WEB-INF/faces-config-custom.xml,/WEB-INF/faces-config-enterprise.xml</param-value>
    </context-param>
 
    <context-param>
@@ -97,17 +97,11 @@
       <filter-class>org.alfresco.web.app.servlet.AdminAuthenticationFilter</filter-class>
    </filter>
    
-   <!-- Used by the JPBM console for monitoring in-flight workflows -->   
-   <filter>
-      <filter-name>JbpmContextFilter</filter-name>
-      <filter-class>org.jbpm.webapp.filter.JbpmContextFilter</filter-class>
-   </filter>
-
    <filter-mapping>
       <filter-name>Authentication Filter</filter-name>
       <url-pattern>/faces/*</url-pattern>
    </filter-mapping>
-   
+
    <!-- For NTLM authentication support enable the following mapping -->
    <!-- (Enterprise version only)                                    -->
    <!--
@@ -152,17 +146,6 @@
       <url-pattern>/faces/jsp/dialog/system-info.jsp</url-pattern>
    </filter-mapping>
    
-   <filter-mapping>
-      <filter-name>Admin Authentication Filter</filter-name>
-      <url-pattern>/faces/jbpm/*</url-pattern>
-   </filter-mapping>
-   
-   <!-- Used by the JPBM console for monitoring in-flight workflows -->
-   <filter-mapping>
-      <filter-name>JbpmContextFilter</filter-name>
-      <url-pattern>/faces/jbpm/*</url-pattern>
-   </filter-mapping>
-
    <listener>
       <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
    </listener>
@@ -195,6 +178,11 @@
    <servlet>
       <servlet-name>guestDownloadContent</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.GuestDownloadContentServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>guestTemplateContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.GuestTemplateContentServlet</servlet-class>
    </servlet>
    
    <servlet>
@@ -260,6 +248,11 @@
    <servlet-mapping>
       <servlet-name>guestDownloadContent</servlet-name>
       <url-pattern>/guestDownload/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>guestTemplateContent</servlet-name>
+      <url-pattern>/guestTemplate/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>

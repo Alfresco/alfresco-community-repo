@@ -119,7 +119,7 @@ public class StartWorkflowWizard extends BaseWizardBean
          logger.debug("Starting workflow: " + this.selectedWorkflow);
       
       // prepare the parameters from the current state of the property sheet
-      Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.startTaskNode);
+      Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.startTaskNode);
       
       if (logger.isDebugEnabled())
          logger.debug("Starting workflow with parameters: " + params);

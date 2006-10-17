@@ -39,6 +39,7 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.actions.handlers.SimpleWorkflowHandler;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.workflow.WorkflowUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;

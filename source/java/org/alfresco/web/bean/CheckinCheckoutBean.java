@@ -783,7 +783,8 @@ public class CheckinCheckoutBean
          }
          catch (Throwable err)
          {
-            Utils.addErrorMessage(MSG_ERROR_CANCELCHECKOUT + err.getMessage(), err);
+            Utils.addErrorMessage(Application.getMessage(
+                  FacesContext.getCurrentInstance(), MSG_ERROR_CANCELCHECKOUT) + err.getMessage(), err);
          }
       }
       else

@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.GuestTemplateContentServlet;
 import org.alfresco.web.app.servlet.TemplateContentServlet;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -506,9 +507,9 @@ public class SpaceDetailsBean extends BaseDetailsBean
       // build RSS feed template URL from selected template and the space NodeRef and
       // add the guest=true URL parameter - this is required for no login access and
       // add the mimetype=text/xml URL parameter - required to return correct stream type
-      return TemplateContentServlet.generateURL(space.getNodeRef(),
+      return GuestTemplateContentServlet.generateURL(space.getNodeRef(),
                 (NodeRef)space.getProperties().get(ContentModel.PROP_FEEDTEMPLATE))
-                    + "/rss.xml?guest=true" + "&mimetype=text%2Fxml";
+                    + "/rss.xml?mimetype=text%2Fxml";
    }
 
    /**

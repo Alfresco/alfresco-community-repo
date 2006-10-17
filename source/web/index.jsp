@@ -16,6 +16,7 @@ License.
 --%>
 
 <%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
+<%@ page import="org.alfresco.service.cmr.security.PermissionService" %>
 <%@ page import="org.alfresco.config.ConfigService" %>
 <%@ page import="org.alfresco.web.app.servlet.AuthenticationHelper" %>
 <%@ page import="org.alfresco.web.bean.NavigationBean" %>
@@ -32,7 +33,7 @@ String location = configElement.getInitialLocation();
 
 // override with the users preference if they have one
 User user = (User)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-if (user != null)
+if (user != null && (user.getUserName().equals(PermissionService.GUEST_AUTHORITY) == false))
 {
    String preference = (String)PreferencesService.getPreferences(user).getValue("start-location");
    if (preference != null)

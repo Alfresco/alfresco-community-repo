@@ -36,6 +36,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private int searchMinimum = 3;
    private boolean forceAndTerms = false;
    private int searchMaxResults = -1;
+   private int selectorsSearchMaxResults = 500;
    private String helpUrl = null;
    private String editLinkType = "http";
    private String homeSpacePermission = null;
@@ -133,6 +134,11 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.getSearchMaxResults() != combinedElement.getSearchMaxResults())
       {
          combinedElement.setSearchMaxResults(newElement.getSearchMaxResults());
+      }
+      
+      if (newElement.getSelectorsSearchMaxResults() != combinedElement.getSelectorsSearchMaxResults())
+      {
+         combinedElement.setSelectorsSearchMaxResults(newElement.getSelectorsSearchMaxResults());
       }
       
       if (newElement.isShelfVisible() != combinedElement.isShelfVisible())
@@ -310,10 +316,9 @@ public class ClientConfigElement extends ConfigElementAdapter
     * 
     * @return
     */
-   
    public int getSearchMaxResults()
    {
-       return searchMaxResults;
+       return this.searchMaxResults;
    }
 
    /**
@@ -325,6 +330,29 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setSearchMaxResults(int searchMaxResults)
    {
        this.searchMaxResults = searchMaxResults;
+   }
+   
+   /**
+    * If positive, this will limit the size of the result set from the search
+    * used in selector components.
+    * 
+    * @return The maximum number of results to display
+    */
+   public int getSelectorsSearchMaxResults()
+   {
+       return this.selectorsSearchMaxResults;
+   }
+
+   /**
+    * Set if the the result set from a search for the selector components
+    * will be of limited size. If negative it is unlimited, by default, 
+    * this is set to 500.
+    * 
+    * @param selectorsSearchMaxResults
+    */
+   /*package*/ void setSelectorsSearchMaxResults(int selectorsSearchMaxResults)
+   {
+       this.selectorsSearchMaxResults = selectorsSearchMaxResults;
    }
 
    /**

@@ -1952,7 +1952,7 @@
    <managed-bean>
       <managed-bean-name>WorkflowBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.workflow.WorkflowBean</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
+      <managed-bean-scope>request</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
          <value>#{NodeService}</value>
@@ -1960,6 +1960,18 @@
       <managed-property>
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+
+   <!-- Admin Node Browser Beans -->
+   <managed-bean>
+      <description>Backing bean used for the Workflow Console</description>
+      <managed-bean-name>WorkflowConsoleBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.workflow.WorkflowConsoleBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>workflowInterpreter</property-name>
+         <value>#{workflowInterpreter}</value>
       </managed-property>
    </managed-bean>
    

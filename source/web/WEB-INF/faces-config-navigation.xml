@@ -787,6 +787,16 @@
            <to-view-id>/jsp/admin/node-browser.jsp</to-view-id>
        </navigation-case>
    </navigation-rule>
+
+   <!-- Workflow Admin -->
+   <navigation-rule>
+       <from-view-id>/jsp/workflow/workflow-console.jsp</from-view-id>
+       <navigation-case>
+           <from-action>#{WorkflowConsoleBean.submitCommand}</from-action>
+           <from-outcome>success</from-outcome>
+           <to-view-id>/jsp/workflow/workflow-console.jsp</to-view-id>
+       </navigation-case>
+   </navigation-rule>
    
    <!-- Forums screen action outcomes -->
    <navigation-rule>

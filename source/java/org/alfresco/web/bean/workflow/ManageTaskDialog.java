@@ -136,7 +136,7 @@ public class ManageTaskDialog extends BaseDialogBean
          logger.debug("Saving task: " + this.task.id);
       
       // prepare the edited parameters for saving
-      Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.taskNode);
+      Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
       
       if (logger.isDebugEnabled())
          logger.debug("Saving task with parameters: " + params);
@@ -262,7 +262,7 @@ public class ManageTaskDialog extends BaseDialogBean
             tx.begin();
             
             // prepare the edited parameters for saving
-            Map<QName, Serializable> params = WorkflowBean.prepareTaskParams(this.taskNode);
+            Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
       
             if (logger.isDebugEnabled())
                logger.debug("Transitioning task with parameters: " + params);
@@ -399,7 +399,7 @@ public class ManageTaskDialog extends BaseDialogBean
     */
    public void togglePackageItemComplete(ActionEvent event)
    {
-      // TODO: implement this!
+      // TODO: not supported yet
    }
    
    // ------------------------------------------------------------------------------

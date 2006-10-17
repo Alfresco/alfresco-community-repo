@@ -385,7 +385,7 @@
          <!-- Create Advanced Space Wizard -->
          <action id="create_space_wizard">
             <permissions>
-               <permission allow="true">ChangePermissions</permission>
+               <permission allow="true">CreateChildren</permission>
             </permissions>
             <label-id>advanced_space_wizard</label-id>
             <image>/images/icons/create_space.gif</image>

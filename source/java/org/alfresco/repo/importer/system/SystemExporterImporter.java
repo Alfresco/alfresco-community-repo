@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.alfresco.repo.admin.patch.PatchDaoService;
 import org.alfresco.repo.domain.AppliedPatch;
-import org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl;
+import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 
@@ -37,7 +37,7 @@ public class SystemExporterImporter
     // dependencies
     private NodeService nodeService;
     private PatchDaoService patchDao;
-    private VersionCounterDaoComponentImpl versionCounterDao;
+    private VersionCounterService versionCounterService;
     
     
     public void setNodeService(NodeService nodeService)
@@ -50,9 +50,9 @@ public class SystemExporterImporter
         this.patchDao = patchDaoService;
     }
     
-    public void setVersionDao(VersionCounterDaoComponentImpl versionCounterDao)
+    public void setVersionCounterService(VersionCounterService versionCounterService)
     {
-        this.versionCounterDao = versionCounterDao;
+        this.versionCounterService = versionCounterService;
     }
     
 
@@ -89,7 +89,7 @@ public class SystemExporterImporter
         for (StoreRef storeRef : storeRefs)
         {
             VersionCounterInfo versionCounterInfo = new VersionCounterInfo();
-            int versionCount = versionCounterDao.currentVersionNumber(storeRef);
+            int versionCount = versionCounterService.currentVersionNumber(storeRef);
             versionCounterInfo.storeRef = storeRef.toString();
             versionCounterInfo.count = versionCount;
             systemInfo.versionCounters.add(versionCounterInfo);
@@ -128,7 +128,7 @@ public class SystemExporterImporter
         for (VersionCounterInfo versionCounterInfo : systemInfo.versionCounters)
         {
             StoreRef storeRef = new StoreRef(versionCounterInfo.storeRef);
-            versionCounterDao.setVersionNumber(storeRef, versionCounterInfo.count);
+            versionCounterService.setVersionNumber(storeRef, versionCounterInfo.count);
         }
     }
     

@@ -59,4 +59,16 @@ public interface VersionCounterService
      * @param storeRef  the store reference
      */
     public void resetVersionNumber(StoreRef storeRef);
+    
+    /**
+     * Sets the version number for a specified store.
+     * 
+     * WARNING: calling this method will completely reset the current 
+     * version count for the specified store and cannot be undone.  
+     *
+     * @param storeRef  the store reference
+     * @param versionCount  the new version count
+     */
+    public void setVersionNumber(StoreRef storeRef, int versionCount);
+    
 }

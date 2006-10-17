@@ -470,7 +470,7 @@ public abstract class CifsAuthenticator
         // Store the client maximum buffer size, maximum multiplexed requests count and client
         // capability flags
 
-        sess.setClientMaximumBufferSize(maxBufSize);
+        sess.setClientMaximumBufferSize(maxBufSize != 0 ? maxBufSize : SMBSrvSession.DefaultBufferSize);
         sess.setClientMaximumMultiplex(maxMpx);
         sess.setClientCapabilities(capabs);
 

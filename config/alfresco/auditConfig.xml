@@ -2,7 +2,6 @@
 
 <!-- Default Audit Configuration -->
 
-
 <Audit xmlns="http://www.alfresco.org/model/audit/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" enabled="false" auditInternal="false" mode="all">
     
     <!--                -->

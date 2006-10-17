@@ -188,6 +188,33 @@
          </properties>
       </type>
       
+      <type name="test:overridetype1">
+        <properties>
+            <property name="test:propoverride">
+                <type>d:text</type>
+                <default>one</default>
+            </property>
+        </properties>
+      </type>
+      
+      <type name="test:overridetype2">
+        <parent>test:overridetype1</parent>
+        <overrides>
+            <property name="test:propoverride">
+                <default>two</default>
+            </property>
+        </overrides>
+      </type>
+      
+      <type name="test:overridetype3">
+        <parent>test:overridetype2</parent>
+        <overrides>
+            <property name="test:propoverride">
+                <default>three</default>
+            </property>
+        </overrides>
+      </type>
+
    </types>
    
    <aspects>

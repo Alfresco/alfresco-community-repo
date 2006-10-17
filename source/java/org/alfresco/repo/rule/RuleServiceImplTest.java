@@ -27,6 +27,8 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -34,7 +36,10 @@ import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.digester.SetRootRule;
 
 
 /**
@@ -44,7 +49,17 @@ import org.alfresco.service.namespace.QName;
  */
 public class RuleServiceImplTest extends BaseRuleTest
 {    
-   
+    AuthenticationService authenticationService;
+	PermissionService permissionService;  
+	
+	@Override
+	protected void onSetUpInTransaction() throws Exception 
+	{
+		super.onSetUpInTransaction();		
+		this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
+		this.authenticationService = (AuthenticationService)this.applicationContext.getBean("authenticationService");
+	}
+	
     /**
      * Test get rule type
      */
@@ -294,6 +309,59 @@ public class RuleServiceImplTest extends BaseRuleTest
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
+    }
+    
+    public void testRuleServicePermissionsConsumer()
+    {
+    	this.authenticationService.createAuthentication("conUser", "password".toCharArray());
+    	this.permissionService.setPermission(this.nodeRef, "conUser", PermissionService.CONSUMER, true);
+    	this.permissionService.setInheritParentPermissions(this.nodeRef, true);    	
+    	
+    	this.authenticationService.authenticate("conUser", "password".toCharArray());    	
+    	Rule rule = createTestRule();
+    	try
+    	{
+    		this.ruleService.saveRule(this.nodeRef, rule);
+    		// Fail
+    		fail("Consumers cannot create rules.");
+    	}
+    	catch (Exception exception)
+    	{
+    		// Ok
+    	}
+
+    }
+    
+    public void testRuleServicePermissionsEditor()
+    {
+    	this.authenticationService.createAuthentication("editorUser", "password".toCharArray());
+    	this.permissionService.setPermission(this.nodeRef, "editorUser", PermissionService.EDITOR, true);
+    	this.permissionService.setInheritParentPermissions(this.nodeRef, true);    	
+    	
+    	this.authenticationService.authenticate("editorUser", "password".toCharArray());    	
+    	Rule rule = createTestRule();
+    	try
+    	{
+    		this.ruleService.saveRule(this.nodeRef, rule);
+    		// Fail
+    		fail("Editors cannot create rules.");
+    	}
+    	catch (Exception exception)
+    	{
+    		// Ok
+    	}
+    }
+    
+    public void testRuleServicePermissionsCoordinator()
+    {
+    	this.authenticationService.createAuthentication("coordUser", "password".toCharArray());
+    	this.permissionService.setPermission(this.nodeRef, "coordUser", PermissionService.COORDINATOR, true);
+    	this.permissionService.setInheritParentPermissions(this.nodeRef, true);
+    	
+    	this.authenticationService.authenticate("admin", "admin".toCharArray());    	
+		Rule rule2 = createTestRule();
+		this.ruleService.saveRule(this.nodeRef, rule2);    	
+		this.authenticationService.clearCurrentSecurityContext();  		
     }
     
     /**

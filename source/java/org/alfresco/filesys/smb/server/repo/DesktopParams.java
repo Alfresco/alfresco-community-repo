@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.filesys.server.SrvSession;
+import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -87,6 +88,19 @@ public class DesktopParams {
 	public final SrvSession getSession()
 	{
 		return m_session;
+	}
+
+	/**
+	 * Return the authentication ticket for the user/session
+	 * 
+	 * @return String
+	 */
+	public final String getTicket()
+	{
+		ClientInfo cInfo = m_session.getClientInformation();
+		if ( cInfo != null)
+			return cInfo.getAuthenticationTicket();
+		return null;
 	}
 	
 	/**

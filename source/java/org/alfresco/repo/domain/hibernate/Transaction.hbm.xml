@@ -70,6 +70,14 @@
          status.key.identifier = :identifier
    </query>
    
+   <query name="txn.GetLastTxnId">
+      select
+         max(txn.id)
+      from
+         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         join status.transaction as txn
+   </query>
+   
    <query name="txn.CountTransactions">
       select
          count(txn.id)
@@ -90,6 +98,21 @@
       ]]>
    </query>
 
+   <query name="txn.GetNextRemoteTxns">
+      <![CDATA[
+      select
+         txn
+      from
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
+         join txn.server as server
+      where
+         txn.id > :lastTxnId and
+         server.ipAddress != :serverIpAddress
+      order by
+         txn.id
+      ]]>
+   </query>
+
    <query name="txn.GetTxnUpdateCountForStore">
       select
          count(status.key.guid)
@@ -98,9 +121,7 @@
          join status.transaction as txn
       where
          txn.id = :txnId and
-         status.node is not null and
-         status.key.protocol = :protocol and
-         status.key.identifier = :identifier
+         status.node is not null
    </query>
 
    <query name="txn.GetTxnDeleteCountForStore">
@@ -111,9 +132,7 @@
          join status.transaction as txn
       where
          txn.id = :txnId and
-         status.node is null and
-         status.key.protocol = :protocol and
-         status.key.identifier = :identifier
+         status.node is null
    </query>
 
    <query name="txn.GetTxnChangesForStore">

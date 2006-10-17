@@ -80,6 +80,9 @@
     
     <!-- Namespace Service -->
     
+    <alias name="namespaceService" alias="NamespaceService"/>
+
+    <!-- 
     <bean id="NamespaceService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.namespace.NamespaceService</value>
@@ -97,6 +100,7 @@
             </list>
         </property>
     </bean>
+    -->
     
     <bean id="NamespaceService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
@@ -124,6 +128,9 @@
     
     <!-- Dictionary Service -->
     
+    <alias name="dictionaryService" alias="DictionaryService"/>
+    
+    <!-- 
     <bean id="DictionaryService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.dictionary.DictionaryService</value>
@@ -141,6 +148,7 @@
             </list>
         </property>
     </bean>
+    -->
     
     <bean id="DictionaryService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">

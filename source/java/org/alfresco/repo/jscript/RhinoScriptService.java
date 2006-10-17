@@ -220,25 +220,24 @@ public class RhinoScriptService implements ScriptService
             // add useful util objects
             model.put("actions", new Actions(services));
             model.put("logger", new ScriptLogger());
+            model.put("utils", new ScriptUtils());
             
             // insert supplied object model into root of the default scope
+            for (String key : model.keySet())
             {
-                for (String key : model.keySet())
+                // set the root scope on appropriate objects
+                // this is used to allow native JS object creation etc.
+                Object obj = model.get(key);
+                if (obj instanceof Scopeable)
                 {
-                    // set the root scope on appropriate objects
-                    // this is used to allow native JS object creation etc.
-                    Object obj = model.get(key);
-                    if (obj instanceof Scopeable)
-                    {
-                        ((Scopeable)obj).setScope(scope);
-                    }
-                    
-                    // convert/wrap each object to JavaScript compatible
-                    Object jsObject = Context.javaToJS(obj, scope);
-                    
-                    // insert into the root scope ready for access by the script
-                    ScriptableObject.putProperty(scope, key, jsObject);
+                    ((Scopeable)obj).setScope(scope);
                 }
+                
+                // convert/wrap each object to JavaScript compatible
+                Object jsObject = Context.javaToJS(obj, scope);
+                
+                // insert into the root scope ready for access by the script
+                ScriptableObject.putProperty(scope, key, jsObject);
             }
             
             // execute the script
@@ -342,6 +341,10 @@ public class RhinoScriptService implements ScriptService
         }
         
         model.put("search", new Search(services, companyHome.getStoreRef(), resolver));
+        
+        model.put("session", new Session(services, resolver));
+        
+        model.put("classification", new Classification(services, companyHome.getStoreRef(), resolver));
         
         return model;
     }

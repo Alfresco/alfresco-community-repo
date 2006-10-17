@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,9 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
+import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,8 +50,6 @@ import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -58,12 +61,13 @@ import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
  * 
  * @author Derek Hulley
  */
-public class SchemaBootstrap implements ApplicationListener
+public class SchemaBootstrap extends AbstractLifecycleBean
 {
     /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
     private static final String PLACEHOLDER_SCRIPT_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
 
     private static final String MSG_EXECUTING_SCRIPT = "schema.update.msg.executing_script";
+    private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
     private static final String ERR_UPDATE_FAILED = "schema.update.err.update_failed";
     private static final String ERR_VALIDATION_FAILED = "schema.update.err.validation_failed";
     private static final String ERR_SCRIPT_NOT_RUN = "schema.update.err.update_script_not_run";
@@ -148,58 +152,6 @@ public class SchemaBootstrap implements ApplicationListener
         this.applyUpdateScriptPatches = scriptPatches;
     }
 
-    public void onApplicationEvent(ApplicationEvent event)
-    {
-        if (!(event instanceof ContextRefreshedEvent))
-        {
-            // only work on startup
-            return;
-        }
-
-        // do everything in a transaction
-        Session session = getLocalSessionFactory().openSession();
-        Transaction transaction = session.beginTransaction();
-        try
-        {
-            // make sure that we don't autocommit
-            Connection connection = session.connection();
-            connection.setAutoCommit(false);
-            
-            Configuration cfg = localSessionFactory.getConfiguration();
-            // dump the schema, if required
-            if (schemaOuputFilename != null)
-            {
-                File schemaOutputFile = new File(schemaOuputFilename);
-                dumpSchemaCreate(cfg, schemaOutputFile);
-            }
-            
-            // update the schema, if required
-            if (updateSchema)
-            {
-                updateSchema(cfg, session, connection);
-            }
-            
-            // verify that all patches have been applied correctly 
-            checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);   // check scripts
-            checkSchemaPatchScripts(cfg, session, connection, applyUpdateScriptPatches, false);      // check scripts
-
-            // all done successfully
-            transaction.commit();
-        }
-        catch (Throwable e)
-        {
-            try { transaction.rollback(); } catch (Throwable ee) {}
-            if (updateSchema)
-            {
-                throw new AlfrescoRuntimeException(ERR_UPDATE_FAILED, e);
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException(ERR_VALIDATION_FAILED, e);
-            }
-        }
-    }
-    
     private void dumpSchemaCreate(Configuration cfg, File schemaOutputFile)
     {
         // if the file exists, delete it
@@ -220,39 +172,78 @@ public class SchemaBootstrap implements ApplicationListener
         return (SessionFactory) localSessionFactory.getObject();
     }
     
+    private static class NoSchemaException extends Exception
+    {
+        private static final long serialVersionUID = 5574280159910824660L;
+    }
+    
     /**
      * @return Returns the number of applied patches
      */
     private int countAppliedPatches(Connection connection) throws Exception
     {
-        Statement stmt = connection.createStatement();
+        DatabaseMetaData dbMetadata = connection.getMetaData();
+        
+        ResultSet tableRs = dbMetadata.getTables(null, null, "%", null);
+        boolean newPatchTable = false;
+        boolean oldPatchTable = false;
         try
         {
-            ResultSet rs = stmt.executeQuery("select count(id) from alf_applied_patch");
-            rs.next();
-            int count = rs.getInt(1);
-            return count;
-        }
-        catch (Throwable e)
-        {
-            // we'll try another table name
+            while (tableRs.next())
+            {
+                String tableName = tableRs.getString("TABLE_NAME");
+                if (tableName.equalsIgnoreCase("applied_patch"))
+                {
+                    oldPatchTable = true;
+                    break;
+                }
+                else if (tableName.equalsIgnoreCase("alf_applied_patch"))
+                {
+                    newPatchTable = true;
+                    break;
+                }
+            }
         }
         finally
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            try { tableRs.close(); } catch (Throwable e) {e.printStackTrace(); }
         }
-        // for pre-1.4 databases, the table was named differently
-        stmt = connection.createStatement();
-        try
+        
+        if (newPatchTable)
         {
-            ResultSet rs = stmt.executeQuery("select count(id) from applied_patch");
-            rs.next();
-            int count = rs.getInt(1);
-            return count;
+            Statement stmt = connection.createStatement();
+            try
+            {
+                ResultSet rs = stmt.executeQuery("select count(id) from alf_applied_patch");
+                rs.next();
+                int count = rs.getInt(1);
+                return count;
+            }
+            finally
+            {
+                try { stmt.close(); } catch (Throwable e) {}
+            }
         }
-        finally
+        else if (oldPatchTable)
         {
-            try { stmt.close(); } catch (Throwable e) {}
+            // found the old style table name
+            Statement stmt = connection.createStatement();
+            try
+            {
+                ResultSet rs = stmt.executeQuery("select count(id) from applied_patch");
+                rs.next();
+                int count = rs.getInt(1);
+                return count;
+            }
+            finally
+            {
+                try { stmt.close(); } catch (Throwable e) {}
+            }
+        }
+        else
+        {
+            // The applied patches table is not present
+            throw new NoSchemaException();
         }
     }
     
@@ -308,22 +299,21 @@ public class SchemaBootstrap implements ApplicationListener
         {
             countAppliedPatches(connection);
         }
-        catch (Throwable e)
+        catch (NoSchemaException e)
         {
             create = true;
         }
+        // Get the dialect
+        final Dialect dialect = Dialect.getDialect(cfg.getProperties());
+        String dialectStr = dialect.getClass().getName();
+
         if (create)
         {
-            // Get the dialect
-            final Dialect dialect = Dialect.getDialect(cfg.getProperties());
-            String dialectStr = dialect.getClass().getName();
-
             // the applied patch table is missing - we assume that all other tables are missing
             // perform a full update using Hibernate-generated statements
             File tempFile = TempFileProvider.createTempFile("AlfrescoSchemaCreate-" + dialectStr + "-", ".sql");
             dumpSchemaCreate(cfg, tempFile);
-            FileInputStream tempInputStream = new FileInputStream(tempFile);
-            executeScriptFile(cfg, connection, tempInputStream, tempFile.getPath());
+            executeScriptFile(cfg, connection, tempFile, tempFile.getPath());
             // execute post-create scripts (not patches)
             for (String scriptUrl : this.postCreateScriptUrls)
             {
@@ -340,12 +330,11 @@ public class SchemaBootstrap implements ApplicationListener
             Writer writer = null;
             try
             {
-                final Dialect dialect = Dialect.getDialect(cfg.getProperties());
                 DatabaseMetadata metadata = new DatabaseMetadata(connection, dialect);
                 String[] sqls = cfg.generateSchemaUpdateScript(dialect, metadata);
                 if (sqls.length > 0)
                 {
-                    tempFile = TempFileProvider.createTempFile("AlfrescoSchemaUpdate", ".sql");
+                    tempFile = TempFileProvider.createTempFile("AlfrescoSchemaUpdate-" + dialectStr + "-", ".sql");
                     writer = new BufferedWriter(new FileWriter(tempFile));
                     for (String sql : sqls)
                     {
@@ -364,8 +353,7 @@ public class SchemaBootstrap implements ApplicationListener
             // execute if there were changes raised by Hibernate
             if (tempFile != null)
             {
-                InputStream tempInputStream = new FileInputStream(tempFile);
-                executeScriptFile(cfg, connection, tempInputStream, tempFile.getPath());
+                executeScriptFile(cfg, connection, tempFile, tempFile.getPath());
             }
         }
     }
@@ -414,14 +402,27 @@ public class SchemaBootstrap implements ApplicationListener
     private void executeScriptUrl(Configuration cfg, Connection connection, String scriptUrl) throws Exception
     {
         Dialect dialect = Dialect.getDialect(cfg.getProperties());
+        String dialectStr = dialect.getClass().getName();
         InputStream scriptInputStream = getScriptInputStream(dialect.getClass(), scriptUrl);
         // check that it exists
         if (scriptInputStream == null)
         {
             throw AlfrescoRuntimeException.create(ERR_SCRIPT_NOT_FOUND, scriptUrl);
         }
+        // write the script to a temp location for future and failure reference
+        File tempFile = null;
+        try
+        {
+            tempFile = TempFileProvider.createTempFile("AlfrescoSchemaUpdate-" + dialectStr + "-", ".sql");
+            ContentWriter writer = new FileContentWriter(tempFile);
+            writer.putContent(scriptInputStream);
+        }
+        finally
+        {
+            try { scriptInputStream.close(); } catch (Throwable e) {}  // usually a duplicate close
+        }
         // now execute it
-        executeScriptFile(cfg, connection, scriptInputStream, scriptUrl);
+        executeScriptFile(cfg, connection, tempFile, scriptUrl);
     }
     
     /**
@@ -463,11 +464,12 @@ public class SchemaBootstrap implements ApplicationListener
     private void executeScriptFile(
             Configuration cfg,
             Connection connection,
-            InputStream scriptInputStream,
+            File scriptFile,
             String scriptUrl) throws Exception
     {
         logger.info(I18NUtil.getMessage(MSG_EXECUTING_SCRIPT, scriptUrl));
         
+        InputStream scriptInputStream = new FileInputStream(scriptFile);
         BufferedReader reader = new BufferedReader(new InputStreamReader(scriptInputStream, "UTF8"));
         try
         {
@@ -512,21 +514,9 @@ public class SchemaBootstrap implements ApplicationListener
                 // execute, if required
                 if (execute)
                 {
-                    Statement stmt = connection.createStatement();
-                    try
-                    {
-                        sql = sb.toString();
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Executing statment: " + sql);
-                        }
-                        stmt.execute(sql);
-                        sb = new StringBuilder(1024);
-                    }
-                    finally
-                    {
-                        try { stmt.close(); } catch (Throwable e) {}
-                    }
+                    sql = sb.toString();
+                    executeStatement(connection, sql, line, scriptFile);
+                    sb = new StringBuilder(1024);
                 }
             }
         }
@@ -535,5 +525,86 @@ public class SchemaBootstrap implements ApplicationListener
             try { reader.close(); } catch (Throwable e) {}
             try { scriptInputStream.close(); } catch (Throwable e) {}
         }
+    }
+    
+    /**
+     * Execute the given SQL statement, absorbing exceptions that we expect during
+     * schema creation or upgrade.
+     */
+    private void executeStatement(Connection connection, String sql, int line, File file) throws Exception
+    {
+        Statement stmt = connection.createStatement();
+        try
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Executing statment: " + sql);
+            }
+            stmt.execute(sql);
+        }
+        catch (SQLException e)
+        {
+            String msg = I18NUtil.getMessage(ERR_STATEMENT_FAILED, sql, e.getMessage(), file.getAbsolutePath(), line);
+            // ignore exceptions generated by the creation of indexes that already exist
+            logger.error(msg);
+            throw e;
+        }
+        finally
+        {
+            try { stmt.close(); } catch (Throwable e) {}
+        }
+    }
+
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        // do everything in a transaction
+        Session session = getLocalSessionFactory().openSession();
+        Transaction transaction = session.beginTransaction();
+        try
+        {
+            // make sure that we don't autocommit
+            Connection connection = session.connection();
+            connection.setAutoCommit(false);
+            
+            Configuration cfg = localSessionFactory.getConfiguration();
+            // dump the schema, if required
+            if (schemaOuputFilename != null)
+            {
+                File schemaOutputFile = new File(schemaOuputFilename);
+                dumpSchemaCreate(cfg, schemaOutputFile);
+            }
+            
+            // update the schema, if required
+            if (updateSchema)
+            {
+                updateSchema(cfg, session, connection);
+            }
+            
+            // verify that all patches have been applied correctly 
+            checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);   // check scripts
+            checkSchemaPatchScripts(cfg, session, connection, applyUpdateScriptPatches, false);      // check scripts
+
+            // all done successfully
+            transaction.commit();
+        }
+        catch (Throwable e)
+        {
+            try { transaction.rollback(); } catch (Throwable ee) {}
+            if (updateSchema)
+            {
+                throw new AlfrescoRuntimeException(ERR_UPDATE_FAILED, e);
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException(ERR_VALIDATION_FAILED, e);
+            }
+        }
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        // NOOP
     }
 }

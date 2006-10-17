@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -272,5 +273,26 @@ public class DictionaryDAOTest extends TestCase
         assertFalse(test5);
     }
     
-    
+
+    public void testPropertyOverride()
+    {
+        TypeDefinition type1 = service.getType(QName.createQName(TEST_URL, "overridetype1"));
+        Map<QName, PropertyDefinition> props1 = type1.getProperties();
+        PropertyDefinition prop1 = props1.get(QName.createQName(TEST_URL, "propoverride"));
+        String def1 = prop1.getDefaultValue();
+        assertEquals("one", def1);
+        
+        TypeDefinition type2 = service.getType(QName.createQName(TEST_URL, "overridetype2"));
+        Map<QName, PropertyDefinition> props2 = type2.getProperties();
+        PropertyDefinition prop2 = props2.get(QName.createQName(TEST_URL, "propoverride"));
+        String def2 = prop2.getDefaultValue();
+        assertEquals("two", def2);
+
+        TypeDefinition type3 = service.getType(QName.createQName(TEST_URL, "overridetype3"));
+        Map<QName, PropertyDefinition> props3 = type3.getProperties();
+        PropertyDefinition prop3 = props3.get(QName.createQName(TEST_URL, "propoverride"));
+        String def3 = prop3.getDefaultValue();
+        assertEquals("three", def3);
+    }
+
 }

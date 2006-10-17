@@ -187,13 +187,14 @@
                 <!--  Applicable actions for workflow package -->
                 <property name="bpm:packageActionGroup">
                     <type>d:text</type>
-                    <!-- NOTE: no default specified, therefore no actions -->
+                    <!-- NOTE: empty default specified, therefore no actions -->
+                    <default></default>
                 </property>
 
                 <!--  Applicable actions for workflow package item -->
                 <property name="bpm:packageItemActionGroup">
                     <type>d:text</type>
-                    <default>workflow_item_read_actions</default>
+                    <default>read_package_item_actions</default>
                 </property>
 
             </properties>
@@ -247,6 +248,29 @@
 
             </properties>
 
+            <overrides>
+
+                <property name="bpm:packageActionGroup">
+                    <default>add_package_item_actions</default>
+                </property>
+
+                <property name="bpm:packageItemActionGroup">
+                    <default>edit_and_remove_package_item_actions</default>
+                </property>
+
+            </overrides>
+
+        </type>
+
+    </types>
+
+    <aspects>
+    
+        <!--                       -->
+        <!--  Single Task Assignee -->
+        <!--                       -->
+        
+        <aspect name="bpm:assignee">
             <associations>
 
                 <association name="bpm:assignee">
@@ -262,24 +286,29 @@
                 </association>
 
             </associations>
+        </aspect>
+    
+        <!--                          -->
+        <!--  Multiple Task Assignees -->
+        <!--                          -->
 
-            <overrides>
+        <aspect name="bpm:assignees">
+            <associations>
 
-                <property name="bpm:packageActionGroup">
-                    <default>workflow_collection_actions</default>
-                </property>
+                <association name="bpm:assignees">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>cm:person</class>
+                        <mandatory>true</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
 
-                <property name="bpm:packageItemActionGroup">
-                    <default>workflow_item_collection_actions</default>
-                </property>
-
-            </overrides>
-
-        </type>
-
-    </types>
-
-    <aspects>
+            </associations>
+        </aspect>
 
         <!--                                                             -->
         <!--  A collection of content routed through a workflow.         -->

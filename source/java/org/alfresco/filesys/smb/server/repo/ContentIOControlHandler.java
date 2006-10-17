@@ -19,6 +19,7 @@ package org.alfresco.filesys.smb.server.repo;
 import java.io.FileNotFoundException;
 
 import org.alfresco.filesys.server.SrvSession;
+import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.TreeConnection;
@@ -30,10 +31,12 @@ import org.alfresco.filesys.smb.server.repo.ContentDiskDriver;
 import org.alfresco.filesys.smb.server.repo.IOControlHandler;
 import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,6 +86,16 @@ public class ContentIOControlHandler implements IOControlHandler
     public final CifsHelper getCifsHelper()
     {
     	return contentDriver.getCifsHelper();
+    }
+    
+    /**
+     * Return the authentication service
+     * 
+     * @return AuthenticationService
+     */
+    public final AuthenticationService getAuthenticationService()
+    {
+    	return contentDriver.getAuthenticationService();
     }
     
     /**
@@ -511,6 +524,11 @@ public class ContentIOControlHandler implements IOControlHandler
         // Start a transaction
         
         sess.beginTransaction( getTransactionService(), true);
+
+        // Get an authentication ticket for the client, or validate the existing ticket. The ticket can be used when
+        // generating URLs for the client-side application so that the user does not have to re-authenticate
+        
+        getTicketForClient( sess);
         
         // Get the list of targets for the action
         
@@ -623,5 +641,66 @@ public class ContentIOControlHandler implements IOControlHandler
         // Return the response
         
     	return respBuf;
+    }
+    
+    /**
+     * Get, or validate, an authentication ticket for the client
+     * 
+     * @param sess SrvSession
+     */
+    private final void getTicketForClient(SrvSession sess)
+    {
+    	// Get the client information and check if there is a ticket allocated
+    	
+    	ClientInfo cInfo = sess.getClientInformation();
+    	if ( cInfo == null)
+    		return;
+    	
+    	boolean needTicket = true;
+    	
+    	if ( cInfo.hasAuthenticationTicket())
+    	{
+    		// Validate the existing ticket, it may have expired
+    		
+    		try
+    		{
+    			// Validate the existing ticket
+    			
+    			getAuthenticationService().validate( cInfo.getAuthenticationTicket());
+    			needTicket = false;
+    		}
+    		catch ( AuthenticationException ex)
+    		{
+    			// Invalidate the current ticket
+    			
+    			try
+    			{
+    				getAuthenticationService().invalidateTicket( cInfo.getAuthenticationTicket());
+    				cInfo.setAuthenticationTicket( null);
+    			}
+    			catch (Exception ex2)
+    			{
+    				// DEBUG
+    				
+    				if ( logger.isDebugEnabled())
+    					logger.debug("Error during invalidate ticket", ex2);
+    			}
+    			
+    			// DEBUG
+    			
+    			if ( logger.isDebugEnabled())
+    				logger.debug("Auth ticket expired or invalid");
+    		}
+    	}
+    	
+    	// Check if a ticket needs to be allocated
+    	
+    	if ( needTicket == true)
+    	{
+    		// Allocate a new ticket and store in the client information for this session
+    		
+   			String ticket = getAuthenticationService().getCurrentTicket();
+   			cInfo.setAuthenticationTicket( ticket);
+    	}
     }
 }

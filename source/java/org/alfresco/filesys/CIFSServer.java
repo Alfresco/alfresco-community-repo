@@ -26,12 +26,11 @@ import org.alfresco.filesys.netbios.server.NetBIOSNameServer;
 import org.alfresco.filesys.server.NetworkServer;
 import org.alfresco.filesys.server.config.ServerConfiguration;
 import org.alfresco.filesys.smb.server.SMBServer;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -41,7 +40,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  * @author GKSpencer
  */
-public class CIFSServer implements ApplicationListener
+public class CIFSServer extends AbstractLifecycleBean
 {
     private static final Log logger = LogFactory.getLog("org.alfresco.smb.server");
 
@@ -81,29 +80,6 @@ public class CIFSServer implements ApplicationListener
         return (filesysConfig != null && filesysConfig.isSMBServerEnabled());
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
-    public void onApplicationEvent(ApplicationEvent event)
-    {
-        if (event instanceof ContextRefreshedEvent)
-        {
-            try
-            {
-                startServer();
-            }
-            catch (SocketException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to start CIFS server", e);
-            }
-            catch (IOException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to start CIFS server", e);
-            }
-        }
-    }
-    
     /**
      * Start the CIFS server components
      * 
@@ -264,5 +240,27 @@ public class CIFSServer implements ApplicationListener
         System.exit(1);
     }
 
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        try
+        {
+            startServer();
+        }
+        catch (SocketException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to start CIFS server", e);
+        }
+        catch (IOException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to start CIFS server", e);
+        }
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        stopServer();
+    }
 
 }

@@ -71,6 +71,10 @@ public class ClientInfo
     
     private Authentication m_authToken;
     
+    // Authentication ticket, used for web access without having to re-authenticate
+    
+    private String m_authTicket;
+    
     // Home folder node
     
     private NodeRef m_homeNode;
@@ -286,6 +290,26 @@ public class ClientInfo
     {
         return m_authToken;
     }
+
+    /**
+     * Check if the client has an authentication ticket
+     * 
+     * @return boolean
+     */
+    public final boolean hasAuthenticationTicket()
+    {
+    	return m_authTicket != null ? true : false;
+    }
+    
+    /**
+     * Return the authentication ticket
+     * 
+     * @return String
+     */
+    public final String getAuthenticationTicket()
+    {
+    	return m_authTicket;
+    }
     
     /**
      * Check if the client has a home folder node
@@ -409,6 +433,16 @@ public class ClientInfo
     {
         m_authToken = token;
     }
+
+    /**
+     * Set the authentication ticket
+     * 
+     * @param ticket String
+     */
+    public final void setAuthenticationTicket(String ticket)
+    {
+    	m_authTicket = ticket;
+    }
     
     /**
      * Set the home folder node
@@ -447,6 +481,12 @@ public class ClientInfo
         {
             str.append(",token=");
             str.append(getAuthenticationToken());
+        }
+
+        if ( hasAuthenticationTicket())
+        {
+        	str.append(",ticket=");
+        	str.append(getAuthenticationTicket());
         }
         
         if (isGuest())

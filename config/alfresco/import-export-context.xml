@@ -171,8 +171,8 @@
       <property name="patchDao">
          <ref bean="patchDaoComponent" />
       </property>
-      <property name="versionDao">
-         <ref bean="versionCounterDaoComponent" />
+      <property name="versionCounterService">
+         <ref bean="versionCounterService" />
       </property>
     </bean>
     

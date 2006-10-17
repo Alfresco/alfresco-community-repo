@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
@@ -91,6 +93,11 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
      * The dictionary service
      */
     private DictionaryService dictionaryService;
+    
+    /**
+     * The permission service
+     */
+    private PermissionService permissionService;
     
     /**
      * The action service implementation which we need for some things.
@@ -177,6 +184,16 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * Set the permission service
+     * 
+     * @param permissionService		the permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+    	this.permissionService = permissionService;
     }
     
     /**
@@ -572,49 +589,56 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
      */
     public void saveRule(NodeRef nodeRef, Rule rule)
     {
-        disableRules();
-        try
-        {
-        	if (this.nodeService.exists(nodeRef) == false)
-        	{
-        		throw new RuleServiceException("The node does not exist.");
-        	}
-    
-        	NodeRef ruleNodeRef = rule.getNodeRef();
-        	if (ruleNodeRef == null)
-        	{
-        		if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == false)
-        		{
-        			// Add the actionable aspect
-        			this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_RULES, null);
-        		}
-    
-    			// Create the action node
-    			ruleNodeRef = this.nodeService.createNode(
-    					getSavedRuleFolderRef(nodeRef),
-    					ContentModel.ASSOC_CONTAINS,
-    					QName.createQName(RuleModel.RULE_MODEL_URI, ASSOC_NAME_RULES_PREFIX + GUID.generate()),
-    					RuleModel.TYPE_RULE).getChildRef();
-    			
-    			// Set the rule node reference and the owning node reference
-                rule.setNodeRef(ruleNodeRef);
-        	}
-            
-            // Update the properties of the rule
-            this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_TITLE, rule.getTitle());
-            this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_DESCRIPTION, rule.getDescription());
-            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_RULE_TYPE, (Serializable)rule.getRuleTypes());
-            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_APPLY_TO_CHILDREN, rule.isAppliedToChildren());
-            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_EXECUTE_ASYNC, rule.getExecuteAsynchronously());
-            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_DISABLED, rule.getRuleDisabled());  
-        	
-        	// Save the rule's action
-            saveAction(ruleNodeRef, rule);
-        }
-        finally
-        {
-            enableRules();
-        }
+    	if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+    	{    	
+	        disableRules();
+	        try
+	        {
+	        	if (this.nodeService.exists(nodeRef) == false)
+	        	{
+	        		throw new RuleServiceException("The node does not exist.");
+	        	}
+	    
+	        	NodeRef ruleNodeRef = rule.getNodeRef();
+	        	if (ruleNodeRef == null)
+	        	{
+	        		if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == false)
+	        		{
+	        			// Add the actionable aspect
+	        			this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_RULES, null);
+	        		}
+	    
+	    			// Create the action node
+	    			ruleNodeRef = this.nodeService.createNode(
+	    					getSavedRuleFolderRef(nodeRef),
+	    					ContentModel.ASSOC_CONTAINS,
+	    					QName.createQName(RuleModel.RULE_MODEL_URI, ASSOC_NAME_RULES_PREFIX + GUID.generate()),
+	    					RuleModel.TYPE_RULE).getChildRef();
+	    			
+	    			// Set the rule node reference and the owning node reference
+	                rule.setNodeRef(ruleNodeRef);
+	        	}
+	            
+	            // Update the properties of the rule
+	            this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_TITLE, rule.getTitle());
+	            this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_DESCRIPTION, rule.getDescription());
+	            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_RULE_TYPE, (Serializable)rule.getRuleTypes());
+	            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_APPLY_TO_CHILDREN, rule.isAppliedToChildren());
+	            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_EXECUTE_ASYNC, rule.getExecuteAsynchronously());
+	            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_DISABLED, rule.getRuleDisabled());  
+	        	
+	        	// Save the rule's action
+	            saveAction(ruleNodeRef, rule);
+	        }
+	        finally
+	        {
+	            enableRules();
+	        }
+    	}
+    	else
+    	{
+    		throw new RuleServiceException("Insufficient permissions to save a rule.");
+    	}
     }
     
     /**
@@ -667,22 +691,29 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
      */
     public void removeRule(NodeRef nodeRef, Rule rule)
     {
-    	if (this.nodeService.exists(nodeRef) == true &&
-    		this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+    	if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
     	{
-            disableRules(nodeRef);
-            try
-            {
-        		NodeRef ruleNodeRef = rule.getNodeRef();
-        		if (ruleNodeRef != null)
-        		{
-        			this.nodeService.removeChild(getSavedRuleFolderRef(nodeRef), ruleNodeRef);
-        		}
-            }
-            finally
-            {
-                enableRules(nodeRef);
-            }
+	    	if (this.nodeService.exists(nodeRef) == true &&
+	    		this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+	    	{
+	            disableRules(nodeRef);
+	            try
+	            {
+	        		NodeRef ruleNodeRef = rule.getNodeRef();
+	        		if (ruleNodeRef != null)
+	        		{
+	        			this.nodeService.removeChild(getSavedRuleFolderRef(nodeRef), ruleNodeRef);
+	        		}
+	            }
+	            finally
+	            {
+	                enableRules(nodeRef);
+	            }
+	    	}
+    	}
+    	else
+    	{
+    		throw new RuleServiceException("Insufficient permissions to remove a rule.");
     	}
     }	
     
@@ -691,20 +722,27 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
      */
     public void removeAllRules(NodeRef nodeRef)
     {
-    	if (this.nodeService.exists(nodeRef) == true && 
-        	this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+    	if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
     	{
-            NodeRef folder = getSavedRuleFolderRef(nodeRef);
-            if (folder != null)
-            {
-        		List<ChildAssociationRef> ruleChildAssocs = this.nodeService.getChildAssocs(
-                                                                            folder, 
-                                                                            RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
-        		for (ChildAssociationRef ruleChildAssoc : ruleChildAssocs)
-    			{
-    				this.nodeService.removeChild(folder, ruleChildAssoc.getChildRef());
-    			}
-            }
+	    	if (this.nodeService.exists(nodeRef) == true && 
+	        	this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+	    	{
+	            NodeRef folder = getSavedRuleFolderRef(nodeRef);
+	            if (folder != null)
+	            {
+	        		List<ChildAssociationRef> ruleChildAssocs = this.nodeService.getChildAssocs(
+	                                                                            folder, 
+	                                                                            RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+	        		for (ChildAssociationRef ruleChildAssoc : ruleChildAssocs)
+	    			{
+	    				this.nodeService.removeChild(folder, ruleChildAssoc.getChildRef());
+	    			}
+	            }
+	    	}
+    	}
+    	else
+    	{
+    		throw new RuleServiceException("Insufficient permissions to remove a rule.");
     	}
     }
 	

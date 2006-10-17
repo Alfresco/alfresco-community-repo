@@ -104,6 +104,7 @@ public class CopyServiceImplTest extends BaseSpringTest
     private static final QName TEST_MANDATORY_ASPECT_QNAME = QName.createQName(TEST_TYPE_NAMESPACE, "testMandatoryAspect");
     private static final QName PROP5_QNAME_MANDATORY = QName.createQName(TEST_TYPE_NAMESPACE, "prop5Mandatory");
     
+    private static final String TEST_NAME = "testName";
 	private static final String TEST_VALUE_1 = "testValue1";
 	private static final String TEST_VALUE_2 = "testValue2";
     private static final String TEST_VALUE_3 = "testValue3";
@@ -239,6 +240,7 @@ public class CopyServiceImplTest extends BaseSpringTest
 	private Map<QName, Serializable> createTypePropertyBag()
 	{
 		Map<QName, Serializable> result = new HashMap<QName, Serializable>();
+		result.put(ContentModel.PROP_NAME, TEST_NAME);
 		result.put(PROP1_QNAME_MANDATORY, TEST_VALUE_1);
 		result.put(PROP2_QNAME_OPTIONAL, TEST_VALUE_2);
         result.put(PROP5_QNAME_MANDATORY, TEST_VALUE_3);
@@ -623,6 +625,31 @@ public class CopyServiceImplTest extends BaseSpringTest
 		NodeRef value = (NodeRef)ruleAction.getParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
 		assertNotNull(value);
 		assertEquals(nodeTwoCopy, value);
+	}
+	 
+	public void testCopyAndRename()
+	{
+		// Check a normal copy with no dup restrictions
+		NodeRef copy = this.copyService.copyAndRename(
+				this.sourceNodeRef,
+				this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+				QName.createQName("{test}copyAssoc"),
+				false);		
+		checkCopiedNode(this.sourceNodeRef, copy, true, true, false); 		
+		assertTrue(TEST_NAME.equals(this.nodeService.getProperty(copy, ContentModel.PROP_NAME)));
+		
+		// Create a folder and content node		
+		Map<QName, Serializable> propsFolder = new HashMap<QName, Serializable>(1);
+		propsFolder.put(ContentModel.PROP_NAME, "tempFolder");
+		NodeRef folderNode = this.nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();		
+		Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+		props.put(ContentModel.PROP_NAME, TEST_NAME);
+		NodeRef contentNode = this.nodeService.createNode(folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName("{test}renametest"), ContentModel.TYPE_CONTENT, props).getChildRef();
+		
+		// Now copy the content node with the duplicate name restriction
+		NodeRef contentCopy = this.copyService.copy(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName("{test}bobbins"), false);
+		assertFalse(TEST_NAME.equals(this.nodeService.getProperty(contentCopy, ContentModel.PROP_NAME)));
 	}
 	
 	/**

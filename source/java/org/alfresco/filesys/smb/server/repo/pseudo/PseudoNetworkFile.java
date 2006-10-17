@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.smb.SeekType;
 
@@ -272,9 +271,7 @@ public class PseudoNetworkFile extends NetworkFile
      */
     public void truncateFile(long siz) throws IOException
     {
-        // Do not allow the file to be written to
-        
-        throw new AccessDeniedException("Cannot truncate pseudo file");
+        // Allow the truncate, just do not do anything
     }
 
     /**
@@ -286,9 +283,7 @@ public class PseudoNetworkFile extends NetworkFile
      */
     public void writeFile(byte[] buf, int len, int pos) throws java.io.IOException
     {
-        // Do not allow the file to be written to
-        
-        throw new AccessDeniedException("Cannot write to pseudo file");
+        // Allow the write, just do not do anything
     }
 
     /**
@@ -302,8 +297,6 @@ public class PseudoNetworkFile extends NetworkFile
      */
     public void writeFile(byte[] buf, int len, int pos, long offset) throws java.io.IOException
     {
-        // Do not allow the file to be written to
-        
-        throw new AccessDeniedException("Cannot write to pseudo file");
+        // Allow the write, just do not do anything
     }
 }

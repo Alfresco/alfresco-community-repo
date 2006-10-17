@@ -28,32 +28,32 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
-
+import org.mozilla.javascript.Wrapper;
 
 /**
  * Scripted Action service for describing and executing actions against Nodes.
- *  
+ * 
  * @author davidc
  */
 public final class Actions implements Scopeable
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
-    
+
     /** Root scope for this object */
     private Scriptable scope;
-
 
     /**
      * Constructor
      * 
-     * @param services   repository service registry
+     * @param services
+     *            repository service registry
      */
     public Actions(ServiceRegistry services)
     {
         this.services = services;
     }
-    
+
     /**
      * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
      */
@@ -61,11 +61,11 @@ public final class Actions implements Scopeable
     {
         this.scope = scope;
     }
-    
+
     /**
      * Gets the list of registered action names
      * 
-     * @return  the registered action names
+     * @return the registered action names
      */
     public String[] getRegistered()
     {
@@ -79,17 +79,18 @@ public final class Actions implements Scopeable
         }
         return registered;
     }
-    
+
     public String[] jsGet_registered()
     {
         return getRegistered();
     }
-    
+
     /**
      * Create an Action
      * 
-     * @param actionName  the action name
-     * @return  the action
+     * @param actionName
+     *            the action name
+     * @return the action
      */
     public ScriptAction create(String actionName)
     {
@@ -104,8 +105,7 @@ public final class Actions implements Scopeable
         }
         return scriptAction;
     }
-    
-    
+
     /**
      * Scriptable Action
      * 
@@ -114,23 +114,25 @@ public final class Actions implements Scopeable
     public final class ScriptAction implements Serializable, Scopeable
     {
         private static final long serialVersionUID = 5794161358406531996L;
-        
+
         /** Root scope for this object */
-        private Scriptable scope;        
+        private Scriptable scope;
 
         /** Converter with knowledge of action parameter values */
         private ActionValueConverter converter;
-        
+
         /** Action state */
         private Action action;
+
         private ActionDefinition actionDef;
+
         private ScriptableParameterMap<String, Serializable> parameters = null;
-        
-        
+
         /**
          * Construct
          * 
-         * @param action  Alfresco action
+         * @param action
+         *            Alfresco action
          */
         public ScriptAction(Action action, ActionDefinition actionDef)
         {
@@ -138,7 +140,7 @@ public final class Actions implements Scopeable
             this.actionDef = actionDef;
             this.converter = new ActionValueConverter();
         }
-        
+
         /**
          * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
          */
@@ -146,28 +148,25 @@ public final class Actions implements Scopeable
         {
             this.scope = scope;
         }
-        
+
         /**
          * Returns the action name
          * 
-         * @return  action name
+         * @return action name
          */
         public String getName()
         {
             return this.actionDef.getName();
         }
-        
+
         public String jsGet_name()
         {
             return getName();
         }
-        
+
         /**
-         * Return all the properties known about this node.
-         * 
-         * The Map returned implements the Scriptable interface to allow access to the properties via
-         * JavaScript associative array access. This means properties of a node can be access thus:
-         * <code>node.properties["name"]</code>
+         * Return all the properties known about this node. The Map returned implements the Scriptable interface to allow access to the properties via JavaScript associative array
+         * access. This means properties of a node can be access thus: <code>node.properties["name"]</code>
          * 
          * @return Map of properties for this Node.
          */
@@ -187,17 +186,18 @@ public final class Actions implements Scopeable
                 this.parameters.setModified(false);
             }
             return this.parameters;
-        }        
-        
+        }
+
         public Map<String, Serializable> jsGet_parameters()
         {
             return getParameters();
         }
-        
+
         /**
          * Execute action
          * 
-         * @param node  the node to execute action upon
+         * @param node
+         *            the node to execute action upon
          */
         @SuppressWarnings("synthetic-access")
         public void execute(Node node)
@@ -206,7 +206,7 @@ public final class Actions implements Scopeable
             {
                 Map<String, Serializable> actionParams = action.getParameterValues();
                 actionParams.clear();
-                
+
                 for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
                 {
                     // perform the conversion from script wrapper object to repo serializable values
@@ -217,7 +217,7 @@ public final class Actions implements Scopeable
             }
             services.getActionService().executeAction(action, node.getNodeRef());
         }
-        
+
         /**
          * Value converter with specific knowledge of action parameters
          * 
@@ -227,10 +227,12 @@ public final class Actions implements Scopeable
         {
             /**
              * Convert Action Parameter for Script usage
-             *  
-             * @param paramName  parameter name
-             * @param value  value to convert
-             * @return  converted value
+             * 
+             * @param paramName
+             *            parameter name
+             * @param value
+             *            value to convert
+             * @return converted value
              */
             @SuppressWarnings("synthetic-access")
             public Serializable convertActionParamForScript(String paramName, Serializable value)
@@ -238,7 +240,7 @@ public final class Actions implements Scopeable
                 ParameterDefinition paramDef = actionDef.getParameterDefintion(paramName);
                 if (paramDef != null && paramDef.getType().equals(DataTypeDefinition.QNAME))
                 {
-                    return ((QName)value).toPrefixString(services.getNamespaceService());
+                    return ((QName) value).toPrefixString(services.getNamespaceService());
                 }
                 else
                 {
@@ -249,17 +251,45 @@ public final class Actions implements Scopeable
             /**
              * Convert Action Parameter for Java usage
              * 
-             * @param paramName  parameter name
-             * @param value  value to convert
-             * @return  converted value
+             * @param paramName
+             *            parameter name
+             * @param value
+             *            value to convert
+             * @return converted value
              */
             @SuppressWarnings("synthetic-access")
             public Serializable convertActionParamForRepo(String paramName, Serializable value)
             {
                 ParameterDefinition paramDef = actionDef.getParameterDefintion(paramName);
+
                 if (paramDef != null && paramDef.getType().equals(DataTypeDefinition.QNAME))
                 {
-                    return QName.createQName((String)value, services.getNamespaceService());
+                    if (value instanceof Wrapper)
+                    {
+                        // unwrap a Java object from a JavaScript wrapper
+                        // recursively call this method to convert the unwrapped value
+                        return convertActionParamForRepo(paramName, (Serializable) ((Wrapper) value).unwrap());
+                    }
+                    else
+                    {
+                        if (value instanceof String)
+                        {
+                            String stringQName = (String) value;
+                            if (stringQName.startsWith("{"))
+                            {
+                                return QName.createQName(stringQName);
+                               
+                            }
+                            else
+                            {
+                                return QName.createQName(stringQName, services.getNamespaceService());
+                            }
+                        }
+                        else
+                        {
+                            return value;
+                        }
+                    }
                 }
                 else
                 {
@@ -269,39 +299,41 @@ public final class Actions implements Scopeable
         }
     }
 
-    
     /**
      * Scripted Parameter map with modified flag.
-     *
+     * 
      * @author davidc
      */
-    public static final class ScriptableParameterMap<K,V> extends ScriptableHashMap<K,V> 
+    public static final class ScriptableParameterMap<K, V> extends ScriptableHashMap<K, V>
     {
         private static final long serialVersionUID = 574661815973241554L;
-        private boolean modified = false;
 
+        private boolean modified = false;
 
         /**
          * Is this a modified parameter map?
          * 
-         * @return  true => modified
+         * @return true => modified
          */
-        /*package*/ boolean isModified()
+        /* package */boolean isModified()
         {
             return modified;
         }
-        
+
         /**
          * Set explicitly whether this map is modified
          * 
-         * @param modified   true => modified, false => not modified
+         * @param modified
+         *            true => modified, false => not modified
          */
-        /*package*/ void setModified(boolean modified)
+        /* package */void setModified(boolean modified)
         {
             this.modified = modified;
         }
-        
-        /* (non-Javadoc)
+
+        /*
+         * (non-Javadoc)
+         * 
          * @see org.mozilla.javascript.Scriptable#getClassName()
          */
         @Override
@@ -310,7 +342,9 @@ public final class Actions implements Scopeable
             return "ScriptableParameterMap";
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
+         * 
          * @see org.mozilla.javascript.Scriptable#delete(java.lang.String)
          */
         @Override
@@ -320,7 +354,9 @@ public final class Actions implements Scopeable
             setModified(true);
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
+         * 
          * @see org.mozilla.javascript.Scriptable#put(java.lang.String, org.mozilla.javascript.Scriptable, java.lang.Object)
          */
         @Override
@@ -330,5 +366,5 @@ public final class Actions implements Scopeable
             setModified(true);
         }
     }
- 
+
 }

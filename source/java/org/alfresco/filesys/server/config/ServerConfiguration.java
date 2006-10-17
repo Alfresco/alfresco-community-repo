@@ -81,11 +81,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * <p>
@@ -93,7 +92,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * 
  * @author Gary K. Spencer
  */
-public class ServerConfiguration implements ApplicationListener
+public class ServerConfiguration extends AbstractLifecycleBean
 {
     // Debug logging
 
@@ -425,18 +424,6 @@ public class ServerConfiguration implements ApplicationListener
         return initialised;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
-    public void onApplicationEvent(ApplicationEvent event)
-    {
-        if (event instanceof ContextRefreshedEvent)
-        {
-            init();
-        }
-    }
-    
     /**
      * Initialize the configuration using the configuration service
      */
@@ -1791,9 +1778,7 @@ public class ServerConfiguration implements ApplicationListener
                 
                 // Load the Alfresco authenticator dynamically
                 
-                auth = loadAuthenticatorClass("org.alfresco.filesys.server.auth.ntlm.AlfrescoAuthenticator");
-                if ( auth == null)
-                    auth = loadAuthenticatorClass("org.alfresco.filesys.server.auth.AlfrescoAuthenticator");
+                auth = loadAuthenticatorClass("org.alfresco.filesys.server.auth.AlfrescoAuthenticator");
                 
                 if ( auth == null)
                     throw new AlfrescoRuntimeException("Failed to load Alfresco authenticator");
@@ -3359,4 +3344,17 @@ public class ServerConfiguration implements ApplicationListener
         
         return srvAuth;
     }
+
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        init();
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        // NO-OP
+    }
+
 }

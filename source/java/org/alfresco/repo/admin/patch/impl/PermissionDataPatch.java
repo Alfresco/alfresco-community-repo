@@ -16,35 +16,42 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.service.cmr.admin.PatchException;
-import org.hibernate.SessionFactory;
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * The roles defined in permissionsDefinition.xml moved from <b>cm:folder</b> to <b>cm:cmobject</b>.
- * This effects the data stored in the <b>node_perm_entry</b> table.
+ * This effects the data stored in the <b>permission</b> table.
  * <p>
  * JIRA: {@link http://www.alfresco.org/jira/browse/AR-344 AR-344}
- * <p>
- * <b>WILL NOT EXECUTE ANYMORE</b>
  * 
  * @author Derek Hulley
  */
-public class PermissionDataPatch extends AbstractPatch
+public class PermissionDataPatch extends AbstractPermissionChangePatch
 {
-    private static final String MSG_UPGRADE = "patch.updatePermissionData.upgrade";
+    private static final String MSG_SUCCESS = "patch.updatePermissionData.result";
     
-    public PermissionDataPatch()
-    {
-    }
-    
-    public void setSessionFactory(SessionFactory sessionFactory)
-    {
-    }
-    
+    private static final QName TYPE_QNAME_OLD = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "folder");
+    private static final QName TYPE_QNAME_NEW = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "cmobject");
+    private static final String[] NAMES = new String[] {"Coordinator", "Contributor", "Editor", "Guest"};
+
     @Override
     protected String applyInternal() throws Exception
     {
-        throw new PatchException(MSG_UPGRADE);
+        int updateCount = 0;
+        for (String permissionName : NAMES)
+        {
+            updateCount += super.renamePermission(
+                    PermissionDataPatch.TYPE_QNAME_OLD,
+                    permissionName,
+                    PermissionDataPatch.TYPE_QNAME_NEW,
+                    permissionName);
+        }
+
+        // build the result message
+        String msg = I18NUtil.getMessage(MSG_SUCCESS, updateCount);
+        // done
+        return msg;
     }
 }

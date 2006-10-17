@@ -25,6 +25,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -47,6 +48,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     private SearchService searchService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
+    private PermissionService permissionService;
     private NodeRef systemWorkflowContainer = null;
 
     
@@ -72,6 +74,11 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
     
     /**
@@ -113,6 +120,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
             QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName);
             ChildAssociationRef childRef = nodeService.createNode(packages, ContentModel.ASSOC_CONTAINS, qname, ContentModel.TYPE_SYSTEM_FOLDER);
             container = childRef.getChildRef();
+            // TODO: For now, grant full access to everyone
+            permissionService.setPermission(container, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
             isSystemPackage = true;
         }
         

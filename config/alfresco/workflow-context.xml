@@ -23,7 +23,22 @@
       <property name="importerBootstrap" ref="spacesBootstrap"/>
       <property name="searchService" ref="searchService"/>
       <property name="nodeService" ref="nodeService"/>
+      <property name="permissionService" ref="permissionService"/>
       <property name="namespaceService" ref="namespaceService"/>
+   </bean>
+
+   <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter">
+      <property name="workflowService" ref="WorkflowService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="personService" ref="PersonService"/>
+   </bean>
+
+   <bean id="workflowInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.workflow-interpreter-help</value>
+            </list>
+        </property>
    </bean>
 
    <!--                 -->
@@ -31,18 +46,10 @@
    <!--                 -->
 
    <bean id="start-workflow" class="org.alfresco.repo.workflow.StartWorkflowActionExecuter" parent="action-executer">
-      <property name="publicAction">
-         <value>true</value>
-      </property>
-      <property name="namespaceService">
-         <ref bean="NamespaceService" />
-      </property>
-      <property name="nodeService">
-         <ref bean="NodeService" />
-      </property>
-      <property name="workflowService">
-         <ref bean="WorkflowService" />
-      </property>
+      <property name="publicAction"><value>true</value></property>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="workflowService" ref="WorkflowService"/>
    </bean>
 
    <!--                       -->
@@ -73,7 +80,7 @@
       <property name="engineId" value="jbpm"/>
       <property name="JBPMTemplate" ref="jbpm_template"/>
       <property name="dictionaryService" ref="DictionaryService"/>
-      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="personService" ref="personService"/>
       <property name="serviceRegistry" ref="ServiceRegistry"/>

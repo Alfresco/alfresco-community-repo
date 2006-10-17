@@ -236,11 +236,14 @@ public interface NodeDaoService
      */
     public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition);
     
-    public Transaction getLastTxn(final StoreRef storeRef);
-    public int getTxnUpdateCountForStore(final StoreRef storeRef, final long txnId);
-    public int getTxnDeleteCountForStore(final StoreRef storeRef, final long txnId);
+    public Transaction getTxnById(long txnId);
+    public Transaction getLastTxn();
+    public Transaction getLastTxnForStore(final StoreRef storeRef);
+    public int getTxnUpdateCount(final long txnId);
+    public int getTxnDeleteCount(final long txnId);
     public int getTransactionCount();
-    public List<Transaction> getNextTxns(final Transaction lastTxn, final int count);
+    public List<Transaction> getNextTxns(final long lastTxnId, final int count);
+    public List<Transaction> getNextRemoteTxns(final long lastTxnId, final int count);
     public List<NodeRef> getTxnChangesForStore(final StoreRef storeRef, final long txnId);
     public List<NodeRef> getTxnChanges(final long txnId);
 }

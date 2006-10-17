@@ -17,10 +17,17 @@
 package org.alfresco.filesys.server.auth;
 
 import java.security.NoSuchAlgorithmException;
+import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.filesys.server.SrvSession;
+import org.alfresco.filesys.server.auth.AuthContext;
+import org.alfresco.filesys.server.auth.CifsAuthenticator;
+import org.alfresco.filesys.server.auth.ClientInfo;
+import org.alfresco.filesys.server.auth.NTLanManAuthContext;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
+import org.alfresco.filesys.util.HexDump;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
 
 /**
  * Alfresco Authenticator Class
@@ -88,10 +95,7 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
         {
             // Use the existing authentication token
             
-            if ( client.isGuest())
-                m_authComponent.setGuestUserAsCurrentUser();
-            else
-                m_authComponent.setCurrentUser(mapUserNameToPerson(client.getUserName()));
+            m_authComponent.setCurrentUser(client.getUserName());
 
             // Debug
             
@@ -107,7 +111,7 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
         
         int authSts = AUTH_DISALLOW;
         
-        if ( client.isGuest() || client.getUserName().equalsIgnoreCase(GUEST_USERNAME))
+        if ( client.isGuest() || client.getUserName().equalsIgnoreCase(getGuestUserName()))
         {
             // Check if guest logons are allowed
             
@@ -140,7 +144,13 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
             
             authSts = doMD4UserAuthentication(client, sess, alg);
         }
-
+        else
+        {
+            // Perform passthru authentication password check
+            
+            authSts = doPassthruUserAuthentication(client, sess, alg);
+        }
+        
         // Check if the logon status indicates a guest logon
         
         if ( authSts == AUTH_GUEST)
@@ -172,6 +182,64 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
         return authSts;
     }
 
+    /**
+     * Return an authentication context for the new session
+     * 
+     * @return AuthContext
+     */
+    public AuthContext getAuthContext( SMBSrvSession sess)
+    {
+        // Check if the client is already authenticated, and it is not a null logon
+
+    	AuthContext authCtx = null;
+    	
+        if ( sess.hasAuthenticationContext() && sess.hasAuthenticationToken() &&
+                sess.getClientInformation().getLogonType() != ClientInfo.LogonNull)
+        {
+            // Return the previous challenge, user is already authenticated
+
+            authCtx = (NTLanManAuthContext) sess.getAuthenticationContext();
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug("Re-using existing challenge, already authenticated");
+        }
+        else if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        {
+            // Create a new authentication context for the session
+
+            authCtx = new NTLanManAuthContext();
+            sess.setAuthenticationContext( authCtx);
+        }
+        else
+        {
+            // Create an authentication token for the session
+            
+            NTLMPassthruToken authToken = new NTLMPassthruToken();
+            
+            // Run the first stage of the passthru authentication to get the challenge
+            
+            m_authComponent.authenticate( authToken);
+            
+            // Save the authentication token for the second stage of the authentication
+            
+            sess.setAuthenticationToken(authToken);
+            
+            // Get the challenge from the token
+            
+            if ( authToken.getChallenge() != null)
+            {
+            	authCtx = new NTLanManAuthContext( authToken.getChallenge().getBytes());
+            	sess.setAuthenticationContext( authCtx);
+            }
+        }
+
+        // Return the authentication context
+        
+        return authCtx;
+    }
+    
     /**
      * Perform MD4 user authentication
      * 
@@ -217,6 +285,20 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
                 // Validate the password
                 
                 byte[] clientHash = client.getPassword();
+                if ( clientHash == null || clientHash.length != 24)
+                {
+                	// Use the secondary password hash from the client
+                
+                	clientHash = client.getANSIPassword();
+                	
+                	// DEBUG
+                	
+                	if ( logger.isDebugEnabled())
+                	{
+                		logger.debug( "Using secondary password hash - " + HexDump.hexString(clientHash));
+                		logger.debug( "                   Local hash - " + HexDump.hexString( localHash));
+                	}
+                }
 
                 if ( clientHash == null || clientHash.length != localHash.length)
                     return CifsAuthenticator.AUTH_BADPASSWORD;
@@ -229,7 +311,7 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
                 
                 // Set the current user to be authenticated, save the authentication token
                 
-                client.setAuthenticationToken( m_authComponent.setCurrentUser(mapUserNameToPerson(client.getUserName())));
+                client.setAuthenticationToken( m_authComponent.setCurrentUser(client.getUserName()));
                 
                 // Get the users home folder node, if available
                 
@@ -258,5 +340,102 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
         // User does not exist, check if guest access is allowed
             
         return allowGuest() ? CifsAuthenticator.AUTH_GUEST : CifsAuthenticator.AUTH_DISALLOW;
+    }
+    
+    /**
+     * Perform passthru user authentication
+     * 
+     * @param client Client information
+     * @param sess Server session
+     * @param alg Encryption algorithm
+     * @return int 
+     */
+    private final int doPassthruUserAuthentication(ClientInfo client, SrvSession sess, int alg)
+    {
+        // Get the authentication token for the session
+
+        NTLMPassthruToken authToken = (NTLMPassthruToken) sess.getAuthenticationToken();
+        
+        if ( authToken == null)
+            return CifsAuthenticator.AUTH_DISALLOW;
+
+        // Get the appropriate hashed password for the algorithm
+        
+        int authSts = CifsAuthenticator.AUTH_DISALLOW;
+        byte[] hashedPassword = null;
+        
+        if ( alg == NTLM1)
+            hashedPassword = client.getPassword();
+        else if ( alg == LANMAN)
+            hashedPassword = client.getANSIPassword();
+        else
+        {
+            // Invalid/unsupported algorithm specified
+            
+            return CifsAuthenticator.AUTH_DISALLOW;
+        }
+        
+        // Set the username and hashed password in the authentication token
+        
+        authToken.setUserAndPassword( client.getUserName(), hashedPassword, alg);
+        
+        // Authenticate the user
+        
+        Authentication genAuthToken = null;
+        
+        try
+        {
+            // Run the second stage of the passthru authentication
+            
+            genAuthToken = m_authComponent.authenticate( authToken);
+            
+            // Check if the user has been logged on as a guest
+
+            if (authToken.isGuestLogon())
+            {
+
+                // Check if the local server allows guest access
+
+                if (allowGuest() == true)
+                {
+
+                    // Allow the user access as a guest
+
+                    authSts = CifsAuthenticator.AUTH_GUEST;
+                }
+            }
+            else
+            {
+
+                // Allow the user full access to the server
+
+                authSts = CifsAuthenticator.AUTH_ALLOW;
+            }
+
+            // Set the current user to be authenticated, save the authentication token
+            
+            client.setAuthenticationToken( genAuthToken);
+            
+            // Get the users home folder node, if available
+            
+            getHomeFolderForUser( client);
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug("Auth token " + genAuthToken);
+        }
+        catch ( Exception ex)
+        {
+            logger.error("Error during passthru authentication", ex);
+        }
+        
+        // Clear the authentication token
+        
+        sess.setAuthenticationToken(null);
+        
+        // Return the authentication status
+        
+        return authSts;
     }
 }

@@ -41,16 +41,12 @@ import org.alfresco.service.license.LicenseService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.Resource;
 
 
@@ -59,11 +55,9 @@ import org.springframework.core.io.Resource;
  * 
  * @author David Caruana
  */
-public class DescriptorServiceImpl implements DescriptorService, ApplicationListener, InitializingBean, ApplicationContextAware, DisposableBean
+public class DescriptorServiceImpl extends AbstractLifecycleBean implements DescriptorService, InitializingBean
 {
     private static Log logger = LogFactory.getLog(DescriptorServiceImpl.class);
-    
-    private ApplicationContext applicationContext;
     
     private Properties serverProperties;
     
@@ -77,14 +71,6 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
     private Descriptor serverDescriptor;
     private Descriptor installedRepoDescriptor;
 
-    
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
     
     /**
      * Sets the server descriptor from a resource file
@@ -163,36 +149,36 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         return (licenseService == null) ? null : licenseService.getLicense();
     }
 
-    /**
-     * @param event
-     */
-    public void onApplicationEvent(ApplicationEvent event)
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        if (event instanceof ContextRefreshedEvent)
+        // initialise the repository descriptor
+        // note: this requires that the repository schema has already been initialised
+        TransactionWork<Descriptor> createDescriptorWork = new TransactionUtil.TransactionWork<Descriptor>()
         {
-            // initialise the repository descriptor
-            // note: this requires that the repository schema has already been initialised
-            TransactionWork<Descriptor> createDescriptorWork = new TransactionUtil.TransactionWork<Descriptor>()
+            public Descriptor doWork()
             {
-                public Descriptor doWork()
-                {
-                    // initialise license service (if installed)
-                    initialiseLicenseService();
-                    
-                    // verify license, but only if license component is installed
-                    licenseService.verifyLicense();
-                    
-                    // persist the server descriptor values
-                    updateCurrentRepositoryDescriptor(serverDescriptor);
+                // initialise license service (if installed)
+                initialiseLicenseService();
+                
+                // verify license, but only if license component is installed
+                licenseService.verifyLicense();
+                
+                // persist the server descriptor values
+                updateCurrentRepositoryDescriptor(serverDescriptor);
 
-                    // return the repository installed descriptor
-                    return createInstalledRepositoryDescriptor();
-                }
-            };
-            installedRepoDescriptor = TransactionUtil.executeInUserTransaction(transactionService, createDescriptorWork);
-        }
+                // return the repository installed descriptor
+                return createInstalledRepositoryDescriptor();
+            }
+        };
+        installedRepoDescriptor = TransactionUtil.executeInUserTransaction(transactionService, createDescriptorWork);
     }
 
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+    }
+    
     /**
      * Initialise Descriptors
      */
@@ -202,13 +188,6 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
         serverDescriptor = createServerDescriptor();
     }
 
-    /**
-     * Destruction hook
-     */
-    public void destroy() throws Exception
-    {
-    }
-    
     /**
      * Create server descriptor
      * 
@@ -358,7 +337,7 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             //       be declaratively taken out in an installed environment.
             Class licenseComponentClass = Class.forName("org.alfresco.license.LicenseComponent");
             Constructor constructor = licenseComponentClass.getConstructor(new Class[] { ApplicationContext.class} );
-            licenseService = (LicenseService)constructor.newInstance(new Object[] { applicationContext });            
+            licenseService = (LicenseService)constructor.newInstance(new Object[] { getApplicationContext() });            
         }
         catch (ClassNotFoundException e)
         {
@@ -766,4 +745,5 @@ public class DescriptorServiceImpl implements DescriptorService, ApplicationList
             return serverProperties.getProperty(key, "");
         }
     }
+
 }

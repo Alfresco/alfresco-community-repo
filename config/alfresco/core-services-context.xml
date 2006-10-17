@@ -23,30 +23,24 @@
     </bean>
 
     <!-- Datasource bean -->
-    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
-        <property name="driverClass">
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName">
             <value>${db.driver}</value>
         </property>
-        <property name="jdbcUrl">
+        <property name="url">
             <value>${db.url}</value>
         </property>
-        <property name="user">
+        <property name="username">
             <value>${db.username}</value>
         </property>
         <property name="password">
             <value>${db.password}</value>
         </property>
-        <property name="initialPoolSize" >
+        <property name="initialSize" >
             <value>${db.pool.initial}</value>
         </property>
-        <property name="maxPoolSize" >
+        <property name="maxActive" >
             <value>${db.pool.max}</value>
-        </property>
-        <property name="maxIdleTime" >
-            <value>${db.pool.maxIdleTime}</value>
-        </property>
-        <property name="numHelperThreads" >
-            <value>1</value>
         </property>
     </bean>
 
@@ -78,6 +72,7 @@
     			<value>alfresco.messages.patch-service</value>
     			<value>alfresco.messages.schema-update</value>
     			<value>alfresco.messages.webdav-messages</value>
+    			<value>alfresco.messages.copy-service</value>
     		</list>
     	</property>
     </bean>
@@ -490,6 +485,9 @@
         <property name="authenticationService">
             <ref bean="AuthenticationService" />
         </property>
+        <property name="internalNodeService">
+            <ref bean="nodeService" />
+        </property>        
     </bean>
 
     <!--                           -->

@@ -92,7 +92,7 @@ public class Node implements Serializable, Scopeable
     private final static String FOLDER_BROWSE_URL   = "/navigate/browse/{0}/{1}/{2}";
     
     /** Root scope for this object */
-    private Scriptable scope;
+    protected Scriptable scope;
     
     /** Node Value Converter */
     private NodeValueConverter converter = null;
@@ -110,16 +110,15 @@ public class Node implements Serializable, Scopeable
     private Node[] children = null;
     /** The properties of this node */
     private ScriptableQNameMap<String, Serializable> properties = null;
-    private ServiceRegistry services = null;
+    protected ServiceRegistry services = null;
     private NodeService nodeService = null;
     private Boolean isDocument = null;
     private Boolean isContainer = null;
     private String displayPath = null;
-    private TemplateImageResolver imageResolver = null;
+    protected TemplateImageResolver imageResolver = null;
     private Node parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
     // NOTE: see the reset() method when adding new cached members!
-    
     
     
     // ------------------------------------------------------------------------------
@@ -462,6 +461,20 @@ public class Node implements Serializable, Scopeable
     public boolean jsGet_isDocument()
     {
         return isDocument();
+    }
+    
+    /**
+     * @return true if the Node is a Category
+     */
+    public boolean isCategory()
+    {
+        // this valid is overriden by the CategoryNode sub-class
+        return false;
+    }
+    
+    public boolean jsGet_isCategory()
+    {
+        return isCategory();
     }
     
     /**
@@ -890,7 +903,8 @@ public class Node implements Serializable, Scopeable
        this.services.getPermissionService().deletePermission(this.nodeRef, authority, permission);
     }
     
-    // -------------
+    
+    // ------------------------------------------------------------------------------
     // Ownership API
     
     /**
@@ -1145,7 +1159,7 @@ public class Node implements Serializable, Scopeable
         {
             if (destination != null)
             {
-                NodeRef copyRef = this.services.getCopyService().copy(
+                NodeRef copyRef = this.services.getCopyService().copyAndRename(
                         this.nodeRef,
                         destination.getNodeRef(),
                         ContentModel.ASSOC_CONTAINS,

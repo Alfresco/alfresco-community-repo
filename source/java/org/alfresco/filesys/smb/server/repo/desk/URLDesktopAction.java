@@ -16,6 +16,9 @@
  */
 package org.alfresco.filesys.smb.server.repo.desk;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.alfresco.filesys.smb.server.repo.DesktopAction;
 import org.alfresco.filesys.smb.server.repo.DesktopParams;
 import org.alfresco.filesys.smb.server.repo.DesktopResponse;
@@ -45,8 +48,29 @@ public class URLDesktopAction extends DesktopAction {
 	@Override
 	public DesktopResponse runAction(DesktopParams params) {
 
-		// Return a URL in the status message
+		// Get the local IP address
 		
-		return new DesktopResponse(StsLaunchURL, "http://www.alfresco.com"); 
+		String ipAddr = null;
+		
+		try
+		{
+			ipAddr = InetAddress.getLocalHost().getHostAddress();
+		}
+		catch (UnknownHostException ex)
+		{
+		}
+		
+		// Return a URL in the status message to browse to the folder node
+		
+		StringBuilder urlStr = new StringBuilder();
+		
+		urlStr.append( "http://");
+		urlStr.append(ipAddr);
+		urlStr.append(":8080/alfresco/navigate/browse/workspace/SpacesStore/");
+		urlStr.append( params.getFolderNode().getId());
+		urlStr.append("?ticket=");
+		urlStr.append(params.getTicket());
+		
+		return new DesktopResponse(StsLaunchURL, urlStr.toString()); 
 	}
 }

@@ -24,11 +24,11 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.ftp.FTPNetworkServer;
 import org.alfresco.filesys.server.NetworkServer;
 import org.alfresco.filesys.server.config.ServerConfiguration;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -39,7 +39,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  * @author GKSpencer
  */
-public class FTPServer implements ApplicationListener
+public class FTPServer extends AbstractLifecycleBean
 {
     private static final Log logger = LogFactory.getLog("org.alfresco.ftp.server");
 
@@ -79,29 +79,6 @@ public class FTPServer implements ApplicationListener
         return (filesysConfig != null && filesysConfig.isFTPServerEnabled());
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
-    public void onApplicationEvent(ApplicationEvent event)
-    {
-        if (event instanceof ContextRefreshedEvent)
-        {
-            try
-            {
-                startServer();
-            }
-            catch (SocketException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to start FTP server", e);
-            }
-            catch (IOException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to start FTP server", e);
-            }
-        }
-    }
-    
     /**
      * Start the FTP server components
      * 
@@ -251,4 +228,28 @@ public class FTPServer implements ApplicationListener
         }
         System.exit(1);
     }
+
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        try
+        {
+            startServer();
+        }
+        catch (SocketException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to start FTP server", e);
+        }
+        catch (IOException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to start FTP server", e);
+        }
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        stopServer();
+    }
+    
 }

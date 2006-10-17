@@ -44,7 +44,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * 
  * @author andyh
  */
 
@@ -153,8 +152,8 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         if ((attribute.getAttribute() != null)
                 && (attribute.getAttribute().startsWith(ACL_NODE)
                         || attribute.getAttribute().startsWith(ACL_PARENT)
-                        || attribute.getAttribute().startsWith(ACL_ALLOW)
-                        || attribute.getAttribute().startsWith(ACL_METHOD)))
+                        || attribute.getAttribute().startsWith(ACL_ALLOW) || attribute.getAttribute().startsWith(
+                        ACL_METHOD)))
         {
             return true;
         }
@@ -165,14 +164,11 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     }
 
     /**
-     * This implementation supports only <code>MethodSecurityInterceptor</code>,
-     * because it queries the presented <code>MethodInvocation</code>.
+     * This implementation supports only <code>MethodSecurityInterceptor</code>, because it queries the presented <code>MethodInvocation</code>.
      * 
      * @param clazz
      *            the secure object
-     * 
-     * @return <code>true</code> if the secure object is
-     *         <code>MethodInvocation</code>, <code>false</code> otherwise
+     * @return <code>true</code> if the secure object is <code>MethodInvocation</code>, <code>false</code> otherwise
      */
     public boolean supports(Class clazz)
     {
@@ -253,7 +249,15 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                     testNodeRef = (NodeRef) invocation.getArguments()[cad.parameter];
                     if (log.isDebugEnabled())
                     {
-                        log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                        if (nodeService.exists(testNodeRef))
+                        {
+                            log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                        }
+                        else
+                        {
+                            log.debug("\tPermission test on non-existing node " +testNodeRef);
+                        }
+
                     }
                 }
                 else if (ChildAssociationRef.class.isAssignableFrom(params[cad.parameter]))
@@ -263,7 +267,14 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         testNodeRef = ((ChildAssociationRef) invocation.getArguments()[cad.parameter]).getChildRef();
                         if (log.isDebugEnabled())
                         {
-                            log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                            if (nodeService.exists(testNodeRef))
+                            {
+                                log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                            }
+                            else
+                            {
+                                log.debug("\tPermission test on non-existing node " + testNodeRef);
+                            }
                         }
                     }
                 }
@@ -284,6 +295,14 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         testNodeRef = nodeService.getPrimaryParent(child).getParentRef();
                         if (log.isDebugEnabled())
                         {
+                            if (nodeService.exists(testNodeRef))
+                            {
+                                log.debug("\tPermission test for parent on node " + nodeService.getPath(testNodeRef));
+                            }
+                            else
+                            {
+                                log.debug("\tPermission test for parent on non-existing node " + testNodeRef);
+                            }
                             log.debug("\tPermission test for parent on node " + nodeService.getPath(testNodeRef));
                         }
                     }
@@ -295,8 +314,17 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         testNodeRef = ((ChildAssociationRef) invocation.getArguments()[cad.parameter]).getParentRef();
                         if (log.isDebugEnabled())
                         {
-                            log.debug("\tPermission test for parent on child assoc ref for node "
-                                    + nodeService.getPath(testNodeRef));
+                            if (nodeService.exists(testNodeRef))
+                            {
+                                log.debug("\tPermission test for parent on child assoc ref for node "
+                                        + nodeService.getPath(testNodeRef));
+                            }
+                            else
+                            {
+                                log.debug("\tPermission test for parent on child assoc ref for non existing node "
+                                        + testNodeRef);
+                            }
+                           
                         }
                     }
 

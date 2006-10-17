@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
@@ -329,6 +330,9 @@ public abstract class AbstractPatch implements Patch
             {
                 public String doWork() throws Exception
                 {
+                    // downgrade integrity checking
+                    IntegrityChecker.setWarnInTransaction();
+
                     String report = applyInternal();
                     // done
                     return report;
@@ -389,7 +393,8 @@ public abstract class AbstractPatch implements Patch
 
     /**
      * This method does the work.  All transactions and thread-safety will be taken care of by this class.
-     * Any exception will result in the transaction being rolled back.
+     * Any exception will result in the transaction being rolled back.  Integrity checks are downgraded
+     * for the duration of the transaction.
      * 
      * @return Returns the report (only success messages).
      * @see #apply()

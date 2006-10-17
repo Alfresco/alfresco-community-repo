@@ -144,4 +144,14 @@
          ace.authority.recipient = :authorityRecipient
    </query>
    
+   <query name="permission.patch.GetAccessControlEntriesToChangePermissionOn" >
+      select
+         entry
+      from
+         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl entry
+      where
+         entry.permission.typeQname = :oldTypeQName and
+         entry.permission.name = :oldName
+   </query>
+    
 </hibernate-mapping>

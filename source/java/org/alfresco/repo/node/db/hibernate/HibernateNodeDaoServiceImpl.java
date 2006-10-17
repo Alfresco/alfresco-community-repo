@@ -18,6 +18,7 @@ package org.alfresco.repo.node.db.hibernate;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -97,6 +98,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private final String uuid;
     
     private static TransactionAwareSingleton<Long> serverIdSingleton = new TransactionAwareSingleton<Long>();
+    private final String ipAddress;
 
     /**
      * 
@@ -104,6 +106,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public HibernateNodeDaoServiceImpl()
     {
         this.uuid = GUID.generate();
+        try
+        {
+            ipAddress = InetAddress.getLocalHost().getHostAddress();
+        }
+        catch (UnknownHostException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to get server IP address", e);
+        }
     }
 
     /**
@@ -148,7 +158,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         try
         {
-            final String ipAddress = InetAddress.getLocalHost().getHostAddress();
             HibernateCallback callback = new HibernateCallback()
             {
                 public Object doInHibernate(Session session)
@@ -994,16 +1003,46 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     /*
      * Queries for transactions
      */
+    private static final String QUERY_GET_LAST_TXN_ID = "txn.GetLastTxnId";
     private static final String QUERY_GET_LAST_TXN_ID_FOR_STORE = "txn.GetLastTxnIdForStore";
     private static final String QUERY_GET_TXN_UPDATE_COUNT_FOR_STORE = "txn.GetTxnUpdateCountForStore";
     private static final String QUERY_GET_TXN_DELETE_COUNT_FOR_STORE = "txn.GetTxnDeleteCountForStore";
     private static final String QUERY_COUNT_TRANSACTIONS = "txn.CountTransactions";
     private static final String QUERY_GET_NEXT_TXNS = "txn.GetNextTxns";
+    private static final String QUERY_GET_NEXT_REMOTE_TXNS = "txn.GetNextRemoteTxns";
     private static final String QUERY_GET_TXN_CHANGES_FOR_STORE = "txn.GetTxnChangesForStore";
     private static final String QUERY_GET_TXN_CHANGES = "txn.GetTxnChanges";
     
+    public Transaction getTxnById(long txnId)
+    {
+        return (Transaction) getSession().get(TransactionImpl.class, new Long(txnId));
+    }
+    
     @SuppressWarnings("unchecked")
-    public Transaction getLastTxn(final StoreRef storeRef)
+    public Transaction getLastTxn()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_LAST_TXN_ID);
+                query.setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Long txnId = (Long) getHibernateTemplate().execute(callback);
+        Transaction txn = null;
+        if (txnId != null)
+        {
+            txn = (Transaction) getSession().get(TransactionImpl.class, txnId);
+        }
+        // done
+        return txn;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Transaction getLastTxnForStore(final StoreRef storeRef)
     {
         HibernateCallback callback = new HibernateCallback()
         {
@@ -1028,7 +1067,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
     
     @SuppressWarnings("unchecked")
-    public int getTxnUpdateCountForStore(final StoreRef storeRef, final long txnId)
+    public int getTxnUpdateCount(final long txnId)
     {
         HibernateCallback callback = new HibernateCallback()
         {
@@ -1036,9 +1075,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session.getNamedQuery(QUERY_GET_TXN_UPDATE_COUNT_FOR_STORE);
                 query.setLong("txnId", txnId)
-                     .setString("protocol", storeRef.getProtocol())
-                     .setString("identifier", storeRef.getIdentifier())
-                     .setMaxResults(1)
                      .setReadOnly(true);
                 return query.uniqueResult();
             }
@@ -1049,7 +1085,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
     
     @SuppressWarnings("unchecked")
-    public int getTxnDeleteCountForStore(final StoreRef storeRef, final long txnId)
+    public int getTxnDeleteCount(final long txnId)
     {
         HibernateCallback callback = new HibernateCallback()
         {
@@ -1057,9 +1093,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session.getNamedQuery(QUERY_GET_TXN_DELETE_COUNT_FOR_STORE);
                 query.setLong("txnId", txnId)
-                     .setString("protocol", storeRef.getProtocol())
-                     .setString("identifier", storeRef.getIdentifier())
-                     .setMaxResults(1)
                      .setReadOnly(true);
                 return query.uniqueResult();
             }
@@ -1088,16 +1121,34 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
     
     @SuppressWarnings("unchecked")
-    public List<Transaction> getNextTxns(final Transaction lastTxn, final int count)
+    public List<Transaction> getNextTxns(final long lastTxnId, final int count)
     {
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                long lastTxnId = (lastTxn == null) ? -1L : lastTxn.getId();
-                
                 Query query = session.getNamedQuery(QUERY_GET_NEXT_TXNS);
                 query.setLong("lastTxnId", lastTxnId)
+                     .setMaxResults(count)
+                     .setReadOnly(true);
+                return query.list();
+            }
+        };
+        List<Transaction> results = (List<Transaction>) getHibernateTemplate().execute(callback);
+        // done
+        return results;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Transaction> getNextRemoteTxns(final long lastTxnId, final int count)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_NEXT_REMOTE_TXNS);
+                query.setLong("lastTxnId", lastTxnId)
+                     .setString("serverIpAddress", ipAddress)
                      .setMaxResults(count)
                      .setReadOnly(true);
                 return query.list();

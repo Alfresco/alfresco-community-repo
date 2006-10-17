@@ -26,9 +26,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 
 /**
@@ -36,7 +35,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * 
  * @author davidc
  */
-public class SystemInfoBootstrap implements ApplicationListener
+public class SystemInfoBootstrap extends AbstractLifecycleBean
 {
     // dependencies
     private TransactionService transactionService;
@@ -177,16 +176,16 @@ public class SystemInfoBootstrap implements ApplicationListener
         return true;
     }
         
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
-    public void onApplicationEvent(ApplicationEvent event)
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        if (event instanceof ContextRefreshedEvent)
-        {
-            bootstrap();
-        }
+        bootstrap();
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        // NOOP
     }
     
 }

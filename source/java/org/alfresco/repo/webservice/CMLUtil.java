@@ -593,7 +593,7 @@ public class CMLUtil
             List<NodeRef> nodesToCopy = getNodeRefList(copy.getWhere_id(), copy.getWhere(), context);
             for (NodeRef nodeToCopy : nodesToCopy)
             {
-                NodeRef newNodeRef = this.copyService.copy(nodeToCopy, destinationNodeRef, assocType, assocName, copyChildren);
+                NodeRef newNodeRef = this.copyService.copyAndRename(nodeToCopy, destinationNodeRef, assocType, assocName, copyChildren);
                 
                 // Create the result
                 results.add(createResult(COPY, null, nodeToCopy, newNodeRef));

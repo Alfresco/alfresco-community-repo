@@ -97,6 +97,7 @@ public class WebDAVServlet extends HttpServlet
         try
         {
             // Create the appropriate WebDAV method for the request and execute it
+        	
             final WebDAVMethod method = createMethod(request, response);
 
             if (method == null)
@@ -115,20 +116,14 @@ public class WebDAVServlet extends HttpServlet
                     logger.error("No root node for request");
                 
                 // Return an error status
+                
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 return;
             }
 
-            // Execute the WebDAV request, wrapped in a transaction
-            TransactionWork<Object> methodWork = new TransactionWork<Object>()
-            {
-                public Object doWork() throws Exception
-                {
-                    method.execute();
-                    return null;
-                }
-            };
-            TransactionUtil.executeInUserTransaction(m_transactionService, methodWork);
+            // Excecute the WebDAV request
+            
+            method.execute();
         }
         catch (Throwable e)
         {
@@ -139,13 +134,15 @@ public class WebDAVServlet extends HttpServlet
                     e = e.getCause();
                 }
             }
+            
             // Work out how to handle the error
+            
             if (e instanceof WebDAVServerException)
             {
                 WebDAVServerException error = (WebDAVServerException) e;
                 if (error.getCause() != null)
                 {
-                    logger.error(INTERNAL_SERVER_ERROR, error.getCause());
+                    logger.debug( "WebDAV " + request.getMethod() + " error: " + error.getCause().getMessage());
                 }
 
                 if (logger.isDebugEnabled())
@@ -166,7 +163,7 @@ public class WebDAVServlet extends HttpServlet
             }
             else
             {
-                logger.error(INTERNAL_SERVER_ERROR, e);
+                logger.debug( "WebDAV " + request.getMethod() + " error: " + e.getMessage());
 
                 if (response.isCommitted())
                 {

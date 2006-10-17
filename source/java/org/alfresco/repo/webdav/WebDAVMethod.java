@@ -23,10 +23,13 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.TransactionUtil;
@@ -113,28 +116,37 @@ public abstract class WebDAVMethod
     public void execute() throws WebDAVServerException
     {
         // Parse the HTTP headers
+    	
         parseRequestHeaders();
 
         // Parse the HTTP body
-        parseRequestBody();
         
-        TransactionWork<WebDAVServerException> executeWork = new TransactionWork<WebDAVServerException>()
-        {
-            public WebDAVServerException doWork() throws Exception
-            {
-                executeImpl();
-                return null;
-            }
-        };
+        parseRequestBody();
+
+        // Run the method wrapped in a transaction
+        
+        TransactionService transactionService = getTransactionService();
+        UserTransaction tx = transactionService.getUserTransaction( false);
+
         try
         {
-            // Execute the method
-            TransactionService transactionService = getTransactionService();
-            TransactionUtil.executeInUserTransaction(transactionService, executeWork);
+        	// Start the transaction
+        	
+        	tx.begin();
+        	
+        	// Run the WebDAV method
+        	
+        	executeImpl();
+        	
+        	// Commit the transaction
+        	
+        	tx.commit();
+        	tx = null;
         }
         catch (AccessDeniedException e)
         {
             // Return a forbidden status
+        	
             throw new WebDAVServerException(HttpServletResponse.SC_UNAUTHORIZED, e);
         }
         catch (Throwable e)
@@ -147,8 +159,38 @@ public abstract class WebDAVMethod
             else
             {
                 // Convert error to a server error
+            	
                 throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
             }
+        }
+        finally
+        {
+        	if ( tx != null)
+        	{
+        		// Commit or rollback the transaction
+
+	            try
+	            {
+	                // Commit or rollback the transaction
+	                
+	                if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+	                {
+	                    // Transaction is marked for rollback
+	                    
+	                    tx.rollback();
+	                }
+	                else
+	                {
+	                    // Commit the transaction
+	                    
+	                    tx.commit();
+	                }
+	            }
+	            catch ( Exception ex)
+	            {
+	                throw new AlfrescoRuntimeException("Failed to end transaction", ex);
+	            }
+        	}
         }
     }
 

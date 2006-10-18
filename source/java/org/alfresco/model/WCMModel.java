@@ -34,4 +34,8 @@ public interface WCMModel
     public static final QName PROP_TEMPLATE_OUTPUT_METHOD_TYPE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templateoutputmethodtype");
     public static final QName PROP_TEMPLATE_OUTPUT_METHOD_DERIVED_FILE_EXTENSION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templateoutputmethodderivedfileextension");
     public static final QName PROP_TEMPLATE_SOURCE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templatesource");
+
+    public static final QName ASPECT_TEMPLATE_DERIVED = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templatederived");
+    public static final QName PROP_TEMPLATE_DERIVED_FROM = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templatederivedfrom");
+    public static final QName PROP_TEMPLATE_DERIVED_FROM_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "templatederivedfromname");
 }

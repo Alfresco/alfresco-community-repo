@@ -13,19 +13,40 @@
             </params>
          </action>
          
+         <action id="manage_task">
+            <label-id>manage_task</label-id>
+            <image>/images/icons/manage_workflow_task.gif</image>
+            <action>dialog:manageTask</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action id="view_completed_task">
+            <label-id>view_completed_task_title</label-id>
+            <image>/images/icons/view_workflow_task.gif</image>
+            <action>dialog:viewCompletedTask</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
          <action id="reassign_task">
             <label-id>reassign</label-id>
             <image>/images/icons/reassign_task.gif</image>
             <action>dialog:reassignTask</action>
             <action-listener>#{DialogManager.setupParameters}</action-listener>
             <params>
-               <param name="task-id">#{actionContext.id}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
          <action id="cancel_workflow">
             <label-id>cancel_workflow</label-id>
             <image>/images/icons/cancel_workflow.gif</image>
+            <evaluator>org.alfresco.web.action.evaluator.CancelWorkflowEvaluator</evaluator>
             <action>dialog:cancelWorkflow</action>
             <action-listener>#{DialogManager.setupParameters}</action-listener>
             <params>
@@ -51,7 +72,7 @@
          
          <action id="view_content_properties">
             <label-id>view_properties</label-id>
-            <image>/images/icons/View_details.gif</image>
+            <image>/images/icons/view_properties.gif</image>
             <action>dialog:viewContentProperties</action>
             <action-listener>#{BrowseBean.setupContentAction}</action-listener>
             <params>
@@ -64,11 +85,50 @@
                <permission allow="true">Write</permission>
             </permissions>
             <label-id>edit_properties</label-id>
-            <image>/images/icons/Change_details.gif</image>
+            <image>/images/icons/edit_properties.gif</image>
             <action>dialog:editContentProperties</action>
             <action-listener>#{BrowseBean.setupContentAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Checkin document from workflow package -->
+         <action id="workflow_checkin_doc">
+            <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
+            <label-id>checkin</label-id>
+            <image>/images/icons/CheckIn_icon.gif</image>
+            <action-listener>#{CheckinCheckoutBean.setupWorkflowContentAction}</action-listener>
+            <action>dialog:checkinFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+               <param name="taskId">#{actionContext.taskId}</param>
+            </params>
+         </action>
+         
+         <!-- Checkout document from workflow package -->
+         <action id="workflow_checkout_doc">
+            <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
+            <label-id>checkout</label-id>
+            <image>/images/icons/CheckOut_icon.gif</image>
+            <action-listener>#{CheckinCheckoutBean.setupWorkflowContentAction}</action-listener>
+            <action>dialog:checkoutFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+               <param name="taskId">#{actionContext.taskId}</param>
+            </params>
+         </action>
+         
+         <!-- Cancel checkout document from workflow package -->
+         <action id="workflow_cancelcheckout_doc">
+            <evaluator>org.alfresco.web.action.evaluator.CancelCheckoutDocEvaluator</evaluator>
+            <label-id>undocheckout</label-id>
+            <image>/images/icons/undo_checkout.gif</image>
+            <action-listener>#{CheckinCheckoutBean.setupWorkflowContentAction}</action-listener>
+            <action>dialog:undoCheckoutFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+               <param name="taskId">#{actionContext.taskId}</param>
             </params>
          </action>
          
@@ -81,10 +141,12 @@
          </action-group>
          
          <action-group id="dashlet_todo_actions">
+            <action idref="manage_task" />
             <action idref="reassign_task" />
          </action-group>
          
          <action-group id="dashlet_completed_actions">
+            <action idref="view_completed_task" />
             <action idref="cancel_workflow" />
          </action-group>
          
@@ -104,9 +166,9 @@
             <action idref="edit_doc_webdav" />
             <action idref="edit_doc_cifs" />
             <action idref="update_doc" />
-            <action idref="checkout_doc" />
-            <action idref="checkin_doc" />
-            <action idref="cancelcheckout_doc" />
+            <action idref="workflow_checkout_doc" />
+            <action idref="workflow_checkin_doc" />
+            <action idref="workflow_cancelcheckout_doc" />
          </action-group>
          
          <action-group id="workflow_collection_actions">

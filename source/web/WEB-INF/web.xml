@@ -92,12 +92,12 @@
       -->
    </filter>
 
-   <!--  -->
-   <!-- JBPM START -->
-   <!-- Used by the JPBM console for monitoring in-flight workflows -->
-   <!-- TODO: Remove this block - just a temporary placement for testing -->
-   <!--  -->
+   <filter>
+      <filter-name>Admin Authentication Filter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.AdminAuthenticationFilter</filter-class>
+   </filter>
    
+   <!-- Used by the JPBM console for monitoring in-flight workflows -->   
    <filter>
       <filter-name>JbpmContextFilter</filter-name>
       <filter-class>org.jbpm.webapp.filter.JbpmContextFilter</filter-class>
@@ -126,20 +126,46 @@
       <url-pattern>/webdav/*</url-pattern>
    </filter-mapping>
    
-  <!--  -->
-   <!-- JBPM START -->
-   <!-- Used by the JPBM console for monitoring in-flight workflows -->
-   <!-- TODO: Remove this block - just a temporary placement for testing -->
-   <!--  -->
+   <filter-mapping>
+      <filter-name>Admin Authentication Filter</filter-name>
+      <url-pattern>/faces/jsp/admin/*</url-pattern>
+   </filter-mapping>
 
+   <filter-mapping>
+      <filter-name>Admin Authentication Filter</filter-name>
+      <url-pattern>/faces/jsp/categories/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Admin Authentication Filter</filter-name>
+      <url-pattern>/faces/jsp/groups/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Admin Authentication Filter</filter-name>
+      <url-pattern>/faces/jsp/users/delete-user.jsp</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Admin Authentication Filter</filter-name>
+      <url-pattern>/faces/jsp/users/users.jsp</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Admin Authentication Filter</filter-name>
+      <url-pattern>/faces/jsp/dialog/system-info.jsp</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Admin Authentication Filter</filter-name>
+      <url-pattern>/faces/jbpm/*</url-pattern>
+   </filter-mapping>
+
+   <!-- Used by the JPBM console for monitoring in-flight workflows -->
    <filter-mapping>
       <filter-name>JbpmContextFilter</filter-name>
       <url-pattern>/faces/jbpm/*</url-pattern>
    </filter-mapping>
-
-   <!--  -->
-   <!-- JBPM END -->
-   <!--  -->
     
    <listener>
       <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
@@ -168,6 +194,11 @@
    <servlet>
       <servlet-name>downloadContent</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.DownloadContentServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>guestDownloadContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.GuestDownloadContentServlet</servlet-class>
    </servlet>
    
    <servlet>
@@ -228,6 +259,11 @@
    <servlet-mapping>
       <servlet-name>downloadContent</servlet-name>
       <url-pattern>/download/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>guestDownloadContent</servlet-name>
+      <url-pattern>/guestDownload/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>

@@ -732,25 +732,25 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, false);
          tx.begin();
          
-         NodeRef nodeRef = getAvmActionNode().getNodeRef();
-         String name = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-         NodeRef workflowPackage = this.workflowService.createPackage(null);
-         ChildAssociationRef childRef = 
-             this.nodeService.createNode(workflowPackage, ContentModel.ASSOC_CONTAINS,
-                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
-                                                           name), ContentModel.TYPE_CMOBJECT);
-         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
-         aspectProperties.put(ContentModel.PROP_NODE_REF, nodeRef);
-         NodeRef childNodeRef = childRef.getChildRef();
-         this.nodeService.addAspect(childNodeRef, ContentModel.ASPECT_REFERENCES_NODE, aspectProperties);
-             
-         Map<String, Serializable> actionParams = new HashMap<String, Serializable>();
-         actionParams.put(StartAVMWorkflowAction.PARAM_WORKFLOW_NAME, "jbpm$wcmwf:submit");
-         Action action = this.actionService.createAction(ACTION_AVM_WORKFLOW, actionParams);
-         this.actionService.executeAction(action, workflowPackage);
+//         NodeRef nodeRef = getAvmActionNode().getNodeRef();
+//         String name = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+//         NodeRef workflowPackage = this.workflowService.createPackage(null);
+//         ChildAssociationRef childRef = 
+//             this.nodeService.createNode(workflowPackage, ContentModel.ASSOC_CONTAINS,
+//                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
+//                                                           name), ContentModel.TYPE_CMOBJECT);
+//         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
+//         aspectProperties.put(ContentModel.PROP_NODE_REF, nodeRef);
+//         NodeRef childNodeRef = childRef.getChildRef();
+//         this.nodeService.addAspect(childNodeRef, ContentModel.ASPECT_REFERENCES_NODE, aspectProperties);
+//             
+//         Map<String, Serializable> actionParams = new HashMap<String, Serializable>();
+//         actionParams.put(StartAVMWorkflowAction.PARAM_WORKFLOW_NAME, "jbpm$wcmwf:submit");
+//         Action action = this.actionService.createAction(ACTION_AVM_WORKFLOW, actionParams);
+//         this.actionService.executeAction(action, workflowPackage);
 
-         // Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
-         // this.actionService.executeAction(action, getAvmActionNode().getNodeRef());
+         Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
+         this.actionService.executeAction(action, getAvmActionNode().getNodeRef());
          
          // commit the transaction
          tx.commit();

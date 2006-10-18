@@ -60,6 +60,7 @@ public class InputDatePickerTag extends HtmlComponentTag
       this.value = null;
       this.showTime = null;
       this.disabled = null;
+      this.initIfNull = null;
    }
    
    /**
@@ -75,6 +76,7 @@ public class InputDatePickerTag extends HtmlComponentTag
       setStringProperty(component, "value", this.value);
       setBooleanProperty(component, "showTime", this.showTime);
       setBooleanProperty(component, "disabled", this.disabled);
+      setBooleanProperty(component, "initialiseIfNull", this.initIfNull);
    }
    
    /**
@@ -127,9 +129,22 @@ public class InputDatePickerTag extends HtmlComponentTag
       this.disabled = disabled;
    }
    
+   /**
+    * Sets whether today's date should be shown initially if the underlying
+    * model value is null. This will also hide the None button thus disallowing
+    * the user to set the date back to null.
+    * 
+    * @param initialiseIfNull true to show today's date instead of 'None'
+    */
+   public void setInitialiseIfNull(String initialiseIfNull)
+   {
+      this.initIfNull = initialiseIfNull;
+   }
+   
    private String startYear = null;
    private String yearCount = null;
    private String value = null;
    private String showTime = null;
    private String disabled = null;
+   private String initIfNull = null;
 }

@@ -1,5 +1,6 @@
 package org.alfresco.web.bean.generator;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,12 +13,15 @@ import javax.faces.model.SelectItem;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.repo.component.UIMultiValueEditor;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
+import org.alfresco.web.ui.repo.component.property.UIPropertySheet.ClientValidation;
 
 /**
  * Generates a text field component.
@@ -166,6 +170,47 @@ public class TextFieldGenerator extends BaseComponentGenerator
       }
    }
    
+   @Override
+   @SuppressWarnings("unchecked")
+   protected void setupConstraints(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem property, 
+         PropertyDefinition propertyDef, UIComponent component)
+   {
+      // do the default processing first
+      super.setupConstraints(context, propertySheet, property, 
+            propertyDef, component);
+      
+      // if the property type is a number based type and the property
+      // sheet is in edit mode and validation is turned, on add the 
+      // validateIsNumber validation function
+      if (propertySheet.inEditMode() && propertySheet.isValidationEnabled() &&
+          propertyDef != null)
+      {
+         // check the type of the property is a number
+         if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
+             propertyDef.getDataType().getName().equals(DataTypeDefinition.FLOAT) ||
+             propertyDef.getDataType().getName().equals(DataTypeDefinition.INT) || 
+             propertyDef.getDataType().getName().equals(DataTypeDefinition.LONG))
+         {
+            List<String> params = new ArrayList<String>(3);
+         
+            // add the value parameter
+            String value = "document.getElementById('" +
+                  component.getClientId(context) + "')";
+            params.add(value);
+            
+            // add the validation failed message to show
+            String msg = Application.getMessage(context, "validation_is_number");
+            addStringConstraintParam(params, 
+                  MessageFormat.format(msg, new Object[] {property.getResolvedDisplayLabel()}));
+            
+            // add the validation case to the property sheet
+            propertySheet.addClientValidation(new ClientValidation("validateIsNumber",
+               params, false));
+         }
+      }
+   }
+
    /**
     * Retrieves the list of values constraint for the item, if it has one
     * 
@@ -174,8 +219,8 @@ public class TextFieldGenerator extends BaseComponentGenerator
     * @param item The item being generated
     * @return The constraint if the item has one, null otherwise
     */
-   protected ListOfValuesConstraint getListOfValuesConstraint(FacesContext context, UIPropertySheet propertySheet, 
-         PropertySheetItem item)
+   protected ListOfValuesConstraint getListOfValuesConstraint(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem item)
    {
       ListOfValuesConstraint lovConstraint = null;
       

@@ -75,6 +75,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    private Boolean validationEnabled;
    private String mode;
    private String configArea;
+   private String nextButtonId;
    private String finishButtonId;
    
    /**
@@ -219,6 +220,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       this.validationEnabled = (Boolean)values[7];
       this.validations = (List<ClientValidation>)values[8];
       this.finishButtonId = (String)values[9];
+      this.nextButtonId = (String)values[10];
    }
    
    /**
@@ -226,7 +228,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[10];
+      Object values[] = new Object[11];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.nodeRef;
@@ -238,6 +240,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       values[7] = this.validationEnabled;
       values[8] = this.validations;
       values[9] = this.finishButtonId;
+      values[10] = this.nextButtonId;
       return (values);
    }
    
@@ -391,6 +394,26 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    {
       this.finishButtonId = finishButtonId;
    }
+   
+   /**
+    * Returns the id of the next button
+    * 
+    * @return The id of the next button on the page
+    */
+   public String getNextButtonId()
+   {
+      return this.nextButtonId;
+   }
+
+   /**
+    * Sets the id of the next button being used on the page
+    * 
+    * @param nextButtonId The id of the next button
+    */
+   public void setNextButtonId(String nextButtonId)
+   {
+      this.nextButtonId = nextButtonId;
+   }
 
    /**
     * @return Returns the mode
@@ -487,8 +510,12 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       ResponseWriter out = context.getResponseWriter();
       UIForm form = Utils.getParentForm(context, this);
          
+      // TODO: We need to encode all the JavaScript functions here 
+      //       with the client id of the property sheet so that we
+      //       can potentially add more than one property sheet to
+      //       page and have validation function correctly.
+      
       // output the validation.js script
-      // TODO: make sure its only included once per page!!
       out.write("\n<script type='text/javascript' src='");
       out.write(context.getExternalContext().getRequestContextPath());
       out.write("/scripts/validation.js");
@@ -496,9 +523,11 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       
       // output variable to hold flag for which submit button was pressed
       out.write("var finishButtonPressed = false;\n");
+      out.write("var nextButtonPressed = false;\n");
       
       // output the validate() function
-      out.write("function validate()\n{\n   var result = true;\n   if (finishButtonPressed && (");
+      out.write("function validate()\n{\n   var result = true;\n   ");
+      out.write("if ((finishButtonPressed || nextButtonPressed) && (");
       
       int numberValidations = this.validations.size();
       List<ClientValidation> realTimeValidations = 
@@ -518,7 +547,8 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       
       // return false if validation failed to stop the form submitting
       out.write(")\n   { result = false; }\n\n");
-      out.write("   finishButtonPressed = false;\n   return result;\n}\n\n");
+      out.write("   finishButtonPressed = false;\n   nextButtonPressed = false;\n");
+      out.write("   return result;\n}\n\n");
       
       // output the processButtonState() function (if necessary)
       int numberRealTimeValidations = realTimeValidations.size();
@@ -532,17 +562,41 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
                   (x == (numberRealTimeValidations-1)), false);
          }
       
-         // disable the finish button if validation failed
-         out.write("\n   { document.getElementById('");
+         // disable the finish button if validation failed and 
+         // also the next button if it is present
+         
+         
+         out.write("\n   {\n      document.getElementById('");
          out.write(form.getClientId(context));
          out.write(NamingContainer.SEPARATOR_CHAR);
          out.write(getFinishButtonId());
-         out.write("').disabled = true; }\n");
-         out.write("   else { document.getElementById('");
+         out.write("').disabled = true; \n");
+         if (this.nextButtonId != null && this.nextButtonId.length() > 0)
+         {
+            out.write("      document.getElementById('");
+            out.write(form.getClientId(context));
+            out.write(NamingContainer.SEPARATOR_CHAR);
+            out.write(this.nextButtonId);
+            out.write("').disabled = true; \n");
+         }
+         out.write("   }\n");
+         
+         out.write("   else\n   {\n      document.getElementById('");
          out.write(form.getClientId(context));
          out.write(NamingContainer.SEPARATOR_CHAR);
          out.write(getFinishButtonId());
-         out.write("').disabled = false; }\n}\n\n");
+         out.write("').disabled = false;");
+         
+         if (this.nextButtonId != null && this.nextButtonId.length() > 0)
+         {
+            out.write("\n      document.getElementById('");
+            out.write(form.getClientId(context));
+            out.write(NamingContainer.SEPARATOR_CHAR);
+            out.write(this.nextButtonId);
+            out.write("').disabled = false;");
+         }
+         
+         out.write("\n   }\n}\n\n");
       }
       
       // write out a function to initialise everything
@@ -559,6 +613,16 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       out.write(NamingContainer.SEPARATOR_CHAR);
       out.write(getFinishButtonId());
       out.write("').onclick = function() { finishButtonPressed = true; }\n");
+      
+      // set the flag when the finish button is clicked
+      if (this.nextButtonId != null && this.nextButtonId.length() > 0)
+      {
+         out.write("   document.getElementById('");
+         out.write(form.getClientId(context));
+         out.write(NamingContainer.SEPARATOR_CHAR);
+         out.write(this.nextButtonId);
+         out.write("').onclick = function() { nextButtonPressed = true; }\n");
+      }
       
       // perform an initial check at page load time (if we have any real time validations)
       if (numberRealTimeValidations > 0)

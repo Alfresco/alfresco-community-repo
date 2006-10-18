@@ -861,7 +861,7 @@ public class Application
    }
    
    /**
-    * Returns the Guest Home folder name
+    * Returns the Guest Home folder name name
     * 
     * @param context The spring context
     * @return The Guest Home folder name

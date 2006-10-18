@@ -25,18 +25,18 @@
          
          <!-- Definition of the view content properties dialog -->
          <dialog name="viewContentProperties" page="/jsp/content/view-content-properties.jsp" 
-                 managed-bean="ViewContentPropertiesDialog" icon="/images/icons/details_large.gif"
+                 managed-bean="ViewContentPropertiesDialog" icon="/images/icons/view_properties_large.gif"
                  title-id="view_content_properties" description-id="view_content_description" 
                  show-ok-button="false"  />
                  
          <!-- Definition of the set content properties dialog -->
          <dialog name="setContentProperties" page="/jsp/content/edit-content-properties.jsp" 
-                 managed-bean="SetContentPropertiesDialog" icon="/images/icons/details_large.gif"
+                 managed-bean="SetContentPropertiesDialog" icon="/images/icons/edit_properties_large.gif"
                  title-id="modify_content_properties" description-id="edit_content_description" />
                  
          <!-- Definition of the edit content properties dialog -->
          <dialog name="editContentProperties" page="/jsp/content/edit-content-properties.jsp" 
-                 managed-bean="EditContentPropertiesDialog" icon="/images/icons/details_large.gif"
+                 managed-bean="EditContentPropertiesDialog" icon="/images/icons/edit_properties_large.gif"
                  title-id="modify_content_properties" description-id="edit_content_description" />
          
          <!-- Definition of the delete content dialog -->

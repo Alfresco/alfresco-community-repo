@@ -20,7 +20,7 @@
       
       <echo level="info">isTomcat = ${isTomcat}</echo>
       <echo level="info">isJBoss = ${isJBoss}</echo>
-
+      
       <antcall target="assemble-war-common" />
       <antcall target="assemble-war-tomcat" />
       <antcall target="assemble-war-jboss" />

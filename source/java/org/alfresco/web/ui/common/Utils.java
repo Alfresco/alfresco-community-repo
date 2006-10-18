@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -968,7 +969,8 @@ public final class Utils
       if (err != null)
       {
          if ((err instanceof InvalidNodeRefException == false &&
-              err instanceof AccessDeniedException == false) || logger.isDebugEnabled())
+              err instanceof AccessDeniedException == false &&
+              err instanceof NoTransformerException == false) || logger.isDebugEnabled())
          {
             logger.error(msg, err);
          }

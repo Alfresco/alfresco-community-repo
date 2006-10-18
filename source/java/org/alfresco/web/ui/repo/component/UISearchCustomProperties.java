@@ -319,6 +319,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          inputFromDate.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
          inputFromDate.setValueBinding("startYear", startYearBind);
          inputFromDate.setValueBinding("yearCount", yearCountBind);
+         inputFromDate.getAttributes().put("initialiseIfNull", Boolean.TRUE);
          inputFromDate.getAttributes().put("showTime", showTime);
          ValueBinding vbFromDate = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + PREFIX_DATE_FROM + propDef.getName().toString() + "\"]}");
@@ -338,6 +339,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
          inputToDate.setRendererType(RepoConstants.ALFRESCO_FACES_DATE_PICKER_RENDERER);
          inputToDate.setValueBinding("startYear", startYearBind);
          inputToDate.setValueBinding("yearCount", yearCountBind);
+         inputToDate.getAttributes().put("initialiseIfNull", Boolean.TRUE);
          inputToDate.getAttributes().put("showTime", showTime);
          ValueBinding vbToDate = facesApp.createValueBinding(
             "#{" + beanBinding + "[\"" + PREFIX_DATE_TO + propDef.getName().toString() + "\"]}");

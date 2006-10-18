@@ -192,6 +192,15 @@
                         <table border=0 cellspacing=2 cellpadding=2>
                            <tr>
                               <td width=50% align=right>
+                                 Kofax Release Script:
+                              </td>
+                              <td>&nbsp;&#8226;&nbsp;</td>
+                              <td width=50%>
+                                 <img src="<%=request.getContextPath()%>/images/logo/ardenringcroft_logo.png" border=0 alt="Arden Ringcroft">
+                              </td>
+                           </tr>
+                           <tr>
+                              <td width=50% align=right>
                                  Meta Data Extraction Framework and PDF/Open Office Format meta data extraction:
                               </td>
                               <td>&nbsp;&#8226;&nbsp;</td>

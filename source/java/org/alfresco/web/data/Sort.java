@@ -17,6 +17,7 @@
 package org.alfresco.web.data;
 
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.text.CollationKey;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -174,6 +175,10 @@ public abstract class Sort
          else if (returnType.equals(float.class) || returnType.equals(Float.class))
          {
             this.comparator = new FloatComparator();
+         }
+         else if (returnType.equals(Timestamp.class))
+         {
+            this.comparator = new TimestampComparator();
          }
          else
          {
@@ -405,6 +410,20 @@ public abstract class Sort
          if (obj1 == null) return -1;
          if (obj2 == null) return 1;
          return ((Date)obj1).compareTo((Date)obj2);
+      }
+   }
+   
+   private static class TimestampComparator implements Comparator
+   {
+      /**
+       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       */
+      public int compare(final Object obj1, final Object obj2)
+      {
+         if (obj1 == null && obj2 == null) return 0;
+         if (obj1 == null) return -1;
+         if (obj2 == null) return 1;
+         return ((Timestamp)obj1).compareTo((Timestamp)obj2);
       }
    }
    

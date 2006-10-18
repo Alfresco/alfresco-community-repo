@@ -31,8 +31,14 @@ public class EditSpaceDialog extends CreateSpaceDialog
       super.init(parameters);
       
       // setup the space being edited
-      this.editableNode = initEditableNode();
+      this.editableNode = new Node(this.browseBean.getActionSpace().getNodeRef());
       this.spaceType = this.editableNode.getType().toString();
+   }
+      
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
    }
    
    /**
@@ -50,26 +56,10 @@ public class EditSpaceDialog extends CreateSpaceDialog
    }
    
    @Override
-   public boolean getFinishButtonDisabled()
-   {
-      return false;
-   }
-   
-   /**
-    * Returns the editable node
-    * 
-    * @return The editable node
-    */
-   public Node getEditableNode()
-   {
-      return this.editableNode;
-   }
-
-   @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // update the existing node in the repository
-      NodeRef nodeRef = this.editableNode.getNodeRef();
+      NodeRef nodeRef = this.browseBean.getActionSpace().getNodeRef();
       Map<String, Object> editedProps = this.editableNode.getProperties();
       
       // handle the name property separately, perform a rename in case it changed
@@ -162,7 +152,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
             this.nodeService.removeChild(assoc.getParentRef(), assoc.getChildRef());
          }
       }
-      
+            
       return outcome;
    }
    

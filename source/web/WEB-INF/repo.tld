@@ -62,6 +62,12 @@
       </attribute>
       
       <attribute>
+         <name>nextButtonId</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
          <name>var</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
@@ -1589,6 +1595,29 @@
          The nodeInfo component wraps another component, typically an
          action link, to provide a floating pop up panel containing
          information on a particular node.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>nodeWorkflowInfo</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.NodeWorkflowInfoTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         The nodeWorkflowInfo component displays information about the workflows
+         a node is currently involved in.
       </description>
       
       <attribute>

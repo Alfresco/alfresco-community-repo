@@ -86,8 +86,6 @@ public class TemplateContentServlet extends BaseServlet
    private static final String DEFAULT_URL  = "/template/{0}/{1}/{2}";
    private static final String TEMPLATE_URL = "/template/{0}/{1}/{2}/{3}/{4}/{5}";
    
-   private static final String MSG_ERROR_CONTENT_MISSING = "error_content_missing";
-   
    private static final String ARG_MIMETYPE = "mimetype";
    private static final String ARG_TEMPLATE_PATH = "templatePath";
    private static final String ARG_CONTEXT_PATH  = "contextPath";
@@ -95,13 +93,17 @@ public class TemplateContentServlet extends BaseServlet
    /**
     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
     */
-   protected void doGet(HttpServletRequest req, HttpServletResponse res)
+   protected void service(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException
    {
       String uri = req.getRequestURI();
       
       if (logger.isDebugEnabled())
-         logger.debug("Processing URL: " + uri + (req.getQueryString() != null ? ("?" + req.getQueryString()) : ""));
+      {
+         String queryString = req.getQueryString();
+         logger.debug("Processing URL: " + uri + 
+               ((queryString != null && queryString.length() > 0) ? ("?" + queryString) : ""));
+      }
       
       AuthenticationStatus status = servletAuthenticate(req, res);
       if (status == AuthenticationStatus.Failure)
@@ -258,6 +260,7 @@ public class TemplateContentServlet extends BaseServlet
     * 
     * @return an object model ready for executing template against
     */
+   @SuppressWarnings("unchecked")
    private Object getModel(ServiceRegistry services, HttpServletRequest req, NodeRef templateRef, NodeRef nodeRef)
    {
       // build FreeMarker default model and merge

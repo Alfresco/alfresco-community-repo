@@ -73,6 +73,17 @@
          <rtexprvalue>true</rtexprvalue>
          <description>The number of years to display in the list</description>
       </attribute>
+      
+      <attribute>
+         <name>initialiseIfNull</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>
+            Whether to initialise the control showing today's date if the
+            underlying value in the model is null. This will also hide the 
+            None button thus disallowing the user to set the date back to null.
+         </description>
+      </attribute>
    </tag>
    
    <tag>

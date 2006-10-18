@@ -46,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
 public class StartWorkflowWizard extends BaseWizardBean
 {
    protected String selectedWorkflow;
+   protected String previouslySelectedWorkflow;
    protected List<SelectItem> availableWorkflows;
    protected Map<String, WorkflowDefinition> workflows;
    protected WorkflowService workflowService;
@@ -77,18 +78,13 @@ public class StartWorkflowWizard extends BaseWizardBean
          this.selectedWorkflow = null;
       }
       
+      this.previouslySelectedWorkflow = null;
       this.startTaskNode = null;
       this.resources = null;
       this.itemsToAdd = null;
       this.packageItemsToAdd = new ArrayList<String>();
       this.isItemBeingAdded = false;
-      if (this.packageItemsRichList != null)
-      {
-         this.packageItemsRichList.setValue(null);
-         this.packageItemsRichList = null;
-      }
-      
-      // TODO: Does this need to be in a read-only transaction??
+      resetRichList();
       
       // add the item the workflow wizard was started on to the list of resources
       String itemToWorkflowId = this.parameters.get("item-to-workflow");
@@ -110,11 +106,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    public void restored()
    {
       // reset the workflow package rich list so everything gets re-evaluated
-      if (this.packageItemsRichList != null)
-      {
-         this.packageItemsRichList.setValue(null);
-         this.packageItemsRichList = null;
-      }
+      resetRichList();
    }
    
    @Override
@@ -190,13 +182,14 @@ public class StartWorkflowWizard extends BaseWizardBean
    {
       String stepName = Application.getWizardManager().getCurrentStepName();
       
-      if ("options".equals(stepName) && this.startTaskNode == null)
+      if ("options".equals(stepName) && 
+          (this.selectedWorkflow.equals(this.previouslySelectedWorkflow) == false))
       {
          // retrieve the start task for the selected workflow, get the task
          // definition and create a transient node to allow the property
          // sheet to collect the required data.
          
-         WorkflowDefinition flowDef = this.workflows.get(this.selectedWorkflow);        
+         WorkflowDefinition flowDef = this.workflows.get(this.selectedWorkflow);
          
          if (logger.isDebugEnabled())
             logger.debug("Selected workflow: "+ flowDef);
@@ -211,20 +204,60 @@ public class StartWorkflowWizard extends BaseWizardBean
             this.startTaskNode = new TransientNode(taskDef.metadata.getName(),
                   "task_" + System.currentTimeMillis(), null);
          }
+         
+         // we also need to reset the resources list so that the actions get re-evaluated
+         resetRichList();
       }
 
       return null;
    }
    
    @Override
+   public String back()
+   {
+      String stepName = Application.getWizardManager().getCurrentStepName();
+      
+      // if we have come back to the "choose-workflow" step remember
+      // the current workflow selection
+      if ("choose-workflow".equals(stepName))
+      {
+         this.previouslySelectedWorkflow = this.selectedWorkflow;
+      }
+      
+      return null;
+   }
+
+   @Override
    public boolean getNextButtonDisabled()
    {
       return this.nextButtonDisabled;
    }
    
+   @Override
+   public String getContainerTitle()
+   {
+      String wizTitle = null;
+      
+      ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+      String stepName = Application.getWizardManager().getCurrentStepName();
+      
+      if ("choose-workflow".equals(stepName) == false && this.selectedWorkflow != null)
+      {
+         String titlePattern = bundle.getString("start_named_workflow_wizard");
+         WorkflowDefinition workflowDef = this.workflows.get(this.selectedWorkflow);
+         wizTitle = MessageFormat.format(titlePattern, new Object[] {workflowDef.title});
+      }
+      else
+      {
+         wizTitle = bundle.getString("start_workflow_wizard");
+      }
+         
+      return wizTitle;
+   }
+   
    // ------------------------------------------------------------------------------
    // Event Handlers
-   
+
    /**
     * Prepares the dialog to allow the user to add an item to the workflow package
     * 
@@ -293,7 +326,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       // reset the rich list so it re-renders
       this.packageItemsRichList.setValue(null);
    }
-
+   
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
 
@@ -465,33 +498,34 @@ public class StartWorkflowWizard extends BaseWizardBean
     */
    public List<SelectItem> getStartableWorkflows()
    {
-      if (this.availableWorkflows == null)
+      // NOTE: we don't cache the list of startable workflows as they could get
+      //       updated, in which case we need the latest instance id, they could
+      //       theoretically also get removed.
+      
+      this.availableWorkflows = new ArrayList<SelectItem>(4);
+      this.workflows = new HashMap<String, WorkflowDefinition>(4);
+      
+      List<WorkflowDefinition> workflowDefs =  this.workflowService.getDefinitions();
+      for (WorkflowDefinition workflowDef : workflowDefs)
       {
-         this.availableWorkflows = new ArrayList<SelectItem>(4);
-         this.workflows = new HashMap<String, WorkflowDefinition>(4);
-         
-         List<WorkflowDefinition> workflowDefs =  this.workflowService.getDefinitions();
-         for (WorkflowDefinition workflowDef : workflowDefs)
+         String label = workflowDef.title;
+         if (workflowDef.description != null && workflowDef.description.length() > 0)
          {
-            String label = workflowDef.title;
-            if (workflowDef.description != null && workflowDef.description.length() > 0)
-            {
-               label = label + " (" + workflowDef.description + ")";
-            }
-            this.availableWorkflows.add(new SelectItem(workflowDef.id, label));
-            this.workflows.put(workflowDef.id, workflowDef);
+            label = label + " (" + workflowDef.description + ")";
          }
-         
-         // set the initial selected workflow to the first in the list, unless there are no
-         // workflows, in which disable the next button
-         if (this.availableWorkflows.size() > 0)
-         {
-            this.selectedWorkflow = (String)this.availableWorkflows.get(0).getValue();
-         }
-         else
-         {
-            this.nextButtonDisabled = true;
-         }
+         this.availableWorkflows.add(new SelectItem(workflowDef.id, label));
+         this.workflows.put(workflowDef.id, workflowDef);
+      }
+      
+      // set the initial selected workflow to the first in the list, unless there are no
+      // workflows, in which disable the next button
+      if (this.availableWorkflows.size() > 0)
+      {
+         this.selectedWorkflow = (String)this.availableWorkflows.get(0).getValue();
+      }
+      else
+      {
+         this.nextButtonDisabled = true;
       }
       
       return availableWorkflows;
@@ -558,5 +592,20 @@ public class StartWorkflowWizard extends BaseWizardBean
    public void setWorkflowService(WorkflowService workflowService)
    {
       this.workflowService = workflowService;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helper methods
+   
+   /**
+    * Resets the rich list
+    */
+   protected void resetRichList()
+   {
+      if (this.packageItemsRichList != null)
+      {
+         this.packageItemsRichList.setValue(null);
+         this.packageItemsRichList = null;
+      }
    }
 }

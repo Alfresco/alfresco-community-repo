@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="/3rd Party/lib/chiba/chiba-1.2.0.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/commons/commons-httpclient-3.0.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/commons/commons-jxpath-1.2.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/xercesImpl.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

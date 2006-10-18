@@ -75,7 +75,6 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
    /**
     * @see org.alfresco.web.bean.content.EditContentPropertiesDialog#initEditableNode()
     */
-   @Override
    protected Node initEditableNode()
    {
       return new Node(this.avmBrowseBean.getAvmActionNode().getNodeRef());

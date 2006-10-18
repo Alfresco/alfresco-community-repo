@@ -8,11 +8,10 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 
 /**
@@ -87,34 +86,39 @@ public class UIWorkflowSummary extends SelfRenderingComponent
          out.write(bundle.getString("title"));
          out.write(":</td><td>");
          out.write(wi.definition.title);
-         out.write("</td></tr><tr><td>");
-         out.write(bundle.getString("description"));
-         out.write(":</td><td>");
-         out.write(wi.definition.description);
+         if (wi.definition.description != null && wi.definition.description.length() > 0)
+         {
+            out.write("&nbsp;(");
+            out.write(wi.definition.description);
+            out.write(")");
+         }
          out.write("</td></tr><tr><td>");
          out.write(bundle.getString("initiated_by"));
          out.write(":</td><td>");
          if (wi.initiator != null)
          {
-            NodeService nodeService = Repository.getServiceRegistry(
-                  context).getNodeService();
-            String userName = (String)nodeService.getProperty(
-                  wi.initiator, ContentModel.PROP_USERNAME);
-            out.write(userName);
+            out.write(User.getFullName(Repository.getServiceRegistry(
+                  context).getNodeService(), wi.initiator));
          }
          out.write("</td></tr><tr><td>");
-         out.write(bundle.getString("start_date"));
+         out.write(bundle.getString("started_on"));
          out.write(":</td><td>");
          if (wi.startDate != null)
          {
             out.write(format.format(wi.startDate));
          }
          out.write("</td></tr><tr><td>");
-         out.write(bundle.getString("due_date"));
+         out.write(bundle.getString("completed_on"));
          out.write(":</td><td>");
          if (wi.endDate != null)
          {
             out.write(format.format(wi.endDate));
+         }
+         else
+         {
+            out.write("&lt;");
+            out.write(bundle.getString("in_progress"));
+            out.write("&gt;");
          }
          out.write("</td></tr></table>");
       }

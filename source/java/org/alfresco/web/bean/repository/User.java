@@ -16,7 +16,9 @@
  */
 package org.alfresco.web.bean.repository;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
@@ -212,5 +214,22 @@ public final class User
       }
       
       return prefRef;
+   }
+   
+   /**
+    * Returns the full name of the user represented by the given NodeRef
+    * 
+    * @param nodeService The node service instance
+    * @param user The user to get the full name for
+    * @return The full name
+    */
+   public static String getFullName(NodeService nodeService, NodeRef user)
+   {
+      Map<QName, Serializable> props = nodeService.getProperties(user);
+      String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
+      String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
+      String fullName = firstName + " " + (lastName != null ? lastName : "");
+      
+      return fullName;
    }
 }

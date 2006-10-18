@@ -168,6 +168,7 @@ public class DatePickerRenderer extends BaseRenderer
     * input component must render the submitted value if it's set, and use the local
     * value only if there is no submitted value.
     */
+   @SuppressWarnings("deprecation")
    public void encodeBegin(FacesContext context, UIComponent component)
          throws IOException
    {
@@ -178,6 +179,7 @@ public class DatePickerRenderer extends BaseRenderer
          String clientId = component.getClientId(context);
          ResponseWriter out = context.getResponseWriter();
          String cmdFieldName = clientId + FIELD_CMD;
+         Boolean initIfNull = (Boolean)component.getAttributes().get("initialiseIfNull");
          
          // this is part of the spec:
          // first you attempt to build the date from the submitted value
@@ -188,11 +190,18 @@ public class DatePickerRenderer extends BaseRenderer
          }
          else
          {
-            // second if no submitted value is found, default to the current value
+            // second - if no submitted value is found, default to the current value
             Object value = ((ValueHolder)component).getValue();
             if (value instanceof Date)
             {
                date = (Date)value;
+            }
+            
+            // third - if no date is present and the initialiseIfNull attribute
+            // is set to true set the date to today's date
+            if (date == null && initIfNull != null && initIfNull.booleanValue())
+            {
+               date = new Date();
             }
          }
          
@@ -253,18 +262,23 @@ public class DatePickerRenderer extends BaseRenderer
             out.write("&nbsp;");
             
             // render 2 links (if the component is not disabled) to allow the user to reset the
-            // date back to null or to select today's date
+            // date back to null (if initialiseIfNull is false) or to select today's date
             if (disabled.booleanValue() == false)
             {
                out.write("<input type=\"button\" onclick=\"");
                out.write(Utils.generateFormSubmit(context, component, cmdFieldName, Integer.toString(CMD_TODAY)));
                out.write("\" value=\"");
                out.write(Application.getMessage(context, "today"));
-               out.write("\">&nbsp;<input type=\"button\" onclick=\"");
-               out.write(Utils.generateFormSubmit(context, component, cmdFieldName, Integer.toString(CMD_RESET)));
-               out.write("\" value=\"");
-               out.write(Application.getMessage(context, "none"));
-               out.write("\">");
+               out.write("\">&nbsp;");
+               
+               if (initIfNull != null && initIfNull.booleanValue() == false)
+               {
+                  out.write("<input type=\"button\" onclick=\"");
+                  out.write(Utils.generateFormSubmit(context, component, cmdFieldName, Integer.toString(CMD_RESET)));
+                  out.write("\" value=\"");
+                  out.write(Application.getMessage(context, "none"));
+                  out.write("\">");
+               }
             }
          }
          else
@@ -412,7 +426,7 @@ public class DatePickerRenderer extends BaseRenderer
       Locale locale = Application.getLanguage(FacesContext.getCurrentInstance());
       if (locale == null)
       {
-         locale = locale.getDefault();
+         locale = Locale.getDefault();
       }
       DateFormatSymbols dfs = new DateFormatSymbols(locale);
       String[] names = dfs.getMonths();

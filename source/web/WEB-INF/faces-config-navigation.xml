@@ -57,6 +57,10 @@
          <from-outcome>dashboard</from-outcome>
          <to-view-id>/jsp/browse/dashboard.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>addContent</from-outcome>
+         <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <!-- rule to get to the Advanced Search page from anywhere -->
@@ -305,6 +309,10 @@
          <from-outcome>editCategories</from-outcome>
          <to-view-id>/jsp/dialog/edit-space-category.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>editSimpleWorkflow</from-outcome>
+         <to-view-id>/jsp/dialog/edit-space-simple-workflow.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>
@@ -352,6 +360,18 @@
       <navigation-case>
          <from-outcome>finish</from-outcome>
          <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/dialog/edit-space-simple-workflow.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>finish</from-outcome>
+         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

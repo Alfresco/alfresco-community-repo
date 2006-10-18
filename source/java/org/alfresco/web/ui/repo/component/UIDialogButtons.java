@@ -186,6 +186,9 @@ public class UIDialogButtons extends SelfRenderingComponent
          if (logger.isDebugEnabled())
             logger.debug("Adding " + buttons.size() + " additional buttons: " + buttons);
          
+         // add a spacing row to separate the additional buttons from the OK button
+         addSpacingRow(context);
+         
          for (DialogButtonConfig buttonCfg : buttons)
          {
             UICommand button = (UICommand)context.getApplication().

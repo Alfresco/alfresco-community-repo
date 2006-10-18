@@ -157,6 +157,8 @@ public class TrashcanBean implements IContextListener
    /** User filter search box text */
    private String userSearchText = null;
    
+   private boolean inProgress = false;
+   
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters
@@ -784,43 +786,54 @@ public class TrashcanBean implements IContextListener
     */
    public String recoverListedItemsOK()
    {
-      FacesContext fc = FacesContext.getCurrentInstance();
+      if (inProgress == true) return null;
       
-      // restore the nodes - the user may have requested a restore to a different parent
-      List<NodeRef> nodeRefs = new ArrayList<NodeRef>(this.listedItems.size());
-      for (Node node : this.listedItems)
-      {
-         nodeRefs.add(node.getNodeRef());
-      }
-      List<RestoreNodeReport> reports;
-      if (this.destination == null)
-      {
-         reports = this.nodeArchiveService.restoreArchivedNodes(nodeRefs);
-      }
-      else
-      {
-         reports = this.nodeArchiveService.restoreArchivedNodes(nodeRefs, this.destination, null, null);
-      }
+      inProgress = true;
       
-      UserTransaction tx = null;
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
-         tx.begin();
+         FacesContext fc = FacesContext.getCurrentInstance();
          
-         saveReportDetail(reports);
+         // restore the nodes - the user may have requested a restore to a different parent
+         List<NodeRef> nodeRefs = new ArrayList<NodeRef>(this.listedItems.size());
+         for (Node node : this.listedItems)
+         {
+            nodeRefs.add(node.getNodeRef());
+         }
+         List<RestoreNodeReport> reports;
+         if (this.destination == null)
+         {
+            reports = this.nodeArchiveService.restoreArchivedNodes(nodeRefs);
+         }
+         else
+         {
+            reports = this.nodeArchiveService.restoreArchivedNodes(nodeRefs, this.destination, null, null);
+         }
          
-         tx.commit();
+         UserTransaction tx = null;
+         try
+         {
+            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+            tx.begin();
+            
+            saveReportDetail(reports);
+            
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            // most exceptions will be caught and returned as RestoreNodeReport objects by the service
+            String reason = err.getMessage();
+            String msg = MessageFormat.format(
+                  Application.getMessage(fc, Repository.ERROR_GENERIC), reason);
+            FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
+            fc.addMessage(null, facesMsg);
+         }
       }
-      catch (Throwable err)
+      finally
       {
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         // most exceptions will be caught and returned as RestoreNodeReport objects by the service
-         String reason = err.getMessage();
-         String msg = MessageFormat.format(
-               Application.getMessage(fc, Repository.ERROR_GENERIC), reason);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
-         fc.addMessage(null, facesMsg);
+         inProgress = false;
       }
       
       return OUTCOME_RECOVERY_REPORT;
@@ -831,38 +844,49 @@ public class TrashcanBean implements IContextListener
     */
    public String recoverAllItemsOK()
    {
-      FacesContext fc = FacesContext.getCurrentInstance();
+      if (inProgress == true) return null;
       
-      // restore all nodes - the user may have requested a restore to a different parent
-      List<RestoreNodeReport> reports;
-      if (this.destination == null)
-      {
-         reports = this.nodeArchiveService.restoreAllArchivedNodes(Repository.getStoreRef());
-      }
-      else
-      {
-         reports = this.nodeArchiveService.restoreAllArchivedNodes(Repository.getStoreRef(), this.destination, null, null);
-      }
+      inProgress = true;
       
-      UserTransaction tx = null;
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
-         tx.begin();
+         FacesContext fc = FacesContext.getCurrentInstance();
          
-         saveReportDetail(reports);
+         // restore all nodes - the user may have requested a restore to a different parent
+         List<RestoreNodeReport> reports;
+         if (this.destination == null)
+         {
+            reports = this.nodeArchiveService.restoreAllArchivedNodes(Repository.getStoreRef());
+         }
+         else
+         {
+            reports = this.nodeArchiveService.restoreAllArchivedNodes(Repository.getStoreRef(), this.destination, null, null);
+         }
          
-         tx.commit();
+         UserTransaction tx = null;
+         try
+         {
+            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+            tx.begin();
+            
+            saveReportDetail(reports);
+            
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            // most exceptions will be caught and returned as RestoreNodeReport objects by the service
+            String reason = err.getMessage();
+            String msg = MessageFormat.format(
+                  Application.getMessage(fc, Repository.ERROR_GENERIC), reason);
+            FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
+            fc.addMessage(null, facesMsg);
+         }
       }
-      catch (Throwable err)
+      finally
       {
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         // most exceptions will be caught and returned as RestoreNodeReport objects by the service
-         String reason = err.getMessage();
-         String msg = MessageFormat.format(
-               Application.getMessage(fc, Repository.ERROR_GENERIC), reason);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
-         fc.addMessage(null, facesMsg);
+         inProgress = false;
       }
       
       return OUTCOME_RECOVERY_REPORT;
@@ -883,6 +907,10 @@ public class TrashcanBean implements IContextListener
     */
    public String deleteListedItemsOK()
    {
+      if (inProgress == true) return null;
+      
+      inProgress = true;
+      
       try
       {
          List<NodeRef> nodeRefs = new ArrayList<NodeRef>(this.listedItems.size());
@@ -897,6 +925,10 @@ public class TrashcanBean implements IContextListener
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
       }
+      finally
+      {
+         inProgress = false;
+      }
       
       return OUTCOME_DIALOGCLOSE;
    }
@@ -906,6 +938,10 @@ public class TrashcanBean implements IContextListener
     */
    public String deleteAllItemsOK()
    {
+      if (inProgress == true) return null;
+      
+      inProgress = true;
+      
       try
       {
          this.nodeArchiveService.purgeAllArchivedNodes(Repository.getStoreRef());
@@ -914,6 +950,10 @@ public class TrashcanBean implements IContextListener
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+      }
+      finally
+      {
+         inProgress = false;
       }
       
       return OUTCOME_DIALOGCLOSE;

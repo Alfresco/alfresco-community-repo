@@ -50,7 +50,7 @@ public class ReassignTaskDialog extends BaseDialogBean
    {
       super.init(parameters);
       
-      this.taskId = this.parameters.get("task-id");
+      this.taskId = this.parameters.get("id");
       if (this.taskId == null || this.taskId.length() == 0)
       {
          throw new IllegalArgumentException("Reassign task dialog called without task id");
@@ -137,12 +137,13 @@ public class ReassignTaskDialog extends BaseDialogBean
       {
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
-         
+
          // build xpath to match available User/Person objects
          NodeRef peopleRef = personService.getPeopleContainer();
          // NOTE: see SearcherComponentTest
-         String xpath = "*[like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + "%', false)" +
-                 " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "lastName, '%" + contains + "%', false)]";
+         String xpath = "*[not(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "userName='guest') and " +
+               "(like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + "%', false)" +
+               " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "lastName, '%" + contains + "%', false))]";
          
          List<NodeRef> nodes = searchService.selectNodes(
                peopleRef,

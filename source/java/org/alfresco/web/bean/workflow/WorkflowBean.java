@@ -196,7 +196,10 @@ public class WorkflowBean
          }
          
          // add the targets for this particular association
-         params.put(assocQName, (Serializable)targets);
+         if (targets.size() > 0)
+         {
+             params.put(assocQName, (Serializable)targets);
+         }
       }
       
       return params;
@@ -223,19 +226,8 @@ public class WorkflowBean
       node.getProperties().put("id", task.id);
       
       // add the name of the source space (if there is one)
-      // TODO: remove this workaroud where JBPM may return a String and not the NodeRef
-      Serializable obj = task.properties.get(WorkflowModel.PROP_CONTEXT);
-      NodeRef context = null;
-      if (obj instanceof NodeRef)
-      {
-         context = (NodeRef)obj;
-      }
-      else if (obj instanceof String)
-      {
-         context = new NodeRef((String)obj);
-      }
-      
-      if (context != null)
+      NodeRef context = (NodeRef)task.properties.get(WorkflowModel.PROP_CONTEXT);
+      if (context != null && this.nodeService.exists(context))
       {
          String name = Repository.getNameForNode(this.nodeService, context);
          node.getProperties().put("sourceSpaceName", name);
@@ -268,7 +260,6 @@ public class WorkflowBean
          
          // add the workflow instance id and name this taks belongs to
          node.getProperties().put("workflowInstanceId", task.path.instance.id);
-         node.getProperties().put("workflowInstanceName", task.path.instance.definition.title);
       }
       
       return node;

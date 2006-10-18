@@ -53,6 +53,24 @@ function validateNumberRange(control, min, max, message, showMessage)
 }
 
 /**
+ * Ensures the value of the 'control' is a number.
+ *
+ * @return true if the value is a number
+ */
+function validateIsNumber(control, message, showMessage)
+{
+   var result = true;
+   
+   if (isNaN(control.value))
+   {
+      informUser(control, message, showMessage);
+      result = false;
+   }
+   
+   return result;
+}
+
+/**
  * Ensures the value of the 'control' has a string length more than 'min' and less than 'max'.
  *
  * @return true if the string length validation passed

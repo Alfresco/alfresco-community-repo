@@ -61,23 +61,24 @@ public class InvokeCommand extends BaseAjaxCommand
       
       // NOTE: it doesn't seem to matter what the content type of the response is (at least with Dojo), 
       // it determines it's behaviour from the mimetype specified in the AJAX call on the client,
-      // therefore, for now we will always return a content type of text/html.
+      // therefore, for now we will always return a content type of text/xml.
       // In the future we may use annotations on the method to be called to specify what content
       // type should be used for the response.
-      final OutputStream os = response.getOutputStream();
-      final UIViewRoot viewRoot = facesContext.getViewRoot();
-      final RenderKitFactory renderFactory = (RenderKitFactory)FactoryFinder.
+      
+      OutputStream os = response.getOutputStream();
+      UIViewRoot viewRoot = facesContext.getViewRoot();
+      RenderKitFactory renderFactory = (RenderKitFactory)FactoryFinder.
             getFactory(FactoryFinder.RENDER_KIT_FACTORY);
-      final RenderKit renderKit = renderFactory.getRenderKit(facesContext, 
+      RenderKit renderKit = renderFactory.getRenderKit(facesContext, 
             viewRoot.getRenderKitId());
-      final ResponseWriter writer = renderKit.createResponseWriter(
+      ResponseWriter writer = renderKit.createResponseWriter(
             new OutputStreamWriter(os), MimetypeMap.MIMETYPE_XML, "UTF-8");
       facesContext.setResponseWriter(writer);
       // must be text/xml otherwise IE doesn't parse the response properly into responseXML
       response.setContentType(MimetypeMap.MIMETYPE_XML);
       
       // create the JSF binding expression
-      final String bindingExpr = makeBindingExpression(expression);
+      String bindingExpr = makeBindingExpression(expression);
       
       if (logger.isDebugEnabled())
          logger.debug("Invoking method represented by " + bindingExpr);
@@ -86,8 +87,8 @@ public class InvokeCommand extends BaseAjaxCommand
       try
       {
          // create the method binding from the expression
-         final MethodBinding binding = 
-	     facesContext.getApplication().createMethodBinding(bindingExpr, new Class[] {});
+         MethodBinding binding = facesContext.getApplication().createMethodBinding(
+               bindingExpr, new Class[] {});
          
          if (binding != null)
          {
@@ -106,13 +107,13 @@ public class InvokeCommand extends BaseAjaxCommand
       {
          // rollback the transaction
          try { if (tx != null) { tx.rollback(); } } catch (Exception ex) { }
-	 if (err instanceof EvaluationException)
-	 {
+	     if (err instanceof EvaluationException)
+	     {
             final Throwable cause = ((EvaluationException)err).getCause();
-	    if (cause != null)
-	       err = cause;
-	 }
-	 logger.error(err);
+	        if (cause != null)
+	           err = cause;
+	     }
+	     logger.error(err);
          throw new AlfrescoRuntimeException("Failed to execute method " + expression + 
 					    ": " + err.getMessage(), 
 					    err);

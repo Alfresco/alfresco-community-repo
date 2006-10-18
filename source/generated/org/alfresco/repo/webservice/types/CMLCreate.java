@@ -2,7 +2,7 @@
  * CMLCreate.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.3 Oct 05, 2005 (05:23:37 EDT) WSDL2Java emitter.
+ * by the Apache Axis 1.4 Apr 22, 2006 (06:55:48 PDT) WSDL2Java emitter.
  */
 
 package org.alfresco.repo.webservice.types;
@@ -11,6 +11,12 @@ public class CMLCreate  implements java.io.Serializable {
     private java.lang.String id;
 
     private org.alfresco.repo.webservice.types.ParentReference parent;
+
+    private java.lang.String parent_id;
+
+    private java.lang.String associationType;
+
+    private java.lang.String childName;
 
     private java.lang.String type;
 
@@ -22,10 +28,16 @@ public class CMLCreate  implements java.io.Serializable {
     public CMLCreate(
            java.lang.String id,
            org.alfresco.repo.webservice.types.ParentReference parent,
+           java.lang.String parent_id,
+           java.lang.String associationType,
+           java.lang.String childName,
            java.lang.String type,
            org.alfresco.repo.webservice.types.NamedValue[] property) {
            this.id = id;
            this.parent = parent;
+           this.parent_id = parent_id;
+           this.associationType = associationType;
+           this.childName = childName;
            this.type = type;
            this.property = property;
     }
@@ -68,6 +80,66 @@ public class CMLCreate  implements java.io.Serializable {
      */
     public void setParent(org.alfresco.repo.webservice.types.ParentReference parent) {
         this.parent = parent;
+    }
+
+
+    /**
+     * Gets the parent_id value for this CMLCreate.
+     * 
+     * @return parent_id
+     */
+    public java.lang.String getParent_id() {
+        return parent_id;
+    }
+
+
+    /**
+     * Sets the parent_id value for this CMLCreate.
+     * 
+     * @param parent_id
+     */
+    public void setParent_id(java.lang.String parent_id) {
+        this.parent_id = parent_id;
+    }
+
+
+    /**
+     * Gets the associationType value for this CMLCreate.
+     * 
+     * @return associationType
+     */
+    public java.lang.String getAssociationType() {
+        return associationType;
+    }
+
+
+    /**
+     * Sets the associationType value for this CMLCreate.
+     * 
+     * @param associationType
+     */
+    public void setAssociationType(java.lang.String associationType) {
+        this.associationType = associationType;
+    }
+
+
+    /**
+     * Gets the childName value for this CMLCreate.
+     * 
+     * @return childName
+     */
+    public java.lang.String getChildName() {
+        return childName;
+    }
+
+
+    /**
+     * Sets the childName value for this CMLCreate.
+     * 
+     * @param childName
+     */
+    public void setChildName(java.lang.String childName) {
+        this.childName = childName;
     }
 
 
@@ -136,6 +208,15 @@ public class CMLCreate  implements java.io.Serializable {
             ((this.parent==null && other.getParent()==null) || 
              (this.parent!=null &&
               this.parent.equals(other.getParent()))) &&
+            ((this.parent_id==null && other.getParent_id()==null) || 
+             (this.parent_id!=null &&
+              this.parent_id.equals(other.getParent_id()))) &&
+            ((this.associationType==null && other.getAssociationType()==null) || 
+             (this.associationType!=null &&
+              this.associationType.equals(other.getAssociationType()))) &&
+            ((this.childName==null && other.getChildName()==null) || 
+             (this.childName!=null &&
+              this.childName.equals(other.getChildName()))) &&
             ((this.type==null && other.getType()==null) || 
              (this.type!=null &&
               this.type.equals(other.getType()))) &&
@@ -158,6 +239,15 @@ public class CMLCreate  implements java.io.Serializable {
         }
         if (getParent() != null) {
             _hashCode += getParent().hashCode();
+        }
+        if (getParent_id() != null) {
+            _hashCode += getParent_id().hashCode();
+        }
+        if (getAssociationType() != null) {
+            _hashCode += getAssociationType().hashCode();
+        }
+        if (getChildName() != null) {
+            _hashCode += getChildName().hashCode();
         }
         if (getType() != null) {
             _hashCode += getType().hashCode();
@@ -194,6 +284,28 @@ public class CMLCreate  implements java.io.Serializable {
         elemField.setFieldName("parent");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "parent"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "ParentReference"));
+        elemField.setMinOccurs(0);
+        elemField.setNillable(true);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("parent_id");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/cml/1.0", "parent_id"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setMinOccurs(0);
+        elemField.setNillable(true);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("associationType");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "associationType"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setMinOccurs(0);
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("childName");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/model/content/1.0", "childName"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

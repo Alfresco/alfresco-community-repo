@@ -36,6 +36,7 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -102,18 +103,23 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          if (logger.isDebugEnabled())
             logger.debug("generating template output for " + this.templateTypeName);
-         this.nodeService.setProperty(AVMNodeConverter.ToNodeRef(-1, this.createdPath), 
-               TemplatingService.TT_QNAME, 
-               this.templateTypeName);
-         TemplatingService ts = TemplatingService.getInstance();
-         TemplateType tt = this.getTemplateType();
+         final TemplateType tt = this.getTemplateType();
+         final TemplatingService ts = TemplatingService.getInstance();
+
+         final Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+         props.put(WCMModel.PROP_TEMPLATE_DERIVED_FROM, tt.getNodeRef());
+         props.put(WCMModel.PROP_TEMPLATE_DERIVED_FROM_NAME, tt.getName());
+         this.nodeService.addAspect(AVMNodeConverter.ToNodeRef(-1, this.createdPath), 
+                                    WCMModel.ASPECT_TEMPLATE_DERIVED,
+                                    props);
+
          OutputUtil.generate(this.createdPath.substring(0, this.createdPath.lastIndexOf('/')),
-               ts.parseXML(this.content),
-               tt,
-               this.fileName,
-               this.contentService,
-               this.nodeService,
-               this.avmService);
+                             ts.parseXML(this.content),
+                             tt,
+                             this.fileName,
+                             this.contentService,
+                             this.nodeService,
+                             this.avmService);
       }
       
       // return the default outcome

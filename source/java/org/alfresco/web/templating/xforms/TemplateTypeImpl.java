@@ -84,6 +84,11 @@ public class TemplateTypeImpl
       return this.schema;
    }
 
+   public NodeRef getNodeRef()
+   {
+      return this.schemaNodeRef;
+   }
+
    public List<TemplateInputMethod> getInputMethods()
    {
       return INPUT_METHODS;

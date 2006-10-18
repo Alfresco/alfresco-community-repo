@@ -24,9 +24,10 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 <%@ page import="org.alfresco.web.bean.wcm.*,
+                 org.alfresco.model.WCMModel,
                  org.alfresco.service.cmr.repository.*,
-		           org.alfresco.web.bean.content.*,
-		           org.alfresco.web.templating.*" %>
+                 org.alfresco.web.bean.content.*,
+                 org.alfresco.web.templating.*" %>
 <%@ page import="java.io.*" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.templating.*" %>
@@ -35,9 +36,9 @@
 final AVMBrowseBean browseBean = (AVMBrowseBean)session.getAttribute("AVMBrowseBean");
 NodeRef nr = browseBean.getAvmActionNode().getNodeRef();
 final AVMEditBean editBean = (AVMEditBean)session.getAttribute("AVMEditBean");
-String ttName = (String)browseBean.getNodeService().getProperty(nr, TemplatingService.TT_QNAME);
+final NodeRef ttNodeRef = (NodeRef)browseBean.getNodeService().getProperty(nr, WCMModel.PROP_TEMPLATE_DERIVED_FROM);
 final TemplatingService ts = TemplatingService.getInstance();
-final TemplateType tt  = ts.getTemplateType(ttName);
+final TemplateType tt  = ts.getTemplateType(ttNodeRef);
 TemplateInputMethod tim = tt.getInputMethods().get(0);
 final InstanceData instanceData = new InstanceData()
 {

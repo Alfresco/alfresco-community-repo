@@ -64,7 +64,9 @@ if (upload == null || upload.getFile() == null)
       </f:verbatim>
     </h:column>
 <%
-} else {
+} 
+else 
+{
 %>
     <h:outputText id="template-output-method-file-name"
                   value="#{WizardManager.bean.templateOutputMethodFileName}"/>

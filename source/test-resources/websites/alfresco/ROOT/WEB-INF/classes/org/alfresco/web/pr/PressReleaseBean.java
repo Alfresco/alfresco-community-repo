@@ -20,32 +20,34 @@ import java.util.*;
 import java.text.*;
 import javax.servlet.jsp.PageContext;
 import org.w3c.dom.*;
+import org.alfresco.web.templating.extension.*;
 
 public class PressReleaseBean
 {
     public static List<PressReleaseBean> getPressReleases(final PageContext pageContext)
 	throws Exception
     {
-	final Map<String, Document> entries = Util.loadXMLDocuments(pageContext,
-								    "/media/releases/content",
-								    "alfresco:press-release");
-	final List<PressReleaseBean> result = new ArrayList<PressReleaseBean>(entries.size());
-	for (Map.Entry<String, Document> entry : entries.entrySet() )
-	{
-	    String fileName = entry.getKey();
-	    Document d = entry.getValue();
-	    Element t = (Element)d.getElementsByTagName("alfresco:title").item(0);
-	    Element a = (Element)d.getElementsByTagName("alfresco:abstract").item(0);
-	    Element dateEl = (Element)d.getElementsByTagName("alfresco:launch_date").item(0);
-	    Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dateEl.getFirstChild().getNodeValue());
-	    String href = "/media/releases/content/" + fileName;
-	    href = href.replaceAll(".xml$", ".shtml");
-	    result.add(new PressReleaseBean(t.getFirstChild().getNodeValue(),
-					    a.getFirstChild().getNodeValue(),
-					    date,
-					    href));
-	}
-	return result;
+       final ExtensionFunctions ef = 
+          new ServletContextExtensionFunctionsAdapter(pageContext.getServletContext());
+
+       final Map<String, Document> entries = ef.getXMLDocuments("press-release", "/media/releases/content");
+       final List<PressReleaseBean> result = new ArrayList<PressReleaseBean>(entries.size());
+       for (Map.Entry<String, Document> entry : entries.entrySet() )
+       {
+          final String fileName = entry.getKey();
+          final Document d = entry.getValue();
+          final Element t = (Element)d.getElementsByTagName("alfresco:title").item(0);
+          final Element a = (Element)d.getElementsByTagName("alfresco:abstract").item(0);
+          final Element dateEl = (Element)d.getElementsByTagName("alfresco:launch_date").item(0);
+          final Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dateEl.getFirstChild().getNodeValue());
+          String href = "/media/releases/content/" + fileName;
+          href = href.replaceAll(".xml$", ".shtml");
+          result.add(new PressReleaseBean(t.getFirstChild().getNodeValue(),
+                                          a.getFirstChild().getNodeValue(),
+                                          date,
+                                          href));
+       }
+       return result;
     }
 
     private final String title;

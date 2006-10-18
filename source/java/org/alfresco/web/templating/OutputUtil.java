@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -77,24 +78,21 @@ public class OutputUtil
             final OutputStreamWriter out = new OutputStreamWriter(fileOut);
 
             final HashMap<String, String> parameters =
-               getOutputMethodParameters(sandBoxUrl, fileName, generatedFileName);
+               getOutputMethodParameters(sandBoxUrl, fileName, generatedFileName, parentPath);
             tom.generate(xml, tt, parameters, out);
             out.close();
             
             NodeRef outputNodeRef = AVMNodeConverter.ToNodeRef(-1, fullAvmPath);
-            nodeService.setProperty(outputNodeRef,
-                                    TemplatingService.TT_QNAME,
-                                    tt.getName());
-            Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-            titledProps.put(ContentModel.PROP_TITLE, fileName);
-            nodeService.addAspect(outputNodeRef, ContentModel.ASPECT_TITLED, titledProps);
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(WCMModel.PROP_TEMPLATE_DERIVED_FROM, tt.getNodeRef());
+            props.put(WCMModel.PROP_TEMPLATE_DERIVED_FROM_NAME, tt.getName());
+            nodeService.addAspect(outputNodeRef, WCMModel.ASPECT_TEMPLATE_DERIVED, props);
+
+            props = new HashMap<QName, Serializable>(1, 1.0f);
+            props.put(ContentModel.PROP_TITLE, fileName);
+            nodeService.addAspect(outputNodeRef, ContentModel.ASPECT_TITLED, props);
             
             LOGGER.debug("generated " + generatedFileName + " using " + tom);
-            
-            NodeRef createdNodeRef = AVMNodeConverter.ToNodeRef(-1, parentPath + '/' + fileName);
-            nodeService.setProperty(createdNodeRef,
-                                    TemplatingService.TT_GENERATED_OUTPUT_QNAME,
-                                    outputNodeRef.toString());
          }
       }
       catch (Exception e)
@@ -114,9 +112,10 @@ public class OutputUtil
       try 
       {
          final TemplatingService ts = TemplatingService.getInstance();
-         final String templateTypeName = (String)
-            nodeService.getProperty(nodeRef, TemplatingService.TT_QNAME);
-         final TemplateType tt = ts.getTemplateType(templateTypeName);
+         final NodeRef templateTypeNodeRef = (NodeRef)
+            nodeService.getProperty(nodeRef, WCMModel.PROP_TEMPLATE_DERIVED_FROM);
+
+         final TemplateType tt = ts.getTemplateType(templateTypeNodeRef);
          
          final ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
          final Document xml = ts.parseXML(reader.getContentInputStream());
@@ -147,7 +146,7 @@ public class OutputUtil
 
             final OutputStreamWriter writer = new OutputStreamWriter(out);
             final HashMap<String, String> parameters =
-               getOutputMethodParameters(sandBoxUrl, fileName, generatedFileName);
+               getOutputMethodParameters(sandBoxUrl, fileName, generatedFileName, parentPath);
             tom.generate(xml, tt, parameters, writer);
             writer.close();
             LOGGER.debug("generated " + fileName + " using " + tom);
@@ -163,12 +162,14 @@ public class OutputUtil
 
    private static HashMap<String, String> getOutputMethodParameters(final String sandBoxUrl,
                                                                     final String fileName,
-                                                                    final String generatedFileName)
+                                                                    final String generatedFileName,
+                                                                    final String parentPath)
    {
       final HashMap<String, String> parameters = new HashMap<String, String>();      
       parameters.put("avm_store_url", sandBoxUrl);
       parameters.put("derived_from_file_name", fileName);
       parameters.put("generated_file_name", generatedFileName);
+      parameters.put("parent_path", parentPath);
       return parameters;
    }
 }

@@ -55,19 +55,6 @@ import org.alfresco.web.bean.repository.Repository;
 public final class TemplatingService implements Serializable
 {
    
-   /**
-    * temporary location of the property on nodes that are xml files created
-    * by templating.
-    */
-   public static final org.alfresco.service.namespace.QName TT_QNAME = 
-      org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt");
-   
-   /**
-    * temporary location of the property on nodes generated from xml assets.
-    */
-   public static final org.alfresco.service.namespace.QName TT_GENERATED_OUTPUT_QNAME = 
-      org.alfresco.service.namespace.QName.createQName(org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI, "tt_generated_output");
-   
    private static final Log LOGGER = LogFactory.getLog(TemplatingService.class);
    
    /** the single instance initialized using spring */
@@ -192,6 +179,11 @@ public final class TemplatingService implements Serializable
          LOGGER.error(re);
          throw re;
       }
+   }
+
+   public TemplateType getTemplateType(final NodeRef nodeRef)
+   {
+      return this.newTemplateType(nodeRef);
    }
    
    /** 

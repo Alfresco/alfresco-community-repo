@@ -24,6 +24,7 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -309,7 +310,7 @@ public class AVMEditBean
             tx.commit();
             
             // TODO: regenerate template content
-            if (nodeService.getProperty(avmRef, TemplatingService.TT_QNAME) != null)
+            if (nodeService.getProperty(avmRef, WCMModel.PROP_TEMPLATE_DERIVED_FROM) != null)
             {
                OutputUtil.regenerate(avmRef,
                                      this.contentService,

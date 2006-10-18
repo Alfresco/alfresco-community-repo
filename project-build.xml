@@ -115,6 +115,9 @@
             deprecation="on" debug="on" target="1.5" source="1.5"
 	    classpathref="classpath.compile"/>
      <mkdir dir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib"/>
+     <jar basedir="${dir.build}/classes"
+          destfile="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib/alfresco-templating-extension.jar"
+	  includes="org/alfresco/web/templating/extension/*.class"/>
      <jar basedir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/classes"
 	  destfile="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib/alfresco-sample-website.jar"
 	  includes="**/*.class"/>

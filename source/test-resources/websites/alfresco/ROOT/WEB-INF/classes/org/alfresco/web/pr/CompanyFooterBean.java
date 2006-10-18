@@ -19,6 +19,7 @@ package org.alfresco.web.pr;
 import java.util.*;
 import javax.servlet.jsp.PageContext;
 import org.w3c.dom.*;
+import org.alfresco.web.templating.extension.*;
 
 public class CompanyFooterBean
 {
@@ -26,20 +27,22 @@ public class CompanyFooterBean
     public static List<CompanyFooterBean> getCompanyFooters(final PageContext pageContext)
 	throws Exception
     {
-	final Map<String, Document> entries = Util.loadXMLDocuments(pageContext,
-								    "/media/releases/content/company_footers",
-								    "alfresco:company-footer");
-	final List<CompanyFooterBean> result = new ArrayList<CompanyFooterBean>(entries.size());
-	for (Map.Entry<String, Document> entry : entries.entrySet())
-	{
-	    String fileName = entry.getKey();
-	    Document d = entry.getValue();
-	    Element n = (Element)d.getElementsByTagName("alfresco:name").item(0);
-	    String href = "/media/releases/content/company_footers/" + fileName;
-	    result.add(new CompanyFooterBean(n.getFirstChild().getNodeValue(),
-					     href));
-	}
-	return result;
+       final ExtensionFunctions ef = 
+          new ServletContextExtensionFunctionsAdapter(pageContext.getServletContext());
+
+       final Map<String, Document> entries = ef.getXMLDocuments("company-footer",
+                                                                "/media/releases/content/company_footers");
+       final List<CompanyFooterBean> result = new ArrayList<CompanyFooterBean>(entries.size());
+       for (Map.Entry<String, Document> entry : entries.entrySet())
+       {
+          final String fileName = entry.getKey();
+          final Document d = entry.getValue();
+          final Element n = (Element)d.getElementsByTagName("alfresco:name").item(0);
+          final String href = "/media/releases/content/company_footers/" + fileName;
+          result.add(new CompanyFooterBean(n.getFirstChild().getNodeValue(),
+                                           href));
+       }
+       return result;
     }
 
     private final String name;

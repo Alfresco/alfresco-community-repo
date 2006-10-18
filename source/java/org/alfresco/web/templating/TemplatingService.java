@@ -128,7 +128,7 @@ public final class TemplatingService implements Serializable
          final SearchParameters sp = new SearchParameters();
          sp.addStore(Repository.getStoreRef());
          sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-         sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_TEMPLATE + "\"");
+         sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + "\"");
          LOGGER.debug("running query [" + sp.getQuery() + "]");
          final ResultSet rs = this.searchService.query(sp);
          LOGGER.debug("received " + rs.length() + " results");
@@ -155,7 +155,7 @@ public final class TemplatingService implements Serializable
          final SearchParameters sp = new SearchParameters();
          sp.addStore(Repository.getStoreRef());
          sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-         sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_TEMPLATE + 
+         sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + 
                      "\" AND @" + Repository.escapeQName(ContentModel.PROP_TITLE) + 
                      ":\"" + name + "\"");
          LOGGER.debug("running query [" + sp.getQuery() + "]");
@@ -203,14 +203,14 @@ public final class TemplatingService implements Serializable
       LOGGER.debug("root tag name is " + schemaRootTagName);
       final TemplateType tt = new TemplateTypeImpl(title, schemaNodeRef, schemaRootTagName);
       for (AssociationRef assoc : this.nodeService.getTargetAssocs(schemaNodeRef, 
-                                                                   WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS))
+                                                                   WCMModel.ASSOC_FORM_TRANSFORMERS))
       {
          final NodeRef tomNodeRef = assoc.getTargetRef();
          try
          {
             final Class templateOutputMethodType = 
                Class.forName((String)this.nodeService.getProperty(tomNodeRef,
-                                                                  WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE));
+                                                                  WCMModel.PROP_FORM_TRANSFORMER_TYPE));
             
             final Constructor c = templateOutputMethodType.getConstructor(NodeRef.class, NodeService.class, ContentService.class);
             final TemplateOutputMethod tom = (TemplateOutputMethod)

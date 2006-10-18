@@ -83,10 +83,17 @@ public class OutputUtil
             out.close();
             
             NodeRef outputNodeRef = AVMNodeConverter.ToNodeRef(-1, fullAvmPath);
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-            props.put(WCMModel.PROP_TEMPLATE_DERIVED_FROM, tt.getNodeRef());
-            props.put(WCMModel.PROP_TEMPLATE_DERIVED_FROM_NAME, tt.getName());
-            nodeService.addAspect(outputNodeRef, WCMModel.ASPECT_TEMPLATE_DERIVED, props);
+
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+            props.put(WCMModel.PROP_FORM_DERIVED_FROM, tt.getNodeRef());
+            props.put(WCMModel.PROP_FORM_DERIVED_FROM_NAME, tt.getName());
+            nodeService.addAspect(outputNodeRef, WCMModel.ASPECT_FORM_DERIVED, props);
+
+            props = new HashMap<QName, Serializable>(2, 1.0f);
+            props.put(WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FROM, tom.getNodeRef());
+            props.put(WCMModel.PROP_PRIMARY_FORM_DERIVED, 
+                      AVMNodeConverter.ToNodeRef(-1, parentPath + fileName));
+            nodeService.addAspect(outputNodeRef, WCMModel.ASPECT_FORM_TRANSFORMER_DERIVED, props);
 
             props = new HashMap<QName, Serializable>(1, 1.0f);
             props.put(ContentModel.PROP_TITLE, fileName);
@@ -113,7 +120,7 @@ public class OutputUtil
       {
          final TemplatingService ts = TemplatingService.getInstance();
          final NodeRef templateTypeNodeRef = (NodeRef)
-            nodeService.getProperty(nodeRef, WCMModel.PROP_TEMPLATE_DERIVED_FROM);
+            nodeService.getProperty(nodeRef, WCMModel.PROP_FORM_DERIVED_FROM);
 
          final TemplateType tt = ts.getTemplateType(templateTypeNodeRef);
          

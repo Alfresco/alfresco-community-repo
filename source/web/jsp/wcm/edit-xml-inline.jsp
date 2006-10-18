@@ -36,11 +36,11 @@
 final AVMBrowseBean browseBean = (AVMBrowseBean)session.getAttribute("AVMBrowseBean");
 NodeRef nr = browseBean.getAvmActionNode().getNodeRef();
 final AVMEditBean editBean = (AVMEditBean)session.getAttribute("AVMEditBean");
-final NodeRef ttNodeRef = (NodeRef)browseBean.getNodeService().getProperty(nr, WCMModel.PROP_TEMPLATE_DERIVED_FROM);
+final NodeRef ttNodeRef = (NodeRef)browseBean.getNodeService().getProperty(nr, WCMModel.PROP_FORM_DERIVED_FROM);
 final TemplatingService ts = TemplatingService.getInstance();
 final TemplateType tt  = ts.getTemplateType(ttNodeRef);
 TemplateInputMethod tim = tt.getInputMethods().get(0);
-final InstanceData instanceData = new InstanceData()
+final TemplateInputMethod.InstanceData instanceData = new TemplateInputMethod.InstanceData()
 {
    public Document getContent()
    { 
@@ -62,7 +62,7 @@ final InstanceData instanceData = new InstanceData()
 };
 %>
 
-<r:page titleId="title_edit_text_inline">
+<r:page titleId="title_edit_xml_inline">
 <script type="text/javascript">
 function _xforms_getSubmitButtons()
 {

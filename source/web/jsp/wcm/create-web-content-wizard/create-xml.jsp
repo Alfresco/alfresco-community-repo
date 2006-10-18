@@ -37,7 +37,7 @@ final CreateWebContentWizard wiz = (CreateWebContentWizard)
 TemplateType tt = wiz.getTemplateType();
 TemplateInputMethod tim = tt.getInputMethods().get(0);
 final TemplatingService ts = TemplatingService.getInstance();
-final InstanceData instanceData = new InstanceData()
+final TemplateInputMethod.InstanceData instanceData = new TemplateInputMethod.InstanceData()
 {
    public Document getContent()
    { 

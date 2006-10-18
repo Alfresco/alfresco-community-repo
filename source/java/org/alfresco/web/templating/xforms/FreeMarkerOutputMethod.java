@@ -52,6 +52,11 @@ public class FreeMarkerOutputMethod
       this.contentService = contentService;
    }
 
+   public NodeRef getNodeRef()
+   {
+      return this.nodeRef;
+   }
+   
    public void generate(final Document xmlContent,
                         final TemplateType tt,
                         final Map<String, String> parameters,
@@ -76,6 +81,6 @@ public class FreeMarkerOutputMethod
    {
       return (String)
          this.nodeService.getProperty(this.nodeRef, 
-                                      WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_DERIVED_FILE_EXTENSION);
+                                      WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FILE_EXTENSION);
    }
 }

@@ -26,15 +26,30 @@ import java.io.Writer;
 public interface TemplateInputMethod
     extends Serializable
 {
+   
+   /////////////////////////////////////////////////////////////////////////////
+   
+   /**
+    * An abstraction layer around the xml content which allows
+    * for reseting the xml content being collected by the input method.
+    */
+   public interface InstanceData
+   {
+       public Document getContent();
+   
+       public void setContent(final Document d);
+   }
 
-    /**
-     * Generates a user interface for inputing data into this template.
-     *
-     * @param instanceData provides the xml instance data if available.
-     * @param tt the template type to generate for
-     * @param out the writer to write the output to.
-     */
-    public void generate(final InstanceData instanceData,
-			 final TemplateType tt,
-			 final Writer out);
+   /////////////////////////////////////////////////////////////////////////////
+
+   /**
+    * Generates a user interface for inputing data into this template.
+    *
+    * @param instanceData provides the xml instance data if available.
+    * @param tt the template type to generate for
+    * @param out the writer to write the output to.
+    */
+   public void generate(final TemplateInputMethod.InstanceData instanceData,
+                        final TemplateType tt,
+                        final Writer out);
 }

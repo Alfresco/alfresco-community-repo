@@ -166,7 +166,7 @@ public class CreateFormWizard extends BaseWizardBean
 
       props = new HashMap<QName, Serializable>(1, 1.0f);
       props.put(WCMModel.PROP_SCHEMA_ROOT_TAG_NAME, this.getSchemaRootTagName());
-      this.nodeService.addAspect(schemaNodeRef, WCMModel.ASPECT_TEMPLATE, props);
+      this.nodeService.addAspect(schemaNodeRef, WCMModel.ASPECT_FORM, props);
          
       for (TemplateOutputMethodData tomd : this.templateOutputMethods)
       {
@@ -189,13 +189,17 @@ public class CreateFormWizard extends BaseWizardBean
 
          this.nodeService.createAssociation(schemaNodeRef,
                                             templateOutputMethodNodeRef,
-                                            WCMModel.ASSOC_TEMPLATE_OUTPUT_METHODS);                         
+                                            WCMModel.ASSOC_FORM_TRANSFORMERS);                         
       
          props = new HashMap<QName, Serializable>(3, 1.0f);
-         props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_TYPE, tomd.getTemplateOutputMethodType().getName());
-         props.put(WCMModel.PROP_TEMPLATE_SOURCE, schemaNodeRef);
-         props.put(WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_DERIVED_FILE_EXTENSION, tomd.getFileExtension());
-         this.nodeService.addAspect(templateOutputMethodNodeRef, WCMModel.ASPECT_TEMPLATE_OUTPUT_METHOD, props);
+         props.put(WCMModel.PROP_FORM_TRANSFORMER_TYPE, 
+                   tomd.getTemplateOutputMethodType().getName());
+         props.put(WCMModel.PROP_FORM_SOURCE, schemaNodeRef);
+         props.put(WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FILE_EXTENSION, 
+                   tomd.getFileExtension());
+         this.nodeService.addAspect(templateOutputMethodNodeRef, 
+                                    WCMModel.ASPECT_FORM_TRANSFORMER, 
+                                    props);
       }
       // return the default outcome
       return outcome;

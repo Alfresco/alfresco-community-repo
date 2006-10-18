@@ -54,6 +54,7 @@ import org.xml.sax.SAXException;
 public class XSLTOutputMethod
     implements TemplateOutputMethod
 {
+   //XXXarielb these should go into a more common location
    private static final String ALFRESCO_NS = "http://www.alfresco.org/alfresco";
    private static final String ALFRESCO_NS_PREFIX = "alfresco";
 
@@ -68,6 +69,11 @@ public class XSLTOutputMethod
    {
       this.nodeRef = nodeRef;
       this.nodeService = nodeService;
+   }
+
+   public NodeRef getNodeRef()
+   {
+      return this.nodeRef;
    }
 
    //XXXarielb this is totally dirty - need to figure a better way to do this
@@ -88,7 +94,7 @@ public class XSLTOutputMethod
    private static String toAVMPath(final ExpressionContext ec, String path)
       throws TransformerException
    {
-      final XObject o = ec.getVariableOrParam(new QName("parent_path"));
+      final XObject o = ec.getVariableOrParam(new QName(ALFRESCO_NS, ALFRESCO_NS_PREFIX, "parent_path"));
       if (o == null)
          return null;
       String avmPath = o.toString();
@@ -109,6 +115,15 @@ public class XSLTOutputMethod
    {
       final ExtensionFunctions ef = XSLTOutputMethod.getExtensionFunctions();
       return ef.getXMLDocument(XSLTOutputMethod.toAVMPath(ec, path));
+   }
+
+   public static NodeIterator getXMLDocuments(final ExpressionContext ec, 
+                                              final String templateTypeName)
+      throws TransformerException,
+      IOException,
+      SAXException
+   {
+      return XSLTOutputMethod.getXMLDocuments(ec, templateTypeName, "");
    }
 
    public static NodeIterator getXMLDocuments(final ExpressionContext ec, 
@@ -228,7 +243,7 @@ public class XSLTOutputMethod
       for (Map.Entry<String, String> e : parameters.entrySet())
       {
          final Element el = xslDocument.createElementNS(XSL_NS, XSL_NS_PREFIX + ":variable");
-         el.setAttribute("name", e.getKey());
+         el.setAttribute("name", ALFRESCO_NS_PREFIX + ':' + e.getKey());
          el.appendChild(xslDocument.createTextNode(e.getValue()));
          docEl.insertBefore(el, docEl.getFirstChild());
       }
@@ -300,6 +315,6 @@ public class XSLTOutputMethod
    {
       return (String)
          this.nodeService.getProperty(this.nodeRef, 
-                                      WCMModel.PROP_TEMPLATE_OUTPUT_METHOD_DERIVED_FILE_EXTENSION);
+                                      WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FILE_EXTENSION);
    }
 }

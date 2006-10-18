@@ -16,6 +16,7 @@
  */
 package org.alfresco.web.templating;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.Map;
@@ -27,6 +28,8 @@ import org.w3c.dom.Document;
 public interface TemplateOutputMethod
    extends Serializable
 {
+   /** the noderef associated with this output method */
+   public NodeRef getNodeRef();
 
    /**
     * Serializes the xml data in to a presentation format.

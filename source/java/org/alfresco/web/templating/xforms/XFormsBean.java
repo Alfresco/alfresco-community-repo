@@ -60,7 +60,7 @@ public class XFormsBean
     private static final Log LOGGER = LogFactory.getLog(XFormsBean.class);
 
     private TemplateType tt;
-    private InstanceData instanceData = null;
+    private TemplateInputMethod.InstanceData instanceData = null;
     private ChibaBean chibaBean;
     private final LinkedList<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
 
@@ -77,7 +77,7 @@ public class XFormsBean
     }
 
     /** @param instanceData the instance data being modified. */
-    public void setInstanceData(final InstanceData instanceData)
+    public void setInstanceData(final TemplateInputMethod.InstanceData instanceData)
     {
 	this.instanceData = instanceData;
     }

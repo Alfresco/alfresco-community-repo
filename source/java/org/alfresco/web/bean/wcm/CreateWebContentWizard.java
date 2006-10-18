@@ -106,11 +106,11 @@ public class CreateWebContentWizard extends BaseContentWizard
          final TemplateType tt = this.getTemplateType();
          final TemplatingService ts = TemplatingService.getInstance();
 
-         final Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-         props.put(WCMModel.PROP_TEMPLATE_DERIVED_FROM, tt.getNodeRef());
-         props.put(WCMModel.PROP_TEMPLATE_DERIVED_FROM_NAME, tt.getName());
+         final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+         props.put(WCMModel.PROP_FORM_DERIVED_FROM, tt.getNodeRef());
+         props.put(WCMModel.PROP_FORM_DERIVED_FROM_NAME, tt.getName());
          this.nodeService.addAspect(AVMNodeConverter.ToNodeRef(-1, this.createdPath), 
-                                    WCMModel.ASPECT_TEMPLATE_DERIVED,
+                                    WCMModel.ASPECT_FORM_DERIVED,
                                     props);
 
          OutputUtil.generate(this.createdPath.substring(0, this.createdPath.lastIndexOf('/')),

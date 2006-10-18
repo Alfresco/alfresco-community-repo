@@ -310,7 +310,7 @@ public class AVMEditBean
             tx.commit();
             
             // TODO: regenerate template content
-            if (nodeService.getProperty(avmRef, WCMModel.PROP_TEMPLATE_DERIVED_FROM) != null)
+            if (nodeService.getProperty(avmRef, WCMModel.PROP_FORM_DERIVED_FROM) != null)
             {
                OutputUtil.regenerate(avmRef,
                                      this.contentService,

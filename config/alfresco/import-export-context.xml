@@ -53,6 +53,47 @@
         	<ref bean="ownableService" />
         </property>
     </bean>
+    
+    
+      <bean id="importerComponentWithBehaviour" class="org.alfresco.repo.importer.ImporterComponent">
+        <!-- For now, hard-wire the view parser -->
+        <property name="namespaceService">
+            <ref bean="NamespaceService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="ruleService">
+            <ref bean="RuleService" />
+        </property>
+        <property name="permissionService">
+        	<ref bean="PermissionService" />
+        </property>
+        <property name="authorityService">
+        	<ref bean="AuthorityService" />
+        </property>
+        <property name="authenticationService">
+        	<ref bean="AuthenticationService" />
+        </property>
+        <property name="viewParser">
+            <ref bean="viewParser" />
+        </property>
+        <property name="behaviourFilter">
+            <ref bean="unboundPolicyBehaviourFilter" />
+        </property>
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+        <property name="ownableService">
+        	<ref bean="ownableService" />
+        </property>
+    </bean>
 
     <bean id="exporterComponent" class="org.alfresco.repo.exporter.ExporterComponent">
         <property name="namespaceService">

@@ -314,9 +314,13 @@ public class SchemaBootstrap implements ApplicationListener
         }
         if (create)
         {
+            // Get the dialect
+            final Dialect dialect = Dialect.getDialect(cfg.getProperties());
+            String dialectStr = dialect.getClass().getName();
+
             // the applied patch table is missing - we assume that all other tables are missing
             // perform a full update using Hibernate-generated statements
-            File tempFile = TempFileProvider.createTempFile("AlfrescoSchemaCreate", ".sql");
+            File tempFile = TempFileProvider.createTempFile("AlfrescoSchemaCreate-" + dialectStr + "-", ".sql");
             dumpSchemaCreate(cfg, tempFile);
             FileInputStream tempInputStream = new FileInputStream(tempFile);
             executeScriptFile(cfg, connection, tempInputStream, tempFile.getPath());

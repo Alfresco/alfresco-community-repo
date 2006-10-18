@@ -79,6 +79,11 @@ import org.springframework.util.StringUtils;
  */
 public class Node implements Serializable, Scopeable
 {
+    /**
+     * Comment for <code>serialVersionUID</code>
+     */
+    private static final long serialVersionUID = -3378946227712939600L;
+
     private static Log logger = LogFactory.getLog(Node.class);
     
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
@@ -885,6 +890,43 @@ public class Node implements Serializable, Scopeable
        this.services.getPermissionService().deletePermission(this.nodeRef, authority, permission);
     }
     
+    // -------------
+    // Ownership API
+    
+    /**
+     * Set the owner of the node 
+     */
+    public void setOwner(String userId)
+    {
+        this.services.getOwnableService().setOwner(this.nodeRef, userId);
+    }
+    
+    /**
+     * Take ownership of the node.
+     */
+    public void takeOwnership()
+    {
+        this.services.getOwnableService().takeOwnership(this.nodeRef);
+    }
+    
+    /**
+     * Get the owner of the node.
+     * @return
+     */
+    public String getOwner()
+    {
+        return this.services.getOwnableService().getOwner(this.nodeRef);
+    }
+    
+    /**
+     * Make owner available as a property.
+     * 
+     * @return
+     */
+    public String jsGet_owner()
+    {
+        return getOwner();
+    }
     
     // ------------------------------------------------------------------------------
     // Create and Modify API  
@@ -1645,8 +1687,11 @@ public class Node implements Serializable, Scopeable
     {
         if (this.nodeService.exists(nodeRef))
         {
+            // TODO: DC: Allow debug output of property values - for now it's disabled as this could potentially
+            //       follow a large network of nodes.  Unfortunately, JBPM issues unprotected debug statements
+            //       where node.toString is used - will request this is fixed in next release of JBPM.
             return "Node Type: " + getType() + 
-                   "\nNode Properties: " + this.getProperties().toString() + 
+                   "\nNode Properties: " + this.getProperties().size() + 
                    "\nNode Aspects: " + this.getAspects().toString();
         }
         else

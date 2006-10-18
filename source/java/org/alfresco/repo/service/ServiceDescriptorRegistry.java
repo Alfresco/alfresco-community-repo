@@ -43,7 +43,9 @@ import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -350,5 +352,21 @@ public class ServiceDescriptorRegistry
     public AVMSyncService getAVMSyncService()
     {
         return (AVMSyncService)getService(AVM_SYNC_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getOwnableService()
+     */
+    public OwnableService getOwnableService()
+    {
+        return (OwnableService)getService(OWNABLE_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getPersonService()
+     */
+    public PersonService getPersonService()
+    {
+        return (PersonService)getService(PERSON_SERVICE);
     }
 }

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
@@ -297,6 +296,7 @@ public interface NodeService
      * 
      * @param parentRef the parent end of the association
      * @param childRef the child end of the association
+     * @return Returns a collection of deleted entities - both associations and node references.
      * @throws InvalidNodeRefException if the parent or child nodes could not be found
      */
     @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"parentRef", "childRef"})

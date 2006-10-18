@@ -323,7 +323,6 @@ public class RoutingContentService implements ContentService
 
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
     {
-
         // check for an existing URL - the get of the reader will perform type checking
         ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
         

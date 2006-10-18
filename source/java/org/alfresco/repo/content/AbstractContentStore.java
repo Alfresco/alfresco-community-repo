@@ -109,7 +109,7 @@ public abstract class AbstractContentStore implements ContentStore
         // extract the relative part of the URL
         String path = contentUrl.substring(index);
         // more extensive checks can be added in, but it seems overkill
-        if (path.length() < 10)
+        if (path.length() < 8)
         {
             throw new AlfrescoRuntimeException(
                     "The content URL is invalid: \n" +

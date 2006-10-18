@@ -27,6 +27,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
@@ -160,6 +161,7 @@ public class PerformanceNodeServiceTest extends TestCase
         {
             public Object doWork()
             {
+                IntegrityChecker.setWarnInTransaction();
                 buildNodeChildren(rootNodeRef, 1, testDepth, testChildCount);
                 return null;
             }

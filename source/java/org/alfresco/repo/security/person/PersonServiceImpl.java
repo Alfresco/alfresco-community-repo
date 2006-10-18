@@ -64,13 +64,11 @@ public class PersonServiceImpl implements PersonService
 
     private boolean createMissingPeople;
 
-    private String companyHomePath;
-
-    private NodeRef companyHomeNodeRef;
-
     private static Set<QName> mutableProperties;
 
     private boolean userNamesAreCaseSensitive = false;
+    
+    private String defaultHomeFolderProvider;
 
     static
     {
@@ -97,6 +95,11 @@ public class PersonServiceImpl implements PersonService
     public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
     {
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
+    }
+    
+    void setDefaultHomeFolderProvider(String defaultHomeFolderProvider)
+    {
+        this.defaultHomeFolderProvider = defaultHomeFolderProvider;
     }
 
     public NodeRef getPerson(String userName)
@@ -245,17 +248,12 @@ public class PersonServiceImpl implements PersonService
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
-        properties.put(ContentModel.PROP_HOMEFOLDER, getHomeFolder());
         properties.put(ContentModel.PROP_FIRSTNAME, userName);
         properties.put(ContentModel.PROP_LASTNAME, "");
         properties.put(ContentModel.PROP_EMAIL, "");
         properties.put(ContentModel.PROP_ORGID, "");
+        properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, defaultHomeFolderProvider);
         return properties;
-    }
-
-    private NodeRef getHomeFolder()
-    {
-        return getCompanyHome();
     }
 
     public NodeRef createPerson(Map<QName, Serializable> properties)
@@ -371,26 +369,6 @@ public class PersonServiceImpl implements PersonService
     public void setStoreUrl(String storeUrl)
     {
         this.storeRef = new StoreRef(storeUrl);
-    }
-
-    public void setCompanyHomePath(String companyHomePath)
-    {
-        this.companyHomePath = companyHomePath;
-    }
-
-    public synchronized NodeRef getCompanyHome()
-    {
-        if (companyHomeNodeRef == null)
-        {
-            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef), companyHomePath, null,
-                    namespacePrefixResolver, false);
-            if (refs.size() != 1)
-            {
-                throw new IllegalStateException("Invalid company home path: found : " + refs.size());
-            }
-            companyHomeNodeRef = refs.get(0);
-        }
-        return companyHomeNodeRef;
     }
 
     public String getUserIdentifier(String caseSensitiveUserName)

@@ -16,9 +16,16 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.io.File;
+
 import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * @see org.alfresco.repo.content.transform.OpenOfficeContentTransformer
@@ -74,5 +81,25 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
         assertEquals("Mimetype should be supported", 1.0, reliability);
         reliability = transformer.getReliability(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertEquals("Mimetype should be supported", 1.0, reliability);
+    }
+    
+    /**
+     * Test what is up with HTML to PDF
+     */
+    public void testHtmlToPdf() throws Exception
+    {
+        if (!transformer.isConnected())
+        {
+            // no connection
+            return;
+        }
+        File htmlSourceFile = loadQuickTestFile("html");
+        File pdfTargetFile = TempFileProvider.createTempFile(getName() + "-target-", ".pdf");
+        ContentReader reader = new FileContentReader(htmlSourceFile);
+        reader.setMimetype(MimetypeMap.MIMETYPE_HTML);
+        ContentWriter writer = new FileContentWriter(pdfTargetFile);
+        writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+        
+        transformer.transform(reader, writer);
     }
 }

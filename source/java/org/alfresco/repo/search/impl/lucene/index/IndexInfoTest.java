@@ -25,7 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
@@ -95,7 +95,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             String guid = GUID.generate();
             ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
-            IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
+            IndexWriter writer = ii.getDeltaIndexWriter(guid, new AlfrescoStandardAnalyser());
 
             Document doc = new Document();
             for (int k = 0; k < 15; k++)
@@ -193,7 +193,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             String guid = GUID.generate();
             ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
-            IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
+            IndexWriter writer = ii.getDeltaIndexWriter(guid, new AlfrescoStandardAnalyser());
 
             Document doc = new Document();
             for (int k = 0; k < 15; k++)
@@ -383,7 +383,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             String guid = GUID.generate();
             ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
-            IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
+            IndexWriter writer = ii.getDeltaIndexWriter(guid, new AlfrescoStandardAnalyser());
 
             Document doc = new Document();
             for (int k = 0; k < 15; k++)
@@ -469,7 +469,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             String guid = GUID.generate();
             ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
-            IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
+            IndexWriter writer = ii.getDeltaIndexWriter(guid, new AlfrescoStandardAnalyser());
 
             Document doc = new Document();
             for (int k = 0; k < 15; k++)
@@ -649,7 +649,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
                     String guid = GUID.generate();
                     ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
-                    IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
+                    IndexWriter writer = ii.getDeltaIndexWriter(guid, new AlfrescoStandardAnalyser());
 
                     Document doc = new Document();
                     for (int k = 0; k < 15; k++)
@@ -740,7 +740,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
                     String guid = GUID.generate();
                     ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
-                    IndexWriter writer = ii.getDeltaIndexWriter(guid, new StandardAnalyzer());
+                    IndexWriter writer = ii.getDeltaIndexWriter(guid, new AlfrescoStandardAnalyser());
 
                     Document doc = new Document();
                     for (int k = 0; k < 15; k++)

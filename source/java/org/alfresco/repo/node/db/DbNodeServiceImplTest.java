@@ -17,6 +17,7 @@
 package org.alfresco.repo.node.db;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,8 @@ import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,6 +50,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
 {
     private TransactionService txnService;
     private NodeDaoService nodeDaoService;
+    private DictionaryService dictionaryService;
     
     protected NodeService getNodeService()
     {
@@ -59,6 +63,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         super.onSetUpInTransaction();
         txnService = (TransactionService) applicationContext.getBean("transactionComponent");
         nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
+        dictionaryService = (DictionaryService) applicationContext.getBean("dictionaryService");
     }
 
     /**
@@ -258,18 +263,34 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     /**
      * Checks that the string_value retrieval against a property type is working
      */
-    public void testGetContentDataStringValues() throws Exception
+    public void testGetContentDataValues() throws Exception
     {
-        ContentData contentData = new ContentData("abc", MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null);
-        // put this in as a random property
+        final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
+
+        ContentData contentDataSingle = new ContentData("url-single", MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null);
+        ContentData contentDataMultiple = new ContentData("url-multiple", MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null);
+        // put this in as a random single property
         nodeService.setProperty(
                 rootNodeRef,
-                QName.createQName(NAMESPACE, "random"),
-                contentData);
+                QName.createQName(NAMESPACE, "random-single"),
+                contentDataSingle);
+        
+        // create a collection of mixed types
+        ArrayList<Serializable> collection = new ArrayList<Serializable>(3);
+        collection.add("abc");
+        collection.add(new Integer(123));
+        collection.add(contentDataMultiple);
+        nodeService.setProperty(
+                rootNodeRef,
+                QName.createQName(NAMESPACE, "random-multiple"),
+                collection);
+        
         // get a list of all content values
-        List<String> contentDataStrings = nodeDaoService.getContentDataStrings();
-        assertNotNull(contentDataStrings);
-        assertTrue("ContentData not represented as a String in results",
-                contentDataStrings.contains(contentData.toString()));
+        List<Serializable> allContentDatas = nodeDaoService.getPropertyValuesByActualType(contentDataType);
+        assertTrue("At least two instances expected", allContentDatas.size() >= 2);
+        assertTrue("Single content data not present in results",
+                allContentDatas.contains(contentDataSingle));
+        assertTrue("Multi-valued buried content data not present in results",
+                allContentDatas.contains(contentDataMultiple));
     }
 }

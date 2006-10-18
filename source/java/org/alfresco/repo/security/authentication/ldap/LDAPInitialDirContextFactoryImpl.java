@@ -30,17 +30,22 @@ import javax.naming.directory.InitialDirContext;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 
-public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFactory
+public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFactory, InitializingBean
 {
+    private static final Log logger = LogFactory.getLog(LDAPInitialDirContextFactoryImpl.class);
+
     private Map<String, String> initialDirContextEnvironment = Collections.<String, String> emptyMap();
 
     static
     {
         System.setProperty("javax.security.auth.useSubjectCredentialsOnly", "false");
     }
-    
+
     public LDAPInitialDirContextFactoryImpl()
     {
         super();
@@ -87,11 +92,22 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             throw new AuthenticationException("Null user name provided.");
         }
+        
+        if (principal.length() == 0)
+        {
+            throw new AuthenticationException("Empty user name provided.");
+        }
 
         if (credentials == null)
         {
             throw new AuthenticationException("No credentials provided.");
         }
+        
+        if (credentials.length() == 0)
+        {
+            throw new AuthenticationException("Empty credentials provided.");
+        }
+        
         Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
         env.putAll(initialDirContextEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, principal);
@@ -187,4 +203,108 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     }
 
+    public void afterPropertiesSet() throws Exception
+    {
+        // Check Anonymous bind
+        
+        Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
+        env.putAll(initialDirContextEnvironment);
+        env.remove(Context.SECURITY_PRINCIPAL);
+        env.remove(Context.SECURITY_CREDENTIALS);
+        try
+        {
+            new InitialDirContext(env);
+
+            logger.warn("LDAP server supports anonymous bind " + env.get(Context.PROVIDER_URL));
+        }
+        catch (javax.naming.AuthenticationException ax)
+        {
+
+        }
+        catch (NamingException nx)
+        {
+            throw new AuthenticationException("Unable to connect to LDAP Server; check LDAP configuration", nx);
+        }
+        
+        // Simple DN and password
+        
+        env = new Hashtable<String, String>(initialDirContextEnvironment.size());
+        env.putAll(initialDirContextEnvironment);
+        env.put(Context.SECURITY_PRINCIPAL, "daftAsABrush");
+        env.put(Context.SECURITY_CREDENTIALS, "daftAsABrush");
+        try
+        {
+
+            new InitialDirContext(env);
+
+            throw new AuthenticationException(
+                    "The ldap server at "
+                            + env.get(Context.PROVIDER_URL)
+                            + " falls back to use anonymous bind if invalid security credentials are presented. This is not supported.");
+        }
+        catch (javax.naming.AuthenticationException ax)
+        {
+            logger.info("LDAP server does not fall back to anonymous bind for a string uid and password at " + env.get(Context.PROVIDER_URL));
+        }
+        catch (NamingException nx)
+        {
+            logger.info("LDAP server does not support simple string user ids and invalid credentials at "+ env.get(Context.PROVIDER_URL));
+        }
+        
+        // DN and password
+        
+        env = new Hashtable<String, String>(initialDirContextEnvironment.size());
+        env.putAll(initialDirContextEnvironment);
+        env.put(Context.SECURITY_PRINCIPAL, "cn=daftAsABrush,dc=woof");
+        env.put(Context.SECURITY_CREDENTIALS, "daftAsABrush");
+        try
+        {
+
+            new InitialDirContext(env);
+
+            throw new AuthenticationException(
+                    "The ldap server at "
+                            + env.get(Context.PROVIDER_URL)
+                            + " falls back to use anonymous bind if invalid security credentials are presented. This is not supported.");
+        }
+        catch (javax.naming.AuthenticationException ax)
+        {
+            logger.info("LDAP server does not fall back to anonymous bind for a simple dn and password at " + env.get(Context.PROVIDER_URL));
+        }
+        catch (NamingException nx)
+        {
+            logger.info("LDAP server does not support simple DN and invalid password at "+ env.get(Context.PROVIDER_URL));
+        }
+
+        // Check more if we have a real principal we expect to work
+        
+        env = new Hashtable<String, String>(initialDirContextEnvironment.size());
+        env.putAll(initialDirContextEnvironment);
+        if(env.get(Context.SECURITY_PRINCIPAL) != null)
+        {
+            // Correct principal invalid password
+            
+            env = new Hashtable<String, String>(initialDirContextEnvironment.size());
+            env.putAll(initialDirContextEnvironment);
+            env.put(Context.SECURITY_CREDENTIALS, "sdasdasdasdasd123123123");
+            try
+            {
+
+                new InitialDirContext(env);
+
+                throw new AuthenticationException(
+                        "The ldap server at "
+                                + env.get(Context.PROVIDER_URL)
+                                + " falls back to use anonymous bind for a known principal if  invalid security credentials are presented. This is not supported.");
+            }
+            catch (javax.naming.AuthenticationException ax)
+            {
+                logger.info("LDAP server does not fall back to anonymous bind for known principal and invalid credentials at " + env.get(Context.PROVIDER_URL));
+            }
+            catch (NamingException nx)
+            {
+                // already donw
+            }
+        }
+    }
 }

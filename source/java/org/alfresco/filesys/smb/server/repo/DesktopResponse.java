@@ -19,6 +19,8 @@ package org.alfresco.filesys.smb.server.repo;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mozilla.javascript.ScriptableObject;
+
 /**
  * Desktop Response Class
  * 
@@ -26,8 +28,12 @@ import java.util.List;
  *  
  * @author gkspencer
  */
-public class DesktopResponse {
+public class DesktopResponse extends ScriptableObject {
 
+	// Version id
+	
+	private static final long serialVersionUID = 6421278986221629296L;
+	
 	//	Desktop action status and optional status message
 	
 	private int m_status;
@@ -58,13 +64,45 @@ public class DesktopResponse {
 		m_status = sts;
 		m_statusMsg = msg;
 	}
+
+	/**
+	 * Javascript constructor
+	 * 
+	 * @param sts int
+	 * @param msg String
+	 */
+	public void jsConstructor(int sts, String msg)
+	{
+		m_status    = sts;
+		m_statusMsg = msg;
+	}
 	
+	/**
+	 * Return the class name
+	 * 
+	 * @return String
+	 */
+	@Override
+	public String getClassName() {
+		return "DesktopResponse";
+	}
+
 	/**
 	 * Return the status code
 	 * 
 	 * @return int
 	 */
 	public final int getStatus()
+	{
+		return m_status;
+	}
+	
+	/**
+	 * Return the status property
+	 * 
+	 * @return int
+	 */
+	public int jsGet_status()
 	{
 		return m_status;
 	}
@@ -87,6 +125,16 @@ public class DesktopResponse {
 	public final String getStatusMessage()
 	{
 		return m_statusMsg;
+	}
+	
+	/**
+	 * Return the status message property
+	 * 
+	 * @return String
+	 */
+	public String jsGet_message()
+	{
+		return m_statusMsg != null ? m_statusMsg : ""; 
 	}
 	
 	/**
@@ -141,6 +189,26 @@ public class DesktopResponse {
 	public final void setStatus(int sts, String msg)
 	{
 		m_status    = sts;
+		m_statusMsg = msg;
+	}
+	
+	/**
+	 * Set the status property
+	 * 
+	 * @param sts int
+	 */
+	public void jsSet_status(int sts)
+	{
+		m_status = sts;
+	}
+	
+	/**
+	 * Set the status message property
+	 * 
+	 * @param msg String
+	 */
+	public void jsSet_message(String msg)
+	{
 		m_statusMsg = msg;
 	}
 	

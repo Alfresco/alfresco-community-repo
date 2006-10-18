@@ -33,17 +33,26 @@ public class WorkflowInstance
     /** Workflow Instance unique id */
     public String id;
 
+    /** Workflow Instance description */
+    public String description;
+
     /** Is this Workflow instance still "in-flight" or has it completed? */
     public boolean active;
 
     /** Initiator (cm:person) - null if System initiated */
     public NodeRef initiator;
-
+    
     /** Workflow Start Date */
     public Date startDate;
     
     /** Workflow End Date */
     public Date endDate;
+
+    /** Workflow Package */
+    public NodeRef workflowPackage;
+    
+    /** Workflow Context */
+    public NodeRef context;
     
     /** Workflow Definition */
     public WorkflowDefinition definition;

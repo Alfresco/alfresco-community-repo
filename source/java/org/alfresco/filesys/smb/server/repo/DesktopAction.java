@@ -27,7 +27,6 @@ import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.smb.server.repo.pseudo.LocalPseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -35,8 +34,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Desktop Action Class
@@ -455,13 +452,13 @@ public abstract class DesktopAction {
     }
 
     /**
-     * Return the check in/out service
+     * Return the service registry
      * 
-     * @return CheckOutInService
+     * @return ServiceRegistry
      */
-    public final CheckOutCheckInService getCheckInOutService()
+    public final ServiceRegistry getServiceRegistry()
     {
-    	return m_contentDriver.getCheckInOutService();
+    	return m_contentDriver.getServiceRegistry();
     }
     
     /**

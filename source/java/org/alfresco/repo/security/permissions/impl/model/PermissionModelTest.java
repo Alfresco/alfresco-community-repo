@@ -22,6 +22,7 @@ import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.AbstractPermissionTest;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
+import org.alfresco.repo.security.permissions.impl.RequiredPermission.On;
 import org.alfresco.service.namespace.QName;
 
 public class PermissionModelTest extends AbstractPermissionTest
@@ -32,12 +33,21 @@ public class PermissionModelTest extends AbstractPermissionTest
         super();
     }
 
+    public void testWoof()
+    {
+        QName typeQname = nodeService.getType(rootNodeRef);
+        Set<QName> aspectQNames = nodeService.getAspects(rootNodeRef);
+        PermissionReference ref = permissionModelDAO.getPermissionReference(null, "CheckOut");
+        Set<PermissionReference> answer = permissionModelDAO.getRequiredPermissions(ref, typeQname, aspectQNames, On.NODE);
+        assertEquals(1, answer.size());
+    }
+    
     public void testIncludePermissionGroups()
     {
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Consumer"));
 
-        assertEquals(5, grantees.size());
+        assertEquals(8, grantees.size());
     }
     
     public void testIncludePermissionGroups2()
@@ -45,7 +55,7 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Contributor"));
 
-        assertEquals(11, grantees.size());
+        assertEquals(17, grantees.size());
     }
     
     public void testIncludePermissionGroups3()
@@ -53,7 +63,7 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Editor"));
 
-        assertEquals(11, grantees.size());
+        assertEquals(17, grantees.size());
     }
     
     public void testIncludePermissionGroups4()
@@ -61,14 +71,34 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Collaborator"));
 
-        assertEquals(16, grantees.size());
+        assertEquals(24, grantees.size());
+    }
+    
+    public void testIncludePermissionGroups5()
+    {
+        Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
+                namespacePrefixResolver), "Coordinator"));
+
+        assertEquals(59, grantees.size());
+    }
+    
+    public void testIncludePermissionGroups6()
+    {
+        Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
+                namespacePrefixResolver), "RecordAdministrator"));
+
+        assertEquals(19, grantees.size());
     }
     
     public void testGetGrantingPermissions()
     {
         Set<PermissionReference> granters = permissionModelDAO.getGrantingPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "ReadProperties"));
-        assertEquals(9, granters.size());
+        assertEquals(10, granters.size());
+        
+        granters = permissionModelDAO.getGrantingPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
+                namespacePrefixResolver), "_ReadProperties"));
+        assertEquals(11, granters.size());
     }
     
     public void testGlobalPermissions()
@@ -76,4 +106,5 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<? extends PermissionEntry> globalPermissions = permissionModelDAO.getGlobalPermissionEntries();
         assertEquals(5, globalPermissions.size());
     }
+    
 }

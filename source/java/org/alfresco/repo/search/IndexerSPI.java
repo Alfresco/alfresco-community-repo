@@ -22,6 +22,6 @@ public interface IndexerSPI extends Indexer
 {
     public void registerCallBack(FTSIndexerAware callBack);
 
-    public void updateFullTextSearch(int i);
+    public int updateFullTextSearch(int i);
 
 }

@@ -16,7 +16,7 @@
    <data-types>
 
       <data-type name="test:datatype">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>java.lang.Object</java-class>
       </data-type>
 

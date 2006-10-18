@@ -42,6 +42,11 @@ public class ClosingIndexSearcher extends IndexSearcher
         this.reader = r;
     }
 
+    /*package*/ IndexReader getReader()
+    {
+        return reader;
+    }
+    
     @Override
     public void close() throws IOException
     {

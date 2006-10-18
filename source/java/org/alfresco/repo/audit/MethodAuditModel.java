@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.audit;
 
+import org.alfresco.repo.audit.model.TrueFalseUnset;
 import org.aopalliance.intercept.MethodInvocation;
 
 public interface MethodAuditModel
@@ -54,4 +55,11 @@ public interface MethodAuditModel
      * @return
      */
     public RecordOptions getAuditRecordOptions(MethodInvocation mi);
+    
+    /**
+     * Should internal service class be logged.
+     * 
+     * @return
+     */
+    public TrueFalseUnset getAuditInternalServiceMethods(MethodInvocation mi);
 }

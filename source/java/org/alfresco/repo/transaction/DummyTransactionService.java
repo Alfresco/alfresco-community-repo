@@ -45,6 +45,10 @@ public class DummyTransactionService implements TransactionService
         return false;
     }
 
+    public void setReadOnly(boolean readOnly)
+    {
+    }
+
     public UserTransaction getUserTransaction()
     {
         return txn;

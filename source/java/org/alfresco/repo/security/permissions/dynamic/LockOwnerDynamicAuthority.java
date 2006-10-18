@@ -26,30 +26,34 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.springframework.beans.factory.InitializingBean;
 
-
+/**
+ * LockOwnerDynamicAuthority
+ */
 public class LockOwnerDynamicAuthority implements DynamicAuthority, InitializingBean
 {
-    
     private LockService lockService;
     
     private NodeService nodeService;
     
-
-    public LockOwnerDynamicAuthority()
-    {
-        super();
-    }
-
+    
     public boolean hasAuthority(NodeRef nodeRef, String userName)
     {
-        if(lockService.getLockStatus(nodeRef) == LockStatus.LOCK_OWNER)
+        if (lockService.getLockStatus(nodeRef) == LockStatus.LOCK_OWNER)
         {
             return true;
         }
-        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            NodeRef originial =  DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE));
-            return  (lockService.getLockStatus(originial) == LockStatus.LOCK_OWNER);
+            NodeRef original = DefaultTypeConverter.INSTANCE.convert(
+                    NodeRef.class, nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE));
+            if (nodeService.exists(original))
+            {
+                return (lockService.getLockStatus(original) == LockStatus.LOCK_OWNER);
+            }
+            else
+            {
+                return false;
+            }
         }
         else
         {
@@ -80,12 +84,8 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
         this.lockService = lockService;
     }
     
-
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
-    
-
 }

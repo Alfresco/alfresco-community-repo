@@ -24,6 +24,7 @@
                         <cm:email></cm:email>
                         <cm:organizationId></cm:organizationId>
                         <cm:homeFolder>/${spaces.company_home.childname}</cm:homeFolder>
+                        <cm:homeFolderProvider>bootstrapHomeFolderProvider</cm:homeFolderProvider>
                     </cm:person>
                     <!-- Guest needs to read their own person information -->
                     <cm:person view:childName="cm:person">
@@ -39,10 +40,11 @@
                         <cm:email></cm:email>
                         <cm:organizationId></cm:organizationId>
                         <cm:homeFolder>/${spaces.company_home.childname}/${spaces.guest_home.childname}</cm:homeFolder>
+                        <cm:homeFolderProvider>bootstrapHomeFolderProvider</cm:homeFolderProvider>
                     </cm:person>
                 </sys:children>
             </sys:container>
-            <cm:folder view:childName="${system.workflow_container.childname}"/>
+            <sys:container view:childName="${system.workflow_container.childname}"/>
         </sys:children>
     </sys:container>
 

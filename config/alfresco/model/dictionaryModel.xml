@@ -19,17 +19,17 @@
    <data-types>
 
       <data-type name="d:any">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>java.lang.Object</java-class>
       </data-type>
 
       <data-type name="d:text">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>java.lang.String</java-class>
       </data-type>
 
       <data-type name="d:content">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>org.alfresco.service.cmr.repository.ContentData</java-class>
       </data-type>
 
@@ -64,37 +64,37 @@
       </data-type>
 
       <data-type name="d:boolean">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>java.lang.Boolean</java-class>
       </data-type>
       
       <data-type name="d:qname">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>org.alfresco.service.namespace.QName</java-class>
       </data-type>
 
       <data-type name="d:noderef">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>org.alfresco.service.cmr.repository.NodeRef</java-class>
       </data-type>
 
       <data-type name="d:childassocref">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>org.alfresco.service.cmr.repository.ChildAssociationRef</java-class>
       </data-type>
 
       <data-type name="d:assocref">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>org.alfresco.service.cmr.repository.AssociationRef</java-class>
       </data-type>
 
       <data-type name="d:path">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>org.alfresco.service.cmr.repository.Path</java-class>
       </data-type>
 
       <data-type name="d:category">
-         <analyser-class>org.apache.lucene.analysis.standard.StandardAnalyzer</analyser-class>
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>org.alfresco.service.cmr.repository.NodeRef</java-class>
       </data-type>
 

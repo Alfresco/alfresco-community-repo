@@ -50,6 +50,7 @@
 			<!--   URL  - launches a URL via the Windows shell                                -->
 			<!--   CmdLine - launches the Notepad application                                 -->
 			<!--   CheckInOut - checks files in/out, drag and drop files onto the application -->
+			<!--   JavaScript - run a server-side script                                      -->
 <!--
 			<desktopActions>
 				<global>
@@ -76,6 +77,15 @@
 					<name>CheckInOut</name>
 			        <filename>__AlfrescoCheckInOut.exe</filename>
 				</action>
+				<action>
+					<class>org.alfresco.filesys.smb.server.repo.desk.JavaScriptDesktopAction</class>
+					<name>JavaScript</name>
+					<filename>__AlfrescoScript.exe</filename>
+					<script>alfresco/desktop/dumpRequest.js</script>
+					<attributes>anyFiles, multiplePaths , allowNoParams</attributes>
+					<preprocess>confirm, copyToTarget</preprocess>
+				</action>
+
 			</desktopActions>
 -->			 
 			 			 

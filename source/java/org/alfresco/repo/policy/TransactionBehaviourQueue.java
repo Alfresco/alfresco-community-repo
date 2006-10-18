@@ -25,7 +25,6 @@ import java.util.Queue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.policy.Policy.Arg;
-import org.alfresco.repo.rule.RuleTransactionListener;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.util.GUID;
@@ -214,7 +213,7 @@ public class TransactionBehaviourQueue implements TransactionListener
         {
             return true;
         }
-        if (obj instanceof RuleTransactionListener)
+        if (obj instanceof TransactionBehaviourQueue)
         {
             TransactionBehaviourQueue that = (TransactionBehaviourQueue) obj;
             return (this.id.equals(that.id));

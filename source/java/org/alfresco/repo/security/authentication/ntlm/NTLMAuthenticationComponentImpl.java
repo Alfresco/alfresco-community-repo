@@ -531,6 +531,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 
                 authSess = m_passthruServers.openSession();
                 
+                if ( authSess == null)
+                	throw new AuthenticationException("Failed to open session to passthru server");
+                
                 // Authenticate using the credentials supplied
                     
                 authenticateLocal(ntlmToken, authSess);
@@ -747,6 +750,11 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             // Open an authentication session for the new token and add to the active session list
             
             authSess = m_passthruServers.openSession();
+            
+            // Check if the session was opened to the passthru server
+            
+            if ( authSess == null)
+            	throw new AuthenticationServiceException("Failed to open passthru auth session");
             
             ntlmToken.setAuthenticationExpireTime(System.currentTimeMillis() + getSessionTimeout());
             

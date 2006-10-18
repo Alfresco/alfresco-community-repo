@@ -16,7 +16,13 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.namespace.QName;
 import org.jbpm.graph.def.Transition;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.taskmgmt.exe.TaskInstance;
@@ -96,14 +102,30 @@ public class WorkflowTaskInstance extends TaskInstance
     @Override
     public void end(Transition transition)
     {
-        // NOTE: Set the outcome first, so it's available during the submission of
+        // Set task properties on completion of task
+        // NOTE: Set properties first, so they're available during the submission of
         //       task variables to the process context
+        Map<QName, Serializable> taskProperties = new HashMap<QName, Serializable>();
         Transition outcome = (transition == null) ? token.getNode().getDefaultLeavingTransition() : transition; 
         if (outcome != null)
         {
-            getJBPMEngine().setTaskOutcome(this, outcome);
+            taskProperties.put(WorkflowModel.PROP_OUTCOME, outcome.getName());
         }
+        taskProperties.put(WorkflowModel.PROP_STATUS, "Completed");
+        getJBPMEngine().setTaskProperties(this, taskProperties);
+        
+        // perform transition
         super.end(transition);
+        
+        if (getTask().getStartState() != null)
+        {
+            // if ending a start task, push start task properties to process context, if not
+            // already done
+            getJBPMEngine().setDefaultWorkflowProperties(this);
+
+            // set task description
+            getJBPMEngine().setDefaultStartTaskDescription(this);
+        }
     }
 
 }

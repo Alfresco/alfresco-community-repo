@@ -145,6 +145,10 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
         {
             return false;   // rgb extension doesn't work
         }
+        else if (mimetype.equals(MimetypeMap.MIMETYPE_IMAGE_SVG))
+        {
+            return false;   // svg extension doesn't work
+        }
         else
         {
             return true;

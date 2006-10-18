@@ -31,20 +31,24 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Simple workflow action executor
  * 
- * @author Roy Wetherall
+ * @author David Caruana
  */
 public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase 
 {
 	public static final String NAME = "start-workflow";
-    
 	public static final String PARAM_WORKFLOW_NAME = "workflowName";
+    public static final String PARAM_END_START_TASK = "endStartTask";
+    public static final String PARAM_START_TASK_TRANSITION = "startTaskTransition";
+    
 	
 	// action dependencies
     private NamespaceService namespaceService;
@@ -94,7 +98,9 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
 		paramList.add(new ParameterDefinitionImpl(PARAM_WORKFLOW_NAME, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_WORKFLOW_NAME)));
-        // TODO: Start Task Template parameter
+        paramList.add(new ParameterDefinitionImpl(PARAM_END_START_TASK, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_END_START_TASK)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_START_TASK_TRANSITION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_START_TASK_TRANSITION)));
+        // TODO: start task node parameter
 	}
 
 
@@ -127,9 +133,31 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
                 workflowParameters.put(qname, value);
             }
         }
-        
+
+        // provide a default context, if one is not specified
+        Serializable context = workflowParameters.get(WorkflowModel.PROP_CONTEXT);
+        if (context == null)
+        {
+            workflowParameters.put(WorkflowModel.PROP_CONTEXT, childAssoc.getParentRef());
+        }
+
         // start the workflow
-        workflowService.startWorkflow(def.id, workflowParameters);
+        WorkflowPath path = workflowService.startWorkflow(def.id, workflowParameters);
+
+        // determine whether to auto-end the start task
+        Boolean endStartTask = (Boolean)ruleAction.getParameterValue(PARAM_END_START_TASK);
+        String startTaskTransition = (String)ruleAction.getParameterValue(PARAM_START_TASK_TRANSITION);
+        endStartTask = (endStartTask == null) ? true : false;
+        startTaskTransition = (startTaskTransition == null) ? "" : startTaskTransition;
+        
+        // auto-end the start task with the provided transition (if one)
+        if (endStartTask)
+        {
+            List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.id);
+            for (WorkflowTask task : tasks)
+            {
+                workflowService.endTask(task.id, startTaskTransition);
+            }
+        }
 	}
-    
 }

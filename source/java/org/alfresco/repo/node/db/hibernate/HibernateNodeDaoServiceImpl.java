@@ -22,10 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -35,6 +33,7 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
@@ -48,19 +47,25 @@ import org.alfresco.repo.domain.hibernate.StoreImpl;
 import org.alfresco.repo.domain.hibernate.TransactionImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionalDao;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectDeletedException;
 import org.hibernate.Query;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -83,7 +88,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_NODE_ASSOCS_TO_AND_FROM = "node.GetNodeAssocsToAndFrom";
     private static final String QUERY_GET_TARGET_ASSOCS = "node.GetTargetAssocs";
     private static final String QUERY_GET_SOURCE_ASSOCS = "node.GetSourceAssocs";
-    private static final String QUERY_GET_CONTENT_DATA_STRINGS = "node.GetContentDataStrings";
+    private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE = "node.GetNodesWithPropertyValuesByActualType";
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
     
     private static Log logger = LogFactory.getLog(HibernateNodeDaoServiceImpl.class);
@@ -91,9 +96,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     /** a uuid identifying this unique instance */
     private final String uuid;
     
-    private final ReadLock serverReadLock;
-    private final WriteLock serverWriteLock;
-    private Server server;
+    private static TransactionAwareSingleton<Long> serverIdSingleton = new TransactionAwareSingleton<Long>();
 
     /**
      * 
@@ -101,10 +104,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public HibernateNodeDaoServiceImpl()
     {
         this.uuid = GUID.generate();
-
-        ReentrantReadWriteLock serverReadWriteLock = new ReentrantReadWriteLock();
-        serverReadLock = serverReadWriteLock.readLock();
-        serverWriteLock = serverReadWriteLock.writeLock();
     }
 
     /**
@@ -137,21 +136,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      */
     private Server getServer()
     {
-        // get readlock
-        serverReadLock.lock();
-        try
+        Long serverId = serverIdSingleton.get();
+        Server server = null;
+        if (serverId != null)
         {
+            server = (Server) getSession().get(ServerImpl.class, serverId);
             if (server != null)
             {
                 return server;
             }
         }
-        finally
-        {
-            serverReadLock.unlock();
-        }
-        // get the write lock
-        serverWriteLock.lock();
         try
         {
             final String ipAddress = InetAddress.getLocalHost().getHostAddress();
@@ -185,15 +179,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     }
                 }
             }
+            // push the value into the singleton
+            serverIdSingleton.put(server.getId());
+            
             return server;
         }
         catch (Exception e)
         {
             throw new AlfrescoRuntimeException("Failed to create server instance", e);
-        }
-        finally
-        {
-            serverWriteLock.unlock();
         }
     }
     
@@ -307,7 +300,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     /**
      * Fetch the node status, if it exists
      */
-    public NodeStatus getNodeStatus(NodeRef nodeRef, boolean create)
+    public NodeStatus getNodeStatus(NodeRef nodeRef, boolean update)
     {
         NodeKey nodeKey = new NodeKey(nodeRef);
         NodeStatus status = null;
@@ -325,12 +318,17 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             throw e;
         }
         // create if necessary
-        if (status == null && create)
+        if (status == null && update)
         {
             status = new NodeStatusImpl();
             status.setKey(nodeKey);
             status.setTransaction(getCurrentTransaction());
             getHibernateTemplate().save(status);
+        }
+        else if (status != null && update)
+        {
+            // update the transaction
+            status.setTransaction(getCurrentTransaction());
         }
         // done
         return status;
@@ -532,10 +530,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         assoc.setChildNodeNameCrc(-1L);         // random names compete only with each other
         assoc.setQname(qname);
         assoc.setIsPrimary(isPrimary);
-        // persist it, catching the duplicate child name
-        getHibernateTemplate().save(assoc);
         // maintain inverse sets
         assoc.buildAssociation(parentNode, childNode);
+        // persist it
+        getHibernateTemplate().save(assoc);
         // done
         return assoc;
     }
@@ -934,18 +932,234 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         getSession().flush();
     }
 
+    public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition)
+    {
+        // get the in-database string representation of the actual type
+        QName typeQName = actualDataTypeDefinition.getName();
+        final String actualTypeString = PropertyValue.getActualTypeString(typeQName);
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                  .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE)
+                  .setString("actualTypeString", actualTypeString);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        ScrollableResults results = (ScrollableResults) getHibernateTemplate().execute(callback);
+        // Loop through, extracting content URLs
+        List<Serializable> convertedValues = new ArrayList<Serializable>(1000);
+        TypeConverter converter = DefaultTypeConverter.INSTANCE;
+        while(results.next())
+        {
+            Node node = (Node) results.get()[0];
+            // loop through all the node properties
+            Map<QName, PropertyValue> properties = node.getProperties();
+            for (PropertyValue propertyValue : properties.values())
+            {
+                // ignore nulls
+                if (propertyValue == null)
+                {
+                    continue;
+                }
+                // Get the actual value(s) as a collection
+                Collection<Serializable> values = propertyValue.getCollection(DataTypeDefinition.ANY);
+                // attempt to convert instance in the collection
+                for (Serializable value : values)
+                {
+                    // ignore nulls (null entries in collections)
+                    if (value == null)
+                    {
+                        continue;
+                    }
+                    try
+                    {
+                         Serializable convertedValue = (Serializable) converter.convert(actualDataTypeDefinition, value);
+                         // it converted, so add it
+                         convertedValues.add(convertedValue);
+                    }
+                    catch (Throwable e)
+                    {
+                        // The value can't be converted - forget it
+                    }
+                }
+            }
+            // evict all data from the session
+            getSession().clear();
+        }
+        return convertedValues;
+    }
+    
+    /*
+     * Queries for transactions
+     */
+    private static final String QUERY_GET_LAST_TXN_ID_FOR_STORE = "txn.GetLastTxnIdForStore";
+    private static final String QUERY_GET_TXN_UPDATE_COUNT_FOR_STORE = "txn.GetTxnUpdateCountForStore";
+    private static final String QUERY_GET_TXN_DELETE_COUNT_FOR_STORE = "txn.GetTxnDeleteCountForStore";
+    private static final String QUERY_COUNT_TRANSACTIONS = "txn.CountTransactions";
+    private static final String QUERY_GET_NEXT_TXNS = "txn.GetNextTxns";
+    private static final String QUERY_GET_TXN_CHANGES_FOR_STORE = "txn.GetTxnChangesForStore";
+    private static final String QUERY_GET_TXN_CHANGES = "txn.GetTxnChanges";
+    
     @SuppressWarnings("unchecked")
-    public List<String> getContentDataStrings()
+    public Transaction getLastTxn(final StoreRef storeRef)
     {
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                Query query = session.getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CONTENT_DATA_STRINGS);
+                Query query = session.getNamedQuery(QUERY_GET_LAST_TXN_ID_FOR_STORE);
+                query.setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Long txnId = (Long) getHibernateTemplate().execute(callback);
+        Transaction txn = null;
+        if (txnId != null)
+        {
+            txn = (Transaction) getSession().get(TransactionImpl.class, txnId);
+        }
+        // done
+        return txn;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public int getTxnUpdateCountForStore(final StoreRef storeRef, final long txnId)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_UPDATE_COUNT_FOR_STORE);
+                query.setLong("txnId", txnId)
+                     .setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        // done
+        return count;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public int getTxnDeleteCountForStore(final StoreRef storeRef, final long txnId)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_DELETE_COUNT_FOR_STORE);
+                query.setLong("txnId", txnId)
+                     .setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        // done
+        return count;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public int getTransactionCount()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_COUNT_TRANSACTIONS);
+                query.setMaxResults(1)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        // done
+        return count.intValue();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Transaction> getNextTxns(final Transaction lastTxn, final int count)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                long lastTxnId = (lastTxn == null) ? -1L : lastTxn.getId();
+                
+                Query query = session.getNamedQuery(QUERY_GET_NEXT_TXNS);
+                query.setLong("lastTxnId", lastTxnId)
+                     .setMaxResults(count)
+                     .setReadOnly(true);
                 return query.list();
             }
         };
-        List<String> queryResults = (List) getHibernateTemplate().execute(callback);
-        return queryResults;
+        List<Transaction> results = (List<Transaction>) getHibernateTemplate().execute(callback);
+        // done
+        return results;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<NodeRef> getTxnChangesForStore(final StoreRef storeRef, final long txnId)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_CHANGES_FOR_STORE);
+                query.setLong("txnId", txnId)
+                     .setString("protocol", storeRef.getProtocol())
+                     .setString("identifier", storeRef.getIdentifier())
+                     .setReadOnly(true);
+                return query.list();
+            }
+        };
+        List<NodeStatus> results = (List<NodeStatus>) getHibernateTemplate().execute(callback);
+        // transform into a simpler form
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(results.size());
+        for (NodeStatus nodeStatus : results)
+        {
+            NodeRef nodeRef = new NodeRef(storeRef, nodeStatus.getKey().getGuid());
+            nodeRefs.add(nodeRef);
+        }
+        // done
+        return nodeRefs;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<NodeRef> getTxnChanges(final long txnId)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_CHANGES);
+                query.setLong("txnId", txnId)
+                     .setReadOnly(true);
+                return query.list();
+            }
+        };
+        List<NodeStatus> results = (List<NodeStatus>) getHibernateTemplate().execute(callback);
+        // transform into a simpler form
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(results.size());
+        for (NodeStatus nodeStatus : results)
+        {
+            NodeRef nodeRef = new NodeRef(
+                    nodeStatus.getKey().getProtocol(),
+                    nodeStatus.getKey().getIdentifier(),
+                    nodeStatus.getKey().getGuid());
+            nodeRefs.add(nodeRef);
+        }
+        // done
+        return nodeRefs;
     }
 }

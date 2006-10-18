@@ -97,4 +97,22 @@ public class ServiceAuditEntry extends AbstractNamedAuditEntry implements Method
         throw new UnsupportedOperationException();
     }
 
+    public TrueFalseUnset getAuditInternalServiceMethods(MethodInvocation mi)
+    {
+        String methodName = mi.getMethod().getName();
+        MethodAuditEntry method = methods.get(methodName);
+        if (method != null)
+        {
+            return method.getAuditInternalServiceMethods(mi);
+        }
+        else
+        {
+            if(s_logger.isDebugEnabled())
+            {
+                s_logger.debug("Evaluating if service is internally audited (no specific setting) for "+getName()+"."+methodName);
+            }
+            return getEffectiveAuditInternal();
+        }
+    }
+
 }

@@ -16,6 +16,7 @@
  */
 package org.alfresco.repo.node.db;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,9 +25,12 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.Store;
+import org.alfresco.repo.domain.Transaction;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -76,11 +80,12 @@ public interface NodeDaoService
      * <code>null</code> is returned.
      * 
      * @param nodeRef the node reference
-     * @param create true to create the entity if it doesn't exist
+     * @param create true if the node status is to be updated in the transaction, i.e.
+     *      the current transaction must be assigned to the status
      * @return Returns the node status if the node exists or once existed, otherwise
      *      returns <code>null</code> if <code>create == false</code>
      */
-    public NodeStatus getNodeStatus(NodeRef nodeRef, boolean create);
+    public NodeStatus getNodeStatus(NodeRef nodeRef, boolean update);
     
     /**
      * Sets the current transaction ID on the node status.  Note that the node
@@ -224,10 +229,18 @@ public interface NodeDaoService
     public void deleteNodeAssoc(NodeAssoc assoc);
     
     /**
-     * Fetch all content data strings.  These are all string values that begin
-     * with <b>contentUrl=</b>.
+     * Fetch all property values for the given type definition.  This will also dig out values that
+     * were persisted as type <b>d:any</b>.
      * 
-     * @return Returns the string values for content data
+     * @return Returns the values for the given type definition
      */
-    public List<String> getContentDataStrings();
+    public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition);
+    
+    public Transaction getLastTxn(final StoreRef storeRef);
+    public int getTxnUpdateCountForStore(final StoreRef storeRef, final long txnId);
+    public int getTxnDeleteCountForStore(final StoreRef storeRef, final long txnId);
+    public int getTransactionCount();
+    public List<Transaction> getNextTxns(final Transaction lastTxn, final int count);
+    public List<NodeRef> getTxnChangesForStore(final StoreRef storeRef, final long txnId);
+    public List<NodeRef> getTxnChanges(final long txnId);
 }

@@ -49,7 +49,7 @@
             <child-association name="cm:contains">
                <source>
                   <mandatory>false</mandatory>
-                  <many>false</many>
+                  <many>true</many>
                </source>
                <target>
                   <class>sys:base</class>
@@ -165,6 +165,12 @@
                <type>d:text</type>
             </property>
             <property name="cm:organizationId">
+               <type>d:text</type>
+            </property>
+            <property name="cm:homeFolderProvider">
+               <type>d:text</type>
+            </property>
+            <property name="cm:defaultHomeFolderPath">
                <type>d:text</type>
             </property>
          </properties>

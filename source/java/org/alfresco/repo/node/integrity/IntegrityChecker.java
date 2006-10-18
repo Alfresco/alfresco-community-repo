@@ -88,6 +88,8 @@ public class IntegrityChecker
     
     /** key against which the set of events is stored in the current transaction */
     private static final String KEY_EVENT_SET = "IntegrityChecker.EventSet";
+    /** key to store the local flag to disable integrity errors, i.e. downgrade to warnings */
+    private static final String KEY_WARN_IN_TRANSACTION = "IntegrityChecker.WarnInTransaction";
     
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
@@ -96,6 +98,36 @@ public class IntegrityChecker
     private boolean failOnViolation;
     private int maxErrorsPerTransaction;
     private boolean traceOn;
+    
+    /**
+     * Downgrade violations to warnings within the current transaction.  This is temporary and
+     * is <u>dependent on there being a current transaction</u> active against the
+     * current thread.  When set, this will override the global 
+     * {@link #setFailOnViolation(boolean) failure behaviour}.
+     */
+    public static void setWarnInTransaction()
+    {
+        AlfrescoTransactionSupport.bindResource(KEY_WARN_IN_TRANSACTION, Boolean.TRUE);
+    }
+    
+    /**
+     * @return Returns true if the current transaction should only warn on violations.
+     *      If <code>false</code>, the global setting will take effect.
+     * 
+     * @see #setWarnInTransaction()
+     */
+    public static boolean isWarnInTransaction()
+    {
+        Boolean warnInTransaction = (Boolean) AlfrescoTransactionSupport.getResource(KEY_WARN_IN_TRANSACTION);
+        if (warnInTransaction == null || warnInTransaction == Boolean.FALSE)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
     
     /**
      */
@@ -572,7 +604,8 @@ public class IntegrityChecker
             }
             sb.append("\n").append(failure);
         }
-        if (failOnViolation)
+        boolean warnOnly = IntegrityChecker.isWarnInTransaction();
+        if (failOnViolation && !warnOnly)
         {
             logger.error(sb.toString());
             throw new IntegrityException(failures);

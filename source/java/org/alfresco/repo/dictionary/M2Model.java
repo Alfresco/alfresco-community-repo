@@ -202,7 +202,7 @@ public class M2Model
         M2Type type = getType(name);
         if (type != null)
         {
-            types.remove(types);
+            types.remove(type);
         }
     }
     

@@ -202,7 +202,7 @@ public final class Actions implements Scopeable
         @SuppressWarnings("synthetic-access")
         public void execute(Node node)
         {
-            if (this.parameters.isModified())
+            if (this.parameters != null && this.parameters.isModified())
             {
                 Map<String, Serializable> actionParams = action.getParameterValues();
                 actionParams.clear();

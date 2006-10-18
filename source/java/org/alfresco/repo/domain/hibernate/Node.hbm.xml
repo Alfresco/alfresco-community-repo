@@ -314,65 +314,19 @@
          assoc.target.id = :targetId
    </query>
    
-   <query name="node.GetNextChangeTxnIds">
-      select distinct
-         transaction.changeTxnId
-      from
-         org.alfresco.repo.domain.hibernate.TransactionImpl as transaction
-      where
-         transaction.changeTxnId > :currentTxnId
-      order by
-         transaction.changeTxnId
-   </query>
-
-   <query name="node.GetChangedNodeStatusesCount">
+   <query name="node.GetNodesWithPropertyValuesByActualType">
       select
-         count(transaction.changeTxnId)
-      from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
-         join status.transaction as transaction
-      where
-         status.key.protocol = :storeProtocol and
-         status.key.identifier = :storeIdentifier and
-         status.node.id is not null and
-         transaction.changeTxnId = :changeTxnId
-   </query>
-
-   <query name="node.GetChangedNodeStatuses">
-      select
-         status
-      from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
-         join status.transaction as transaction
-      where
-         status.key.protocol = :storeProtocol and
-         status.key.identifier = :storeIdentifier and
-         status.node.id is not null and
-         transaction.changeTxnId = :changeTxnId
-   </query>
-
-   <query name="node.GetDeletedNodeStatuses">
-      select
-         status
-      from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
-         join status.transaction as transaction
-      where
-         status.key.protocol = :storeProtocol and
-         status.key.identifier = :storeIdentifier and
-         status.node.id is null and
-         transaction.changeTxnId = :changeTxnId
-   </query>
-
-   <query name="node.GetContentDataStrings">
-      select distinct
-         props.stringValue
+         node
       from
          org.alfresco.repo.domain.hibernate.NodeImpl as node
       join
-         node.properties props
+         node.properties prop
       where
-         props.stringValue like 'contentUrl%'
+         (
+            prop.actualType = :actualTypeString or
+            prop.actualType = 'SERIALIZABLE'
+         ) and
+         prop.persistedType != 'NULL'
    </query>
 
    <query name="node.patch.GetNodesWithPersistedSerializableProperties">

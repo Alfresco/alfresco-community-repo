@@ -1696,13 +1696,13 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
         return false;
     }
 
-    public void updateFullTextSearch(int size) throws LuceneIndexException
+    public int updateFullTextSearch(int size) throws LuceneIndexException
     {
         checkAbleToDoWork(true, false);
         if (!mainIndexExists())
         {
             remainingCount = size;
-            return;
+            return 0;
         }
         try
         {
@@ -1723,7 +1723,7 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                 if(searcher == null)
                 {
                     remainingCount = size;
-                    return;
+                    return 0;
                 }
                 Hits hits;
                 try
@@ -1817,7 +1817,9 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                         }
                     }
 
-                    remainingCount = count - writer.docCount();
+                    int done =  writer.docCount();
+                    remainingCount = count - done;
+                    return done;
                 }
                 catch (LuceneIndexException e)
                 {
@@ -1825,8 +1827,14 @@ public class LuceneIndexerImpl extends LuceneBase implements LuceneIndexer
                     {
                         closeDeltaWriter();
                     }
+                    return 0;
                 }
             }
+            else
+            {
+                return 0;
+            }
+            
         }
         catch (LuceneIndexException e)
         {

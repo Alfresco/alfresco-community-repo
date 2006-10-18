@@ -19,7 +19,10 @@ package org.alfresco.repo.content.transform;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -120,45 +123,71 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
      * case where optimizations are being done around the selection of the most
      * appropriate transformer, different transformers could be used during the iteration
      * process.
+     * <p>
+     * Results for the transformations are dumped to a temporary file named
+     * <b>AbstractContentTransformerTest-results-1234.txt</b>.
      */
     public void testAllConversions() throws Exception
     {
+        StringBuilder sb = new StringBuilder(2048);
+        sb.append("Mimetype Conversion Tests \n")
+          .append("========================= \n")
+          .append("   Date: ").append(new Date()).append("\n")
+          .append("\n");
+        
         // get all mimetypes
-        List<String> mimetypes = mimetypeMap.getMimetypes();
+        Set<String> mimetypes = new TreeSet<String>(mimetypeMap.getMimetypes());
         for (String sourceMimetype : mimetypes)
         {
             // attempt to get a source file for each mimetype
             String sourceExtension = mimetypeMap.getExtension(sourceMimetype);
-            File sourceFile = AbstractContentTransformerTest.loadQuickTestFile(sourceExtension);
-            if (sourceFile == null)
-            {
-                continue;  // no test file available for that extension
-            }
+            
+            sb.append("   Source Extension: ").append(sourceExtension).append("\n");
             
             // attempt to convert to every other mimetype
             for (String targetMimetype : mimetypes)
             {
                 ContentWriter targetWriter = null;
                 // construct a reader onto the source file
+                String targetExtension = mimetypeMap.getExtension(targetMimetype);
+
+                // must we test the transformation?
+                ContentTransformer transformer = getTransformer(sourceMimetype, targetMimetype);
+                if (transformer == null || transformer.getReliability(sourceMimetype, targetMimetype) <= 0.0)
+                {
+                    // no transformer
+                    continue;
+                }
+
+                // dump
+                sb.append("      Target Extension: ").append(targetExtension);
+                sb.append(" <").append(transformer.getClass().getSimpleName()).append(">");
+
+                // is there a test file for this conversion?
+                File sourceFile = AbstractContentTransformerTest.loadQuickTestFile(sourceExtension);
+                if (sourceFile == null)
+                {
+                    sb.append(" <no source test file>\n");
+                    continue;  // no test file available for that extension
+                }
                 ContentReader sourceReader = new FileContentReader(sourceFile);
 
                 // perform the transformation several times so that we get a good idea of performance
                 int count = 0;
+                long before = System.currentTimeMillis();
+                Set<String> transformerClasses = new HashSet<String>(2);
                 for (int i = 0; i < 5; i++)
                 {
-                    // must we test the transformation?
-                    ContentTransformer transformer = getTransformer(sourceMimetype, targetMimetype);
-                    if (transformer == null)
+                    // get the transformer repeatedly as it might be different each time around
+                    transformer = getTransformer(sourceMimetype, targetMimetype);
+                    // must we report on this class?
+                    if (!transformerClasses.contains(transformer.getClass().getName()))
                     {
-                        break;   // test is not required
+                        transformerClasses.add(transformer.getClass().getName());
+                        sb.append(" <").append(transformer.getClass().getSimpleName()).append(">");
                     }
-                    else if (transformer.getReliability(sourceMimetype, targetMimetype) <= 0.0)
-                    {
-                        break;   // not reliable for this transformation
-                    }
-                    
+
                     // make a writer for the target file
-                    String targetExtension = mimetypeMap.getExtension(targetMimetype);
                     File targetFile = TempFileProvider.createTempFile(
                             getClass().getSimpleName() + "_" + getName() + "_" + sourceExtension + "_",
                             "." + targetExtension);
@@ -198,6 +227,11 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
                     // increment count
                     count++;
                 }
+                long after = System.currentTimeMillis();
+                double average = (double) (after - before) / (double) count;
+                
+                // dump
+                sb.append(String.format(" average %10.0f ms", average)).append("\n");
                 
                 if (logger.isDebugEnabled())
                 {
@@ -209,5 +243,11 @@ public abstract class AbstractContentTransformerTest extends BaseSpringTest
                 }
             }
         }
+        
+        // dump to file
+        File outputFile = TempFileProvider.createTempFile("AbstractContentTransformerTest-results-", ".txt");
+        ContentWriter outputWriter = new FileContentWriter(outputFile);
+        outputWriter.setEncoding("UTF8");
+        outputWriter.putContent(sb.toString());
     }
 }

@@ -285,6 +285,9 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"></ref>
         </property>
+        <property name="headerEncoding">
+            <value>${mail.header}</value>
+        </property>
     </bean>
     
     <bean id="set-property-value" class="org.alfresco.repo.action.executer.SetPropertyValueActionExecuter" parent="action-executer">

@@ -152,6 +152,21 @@ public class JBPMEngineTest extends BaseSpringTest
     }
 
     
+    public void testGetWorkflowInstance()
+    {
+        WorkflowDefinition workflowDef = getTestDefinition();
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, null);
+        assertNotNull(path);
+        assertTrue(path.id.endsWith("-@"));
+        assertNotNull(path.node);
+        assertNotNull(path.instance);
+        assertEquals(workflowDef.id, path.instance.definition.id);
+        WorkflowInstance instance = workflowComponent.getWorkflowById(path.instance.id);
+        assertNotNull(instance);
+        assertEquals(path.instance.id, instance.id);
+    }
+    
+    
     public void testStartWorkflowParameters()
     {
         WorkflowDefinition workflowDef = getTestDefinition();
@@ -303,20 +318,27 @@ public class JBPMEngineTest extends BaseSpringTest
     
     public void testCancelWorkflowInstance()
     {
-        WorkflowDefinition workflowDef = getTestDefinition();
+    	WorkflowDefinition workflowDef = getTestDefinition();
         workflowComponent.startWorkflow(workflowDef.id, null);
         List<WorkflowInstance> instances1 = workflowComponent.getActiveWorkflows(workflowDef.id);
         assertNotNull(instances1);
         assertEquals(1, instances1.size());
+        List<WorkflowTask> tasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
+        assertNotNull(tasks);
+        assertTrue(tasks.size() > 0);
         WorkflowInstance cancelledInstance = workflowComponent.cancelWorkflow(instances1.get(0).id);
         assertNotNull(cancelledInstance);
         assertFalse(cancelledInstance.active);
         List<WorkflowInstance> instances2 = workflowComponent.getActiveWorkflows(workflowDef.id);
         assertNotNull(instances2);
         assertEquals(0, instances2.size());
+        List<WorkflowTask> tasks1 = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
+        assertNotNull(tasks1);
+        tasks1 = filterTasksByWorkflowInstance(tasks1, cancelledInstance.id);
+        assertEquals(0, tasks1.size());
     }
     
- 
+     
     public void testSignal()
     {
         WorkflowDefinition workflowDef = getTestDefinition();
@@ -334,7 +356,6 @@ public class JBPMEngineTest extends BaseSpringTest
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
-        assertNotNull(path);
         assertNotNull(path);
         List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.id);
         assertNotNull(tasks);
@@ -360,7 +381,6 @@ public class JBPMEngineTest extends BaseSpringTest
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
-        assertNotNull(path);
         assertNotNull(path);
         List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
         assertNotNull(tasks1);

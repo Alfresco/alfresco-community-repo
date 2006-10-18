@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
+import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.ServiceRegistry;
@@ -113,6 +114,9 @@ public class ArchiveAndRestoreTest extends TestCase
         // Start a transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
+        
+        // downgrade integrity checks
+        IntegrityChecker.setWarnInTransaction();
         
         try
         {

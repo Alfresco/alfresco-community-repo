@@ -57,7 +57,7 @@
          <property name="contentService"><ref bean="ContentService" /></property>
          <property name="permissionService"><ref bean="permissionService"/></property>
          <property name="authenticationComponent"><ref bean="authenticationComponent"/></property>
-	     <property name="checkInOutService"><ref bean="checkOutCheckInService"/></property>
+	     <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
    </bean>
    
    <bean id="cifsHelper" class="org.alfresco.filesys.smb.server.repo.CifsHelper">

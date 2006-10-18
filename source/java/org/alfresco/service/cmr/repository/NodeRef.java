@@ -37,6 +37,15 @@ public final class NodeRef implements EntityRef, Serializable
     private final String id;
 
     /**
+     * @see #NodeRef(StoreRef, String)
+     * @see StoreRef#StoreRef(String, String)
+     */
+    public NodeRef(String protocol, String identifier, String id)
+    {
+        this(new StoreRef(protocol, identifier), id);
+    }
+    
+    /**
      * Construct a Node Reference from a Store Reference and Node Id
      * 
      * @param storeRef store reference

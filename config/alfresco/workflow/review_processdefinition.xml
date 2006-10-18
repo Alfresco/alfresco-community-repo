@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:review">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="wf:submitReviewTask" swimlane="initiator" />
+        <transition name="" to="review" />
+    </start-state>
+
+    <swimlane name="reviewer">
+        <assignment actor-id="#{bpm_assignee.properties['cm:userName']}" />
+    </swimlane>
+
+    <task-node name="review">
+        <task name="wf:reviewTask" swimlane="reviewer">
+            <event type="task-create">
+                <script>
+                    if (bpm_workflowDueDate != void)
+                    {
+                        taskInstance.dueDate = bpm_workflowDueDate;
+                    }
+                    if (bpm_workflowPriority != void)
+                    {
+                        taskInstance.priority = bpm_workflowPriority;
+                    }
+                </script>
+            </event>
+        </task>
+        <transition name="reject" to="rejected" />
+        <transition name="approve" to="approved" />
+    </task-node>
+
+    <task-node name="rejected">
+        <task name="wf:rejectedTask" swimlane="initiator" />
+        <transition name="" to="end" />
+    </task-node>
+
+    <task-node name="approved">
+        <task name="wf:approvedTask" swimlane="initiator" />
+        <transition name="" to="end" />
+    </task-node>
+
+    <end-state name="end" />
+
+</process-definition>

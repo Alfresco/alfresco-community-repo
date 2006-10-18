@@ -2,24 +2,12 @@
            xmlns:cm="http://www.alfresco.org/model/content/1.0"
            xmlns:app="http://www.alfresco.org/model/application/1.0">
 
-<!--
-	<cm:folder>
-		<app:uifacets />
-		<cm:name>${tutorial.space.name}</cm:name>
-		<cm:description>${tutorial.space.description}</cm:description>
-		<app:icon>space-icon-doc</app:icon>
-		<cm:contains>
--->
-			<cm:content>
-				<app:uifacets />
-				<cm:name>${tutorial.document.name}</cm:name>
-				<cm:title>${tutorial.document.title}</cm:title>
-				<cm:description>${tutorial.document.description}</cm:description>
-				<cm:content>contentUrl=classpath:alfresco/bootstrap/${tutorial.document.name}|mimetype=application/pdf|size=|encoding=</cm:content>
-			</cm:content>
-<!--
-		</cm:contains>
-	</cm:folder>
--->
+    <cm:content>
+    	<app:uifacets />
+    	<cm:name>${tutorial.document.name}</cm:name>
+    	<cm:title>${tutorial.document.title}</cm:title>
+    	<cm:description>${tutorial.document.description}</cm:description>
+    	<cm:content>contentUrl=classpath:alfresco/bootstrap/Alfresco-Tutorial.pdf|mimetype=application/pdf|size=|encoding=</cm:content>
+    </cm:content>
 
 </view:view>

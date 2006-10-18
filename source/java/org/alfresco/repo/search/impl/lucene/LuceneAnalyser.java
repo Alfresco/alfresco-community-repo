@@ -29,13 +29,13 @@ import org.alfresco.service.namespace.QName;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 
 /**
  * Analyse properties according to the property definition.
  * 
  * The default is to use the standard tokeniser. The tokeniser should not have
- * been called when indexeing properties that require no tokenisation. (tokenise
+ * been called when indexing properties that require no tokenisation. (tokenise
  * should be set to false when adding the field to the document)
  * 
  * @author andyh
@@ -60,7 +60,7 @@ public class LuceneAnalyser extends Analyzer
      */
     public LuceneAnalyser(DictionaryService dictionaryService)
     {
-        this(new StandardAnalyzer());
+        this(new AlfrescoStandardAnalyser());
         this.dictionaryService = dictionaryService;
     }
 

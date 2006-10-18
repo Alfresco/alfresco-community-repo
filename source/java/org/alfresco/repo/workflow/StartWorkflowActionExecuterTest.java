@@ -31,9 +31,9 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 
 /**
- * Add features action execution test
+ * Start Advanced Workflow action execution test
  * 
- * @author Roy Wetherall
+ * @author David Caruana
  */
 public class StartWorkflowActionExecuterTest extends BaseSpringTest
 {
@@ -78,9 +78,10 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
         // Execute the action
         ActionImpl action = new ActionImpl(null, GUID.generate(), StartWorkflowActionExecuter.NAME, null);
         action.setParameterValue(StartWorkflowActionExecuter.PARAM_WORKFLOW_NAME, "jbpm$wf:review");
-        action.setParameterValue(WorkflowModel.PROP_REVIEW_DUE_DATE.toPrefixString(namespaceService), new Date());
+        action.setParameterValue(WorkflowModel.PROP_WORKFLOW_DUE_DATE.toPrefixString(namespaceService), new Date());
         NodeRef reviewer = personService.getPerson("admin");
-        action.setParameterValue(WorkflowModel.ASSOC_REVIEWER.toPrefixString(namespaceService), reviewer);
+        action.setParameterValue(WorkflowModel.ASSOC_ASSIGNEE.toPrefixString(namespaceService), reviewer);
         executer.execute(action, this.nodeRef);
     }
+    
 }

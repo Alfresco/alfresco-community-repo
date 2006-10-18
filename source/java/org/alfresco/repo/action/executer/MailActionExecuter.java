@@ -110,6 +110,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     private ServiceRegistry serviceRegistry;
     
     /**
+     * Mail header encoding scheme
+     */
+    private String headerEncoding = null;
+    
+    /**
      * @param javaMailSender    the java mail sender
      */
     public void setMailService(JavaMailSender javaMailSender) 
@@ -164,6 +169,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.nodeService = nodeService;
     }
+    
+    /**
+     * @param headerEncoding     The mail header encoding to set.
+     */
+    public void setHeaderEncoding(String headerEncoding)
+    {
+        this.headerEncoding = headerEncoding;
+    }
 
     /**
      * Execute the rule action
@@ -179,6 +192,12 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             public void prepare(MimeMessage mimeMessage) throws MessagingException
             {
                 MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
+                
+                // set header encoding if one has been supplied
+                if (headerEncoding != null && headerEncoding.length() != 0)
+                {
+                    mimeMessage.setHeader("Content-Transfer-Encoding", headerEncoding);
+                }
                 
                 // set recipient
                 String to = (String)ruleAction.getParameterValue(PARAM_TO);

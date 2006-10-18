@@ -145,7 +145,7 @@ public abstract class LuceneBase2
         }
     }
 
-    protected Searcher getSearcher(LuceneIndexer2 luceneIndexer) throws LuceneIndexException
+    protected ClosingIndexSearcher getSearcher(LuceneIndexer2 luceneIndexer) throws LuceneIndexException
     {
         // If we know the delta id we should do better
 

@@ -19,19 +19,18 @@
       
       <type name="wf:submitReviewTask">
          <parent>bpm:startTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
       </type>
 
       <type name="wf:reviewTask">
          <parent>bpm:workflowTask</parent>
-         
          <overrides>
-         
             <property name="bpm:packageItemActionGroup">
-               <default>workflow_item_edit_actions</default>
+               <default>edit_package_item_actions</default>
             </property>
-            
          </overrides>
-
       </type>
 
 
@@ -39,21 +38,29 @@
       <!--  Adhoc Tasks -->               
       <!--                               -->
       
-      
       <type name="wf:submitAdhocTask">
          <parent>bpm:startTask</parent>
-         
          <properties>
             <property name="wf:notifyMe">
                <type>d:boolean</type>
                <default>false</default>
             </property>
          </properties>
-
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
       </type>
 
       <type name="wf:adhocTask">
          <parent>bpm:workflowTask</parent>
+         <overrides>
+            <property name="bpm:packageActionGroup">
+               <default>add_package_item_actions</default>
+            </property>
+            <property name="bpm:packageItemActionGroup">
+               <default>edit_package_item_actions</default>
+            </property>
+         </overrides>
       </type>
 
       <type name="wf:completedAdhocTask">

@@ -43,5 +43,47 @@
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>
+
+   <tag>
+      <name>formProcessor</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.FormProcessorTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Form Processor</display-name>
+      <description>Renders a form</description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+      
+      <attribute>
+         <name>formInstanceData</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The instance data for the form processor</description>
+      </attribute>
+
+      <attribute>
+         <name>form</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The form to use to render this form.</description>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The value binding expression linking this component to a property in a backing bean</description>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
    
 </taglib>

@@ -8,6 +8,11 @@
       <component-type>org.alfresco.faces.UserSandboxes</component-type>
       <component-class>org.alfresco.web.ui.wcm.component.UIUserSandboxes</component-class>
    </component>
+
+   <component>
+      <component-type>org.alfresco.faces.FormProcessor</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIFormProcessor</component-class>
+   </component>
    
    
    <!-- ==================== CONVERTERS ==================== -->

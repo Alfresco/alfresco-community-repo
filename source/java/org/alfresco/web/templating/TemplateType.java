@@ -24,37 +24,39 @@ import java.util.List;
 
 /**
  * Encapsulation of a template type.
+ *
+ * @author Ariel Backenroth
  */
 public interface TemplateType
-    extends Serializable
+   extends Serializable
 {
 
-    /** the name of the template, which must be unique within the TemplatingService */
-    public String getName();
+   /** the name of the template, which must be unique within the TemplatingService */
+   public String getName();
 
-    /** the root tag to use within the schema */
-    public String getRootTagName();
+   /** the root tag to use within the schema */
+   public String getRootTagName();
 
-    /** the xml schema for this template type */
-    public Document getSchema();
+   /** the xml schema for this template type */
+   public Document getSchema();
 
    public NodeRef getNodeRef();
 
-    //XXXarielb not used currently and not sure if it's necessary...
-    //    public void addInputMethod(final TemplateInputMethod in);
+   //XXXarielb not used currently and not sure if it's necessary...
+   //    public void addInputMethod(final TemplateInputMethod in);
 
-    /**
-     * Provides a set of input methods for this template.
-     */
-    public List<TemplateInputMethod> getInputMethods();
+   /**
+    * Provides a set of input methods for this template.
+    */
+   public List<TemplateInputMethod> getInputMethods();
 
-    /**
-     * adds an output method to this template type.
-     */
-    public void addOutputMethod(TemplateOutputMethod output);
+   /**
+    * adds an output method to this template type.
+    */
+   public void addOutputMethod(TemplateOutputMethod output);
 
-    /**
-     * Provides the set of output methods for this template.
-     */
-    public List<TemplateOutputMethod> getOutputMethods();
+   /**
+    * Provides the set of output methods for this template.
+    */
+   public List<TemplateOutputMethod> getOutputMethods();
 }

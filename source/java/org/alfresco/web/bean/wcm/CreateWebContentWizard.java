@@ -47,10 +47,12 @@ import org.alfresco.web.bean.content.BaseContentWizard;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.templating.OutputUtil;
+import org.alfresco.web.templating.TemplateInputMethod;
 import org.alfresco.web.templating.TemplateType;
 import org.alfresco.web.templating.TemplatingService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
 
 /**
  * Bean implementation for the "Create Web Content Wizard" dialog
@@ -302,6 +304,37 @@ public class CreateWebContentWizard extends BaseContentWizard
    public void setTemplateTypeName(final String templateTypeName)
    {
       this.templateTypeName = templateTypeName;
+   }
+
+   /**
+    * @return Returns the wrapper instance data for feeding the xml
+    * content to the form processor.
+    */
+   public TemplateInputMethod.InstanceData getInstanceData()
+   {
+      return new TemplateInputMethod.InstanceData()
+      {
+         private final TemplatingService ts = TemplatingService.getInstance();
+
+         public Document getContent()
+         { 
+            try
+            {
+               final String content = CreateWebContentWizard.this.getContent();
+               return content != null ? this.ts.parseXML(content) : null;
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+               return null;
+            }
+         }
+    
+         public void setContent(final Document d)
+         {
+            CreateWebContentWizard.this.setContent(ts.writeXMLToString(d));
+         }
+      };
    }
    
    /**

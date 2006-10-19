@@ -41,10 +41,13 @@ import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.templating.OutputUtil;
+import org.alfresco.web.templating.TemplateType;
+import org.alfresco.web.templating.TemplateInputMethod;
 import org.alfresco.web.templating.TemplatingService;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
 
 /**
  * Bean backing the edit pages for a AVM node content.
@@ -204,7 +207,51 @@ public class AVMEditBean
       return MessageFormat.format(msg, new Object[] {getFileName()});
    }
    
-   
+   /**
+    * @return Returns the template type when in the context of editing an xml asset.
+    */
+   public TemplateType getTemplateType()
+   {
+      final NodeRef ttNodeRef = (NodeRef)
+         this.nodeService.getProperty(this.getAvmNode().getNodeRef(), 
+                                      WCMModel.PROP_FORM_DERIVED_FROM);
+      final TemplatingService ts = TemplatingService.getInstance();
+      return ts.getTemplateType(ttNodeRef);
+   }
+
+   /**
+    * @return Returns the wrapper instance data for feeding the xml
+    * content to the form processor.
+    */
+   public TemplateInputMethod.InstanceData getInstanceData()
+   {
+      final TemplateType tt = this.getTemplateType();
+      final TemplateInputMethod tim = tt.getInputMethods().get(0);
+      return new TemplateInputMethod.InstanceData()
+      {
+         private final TemplatingService ts = TemplatingService.getInstance();
+
+         public Document getContent()
+         { 
+            try
+            {
+               final String content = AVMEditBean.this.getEditorOutput();
+               return content != null ? this.ts.parseXML(content) : null;
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+               return null;
+            }
+         }
+         
+         public void setContent(final Document d)
+         {
+            AVMEditBean.this.setEditorOutput(this.ts.writeXMLToString(d));
+         }
+      };
+   }
+
    // ------------------------------------------------------------------------------
    // Action event handlers
    

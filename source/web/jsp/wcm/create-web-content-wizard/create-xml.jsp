@@ -18,11 +18,7 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
-<%@ page import="org.alfresco.web.bean.wcm.AVMConstants" %>
-<%@ page import="org.alfresco.web.app.Application" %>
-<%@ page import="org.alfresco.web.templating.*" %>
-<%@ page import="org.alfresco.web.bean.wcm.CreateWebContentWizard" %>
-<%@ page import="org.w3c.dom.Document" %>
+<%@ taglib uri="/WEB-INF/wcm.tld" prefix="wcm" %>
 
 <script type="text/javascript">
 function _xforms_getSubmitButtons()
@@ -31,31 +27,6 @@ function _xforms_getSubmitButtons()
            document.getElementById("wizard:finish-button") ];
 }
 </script>
-<%
-final CreateWebContentWizard wiz = (CreateWebContentWizard)
-    Application.getWizardManager().getBean();
-TemplateType tt = wiz.getTemplateType();
-TemplateInputMethod tim = tt.getInputMethods().get(0);
-final TemplatingService ts = TemplatingService.getInstance();
-final TemplateInputMethod.InstanceData instanceData = new TemplateInputMethod.InstanceData()
-{
-   public Document getContent()
-   { 
-      try
-      {
-         return (wiz.getContent() != null ? ts.parseXML(wiz.getContent()) : null);
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         return null;
-      }
-   }
-    
-   public void setContent(final Document d)
-   {
-      wiz.setContent(ts.writeXMLToString(d));
-   }
-};
-tim.generate(instanceData, tt, out);
-%>
+<wcm:formProcessor id="form-data-renderer"
+		   formInstanceData="#{WizardManager.bean.instanceData}" 
+		   form="#{WizardManager.bean.templateType}"/>

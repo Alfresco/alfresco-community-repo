@@ -19,48 +19,11 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ taglib uri="/WEB-INF/wcm.tld" prefix="wcm" %>
 
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-<%@ page import="org.alfresco.web.bean.wcm.*,
-                 org.alfresco.model.WCMModel,
-                 org.alfresco.service.cmr.repository.*,
-                 org.alfresco.web.bean.content.*,
-                 org.alfresco.web.templating.*" %>
-<%@ page import="java.io.*" %>
-<%@ page import="org.alfresco.web.app.Application" %>
-<%@ page import="org.alfresco.web.templating.*" %>
-<%@ page import="org.w3c.dom.Document" %>
-<%
-final AVMBrowseBean browseBean = (AVMBrowseBean)session.getAttribute("AVMBrowseBean");
-NodeRef nr = browseBean.getAvmActionNode().getNodeRef();
-final AVMEditBean editBean = (AVMEditBean)session.getAttribute("AVMEditBean");
-final NodeRef ttNodeRef = (NodeRef)browseBean.getNodeService().getProperty(nr, WCMModel.PROP_FORM_DERIVED_FROM);
-final TemplatingService ts = TemplatingService.getInstance();
-final TemplateType tt  = ts.getTemplateType(ttNodeRef);
-TemplateInputMethod tim = tt.getInputMethods().get(0);
-final TemplateInputMethod.InstanceData instanceData = new TemplateInputMethod.InstanceData()
-{
-   public Document getContent()
-   { 
-      try
-      {
-         return editBean.getEditorOutput() != null ? ts.parseXML(editBean.getEditorOutput()) : null;
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         return null;
-      }
-   }
-   
-   public void setContent(final Document d)
-   {
-      editBean.setEditorOutput(ts.writeXMLToString(d));
-   }
-};
-%>
 
 <r:page titleId="title_edit_xml_inline">
 <script type="text/javascript">
@@ -140,7 +103,9 @@ function _xforms_getSubmitButtons()
                            <td width="100%" valign="top" height="100%">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                                  
-                                 <% tim.generate(instanceData, tt, out); %>
+                              <wcm:formProcessor id="form-data-renderer"
+						 formInstanceData="#{AVMEditBean.instanceData}"
+						 form="#{AVMEditBean.templateType}"/>
                                  
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
                            </td>

@@ -93,8 +93,8 @@
    </h:selectOneMenu>
 
    <h:outputText value=""/>
-   <h:outputText value="#{msg.template_type}:"/>
-   <h:selectOneMenu value="#{WizardManager.bean.templateTypeName}">
-      <f:selectItems value="#{WizardManager.bean.createTemplateTypes}" />
+   <h:outputText value="#{msg.form}:"/>
+   <h:selectOneMenu value="#{WizardManager.bean.formName}">
+      <f:selectItems value="#{WizardManager.bean.formChoices}" />
    </h:selectOneMenu>
 </h:panelGrid>

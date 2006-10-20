@@ -107,15 +107,14 @@ public class CreateFormWizard extends BaseWizardBean
 
    /////////////////////////////////////////////////////////////////////////////
    
-   private static final String FILE_RENDERING_ENGINE = "template-output-method";
+   public static final String FILE_RENDERING_ENGINE = "rendering-engine";
 
-   private static final String FILE_SCHEMA = "schema";
+   public static final String FILE_SCHEMA = "schema";
 
-   private final static Log LOGGER = 
-      LogFactory.getLog(CreateFormWizard.class);
+   private final static Log LOGGER = LogFactory.getLog(CreateFormWizard.class);
    
    private String schemaRootTagName;
-   private String templateName;
+   private String formName;
    private Class renderingEngineType = null;
    protected ContentService contentService;
    private DataModel renderingEnginesDataModel;
@@ -135,7 +134,7 @@ public class CreateFormWizard extends BaseWizardBean
 
       final FileInfo folderInfo = 
          this.fileFolderService.create(contentFormsNodeRef,
-                                       this.getTemplateName(),
+                                       this.getFormName(),
                                        ContentModel.TYPE_FOLDER);
       FileInfo fileInfo = 
          this.fileFolderService.create(folderInfo.getNodeRef(),
@@ -158,7 +157,7 @@ public class CreateFormWizard extends BaseWizardBean
 
       // apply the titled aspect - title and description
       Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(ContentModel.PROP_TITLE, this.getTemplateName());
+      props.put(ContentModel.PROP_TITLE, this.getFormName());
       props.put(ContentModel.PROP_DESCRIPTION, "");
       this.nodeService.addAspect(schemaNodeRef, ContentModel.ASPECT_TITLED, props);
 
@@ -211,7 +210,7 @@ public class CreateFormWizard extends BaseWizardBean
       this.removeUploadedSchemaFile();
       this.removeUploadedRenderingEngineFile();
       this.schemaRootTagName = null;
-      this.templateName = null;
+      this.formName = null;
       this.renderingEngineType = null;
       this.renderingEngines = new ArrayList<RenderingEngineData>();
       this.fileExtension = null;
@@ -248,7 +247,8 @@ public class CreateFormWizard extends BaseWizardBean
    }
    
    /**
-    * @return true if the Add To List button on the Template Output Methods should be disabled
+    * @return true if the Add To List button on the configure rendering engines 
+    * page should be disabled
     */
    public boolean getAddToListDisabled()
    {
@@ -272,7 +272,7 @@ public class CreateFormWizard extends BaseWizardBean
    }
 
    /**
-    * Add the selected template output method to the list
+    * Add the selected rendering engine to the list
     */
    public void addSelectedRenderingEngine(ActionEvent event)
    {
@@ -280,7 +280,7 @@ public class CreateFormWizard extends BaseWizardBean
       {
          if (tomd.getFileExtension().equals(this.fileExtension))
          {
-            throw new AlfrescoRuntimeException("template output method with extension " + this.fileExtension +
+            throw new AlfrescoRuntimeException("rendering engine with extension " + this.fileExtension +
                                                " already exists");
          }
       }
@@ -298,7 +298,7 @@ public class CreateFormWizard extends BaseWizardBean
    
    /**
     * Action handler called when the Remove button is pressed to remove a 
-    * template output method
+    * rendering engine
     */
    public void removeSelectedRenderingEngine(ActionEvent event)
    {
@@ -463,7 +463,7 @@ public class CreateFormWizard extends BaseWizardBean
    }
    
    /**
-    * @return Returns the presentationTemplate file or <tt>null</tt>
+    * @return Returns the rendering engine file or <tt>null</tt>
     */
    public File getRenderingEngineFile()
    {
@@ -518,21 +518,21 @@ public class CreateFormWizard extends BaseWizardBean
    }
    
    /**
-    * Sets the human friendly name for this template.
+    * Sets the human friendly name for this form.
     */
-   public void setTemplateName(final String templateName)
+   public void setFormName(final String formName)
    {
-      this.templateName = templateName;
+      this.formName = formName;
    }
 
    /**
-    * @return the human friendly name for this template.
+    * @return the human friendly name for this form.
     */
-   public String getTemplateName()
+   public String getFormName()
    {
-      return (this.templateName == null && this.getSchemaFileName() != null
+      return (this.formName == null && this.getSchemaFileName() != null
               ? this.getSchemaFileName().replaceAll("(.+)\\..*", "$1")
-              : this.templateName);
+              : this.formName);
    }
    
    /**

@@ -220,16 +220,19 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.content = content;
    }
    
-   public List<SelectItem> getCreateForms()
+   /**
+    * @return the available forms that can be created.
+    */
+   public List<SelectItem> getFormChoices()
    {
-      Collection<Form> ttl = FormsService.getInstance().getForms();
-      List<SelectItem> sil = new ArrayList<SelectItem>(ttl.size());
+      final Collection<Form> ttl = FormsService.getInstance().getForms();
+      final List<SelectItem> sil = new ArrayList<SelectItem>(ttl.size());
       for (Form tt : ttl)
       {
          sil.add(new SelectItem(tt.getName(), tt.getName()));
       }
       
-      QuickSort sorter = new QuickSort(sil, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+      final QuickSort sorter = new QuickSort(sil, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
       sorter.sort();
       return sil;
    }

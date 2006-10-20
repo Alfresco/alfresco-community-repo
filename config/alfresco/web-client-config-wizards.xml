@@ -235,10 +235,10 @@
                      description-id="create_form_step1_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="configure_presentation_templates" 
-		  title-id="configure_template_output_methods" 
+            <step name="configure_rendering_engines" 
+		  title-id="configure_rendering_engines" 
 		  description-id="create_form_step2_desc">
-               <page path="/jsp/wcm/create-form-wizard/configure-template-output-methods.jsp"
+               <page path="/jsp/wcm/create-form-wizard/configure-rendering-engines.jsp"
                      title-id="create_form_step2_title"
                      description-id="create_form_step2_desc"
                      instruction-id="default_instruction" />

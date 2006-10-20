@@ -43,7 +43,7 @@
 <h:panelGrid id="general-properties-panel-grid" 
 	     columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%">
-  <h:outputText id="step-1-text" value="1. #{msg.configure_output_methods_step1_desc}" escape="false" />
+  <h:outputText id="step-1-text" value="1. #{msg.configure_rendering_engines_step1_desc}" escape="false" />
   <h:panelGrid id="panel_grid_3"
                columns="3" cellpadding="3" cellspacing="3" border="0"
                width="100%">
@@ -59,7 +59,7 @@ if (upload == null || upload.getFile() == null)
 %>
     <h:column id="column_pt">
       <f:verbatim>
-	<input type="hidden" name="upload-id" value="template-output-method"/>
+	<input type="hidden" name="upload-id" value="<%= CreateFormWizard.FILE_RENDERING_ENGINE %>"/>
 	<input type="hidden" name="return-page" value="<%= request.getContextPath() %>/faces<%= request.getServletPath() %>"/>
 	<input id="wizard:wizard-body:file-input" type="file" size="35" name="alfFileInput" onchange="javascript:upload_file(this)"/>
       </f:verbatim>
@@ -69,24 +69,24 @@ if (upload == null || upload.getFile() == null)
 else 
 {
 %>
-    <h:outputText id="template-output-method-file-name"
-                  value="#{WizardManager.bean.templateOutputMethodFileName}"/>
+    <h:outputText id="rendering-engine-file-name"
+                  value="#{WizardManager.bean.renderingEngineFileName}"/>
 <%
 }
 %>
-    <h:graphicImage id="required_image_template_output_method_type"
+    <h:graphicImage id="required-image-rendering-engine-type"
                     value="/images/icons/required_field.gif" alt="Required Field" />
-    <h:outputText id="template_output_method_type_output_text"
+    <h:outputText id="rendering-engine-type-output-text"
                   value="#{msg.type}:"/>
-    <h:selectOneRadio id="template_output_method_type" 
-		      value="#{WizardManager.bean.templateOutputMethodType}">
-     <f:selectItems id="template_output_method_type_choices"
-		    value="#{WizardManager.bean.templateOutputMethodTypeChoices}"/>
+    <h:selectOneRadio id="rendering-engine-type" 
+		      value="#{WizardManager.bean.renderingEngineType}">
+     <f:selectItems id="rendering-engine-type-choices"
+		    value="#{WizardManager.bean.renderingEngineTypeChoices}"/>
     </h:selectOneRadio>
 
-    <h:graphicImage id="required_image_file_extension"
+    <h:graphicImage id="required-image-file-extension"
                     value="/images/icons/required_field.gif" alt="Required Field" />
-    <h:outputText id="file_extension_output_text"
+    <h:outputText id="file-extension-output-text"
                   value="#{msg.extension_for_generated_assets}:"/>
     <h:inputText id="file-extension" value="#{WizardManager.bean.fileExtension}"
                  maxlength="10" size="10"/>
@@ -95,22 +95,22 @@ else
   <h:panelGroup id="step-2-panel-group" styleClass="mainSubText">
     <h:outputText id="step-2-output-text" value="2." />
     <h:commandButton id="add-to-list-button" value="#{msg.add_to_list_button}" 
-		     actionListener="#{WizardManager.bean.addSelectedTemplateOutputMethod}" 
+		     actionListener="#{WizardManager.bean.addSelectedRenderingEngine}" 
 		     styleClass="wizardButton" disabled="#{WizardManager.bean.addToListDisabled}" />
   </h:panelGroup>
-  <h:outputText id="selected_template_output_methods_output_text"
+  <h:outputText id="selected-rendering-engines-output-text"
                 styleClass="mainSubText" 
-		value="#{msg.selected_templateoutputmethods}" />
+		value="#{msg.selected_rendering_engines}" />
   <h:panelGroup id="data-table-panel-group">
-    <h:dataTable id="template_output_method_data_table"
-                 value="#{WizardManager.bean.templateOutputMethodsDataModel}" 
+    <h:dataTable id="rendering-engine-data-table"
+                 value="#{WizardManager.bean.renderingEnginesDataModel}" 
 		 var="row" 
                  rowClasses="selectedItemsRow,selectedItemsRowAlt"
                  styleClass="selectedItems" 
 		 headerClass="selectedItemsHeader"
                  cellspacing="0" 
 		 cellpadding="4" 
-                 rendered="#{WizardManager.bean.templateOutputMethodsDataModel.rowCount != 0}">
+                 rendered="#{WizardManager.bean.renderingEnginesDataModel.rowCount != 0}">
       <h:column id="data-table-column-1">
         <f:facet name="header">
           <h:outputText id="data-table-name-1" value="#{msg.file_name}" />
@@ -121,7 +121,7 @@ else
         <f:facet name="header">
           <h:outputText id="data-table-name-2" value="#{msg.type}" />
         </f:facet>
-        <h:outputText id="data-table-value-2" value="#{row.templateOutputMethodTypeName}" />
+        <h:outputText id="data-table-value-2" value="#{row.renderingEngineTypeName}" />
       </h:column>
       <h:column id="data-table-column-3">
         <f:facet name="header">
@@ -130,14 +130,14 @@ else
         <h:outputText id="data-table-value-3" value="#{row.fileExtension}" />
       </h:column>
       <h:column id="data-table-column-4">
-        <a:actionLink id="remove-select-template-output-method-action-link"
-		      actionListener="#{WizardManager.bean.removeSelectedTemplateOutputMethod}" 
+        <a:actionLink id="remove-select-rendering-engine-action-link"
+		      actionListener="#{WizardManager.bean.removeSelectedRenderingEngine}" 
 	              image="/images/icons/delete.gif"
                       value="#{msg.remove}" showLink="false" style="padding-left:6px" />
       </h:column>
     </h:dataTable>
     
-    <a:panel id="no-items" rendered="#{WizardManager.bean.templateOutputMethodsDataModel.rowCount == 0}">
+    <a:panel id="no-items" rendered="#{WizardManager.bean.renderingEnginesDataModel.rowCount == 0}">
       <h:panelGrid id="no-items-panel-grid" 
 		   columns="1" 
 		   cellpadding="2" 

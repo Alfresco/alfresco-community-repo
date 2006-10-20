@@ -23,9 +23,11 @@ import java.util.Map;
 import org.w3c.dom.Document;
 
 /**
- * Serializes the xml data to a writer.
+ * Serializes the xml instance data collected by a form to a writer.
+ *
+ * @author Ariel Backenroth
  */
-public interface TemplateOutputMethod
+public interface FormDataRenderer
    extends Serializable
 {
    /** the noderef associated with this output method */

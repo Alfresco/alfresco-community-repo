@@ -34,11 +34,9 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.alfresco.model.WCMModel;
-import org.alfresco.repo.avm.AVMRemote;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.templating.*;
 import org.alfresco.web.templating.extension.ExtensionFunctions;
 import org.apache.commons.logging.Log;
@@ -52,60 +50,23 @@ import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.SAXException;
 
 public class XSLTOutputMethod
-    implements TemplateOutputMethod
+   extends AbstractFormDataRenderer
 {
-   //XXXarielb these should go into a more common location
-   private static final String ALFRESCO_NS = "http://www.alfresco.org/alfresco";
-   private static final String ALFRESCO_NS_PREFIX = "alfresco";
 
    private static final Log LOGGER = LogFactory.getLog(XSLTOutputMethod.class);
-   
-   private final NodeRef nodeRef;
-   private final NodeService nodeService;
 
    public XSLTOutputMethod(final NodeRef nodeRef,
                            final NodeService nodeService,
                            final ContentService contentService)
    {
-      this.nodeRef = nodeRef;
-      this.nodeService = nodeService;
-   }
-
-   public NodeRef getNodeRef()
-   {
-      return this.nodeRef;
-   }
-
-   //XXXarielb this is totally dirty - need to figure a better way to do this
-   private static AVMRemote getAVMRemote()
-   {
-      final javax.faces.context.FacesContext fc = 
-         javax.faces.context.FacesContext.getCurrentInstance();
-      final org.springframework.web.context.WebApplicationContext wac = 
-         org.springframework.web.jsf.FacesContextUtils.getRequiredWebApplicationContext(fc);
-      return (AVMRemote)wac.getBean("avmRemote");
-   }
-
-   private static ExtensionFunctions getExtensionFunctions()
-   {
-      return new ExtensionFunctions(XSLTOutputMethod.getAVMRemote());
+      super(nodeRef, nodeService, contentService);
    }
 
    private static String toAVMPath(final ExpressionContext ec, String path)
       throws TransformerException
    {
       final XObject o = ec.getVariableOrParam(new QName(ALFRESCO_NS, ALFRESCO_NS_PREFIX, "parent_path"));
-      if (o == null)
-         return null;
-      String avmPath = o.toString();
-      if (path != null && path.length() != 0 && path.charAt(0) == '/')
-      {
-         avmPath = avmPath.substring(0, 
-                                     avmPath.indexOf(':') + 
-                                     ('/' + AVMConstants.DIR_APPBASE + 
-                                      '/' + AVMConstants.DIR_WEBAPPS).length() + 1);
-      }
-      return avmPath + (avmPath.endsWith("/")  ?  path :  '/' + path);
+      return o == null ? null : XSLTOutputMethod.toAVMPath(o.toString(), path);
    }
 
    public static Document getXMLDocument(final ExpressionContext ec, final String path)
@@ -263,7 +224,7 @@ public class XSLTOutputMethod
       final String sandBoxUrl = (String)parameters.get("avm_store_url");
       final TransformerFactory tf = TransformerFactory.newInstance();
       final TemplatingService ts = TemplatingService.getInstance();
-      final Document xslDocument = ts.parseXML(this.nodeRef);
+      final Document xslDocument = ts.parseXML(this.getNodeRef());
       this.addScript(xslDocument);
       this.addParameters(parameters, xslDocument);
 
@@ -309,12 +270,5 @@ public class XSLTOutputMethod
          LOGGER.error(e.getMessageAndLocation());
          throw e;
       }
-   }
-
-   public String getFileExtension()
-   {
-      return (String)
-         this.nodeService.getProperty(this.nodeRef, 
-                                      WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FILE_EXTENSION);
    }
 }

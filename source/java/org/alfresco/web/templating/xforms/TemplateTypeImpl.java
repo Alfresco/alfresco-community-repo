@@ -37,8 +37,8 @@ public class TemplateTypeImpl
    private final NodeRef schemaNodeRef;
    private final String name;
    private final String rootTagName;
-   private final LinkedList<TemplateOutputMethod> outputMethods = 
-      new LinkedList<TemplateOutputMethod>();
+   private final LinkedList<FormDataRenderer> formDataRenderers = 
+      new LinkedList<FormDataRenderer>();
    private final static LinkedList<TemplateInputMethod> INPUT_METHODS = 
       new LinkedList<TemplateInputMethod>();
    
@@ -94,14 +94,14 @@ public class TemplateTypeImpl
       return INPUT_METHODS;
    }
 
-   public void addOutputMethod(TemplateOutputMethod output)
+   public void addFormDataRenderer(final FormDataRenderer output)
    {
-      this.outputMethods.add(output);
+      this.formDataRenderers.add(output);
    }
 
-   public List<TemplateOutputMethod> getOutputMethods()
+   public List<FormDataRenderer> getFormDataRenderers()
    {
-      return this.outputMethods;
+      return this.formDataRenderers;
    }
 
    public int hashCode() 

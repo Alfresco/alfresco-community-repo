@@ -40,8 +40,10 @@ import org.w3c.dom.Document;
 
 /**
  * temporary home of generate and regenerate functionality until i figure
- * out a more general way of triggering generate in TemplateOutputMethod
+ * out a more general way of triggering generate in FormDataRenderer
  * every time the xml file is saved.
+ *
+ * @author Ariel Backenroth
  */
 public class OutputUtil
 {
@@ -63,7 +65,7 @@ public class OutputUtil
    {
       try 
       {
-         for (TemplateOutputMethod tom : tt.getOutputMethods())
+         for (FormDataRenderer tom : tt.getFormDataRenderers())
          {
             // get the node ref of the node that will contain the content
             final String generatedFileName = stripExtension(fileName) + "." + tom.getFileExtension();
@@ -132,7 +134,7 @@ public class OutputUtil
          final String avmStore = avmPath.substring(0, avmPath.indexOf(":/"));
          final String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
          final String parentPath = AVMNodeConverter.SplitBase(avmPath)[0];
-         for (TemplateOutputMethod tom : tt.getOutputMethods())
+         for (FormDataRenderer tom : tt.getFormDataRenderers())
          {
             final String generatedFileName = stripExtension(fileName) + "." + tom.getFileExtension();
 

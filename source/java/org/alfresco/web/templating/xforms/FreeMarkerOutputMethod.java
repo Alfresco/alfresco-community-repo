@@ -17,46 +17,51 @@
 package org.alfresco.web.templating.xforms;
 
 import freemarker.ext.dom.NodeModel;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.templating.*;
+import org.alfresco.web.templating.extension.ExtensionFunctions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.chiba.xml.util.DOMUtil;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/**
+ * Implementation of a form data renderer for processing xml instance data
+ * using a freemarker template.
+ *
+ * @author Ariel Backenroth
+ */
 public class FreeMarkerOutputMethod
-   implements TemplateOutputMethod
+   extends AbstractFormDataRenderer
 {
 
-   private final NodeRef nodeRef;
-   private final NodeService nodeService;
-   private final ContentService contentService;
+   private static final Log LOGGER = LogFactory.getLog(FreeMarkerOutputMethod.class);
 
    public FreeMarkerOutputMethod(final NodeRef nodeRef,
                                  final NodeService nodeService,
                                  final ContentService contentService)
    {
-      this.nodeRef = nodeRef;
-      this.nodeService = nodeService;
-      this.contentService = contentService;
+      super(nodeRef, nodeService, contentService);
    }
 
-   public NodeRef getNodeRef()
-   {
-      return this.nodeRef;
-   }
-   
+   /**
+    * Generates the rendition using the configured freemarker template.  This
+    * provides a root map to the freemarker template which places the xml document, and 
+    * a variable named alfresco at the root.  the alfresco variable contains a hash of 
+    * all parameters and all extension functions.
+    */
    public void generate(final Document xmlContent,
                         final TemplateType tt,
                         final Map<String, String> parameters,
@@ -65,22 +70,105 @@ public class FreeMarkerOutputMethod
       TemplateException
    {
       final ContentReader contentReader = 
-         this.contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
+         this.contentService.getReader(this.getNodeRef(), ContentModel.TYPE_CONTENT);
       final Reader reader = new InputStreamReader(contentReader.getContentInputStream());
       final Configuration cfg = new Configuration();
       cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
       
       final Template t = new Template("freemarker_template", reader, cfg);
-      final Map<String, Object> root = new HashMap<String, Object>();
-      root.put("doc", NodeModel.wrap(xmlContent));
-      t.process(root, out);
-      out.flush();
-   }
+      
+      // wrap the xml instance in a model
+      final TemplateHashModel instanceDataModel = NodeModel.wrap(xmlContent);
 
-   public String getFileExtension()
-   {
-      return (String)
-         this.nodeService.getProperty(this.nodeRef, 
-                                      WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FILE_EXTENSION);
+      // build models for each of the extension functions
+      final TemplateModel getXMLDocumentModel = new TemplateMethodModel()
+      {
+         public Object exec(final List args)
+            throws TemplateModelException
+         {
+            try 
+            {
+               final ExtensionFunctions ef = FreeMarkerOutputMethod.getExtensionFunctions();
+               final String path = FreeMarkerOutputMethod.toAVMPath(parameters.get("parent_path"), 
+                                                                    (String)args.get(0));
+               return ef.getXMLDocument(path);
+            }
+            catch (Exception e)
+            {
+               throw new TemplateModelException(e);
+            }
+         }
+      };
+      final TemplateModel getXMLDocumentsModel = new TemplateMethodModel()
+      {
+         public Object exec(final List args)
+            throws TemplateModelException
+         {
+            try 
+            {
+               final ExtensionFunctions ef = FreeMarkerOutputMethod.getExtensionFunctions();
+               final String path = FreeMarkerOutputMethod.toAVMPath(parameters.get("parent_path"), 
+                                                                    args.size() == 1 ? "" : (String)args.get(1));
+               final Map<String, Document> resultMap = ef.getXMLDocuments((String)args.get(0), path);
+               LOGGER.debug("received " + resultMap.size() + " documents in " + path);
+               final List<NodeModel> result = new ArrayList<NodeModel>(resultMap.size());
+               for (Map.Entry<String, Document> e : resultMap.entrySet())
+               {
+                  final Document d = e.getValue();
+                  final Element documentEl = d.getDocumentElement();
+                  documentEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
+                  documentEl.setAttributeNS(ALFRESCO_NS, 
+                                            ALFRESCO_NS_PREFIX + ":file-name", 
+                                            e.getKey());
+                  result.add(NodeModel.wrap(d));
+               }
+               return result;
+            }
+            catch (Exception e)
+            {
+               throw new TemplateModelException(e);
+            }
+         }
+      };
+
+      // build a wrapper for the parameters.  this also wraps the extension functions
+      // so they appear in the namespace alfresco.
+      final TemplateHashModel parameterModel = new SimpleHash(parameters)
+      {
+         public TemplateModel get(final String key)
+            throws TemplateModelException
+         {
+            if ("getXMLDocument".equals(key))
+            {
+                return getXMLDocumentModel;
+            }
+            if ("getXMLDocuments".equals(key))
+            {
+               return getXMLDocumentsModel;
+            }
+            return super.get(key);
+         }
+      };
+      
+      // build the root model.  anything not in the falsey alfresco namespace will be 
+      // retrieved from the xml file in order to make it behave as close as possible to
+      // the xsl environment
+      final TemplateHashModel rootModel = new TemplateHashModel()
+      {
+         public TemplateModel get(final String key)
+            throws TemplateModelException
+         {
+            return ALFRESCO_NS_PREFIX.equals(key) ? parameterModel : instanceDataModel.get(key);
+         }
+
+         public boolean isEmpty()
+         {
+            return false;
+         }
+      };
+
+      // process the form
+      t.process(rootModel, out);
+      out.flush();
    }
 }

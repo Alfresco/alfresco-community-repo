@@ -51,6 +51,8 @@ import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Provides management of template types.
+ *
+ * @author Ariel Backenroth
  */
 public final class TemplatingService implements Serializable
 {
@@ -213,11 +215,11 @@ public final class TemplatingService implements Serializable
                                                                   WCMModel.PROP_FORM_TRANSFORMER_TYPE));
             
             final Constructor c = templateOutputMethodType.getConstructor(NodeRef.class, NodeService.class, ContentService.class);
-            final TemplateOutputMethod tom = (TemplateOutputMethod)
+            final FormDataRenderer tom = (FormDataRenderer)
                c.newInstance(tomNodeRef, this.nodeService, this.contentService);
             LOGGER.debug("loaded template output method type " + tom.getClass().getName() +
                          " for extension " + tom.getFileExtension() + ", " + tomNodeRef);
-            tt.addOutputMethod(tom);
+            tt.addFormDataRenderer(tom);
          }
          catch (Exception e)
          {

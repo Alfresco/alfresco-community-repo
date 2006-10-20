@@ -53,10 +53,10 @@ public interface TemplateType
    /**
     * adds an output method to this template type.
     */
-   public void addOutputMethod(TemplateOutputMethod output);
+   public void addFormDataRenderer(FormDataRenderer output);
 
    /**
     * Provides the set of output methods for this template.
     */
-   public List<TemplateOutputMethod> getOutputMethods();
+   public List<FormDataRenderer> getFormDataRenderers();
 }

@@ -8,7 +8,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -184,15 +183,6 @@ public class WorkflowBean
       node.getProperties().put(ContentModel.PROP_NAME.toString(), task.title);
       node.getProperties().put("type", taskDef.metadata.getTitle());
       node.getProperties().put("id", task.id);
-      
-      // add the name of the source space (if there is one)
-      NodeRef context = (NodeRef)task.properties.get(WorkflowModel.PROP_CONTEXT);
-      if (context != null && this.nodeService.exists(context))
-      {
-         String name = Repository.getNameForNode(this.nodeService, context);
-         node.getProperties().put("sourceSpaceName", name);
-         node.getProperties().put("sourceSpaceId", context.getId());
-      }
       
       // add extra properties for completed tasks
       if (task.state.equals(WorkflowTaskState.COMPLETED))

@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating;
+package org.alfresco.web.forms;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.w3c.dom.Document;
@@ -23,15 +23,15 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * Encapsulation of a template type.
+ * Encapsulation of a form.
  *
  * @author Ariel Backenroth
  */
-public interface TemplateType
+public interface Form
    extends Serializable
 {
 
-   /** the name of the template, which must be unique within the TemplatingService */
+   /** the name of the template, which must be unique within the FormsService */
    public String getName();
 
    /** the root tag to use within the schema */
@@ -48,15 +48,15 @@ public interface TemplateType
    /**
     * Provides a set of input methods for this template.
     */
-   public List<TemplateInputMethod> getInputMethods();
+   public List<FormProcessor> getFormProcessors();
 
    /**
     * adds an output method to this template type.
     */
-   public void addFormDataRenderer(FormDataRenderer output);
+   public void addRenderingEngine(RenderingEngine output);
 
    /**
     * Provides the set of output methods for this template.
     */
-   public List<FormDataRenderer> getFormDataRenderers();
+   public List<RenderingEngine> getRenderingEngines();
 }

@@ -14,42 +14,42 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms;
+package org.alfresco.web.forms;
 
 import java.io.*;
 import java.net.URI;
 import java.util.*;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.web.forms.xforms.XFormsProcessor;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
-import org.alfresco.web.templating.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-public class TemplateTypeImpl 
-    implements TemplateType
+public class FormImpl 
+    implements Form
 {
-   private static final Log LOGGER = LogFactory.getLog(TemplateTypeImpl.class);
+   private static final Log LOGGER = LogFactory.getLog(FormImpl.class);
    
    private transient Document schema;
    private final NodeRef schemaNodeRef;
    private final String name;
    private final String rootTagName;
-   private final LinkedList<FormDataRenderer> formDataRenderers = 
-      new LinkedList<FormDataRenderer>();
-   private final static LinkedList<TemplateInputMethod> INPUT_METHODS = 
-      new LinkedList<TemplateInputMethod>();
+   private final LinkedList<RenderingEngine> renderingEngines = 
+      new LinkedList<RenderingEngine>();
+   private final static LinkedList<FormProcessor> PROCESSORS = 
+      new LinkedList<FormProcessor>();
    
    static 
    {
-      INPUT_METHODS.add(new XFormsInputMethod());
+      PROCESSORS.add(new XFormsProcessor());
    }
    
-   public TemplateTypeImpl(final String name,
-                           final NodeRef schemaNodeRef,
-                           final String rootTagName) 
+   public FormImpl(final String name,
+                   final NodeRef schemaNodeRef,
+                   final String rootTagName) 
    {
       this.name = name;
       this.schemaNodeRef = schemaNodeRef;
@@ -70,7 +70,7 @@ public class TemplateTypeImpl
    {
       if (this.schema == null)
       {
-         final TemplatingService ts = TemplatingService.getInstance();
+         final FormsService ts = FormsService.getInstance();
          try
          {
             //XXXarielb maybe cloneNode instead?
@@ -89,19 +89,19 @@ public class TemplateTypeImpl
       return this.schemaNodeRef;
    }
 
-   public List<TemplateInputMethod> getInputMethods()
+   public List<FormProcessor> getFormProcessors()
    {
-      return INPUT_METHODS;
+      return PROCESSORS;
    }
 
-   public void addFormDataRenderer(final FormDataRenderer output)
+   public void addRenderingEngine(final RenderingEngine output)
    {
-      this.formDataRenderers.add(output);
+      this.renderingEngines.add(output);
    }
 
-   public List<FormDataRenderer> getFormDataRenderers()
+   public List<RenderingEngine> getRenderingEngines()
    {
-      return this.formDataRenderers;
+      return this.renderingEngines;
    }
 
    public int hashCode() 

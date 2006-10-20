@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.extension;
+package org.alfresco.web.forms;
 
 import org.alfresco.jndi.AVMFileDirContext;
 import org.w3c.dom.Document;
@@ -23,13 +23,13 @@ import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.util.Map;
 
-public class ServletContextExtensionFunctionsAdapter
-   extends ExtensionFunctions
+public class ServletContextFormDataFunctionsAdapter
+   extends FormDataFunctions
 {
 
    private final ServletContext servletContext;
 
-   public ServletContextExtensionFunctionsAdapter(final ServletContext servletContext)
+   public ServletContextFormDataFunctionsAdapter(final ServletContext servletContext)
    {
       super(AVMFileDirContext.getAVMRemote());
       this.servletContext = servletContext;
@@ -55,11 +55,11 @@ public class ServletContextExtensionFunctionsAdapter
       return super.getXMLDocument(this.toAVMPath(path));
    }
 
-   public Map<String, Document> getXMLDocuments(final String templateTypeName,
+   public Map<String, Document> getXMLDocuments(final String formName,
                                                 final String path)
       throws IOException,
       SAXException
    {
-      return super.getXMLDocuments(templateTypeName, this.toAVMPath(path));
+      return super.getXMLDocuments(formName, this.toAVMPath(path));
    }
 }

@@ -40,10 +40,9 @@ import org.alfresco.web.bean.CheckinCheckoutBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.templating.OutputUtil;
-import org.alfresco.web.templating.TemplateType;
-import org.alfresco.web.templating.TemplateInputMethod;
-import org.alfresco.web.templating.TemplatingService;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormProcessor;
+import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -208,28 +207,28 @@ public class AVMEditBean
    }
    
    /**
-    * @return Returns the template type when in the context of editing an xml asset.
+    * @return Returns the form when in the context of editing an xml asset.
     */
-   public TemplateType getTemplateType()
+   public Form getForm()
    {
       final NodeRef ttNodeRef = (NodeRef)
          this.nodeService.getProperty(this.getAvmNode().getNodeRef(), 
-                                      WCMModel.PROP_FORM_DERIVED_FROM);
-      final TemplatingService ts = TemplatingService.getInstance();
-      return ts.getTemplateType(ttNodeRef);
+                                      WCMModel.PROP_PARENT_FORM);
+      final FormsService ts = FormsService.getInstance();
+      return ts.getForm(ttNodeRef);
    }
 
    /**
     * @return Returns the wrapper instance data for feeding the xml
     * content to the form processor.
     */
-   public TemplateInputMethod.InstanceData getInstanceData()
+   public FormProcessor.InstanceData getInstanceData()
    {
-      final TemplateType tt = this.getTemplateType();
-      final TemplateInputMethod tim = tt.getInputMethods().get(0);
-      return new TemplateInputMethod.InstanceData()
+      final Form tt = this.getForm();
+      final FormProcessor tim = tt.getFormProcessors().get(0);
+      return new FormProcessor.InstanceData()
       {
-         private final TemplatingService ts = TemplatingService.getInstance();
+         private final FormsService ts = FormsService.getInstance();
 
          public Document getContent()
          { 
@@ -356,13 +355,11 @@ public class AVMEditBean
             // commit the transaction
             tx.commit();
             
-            // TODO: regenerate template content
-            if (nodeService.getProperty(avmRef, WCMModel.PROP_FORM_DERIVED_FROM) != null)
+            // TODO: regenerate form content
+            if (nodeService.getProperty(avmRef, WCMModel.PROP_PARENT_FORM) != null)
             {
-               OutputUtil.regenerate(avmRef,
-                                     this.contentService,
-                                     this.nodeService,
-                                     this.avmService);
+               final FormsService fs = FormsService.getInstance();
+               fs.regenerate(avmRef);
             }
             
             resetState();

@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms;
+package org.alfresco.web.forms;
 
 import java.io.*;
 import java.net.URI;
@@ -37,8 +37,6 @@ import org.alfresco.model.WCMModel;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.web.templating.*;
-import org.alfresco.web.templating.extension.ExtensionFunctions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xalan.extensions.ExpressionContext;
@@ -49,13 +47,13 @@ import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.SAXException;
 
-public class XSLTOutputMethod
-   extends AbstractFormDataRenderer
+public class XSLTRenderingEngine
+   extends AbstractRenderingEngine
 {
 
-   private static final Log LOGGER = LogFactory.getLog(XSLTOutputMethod.class);
+   private static final Log LOGGER = LogFactory.getLog(XSLTRenderingEngine.class);
 
-   public XSLTOutputMethod(final NodeRef nodeRef,
+   public XSLTRenderingEngine(final NodeRef nodeRef,
                            final NodeService nodeService,
                            final ContentService contentService)
    {
@@ -66,7 +64,7 @@ public class XSLTOutputMethod
       throws TransformerException
    {
       final XObject o = ec.getVariableOrParam(new QName(ALFRESCO_NS, ALFRESCO_NS_PREFIX, "parent_path"));
-      return o == null ? null : XSLTOutputMethod.toAVMPath(o.toString(), path);
+      return o == null ? null : XSLTRenderingEngine.toAVMPath(o.toString(), path);
    }
 
    public static Document getXMLDocument(final ExpressionContext ec, final String path)
@@ -74,29 +72,29 @@ public class XSLTOutputMethod
       IOException,
       SAXException
    {
-      final ExtensionFunctions ef = XSLTOutputMethod.getExtensionFunctions();
-      return ef.getXMLDocument(XSLTOutputMethod.toAVMPath(ec, path));
+      final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
+      return ef.getXMLDocument(XSLTRenderingEngine.toAVMPath(ec, path));
    }
 
    public static NodeIterator getXMLDocuments(final ExpressionContext ec, 
-                                              final String templateTypeName)
+                                              final String formName)
       throws TransformerException,
       IOException,
       SAXException
    {
-      return XSLTOutputMethod.getXMLDocuments(ec, templateTypeName, "");
+      return XSLTRenderingEngine.getXMLDocuments(ec, formName, "");
    }
 
    public static NodeIterator getXMLDocuments(final ExpressionContext ec, 
-                                              final String templateTypeName, 
+                                              final String formName, 
                                               String path)
       throws TransformerException,
       IOException,
       SAXException
    {
-      final ExtensionFunctions ef = XSLTOutputMethod.getExtensionFunctions();
-      path = XSLTOutputMethod.toAVMPath(ec, path);
-      final Map<String, Document> resultMap = ef.getXMLDocuments(templateTypeName, path);
+      final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
+      path = XSLTRenderingEngine.toAVMPath(ec, path);
+      final Map<String, Document> resultMap = ef.getXMLDocuments(formName, path);
       LOGGER.debug("received " + resultMap.size() + " documents in " + path);
       final List<Map.Entry<String, Document>> documents = 
          new ArrayList<Map.Entry<String, Document>>(resultMap.entrySet());
@@ -211,26 +209,40 @@ public class XSLTOutputMethod
    }
 
    public void generate(final Document xmlContent,
-                        final TemplateType tt,
                         final Map<String, String> parameters,
                         final Writer out)
-      throws ParserConfigurationException,
-      TransformerConfigurationException,
-      TransformerException,
-      SAXException,
-      IOException
+      throws IOException,
+      RenderingEngine.RenderingException
    {
       // XXXarielb - dirty - fix this
       final String sandBoxUrl = (String)parameters.get("avm_store_url");
       final TransformerFactory tf = TransformerFactory.newInstance();
-      final TemplatingService ts = TemplatingService.getInstance();
-      final Document xslDocument = ts.parseXML(this.getNodeRef());
+      final FormsService ts = FormsService.getInstance();
+      Document xslDocument = null;
+      try
+      {
+         xslDocument = ts.parseXML(this.getNodeRef());
+      }
+      catch (final SAXException sax)
+      {
+         throw new RenderingEngine.RenderingException(sax);
+      }
       this.addScript(xslDocument);
       this.addParameters(parameters, xslDocument);
 
       final DOMSource source = new DOMSource(xslDocument);
-      final Templates templates = tf.newTemplates(source);
-      final Transformer t = templates.newTransformer();
+
+      Transformer t = null;
+      try 
+      {
+         final Templates templates = tf.newTemplates(source);
+         t = templates.newTransformer();
+      }
+      catch (TransformerConfigurationException tce)
+      {
+         LOGGER.error(tce);
+         throw new RenderingEngine.RenderingException(tce);
+      }
       t.setURIResolver(new URIResolver()
       {
          public Source resolve(final String href, final String base)
@@ -268,7 +280,7 @@ public class XSLTOutputMethod
       catch (TransformerException e)
       {
          LOGGER.error(e.getMessageAndLocation());
-         throw e;
+         throw new RenderingEngine.RenderingException(e);
       }
    }
 }

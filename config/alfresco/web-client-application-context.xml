@@ -34,7 +34,7 @@
    </bean>
 
    <!-- NOTE: This references a bean in the repository Spring configuration -->
-   <bean id="templatingSerivce" class="org.alfresco.web.templating.TemplatingService">
+   <bean id="formsSerivce" class="org.alfresco.web.forms.FormsService">
       <constructor-arg>
          <ref bean="ContentService" />
       </constructor-arg>
@@ -52,6 +52,9 @@
       </constructor-arg>
       <constructor-arg>
          <ref bean="SearchService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="AVMService" />
       </constructor-arg>
    </bean>
    

@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.extension;
+package org.alfresco.web.forms;
 
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMRemote;
@@ -38,15 +38,15 @@ import java.util.HashMap;
  *
  * @author Ariel Backenroth
  */
-public class ExtensionFunctions
+public class FormDataFunctions
 {
-   private static final Log LOGGER = LogFactory.getLog(ExtensionFunctions.class);
+   private static final Log LOGGER = LogFactory.getLog(FormDataFunctions.class);
 
    private static DocumentBuilder documentBuilder;
 
    private final AVMRemote avmRemote;
 
-   public ExtensionFunctions(final AVMRemote avmRemote)
+   public FormDataFunctions(final AVMRemote avmRemote)
    {
       this.avmRemote = avmRemote;
    }
@@ -102,7 +102,7 @@ public class ExtensionFunctions
             PropertyValue pv = 
                this.avmRemote.getNodeProperty(-1, 
                                               avmPath + '/' + entryName,
-                                              WCMModel.PROP_FORM_DERIVED_FROM_NAME);
+                                              WCMModel.PROP_PARENT_FORM_NAME);
             if (pv == null || 
                 pv.getStringValue() == null || 
                 !((String)pv.getStringValue()).equals(formName))
@@ -113,7 +113,7 @@ public class ExtensionFunctions
 
             pv = this.avmRemote.getNodeProperty(-1, 
                                                 avmPath + '/' + entryName,
-                                                WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FROM);
+                                                WCMModel.PROP_PARENT_RENDERING_ENGINE);
             
             if (pv != null)
             {
@@ -139,20 +139,20 @@ public class ExtensionFunctions
 
    private static DocumentBuilder getDocumentBuilder()
    {
-      if (ExtensionFunctions.documentBuilder == null)
+      if (FormDataFunctions.documentBuilder == null)
       {
          try
          {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
             dbf.setValidating(false);
-            ExtensionFunctions.documentBuilder = dbf.newDocumentBuilder();
+            FormDataFunctions.documentBuilder = dbf.newDocumentBuilder();
          }
          catch (ParserConfigurationException pce)
          {
             LOGGER.error(pce);
          }
       }
-      return ExtensionFunctions.documentBuilder;
+      return FormDataFunctions.documentBuilder;
    }
 }

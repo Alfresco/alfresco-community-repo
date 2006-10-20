@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating;
+package org.alfresco.web.forms;
 
 import org.w3c.dom.Document;
 import java.io.Serializable;
@@ -23,7 +23,7 @@ import java.io.Writer;
 /**
  * Generates a user interface for inputing data into a template.
  */
-public interface TemplateInputMethod
+public interface FormProcessor
     extends Serializable
 {
    
@@ -43,13 +43,13 @@ public interface TemplateInputMethod
    /////////////////////////////////////////////////////////////////////////////
 
    /**
-    * Generates a user interface for inputing data into this template.
+    * Generates a user interface for inputing data into a form.
     *
     * @param instanceData provides the xml instance data if available.
-    * @param tt the template type to generate for
+    * @param form the form to generate for
     * @param out the writer to write the output to.
     */
-   public void generate(final TemplateInputMethod.InstanceData instanceData,
-                        final TemplateType tt,
+   public void generate(final FormProcessor.InstanceData instanceData,
+                        final Form form,
                         final Writer out);
 }

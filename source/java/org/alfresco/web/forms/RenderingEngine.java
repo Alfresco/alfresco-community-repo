@@ -14,9 +14,10 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating;
+package org.alfresco.web.forms;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.Map;
@@ -27,9 +28,28 @@ import org.w3c.dom.Document;
  *
  * @author Ariel Backenroth
  */
-public interface FormDataRenderer
+public interface RenderingEngine
    extends Serializable
 {
+   /////////////////////////////////////////////////////////////////////////////
+
+   public static class RenderingException
+      extends Exception
+   {
+
+      public RenderingException(final Exception cause)
+      {
+         super(cause);
+      }
+
+      public RenderingException(final String msg, final Exception cause)
+      {
+         super(msg, cause);
+      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
    /** the noderef associated with this output method */
    public NodeRef getNodeRef();
 
@@ -37,15 +57,14 @@ public interface FormDataRenderer
     * Serializes the xml data in to a presentation format.
     *
     * @param xmlContent the xml content to serialize
-    * @param tt the template type that collected the xml content.
+    * @param form the form that collected the xml content.
     * @param sandBoxUrl the url of the current sandbox
     * @param out the writer to serialize to.
     */
    public void generate(final Document xmlContent,
-                        final TemplateType tt,
                         final Map<String, String> parameters,
                         final Writer out)
-      throws Exception;
+      throws IOException, RenderingException;
 
    /**
     * Returns the file extension to use when generating content for this

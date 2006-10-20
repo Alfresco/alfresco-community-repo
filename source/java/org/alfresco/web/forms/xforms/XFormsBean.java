@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms;
+package org.alfresco.web.forms.xforms;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,8 +32,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.alfresco.web.bean.wcm.AVMConstants;
-import org.alfresco.web.templating.*;
-import org.alfresco.web.templating.xforms.*;
+import org.alfresco.web.forms.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
@@ -59,25 +58,25 @@ public class XFormsBean
 {
     private static final Log LOGGER = LogFactory.getLog(XFormsBean.class);
 
-    private TemplateType tt;
-    private TemplateInputMethod.InstanceData instanceData = null;
+    private Form tt;
+    private FormProcessor.InstanceData instanceData = null;
     private ChibaBean chibaBean;
     private final LinkedList<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
 
-    /** @return the template type */
-    public TemplateType getTemplateType()
+    /** @return the form */
+    public Form getForm()
     {
 	return this.tt;
     }
 
     /** @param tt the template type */
-    public void setTemplateType(final TemplateType tt)
+    public void setForm(final Form tt)
     {
 	this.tt = tt;
     }
 
     /** @param instanceData the instance data being modified. */
-    public void setInstanceData(final TemplateInputMethod.InstanceData instanceData)
+    public void setInstanceData(final FormProcessor.InstanceData instanceData)
     {
 	this.instanceData = instanceData;
     }
@@ -164,7 +163,7 @@ public class XFormsBean
 	final Map requestParameters = context.getExternalContext().getRequestParameterMap();
 	LOGGER.debug("building xform for " + this.tt.getName());
 	final Node form = this.chibaBean.getXMLContainer();
-	final TemplatingService ts = TemplatingService.getInstance();
+	final FormsService ts = FormsService.getInstance();
 	ts.writeXML(form, out);
     }
 
@@ -186,7 +185,7 @@ public class XFormsBean
 	LOGGER.debug(this + " setXFormsValue(" + id + ", " + value + ")");
 	this.chibaBean.updateControlValue(id, value);
 
-	final TemplatingService ts = TemplatingService.getInstance();
+	final FormsService ts = FormsService.getInstance();
 	final ResponseWriter out = context.getResponseWriter();
 	ts.writeXML(this.getEventLog(), out);
 	out.close();
@@ -210,7 +209,7 @@ public class XFormsBean
 	LOGGER.debug(this + " setRepeatIndex(" + id + ", " + index + ")");
 	this.chibaBean.updateRepeatIndex(id, index);
 
-	final TemplatingService ts = TemplatingService.getInstance();
+	final FormsService ts = FormsService.getInstance();
 	final ResponseWriter out = context.getResponseWriter();
 	ts.writeXML(this.getEventLog(), out);
 	out.close();
@@ -231,7 +230,7 @@ public class XFormsBean
 	LOGGER.debug(this + " fireAction(" + id + ")");
 	this.chibaBean.dispatch(id, XFormsEventFactory.DOM_ACTIVATE);
 
-	final TemplatingService ts = TemplatingService.getInstance();
+	final FormsService ts = FormsService.getInstance();
 	final ResponseWriter out = context.getResponseWriter();
 	ts.writeXML(this.getEventLog(), out);
 	out.close();
@@ -247,7 +246,7 @@ public class XFormsBean
 	final FacesContext context = FacesContext.getCurrentInstance();
 	final HttpServletRequest request = (HttpServletRequest)
 	    context.getExternalContext().getRequest();
-	final TemplatingService ts = TemplatingService.getInstance();
+	final FormsService ts = FormsService.getInstance();
 	final Document result = ts.parseXML(request.getInputStream());
 	this.instanceData.setContent(result);
 
@@ -283,7 +282,7 @@ public class XFormsBean
      * Generates the xforms based on the schema.
      */
     private Document buildXForm(Document xmlContent, 
-				final TemplateType tt,
+				final Form tt,
 				final String cwdAvmPath,
 				final HttpServletRequest request) 
 	throws FormBuilderException
@@ -311,7 +310,7 @@ public class XFormsBean
 
     private Node getEventLog()
     {
-	final TemplatingService ts = TemplatingService.getInstance();
+	final FormsService ts = FormsService.getInstance();
 	final Document result = ts.newDocument();
 	final Element eventsElement = result.createElement("events");
 	result.appendChild(eventsElement);

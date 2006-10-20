@@ -46,10 +46,9 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.templating.OutputUtil;
-import org.alfresco.web.templating.TemplateInputMethod;
-import org.alfresco.web.templating.TemplateType;
-import org.alfresco.web.templating.TemplatingService;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormProcessor;
+import org.alfresco.web.forms.FormsService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -62,7 +61,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    private static final Log logger = LogFactory.getLog(CreateWebContentWizard.class);
    
    protected String content = null;
-   protected String templateTypeName;
+   protected String formName;
    protected List<SelectItem> createMimeTypes;
    protected String createdPath = null;
    
@@ -101,27 +100,24 @@ public class CreateWebContentWizard extends BaseContentWizard
          logger.debug("saving file content to " + this.fileName);
       saveContent(null, this.content);
       
-      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.templateTypeName != null)
+      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
          if (logger.isDebugEnabled())
-            logger.debug("generating template output for " + this.templateTypeName);
-         final TemplateType tt = this.getTemplateType();
-         final TemplatingService ts = TemplatingService.getInstance();
+            logger.debug("generating form data renderer output for " + this.formName);
+         final Form tt = this.getForm();
+         final FormsService ts = FormsService.getInstance();
 
          final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-         props.put(WCMModel.PROP_FORM_DERIVED_FROM, tt.getNodeRef());
-         props.put(WCMModel.PROP_FORM_DERIVED_FROM_NAME, tt.getName());
+         props.put(WCMModel.PROP_PARENT_FORM, tt.getNodeRef());
+         props.put(WCMModel.PROP_PARENT_FORM_NAME, tt.getName());
          this.nodeService.addAspect(AVMNodeConverter.ToNodeRef(-1, this.createdPath), 
-                                    WCMModel.ASPECT_FORM_DERIVED,
+                                    WCMModel.ASPECT_FORM_INSTANCE_DATA,
                                     props);
 
-         OutputUtil.generate(this.createdPath.substring(0, this.createdPath.lastIndexOf('/')),
-                             ts.parseXML(this.content),
-                             tt,
-                             this.fileName,
-                             this.contentService,
-                             this.nodeService,
-                             this.avmService);
+         ts.generate(this.createdPath.substring(0, this.createdPath.lastIndexOf('/')),
+                     ts.parseXML(this.content),
+                     tt,
+                     this.fileName);
       }
       
       // return the default outcome
@@ -169,7 +165,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       
       this.content = null;
       this.inlineEdit = true;
-      this.templateTypeName = null;
+      this.formName = null;
       this.mimeType = MimetypeMap.MIMETYPE_XML;
    }
    
@@ -224,11 +220,11 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.content = content;
    }
    
-   public List<SelectItem> getCreateTemplateTypes()
+   public List<SelectItem> getCreateForms()
    {
-      Collection<TemplateType> ttl = TemplatingService.getInstance().getTemplateTypes();
+      Collection<Form> ttl = FormsService.getInstance().getForms();
       List<SelectItem> sil = new ArrayList<SelectItem>(ttl.size());
-      for (TemplateType tt : ttl)
+      for (Form tt : ttl)
       {
          sil.add(new SelectItem(tt.getName(), tt.getName()));
       }
@@ -287,34 +283,34 @@ public class CreateWebContentWizard extends BaseContentWizard
       return this.createMimeTypes;
    }
    
-   public String getTemplateTypeName()
+   public String getFormName()
    {
-      return this.templateTypeName;
+      return this.formName;
    }
    
-   public TemplateType getTemplateType()
+   public Form getForm()
    {
-      final TemplatingService ts = TemplatingService.getInstance();
-      return ts.getTemplateType(this.getTemplateTypeName());
+      final FormsService ts = FormsService.getInstance();
+      return ts.getForm(this.getFormName());
    }
    
    /**
-    * @param templateType Sets the currently selected template type
+    * @param form Sets the currently selected form
     */
-   public void setTemplateTypeName(final String templateTypeName)
+   public void setFormName(final String formName)
    {
-      this.templateTypeName = templateTypeName;
+      this.formName = formName;
    }
 
    /**
     * @return Returns the wrapper instance data for feeding the xml
     * content to the form processor.
     */
-   public TemplateInputMethod.InstanceData getInstanceData()
+   public FormProcessor.InstanceData getInstanceData()
    {
-      return new TemplateInputMethod.InstanceData()
+      return new FormProcessor.InstanceData()
       {
-         private final TemplatingService ts = TemplatingService.getInstance();
+         private final FormsService ts = FormsService.getInstance();
 
          public Document getContent()
          { 

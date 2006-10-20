@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms;
+package org.alfresco.web.forms;
 
 import freemarker.ext.dom.NodeModel;
 import freemarker.template.*;
@@ -28,8 +28,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.web.templating.*;
-import org.alfresco.web.templating.extension.ExtensionFunctions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.chiba.xml.util.DOMUtil;
@@ -43,13 +41,13 @@ import org.w3c.dom.Node;
  *
  * @author Ariel Backenroth
  */
-public class FreeMarkerOutputMethod
-   extends AbstractFormDataRenderer
+public class FreeMarkerRenderingEngine
+   extends AbstractRenderingEngine
 {
 
-   private static final Log LOGGER = LogFactory.getLog(FreeMarkerOutputMethod.class);
+   private static final Log LOGGER = LogFactory.getLog(FreeMarkerRenderingEngine.class);
 
-   public FreeMarkerOutputMethod(final NodeRef nodeRef,
+   public FreeMarkerRenderingEngine(final NodeRef nodeRef,
                                  final NodeService nodeService,
                                  final ContentService contentService)
    {
@@ -63,11 +61,10 @@ public class FreeMarkerOutputMethod
     * all parameters and all extension functions.
     */
    public void generate(final Document xmlContent,
-                        final TemplateType tt,
                         final Map<String, String> parameters,
                         final Writer out)
       throws IOException,
-      TemplateException
+      RenderingEngine.RenderingException
    {
       final ContentReader contentReader = 
          this.contentService.getReader(this.getNodeRef(), ContentModel.TYPE_CONTENT);
@@ -88,8 +85,8 @@ public class FreeMarkerOutputMethod
          {
             try 
             {
-               final ExtensionFunctions ef = FreeMarkerOutputMethod.getExtensionFunctions();
-               final String path = FreeMarkerOutputMethod.toAVMPath(parameters.get("parent_path"), 
+               final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
+               final String path = FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
                                                                     (String)args.get(0));
                return ef.getXMLDocument(path);
             }
@@ -106,8 +103,8 @@ public class FreeMarkerOutputMethod
          {
             try 
             {
-               final ExtensionFunctions ef = FreeMarkerOutputMethod.getExtensionFunctions();
-               final String path = FreeMarkerOutputMethod.toAVMPath(parameters.get("parent_path"), 
+               final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
+               final String path = FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
                                                                     args.size() == 1 ? "" : (String)args.get(1));
                final Map<String, Document> resultMap = ef.getXMLDocuments((String)args.get(0), path);
                LOGGER.debug("received " + resultMap.size() + " documents in " + path);
@@ -168,7 +165,18 @@ public class FreeMarkerOutputMethod
       };
 
       // process the form
-      t.process(rootModel, out);
-      out.flush();
+      try
+      {
+         t.process(rootModel, out);
+      }
+      catch (final TemplateException te)
+      {
+         LOGGER.debug(te);
+         throw new RenderingEngine.RenderingException(te);
+      }
+      finally
+      {
+         out.flush();
+      }
    }
 }

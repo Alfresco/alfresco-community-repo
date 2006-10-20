@@ -2723,7 +2723,7 @@
          Bean that returns information on a node
       </description>
       <managed-bean-name>XFormsBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.templating.xforms.XFormsBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.forms.xforms.XFormsBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
 </faces-config>

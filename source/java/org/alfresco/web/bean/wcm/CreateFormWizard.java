@@ -25,13 +25,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
@@ -43,8 +41,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
-import org.alfresco.web.templating.xforms.*;
-import org.alfresco.web.templating.TemplatingService;
+import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.xforms.SchemaFormBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.*;
@@ -61,24 +59,24 @@ public class CreateFormWizard extends BaseWizardBean
    /////////////////////////////////////////////////////////////////////////////
 
    /**
-    * Simple wrapper class to represent a template output method
+    * Simple wrapper class to represent a form data renderer
     */
-   public class TemplateOutputMethodData
+   public class RenderingEngineData
    {
       private final String fileName;
       private final File file;
       private final String fileExtension;
-      private final Class templateOutputMethodType;
+      private final Class renderingEngineType;
 
-      public TemplateOutputMethodData(final String fileName, 
+      public RenderingEngineData(final String fileName, 
                                       final File file,
                                       final String fileExtension,
-                                      final Class templateOutputMethodType)
+                                      final Class renderingEngineType)
       {
          this.fileName = fileName;
          this.file = file;
          this.fileExtension = fileExtension;
-         this.templateOutputMethodType = templateOutputMethodType;
+         this.renderingEngineType = renderingEngineType;
       }
       
       public String getFileExtension()
@@ -96,20 +94,20 @@ public class CreateFormWizard extends BaseWizardBean
          return this.file;
       }
 
-      public Class getTemplateOutputMethodType()
+      public Class getRenderingEngineType()
       {
-         return this.templateOutputMethodType;
+         return this.renderingEngineType;
       }
       
-      public String getTemplateOutputMethodTypeName()
+      public String getRenderingEngineTypeName()
       {
-         return CreateFormWizard.this.getTemplateOutputMethodTypeName(this.getTemplateOutputMethodType());
+         return CreateFormWizard.this.getRenderingEngineTypeName(this.getRenderingEngineType());
       }
    }
 
    /////////////////////////////////////////////////////////////////////////////
    
-   private static final String FILE_TEMPLATEOUTPUT = "template-output-method";
+   private static final String FILE_RENDERING_ENGINE = "template-output-method";
 
    private static final String FILE_SCHEMA = "schema";
 
@@ -118,10 +116,10 @@ public class CreateFormWizard extends BaseWizardBean
    
    private String schemaRootTagName;
    private String templateName;
-   private Class templateOutputMethodType = null;
+   private Class renderingEngineType = null;
    protected ContentService contentService;
-   private DataModel templateOutputMethodsDataModel;
-   private List<TemplateOutputMethodData> templateOutputMethods = null;
+   private DataModel renderingEnginesDataModel;
+   private List<RenderingEngineData> renderingEngines = null;
    private String fileExtension = null;
 
    // ------------------------------------------------------------------------------
@@ -131,7 +129,7 @@ public class CreateFormWizard extends BaseWizardBean
    protected String finishImpl(FacesContext context, String outcome)
       throws Exception
    {
-      final TemplatingService ts = TemplatingService.getInstance();
+      final FormsService ts = FormsService.getInstance();
       // get the node ref of the node that will contain the content
       final NodeRef contentFormsNodeRef = ts.getContentFormsNodeRef();
 
@@ -168,18 +166,18 @@ public class CreateFormWizard extends BaseWizardBean
       props.put(WCMModel.PROP_SCHEMA_ROOT_TAG_NAME, this.getSchemaRootTagName());
       this.nodeService.addAspect(schemaNodeRef, WCMModel.ASPECT_FORM, props);
          
-      for (TemplateOutputMethodData tomd : this.templateOutputMethods)
+      for (RenderingEngineData tomd : this.renderingEngines)
       {
          fileInfo = this.fileFolderService.create(folderInfo.getNodeRef(),
                                                   tomd.getFileName(),
                                                   ContentModel.TYPE_CONTENT);
-         final NodeRef templateOutputMethodNodeRef = fileInfo.getNodeRef();
+         final NodeRef renderingEngineNodeRef = fileInfo.getNodeRef();
       
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + tomd.getFileName());
       
          // get a writer for the content and put the file
-         writer = this.contentService.getWriter(templateOutputMethodNodeRef, 
+         writer = this.contentService.getWriter(renderingEngineNodeRef, 
                                                 ContentModel.PROP_CONTENT, 
                                                 true);
          // set the mimetype and encoding
@@ -188,17 +186,17 @@ public class CreateFormWizard extends BaseWizardBean
          writer.putContent(tomd.getFile());
 
          this.nodeService.createAssociation(schemaNodeRef,
-                                            templateOutputMethodNodeRef,
-                                            WCMModel.ASSOC_FORM_TRANSFORMERS);                         
+                                            renderingEngineNodeRef,
+                                            WCMModel.ASSOC_RENDERING_ENGINES);
       
          props = new HashMap<QName, Serializable>(3, 1.0f);
-         props.put(WCMModel.PROP_FORM_TRANSFORMER_TYPE, 
-                   tomd.getTemplateOutputMethodType().getName());
+         props.put(WCMModel.PROP_RENDERING_ENGINE_TYPE, 
+                   tomd.getRenderingEngineType().getName());
          props.put(WCMModel.PROP_FORM_SOURCE, schemaNodeRef);
-         props.put(WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FILE_EXTENSION, 
+         props.put(WCMModel.PROP_FILE_EXTENSION_FOR_RENDITION, 
                    tomd.getFileExtension());
-         this.nodeService.addAspect(templateOutputMethodNodeRef, 
-                                    WCMModel.ASPECT_FORM_TRANSFORMER, 
+         this.nodeService.addAspect(renderingEngineNodeRef, 
+                                    WCMModel.ASPECT_RENDERING_ENGINE, 
                                     props);
       }
       // return the default outcome
@@ -211,11 +209,11 @@ public class CreateFormWizard extends BaseWizardBean
       super.init(parameters);
       
       this.removeUploadedSchemaFile();
-      this.removeUploadedTemplateOutputMethodFile();
+      this.removeUploadedRenderingEngineFile();
       this.schemaRootTagName = null;
       this.templateName = null;
-      this.templateOutputMethodType = null;
-      this.templateOutputMethods = new ArrayList<TemplateOutputMethodData>();
+      this.renderingEngineType = null;
+      this.renderingEngines = new ArrayList<RenderingEngineData>();
       this.fileExtension = null;
    }
    
@@ -223,7 +221,7 @@ public class CreateFormWizard extends BaseWizardBean
    public String cancel()
    {
       this.removeUploadedSchemaFile();
-      this.removeUploadedTemplateOutputMethodFile();
+      this.removeUploadedRenderingEngineFile();
       return super.cancel();
    }
    
@@ -254,7 +252,7 @@ public class CreateFormWizard extends BaseWizardBean
     */
    public boolean getAddToListDisabled()
    {
-      return getTemplateOutputMethodFileName() == null;
+      return getRenderingEngineFileName() == null;
    }
 
    /**
@@ -276,9 +274,9 @@ public class CreateFormWizard extends BaseWizardBean
    /**
     * Add the selected template output method to the list
     */
-   public void addSelectedTemplateOutputMethod(ActionEvent event)
+   public void addSelectedRenderingEngine(ActionEvent event)
    {
-      for (TemplateOutputMethodData tomd : this.templateOutputMethods)
+      for (RenderingEngineData tomd : this.renderingEngines)
       {
          if (tomd.getFileExtension().equals(this.fileExtension))
          {
@@ -287,14 +285,14 @@ public class CreateFormWizard extends BaseWizardBean
          }
       }
 
-      final TemplateOutputMethodData data = 
-         this.new TemplateOutputMethodData(this.getTemplateOutputMethodFileName(),
-                                           this.getTemplateOutputMethodFile(),
+      final RenderingEngineData data = 
+         this.new RenderingEngineData(this.getRenderingEngineFileName(),
+                                           this.getRenderingEngineFile(),
                                            this.fileExtension,
-                                           this.templateOutputMethodType);
-      this.templateOutputMethods.add(data);
-      this.removeUploadedTemplateOutputMethodFile();
-      this.templateOutputMethodType = null;
+                                           this.renderingEngineType);
+      this.renderingEngines.add(data);
+      this.removeUploadedRenderingEngineFile();
+      this.renderingEngineType = null;
       this.fileExtension = null;
    }
    
@@ -302,13 +300,13 @@ public class CreateFormWizard extends BaseWizardBean
     * Action handler called when the Remove button is pressed to remove a 
     * template output method
     */
-   public void removeSelectedTemplateOutputMethod(ActionEvent event)
+   public void removeSelectedRenderingEngine(ActionEvent event)
    {
-      final TemplateOutputMethodData wrapper = (TemplateOutputMethodData)
-         this.templateOutputMethodsDataModel.getRowData();
+      final RenderingEngineData wrapper = (RenderingEngineData)
+         this.renderingEnginesDataModel.getRowData();
       if (wrapper != null)
       {
-         this.templateOutputMethods.remove(wrapper);
+         this.renderingEngines.remove(wrapper);
       }
    }
    
@@ -326,9 +324,9 @@ public class CreateFormWizard extends BaseWizardBean
    /**
     * Action handler called when the user wishes to remove an uploaded file
     */
-   public String removeUploadedTemplateOutputMethodFile()
+   public String removeUploadedRenderingEngineFile()
    {
-      clearUpload(FILE_TEMPLATEOUTPUT);
+      clearUpload(FILE_RENDERING_ENGINE);
       
       // refresh the current page
       return null;
@@ -343,68 +341,68 @@ public class CreateFormWizard extends BaseWizardBean
     * 
     * @return JSF DataModel representing the current configured output methods
     */
-   public DataModel getTemplateOutputMethodsDataModel()
+   public DataModel getRenderingEnginesDataModel()
    {
-      if (this.templateOutputMethodsDataModel == null)
+      if (this.renderingEnginesDataModel == null)
       {
-         this.templateOutputMethodsDataModel = new ListDataModel();
+         this.renderingEnginesDataModel = new ListDataModel();
       }
       
-      this.templateOutputMethodsDataModel.setWrappedData(this.templateOutputMethods);
+      this.renderingEnginesDataModel.setWrappedData(this.renderingEngines);
       
-      return this.templateOutputMethodsDataModel;
+      return this.renderingEnginesDataModel;
    }
    
    /**
     * @return Returns the mime type currenty selected
     */
-   public String getTemplateOutputMethodType()
+   public String getRenderingEngineType()
    {
-      if (this.templateOutputMethodType == null &&
-          this.getTemplateOutputMethodFileName() != null)
+      if (this.renderingEngineType == null &&
+          this.getRenderingEngineFileName() != null)
       {
-         this.templateOutputMethodType =
-            (this.getTemplateOutputMethodFileName().endsWith(".xsl")
-             ? XSLTOutputMethod.class
-             : (this.getTemplateOutputMethodFileName().endsWith(".ftl")
-                ? FreeMarkerOutputMethod.class
+         this.renderingEngineType =
+            (this.getRenderingEngineFileName().endsWith(".xsl")
+             ? XSLTRenderingEngine.class
+             : (this.getRenderingEngineFileName().endsWith(".ftl")
+                ? FreeMarkerRenderingEngine.class
                 : null));
       }
-      return (this.templateOutputMethodType == null
+      return (this.renderingEngineType == null
               ? null
-              : this.templateOutputMethodType.getName());
+              : this.renderingEngineType.getName());
    }
    
    /**
-    * @param templateOutputMethodType Sets the currently selected mime type
+    * @param renderingEngineType Sets the currently selected mime type
     */
-   public void setTemplateOutputMethodType(final String templateOutputMethodType)
+   public void setRenderingEngineType(final String renderingEngineType)
       throws ClassNotFoundException
    {
-      this.templateOutputMethodType = (templateOutputMethodType == null
+      this.renderingEngineType = (renderingEngineType == null
                                        ? null
-                                       : Class.forName(templateOutputMethodType));
+                                       : Class.forName(renderingEngineType));
    }
    
    /**
     * @return Returns a list of mime types to allow the user to select from
     */
-   public List<SelectItem> getTemplateOutputMethodTypeChoices()
+   public List<SelectItem> getRenderingEngineTypeChoices()
    {
       return (List<SelectItem>)Arrays.asList(new SelectItem[] 
       {
-         new SelectItem(FreeMarkerOutputMethod.class.getName(), 
-                        getTemplateOutputMethodTypeName(FreeMarkerOutputMethod.class)),
-         new SelectItem(XSLTOutputMethod.class.getName(), 
-                        getTemplateOutputMethodTypeName(XSLTOutputMethod.class))
+         new SelectItem(FreeMarkerRenderingEngine.class.getName(), 
+                        getRenderingEngineTypeName(FreeMarkerRenderingEngine.class)),
+         new SelectItem(XSLTRenderingEngine.class.getName(), 
+                        getRenderingEngineTypeName(XSLTRenderingEngine.class))
       });
    }
 
-   private String getTemplateOutputMethodTypeName(Class type)
+   private String getRenderingEngineTypeName(Class type)
    {
-      return (FreeMarkerOutputMethod.class.equals(type)
+      return (FreeMarkerRenderingEngine.class.equals(type)
               ? "FreeMarker"
-              : (XSLTOutputMethod.class.equals(type)
+              : (XSLTRenderingEngine.class.equals(type)
                  ? "XSLT"
                  : null));
    }
@@ -459,17 +457,17 @@ public class CreateFormWizard extends BaseWizardBean
    /**
     * @return Returns the schema file or <tt>null</tt>
     */
-   public String getTemplateOutputMethodFileName()
+   public String getRenderingEngineFileName()
    {
-      return this.getFileName(FILE_TEMPLATEOUTPUT);
+      return this.getFileName(FILE_RENDERING_ENGINE);
    }
    
    /**
     * @return Returns the presentationTemplate file or <tt>null</tt>
     */
-   public File getTemplateOutputMethodFile()
+   public File getRenderingEngineFile()
    {
-      return this.getFile(FILE_TEMPLATEOUTPUT);
+      return this.getFile(FILE_RENDERING_ENGINE);
    }
 
    /**
@@ -499,7 +497,7 @@ public class CreateFormWizard extends BaseWizardBean
       {
          try
          {
-            final TemplatingService ts = TemplatingService.getInstance();
+            final FormsService ts = FormsService.getInstance();
             final Document d = ts.parseXML(this.getSchemaFile());
             final XSModel xsm = SchemaFormBuilder.loadSchema(d);
             final XSNamedMap elementsMap = xsm.getComponents(XSConstants.ELEMENT_DECLARATION);
@@ -543,14 +541,14 @@ public class CreateFormWizard extends BaseWizardBean
    public String getSummary()
    {
       final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      final String[] labels = new String[1 + this.templateOutputMethods.size()];
-      final String[] values = new String[1 + this.templateOutputMethods.size()];
+      final String[] labels = new String[1 + this.renderingEngines.size()];
+      final String[] values = new String[1 + this.renderingEngines.size()];
       labels[0] = "Schema File";
       values[0] = this.getSchemaFileName();
-      for (int i = 0; i < this.templateOutputMethods.size(); i++)
+      for (int i = 0; i < this.renderingEngines.size(); i++)
       {
-         final TemplateOutputMethodData tomd = this.templateOutputMethods.get(i);
-         labels[1 + i] = "Template output method for " + tomd.getFileExtension();
+         final RenderingEngineData tomd = this.renderingEngines.get(i);
+         labels[1 + i] = "Form Data Renderer for " + tomd.getFileExtension();
          values[1 + i] = tomd.getFileName();
       }
 

@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating;
+package org.alfresco.web.forms;
 
 import javax.faces.context.FacesContext;
 import org.alfresco.model.WCMModel;
@@ -23,7 +23,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.bean.wcm.AVMConstants;
-import org.alfresco.web.templating.extension.ExtensionFunctions;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.jsf.FacesContextUtils;
 
@@ -32,8 +31,8 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 // XXXarielb this class is probably temporary - but useful to
 // reduce redundant code until i find a better place to put this stuff
-public abstract class AbstractFormDataRenderer
-   implements FormDataRenderer
+public abstract class AbstractRenderingEngine
+   implements RenderingEngine
 {
    protected static final String ALFRESCO_NS = "http://www.alfresco.org/alfresco";
    protected static final String ALFRESCO_NS_PREFIX = "alfresco";
@@ -42,9 +41,9 @@ public abstract class AbstractFormDataRenderer
    protected final NodeService nodeService;
    protected final ContentService contentService;
 
-   protected AbstractFormDataRenderer(final NodeRef nodeRef,
-                                      final NodeService nodeService,
-                                      final ContentService contentService)
+   protected AbstractRenderingEngine(final NodeRef nodeRef,
+                                     final NodeService nodeService,
+                                     final ContentService contentService)
    {
       this.nodeRef = nodeRef;
       this.nodeService = nodeService;
@@ -60,7 +59,7 @@ public abstract class AbstractFormDataRenderer
    {
       return (String)
          this.nodeService.getProperty(this.nodeRef, 
-                                      WCMModel.PROP_FORM_TRANSFORMER_DERIVED_FILE_EXTENSION);
+                                      WCMModel.PROP_FILE_EXTENSION_FOR_RENDITION);
    }
 
    protected static AVMRemote getAVMRemote()
@@ -72,9 +71,9 @@ public abstract class AbstractFormDataRenderer
       return (AVMRemote)wac.getBean("avmRemote");
    }
 
-   protected static ExtensionFunctions getExtensionFunctions()
+   protected static FormDataFunctions getFormDataFunctions()
    {
-      return new ExtensionFunctions(AbstractFormDataRenderer.getAVMRemote());
+      return new FormDataFunctions(AbstractRenderingEngine.getAVMRemote());
    }
 
    protected static String toAVMPath(String parentAVMPath, String path)

@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms;
+package org.alfresco.web.forms.xforms;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
-import org.alfresco.web.templating.*;
+import org.alfresco.web.forms.FormsService;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.logging.Log;
@@ -2763,7 +2763,7 @@ public class SchemaFormBuilder
 
    private Document createFormTemplate(final String formId)
    {
-      final TemplatingService ts = TemplatingService.getInstance();
+      final FormsService ts = FormsService.getInstance();
       final Document xForm = ts.newDocument();
 
       final Element envelopeElement = this.wrapper.createEnvelope(xForm);
@@ -3479,7 +3479,7 @@ public class SchemaFormBuilder
 
          final DOMImplementationLS lsImpl = (DOMImplementationLS)
             registry.getDOMImplementation("XML 1.0 LS 3.0");
-         final TemplatingService ts = TemplatingService.getInstance();
+         final FormsService ts = FormsService.getInstance();
          final LSInput in = lsImpl.createLSInput();
          in.setStringData(ts.writeXMLToString(schemaDocument));
 

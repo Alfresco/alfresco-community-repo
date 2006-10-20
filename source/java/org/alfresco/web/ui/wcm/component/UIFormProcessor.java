@@ -22,7 +22,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
-import org.alfresco.web.templating.*;
+import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,9 +35,9 @@ public class UIFormProcessor extends SelfRenderingComponent
    private static final Log LOGGER = LogFactory.getLog(UIFormProcessor.class);
    
    
-   private TemplateInputMethod.InstanceData formInstanceData = null;
+   private FormProcessor.InstanceData formInstanceData = null;
    
-   private TemplateType form = null;
+   private Form form = null;
    
    
    
@@ -57,8 +57,8 @@ public class UIFormProcessor extends SelfRenderingComponent
       final Object values[] = (Object[])state;
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
-      this.formInstanceData = (TemplateInputMethod.InstanceData)values[1];
-      this.form = (TemplateType)values[2];
+      this.formInstanceData = (FormProcessor.InstanceData)values[1];
+      this.form = (Form)values[2];
    }
    
    public Object saveState(FacesContext context)
@@ -85,9 +85,9 @@ public class UIFormProcessor extends SelfRenderingComponent
       }
       
       final ResponseWriter out = context.getResponseWriter();
-      final TemplateType form = this.getForm();
-      final TemplateInputMethod.InstanceData formInstanceData = this.getFormInstanceData();
-      final TemplateInputMethod tim = form.getInputMethods().get(0);
+      final Form form = this.getForm();
+      final FormProcessor.InstanceData formInstanceData = this.getFormInstanceData();
+      final FormProcessor tim = form.getFormProcessors().get(0);
       tim.generate(formInstanceData, form, out);
    }
    
@@ -99,12 +99,12 @@ public class UIFormProcessor extends SelfRenderingComponent
     *
     * @return The instance data to render
     */
-   public TemplateInputMethod.InstanceData getFormInstanceData()
+   public FormProcessor.InstanceData getFormInstanceData()
    {
       final ValueBinding vb = getValueBinding("formInstanceData");
       if (vb != null)
       {
-         this.formInstanceData = (TemplateInputMethod.InstanceData)vb.getValue(getFacesContext());
+         this.formInstanceData = (FormProcessor.InstanceData)vb.getValue(getFacesContext());
       }
       
       return this.formInstanceData;
@@ -115,7 +115,7 @@ public class UIFormProcessor extends SelfRenderingComponent
     *
     * @param formInstanceData The instance data to render
     */
-   public void setFormInstanceData(final TemplateInputMethod.InstanceData formInstanceData)
+   public void setFormInstanceData(final FormProcessor.InstanceData formInstanceData)
    {
       this.formInstanceData = formInstanceData;
    }
@@ -125,12 +125,12 @@ public class UIFormProcessor extends SelfRenderingComponent
     *
     * @return The form
     */
-   public TemplateType getForm()
+   public Form getForm()
    {
       final ValueBinding vb = getValueBinding("form");
       if (vb != null)
       {
-         this.form = (TemplateType)vb.getValue(getFacesContext());
+         this.form = (Form)vb.getValue(getFacesContext());
       }
       
       return this.form;
@@ -141,7 +141,7 @@ public class UIFormProcessor extends SelfRenderingComponent
     *
     * @param form The form
     */
-   public void setForm(final TemplateType form)
+   public void setForm(final Form form)
    {
       this.form = form;
    }

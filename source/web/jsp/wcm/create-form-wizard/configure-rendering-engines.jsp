@@ -21,6 +21,7 @@
 
 <jsp:directive.page import="java.io.*"/>
 <jsp:directive.page import="org.alfresco.web.bean.FileUploadBean"/>
+<jsp:directive.page import="org.alfresco.web.bean.wcm.CreateFormWizard"/>
 <jsp:directive.page buffer="32kb" contentType="text/html;charset=UTF-8"/>
 <jsp:directive.page isELIgnored="false"/>
 
@@ -49,10 +50,10 @@
     <h:graphicImage id="required_image_pt"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="output_text_pt"
-                  value="#{msg.template_output_method_file}:"/>
+                  value="#{msg.rendering_engine_file}:"/>
 <%
 final FileUploadBean upload = (FileUploadBean)
-   session.getAttribute(FileUploadBean.getKey("template-output-method"));
+   session.getAttribute(FileUploadBean.getKey(CreateFormWizard.FILE_RENDERING_ENGINE));
 if (upload == null || upload.getFile() == null)
 {
 %>

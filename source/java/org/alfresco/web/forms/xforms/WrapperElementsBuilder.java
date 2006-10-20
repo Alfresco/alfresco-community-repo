@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms;
+package org.alfresco.web.forms.xforms;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,7 +27,9 @@ import org.w3c.dom.Element;
  *
  * @author Sophie Ramel
  */
-public interface WrapperElementsBuilder {
+public interface WrapperElementsBuilder 
+{
+
     /**
      * create the wrapper element of the form (exemple_ "body" for HTML)
      *

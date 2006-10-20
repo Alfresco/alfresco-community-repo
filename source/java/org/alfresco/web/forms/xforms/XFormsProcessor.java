@@ -14,14 +14,14 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.templating.xforms;
+package org.alfresco.web.forms.xforms;
 
 import java.io.*;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletContext;
 
-import org.alfresco.web.templating.*;
+import org.alfresco.web.forms.*;
 import org.chiba.xml.util.DOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,12 +32,12 @@ import org.w3c.dom.Node;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.chiba.xml.xforms.exception.XFormsException;
 
-public class XFormsInputMethod
-    implements TemplateInputMethod
+public class XFormsProcessor
+    implements FormProcessor
 {
-    private static final Log LOGGER = LogFactory.getLog(XFormsInputMethod.class); 
+    private static final Log LOGGER = LogFactory.getLog(XFormsProcessor.class); 
 
-    public XFormsInputMethod()
+    public XFormsProcessor()
     {
     }
 
@@ -46,16 +46,16 @@ public class XFormsInputMethod
      * call back into the XFormsBean and get the xform and build the ui.
      */
     public void generate(final InstanceData instanceData, 
-			 final TemplateType tt,
+			 final Form tt,
 			 final Writer out)
     {
-	final TemplatingService ts = TemplatingService.getInstance();
+	final FormsService ts = FormsService.getInstance();
 	final FacesContext fc = FacesContext.getCurrentInstance();
 	//make the XFormsBean available for this session
 	final XFormsBean xforms = (XFormsBean)
 	    FacesHelper.getManagedBean(fc, "XFormsBean");
 	xforms.setInstanceData(instanceData);
-	xforms.setTemplateType(tt);
+	xforms.setForm(tt);
 	try
         {
 	    xforms.init();

@@ -104,6 +104,6 @@ if (upload == null || upload.getFile() == null)
    </h:selectOneMenu>
    <h:graphicImage id="graphic_image_name" value="/images/icons/required_field.gif" alt="Required Field" />
    <h:outputText id="output_text_name" value="#{msg.name}:"/>
-   <h:inputText id="file-name" value="#{WizardManager.bean.templateName}" 
+   <h:inputText id="file-name" value="#{WizardManager.bean.formName}" 
                 maxlength="1024" size="35"/>
 </h:panelGrid>

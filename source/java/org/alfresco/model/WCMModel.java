@@ -40,19 +40,19 @@ public interface WCMModel
     // The XForms data capture form aspect.
     public static final QName ASPECT_FORM = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "form");
     public static final QName PROP_SCHEMA_ROOT_TAG_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "schemaroottagname");
-    public static final QName ASSOC_FORM_TRANSFORMERS = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formtransformers");
+    public static final QName ASSOC_RENDERING_ENGINES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingengines");
     
     // An XML to something else tranformer aspect.
-    public static final QName ASPECT_FORM_TRANSFORMER = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formtransformer");
-    public static final QName PROP_FORM_TRANSFORMER_TYPE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formtransformertype");
-    public static final QName PROP_FORM_TRANSFORMER_DERIVED_FILE_EXTENSION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formtransformerderivedfileextension");
+    public static final QName ASPECT_RENDERING_ENGINE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingengine");
+    public static final QName PROP_RENDERING_ENGINE_TYPE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingenginetype");
+    public static final QName PROP_FILE_EXTENSION_FOR_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "fileextensionfordatarendition");
     public static final QName PROP_FORM_SOURCE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formsource");
 
-    public static final QName ASPECT_FORM_DERIVED = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formderived");
-    public static final QName PROP_FORM_DERIVED_FROM = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formderivedfrom");
-    public static final QName PROP_FORM_DERIVED_FROM_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formderivedfromname");
+    public static final QName ASPECT_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "forminstancedata");
+    public static final QName PROP_PARENT_FORM = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentform");
+    public static final QName PROP_PARENT_FORM_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentformname");
 
-    public static final QName ASPECT_FORM_TRANSFORMER_DERIVED = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formtransformerderived");
-    public static final QName PROP_FORM_TRANSFORMER_DERIVED_FROM = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formtransformerderivedfrom");
-    public static final QName PROP_PRIMARY_FORM_DERIVED = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "primaryformderived");
+    public static final QName ASPECT_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "rendition");
+    public static final QName PROP_PARENT_RENDERING_ENGINE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentrenderingengine");
+    public static final QName PROP_PRIMARY_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "primaryforminstancedata");
 }

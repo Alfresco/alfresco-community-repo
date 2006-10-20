@@ -20,15 +20,15 @@ import java.util.*;
 import java.text.*;
 import javax.servlet.jsp.PageContext;
 import org.w3c.dom.*;
-import org.alfresco.web.templating.extension.*;
+import org.alfresco.web.forms.*;
 
 public class PressReleaseBean
 {
     public static List<PressReleaseBean> getPressReleases(final PageContext pageContext)
 	throws Exception
     {
-       final ExtensionFunctions ef = 
-          new ServletContextExtensionFunctionsAdapter(pageContext.getServletContext());
+       final FormDataFunctions ef = 
+          new ServletContextFormDataFunctionsAdapter(pageContext.getServletContext());
 
        final Map<String, Document> entries = ef.getXMLDocuments("press-release", "/media/releases/content");
        final List<PressReleaseBean> result = new ArrayList<PressReleaseBean>(entries.size());

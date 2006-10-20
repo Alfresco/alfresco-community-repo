@@ -19,7 +19,7 @@ package org.alfresco.web.pr;
 import java.util.*;
 import javax.servlet.jsp.PageContext;
 import org.w3c.dom.*;
-import org.alfresco.web.templating.extension.*;
+import org.alfresco.web.forms.*;
 
 public class CompanyFooterBean
 {
@@ -27,8 +27,8 @@ public class CompanyFooterBean
     public static List<CompanyFooterBean> getCompanyFooters(final PageContext pageContext)
 	throws Exception
     {
-       final ExtensionFunctions ef = 
-          new ServletContextExtensionFunctionsAdapter(pageContext.getServletContext());
+       final FormDataFunctions ef = 
+          new ServletContextFormDataFunctionsAdapter(pageContext.getServletContext());
 
        final Map<String, Document> entries = ef.getXMLDocuments("company-footer",
                                                                 "/media/releases/content/company_footers");

@@ -1,5 +1,5 @@
 -- ------------------------------------------------------
--- Alfresco Schema conversion V1.3 to V1.4 Part 2
+-- Alfresco Schema conversion V1.3 to V1.4 Part 2 (MySQL)
 --
 -- Adds the alf_transaction and alf_server tables to keep track of the sources
 -- of transactions.
@@ -25,7 +25,6 @@ CREATE TABLE alf_transaction (
   change_txn_id varchar(56) NOT NULL,
   PRIMARY KEY  (id),
   KEY FKB8761A3A9AE340B7 (server_id),
-  KEY IDX_CHANGE_TXN (change_txn_id),
   CONSTRAINT FKB8761A3A9AE340B7 FOREIGN KEY (server_id) REFERENCES alf_server (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 insert into alf_transaction
@@ -44,7 +43,8 @@ UPDATE alf_node_status ns SET ns.transaction_id =
   );
 ALTER TABLE alf_node_status
   DROP COLUMN change_txn_id,
-  ADD CONSTRAINT FK71C2002B9E57C13D FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id);
+  ADD CONSTRAINT FK71C2002B9E57C13D FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id),
+  ADD INDEX FK71C2002B9E57C13D (transaction_id);
 
 --
 -- Record script finish

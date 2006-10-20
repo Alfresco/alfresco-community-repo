@@ -1,5 +1,5 @@
 --
--- Add post-creation indexes. (Oracle Schema 1.4)
+-- Add post-creation indexes. (SQL Server Schema 1.4)
 --
 CREATE INDEX FKFFF41F9960601995 ON alf_access_control_entry (permission_id);
 CREATE INDEX FKFFF41F99B25A50BF ON alf_access_control_entry (authority_id);

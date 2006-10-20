@@ -8,6 +8,11 @@
 #
 
 #
+# HSQL dialect
+#
+#hibernate.dialect=org.hibernate.dialect.HSQLDialect
+
+#
 # MySQL dialect (default)
 #
 #hibernate.dialect=org.hibernate.dialect.MySQLInnoDBDialect

@@ -834,8 +834,16 @@ public class IndexInfo
             // luceneIndexer.flushPending();
             
             IndexReader deltaReader =  buildAndRegisterDeltaReader(id);
-            IndexReader reader = new MultiReader(new IndexReader[] {
+            IndexReader reader = null;
+            if (deletions == null || deletions.size() == 0)
+            {
+                reader = new MultiReader(new IndexReader[] {mainIndexReader, deltaReader });
+            }
+            else
+            {
+                reader = new MultiReader(new IndexReader[] {
                     new FilterIndexReaderByNodeRefs2(mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
+            }
             reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader("MainReader"+id, reader);
             ReferenceCounting refCounting = (ReferenceCounting)reader;
             refCounting.incrementReferenceCount();

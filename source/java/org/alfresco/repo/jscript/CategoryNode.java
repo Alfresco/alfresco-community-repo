@@ -158,7 +158,7 @@ public class CategoryNode extends Node
     }
 
     @Override
-    public boolean isCategory()
+    public boolean getIsCategory()
     {
         return true;
     }

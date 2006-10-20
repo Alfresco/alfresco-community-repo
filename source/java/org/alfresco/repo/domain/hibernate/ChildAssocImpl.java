@@ -25,7 +25,6 @@ import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.EqualsHelper;
 
 /**
  * @author Derek Hulley
@@ -124,9 +123,12 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     {
         StringBuffer sb = new StringBuffer(32);
         sb.append("ChildAssoc")
-          .append("[ parent=").append(parent)
-          .append(", child=").append(child)
+          .append("[ id=").append(id)
+          .append(", parent=").append(parent.getId())
+          .append(", child=").append(child.getId())
+          .append(", child name=").append(childNodeName)
           .append(", child name crc=").append(childNodeNameCrc)
+          .append(", assoc type=").append(getTypeQName())
           .append(", assoc name=").append(getQname())
           .append(", isPrimary=").append(isPrimary)
           .append("]");

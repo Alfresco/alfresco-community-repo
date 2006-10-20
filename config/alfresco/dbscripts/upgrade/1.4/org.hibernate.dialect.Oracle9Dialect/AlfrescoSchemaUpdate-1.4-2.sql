@@ -27,7 +27,6 @@ create table alf_transaction
   change_txn_id varchar2(56 char) not null,
   primary key (id)
 );
-create index CHANGE_TXN_ID on alf_transaction (change_txn_id);
 alter table alf_transaction add constraint FKB8761A3A9AE340B7 foreign key (server_id) references alf_server;
 create index FKB8761A3A9AE340B7 on alf_transaction (server_id);
 

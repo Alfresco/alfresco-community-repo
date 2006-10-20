@@ -29,7 +29,7 @@
             unique="false"
             not-null="false"
             cascade="none" />
-      <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" index="CHANGE_TXN_ID"/>
+      <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" />
    </class>
 
    <class

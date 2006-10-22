@@ -23,6 +23,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.jsf.FacesContextUtils;
 
@@ -34,6 +36,8 @@ import org.springframework.web.jsf.FacesContextUtils;
 public abstract class AbstractRenderingEngine
    implements RenderingEngine
 {
+   private static final Log LOGGER = LogFactory.getLog(AbstractRenderingEngine.class);
+
    protected static final String ALFRESCO_NS = "http://www.alfresco.org/alfresco";
    protected static final String ALFRESCO_NS_PREFIX = "alfresco";
 
@@ -76,16 +80,25 @@ public abstract class AbstractRenderingEngine
       return new FormDataFunctions(AbstractRenderingEngine.getAVMRemote());
    }
 
-   protected static String toAVMPath(String parentAVMPath, String path)
+   protected static String toAVMPath(final String parentAVMPath, final String path)
    {
+      String parent = parentAVMPath;
       if (path != null && path.length() != 0 && path.charAt(0) == '/')
       {
-         parentAVMPath = parentAVMPath.substring(0, 
-                                                 parentAVMPath.indexOf(':') + 
-                                                 ('/' + AVMConstants.DIR_APPBASE + 
-                                                  '/' + AVMConstants.DIR_WEBAPPS).length() + 1);
+         parent = parentAVMPath.substring(0, 
+                                          parentAVMPath.indexOf(':') + 
+                                          ('/' + AVMConstants.DIR_APPBASE + 
+                                           '/' + AVMConstants.DIR_WEBAPPS).length() + 1);
       }
-      return parentAVMPath + (parentAVMPath.endsWith("/")  ?  path :  '/' + path);
+      if (parent.endsWith("/"))
+      {
+         parent = parent.substring(0, parent.length() - 1);
+      }
+      final String result = parent + '/' + path;
+      LOGGER.debug("built full avmPath " + result + 
+                   " for parent " + parentAVMPath + 
+                   " and request path " + path);
+      return result;
    }
 
 }

@@ -22,8 +22,22 @@ import javax.servlet.jsp.PageContext;
 import org.w3c.dom.*;
 import org.alfresco.web.forms.*;
 
+/**
+ * Bean for getting data for press releases.
+ * It's used by /media/releases/index.jsp to aggregate all forms created by press-release.xsd in 
+ * /media/releases/content and generate an index page for them.
+ */
 public class PressReleaseBean
 {
+   /**
+    * Loads all xml assets created by press-release.xsd in /media/releases/content and populates
+    * PressReleaseBeans with their contents.
+    *
+    * @param pageContext the page context from the jsp, needed for accessing the 
+    * servlet context for the ServletContextFormDataFunctionsAdapter class.
+    *
+    * @return a list of populated PressReleaseBeans.
+    */
     public static List<PressReleaseBean> getPressReleases(final PageContext pageContext)
 	throws Exception
     {
@@ -41,7 +55,7 @@ public class PressReleaseBean
           final Element dateEl = (Element)d.getElementsByTagName("alfresco:launch_date").item(0);
           final Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dateEl.getFirstChild().getNodeValue());
           String href = "/media/releases/content/" + fileName;
-          href = href.replaceAll(".xml$", ".shtml");
+          href = href.replaceAll(".xml$", ".html");
           result.add(new PressReleaseBean(t.getFirstChild().getNodeValue(),
                                           a.getFirstChild().getNodeValue(),
                                           date,
@@ -66,23 +80,37 @@ public class PressReleaseBean
         this.href = href;
     }
 
+   /** 
+    * The title of the press release as defined in the xml asset. 
+    */
     public String getTitle() 
     { 
 	return this.title; 
     }
 
+   /** 
+    * The abstract of the press release as defined in the xml asset. 
+    */
     public String getAbstract()
     {
 	return this.theAbstract;
     }
 
+   /** 
+    * The launch date of the press release as defined in the xml asset. 
+    */
     public Date getLaunchDate()
     {
 	return this.launchDate;
     }
 
-    public String getHref()
-    {
-	return this.href;
-    }
+  /**
+    * Returns the url within the webapp to the xml file describing this press release
+    *
+    * @return the url to the xml file which will be something like /media/releases/content/[filename].xml
+    */
+   public String getHref()
+   {
+      return this.href;
+   }
 }

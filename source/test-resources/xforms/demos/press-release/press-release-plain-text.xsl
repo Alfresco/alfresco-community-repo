@@ -6,7 +6,6 @@
   <xsl:output method="text"  encoding="UTF-8" indent="no" omit-xml-declaration="no" media-type="text/plain"/>
 
   <xsl:preserve-space elements="*"/>
-  <xsl:param name="avm_store_url" select="'not_specified'"/>
 
   <xsl:template match="/">
 --- <xsl:value-of select="/alfresco:press-release/alfresco:title"/> ---

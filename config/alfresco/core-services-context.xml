@@ -42,6 +42,9 @@
         <property name="maxActive" >
             <value>${db.pool.max}</value>
         </property>
+        <property name="defaultAutoCommit" >
+            <value>false</value>
+        </property>
     </bean>
 
     <!-- transaction service -->

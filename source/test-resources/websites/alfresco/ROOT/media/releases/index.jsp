@@ -1,4 +1,4 @@
-<%--
+<!--
 Copyright (C) 2005 Alfresco, Inc.
 
 Licensed under the Mozilla Public License version 1.1 
@@ -13,17 +13,15 @@ software distributed under the License is distributed on an
 either express or implied. See the License for the specific
 language governing permissions and limitations under the
 License.
---%>
 
-<%--
 Produces the index page for the press release page.
---%>
+-->
 <jsp:root version="1.2"
           xmlns:jsp="http://java.sun.com/JSP/Page"
  	  xmlns:c="http://java.sun.com/jsp/jstl/core"
 	  xmlns:pr="http://www.alfresco.org/pr"
           xmlns:fmt="http://java.sun.com/jsp/jstl/fmt">
-  <%-- xmlns:pr is mapped to /WEB-INF/pr.tld by web.xml --%>
+  <!-- xmlns:pr is mapped to /WEB-INF/pr.tld by web.xml -->
 
   <jsp:output doctype-root-element="html"
 	      doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -34,7 +32,7 @@ Produces the index page for the press release page.
   
   <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
-      <%-- include common navigation components using the jsp compile time include directive --%>
+      <!-- include common navigation components using the jsp compile time include directive -->
       <jsp:directive.include file="/assets/include_in_head.html"/>
       <title>Alfresco Press Releases - Open Source Content Management</title>
       <meta name="description" lang="en" content="News and press releases about Alfresco's enterprise content management system and document management software." />
@@ -64,10 +62,9 @@ Produces the index page for the press release page.
 	<div id="main_content">
 	  
 	  <!-- BEGIN MAIN CONTENT -->
-	  
 	  <h1>Alfresco Press Releases</h1>
 	  
-	  <%-- load all PressReleaseBeans by using the function defined in /WEB-INF/pr.tld --%>
+	  <!-- load all PressReleaseBeans by using the function defined in /WEB-INF/pr.tld -->
 	  <c:forEach items="${pr:getPressReleases(pageContext)}" var="pressRelease">
 	    <h2 class="headline">
 	      <jsp:element name="a">

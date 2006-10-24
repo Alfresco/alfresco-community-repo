@@ -39,7 +39,7 @@ public interface WCMModel
     
     // The XForms data capture form aspect.
     public static final QName ASPECT_FORM = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "form");
-    public static final QName PROP_SCHEMA_ROOT_TAG_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "schemaroottagname");
+    public static final QName PROP_SCHEMA_ROOT_ELEMENT_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "schemarootelementname");
     public static final QName ASSOC_RENDERING_ENGINES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingengines");
     
     // An XML to something else tranformer aspect.

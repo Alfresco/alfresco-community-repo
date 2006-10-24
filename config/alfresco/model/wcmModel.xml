@@ -68,8 +68,8 @@
       <aspect name="wcm:form">
          <title>XForms Form</title>
          <properties>
-            <property name="wcm:schemaroottagname">
-               <title>Schema Root Tag Name</title>
+            <property name="wcm:schemarootelementname">
+               <title>Schema Root Element Name</title>
                <type>d:text</type>
                <mandatory>true</mandatory>
             </property>

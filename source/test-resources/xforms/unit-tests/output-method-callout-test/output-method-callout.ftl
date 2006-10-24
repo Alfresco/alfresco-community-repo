@@ -37,6 +37,12 @@
     <div class="name"><#noparse>${alfresco.request_context_path}</#noparse></div>
     <span>${alfresco.request_context_path}</span>
 
+    <div class="name"><#noparse>${alfresco._getAVMPath('foo')}</#noparse></div>
+    <span>${alfresco._getAVMPath('foo')}</span>
+
+    <div class="name"><#noparse>${alfresco._getAVMPath('/foo')}</#noparse></div>
+    <span>${alfresco._getAVMPath('/foo')}</span>
+
     <div class="name">My value accessed using <#noparse>${simple.string}</#noparse>:</div>	
     <span>${simple.string}</span>
 

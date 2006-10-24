@@ -77,7 +77,7 @@ else
     <h:graphicImage id="required-image-rendering-engine-type"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="rendering-engine-type-output-text"
-                  value="#{msg.type}:"/>
+                  value="#{msg.rendering_engine_type}:"/>
     <h:selectOneRadio id="rendering-engine-type" 
 		      value="#{WizardManager.bean.renderingEngineType}">
      <f:selectItems id="rendering-engine-type-choices"

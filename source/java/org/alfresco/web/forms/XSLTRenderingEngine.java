@@ -194,6 +194,17 @@ public class XSLTRenderingEngine
       };
    }
 
+   // for debugging
+   public static String _getAVMPath(final ExpressionContext ec, 
+                                    final String path)
+      throws TransformerException,
+      IOException,
+      SAXException
+   {
+      final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
+      return XSLTRenderingEngine.toAVMPath(ec, path);
+   }
+
    private void addScript(final Document d)
    {
       final Element docEl = d.getDocumentElement();

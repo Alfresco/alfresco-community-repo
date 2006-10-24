@@ -221,7 +221,7 @@ public final class FormsService
          this.nodeService.getProperty(schemaNodeRef, ContentModel.PROP_TITLE);
       LOGGER.debug("title is " + title);
       final String schemaRootTagName = (String)
-         this.nodeService.getProperty(schemaNodeRef, WCMModel.PROP_SCHEMA_ROOT_TAG_NAME);
+         this.nodeService.getProperty(schemaNodeRef, WCMModel.PROP_SCHEMA_ROOT_ELEMENT_NAME);
       LOGGER.debug("root tag name is " + schemaRootTagName);
       final Form tt = new FormImpl(title, schemaNodeRef, schemaRootTagName);
       for (AssociationRef assoc : this.nodeService.getTargetAssocs(schemaNodeRef, 

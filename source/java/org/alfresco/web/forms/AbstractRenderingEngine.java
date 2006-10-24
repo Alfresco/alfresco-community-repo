@@ -16,6 +16,8 @@
  */
 package org.alfresco.web.forms;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMRemote;
@@ -91,17 +93,23 @@ public abstract class AbstractRenderingEngine
          return parentAVMPath;
       }
 
+
       if (path.charAt(0) == '/')
       {
-         //XXXarielb this doesn't work with context paths for the website
-         parent = parentAVMPath.substring(0, 
-                                          parentAVMPath.indexOf(':') + 
-                                          ('/' + AVMConstants.DIR_APPBASE + 
-                                           '/' + AVMConstants.DIR_WEBAPPS).length());
+         final Pattern p = Pattern.compile("([^:]+:/" + AVMConstants.DIR_APPBASE +
+                                           "/[^/]+/[^/]+).*");
+         final Matcher m = p.matcher(parentAVMPath);
+         if (m.matches())
+         {
+            parent = m.group(1);
+         }
+      } 
+      else if (parentAVMPath.charAt(parentAVMPath.length() - 1) != '/')
+      {
+         parent = parent + '/';
       }
 
-      final String result = 
-         parent + (parent.endsWith("/") || path.startsWith("/") ? path : '/' + path);
+      final String result = parent + path;
       LOGGER.debug("built full avmPath " + result + 
                    " for parent " + parentAVMPath + 
                    " and request path " + path);

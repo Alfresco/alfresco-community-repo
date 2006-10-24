@@ -79,7 +79,9 @@ public class FreeMarkerRenderingEngine
       final TemplateHashModel instanceDataModel = NodeModel.wrap(xmlContent);
 
       // build models for each of the extension functions
-      final TemplateModel parseXMLDocumentModel = new TemplateMethodModel()
+      final HashMap<String, TemplateMethodModel> methodModels =
+            new HashMap<String, TemplateMethodModel>(3, 1.0f);
+      methodModels.put("parseXMLDocument", new TemplateMethodModel()
       {
          public Object exec(final List args)
             throws TemplateModelException
@@ -97,8 +99,9 @@ public class FreeMarkerRenderingEngine
                throw new TemplateModelException(e);
             }
          }
-      };
-      final TemplateModel parseXMLDocumentsModel = new TemplateMethodModel()
+      });
+
+      methodModels.put("parseXMLDocuments", new TemplateMethodModel()
       {
          public Object exec(final List args)
             throws TemplateModelException
@@ -143,24 +146,37 @@ public class FreeMarkerRenderingEngine
                throw new TemplateModelException(e);
             }
          }
-      };
+      });
+
+      // for debugging
+      methodModels.put("_getAVMPath", new TemplateMethodModel()
+      {
+         public Object exec(final List args)
+            throws TemplateModelException
+         {
+            try 
+            {
+               return FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
+                                                          (String)args.get(0));
+            }
+            catch (Exception e)
+            {
+               throw new TemplateModelException(e);
+            }
+         }
+      });
 
       // build a wrapper for the parameters.  this also wraps the extension functions
       // so they appear in the namespace alfresco.
       final TemplateHashModel parameterModel = new SimpleHash(parameters)
       {
+
          public TemplateModel get(final String key)
             throws TemplateModelException
          {
-            if ("parseXMLDocument".equals(key))
-            {
-                return parseXMLDocumentModel;
-            }
-            if ("parseXMLDocuments".equals(key))
-            {
-               return parseXMLDocumentsModel;
-            }
-            return super.get(key);
+            return (methodModels.containsKey(key)
+                    ? methodModels.get(key)
+                    : super.get(key));
          }
       };
       
@@ -172,7 +188,9 @@ public class FreeMarkerRenderingEngine
          public TemplateModel get(final String key)
             throws TemplateModelException
          {
-            return ALFRESCO_NS_PREFIX.equals(key) ? parameterModel : instanceDataModel.get(key);
+            return (ALFRESCO_NS_PREFIX.equals(key) 
+                    ? parameterModel 
+                    : instanceDataModel.get(key));
          }
 
          public boolean isEmpty()

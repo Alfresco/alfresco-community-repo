@@ -113,7 +113,7 @@ public class CreateFormWizard extends BaseWizardBean
 
    private final static Log LOGGER = LogFactory.getLog(CreateFormWizard.class);
    
-   private String schemaRootTagName;
+   private String schemaRootElementName;
    private String formName;
    private String formDescription;
    private Class renderingEngineType = null;
@@ -163,7 +163,7 @@ public class CreateFormWizard extends BaseWizardBean
       this.nodeService.addAspect(schemaNodeRef, ContentModel.ASPECT_TITLED, props);
 
       props = new HashMap<QName, Serializable>(1, 1.0f);
-      props.put(WCMModel.PROP_SCHEMA_ROOT_TAG_NAME, this.getSchemaRootTagName());
+      props.put(WCMModel.PROP_SCHEMA_ROOT_ELEMENT_NAME, this.getSchemaRootElementName());
       this.nodeService.addAspect(schemaNodeRef, WCMModel.ASPECT_FORM, props);
          
       for (RenderingEngineData tomd : this.renderingEngines)
@@ -210,7 +210,7 @@ public class CreateFormWizard extends BaseWizardBean
       
       this.removeUploadedSchemaFile();
       this.removeUploadedRenderingEngineFile();
-      this.schemaRootTagName = null;
+      this.schemaRootElementName = null;
       this.formName = null;
       this.formDescription = null;
       this.renderingEngineType = null;
@@ -473,26 +473,26 @@ public class CreateFormWizard extends BaseWizardBean
    }
 
    /**
-    * Sets the root tag name to use when processing the schema.
+    * Sets the root element name to use when processing the schema.
     */
-   public void setSchemaRootTagName(final String schemaRootTagName)
+   public void setSchemaRootElementName(final String schemaRootElementName)
    {
-      this.schemaRootTagName = schemaRootTagName;
+      this.schemaRootElementName = schemaRootElementName;
    }
 
    /**
-    * Returns the root tag name to use when processing the schema.
+    * Returns the root element name to use when processing the schema.
     */
-   public String getSchemaRootTagName()
+   public String getSchemaRootElementName()
    {
-      return this.schemaRootTagName;
+      return this.schemaRootElementName;
    }
    
    /**
-    * @return the possible root tag names for use with the schema based on 
+    * @return the possible root element names for use with the schema based on 
     * the element declarations it defines.
     */
-   public List<SelectItem> getSchemaRootTagNameChoices()
+   public List<SelectItem> getSchemaRootElementNameChoices()
    {
       final List<SelectItem> result = new LinkedList<SelectItem>();
       if (this.getSchemaFile() != null)

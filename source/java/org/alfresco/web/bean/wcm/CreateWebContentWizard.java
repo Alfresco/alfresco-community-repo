@@ -104,20 +104,20 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          if (logger.isDebugEnabled())
             logger.debug("generating form data renderer output for " + this.formName);
-         final Form tt = this.getForm();
-         final FormsService ts = FormsService.getInstance();
-
+         final Form form = this.getForm();
+         final FormsService fs = FormsService.getInstance();
+         final NodeRef formInstanceDataNodeRef = 
+            AVMNodeConverter.ToNodeRef(-1, this.createdPath);
          final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-         props.put(WCMModel.PROP_PARENT_FORM, tt.getNodeRef());
-         props.put(WCMModel.PROP_PARENT_FORM_NAME, tt.getName());
-         this.nodeService.addAspect(AVMNodeConverter.ToNodeRef(-1, this.createdPath), 
+         props.put(WCMModel.PROP_PARENT_FORM, form.getNodeRef());
+         props.put(WCMModel.PROP_PARENT_FORM_NAME, form.getName());
+         this.nodeService.addAspect(formInstanceDataNodeRef, 
                                     WCMModel.ASPECT_FORM_INSTANCE_DATA,
                                     props);
 
-         ts.generate(this.createdPath.substring(0, this.createdPath.lastIndexOf('/')),
-                     ts.parseXML(this.content),
-                     tt,
-                     this.fileName);
+         fs.generateRenditions(formInstanceDataNodeRef,
+                               fs.parseXML(this.content),
+                               form);
       }
       
       // return the default outcome

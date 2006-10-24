@@ -115,6 +115,7 @@ public class CreateFormWizard extends BaseWizardBean
    
    private String schemaRootTagName;
    private String formName;
+   private String formDescription;
    private Class renderingEngineType = null;
    protected ContentService contentService;
    private DataModel renderingEnginesDataModel;
@@ -158,7 +159,7 @@ public class CreateFormWizard extends BaseWizardBean
       // apply the titled aspect - title and description
       Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(ContentModel.PROP_TITLE, this.getFormName());
-      props.put(ContentModel.PROP_DESCRIPTION, "");
+      props.put(ContentModel.PROP_DESCRIPTION, this.getFormDescription());
       this.nodeService.addAspect(schemaNodeRef, ContentModel.ASPECT_TITLED, props);
 
       props = new HashMap<QName, Serializable>(1, 1.0f);
@@ -211,6 +212,7 @@ public class CreateFormWizard extends BaseWizardBean
       this.removeUploadedRenderingEngineFile();
       this.schemaRootTagName = null;
       this.formName = null;
+      this.formDescription = null;
       this.renderingEngineType = null;
       this.renderingEngines = new ArrayList<RenderingEngineData>();
       this.fileExtension = null;
@@ -533,6 +535,22 @@ public class CreateFormWizard extends BaseWizardBean
       return (this.formName == null && this.getSchemaFileName() != null
               ? this.getSchemaFileName().replaceAll("(.+)\\..*", "$1")
               : this.formName);
+   }
+
+   /**
+    * Sets the description for this form.
+    */
+   public void setFormDescription(final String formDescription)
+   {
+      this.formDescription = formDescription;
+   }
+
+   /**
+    * @return the description for this form.
+    */
+   public String getFormDescription()
+   {
+      return this.formDescription;
    }
    
    /**

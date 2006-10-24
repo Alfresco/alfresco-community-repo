@@ -359,7 +359,7 @@ public class AVMEditBean
             if (nodeService.getProperty(avmRef, WCMModel.PROP_PARENT_FORM) != null)
             {
                final FormsService fs = FormsService.getInstance();
-               fs.regenerate(avmRef);
+               fs.regenerateRenditions(avmRef);
             }
             
             resetState();

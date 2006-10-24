@@ -95,6 +95,7 @@ if (upload == null || upload.getFile() == null)
 }
 %>
    </h:column>
+
    <h:graphicImage id="graphic_image_root_tag_name"
 		   value="/images/icons/required_field.gif" alt="Required Field" />
    <h:outputText id="output_text_root_tag_name" value="#{msg.schema_root_tag_name}:"/>
@@ -103,7 +104,13 @@ if (upload == null || upload.getFile() == null)
      <f:selectItems value="#{WizardManager.bean.schemaRootTagNameChoices}"/>
    </h:selectOneMenu>
    <h:graphicImage id="graphic_image_name" value="/images/icons/required_field.gif" alt="Required Field" />
+
    <h:outputText id="output_text_name" value="#{msg.name}:"/>
    <h:inputText id="file-name" value="#{WizardManager.bean.formName}" 
+                maxlength="1024" size="35"/>
+
+   <h:outputText id="no_graphic_image_description" value=""/>
+   <h:outputText id="output_text_description" value="#{msg.description}:"/>
+   <h:inputText id="description" value="#{WizardManager.bean.formDescription}" 
                 maxlength="1024" size="35"/>
 </h:panelGrid>

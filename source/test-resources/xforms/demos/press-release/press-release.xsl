@@ -78,7 +78,7 @@ Produces an html rendition of a press release
 	    </xsl:if>
 	    <!-- END MAIN CONTENT -->
 	    <xsl:element name="a">
-	      <xsl:attribute name="href"><xsl:value-of select="fn:replaceAll(string($alfresco:derived_from_file_name), '.xml', '.txt')"/></xsl:attribute>
+	      <xsl:attribute name="href"><xsl:value-of select="fn:replaceAll(string($alfresco:form_instance_data_file_name), '.xml', '.txt')"/></xsl:attribute>
 	      <xsl:text>view plain text version</xsl:text>
 	    </xsl:element>
 	  </div>

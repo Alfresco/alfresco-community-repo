@@ -196,6 +196,13 @@ public final class FormsService
       }
    }
 
+   /**
+    * Returns the form backed by the given NodeRef.  The NodeRef should
+    * point to the schema for this form.
+    *
+    * @param nodeRef the node ref for the schema for the form
+    * @return the form for the given node ref.
+    */
    public Form getForm(final NodeRef nodeRef)
    {
       return this.newForm(nodeRef);
@@ -242,137 +249,139 @@ public final class FormsService
       return tt;
    }
    
-   public void generate(final String parentPath,
-                        final Document xml, 
-                        final Form tt, 
-                        final String fileName)
+   /**
+    * Generates renditions for the provided formInstanceData.
+    *
+    * @param formInstanceDataNodeRef the noderef containing the form instance data
+    * @param formInstanceData the parsed contents of the form.
+    * @param form the form to use when generating renditions.
+    */
+   public void generateRenditions(final NodeRef formInstanceDataNodeRef,
+                                  final Document formInstanceData, 
+                                  final Form form)
       throws IOException,
       RenderingEngine.RenderingException
    {
-      for (RenderingEngine tom : tt.getRenderingEngines())
+      final String formInstanceDataFileName = (String)
+         nodeService.getProperty(formInstanceDataNodeRef, ContentModel.PROP_NAME);
+      final String formInstanceDataAvmPath = AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
+      final String parentPath = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0];
+
+      for (RenderingEngine re : form.getRenderingEngines())
       {
          // get the node ref of the node that will contain the content
-         final String generatedFileName = stripExtension(fileName) + "." + tom.getFileExtension();
-         final OutputStream fileOut = this.avmService.createFile(parentPath, generatedFileName);
-         final String fullAvmPath = parentPath + '/' + generatedFileName;
-         final String avmStore = parentPath.substring(0, parentPath.indexOf(":/"));
-         final String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
+         final String renditionFileName = 
+            this.stripExtension(formInstanceDataFileName) + "." + re.getFileExtension();
+         final OutputStream fileOut = this.avmService.createFile(parentPath, renditionFileName);
+         final String renditionAvmPath = parentPath + '/' + renditionFileName;
          
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Created file node for file: " + 
-                         fullAvmPath);
+            LOGGER.debug("Created file node for file: " + renditionAvmPath);
          final OutputStreamWriter out = new OutputStreamWriter(fileOut);
 
          final HashMap<String, String> parameters =
-            getOutputMethodParameters(sandBoxUrl, fileName, generatedFileName, parentPath);
-         tom.generate(xml, parameters, out);
+            this.getOutputMethodParameters(formInstanceDataFileName, 
+                                           renditionFileName, 
+                                           parentPath);
+         re.generate(formInstanceData, parameters, out);
          out.close();
             
-         NodeRef outputNodeRef = AVMNodeConverter.ToNodeRef(-1, fullAvmPath);
+         final NodeRef renditionNodeRef = 
+            AVMNodeConverter.ToNodeRef(-1, parentPath + '/' + renditionFileName);
 
          Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-         props.put(WCMModel.PROP_PARENT_FORM, tt.getNodeRef());
-         props.put(WCMModel.PROP_PARENT_FORM_NAME, tt.getName());
-         nodeService.addAspect(outputNodeRef, WCMModel.ASPECT_FORM_INSTANCE_DATA, props);
+         props.put(WCMModel.PROP_PARENT_FORM, form.getNodeRef());
+         props.put(WCMModel.PROP_PARENT_FORM_NAME, form.getName());
+         nodeService.addAspect(renditionNodeRef, WCMModel.ASPECT_FORM_INSTANCE_DATA, props);
 
          props = new HashMap<QName, Serializable>(2, 1.0f);
-         props.put(WCMModel.PROP_PARENT_RENDERING_ENGINE, tom.getNodeRef());
+         props.put(WCMModel.PROP_PARENT_RENDERING_ENGINE, re.getNodeRef());
          props.put(WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA, 
-                   AVMNodeConverter.ToNodeRef(-1, parentPath + fileName));
-         nodeService.addAspect(outputNodeRef, WCMModel.ASPECT_RENDITION, props);
+                   AVMNodeConverter.ToNodeRef(-1, parentPath + formInstanceDataFileName));
+         nodeService.addAspect(renditionNodeRef, WCMModel.ASPECT_RENDITION, props);
 
          props = new HashMap<QName, Serializable>(1, 1.0f);
-         props.put(ContentModel.PROP_TITLE, fileName);
-         nodeService.addAspect(outputNodeRef, ContentModel.ASPECT_TITLED, props);
+         props.put(ContentModel.PROP_TITLE, renditionFileName);
+         nodeService.addAspect(renditionNodeRef, ContentModel.ASPECT_TITLED, props);
             
-         LOGGER.debug("generated " + generatedFileName + " using " + tom);
+         LOGGER.debug("generated " + renditionFileName + " using " + re);
       }
    }
    
-   public void regenerate(final NodeRef nodeRef)
+   /**
+    * Regenerates all renditions of the provided form instance data.
+    *
+    * @param formInstanceDataNodeRef the node ref containing the form instance data.
+    */
+   public void regenerateRenditions(final NodeRef formInstanceDataNodeRef)
       throws IOException,
       SAXException,
       RenderingEngine.RenderingException
    {
       final NodeRef formNodeRef = (NodeRef)
-         nodeService.getProperty(nodeRef, WCMModel.PROP_PARENT_FORM);
+         nodeService.getProperty(formInstanceDataNodeRef, WCMModel.PROP_PARENT_FORM);
 
-      final Form tt = this.getForm(formNodeRef);
+      final Form form = this.getForm(formNodeRef);
          
-      final ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-      final Document xml = this.parseXML(reader.getContentInputStream());
-      final String fileName = (String)
-         nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-      final String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
-      final String avmStore = avmPath.substring(0, avmPath.indexOf(":/"));
-      final String sandBoxUrl = AVMConstants.buildAVMStoreUrl(avmStore);
-      final String parentPath = AVMNodeConverter.SplitBase(avmPath)[0];
-      for (RenderingEngine tom : tt.getRenderingEngines())
+      final ContentReader reader = contentService.getReader(formInstanceDataNodeRef, ContentModel.PROP_CONTENT);
+      final Document formInstanceData = this.parseXML(reader.getContentInputStream());
+      final String formInstanceDataFileName = (String)
+         nodeService.getProperty(formInstanceDataNodeRef, ContentModel.PROP_NAME);
+
+      // other parameter values passed to rendering engine
+      final String formInstanceDataAvmPath = AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
+      final String parentPath = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0];
+
+      for (RenderingEngine re : form.getRenderingEngines())
       {
-         final String generatedFileName = stripExtension(fileName) + "." + tom.getFileExtension();
+         final String renditionFileName = 
+            this.stripExtension(formInstanceDataFileName) + "." + re.getFileExtension();
 
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("regenerating file node for : " + fileName + " (" +
-                         nodeRef.toString() + ") to " + parentPath + "/" + generatedFileName);
+            LOGGER.debug("regenerating file node for : " + formInstanceDataFileName + 
+                         " (" + formInstanceDataNodeRef.toString() + 
+                         ") to " + parentPath + 
+                         "/" + renditionFileName);
             
          // get a writer for the content and put the file
          OutputStream out = null;
          try
          {
-            out = this.avmService.getFileOutputStream(parentPath + "/" + generatedFileName);
+            out = this.avmService.getFileOutputStream(parentPath + "/" + renditionFileName);
          }
          catch (AVMNotFoundException e)
          {
-            out = this.avmService.createFile(parentPath, generatedFileName);
+            out = this.avmService.createFile(parentPath, renditionFileName);
          }
 
          final OutputStreamWriter writer = new OutputStreamWriter(out);
          final HashMap<String, String> parameters =
-            getOutputMethodParameters(sandBoxUrl, fileName, generatedFileName, parentPath);
-         tom.generate(xml, parameters, writer);
+            this.getOutputMethodParameters(formInstanceDataFileName, 
+                                           renditionFileName, 
+                                           parentPath);
+         re.generate(formInstanceData, parameters, writer);
          writer.close();
-         LOGGER.debug("generated " + fileName + " using " + tom);
+
+         LOGGER.debug("generated " + renditionFileName + " using " + re);
       }
    }
 
-   private static HashMap<String, String> getOutputMethodParameters(final String sandBoxUrl,
-                                                                    final String fileName,
-                                                                    final String generatedFileName,
-                                                                    final String parentPath)
+   private static HashMap<String, String> getOutputMethodParameters(final String formInstanceDataFileName,
+                                                                    final String renditionFileName,
+                                                                    final String parentAvmPath)
    {
       final HashMap<String, String> parameters = new HashMap<String, String>();      
-      parameters.put("avm_store_url", sandBoxUrl);
-      parameters.put("derived_from_file_name", fileName);
-      parameters.put("generated_file_name", generatedFileName);
-      parameters.put("parent_path", parentPath);
+      parameters.put("avm_sandbox_url", AVMConstants.buildAVMStoreUrl(parentAvmPath));
+      parameters.put("form_instance_data_file_name", formInstanceDataFileName);
+      parameters.put("rendition_file_name", renditionFileName);
+      parameters.put("parent_path", parentAvmPath);
       return parameters;
    }
    
    /** utility function for creating a document */
    public Document newDocument()
    {
-      try
-      {
-         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-         dbf.setNamespaceAware(true);
-         dbf.setValidating(false);
-         final DocumentBuilder db = dbf.newDocumentBuilder();
-         return db.newDocument();
-      }
-      catch (ParserConfigurationException pce)
-      {
-         assert false : pce;
-      LOGGER.error(pce);
-      return null;
-      }
-//    catch (SAXException saxe)
-//    {
-//    LOGGER.error(saxe);
-//    }
-//    catch (IOException ioe)
-//    {
-//    LOGGER.error(ioe);
-//    }
+      return this.getDocumentBuilder().newDocument();
    }
    
    /** utility function for serializing a node */
@@ -423,7 +432,7 @@ public final class FormsService
    
    /** utility function for parsing xml */
    public Document parseXML(final String source)
-   throws SAXException,
+      throws SAXException,
       IOException
    {
       return this.parseXML(new ByteArrayInputStream(source.getBytes()));
@@ -482,5 +491,5 @@ public final class FormsService
          }
       }
       return FormsService.documentBuilder;
-   } 
+   }
 }

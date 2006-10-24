@@ -19,7 +19,7 @@ Produces the index page for the press release page.
 <jsp:root version="1.2"
           xmlns:jsp="http://java.sun.com/JSP/Page"
  	  xmlns:c="http://java.sun.com/jsp/jstl/core"
-	  xmlns:pr="http://www.alfresco.org/pr"
+	  xmlns:pr="http://www.alfresco.org/alfresco/pr"
           xmlns:fmt="http://java.sun.com/jsp/jstl/fmt">
   <!-- xmlns:pr is mapped to /WEB-INF/pr.tld by web.xml -->
 
@@ -82,6 +82,25 @@ Produces the index page for the press release page.
 	<!-- Feature Content -->
 	<div id="right_content">
 	  <div class="box_blue">
+	    <h2>Press Releases By Category</h2>
+	    <ul>
+	    <!-- load all categories used by the press releases -->
+	    <c:forEach items="${pr:getPressReleaseCategories(pageContext)}" var="category">
+	      <li>
+		<c:out value="${category}"/>
+		<ul>
+		  <c:forEach items="${pr:getPressReleasesInCategory(pageContext, category)}" var="pressRelease">
+		    <li>
+		      <jsp:element name="a">
+			<jsp:attribute name="href"><c:out value="${pressRelease.href}"/></jsp:attribute>
+			<jsp:body><c:out value="${pressRelease.title}"/></jsp:body>
+		      </jsp:element>
+		    </li>
+		  </c:forEach>
+		</ul>
+	      </li>
+	    </c:forEach>
+	    </ul>
 	    <h2>Press Release Archive</h2>
 	    <ul>
 	      <li><a href="/media/releases/archives/index.html">View Archived Releases</a></li>

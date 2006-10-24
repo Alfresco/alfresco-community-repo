@@ -57,7 +57,7 @@ public class FormDataFunctions
     * @param avmPath a path within the avm repository.
     * @return the parsed document.
     */
-   public Document getXMLDocument(final String avmPath)
+   public Document parseXMLDocument(final String avmPath)
       throws IOException,
       SAXException
    {
@@ -85,7 +85,7 @@ public class FormDataFunctions
     * @param avmPath a path within the avm repository.
     * @return the parsed document.
     */
-   public Map<String, Document> getXMLDocuments(final String formName, final String avmPath)
+   public Map<String, Document> parseXMLDocuments(final String formName, final String avmPath)
       throws IOException,
       SAXException
    {

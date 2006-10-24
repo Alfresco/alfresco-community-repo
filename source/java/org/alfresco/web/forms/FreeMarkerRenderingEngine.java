@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.parsers.DocumentBuilder;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -48,8 +49,8 @@ public class FreeMarkerRenderingEngine
    private static final Log LOGGER = LogFactory.getLog(FreeMarkerRenderingEngine.class);
 
    public FreeMarkerRenderingEngine(final NodeRef nodeRef,
-                                 final NodeService nodeService,
-                                 final ContentService contentService)
+                                    final NodeService nodeService,
+                                    final ContentService contentService)
    {
       super(nodeRef, nodeService, contentService);
    }
@@ -78,7 +79,7 @@ public class FreeMarkerRenderingEngine
       final TemplateHashModel instanceDataModel = NodeModel.wrap(xmlContent);
 
       // build models for each of the extension functions
-      final TemplateModel getXMLDocumentModel = new TemplateMethodModel()
+      final TemplateModel parseXMLDocumentModel = new TemplateMethodModel()
       {
          public Object exec(final List args)
             throws TemplateModelException
@@ -87,8 +88,9 @@ public class FreeMarkerRenderingEngine
             {
                final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
                final String path = FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
-                                                                    (String)args.get(0));
-               return ef.getXMLDocument(path);
+                                                                       (String)args.get(0));
+               final Document d = ef.parseXMLDocument(path);
+               return d != null ? d.getDocumentElement() : null;
             }
             catch (Exception e)
             {
@@ -96,7 +98,7 @@ public class FreeMarkerRenderingEngine
             }
          }
       };
-      final TemplateModel getXMLDocumentsModel = new TemplateMethodModel()
+      final TemplateModel parseXMLDocumentsModel = new TemplateMethodModel()
       {
          public Object exec(final List args)
             throws TemplateModelException
@@ -104,20 +106,35 @@ public class FreeMarkerRenderingEngine
             try 
             {
                final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
-               final String path = FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
-                                                                    args.size() == 1 ? "" : (String)args.get(1));
-               final Map<String, Document> resultMap = ef.getXMLDocuments((String)args.get(0), path);
+               final String path = 
+                  FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
+                                                      args.size() == 1 ? "" : (String)args.get(1));
+               final Map<String, Document> resultMap = ef.parseXMLDocuments((String)args.get(0), path);
                LOGGER.debug("received " + resultMap.size() + " documents in " + path);
+
+               // create a root document for rooting all the results.  we do this
+               // so that each document root element has a common parent node
+               // and so that xpath axes work properly
+               final FormsService fs = FormsService.getInstance();
+               final DocumentBuilder documentBuilder = fs.getDocumentBuilder();
+               final Document rootNodeDocument = documentBuilder.newDocument();
+               final Element rootNodeDocumentEl = 
+                  rootNodeDocument.createElementNS(ALFRESCO_NS,
+                                                   ALFRESCO_NS_PREFIX + ":file_list");
+               rootNodeDocumentEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
+               rootNodeDocument.appendChild(rootNodeDocumentEl);
+               
                final List<NodeModel> result = new ArrayList<NodeModel>(resultMap.size());
                for (Map.Entry<String, Document> e : resultMap.entrySet())
                {
-                  final Document d = e.getValue();
-                  final Element documentEl = d.getDocumentElement();
+                  final Element documentEl = e.getValue().getDocumentElement();
                   documentEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
                   documentEl.setAttributeNS(ALFRESCO_NS, 
-                                            ALFRESCO_NS_PREFIX + ":file-name", 
+                                            ALFRESCO_NS_PREFIX + ":file_name", 
                                             e.getKey());
-                  result.add(NodeModel.wrap(d));
+                  final Node n = rootNodeDocument.importNode(documentEl, true);
+                  rootNodeDocumentEl.appendChild(n);
+                  result.add(NodeModel.wrap(n));
                }
                return result;
             }
@@ -135,13 +152,13 @@ public class FreeMarkerRenderingEngine
          public TemplateModel get(final String key)
             throws TemplateModelException
          {
-            if ("getXMLDocument".equals(key))
+            if ("parseXMLDocument".equals(key))
             {
-                return getXMLDocumentModel;
+                return parseXMLDocumentModel;
             }
-            if ("getXMLDocuments".equals(key))
+            if ("parseXMLDocuments".equals(key))
             {
-               return getXMLDocumentsModel;
+               return parseXMLDocumentsModel;
             }
             return super.get(key);
          }

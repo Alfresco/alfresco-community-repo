@@ -280,7 +280,7 @@ public final class FormsService
          final OutputStreamWriter out = new OutputStreamWriter(fileOut);
 
          final HashMap<String, String> parameters =
-            this.getOutputMethodParameters(formInstanceDataFileName, 
+            this.getRenderingEngineParameters(formInstanceDataFileName, 
                                            renditionFileName, 
                                            parentPath);
          re.generate(formInstanceData, parameters, out);
@@ -356,7 +356,7 @@ public final class FormsService
 
          final OutputStreamWriter writer = new OutputStreamWriter(out);
          final HashMap<String, String> parameters =
-            this.getOutputMethodParameters(formInstanceDataFileName, 
+            this.getRenderingEngineParameters(formInstanceDataFileName, 
                                            renditionFileName, 
                                            parentPath);
          re.generate(formInstanceData, parameters, writer);
@@ -366,15 +366,17 @@ public final class FormsService
       }
    }
 
-   private static HashMap<String, String> getOutputMethodParameters(final String formInstanceDataFileName,
-                                                                    final String renditionFileName,
-                                                                    final String parentAvmPath)
+   private static HashMap<String, String> getRenderingEngineParameters(final String formInstanceDataFileName,
+                                                                       final String renditionFileName,
+                                                                       final String parentAvmPath)
    {
       final HashMap<String, String> parameters = new HashMap<String, String>();      
       parameters.put("avm_sandbox_url", AVMConstants.buildAVMStoreUrl(parentAvmPath));
       parameters.put("form_instance_data_file_name", formInstanceDataFileName);
       parameters.put("rendition_file_name", renditionFileName);
       parameters.put("parent_path", parentAvmPath);
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      parameters.put("request_context_path", fc.getExternalContext().getRequestContextPath());
       return parameters;
    }
    

@@ -7,15 +7,25 @@
 
     <tlib-version>1.0</tlib-version>
     <short-name>pr</short-name>
-    <uri>http://www.alfresco.org/pr</uri>
+    <uri>http://www.alfresco.org/alfresco/pr</uri>
     <function>
       <name>getPressReleases</name>
       <function-class>org.alfresco.web.pr.PressReleaseBean</function-class>
       <function-signature>java.util.List getPressReleases(javax.servlet.jsp.PageContext)</function-signature>
     </function>
     <function>
-      <name>getCompanyFooters</name>
+      <name>getPressReleasesInCategory</name>
+      <function-class>org.alfresco.web.pr.PressReleaseBean</function-class>
+      <function-signature>java.util.List getPressReleasesInCategory(javax.servlet.jsp.PageContext, java.lang.String)</function-signature>
+    </function>
+    <function>
+      <name>getPressReleaseCategories</name>
+      <function-class>org.alfresco.web.pr.PressReleaseBean</function-class>
+      <function-signature>java.util.Set getPressReleaseCategories(javax.servlet.jsp.PageContext)</function-signature>
+    </function>
+    <function>
+      <name>getCompanyFooterChoices</name>
       <function-class>org.alfresco.web.pr.CompanyFooterBean</function-class>
-      <function-signature>java.util.List getCompanyFooters(javax.servlet.jsp.PageContext)</function-signature>
+      <function-signature>java.util.List getCompanyFooterChoices(javax.servlet.jsp.PageContext)</function-signature>
     </function>
 </taglib>

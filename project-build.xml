@@ -106,6 +106,9 @@
    </target>
    
    <target name="sample-website" depends="init">
+     <delete failonerror="false">
+       <fileset dir="${dir.build}/sample-website"/>
+     </delete>
      <mkdir dir="${dir.build}/sample-website/alfresco"/>
      <copy todir="${dir.build}/sample-website/alfresco">
        <fileset dir="${dir.src}/test-resources/websites/alfresco" excludes="**/.svn"/>

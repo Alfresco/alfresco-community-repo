@@ -83,18 +83,25 @@ public abstract class AbstractRenderingEngine
    protected static String toAVMPath(final String parentAVMPath, final String path)
    {
       String parent = parentAVMPath;
-      if (path != null && path.length() != 0 && path.charAt(0) == '/')
+      if (path == null || 
+          path.length() == 0 || 
+          ".".equals(path) || 
+          "./".equals(path))
       {
+         return parentAVMPath;
+      }
+
+      if (path.charAt(0) == '/')
+      {
+         //XXXarielb this doesn't work with context paths for the website
          parent = parentAVMPath.substring(0, 
                                           parentAVMPath.indexOf(':') + 
                                           ('/' + AVMConstants.DIR_APPBASE + 
-                                           '/' + AVMConstants.DIR_WEBAPPS).length() + 1);
+                                           '/' + AVMConstants.DIR_WEBAPPS).length());
       }
-      if (parent.endsWith("/"))
-      {
-         parent = parent.substring(0, parent.length() - 1);
-      }
-      final String result = parent + '/' + path;
+
+      final String result = 
+         parent + (parent.endsWith("/") || path.startsWith("/") ? path : '/' + path);
       LOGGER.debug("built full avmPath " + result + 
                    " for parent " + parentAVMPath + 
                    " and request path " + path);

@@ -21,7 +21,7 @@ which wants to update the list of available company footers dynamically.
 <jsp:root version="1.2"
           xmlns:jsp="http://java.sun.com/JSP/Page"
  	  xmlns:c="http://java.sun.com/jsp/jstl/core"
-	  xmlns:pr="http://www.alfresco.org/pr">   
+	  xmlns:pr="http://www.alfresco.org/alfresco/pr">   
   <!-- xmlns:pr is mapped to /WEB-INF/pr.tld by web.xml -->
   <jsp:directive.page language="java" contentType="text/html; charset=UTF-8"/>
   <jsp:directive.page isELIgnored="false"/>
@@ -31,7 +31,7 @@ which wants to update the list of available company footers dynamically.
   <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
              xmlns:alfresco="http://www.alfresco.org/alfresco"
   	   elementFormDefault="qualified">
-    <xs:simpleType name="company_footer">
+    <xs:simpleType name="company_footer_choices">
       <xs:restriction base="xs:string">
         <xs:enumeration value="company_footer_1.xml">
   	<xs:annotation>
@@ -54,10 +54,10 @@ which wants to update the list of available company footers dynamically.
   <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
              xmlns:alfresco="http://www.alfresco.org/alfresco"
   	     elementFormDefault="qualified">
-    <xs:simpleType name="company_footer">
+    <xs:simpleType name="company_footer_choices">
       <xs:restriction base="xs:string">
 	<!-- call into CompanyFooterBean to retrieve all company footers -->
-        <c:forEach items="${pr:getCompanyFooters(pageContext)}" var="companyFooter">
+        <c:forEach items="${pr:getCompanyFooterChoices(pageContext)}" var="companyFooter">
           <jsp:element name="xs:enumeration">
 	    <!-- this is the file name of the company footer -->
 	    <jsp:attribute name="value"><c:out value="${companyFooter.fileName}"/></jsp:attribute>

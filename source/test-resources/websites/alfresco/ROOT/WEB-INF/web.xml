@@ -39,7 +39,7 @@
 
    <!-- register the pr tag library -->
     <taglib>
-        <taglib-uri>http://www.alfresco.org/pr</taglib-uri>
+        <taglib-uri>http://www.alfresco.org/alfresco/pr</taglib-uri>
         <taglib-location>/WEB-INF/pr.tld</taglib-location>
     </taglib>
 

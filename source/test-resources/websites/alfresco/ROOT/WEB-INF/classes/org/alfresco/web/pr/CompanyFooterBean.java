@@ -23,9 +23,10 @@ import org.alfresco.web.forms.*;
 
 /**
  * Bean for getting data for company footers which are included within press release forms.
- * It's used by /media/releases/get_company_footer_simple_type.jsp to aggregate all
- * forms created by company-footer.xsd in /media/releases/content and generate an
- * xsd simpleType enumeration which is used within the press release form (press-release.xsd).
+ * It's used by /media/releases/get_company_footer_choices_simple_type.jsp to aggregate all
+ * forms created by press-release.xsd with company_footer as the root tag name
+ * in /media/releases/content and generate an xsd simpleType enumeration which is used within
+ * the press release form.
  * press-release.xsl then uses the selected company footers and loads the xml assets and
  * includes their content within the generated press release renditions.
  */
@@ -42,20 +43,20 @@ public class CompanyFooterBean
     *
     * @return a list of populated CompanyFooterBeans.
     */
-   public static List<CompanyFooterBean> getCompanyFooters(final PageContext pageContext)
+   public static List<CompanyFooterBean> getCompanyFooterChoices(final PageContext pageContext)
       throws Exception
    {
       final FormDataFunctions ef = 
          new ServletContextFormDataFunctionsAdapter(pageContext.getServletContext());
 
-      final Map<String, Document> entries = ef.getXMLDocuments("company-footer",
-                                                               "/media/releases/content");
+      final Map<String, Document> entries = 
+         ef.parseXMLDocuments("company-footer", "/media/releases/content");
       final List<CompanyFooterBean> result = new ArrayList<CompanyFooterBean>(entries.size());
       for (Map.Entry<String, Document> entry : entries.entrySet())
       {
          final String fileName = entry.getKey();
          final Document d = entry.getValue();
-         final Element n = (Element)d.getElementsByTagName("alfresco:name").item(0);
+         final Element n = (Element)d.getElementsByTagName("pr:name").item(0);
          result.add(new CompanyFooterBean(n.getFirstChild().getNodeValue(),
                                           fileName));
       }

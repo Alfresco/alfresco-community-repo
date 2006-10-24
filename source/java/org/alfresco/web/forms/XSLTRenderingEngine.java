@@ -20,6 +20,7 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -37,6 +38,7 @@ import org.alfresco.model.WCMModel;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.web.forms.FormsService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xalan.extensions.ExpressionContext;
@@ -46,7 +48,14 @@ import org.w3c.dom.*;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.SAXException;
+import org.apache.bsf.BSFManager;
 
+/**
+ * A rendering engine which uses xsl templates to generate renditions of
+ * form instance data.
+ *
+ * @author Ariel Backenroth
+ */
 public class XSLTRenderingEngine
    extends AbstractRenderingEngine
 {
@@ -54,8 +63,8 @@ public class XSLTRenderingEngine
    private static final Log LOGGER = LogFactory.getLog(XSLTRenderingEngine.class);
 
    public XSLTRenderingEngine(final NodeRef nodeRef,
-                           final NodeService nodeService,
-                           final ContentService contentService)
+                              final NodeService nodeService,
+                              final ContentService contentService)
    {
       super(nodeRef, nodeService, contentService);
    }
@@ -67,37 +76,60 @@ public class XSLTRenderingEngine
       return o == null ? null : XSLTRenderingEngine.toAVMPath(o.toString(), path);
    }
 
-   public static Document getXMLDocument(final ExpressionContext ec, final String path)
+   public static Node parseXMLDocument(final ExpressionContext ec, final String path)
       throws TransformerException,
       IOException,
       SAXException
    {
       final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
-      return ef.getXMLDocument(XSLTRenderingEngine.toAVMPath(ec, path));
+      final Document d = ef.parseXMLDocument(XSLTRenderingEngine.toAVMPath(ec, path));
+      return d != null ? d.getDocumentElement() : null;
    }
 
-   public static NodeIterator getXMLDocuments(final ExpressionContext ec, 
-                                              final String formName)
+   public static NodeIterator parseXMLDocuments(final ExpressionContext ec, 
+                                                final String formName)
       throws TransformerException,
       IOException,
       SAXException
    {
-      return XSLTRenderingEngine.getXMLDocuments(ec, formName, "");
+      return XSLTRenderingEngine.parseXMLDocuments(ec, formName, "");
    }
 
-   public static NodeIterator getXMLDocuments(final ExpressionContext ec, 
-                                              final String formName, 
-                                              String path)
+   public static NodeIterator parseXMLDocuments(final ExpressionContext ec, 
+                                                final String formName, 
+                                                String path)
       throws TransformerException,
       IOException,
       SAXException
    {
       final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
       path = XSLTRenderingEngine.toAVMPath(ec, path);
-      final Map<String, Document> resultMap = ef.getXMLDocuments(formName, path);
+      final Map<String, Document> resultMap = ef.parseXMLDocuments(formName, path);
       LOGGER.debug("received " + resultMap.size() + " documents in " + path);
-      final List<Map.Entry<String, Document>> documents = 
-         new ArrayList<Map.Entry<String, Document>>(resultMap.entrySet());
+
+      // create a root document for rooting all the results.  we do this
+      // so that each document root element has a common parent node
+      // and so that xpath axes work properly
+      final FormsService fs = FormsService.getInstance();
+      final DocumentBuilder documentBuilder = fs.getDocumentBuilder();
+      final Document rootNodeDocument = documentBuilder.newDocument();
+      final Element rootNodeDocumentEl = 
+         rootNodeDocument.createElementNS(ALFRESCO_NS,
+                                          ALFRESCO_NS_PREFIX + ":file_list");
+      rootNodeDocumentEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
+      rootNodeDocument.appendChild(rootNodeDocumentEl);
+
+      final List<Node> documents = new ArrayList<Node>(resultMap.size());
+      for (Map.Entry<String, Document> mapEntry : resultMap.entrySet())
+      {
+         final Element documentEl = mapEntry.getValue().getDocumentElement();
+         documentEl.setAttributeNS(ALFRESCO_NS, 
+                                   ALFRESCO_NS_PREFIX + ":file_name", 
+                                   mapEntry.getKey());
+         final Node n = rootNodeDocument.importNode(documentEl, true);
+         documents.add(n);
+         rootNodeDocumentEl.appendChild(n);
+      }
 
       return new NodeIterator()
       {
@@ -130,8 +162,7 @@ public class XSLTRenderingEngine
 
          public Node getRoot()
          {
-            LOGGER.error("NodeIterator.getRoot() unexpectedly called");
-            throw new UnsupportedOperationException();
+            return rootNodeDocumentEl;
          }
 
          public int getWhatToShow()
@@ -147,7 +178,7 @@ public class XSLTRenderingEngine
                throw new DOMException(DOMException.INVALID_STATE_ERR, null);
             if (index == documents.size())
                return null;
-            return this.getNodeAt(index++);
+            return documents.get(index++);
          }
 
          public Node previousNode()
@@ -158,18 +189,7 @@ public class XSLTRenderingEngine
                throw new DOMException(DOMException.INVALID_STATE_ERR, null);
             if (index == -1)
                return null;
-            return this.getNodeAt(index--);
-         }
-
-         private Document getNodeAt(int index)
-         {
-            final Document d = documents.get(index).getValue();
-            final Element documentEl = d.getDocumentElement();
-            documentEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
-            documentEl.setAttributeNS(ALFRESCO_NS, 
-                                      ALFRESCO_NS_PREFIX + ":file-name", 
-                                      documents.get(index).getKey());
-            return d;
+            return documents.get(index--);
          }
       };
    }
@@ -214,8 +234,8 @@ public class XSLTRenderingEngine
       throws IOException,
       RenderingEngine.RenderingException
    {
-      // XXXarielb - dirty - fix this
-      final String sandBoxUrl = (String)parameters.get("avm_store_url");
+      System.setProperty("org.apache.xalan.extensions.bsf.BSFManager",
+                         BSFManager.class.getName());
       final TransformerFactory tf = TransformerFactory.newInstance();
       final FormsService ts = FormsService.getInstance();
       Document xslDocument = null;
@@ -243,11 +263,17 @@ public class XSLTRenderingEngine
          LOGGER.error(tce);
          throw new RenderingEngine.RenderingException(tce);
       }
+
+      // create a uri resolver to resolve document() calls to the virtualized
+      // web application
       t.setURIResolver(new URIResolver()
       {
          public Source resolve(final String href, final String base)
             throws TransformerException
          {
+            // XXXarielb - dirty - fix this
+            final String sandBoxUrl = (String)parameters.get("avm_sandbox_url");
+
             URI uri = null;
             try
             {

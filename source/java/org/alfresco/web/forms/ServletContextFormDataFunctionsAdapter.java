@@ -48,18 +48,18 @@ public class ServletContextFormDataFunctionsAdapter
       return path;
    }
 
-   public Document getXMLDocument(final String path)
+   public Document parseXMLDocument(final String path)
       throws IOException,
       SAXException
    {
-      return super.getXMLDocument(this.toAVMPath(path));
+      return super.parseXMLDocument(this.toAVMPath(path));
    }
 
-   public Map<String, Document> getXMLDocuments(final String formName,
-                                                final String path)
+   public Map<String, Document> parseXMLDocuments(final String formName,
+                                                  final String path)
       throws IOException,
       SAXException
    {
-      return super.getXMLDocuments(formName, this.toAVMPath(path));
+      return super.parseXMLDocuments(formName, this.toAVMPath(path));
    }
 }

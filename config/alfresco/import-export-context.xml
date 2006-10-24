@@ -227,6 +227,9 @@
         -->
 	</bean>
 
+    <bean id="storeImporterViews" class="org.alfresco.repo.importer.ImporterBootstrapViews" abstract="true">
+    </bean>
+
 
 	<!--  -->
 	<!--  Store specific Importers -->

@@ -412,7 +412,6 @@
                 <value>alfresco/model/bpmModel.xml</value>
                 <value>alfresco/model/applicationModel.xml</value>
                 <value>alfresco/model/forumModel.xml</value>
-                <value>alfresco/model/recordsModel.xml</value>
 
                 <!-- Implementation models -->
                 <value>org/alfresco/repo/security/authentication/userModel.xml</value>

@@ -145,10 +145,6 @@
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
                     <prop key="location">alfresco/bootstrap/example_javascripts.acp</prop>
                 </props>
-                <props>
-                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</prop>
-                    <prop key="location">alfresco/bootstrap/file_plan.xml</prop>
-                </props>
             </list>
         </property>
     </bean>
@@ -181,6 +177,10 @@
 			</list>
 		</property>
 	</bean>
+
+    <!-- Bootstrap any extensions -->
+    
+    <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
 
     <!-- Descriptor Service -->
 

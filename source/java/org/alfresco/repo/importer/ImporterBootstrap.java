@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -82,6 +83,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     private NodeService nodeService;
     private ImporterService importerService;
     private List<Properties> bootstrapViews;
+    private List<Properties> extensionBootstrapViews;
     private StoreRef storeRef = null;
     private List<String> mustNotExistStoreUrls = null;
     private Properties configuration = null;
@@ -173,6 +175,20 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     public void setBootstrapViews(List<Properties> bootstrapViews)
     {
         this.bootstrapViews = bootstrapViews;
+    }
+
+    /**
+     * Sets the bootstrap views
+     * 
+     * @param bootstrapViews
+     */
+    public void addBootstrapViews(List<Properties> bootstrapViews)
+    {
+        if (this.extensionBootstrapViews == null)
+        {
+            this.extensionBootstrapViews = new ArrayList<Properties>();
+        }
+        this.extensionBootstrapViews.addAll(bootstrapViews);
     }
 
     /**
@@ -347,6 +363,12 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                 // bootstrap the store contents
                 if (bootstrapViews != null)
                 {
+                    // add-in any extended views
+                    if (extensionBootstrapViews != null)
+                    {
+                        bootstrapViews.addAll(extensionBootstrapViews);
+                    }
+                    
                     for (Properties bootstrapView : bootstrapViews)
                     {
                         String view = bootstrapView.getProperty(VIEW_LOCATION_VIEW);

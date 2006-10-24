@@ -54,6 +54,7 @@ update alf_node_status ns SET ns.transaction_id =
 alter table alf_node_status DROP COLUMN change_txn_id;
 alter table alf_node_status ADD CONSTRAINT FK71C2002B9E57C13D FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id);
 create index FK71C2002B9E57C13D on alf_node_status (transaction_id);
+alter table alf_node_status DROP COLUMN deleted;(optional)
 
 --
 -- Record script finish

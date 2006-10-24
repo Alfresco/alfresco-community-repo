@@ -45,6 +45,9 @@ ALTER TABLE alf_node_status
   DROP COLUMN change_txn_id,
   ADD CONSTRAINT FK71C2002B9E57C13D FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id),
   ADD INDEX FK71C2002B9E57C13D (transaction_id);
+ALTER TABLE alf_node_status
+  DROP COLUMN deleted
+  ;(optional)
 
 --
 -- Record script finish

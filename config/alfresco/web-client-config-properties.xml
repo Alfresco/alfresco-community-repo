@@ -181,11 +181,11 @@
    <config evaluator="aspect-name" condition="emailed">
       <property-sheet>
          <separator name="sepem1" display-label="Email Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="originator"  show-in-edit-mode="false"/>
-         <show-property name="addressee"  show-in-edit-mode="false"/>
-         <show-property name="addressees"  show-in-edit-mode="false"/>
-         <show-property name="sentdate"  show-in-edit-mode="false"/>
-         <show-property name="subjectline"  show-in-edit-mode="false"/>
+         <show-property name="originator" read-only="true"/>
+         <show-property name="addressee" read-only="true"/>
+         <show-property name="addressees" read-only="true"/>
+         <show-property name="sentdate" read-only="true"/>
+         <show-property name="subjectline" read-only="true"/>
       </property-sheet>
    </config>
     
@@ -313,145 +313,4 @@
       </property-sheet>
    </config>
    
-   <!-- BEGIN RECORDS MANAGEMENT MODEL -->
-   <!-- Model supporting the DoD 5015.2 Standard -->
-
-   <config evaluator="aspect-name" condition="rma:filePlan">
-      <property-sheet>
-         <separator name="sepfp1" display-label="File Plan" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:recordCategoryIdentifier" />
-         <show-property name="rma:dispositionAuthority" />
-         <show-property name="rma:dispositionInstructions" component-generator="TextAreaGenerator" />
-         <show-property name="rma:permanentRecordIndicator" />
-         <show-property name="rma:containsRecordFolders" />
-         <show-property name="rma:defaultMediaType" />
-         <show-property name="rma:defaultMarkingList" />
-         <show-property name="rma:defaultOriginatingOrganization" />
-         <show-property name="rma:recordCounter" />
-         <separator name="sepfp2" display-label="Process Vital Records" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:vitalRecordIndicator" />
-         <show-property name="rma:vitalRecordReviewPeriod" />
-         <separator name="sepfp3" display-label="Process Cutoff" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:processCutoff" />
-         <show-property name="rma:eventTrigger" />
-         <show-property name="rma:cutoffPeriod" />
-         <show-property name="rma:cutoffOnObsolete" />
-         <show-property name="rma:cutoffOnSuperseded" />
-         <separator name="sepfp4" display-label="Process Hold / Retention Period" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:processHold" />
-         <show-property name="rma:holdPeriod" />
-         <show-property name="rma:discretionaryHold" />
-         <separator name="sepfp5" display-label="Process Transfer" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:processTransfer" />
-         <show-property name="rma:defaultTransferLocation" />
-         <show-property name="rma:transferBlockSize" />
-         <separator name="sepfp6" display-label="Process Accession to National Archives" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:processAccession" />
-         <show-property name="rma:accessionPeriod" />
-         <show-property name="rma:accessionLocation" />
-         <show-property name="rma:accessionBlockSize" />
-         <separator name="sepfp7" display-label="Process Destruction" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:processDestruction" />
-      </property-sheet>
-   </config>
-
-   <config evaluator="aspect-name" condition="rma:record">
-      <property-sheet>
-         <separator name="seprm1" display-label="Record Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:recordIdentifier"   show-in-edit-mode="false"/>
-         <show-property name="rma:subject" />
-         <show-property name="rma:format"  show-in-edit-mode="false"/>
-         <show-property name="rma:dateFiled" />
-         <show-property name="rma:publicationDate" />
-         <show-property name="rma:dateReceived" />
-         <show-property name="rma:originator" />
-         <show-property name="rma:originatingOrganization" />
-         <show-property name="rma:addressee" />
-         <show-property name="rma:otherAddressee" />
-         <show-property name="rma:supplementalMarkingList" />
-         <show-property name="rma:isObsolete" />
-         <show-property name="rma:recordNote" />
-      </property-sheet>
-   </config>
-
-   <config evaluator="aspect-name" condition="rma:vitalrecord">
-      <property-sheet>
-         <separator name="seprm3" display-label="Vital Record Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:isVitalRecord" />
-         <show-property name="rma:prevReviewDate" />
-         <show-property name="rma:nextReviewDate" />
-      </property-sheet>
-   </config>
-
-
-   <config evaluator="aspect-name" condition="rma:cutoffable">
-      <property-sheet>
-         <separator name="seprm4" display-label="Record Cutoff Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:cutoffExecuted" />
-         <show-property name="rma:cutoffNow" />
-         <show-property name="rma:cutoffDateTime" />
-      </property-sheet>
-   </config>
-
-
-   <config evaluator="aspect-name" condition="rma:holdable">
-      <property-sheet>
-         <separator name="seprm5" display-label="Record Hold Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:holdExecuted" />
-         <show-property name="rma:holdUntil" />
-         <show-property name="rma:holdUntilEvent" />
-         <show-property name="rma:freeze" />
-      </property-sheet>
-   </config>
-
-
-   <config evaluator="aspect-name" condition="rma:transferable">
-      <property-sheet>
-         <separator name="seprm6" display-label="Record Transfer Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:transferExecuted" />
-         <show-property name="rma:transferDate" />
-      </property-sheet>
-   </config>
-
-
-   <config evaluator="aspect-name" condition="rma:accessionable">
-      <property-sheet>
-         <separator name="seprm7" display-label="Record Accession Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:accessionExecuted" />
-         <show-property name="rma:accessionDate" />
-      </property-sheet>
-   </config>
-
-
-   <config evaluator="aspect-name" condition="rma:destroyable">
-      <property-sheet>
-         <separator name="seprm8" display-label="Record Destruction Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:destructionDate" />
-      </property-sheet>
-   </config>
-
-   <!-- Put these at the end since they take up so much room -->
-   <config evaluator="aspect-name" condition="referencing">
-      <property-sheet>
-         <separator name="seprm9" />
-         <show-association name="references"/>
-      </property-sheet>
-   </config>
-
-   <config evaluator="aspect-name" condition="rma:superseded">
-      <property-sheet>
-         <separator name="seprm10" />
-         <show-association name="rma:superseding"/>
-      </property-sheet>
-   </config>
-
-   <config evaluator="aspect-name" condition="rma:userSpecifiedData">
-      <property-sheet>
-         <separator name="seprm11" display-label="User-Specified Record Data" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="rma:privacyActSystem" />
-      </property-sheet>
-   </config>
-
-   <!-- END RECORDS MANAGEMENT MODEL -->
-
 </alfresco-config>

@@ -163,16 +163,6 @@
             <!-- types must extend cm:folder for display in the Alfresco web-client -->
             <type name="fm:forums" />
          </folder-types>
-         <!-- custom properties to be shown in the More Options panel -->
-         <custom-properties>
-            <meta-data aspect="rma:filePlan" property="rma:recordCategoryName" />
-            <meta-data aspect="rma:filePlan" property="rma:recordCategoryIdentifier" />
-            <meta-data aspect="rma:record" property="rma:recordIdentifier" />
-            <meta-data aspect="rma:record" property="rma:orginator" />
-            <meta-data aspect="rma:record" property="rma:orginatingOrganization" />
-            <meta-data aspect="rma:record" property="rma:dateReceived" />
-            <meta-data aspect="rma:record" property="rma:supplementalMarkingList" />
-         </custom-properties>
       </advanced-search>
    </config>
    
@@ -265,13 +255,6 @@
          <aspect name="translatable"/>
          <aspect name="localizable"/>
          <aspect name="emailed"/>
-         <aspect name="rma:record"/>
-         <aspect name="rma:filePlan"/>
-         <aspect name="rma:cutoffable"/>
-         <aspect name="rma:holdable"/>
-         <aspect name="rma:transferable"/>
-         <aspect name="rma:accessionable"/>
-         <aspect name="rma:destroyable"/>
       </aspects>
       <!-- List of aspects to only show in the add features action -->
       <aspects-add>

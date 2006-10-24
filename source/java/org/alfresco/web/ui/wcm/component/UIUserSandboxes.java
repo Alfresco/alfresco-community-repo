@@ -18,7 +18,6 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -415,8 +414,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
                // build node context required for actions
                AVMNode avmNode = new AVMNode(node);
                String assetPath = sourcePath.substring(rootPathIndex);
-               String previewUrl = MessageFormat.format(
-                  AVMConstants.PREVIEW_ASSET_URL, dns, config.getWCMDomain(), config.getWCMPort(), assetPath);
+               String previewUrl = AVMConstants.buildAVMAssetUrl(
+                     assetPath, config.getWCMDomain(), config.getWCMPort(), dns);
                avmNode.getProperties().put("previewUrl", previewUrl);
                
                // size of files

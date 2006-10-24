@@ -16,12 +16,10 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -33,7 +31,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.actions.StartAVMWorkflowAction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -47,7 +44,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -617,8 +613,7 @@ public class AVMBrowseBean implements IContextListener
             
             // common properties
             String assetPath = path.substring(rootPathIndex);
-            String previewUrl = MessageFormat.format(
-                  AVMConstants.PREVIEW_ASSET_URL, dns, this.wcmDomain, this.wcmPort, assetPath);
+            String previewUrl = AVMConstants.buildAVMAssetUrl(assetPath, this.wcmDomain, this.wcmPort, dns);
             node.getProperties().put("previewUrl", previewUrl);
          }
          

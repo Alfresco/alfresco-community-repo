@@ -75,21 +75,6 @@ public final class AVMConstants
       return MessageFormat.format(PREVIEW_SANDBOX_URL, lookupStoreDNS(store), config.getWCMDomain(), config.getWCMPort());
    }
    
-   public static String buildAVMAssetUrl(String store, String assetPath)
-   {
-      if (assetPath.startsWith('/' + DIR_APPBASE + '/' + DIR_WEBAPPS))
-      {
-         assetPath = assetPath.substring(('/' + DIR_APPBASE + '/' + DIR_WEBAPPS).length());
-      }
-      if (assetPath.length() == 0 || assetPath.charAt(0) != '/')
-      {
-         assetPath = '/' + assetPath;
-      }
-      
-      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      return MessageFormat.format(PREVIEW_ASSET_URL, lookupStoreDNS(store), config.getWCMDomain(), config.getWCMPort(), assetPath);
-   }
-   
    public static String buildAVMAssetUrl(final String avmPath)
    {
       final String[] s = avmPath.split(":");
@@ -98,6 +83,30 @@ public final class AVMConstants
          throw new IllegalArgumentException("expected exactly one ':' in " + avmPath);
       }
       return AVMConstants.buildAVMAssetUrl(s[0], s[1]);
+   }
+   
+   public static String buildAVMAssetUrl(String store, String assetPath)
+   {
+      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
+      return buildAVMAssetUrl(assetPath, config.getWCMDomain(), config.getWCMPort(), lookupStoreDNS(store));
+   }
+   
+   public static String buildAVMAssetUrl(String assetPath, String domain, String port, String dns)
+   {
+      if (assetPath.startsWith('/' + DIR_APPBASE + '/' + DIR_WEBAPPS))
+      {
+         assetPath = assetPath.substring(('/' + DIR_APPBASE + '/' + DIR_WEBAPPS).length());
+      }
+      if (assetPath.startsWith('/' + DIR_ROOT))
+      {
+         assetPath = assetPath.substring(('/' + DIR_ROOT).length());
+      }
+      if (assetPath.length() == 0 || assetPath.charAt(0) != '/')
+      {
+         assetPath = '/' + assetPath;
+      }
+      
+      return MessageFormat.format(PREVIEW_ASSET_URL, dns, domain, port, assetPath);
    }
    
    public static String lookupStoreDNS(String store)
@@ -123,6 +132,9 @@ public final class AVMConstants
    public final static String DIR_APPBASE = "appBase";
    public final static String DIR_WEBAPPS = "avm_webapps";
    
+   // servlet implicit root directory
+   public final static String DIR_ROOT = "ROOT";
+   
    // system property keys for sandbox identification and DNS virtualisation mapping
    public final static String PROP_SANDBOXID = ".sandbox-id.";
    public final static String PROP_SANDBOX_STAGING_MAIN = ".sandbox.staging.main";
@@ -135,6 +147,6 @@ public final class AVMConstants
    public final static String SPACE_ICON_WEBSITE = "space-icon-website";
    
    // URLs for preview of sandboxes and assets
-   public final static String PREVIEW_SANDBOX_URL = "http://www-{0}.avm.{1}:{2}";
-   public final static String PREVIEW_ASSET_URL = "http://www-{0}.avm.{1}:{2}{3}";
+   private final static String PREVIEW_SANDBOX_URL = "http://www-{0}.avm.{1}:{2}";
+   private final static String PREVIEW_ASSET_URL = "http://www-{0}.avm.{1}:{2}{3}";
 }

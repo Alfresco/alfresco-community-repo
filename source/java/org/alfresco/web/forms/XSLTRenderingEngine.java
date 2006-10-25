@@ -76,6 +76,12 @@ public class XSLTRenderingEngine
       return o == null ? null : XSLTRenderingEngine.toAVMPath(o.toString(), path);
    }
 
+   /**
+    * Adapter function used by the xsl tempalte to retrieve an xml asset at the given
+    * path.
+    *
+    * @return the document element for the xml asset at the given path.
+    */
    public static Node parseXMLDocument(final ExpressionContext ec, final String path)
       throws TransformerException,
       IOException,
@@ -86,6 +92,10 @@ public class XSLTRenderingEngine
       return d != null ? d.getDocumentElement() : null;
    }
 
+   /**
+    * Adapter function used by the xsl tempalte to retrieve a xml assets in the
+    * current directory.
+    */
    public static NodeIterator parseXMLDocuments(final ExpressionContext ec, 
                                                 final String formName)
       throws TransformerException,
@@ -95,6 +105,15 @@ public class XSLTRenderingEngine
       return XSLTRenderingEngine.parseXMLDocuments(ec, formName, "");
    }
 
+   /**
+    * Adapter function used by the xsl tempalte to retrieve a xml assets at 
+    * the given path.
+    *
+    * @return an iterator of the document elements for each of the xml
+    * assets at the given path.  In order to enable xpath expressions to
+    * properly access siblings, each root element is rooted at a node named
+    * file-list in the alfresco namespace.
+    */
    public static NodeIterator parseXMLDocuments(final ExpressionContext ec, 
                                                 final String formName, 
                                                 String path)
@@ -194,7 +213,10 @@ public class XSLTRenderingEngine
       };
    }
 
-   // for debugging
+   /**
+    * for debugging only.  provides the absolute avm path for the given
+    * path.
+    */
    public static String _getAVMPath(final ExpressionContext ec, 
                                     final String path)
       throws TransformerException,

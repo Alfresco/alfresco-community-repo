@@ -33,8 +33,6 @@ import org.springframework.web.jsf.FacesContextUtils;
 /**
  * Provides helper functions for form data renderers.
  */
-// XXXarielb this class is probably temporary - but useful to
-// reduce redundant code until i find a better place to put this stuff
 public abstract class AbstractRenderingEngine
    implements RenderingEngine
 {
@@ -56,11 +54,21 @@ public abstract class AbstractRenderingEngine
       this.contentService = contentService;
    }
 
+   /**
+    * Returns the node ref for the rendering engine template.
+    *
+    * @return the node ref for the rendering engine template.
+    */
    public NodeRef getNodeRef()
    {
       return this.nodeRef;
    }
 
+   /**
+    * Returns the file extension to use for generated assets.
+    *
+    * @return the file extension to use for generated assets.
+    */
    public String getFileExtension()
    {
       return (String)
@@ -82,6 +90,17 @@ public abstract class AbstractRenderingEngine
       return new FormDataFunctions(AbstractRenderingEngine.getAVMRemote());
    }
 
+   /**
+    * Converts the provided path to an absolute path within the avm.
+    *
+    * @param parentAVMPath used as the parent path if the provided path
+    * is relative, otherwise used to extract the parent path portion up until
+    * the webapp directory.
+    * @param path a path relative to the parentAVMPath path, or if it is
+    * absolute, it is relative to the webapp used in the parentAVMPath.
+    *
+    * @return an absolute path within the avm using the paths provided.
+    */
    protected static String toAVMPath(final String parentAVMPath, final String path)
    {
       String parent = parentAVMPath;
@@ -92,7 +111,6 @@ public abstract class AbstractRenderingEngine
       {
          return parentAVMPath;
       }
-
 
       if (path.charAt(0) == '/')
       {
@@ -115,5 +133,4 @@ public abstract class AbstractRenderingEngine
                    " and request path " + path);
       return result;
    }
-
 }

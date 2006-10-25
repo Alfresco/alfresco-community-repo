@@ -144,6 +144,11 @@
       <component-class>org.alfresco.web.ui.common.component.UIStatusMessage</component-class>
    </component>
    
+   <component>
+      <component-type>org.alfresco.faces.SelectList</component-type>
+      <component-class>org.alfresco.web.ui.common.component.UISelectList</component-class>
+   </component>
+   
    
    <!-- ==================== CONVERTERS ==================== -->
    <converter>
@@ -165,6 +170,7 @@
       <converter-id>org.alfresco.faces.MultiValueConverter</converter-id>
       <converter-class>org.alfresco.web.ui.common.converter.MultiValueConverter</converter-class>
    </converter>
+   
    
    <!-- ==================== RENDERERS ==================== -->
    <render-kit>

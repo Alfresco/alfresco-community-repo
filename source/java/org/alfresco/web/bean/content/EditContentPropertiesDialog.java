@@ -42,7 +42,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       super.init(parameters);
       
       // setup the editable node
-      this.editableNode = new Node(this.browseBean.getDocument().getNodeRef());
+      this.editableNode = initEditableNode();
       
       // special case for Mimetype - since this is a sub-property of the ContentData object
       // we must extract it so it can be edited in the client, then we check for it later
@@ -54,11 +54,19 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       }
    }
    
+   /**
+    * Init the editable Node
+    */
+   protected Node initEditableNode()
+   {
+      return new Node(this.browseBean.getDocument().getNodeRef());
+   }
+   
    @Override
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
-      NodeRef nodeRef = this.browseBean.getDocument().getNodeRef();
+      NodeRef nodeRef = this.editableNode.getNodeRef();
       Map<String, Object> editedProps = this.editableNode.getProperties();
       
       // get the name and move the node as necessary
@@ -68,9 +76,9 @@ public class EditContentPropertiesDialog extends BaseDialogBean
          fileFolderService.rename(nodeRef, name);
       }
       
-      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
       // we need to put all the properties from the editable bag back into 
       // the format expected by the repository
+      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
       
       // but first extract and deal with the special mimetype property for ContentData
       String mimetype = (String)editedProps.get(TEMP_PROP_MIMETYPE);
@@ -172,7 +180,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
             this.nodeService.removeChild(assoc.getParentRef(), assoc.getChildRef());
          }
       }
-         
+      
       return outcome;
    }
    
@@ -232,6 +240,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
    {
       return false;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Bean getters and setters

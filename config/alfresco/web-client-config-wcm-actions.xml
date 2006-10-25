@@ -102,7 +102,7 @@
          </action>
          
          <!-- Create AVM Content -->
-         <action id="create_content">
+         <action id="create_avm_content">
             <permissions>
                <permission allow="true">CreateChildren</permission>
             </permissions>
@@ -223,7 +223,7 @@
          <action-group id="avm_create_menu">
             <show-link>false</show-link>
             <action idref="add_content" />
-            <action idref="create_content" />
+            <action idref="create_avm_content" />
             <action idref="create_folder" />
          </action-group>
          

@@ -40,12 +40,14 @@ public class UIListItem extends SelfRenderingComponent
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[5];
+      Object values[] = new Object[7];
       values[0] = super.saveState(context);
       values[1] = this.value;
       values[2] = this.disabled;
       values[3] = this.label;
-      values[4] = this.tooltip;
+      values[4] = this.description;
+      values[5] = this.tooltip;
+      values[6] = this.image;
       return ((Object) (values));
    }
 
@@ -59,7 +61,9 @@ public class UIListItem extends SelfRenderingComponent
       this.value = values[1];
       this.disabled = (Boolean)values[2];
       this.label = (String)values[3];
-      this.tooltip = (String)values[4];
+      this.description = (String)values[4];
+      this.tooltip = (String)values[5];
+      this.image = (String)values[6];
    }
    
    
@@ -149,6 +153,50 @@ public class UIListItem extends SelfRenderingComponent
    {
       this.label = label;
    }
+   
+   /**
+    * @return Returns the description.
+    */
+   public String getDescription()
+   {
+      ValueBinding vb = getValueBinding("description");
+      if (vb != null)
+      {
+         this.description = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.description;
+   }
+
+   /**
+    * @param description The description to set.
+    */
+   public void setDescription(String description)
+   {
+      this.description = description;
+   }
+   
+   /**
+    * @return Returns the image.
+    */
+   public String getImage()
+   {
+      ValueBinding vb = getValueBinding("image");
+      if (vb != null)
+      {
+         this.image = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.image;
+   }
+
+   /**
+    * @param image The image to set.
+    */
+   public void setImage(String image)
+   {
+      this.image = image;
+   }
 
    /**
     * @return Returns the tooltip.
@@ -187,4 +235,10 @@ public class UIListItem extends SelfRenderingComponent
 
    /** the label */
    private String label;
+   
+   /** the description */
+   private String description;
+   
+   /** the image */
+   private String image;
 }

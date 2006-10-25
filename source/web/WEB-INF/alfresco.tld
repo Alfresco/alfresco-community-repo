@@ -1055,18 +1055,6 @@
       </attribute>
       
       <attribute>
-         <name>style</name>
-         <required>false</required>
-         <rtexprvalue>true</rtexprvalue>
-      </attribute>
-      
-      <attribute>
-         <name>styleClass</name>
-         <required>false</required>
-         <rtexprvalue>true</rtexprvalue>
-      </attribute>
-      
-      <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
@@ -1074,6 +1062,12 @@
       
       <attribute>
          <name>label</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>description</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
@@ -1840,6 +1834,80 @@
       <attribute>
          <name>label</name>
          <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>selectList</name>
+      <tag-class>org.alfresco.web.ui.common.tag.SelectListTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         The SelectList component displays a graphical list of items, each with a label and icon image.
+         The list has three selection modes; single select (radio), multi-select (checkbox) and command
+         button single item select (action).
+         The value for the component is a bound list of SelectListItem objects.
+         The selected value can be retrieved from the component or during the actionListener event handler.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>style</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>styleClass</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>multiSelect</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+
+      <attribute>
+         <name>buttonLabel</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>action</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+
+      <attribute>
+         <name>actionListener</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+
+      <attribute>
+         <name>value</name>
+         <required>true</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
    </tag>

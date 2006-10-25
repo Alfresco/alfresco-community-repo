@@ -165,7 +165,7 @@ public class EditFolderPropertiesDialog extends EditSpaceDialog
       
       UIListItem item = new UIListItem();
       item.setValue(DEFAULT_SPACE_ICON_NAME);
-      item.getAttributes().put("image", "/images/icons/" + DEFAULT_SPACE_ICON_NAME + ".gif");
+      item.setImage("/images/icons/" + DEFAULT_SPACE_ICON_NAME + ".gif");
       icons.add(item);
       
       return icons;

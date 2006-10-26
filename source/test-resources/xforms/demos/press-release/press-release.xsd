@@ -35,16 +35,6 @@ Describes a press release and related assets.
     </xs:restriction>
   </xs:simpleType>
 
-  <!-- defines the form for creating a company footer -->
-  <xs:element name="company_footer">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="name" type="xs:string"/>
-        <xs:element name="body" type="xs:anyType" minOccurs="1" maxOccurs="unbounded"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-
   <!-- defines the form for creating a press release -->
   <xs:element name="press_release">
     <xs:complexType>

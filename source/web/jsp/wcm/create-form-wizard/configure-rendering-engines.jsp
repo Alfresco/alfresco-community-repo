@@ -84,19 +84,32 @@ else
 		    value="#{WizardManager.bean.renderingEngineTypeChoices}"/>
     </h:selectOneRadio>
 
+    <h:graphicImage id="required-image-mimetype"
+                    value="/images/icons/required_field.gif" alt="Required Field" />
+    <h:outputText id="mimetype-output-text"
+		  value="#{msg.mimetype_for_generated_assets}:"/>
+    <h:selectOneMenu id="mimetype"
+		     value="#{WizardManager.bean.mimetype}">
+      <f:selectItems id="mimetype-choices"
+		     value="#{WizardManager.bean.mimeTypeChoices}" />
+    </h:selectOneMenu>
+
     <h:graphicImage id="required-image-file-extension"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="file-extension-output-text"
                   value="#{msg.extension_for_generated_assets}:"/>
-    <h:inputText id="file-extension" value="#{WizardManager.bean.fileExtension}"
+    <h:inputText id="file-extension" 
+		 value="#{WizardManager.bean.fileExtension}"
                  maxlength="10" size="10"/>
   </h:panelGrid>
 
   <h:panelGroup id="step-2-panel-group" styleClass="mainSubText">
     <h:outputText id="step-2-output-text" value="2." />
-    <h:commandButton id="add-to-list-button" value="#{msg.add_to_list_button}" 
+    <h:commandButton id="add-to-list-button" 
+		     value="#{msg.add_to_list_button}" 
 		     actionListener="#{WizardManager.bean.addSelectedRenderingEngine}" 
-		     styleClass="wizardButton" disabled="#{WizardManager.bean.addToListDisabled}" />
+		     styleClass="wizardButton" 
+		     disabled="#{WizardManager.bean.addToListDisabled}" />
   </h:panelGroup>
   <h:outputText id="selected-rendering-engines-output-text"
                 styleClass="mainSubText" 
@@ -130,6 +143,12 @@ else
         <h:outputText id="data-table-value-3" value="#{row.fileExtension}" />
       </h:column>
       <h:column id="data-table-column-4">
+        <f:facet name="header">
+          <h:outputText id="data-table-name-4" value="#{msg.mimetype}" />
+        </f:facet>
+        <h:outputText id="data-table-value-4" value="#{row.mimetype}" />
+      </h:column>
+      <h:column id="data-table-column-5">
         <a:actionLink id="remove-select-rendering-engine-action-link"
 		      actionListener="#{WizardManager.bean.removeSelectedRenderingEngine}" 
 	              image="/images/icons/delete.gif"

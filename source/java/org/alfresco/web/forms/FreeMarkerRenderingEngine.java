@@ -56,14 +56,14 @@ public class FreeMarkerRenderingEngine
    }
 
    /**
-    * Generates the rendition using the configured freemarker template.  This
+    * Renders the rendition using the configured freemarker template.  This
     * provides a root map to the freemarker template which places the xml document, and 
     * a variable named alfresco at the root.  the alfresco variable contains a hash of 
     * all parameters and all extension functions.
     */
-   public void generate(final Document xmlContent,
-                        final Map<String, String> parameters,
-                        final Writer out)
+   public void render(final Document xmlContent,
+                      final Map<String, String> parameters,
+                      final OutputStream out)
       throws IOException,
       RenderingEngine.RenderingException
    {
@@ -200,9 +200,10 @@ public class FreeMarkerRenderingEngine
       };
 
       // process the form
+      final Writer writer = new OutputStreamWriter(out);
       try
       {
-         t.process(rootModel, out);
+         t.process(rootModel, writer);
       }
       catch (final TemplateException te)
       {
@@ -211,7 +212,7 @@ public class FreeMarkerRenderingEngine
       }
       finally
       {
-         out.flush();
+         writer.flush();
       }
    }
 }

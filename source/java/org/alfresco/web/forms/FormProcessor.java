@@ -43,13 +43,13 @@ public interface FormProcessor
    /////////////////////////////////////////////////////////////////////////////
 
    /**
-    * Generates a user interface for inputing data into a form.
+    * Processes a user interface for inputing data into a form.
     *
     * @param instanceData provides the xml instance data if available.
     * @param form the form to generate for
     * @param out the writer to write the output to.
     */
-   public void generate(final FormProcessor.InstanceData instanceData,
-                        final Form form,
-                        final Writer out);
+   public void process(final FormProcessor.InstanceData instanceData,
+                       final Form form,
+                       final Writer out);
 }

@@ -36,11 +36,14 @@ import org.alfresco.model.WCMModel;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.forms.xforms.SchemaFormBuilder;
 import org.apache.commons.logging.Log;
@@ -66,22 +69,30 @@ public class CreateFormWizard extends BaseWizardBean
       private final String fileName;
       private final File file;
       private final String fileExtension;
+      private final String mimetype;
       private final Class renderingEngineType;
 
       public RenderingEngineData(final String fileName, 
-                                      final File file,
-                                      final String fileExtension,
-                                      final Class renderingEngineType)
+                                 final File file,
+                                 final String fileExtension,
+                                 final String mimetype,
+                                 final Class renderingEngineType)
       {
          this.fileName = fileName;
          this.file = file;
          this.fileExtension = fileExtension;
+         this.mimetype = mimetype;
          this.renderingEngineType = renderingEngineType;
       }
       
       public String getFileExtension()
       {
          return this.fileExtension;
+      }
+
+      public String getMimetype()
+      {
+         return this.mimetype;
       }
       
       public String getFileName()
@@ -118,9 +129,12 @@ public class CreateFormWizard extends BaseWizardBean
    private String formDescription;
    private Class renderingEngineType = null;
    protected ContentService contentService;
+   protected MimetypeService mimetypeService;
    private DataModel renderingEnginesDataModel;
    private List<RenderingEngineData> renderingEngines = null;
    private String fileExtension = null;
+   private String mimetype = null;
+   private List<SelectItem> mimetypeChoices = null;
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -195,6 +209,8 @@ public class CreateFormWizard extends BaseWizardBean
          props.put(WCMModel.PROP_FORM_SOURCE, schemaNodeRef);
          props.put(WCMModel.PROP_FILE_EXTENSION_FOR_RENDITION, 
                    tomd.getFileExtension());
+         props.put(WCMModel.PROP_MIMETYPE_FOR_RENDITION, 
+                   tomd.getMimetype());
          this.nodeService.addAspect(renderingEngineNodeRef, 
                                     WCMModel.ASPECT_RENDERING_ENGINE, 
                                     props);
@@ -216,6 +232,7 @@ public class CreateFormWizard extends BaseWizardBean
       this.renderingEngineType = null;
       this.renderingEngines = new ArrayList<RenderingEngineData>();
       this.fileExtension = null;
+      this.mimetype = null;
    }
    
    @Override
@@ -262,6 +279,10 @@ public class CreateFormWizard extends BaseWizardBean
     */
    public String getFileExtension()
    {
+      if (this.fileExtension == null && this.mimetype != null)
+      {
+         this.fileExtension =  this.mimetypeService.getExtension(this.mimetype);
+      }
       return this.fileExtension;
    }
 
@@ -271,6 +292,26 @@ public class CreateFormWizard extends BaseWizardBean
    public void setFileExtension(String fileExtension)
    {
       this.fileExtension = fileExtension;
+   }
+
+   /**
+    * @return Returns the mimetype.
+    */
+   public String getMimetype()
+   {
+      if (this.mimetype == null && this.fileExtension != null)
+      {
+         this.mimetype = this.mimetypeService.guessMimetype(this.fileExtension);
+      }
+      return this.mimetype;
+   }
+
+   /**
+    * @param mimetype The mimetype to set.
+    */
+   public void setMimetype(String mimetype)
+   {
+      this.mimetype = mimetype;
    }
 
    /**
@@ -289,13 +330,15 @@ public class CreateFormWizard extends BaseWizardBean
 
       final RenderingEngineData data = 
          this.new RenderingEngineData(this.getRenderingEngineFileName(),
-                                           this.getRenderingEngineFile(),
-                                           this.fileExtension,
-                                           this.renderingEngineType);
+                                      this.getRenderingEngineFile(),
+                                      this.getFileExtension(),
+                                      this.getMimetype(),
+                                      this.renderingEngineType);
       this.renderingEngines.add(data);
       this.removeUploadedRenderingEngineFile();
       this.renderingEngineType = null;
       this.fileExtension = null;
+      this.mimetype = null;
    }
    
    /**
@@ -368,7 +411,9 @@ public class CreateFormWizard extends BaseWizardBean
              ? XSLTRenderingEngine.class
              : (this.getRenderingEngineFileName().endsWith(".ftl")
                 ? FreeMarkerRenderingEngine.class
-                : null));
+                : (this.getRenderingEngineFileName().endsWith(".fo")
+                   ? XSLFORenderingEngine.class
+                   : null)));
       }
       return (this.renderingEngineType == null
               ? null
@@ -396,8 +441,39 @@ public class CreateFormWizard extends BaseWizardBean
          new SelectItem(FreeMarkerRenderingEngine.class.getName(), 
                         getRenderingEngineTypeName(FreeMarkerRenderingEngine.class)),
          new SelectItem(XSLTRenderingEngine.class.getName(), 
-                        getRenderingEngineTypeName(XSLTRenderingEngine.class))
+                        getRenderingEngineTypeName(XSLTRenderingEngine.class)),
+         new SelectItem(XSLFORenderingEngine.class.getName(), 
+                        getRenderingEngineTypeName(XSLFORenderingEngine.class))
       });
+   }
+   
+   /**
+    * Returns a list of mime types in the system
+    * 
+    * @return List of mime types
+    */
+   public List<SelectItem> getMimeTypeChoices()
+   {
+       if (this.mimetypeChoices == null)
+       {
+           this.mimetypeChoices = new ArrayList<SelectItem>(50);
+           
+           final Map<String, String> mimetypes = this.mimetypeService.getDisplaysByMimetype();
+           for (String mimetype : mimetypes.keySet())
+           {
+              this.mimetypeChoices.add(new SelectItem(mimetype, 
+                                                      mimetypes.get(mimetype)));
+           }
+           
+           // make sure the list is sorted by the values
+           final QuickSort sorter = new QuickSort(this.mimetypeChoices, 
+                                                  "label", 
+                                                  true, 
+                                                  IDataContainer.SORT_CASEINSENSITIVE);
+           sorter.sort();
+       }
+       
+       return this.mimetypeChoices;
    }
 
    private String getRenderingEngineTypeName(Class type)
@@ -406,7 +482,9 @@ public class CreateFormWizard extends BaseWizardBean
               ? "FreeMarker"
               : (XSLTRenderingEngine.class.equals(type)
                  ? "XSLT"
-                 : null));
+                 : (XSLFORenderingEngine.class.equals(type)
+                    ? "XSL-FO"
+                    : null)));
    }
    
    private FileUploadBean getFileUploadBean(final String id)
@@ -566,7 +644,8 @@ public class CreateFormWizard extends BaseWizardBean
       for (int i = 0; i < this.renderingEngines.size(); i++)
       {
          final RenderingEngineData tomd = this.renderingEngines.get(i);
-         labels[1 + i] = "Form Data Renderer for " + tomd.getFileExtension();
+         labels[1 + i] = ("RenderingEngine for " + tomd.getFileExtension() +
+                          " mimetype " + tomd.getMimetype());
          values[1 + i] = tomd.getFileName();
       }
 
@@ -584,7 +663,14 @@ public class CreateFormWizard extends BaseWizardBean
    {
       this.contentService = contentService;
    }
-   
+
+   /**
+    * @param mimetypeService The mimetypeService to set.
+    */
+   public void setMimetypeService(MimetypeService mimetypeService)
+   {
+      this.mimetypeService = mimetypeService;
+   }
    
    // ------------------------------------------------------------------------------
    // Helper Methods

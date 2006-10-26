@@ -69,11 +69,23 @@ public abstract class AbstractRenderingEngine
     *
     * @return the file extension to use for generated assets.
     */
-   public String getFileExtension()
+   public String getFileExtensionForRendition()
    {
       return (String)
          this.nodeService.getProperty(this.nodeRef, 
                                       WCMModel.PROP_FILE_EXTENSION_FOR_RENDITION);
+   }
+
+   /**
+    * Returns the file extension to use for generated assets.
+    *
+    * @return the file extension to use for generated assets.
+    */
+   public String getMimetypeForRendition()
+   {
+      return (String)
+         this.nodeService.getProperty(this.nodeRef, 
+                                      WCMModel.PROP_MIMETYPE_FOR_RENDITION);
    }
 
    protected static AVMRemote getAVMRemote()

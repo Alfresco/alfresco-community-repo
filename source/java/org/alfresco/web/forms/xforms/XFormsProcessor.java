@@ -45,9 +45,9 @@ public class XFormsProcessor
      * Generates html text which bootstraps the JavaScript code that will
      * call back into the XFormsBean and get the xform and build the ui.
      */
-    public void generate(final InstanceData instanceData, 
-			 final Form tt,
-			 final Writer out)
+    public void process(final InstanceData instanceData, 
+                        final Form tt,
+                        final Writer out)
     {
 	final FormsService ts = FormsService.getInstance();
 	final FacesContext fc = FacesContext.getCurrentInstance();

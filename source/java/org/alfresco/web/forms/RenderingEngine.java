@@ -18,8 +18,8 @@ package org.alfresco.web.forms;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.Writer;
 import java.util.Map;
 import org.w3c.dom.Document;
 
@@ -50,20 +50,25 @@ public interface RenderingEngine
 
    /////////////////////////////////////////////////////////////////////////////
 
-   /** the noderef associated with this output method */
+   /** 
+    * XXXarielb this shouldn't be in the interface... i'll figure out a 
+    * different id scheme once i make rendering engines configurable.
+    *
+    * the noderef associated with this output method 
+    */
    public NodeRef getNodeRef();
 
    /**
-    * Serializes the xml data in to a presentation format.
+    * Renders the xml data in to a presentation format.
     *
-    * @param xmlContent the xml content to serialize
+    * @param formInstanceData the xml content to serialize
     * @param form the form that collected the xml content.
-    * @param sandBoxUrl the url of the current sandbox
-    * @param out the writer to serialize to.
+    * @param parameters the set of parameters to the rendering engine
+    * @param out the output stream to serialize to.
     */
-   public void generate(final Document xmlContent,
-                        final Map<String, String> parameters,
-                        final Writer out)
+   public void render(final Document formInstanceData,
+                      final Map<String, String> parameters,
+                      final OutputStream out)
       throws IOException, RenderingException;
 
    /**
@@ -71,7 +76,16 @@ public interface RenderingEngine
     * output method.
     *
     * @return the file extension to use when generating content for this
-    * output method, such as html, rss, pdf.
+    * output method, such as html, xml, pdf.
     */
-   public String getFileExtension();
+   public String getFileExtensionForRendition();
+
+   /**
+    * Returns the mimetype to use when generating content for this
+    * output method.
+    *
+    * @return the mimetype to use when generating content for this
+    * output method, such as text/html, text/xml, application/pdf.
+    */
+   public String getMimetypeForRendition();
 }

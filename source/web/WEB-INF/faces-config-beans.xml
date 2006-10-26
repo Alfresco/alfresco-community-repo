@@ -2054,6 +2054,10 @@
          <property-name>contentService</property-name>
          <value>#{ContentService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>mimetypeService</property-name>
+         <value>#{MimetypeService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

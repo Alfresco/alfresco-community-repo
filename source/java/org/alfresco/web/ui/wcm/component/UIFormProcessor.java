@@ -88,7 +88,7 @@ public class UIFormProcessor extends SelfRenderingComponent
       final Form form = this.getForm();
       final FormProcessor.InstanceData formInstanceData = this.getFormInstanceData();
       final FormProcessor tim = form.getFormProcessors().get(0);
-      tim.generate(formInstanceData, form, out);
+      tim.process(formInstanceData, form, out);
    }
    
    // ------------------------------------------------------------------------------

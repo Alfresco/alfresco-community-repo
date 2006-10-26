@@ -238,7 +238,8 @@ public final class FormsService
             final RenderingEngine tom = (RenderingEngine)
                c.newInstance(tomNodeRef, this.nodeService, this.contentService);
             LOGGER.debug("loaded form data renderer type " + tom.getClass().getName() +
-                         " for extension " + tom.getFileExtension() + ", " + tomNodeRef);
+                         " for extension " + tom.getFileExtensionForRendition() + 
+                         ", " + tomNodeRef);
             tt.addRenderingEngine(tom);
          }
          catch (Exception e)
@@ -271,19 +272,19 @@ public final class FormsService
       {
          // get the node ref of the node that will contain the content
          final String renditionFileName = 
-            this.stripExtension(formInstanceDataFileName) + "." + re.getFileExtension();
-         final OutputStream fileOut = this.avmService.createFile(parentPath, renditionFileName);
+            (this.stripExtension(formInstanceDataFileName) + 
+             "." + re.getFileExtensionForRendition());
+         final OutputStream out = this.avmService.createFile(parentPath, renditionFileName);
          final String renditionAvmPath = parentPath + '/' + renditionFileName;
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + renditionAvmPath);
-         final OutputStreamWriter out = new OutputStreamWriter(fileOut);
 
          final HashMap<String, String> parameters =
             this.getRenderingEngineParameters(formInstanceDataFileName, 
-                                           renditionFileName, 
-                                           parentPath);
-         re.generate(formInstanceData, parameters, out);
+                                              renditionFileName, 
+                                              parentPath);
+         re.render(formInstanceData, parameters, out);
          out.close();
             
          final NodeRef renditionNodeRef = 
@@ -335,7 +336,8 @@ public final class FormsService
       for (RenderingEngine re : form.getRenderingEngines())
       {
          final String renditionFileName = 
-            this.stripExtension(formInstanceDataFileName) + "." + re.getFileExtension();
+            (this.stripExtension(formInstanceDataFileName) + "." + 
+             re.getFileExtensionForRendition());
 
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("regenerating file node for : " + formInstanceDataFileName + 
@@ -354,13 +356,12 @@ public final class FormsService
             out = this.avmService.createFile(parentPath, renditionFileName);
          }
 
-         final OutputStreamWriter writer = new OutputStreamWriter(out);
          final HashMap<String, String> parameters =
             this.getRenderingEngineParameters(formInstanceDataFileName, 
                                            renditionFileName, 
                                            parentPath);
-         re.generate(formInstanceData, parameters, writer);
-         writer.close();
+         re.render(formInstanceData, parameters, out);
+         out.close();
 
          LOGGER.debug("generated " + renditionFileName + " using " + re);
       }

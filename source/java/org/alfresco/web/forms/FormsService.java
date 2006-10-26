@@ -297,8 +297,7 @@ public final class FormsService
 
          props = new HashMap<QName, Serializable>(2, 1.0f);
          props.put(WCMModel.PROP_PARENT_RENDERING_ENGINE, re.getNodeRef());
-         props.put(WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA, 
-                   AVMNodeConverter.ToNodeRef(-1, parentPath + formInstanceDataFileName));
+         props.put(WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA, formInstanceDataNodeRef);
          nodeService.addAspect(renditionNodeRef, WCMModel.ASPECT_RENDITION, props);
 
          props = new HashMap<QName, Serializable>(1, 1.0f);

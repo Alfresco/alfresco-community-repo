@@ -33,12 +33,12 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.CheckinCheckoutBean;
 import org.alfresco.web.bean.FileUploadBean;
-import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormProcessor;
@@ -55,7 +55,7 @@ import org.w3c.dom.Document;
  */
 public class AVMEditBean
 {
-   private static Log logger = LogFactory.getLog(AVMEditBean.class);
+   private static final Log LOGGER = LogFactory.getLog(AVMEditBean.class);
    
    private static final String MSG_ERROR_UPDATE = "error_update";
    private static final String MSG_UPLOAD_SUCCESS = "file_upload_success";
@@ -143,7 +143,8 @@ public class AVMEditBean
     */
    public String getUrl()
    {
-      return DownloadContentServlet.generateDownloadURL(AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath()), getAvmNode().getName());
+      return DownloadContentServlet.generateDownloadURL(AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath()), 
+                                                        getAvmNode().getName());
    }
    
    /**
@@ -264,13 +265,25 @@ public class AVMEditBean
       
       // retrieve the content reader for this node
       NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath());
-      if (logger.isDebugEnabled())
-         logger.debug("Editing AVM node: " + avmRef.toString());
+      if (this.nodeService.hasAspect(avmRef, WCMModel.ASPECT_RENDITION))
+      {
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug(avmRef + " is a rendition, editing primary rendition instead");
+         avmRef = (NodeRef)this.nodeService.getProperty(avmRef, WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+
+         final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(avmRef);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Editing primary form instance data " + p.getSecond() + " version " + p.getFirst());
+         final AVMNode avmNode = new AVMNode(this.avmService.lookup(p.getFirst(), p.getSecond()));
+         this.avmBrowseBean.setAvmActionNode(avmNode);
+      }
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Editing AVM node: " + avmRef.toString());
       ContentReader reader = contentService.getReader(avmRef, ContentModel.PROP_CONTENT);
       if (reader != null)
       {
          String mimetype = reader.getMimetype();
-         
+         String outcome = null;
          // calculate which editor screen to display
          if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) ||
              MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
@@ -281,17 +294,10 @@ public class AVMEditBean
             setEditorOutput(reader.getContentString());
             
             // navigate to appropriate screen
-            FacesContext fc = FacesContext.getCurrentInstance();
-            String outcome;
-            if (MimetypeMap.MIMETYPE_XML.equals(mimetype))
-            {
-               outcome = "dialog:editAvmXmlInline";
-            }
-            else
-            {
-               outcome = "dialog:editAvmTextInline";
-            }
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
+            outcome = ((MimetypeMap.MIMETYPE_XML.equals(mimetype) && 
+                        this.nodeService.hasAspect(avmRef, WCMModel.ASPECT_FORM_INSTANCE_DATA))
+                       ? "dialog:editAvmXmlInline"
+                       : "dialog:editAvmTextInline");
          }
          else if (MimetypeMap.MIMETYPE_HTML.equals(mimetype))
          {
@@ -300,15 +306,16 @@ public class AVMEditBean
             setEditorOutput(null);
             
             // navigate to appropriate screen
-            FacesContext fc = FacesContext.getCurrentInstance();
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editAvmHtmlInline");
+            outcome = "dialog:editAvmHtmlInline";
          }
          else
          {
             // normal downloadable document
-            FacesContext fc = FacesContext.getCurrentInstance();
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editAvmFile");
+            outcome = "dialog:editAvmFile";
          }
+
+         final FacesContext fc = FacesContext.getCurrentInstance();
+         fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
       }
    }
    
@@ -355,8 +362,8 @@ public class AVMEditBean
             // commit the transaction
             tx.commit();
             
-            // TODO: regenerate form content
-            if (nodeService.getProperty(avmRef, WCMModel.PROP_PARENT_FORM) != null)
+            // regenerate form content
+            if (nodeService.hasAspect(avmRef, WCMModel.ASPECT_FORM_INSTANCE_DATA))
             {
                final FormsService fs = FormsService.getInstance();
                fs.regenerateRenditions(avmRef);

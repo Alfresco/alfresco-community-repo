@@ -44,7 +44,7 @@
       else
       {
          document.getElementById("wizard:next-button").disabled = false;
-         document.getElementById("wizard:finish-button").disabled = false;
+         document.getElementById("wizard:finish-button").disabled = true;
       }
    }
    

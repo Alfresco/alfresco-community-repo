@@ -18,11 +18,13 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.faces.component.UISelectItem;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -44,6 +46,8 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
+import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -274,6 +278,45 @@ public class CreateWebsiteWizard extends BaseWizardBean
                           bundle.getString(MSG_USERROLES)},
             new String[] {this.name, this.description, buf.toString()});
    }
+   
+   public List<UIListItem> getFormsList()
+   {
+      List<UIListItem> forms = new ArrayList<UIListItem>();
+      UIListItem item = new UIListItem();
+      item.setValue("0001");
+      item.setLabel("Company Press Release");
+      item.setDescription("Standard monthly press release form");
+      item.setTooltip("Standard monthly press release form");
+      item.setImage(WebResources.IMAGE_SANDBOX_32);
+      forms.add(item);
+      item = new UIListItem();
+      item.setValue("0002");
+      item.setLabel("Company Site Note");
+      item.setDescription("Main site footer node");
+      item.setTooltip("Basic footer node addition form");
+      item.setImage(WebResources.IMAGE_SANDBOX_32);
+      forms.add(item);
+      item = new UIListItem();
+      item.setValue("0003");
+      item.setLabel("Index Generator");
+      item.setDescription("Complete site index");
+      item.setTooltip("Complete site index generation form");
+      item.setImage(WebResources.IMAGE_SANDBOX_32);
+      forms.add(item);
+      return forms;
+   }
+   
+   public String[] getFormsSelectedValue()
+   {
+      return testValue;
+   }
+   
+   public void setFormsSelectedValue(String[] value)
+   {
+      testValue = value;
+   }
+   
+   private String[] testValue = new String[] {"0001"};
    
    
    /**

@@ -74,7 +74,6 @@ public class UIUserGroupPicker extends UICommand
    public void decode(FacesContext context)
    {
       Map requestMap = context.getExternalContext().getRequestParameterMap();
-      Map valuesMap = context.getExternalContext().getRequestParameterValuesMap();
       String fieldId = getHiddenFieldName(context);
       String value = (String)requestMap.get(fieldId);
       

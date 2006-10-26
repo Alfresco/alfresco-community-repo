@@ -559,3 +559,15 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 {
 	padding-bottom: 8px;
 }
+
+.selectListTable
+{
+   border: 1px solid #999999;
+   padding: 2px;
+}
+
+.selectListItem
+{
+   background-color: #eeeeee;
+   border-bottom: 2px solid #ffffff;
+}

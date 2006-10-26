@@ -16,7 +16,6 @@
  */
 package org.alfresco.web.ui.common.tag;
 
-import javax.faces.component.UICommand;
 import javax.faces.component.UIComponent;
 
 /**
@@ -46,10 +45,12 @@ public class SelectListTag extends HtmlComponentTag
    protected void setProperties(UIComponent component)
    {
       super.setProperties(component);
-      setActionProperty((UICommand)component, this.action);
-      setActionListenerProperty((UICommand)component, this.actionListener);
       setBooleanProperty(component, "multiSelect", this.multiSelect);
-      setStringProperty(component, "buttonLabel", this.buttonLabel);
+      setBooleanProperty(component, "activeSelect", this.activeSelect);
+      setStringStaticProperty(component, "var", this.var);
+      setStringProperty(component, "itemStyle", this.itemStyle);
+      setStringProperty(component, "itemStyleClass", this.itemStyleClass);
+      setStringProperty(component, "value", this.value);
    }
    
    /**
@@ -58,62 +59,89 @@ public class SelectListTag extends HtmlComponentTag
    public void release()
    {
       super.release();
-      this.action = null;
-      this.actionListener = null;
       this.multiSelect = null;
-      this.buttonLabel = null;
+      this.activeSelect = null;
+      this.var = null;
+      this.itemStyle = null;
+      this.itemStyleClass = null;
+      this.value = null;
    }
 
    /**
-    * Set the action
+    * Set the multi-select mode 
     *
-    * @param action     the action
-    */
-   public void setAction(String action)
-   {
-      this.action = action;
-   }
-
-   /**
-    * Set the actionListener
-    *
-    * @param actionListener     the actionListener
-    */
-   public void setActionListener(String actionListener)
-   {
-      this.actionListener = actionListener;
-   }
-
-   /**
-    * Set the multiSelect
-    *
-    * @param multiSelect     the multiSelect
+    * @param multiSelect     the multi-select mode 
     */
    public void setMultiSelect(String multiSelect)
    {
       this.multiSelect = multiSelect;
    }
-
+   
    /**
-    * Set the buttonLabel
+    * Set the active selection mode
     *
-    * @param buttonLabel     the buttonLabel
+    * @param activeSelect     the active selection mode
     */
-   public void setButtonLabel(String buttonLabel)
+   public void setActiveSelect(String activeSelect)
    {
-      this.buttonLabel = buttonLabel;
+      this.activeSelect = activeSelect;
+   }
+   
+   /**
+    * Set the variable name for row item context
+    *
+    * @param var     the variable name for row item context
+    */
+   public void setVar(String var)
+   {
+      this.var = var;
+   }
+   
+   /**
+    * Set the item Style
+    *
+    * @param itemStyle     the item Style
+    */
+   public void setItemStyle(String itemStyle)
+   {
+      this.itemStyle = itemStyle;
    }
 
+   /**
+    * Set the item Style Class
+    *
+    * @param itemStyleClass     the item Style Class
+    */
+   public void setItemStyleClass(String itemStyleClass)
+   {
+      this.itemStyleClass = itemStyleClass;
+   }
+   
+   /**
+    * Set the selected value
+    *
+    * @param value     the selected value
+    */
+   public void setValue(String value)
+   {
+      this.value = value;
+   }
 
-   /** the multiSelect */
+   /** the selected value */
+   private String value;
+
+   /** the itemStyle */
+   private String itemStyle;
+
+   /** the itemStyleClass */
+   private String itemStyleClass;
+
+   /** the multi-select mode */
    private String multiSelect;
 
-   /** the buttonLabel */
-   private String buttonLabel;
-
-   /** the action */
-   private String action;
-
-   /** the actionListener */
-   private String actionListener;
+   /** the active selection mode */
+   private String activeSelect;
+   
+   /** the variable name for row item context */
+   private String var;
 }

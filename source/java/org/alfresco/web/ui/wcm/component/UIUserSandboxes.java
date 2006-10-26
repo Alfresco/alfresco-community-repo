@@ -149,7 +149,6 @@ public class UIUserSandboxes extends SelfRenderingComponent
    public void decode(FacesContext context)
    {
       Map requestMap = context.getExternalContext().getRequestParameterMap();
-      Map valuesMap = context.getExternalContext().getRequestParameterValuesMap();
       String fieldId = getClientId(context);
       String value = (String)requestMap.get(fieldId);
       

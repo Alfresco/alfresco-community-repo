@@ -72,7 +72,7 @@
    <tr>
       <td colspan="3" class="wizardSectionHeading">
          </f:verbatim>
-         <h:outputText value="#{msg.create_website_title}"/>
+         <h:outputText value="#{msg.website_details}"/>
          <f:verbatim>
       </td>
    </tr>

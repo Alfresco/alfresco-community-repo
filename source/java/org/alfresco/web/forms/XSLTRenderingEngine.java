@@ -21,20 +21,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.alfresco.model.WCMModel;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -51,7 +48,7 @@ import org.xml.sax.SAXException;
 import org.apache.bsf.BSFManager;
 
 /**
- * A rendering engine which uses xsl templates to generate renditions of
+ * A rendering engine which uses xsl templates to render renditions of
  * form instance data.
  *
  * @author Ariel Backenroth
@@ -69,7 +66,7 @@ public class XSLTRenderingEngine
       super(nodeRef, nodeService, contentService);
    }
 
-   private static String toAVMPath(final ExpressionContext ec, String path)
+   protected static String toAVMPath(final ExpressionContext ec, String path)
       throws TransformerException
    {
       final XObject o = ec.getVariableOrParam(new QName(ALFRESCO_NS, ALFRESCO_NS_PREFIX, "parent_path"));
@@ -227,69 +224,89 @@ public class XSLTRenderingEngine
       return XSLTRenderingEngine.toAVMPath(ec, path);
    }
 
-   private void addScript(final Document d)
+   /**
+    * Adds a script element to the xsl which makes static methods on this
+    * object available to the xsl tempalte.
+    *
+    * @param xslTemplate the xsl template
+    */
+   protected void addScript(final Document xslTemplate)
    {
-      final Element docEl = d.getDocumentElement();
+      final Element docEl = xslTemplate.getDocumentElement();
       final String XALAN_NS = "http://xml.apache.org/xalan";
       final String XALAN_NS_PREFIX = "xalan";
       docEl.setAttribute("xmlns:" + XALAN_NS_PREFIX, XALAN_NS);
       docEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
       
-      final Element compEl = d.createElementNS(XALAN_NS, XALAN_NS_PREFIX + ":component");
+      final Element compEl = xslTemplate.createElementNS(XALAN_NS, XALAN_NS_PREFIX + ":component");
       compEl.setAttribute("prefix", "alfresco");
       docEl.appendChild(compEl);
 
-      final Element scriptEl = d.createElementNS(XALAN_NS, XALAN_NS_PREFIX + ":script");
+      final Element scriptEl = xslTemplate.createElementNS(XALAN_NS, XALAN_NS_PREFIX + ":script");
       scriptEl.setAttribute("lang", "javaclass");
       scriptEl.setAttribute("src", XALAN_NS_PREFIX + "://" + this.getClass().getName());
       compEl.appendChild(scriptEl);
    }
 
-   private void addParameters(final Map<String, String> parameters,
-                              final Document xslDocument)
+   /**
+    * Adds the specified parameters to the xsl template as variables within the 
+    * alfresco namespace.
+    *
+    * @param parameters the variables to place within the xsl template
+    * @param xslTemplate the xsl template
+    */
+   protected void addParameters(final Map<String, String> parameters,
+                              final Document xslTemplate)
    {
-      final Element docEl = xslDocument.getDocumentElement();
+      final Element docEl = xslTemplate.getDocumentElement();
       final String XSL_NS = docEl.getNamespaceURI();
       final String XSL_NS_PREFIX = docEl.getPrefix();
       
       for (Map.Entry<String, String> e : parameters.entrySet())
       {
-         final Element el = xslDocument.createElementNS(XSL_NS, XSL_NS_PREFIX + ":variable");
+         final Element el = xslTemplate.createElementNS(XSL_NS, XSL_NS_PREFIX + ":variable");
          el.setAttribute("name", ALFRESCO_NS_PREFIX + ':' + e.getKey());
-         el.appendChild(xslDocument.createTextNode(e.getValue()));
+         el.appendChild(xslTemplate.createTextNode(e.getValue()));
          docEl.insertBefore(el, docEl.getFirstChild());
       }
    }
 
-   public void generate(final Document xmlContent,
-                        final Map<String, String> parameters,
-                        final Writer out)
+   public void render(final Document formInstanceData,
+                      final Map<String, String> parameters,
+                      final OutputStream out)
+      throws IOException,
+      RenderingEngine.RenderingException
+   {
+      this.render(new DOMSource(formInstanceData), parameters, new StreamResult(out));
+   }
+
+   protected void render(final Source formInstanceDataSource,
+                         final Map<String, String> parameters,
+                         final Result result)
       throws IOException,
       RenderingEngine.RenderingException
    {
       System.setProperty("org.apache.xalan.extensions.bsf.BSFManager",
                          BSFManager.class.getName());
-      final TransformerFactory tf = TransformerFactory.newInstance();
       final FormsService ts = FormsService.getInstance();
-      Document xslDocument = null;
+      Document xslTemplate = null;
       try
       {
-         xslDocument = ts.parseXML(this.getNodeRef());
+         xslTemplate = ts.parseXML(this.getNodeRef());
       }
       catch (final SAXException sax)
       {
          throw new RenderingEngine.RenderingException(sax);
       }
-      this.addScript(xslDocument);
-      this.addParameters(parameters, xslDocument);
-
-      final DOMSource source = new DOMSource(xslDocument);
+      this.addScript(xslTemplate);
+      this.addParameters(parameters, xslTemplate);
 
       Transformer t = null;
       try 
       {
-         final Templates templates = tf.newTemplates(source);
-         t = templates.newTransformer();
+         final TransformerFactory tf = TransformerFactory.newInstance();
+         t = tf.newTransformer(new DOMSource(xslTemplate));
+         t.setParameter("versionParam", "2.0");
       }
       catch (TransformerConfigurationException tce)
       {
@@ -314,7 +331,9 @@ public class XSLTRenderingEngine
             }
             catch (URISyntaxException e)
             {
-               throw new TransformerException("unable to create uri " + sandBoxUrl + href, e);
+               throw new TransformerException("unable to create uri " + 
+                                              sandBoxUrl + href, 
+                                              e);
             }
             try
             {
@@ -331,10 +350,9 @@ public class XSLTRenderingEngine
          }
       });
 
-      final StreamResult result = new StreamResult(out);
       try
       {
-         t.transform(new DOMSource(xmlContent), result);
+         t.transform(formInstanceDataSource, result);
       }
       catch (TransformerException e)
       {

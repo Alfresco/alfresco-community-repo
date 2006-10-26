@@ -45,7 +45,8 @@ public interface WCMModel
     // An XML to something else tranformer aspect.
     public static final QName ASPECT_RENDERING_ENGINE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingengine");
     public static final QName PROP_RENDERING_ENGINE_TYPE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingenginetype");
-    public static final QName PROP_FILE_EXTENSION_FOR_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "fileextensionfordatarendition");
+    public static final QName PROP_FILE_EXTENSION_FOR_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "fileextensionforrendition");
+    public static final QName PROP_MIMETYPE_FOR_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "mimetypeforrendition");
     public static final QName PROP_FORM_SOURCE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formsource");
 
     public static final QName ASPECT_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "forminstancedata");

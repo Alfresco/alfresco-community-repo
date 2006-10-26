@@ -101,7 +101,8 @@ if (upload == null || upload.getFile() == null)
    <h:outputText id="output_text_root_element_name" value="#{msg.schema_root_element_name}:"/>
    <h:selectOneMenu id="schema-root-element-name" 
                     value="#{WizardManager.bean.schemaRootElementName}">
-     <f:selectItems value="#{WizardManager.bean.schemaRootElementNameChoices}"/>
+     <f:selectItems id="schema-root-element-name-choices"
+		    value="#{WizardManager.bean.schemaRootElementNameChoices}"/>
    </h:selectOneMenu>
    <h:graphicImage id="graphic_image_name" value="/images/icons/required_field.gif" alt="Required Field" />
 

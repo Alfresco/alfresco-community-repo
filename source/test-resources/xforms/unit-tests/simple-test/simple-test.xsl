@@ -39,7 +39,7 @@ body
     <xsl:template match="/simple/string">
       <div style="line-height: 25px;">
 	<span class="name">Captured string value:</span>
-	<span><xsl:value-of select="/simple/string"/></span>
+	<span><xsl:value-of select="."/></span>
       </div>
     </xsl:template>
 </xsl:stylesheet>

@@ -56,38 +56,30 @@ public class XSLFORenderingEngine
       super(nodeRef, nodeService, contentService);
    }
 
-   public void generate(final Document xmlContent,
-                        final Map<String, String> parameters,
-                        final OutputStream out)
+   public void render(final Document xmlContent,
+                      final Map<String, String> parameters,
+                      final OutputStream out)
       throws IOException,
       RenderingEngine.RenderingException
    {
+      Result result = null;
       try
       {
          final FopFactory fopFactory = FopFactory.newInstance();
          final FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
-         final Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, out);
-         
+         final Fop fop = fopFactory.newFop(this.getMimetypeForRendition(), 
+                                           foUserAgent, 
+                                           out);
          // Resulting SAX events (the generated FO) must be piped through to FOP
-         final Result result = new SAXResult(fop.getDefaultHandler());
+         result = new SAXResult(fop.getDefaultHandler());
          
-         super.render(new DOMSource(xmlContent), parameters, result);
-         
-         // Result processing
-         FormattingResults foResults = fop.getResults();
-         java.util.List pageSequences = foResults.getPageSequences();
-         for (java.util.Iterator it = pageSequences.iterator(); it.hasNext();) 
-         {
-            PageSequenceResults pageSequenceResults = (PageSequenceResults)it.next();
-            System.out.println("PageSequence " 
-                               + (String.valueOf(pageSequenceResults.getID()).length() > 0 
-                                  ? pageSequenceResults.getID() : "<no id>") 
-                               + " generated " + pageSequenceResults.getPageCount() + " pages.");
-         }
-         System.out.println("Generated " + foResults.getPageCount() + " pages in total.");
       }
       catch (FOPException fope)
       {
+         throw new RenderingEngine.RenderingException(fope);
       }
+         
+      super.render(new DOMSource(xmlContent), parameters, result);
+
    }
 }

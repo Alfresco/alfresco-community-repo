@@ -87,7 +87,7 @@ else
     <h:graphicImage id="required-image-mimetype"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="mimetype-output-text"
-		  value="#{msg.mimetype_for_generated_assets}:"/>
+		  value="#{msg.mimetype_for_renditions}:"/>
     <h:selectOneMenu id="mimetype"
 		     value="#{WizardManager.bean.mimetype}">
       <f:selectItems id="mimetype-choices"
@@ -97,7 +97,7 @@ else
     <h:graphicImage id="required-image-file-extension"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="file-extension-output-text"
-                  value="#{msg.extension_for_generated_assets}:"/>
+                  value="#{msg.extension_for_renditions}:"/>
     <h:inputText id="file-extension" 
 		 value="#{WizardManager.bean.fileExtension}"
                  maxlength="10" size="10"/>

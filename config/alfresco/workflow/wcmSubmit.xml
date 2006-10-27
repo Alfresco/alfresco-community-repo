@@ -22,7 +22,7 @@
 	<task-node name="setup">
 		<task name="wcmwf:setupSubmit" swimlane="initiator">
 			<controller>
-				<variable name="assignee" access="write" mapped-name="wcmwf:assignee"/>
+				<variable name="assignee" access="write" mapped-name="bpm:assignee"/>
 				<variable name="description" access="write" mapped-name="wcmwf:description"/>
 				<variable name="package" access="write" mapped-name="bpm:package"/>
 				<variable name="workflowcontext" access="write" mapped-name="bpm:context"/>
@@ -32,7 +32,7 @@
 	</task-node>
 	
     <swimlane name="assignee">
-        <assignment actor-id="#{assignee.properties['cm:userName']}"/>
+        <assignment actor-id="#{bpm_assignee.properties['cm:userName']}"/>
     </swimlane>
 
     <task-node name="review">

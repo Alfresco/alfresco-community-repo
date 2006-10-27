@@ -100,6 +100,7 @@ public class StartAVMWorkflowAction extends ActionExecuterAbstractBase
             fgLogger.error(wfParams.get(name));
         }
         WorkflowPath path = fWorkflowService.startWorkflow(def.id, wfParams);
+        /*
         if (path != null)
         {
             fgLogger.error("Workflow path is not null.");
@@ -119,6 +120,7 @@ public class StartAVMWorkflowAction extends ActionExecuterAbstractBase
                 }
             }
         }
+        */
     }
 
     /**

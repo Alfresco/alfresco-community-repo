@@ -31,7 +31,7 @@
     </bean>
     <bean id="sessionFactoryBase" abstract="true">
         <property name="schemaUpdate">
-           <value>false</value>
+           <value>true</value>
         </property>
         <property name="mappingResources">
             <list>

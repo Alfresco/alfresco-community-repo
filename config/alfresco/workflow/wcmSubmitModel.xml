@@ -22,30 +22,21 @@
                    <type>d:text</type>
                </property>
             </properties>
+            
+            
         </type>
 
         <type name="wcmwf:startSubmit">
             <title>Submit Web Content</title>
             <parent>wcmwf:baseSubmitTask</parent>
+	         <mandatory-aspects>
+    	        <aspect>bpm:assignee</aspect>
+        	 </mandatory-aspects>
         </type>
 
 		<type name="wcmwf:setupSubmit">
 			<title>Submit Web Content</title>
 			<parent>wcmwf:baseSubmitTask</parent>
-			<associations>
-				<association name="wcmwf:assignee">
-					<title>The Reviewer</title>
-					<source>
-						<mandatory>false</mandatory>
-						<many>false</many>
-					</source>
-					<target>
-						<class>cm:person</class>
-						<mandatory>true</mandatory>
-						<many>false</many>
-					</target>
-				</association>
-			</associations>
 		</type>
 
         <type name="wcmwf:review">

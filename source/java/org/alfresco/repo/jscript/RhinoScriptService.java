@@ -21,7 +21,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -30,6 +32,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptException;
+import org.alfresco.service.cmr.repository.ScriptImplementation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
@@ -51,6 +54,8 @@ public class RhinoScriptService implements ScriptService
     /** Repository Service Registry */
     private ServiceRegistry services;
     
+    /** List of global scripts */
+    private List<ScriptImplementation> globalScripts = new ArrayList<ScriptImplementation>(5); 
 
     /**
      * Set the Service Registry
@@ -60,6 +65,14 @@ public class RhinoScriptService implements ScriptService
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptService#registerScript(java.lang.Object)
+     */
+    public void registerScript(ScriptImplementation script)
+    {
+    	this.globalScripts.add(script);
     }
     
     /**
@@ -217,10 +230,11 @@ public class RhinoScriptService implements ScriptService
                 model = new HashMap<String, Object>();
             }
             
-            // add useful util objects
-            model.put("actions", new Actions(services));
-            model.put("logger", new ScriptLogger());
-            model.put("utils", new ScriptUtils());
+            // add the global scripts
+            for (ScriptImplementation script : this.globalScripts) 
+            {
+            	model.put(script.getScriptName(), script);
+			}
             
             // insert supplied object model into root of the default scope
             for (String key : model.keySet())

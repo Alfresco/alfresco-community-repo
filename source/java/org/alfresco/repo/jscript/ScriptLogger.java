@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 /**
  * @author Kevin Roast
  */
-public final class ScriptLogger
+public final class ScriptLogger extends BaseScriptImplementation
 {
     private static final Logger logger = Logger.getLogger(ScriptLogger.class);
     

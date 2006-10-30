@@ -23,7 +23,7 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Kevin Roast
  */
-public final class ScriptUtils implements Scopeable
+public final class ScriptUtils extends BaseScriptImplementation implements Scopeable
 {
     /** Root scope for this object */
     private Scriptable scope;

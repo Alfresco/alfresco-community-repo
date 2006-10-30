@@ -1738,7 +1738,7 @@ public class Node implements Serializable, Scopeable
     /**
      * Reset the Node cached state
      */
-    private void reset()
+    public void reset()
     {
        this.name = null;
        this.type = null;

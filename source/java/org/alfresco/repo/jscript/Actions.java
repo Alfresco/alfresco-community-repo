@@ -35,7 +35,7 @@ import org.mozilla.javascript.Wrapper;
  * 
  * @author davidc
  */
-public final class Actions implements Scopeable
+public final class Actions extends BaseScriptImplementation implements Scopeable
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
@@ -44,14 +44,13 @@ public final class Actions implements Scopeable
     private Scriptable scope;
 
     /**
-     * Constructor
+     * Set the service registry
      * 
-     * @param services
-     *            repository service registry
+     * @param serviceRegistry	the service registry
      */
-    public Actions(ServiceRegistry services)
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-        this.services = services;
+    	this.services = serviceRegistry;
     }
 
     /**
@@ -61,7 +60,7 @@ public final class Actions implements Scopeable
     {
         this.scope = scope;
     }
-
+    
     /**
      * Gets the list of registered action names
      * 
@@ -216,6 +215,9 @@ public final class Actions implements Scopeable
                 }
             }
             services.getActionService().executeAction(action, node.getNodeRef());
+            
+            // Reset the actioned upon node
+            node.reset();
         }
 
         /**

@@ -2,9 +2,38 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+
     <bean id="scriptService" class="org.alfresco.repo.jscript.RhinoScriptService">
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
     </bean>
+    
+    <bean id="baseScriptImplementation" abstract="true" init-method="register">
+        <property name="scriptService">
+            <ref bean="scriptService"/>
+        </property>
+    </bean>    
+    
+    <bean id="loggerScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.ScriptLogger">
+        <property name="scriptName">
+            <value>logger</value>
+        </property>
+    </bean>
+    
+    <bean id="utilsScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.ScriptUtils">
+        <property name="scriptName">
+            <value>utils</value>
+        </property>
+    </bean>        
+    
+    <bean id="actionsScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Actions">
+        <property name="scriptName">
+            <value>actions</value>
+        </property>        
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
 </beans>

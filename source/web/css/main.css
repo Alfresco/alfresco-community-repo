@@ -571,3 +571,11 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    background-color: #eeeeee;
    border-bottom: 2px solid #ffffff;
 }
+
+.modifiedItemsList
+{
+   background-color: #EEEEEE;
+   border-width: 1px;
+   border-style: dashed;
+   border-color: #AAAAAA;
+}

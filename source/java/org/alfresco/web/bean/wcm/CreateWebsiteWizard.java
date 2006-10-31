@@ -64,6 +64,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
 
    private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
    
+   protected String dnsName;
    protected String title;
    protected String name;
    protected String description;
@@ -85,6 +86,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       super.init(parameters);
       
       this.name = null;
+      this.dnsName = null;
       this.title = null;
       this.description = null;
       
@@ -109,6 +111,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       if (logger.isDebugEnabled())
          logger.debug("Created website folder node with name: " + this.name);
+      
+      String avmStore = DNSNameMangler.MakeDNSName(this.dnsName);
       
       // apply the uifacets aspect - icon, title and description props
       Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4);
@@ -149,11 +153,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
          // build the sandboxes now we have the manager list and complete user list
          for (UserGroupRole userRole : invitedUserRoles)
          {
-            createUserSandbox(this.name, managers, userRole.getAuthority(), userRole.getRole());
+            createUserSandbox(avmStore, managers, userRole.getAuthority(), userRole.getRole());
          }
          
          // create the AVM stores to represent the newly created location website
-         createStagingSandbox(this.name, managers);
+         createStagingSandbox(avmStore, managers);
          
          // save the list of invited users against the store
          for (UserGroupRole userRole : invitedUserRoles)
@@ -170,7 +174,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          }
          
          // set the property on the node to reference the AVM store
-         this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, DNSNameMangler.MakeDNSName(this.name));
+         this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, avmStore);
          
          // navigate to the Websites folder so we can see the newly created folder
          this.navigator.setCurrentNodeId(websiteParentId);
@@ -212,6 +216,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.name = name;
    }
    
+   /**
+    * @return
+    */
+   public String getDnsName()
+   {
+      return this.dnsName;
+   }
+
+   /**
+    * @param dnsName
+    */
+   public void setDnsName(String dnsName)
+   {
+      this.dnsName = dnsName;
+   }
+
    /**
     * @return Returns the title.
     */

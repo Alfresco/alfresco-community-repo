@@ -907,7 +907,7 @@ public final class Utils
       
       if (disabled == false)
       {
-         Object readOnlyAttr = component.getAttributes().get("disabled");
+         Object readOnlyAttr = component.getAttributes().get("readonly");
          if (readOnlyAttr != null)
          {
             readOnly = readOnlyAttr.equals(Boolean.TRUE);

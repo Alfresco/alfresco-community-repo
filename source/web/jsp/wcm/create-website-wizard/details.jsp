@@ -57,9 +57,16 @@
       if (finishButtonPressed)
       {
          finishButtonPressed = false;
-         return validateName(document.getElementById("wizard:wizard-body:name"), 
+         var valid = validateName(document.getElementById("wizard:wizard-body:name"), 
                              '</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>',
                              true);
+         if (valid == true)
+         {
+            valid = validateRegex(document.getElementById("wizard:wizard-body:dnsname"),
+                  "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$", true, null,
+                  '</f:verbatim><a:outputText value="#{msg.validation_invalid_dns_name}" /><f:verbatim>', true);
+         }
+         return valid;
       }
       else
       {
@@ -90,6 +97,24 @@
       <td width="85%">
          </f:verbatim>
          <h:inputText id="name" value="#{WizardManager.bean.name}" size="35" maxlength="1024"
+                      onkeyup="javascript:checkButtonState();" />
+         <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td align="middle">
+         </f:verbatim>
+         <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+         <f:verbatim>
+      </td>
+      <td>
+         </f:verbatim>
+         <h:outputText value="#{msg.website_dnsname}:"/>
+         <f:verbatim>
+      </td>
+      <td width="85%">
+         </f:verbatim>
+         <h:inputText id="dnsname" value="#{WizardManager.bean.dnsName}" size="35" maxlength="64"
                       onkeyup="javascript:checkButtonState();" />
          <f:verbatim>
       </td>

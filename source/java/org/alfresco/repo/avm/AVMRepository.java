@@ -1709,24 +1709,43 @@ public class AVMRepository
             throw new AVMNotFoundException("Node not found.");
         }
         List<AVMNode> leftHistory = new ArrayList<AVMNode>();
-        while (lNode != null)
-        {
-            leftHistory.add(lNode);
-            lNode = lNode.getAncestor();
-        }
         List<AVMNode> rightHistory = new ArrayList<AVMNode>();
-        while (rNode != null)
+        while (lNode != null || rNode != null)
         {
-            rightHistory.add(rNode);
-            rNode = rNode.getAncestor();
-        }
-        for (AVMNode l : leftHistory)
-        {
-            for (AVMNode r : rightHistory)
+            boolean checkRight = false;
+            if (lNode != null)
             {
-                if (l.equals(r))
+                leftHistory.add(lNode);
+                checkRight = true;
+                lNode = lNode.getAncestor();
+            }
+            boolean checkLeft = false;
+            if (rNode != null)
+            {
+                rightHistory.add(rNode);
+                checkLeft = true;
+                rNode = rNode.getAncestor();
+            }
+            if (checkRight)
+            {
+                AVMNode check = leftHistory.get(leftHistory.size() - 1);
+                for (AVMNode node : rightHistory)
                 {
-                    return l.getDescriptor("", "", "");
+                    if (node.equals(check))
+                    {
+                        return node.getDescriptor("", "", "");
+                    }
+                }
+            }
+            if (checkLeft)
+            {
+                AVMNode check = rightHistory.get(rightHistory.size() - 1);
+                for (AVMNode node : leftHistory)
+                {
+                    if (node.equals(check))
+                    {
+                        return node.getDescriptor("", "", "");
+                    }
                 }
             }
         }

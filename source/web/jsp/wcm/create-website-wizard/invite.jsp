@@ -54,7 +54,7 @@ License.
       
       <a:panel id="no-items" rendered="#{InviteWebsiteUsersWizard.userRolesDataModel.rowCount == 0}">
          <h:panelGrid columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
-            <h:outputText styleClass="selectedItemsHeader" id="no-items-name" value="#{msg.name}" />
+            <h:outputText id="no-items-name" value="#{msg.name}" />
             <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />
          </h:panelGrid>
       </a:panel>

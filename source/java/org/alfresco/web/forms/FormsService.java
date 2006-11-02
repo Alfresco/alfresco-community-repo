@@ -16,34 +16,56 @@
  */
 package org.alfresco.web.forms;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
-import org.alfresco.repo.avm.*;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.model.*;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.*;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
-import org.alfresco.web.forms.xforms.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -134,28 +156,22 @@ public final class FormsService
     */
    public Collection<Form> getForms()
    {
-      try
-      {
-         final SearchParameters sp = new SearchParameters();
-         sp.addStore(Repository.getStoreRef());
-         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-         sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + "\"");
+      final SearchParameters sp = new SearchParameters();
+      sp.addStore(Repository.getStoreRef());
+      sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+      sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + "\"");
+      if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query [" + sp.getQuery() + "]");
-         final ResultSet rs = this.searchService.query(sp);
+      final ResultSet rs = this.searchService.query(sp);
+      if (LOGGER.isDebugEnabled())
          LOGGER.debug("received " + rs.length() + " results");
-         final Collection<Form> result = new LinkedList<Form>();
-         for (ResultSetRow row : rs)
-         {
-            final NodeRef nodeRef = row.getNodeRef();
-            result.add(this.newForm(nodeRef));
-         }
-         return result;
-      }
-      catch (RuntimeException re)
+      final Collection<Form> result = new LinkedList<Form>();
+      for (ResultSetRow row : rs)
       {
-         LOGGER.error(re);
-         throw re;
+         final NodeRef nodeRef = row.getNodeRef();
+         result.add(this.newForm(nodeRef));
       }
+      return result;
    }
    
    /** 
@@ -165,35 +181,28 @@ public final class FormsService
     */
    public Form getForm(final String name)
    {
-      try
-      {
-         final SearchParameters sp = new SearchParameters();
-         sp.addStore(Repository.getStoreRef());
-         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-         sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + 
-                     "\" AND @" + Repository.escapeQName(ContentModel.PROP_TITLE) + 
-                     ":\"" + name + "\"");
+      final SearchParameters sp = new SearchParameters();
+      sp.addStore(Repository.getStoreRef());
+      sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+      sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + 
+                  "\" AND @" + Repository.escapeQName(ContentModel.PROP_TITLE) + 
+                  ":\"" + name + "\"");
+      if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query [" + sp.getQuery() + "]");
-         final ResultSet rs = this.searchService.query(sp);
-         NodeRef result = null;
-         for (ResultSetRow row : rs)
-         {
-            final NodeRef nr = row.getNodeRef();
-            if (this.nodeService.getProperty(nr, ContentModel.PROP_TITLE).equals(name))
-            {
-               result = nr;
-               break;
-            }
-         }
-         if (result == null && LOGGER.isDebugEnabled())
-            LOGGER.debug("unable to find tempalte type " + name);
-         return result != null ? this.newForm(result) : null;
-      }
-      catch (RuntimeException re)
+      final ResultSet rs = this.searchService.query(sp);
+      NodeRef result = null;
+      for (ResultSetRow row : rs)
       {
-         LOGGER.error(re);
-         throw re;
+         final NodeRef nr = row.getNodeRef();
+         if (this.nodeService.getProperty(nr, ContentModel.PROP_TITLE).equals(name))
+         {
+            result = nr;
+            break;
+         }
       }
+      if (result == null && LOGGER.isDebugEnabled())
+         LOGGER.debug("unable to find tempalte type " + name);
+      return result != null ? this.newForm(result) : null;
    }
 
    /**
@@ -216,13 +225,16 @@ public final class FormsService
     */
    private Form newForm(final NodeRef schemaNodeRef)
    {
-      LOGGER.debug("creating form for " + schemaNodeRef);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("creating form for " + schemaNodeRef);
       final String title = (String)
          this.nodeService.getProperty(schemaNodeRef, ContentModel.PROP_TITLE);
-      LOGGER.debug("title is " + title);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("title is " + title);
       final String schemaRootTagName = (String)
          this.nodeService.getProperty(schemaNodeRef, WCMModel.PROP_SCHEMA_ROOT_ELEMENT_NAME);
-      LOGGER.debug("root tag name is " + schemaRootTagName);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("root tag name is " + schemaRootTagName);
       final Form tt = new FormImpl(title, schemaNodeRef, schemaRootTagName);
       for (AssociationRef assoc : this.nodeService.getTargetAssocs(schemaNodeRef, 
                                                                    WCMModel.ASSOC_RENDERING_ENGINES))
@@ -237,14 +249,17 @@ public final class FormsService
             final Constructor c = formDataRendererType.getConstructor(NodeRef.class, NodeService.class, ContentService.class);
             final RenderingEngine tom = (RenderingEngine)
                c.newInstance(tomNodeRef, this.nodeService, this.contentService);
-            LOGGER.debug("loaded form data renderer type " + tom.getClass().getName() +
-                         " for extension " + tom.getFileExtensionForRendition() + 
-                         ", " + tomNodeRef);
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("loaded form data renderer type " + tom.getClass().getName() +
+                            " for extension " + tom.getFileExtensionForRendition() + 
+                            ", " + tomNodeRef);
+            }
             tt.addRenderingEngine(tom);
          }
          catch (Exception e)
          {
-            LOGGER.error(e);
+            throw new AlfrescoRuntimeException(e.getMessage(), e);
          }
       }
       return tt;
@@ -303,8 +318,9 @@ public final class FormsService
          props = new HashMap<QName, Serializable>(1, 1.0f);
          props.put(ContentModel.PROP_TITLE, renditionFileName);
          nodeService.addAspect(renditionNodeRef, ContentModel.ASPECT_TITLED, props);
-            
-         LOGGER.debug("generated " + renditionFileName + " using " + re);
+         
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("generated " + renditionFileName + " using " + re);
       }
    }
    
@@ -362,7 +378,8 @@ public final class FormsService
          re.render(formInstanceData, parameters, out);
          out.close();
 
-         LOGGER.debug("generated " + renditionFileName + " using " + re);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("generated " + renditionFileName + " using " + re);
       }
    }
 
@@ -398,14 +415,14 @@ public final class FormsService
          if (LOGGER.isDebugEnabled())
          {
             LOGGER.debug("writing out a document for " + 
-			 (n instanceof Document
-			  ? ((Document)n).getDocumentElement()
-			  : n).getNodeName() + 
-			 " to " + (output instanceof StringWriter
-				   ? "string"
-				   : output));
-            final StringWriter sw = new StringWriter();
-            t.transform(new DOMSource(n), new StreamResult(sw));
+      			 (n instanceof Document
+      			  ? ((Document)n).getDocumentElement()
+      			  : n).getNodeName() + 
+   			     " to " + (output instanceof StringWriter
+   				  ? "string"
+   				  : output));
+                 final StringWriter sw = new StringWriter();
+                 t.transform(new DOMSource(n), new StreamResult(sw));
             LOGGER.debug(sw.toString());
          }
          t.transform(new DOMSource(n), new StreamResult(output));

@@ -22,25 +22,55 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<h:panelGrid columns="1" cellpadding="2" cellpadding="3" width="100%">
+<h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%">
+   <%-- Form selection list - scrollable DIV area --%>
    <h:outputText styleClass="mainSubText" value="#{msg.website_select_form}:" />
-   <a:selectList multiSelect="true" activeSelect="false" value="#{WizardManager.bean.formsSelectedValue}"
-         styleClass="selectListTable" itemStyleClass="selectListItem">
-      <a:listItems value="#{WizardManager.bean.formsList}" />
-   </a:selectList>
+   <h:panelGroup>
+      <f:verbatim><div style="height:108px;*height:112px;width:300px;overflow:auto" class='selectListTable'></f:verbatim>
+      <a:selectList id="form-list" activeSelect="true" style="width:276px" itemStyleClass="selectListItem">
+         <a:listItems value="#{WizardManager.bean.formsList}" />
+         <h:commandButton value="#{msg.add_to_list_button}" styleClass="dialogControls" actionListener="#{WizardManager.bean.addForm}" />
+      </a:selectList>
+      <f:verbatim></div></f:verbatim>
+   </h:panelGroup>
    
-   <h:outputText styleClass="mainSubText" value="#{msg.website_select_form}:" />
-   <a:selectList multiSelect="false" activeSelect="false"
-         styleClass="selectListTable" itemStyleClass="selectListItem">
-      <a:listItems value="#{WizardManager.bean.formsList}" />
-   </a:selectList>
+   <%-- Selected Form table, with configuration buttons and info text --%>
+   <h:outputText styleClass="mainSubText" style="padding-top:4px" value="#{msg.website_selected_forms}:" />
+   <h:dataTable value="#{WizardManager.bean.formsDataModel}" var="row" 
+                rowClasses="selectedItemsRow,selectedItemsRowAlt"
+                styleClass="selectedItems" headerClass="selectedItemsHeader"
+                cellspacing="0" cellpadding="4" 
+                rendered="#{WizardManager.bean.formsDataModel.rowCount != 0}">
+      <h:column>
+         <f:facet name="header">
+            <h:outputText value="#{msg.title}" />
+         </f:facet>
+         <h:outputText value="#{row.title}" />
+      </h:column>
+      <h:column>
+         <f:facet name="header">
+            <h:outputText value="#{msg.details}" />
+         </f:facet>
+         <h:outputText value="#{row.details}" />
+      </h:column>
+      <h:column>
+         <f:facet name="header">
+            <h:outputText value="#{msg.configure}" />
+         </f:facet>
+         <h:commandButton value="#{msg.form_template_details}" style="margin:2px" styleClass="dialogControls" action="dialog:formDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
+         <h:commandButton value="#{msg.form_template_conf_workflow}" style="margin:2px" styleClass="dialogControls" action="dialog:formWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" />
+         <h:commandButton value="#{msg.form_template_select_templates}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
+      </h:column>
+      <h:column>
+         <a:actionLink actionListener="#{WizardManager.bean.removeForm}" image="/images/icons/delete.gif"
+                       value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+      </h:column>
+   </h:dataTable>
    
-   <h:outputText styleClass="mainSubText" value="#{msg.website_select_form}:" />
-   <a:selectList var="r" multiSelect="false" activeSelect="true"
-         styleClass="selectListTable" itemStyleClass="selectListItem">
-      <a:listItems value="#{WizardManager.bean.formsList}" />
-      <h:commandButton value="Add to List" styleClass="dialogControls">
-         <f:param name="id" value="#{r.value}" />
-      </h:commandButton>
-   </a:selectList>
+   <a:panel id="no-items" rendered="#{WizardManager.bean.formsDataModel.rowCount == 0}">
+      <h:panelGrid columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
+         <h:outputText id="no-items-name" value="#{msg.name}" />
+         <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />
+      </h:panelGrid>
+   </a:panel>
 </h:panelGrid>

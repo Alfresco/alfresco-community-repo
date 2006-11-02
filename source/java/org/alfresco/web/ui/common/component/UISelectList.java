@@ -29,6 +29,10 @@ import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
+import javax.faces.event.AbortProcessingException;
+import javax.faces.event.FacesEvent;
+import javax.faces.event.FacesListener;
+import javax.faces.event.PhaseId;
 
 import org.alfresco.web.ui.common.Utils;
 
@@ -47,10 +51,12 @@ import org.alfresco.web.ui.common.Utils;
  * 
  * @author Kevin Roast
  */
-public class UISelectList extends UIInput
+public class UISelectList extends UIInput implements NamingContainer
 {
    private Boolean multiSelect;
    private Boolean activeSelect;
+   private int rowIndex = -1;
+   private int itemCount;
    
    
    // ------------------------------------------------------------------------------
@@ -82,6 +88,7 @@ public class UISelectList extends UIInput
       super.restoreState(context, values[0]);
       this.multiSelect = (Boolean)values[1];
       this.activeSelect = (Boolean)values[2];
+      this.itemCount = (Integer)values[3];
    }
    
    /**
@@ -89,12 +96,105 @@ public class UISelectList extends UIInput
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[3];
+      Object values[] = new Object[4];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.multiSelect;
       values[2] = this.activeSelect;
+      values[3] = this.itemCount;
       return (values);
+   }
+   
+   /**
+    * @return the client Id for this naming container component - based on the current row context.
+    *         This allows a single component rendered multiple times in a list to dynamically base
+    *         their ID on the current row - so that the 'correct' component is decoded and event is
+    *         queued with the current row value. 
+    */
+   @Override
+   public String getClientId(FacesContext context)
+   {
+      String clientId = super.getClientId(context);
+      int rowIndex = getRowIndex();
+      if (rowIndex == -1)
+      {
+         return clientId;
+      }
+      return clientId + "_" + rowIndex;
+   }
+   
+   /**
+    * Override the processing of child component decodes - we set the current row context so any
+    * events queued by child components wrapped in FacesEventWrapper have current row value. 
+    */
+   @Override
+   public void processDecodes(FacesContext context)
+   {
+      if (!isRendered())
+      {
+         return;
+      }
+      
+      setRowIndex(-1);
+      for (Iterator itr=getChildren().iterator(); itr.hasNext(); /**/)
+      {
+         UIComponent child = (UIComponent)itr.next();
+         if (child instanceof UIListItem == false && child instanceof UIListItems == false)
+         {
+            for (int i=0; i<this.itemCount; i++)
+            {
+               setRowIndex(i);
+               child.processDecodes(context);
+            }
+         }
+      }
+      setRowIndex(-1);
+      try
+      {
+         decode(context);
+      }
+      catch (RuntimeException e)
+      {
+         context.renderResponse();
+         throw e;
+      }
+   }
+   
+   /**
+    * Override event queueing from child components - wrap and add current row value
+    */
+   @Override
+   public void queueEvent(FacesEvent event)
+   {
+      super.queueEvent(new FacesEventWrapper(event, getRowIndex(), this));
+   }
+   
+   /**
+    * Override event broadcasting to look for event wrappers to set the current row context
+    * correctly for components that have been rendered multiple times in the list.
+    */
+   @Override
+   public void broadcast(FacesEvent event) throws AbortProcessingException
+   {
+      if (event instanceof FacesEventWrapper)
+      {
+         FacesEvent originalEvent = ((FacesEventWrapper)event).getWrappedFacesEvent();
+         int eventRowIndex = ((FacesEventWrapper)event).getRowIndex();
+         int currentRowIndex = getRowIndex();
+         setRowIndex(eventRowIndex);
+         try
+         {
+            originalEvent.getComponent().broadcast(originalEvent);
+         }
+         finally
+         {
+            setRowIndex(currentRowIndex);
+         }
+      }
+      else
+      {
+         super.broadcast(event);
+      }
    }
    
    /**
@@ -159,6 +259,8 @@ public class UISelectList extends UIInput
       out.write('>');
       
       // get the child components and look for compatible ListItem objects
+      this.itemCount = 0;
+      setRowIndex(-1);
       for (Iterator i = getChildren().iterator(); i.hasNext(); /**/)
       {
          UIComponent child = (UIComponent)i.next();
@@ -177,8 +279,10 @@ public class UISelectList extends UIInput
                      {
                         requestMap.put(var, item);
                      }
+                     setRowIndex(this.itemCount);
                      renderItem(context, out, item);
                   }
+                  this.itemCount++;
                }
             }
          }
@@ -192,10 +296,13 @@ public class UISelectList extends UIInput
                {
                   requestMap.put(var, item);
                }
+               setRowIndex(this.itemCount);
                renderItem(context, out, item);
             }
+            this.itemCount++;
          }
       }
+      setRowIndex(-1);
       if (var != null)
       {
          requestMap.remove(var);
@@ -319,6 +426,37 @@ public class UISelectList extends UIInput
    // Strongly typed property accessors 
    
    /**
+    * @return current row index
+    */
+   public int getRowIndex()
+   {
+      return this.rowIndex;
+   }
+
+   /**
+    * Set the transient current row index. Setting this value causes all child components to
+    * have their ID values reset - so that cached clientID values are regenerated when next requested.
+    * 
+    * @param rowIndex
+    */
+   public void setRowIndex(int rowIndex)
+   {
+      this.rowIndex = rowIndex;
+      for (Iterator itr=getChildren().iterator(); itr.hasNext(); /**/)
+      {
+         UIComponent child = (UIComponent)itr.next();
+         if (child instanceof UIListItem == false && child instanceof UIListItems == false)
+         {
+            // forces a reset of the clientId for the component
+            // This is then regenerated - relative to this naming container which itself uses the
+            // current row index as part of the Id. This is what facilities the correct component
+            // rendering submit script and then identified during the decode() phase.
+            child.setId(child.getId());
+         }
+      }
+   }
+
+   /**
     * Get the multi-select rendering flag
     *
     * @return true for multi-select rendering, false otherwise
@@ -398,5 +536,62 @@ public class UISelectList extends UIInput
    {
       UIForm form = Utils.getParentForm(context, component);
       return form.getClientId(context) + NamingContainer.SEPARATOR_CHAR + "selectlist";
+   }
+   
+   
+   /**
+    * Wrapper for a FacesEvent to hold current row value when the event was fired
+    */
+   private static class FacesEventWrapper extends FacesEvent
+   {
+      private FacesEvent wrappedFacesEvent;
+      private int rowIndex;
+      
+      public FacesEventWrapper(FacesEvent facesEvent, int rowIndex, UISelectList redirectComponent)
+      {
+         super(redirectComponent);
+         wrappedFacesEvent = facesEvent;
+         this.rowIndex = rowIndex;
+      }
+      
+      public PhaseId getPhaseId()
+      {
+         return wrappedFacesEvent.getPhaseId();
+      }
+      
+      public void setPhaseId(PhaseId phaseId)
+      {
+         wrappedFacesEvent.setPhaseId(phaseId);
+      }
+      
+      public void queue()
+      {
+         wrappedFacesEvent.queue();
+      }
+      
+      public String toString()
+      {
+         return wrappedFacesEvent.toString();
+      }
+      
+      public boolean isAppropriateListener(FacesListener faceslistener)
+      {
+         return wrappedFacesEvent.isAppropriateListener(faceslistener);
+      }
+      
+      public void processListener(FacesListener faceslistener)
+      {
+         wrappedFacesEvent.processListener(faceslistener);
+      }
+      
+      public FacesEvent getWrappedFacesEvent()
+      {
+         return wrappedFacesEvent;
+      }
+      
+      public int getRowIndex()
+      {
+         return rowIndex;
+      }
    }
 }

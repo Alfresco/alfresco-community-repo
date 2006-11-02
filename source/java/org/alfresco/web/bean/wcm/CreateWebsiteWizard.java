@@ -18,14 +18,16 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.faces.component.UISelectItem;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
+import javax.faces.model.DataModel;
+import javax.faces.model.ListDataModel;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -46,7 +48,10 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.ui.common.component.UISelectList;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,6 +61,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateWebsiteWizard extends BaseWizardBean
 {
+   private static final String COMPONENT_FORMLIST = "form-list";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_NAME = "name";
    private static final String MSG_USERROLES = "create_website_summary_users";
@@ -74,6 +80,18 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected AVMService avmService;
    protected PermissionService permissionService;
    
+   /** datamodel for table of selected forms */
+   private DataModel formsDataModel = null;
+   
+   /** transient list of form UIListItem objects */
+   private List<UIListItem> formsList = null;
+   
+   /** list of forms wrapper objects */
+   private List<FormWrapper> forms = null;
+   
+   /** Current form action dialog context */
+   private FormWrapper actionForm = null;
+   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -89,6 +107,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.dnsName = null;
       this.title = null;
       this.description = null;
+      this.formsDataModel = null;
+      this.forms = new ArrayList<FormWrapper>();
       
       // init the dependant bean we are using for the invite users pages
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
@@ -216,6 +236,23 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.name = name;
    }
    
+   public DataModel getFormsDataModel()
+   {
+      if (this.formsDataModel == null)
+      {
+         this.formsDataModel = new ListDataModel();
+      }
+      
+      this.formsDataModel.setWrappedData(this.forms);
+      
+      return this.formsDataModel;
+   }
+
+   public void setFormsDataModel(DataModel formsDataModel)
+   {
+      this.formsDataModel = formsDataModel;
+   }
+
    /**
     * @return
     */
@@ -299,46 +336,76 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new String[] {this.name, this.description, buf.toString()});
    }
    
+   /**
+    * @return List of UI items to represent the available Forms for all websites
+    */
    public List<UIListItem> getFormsList()
    {
-      List<UIListItem> forms = new ArrayList<UIListItem>();
-      UIListItem item = new UIListItem();
-      item.setValue("0001");
-      item.setLabel("Company Press Release");
-      item.setDescription("Standard monthly press release form");
-      item.setTooltip("Standard monthly press release form");
-      item.setImage(WebResources.IMAGE_SANDBOX_32);
-      forms.add(item);
-      item = new UIListItem();
-      item.setValue("0002");
-      item.setLabel("Company Site Note");
-      item.setDescription("Main site footer node");
-      item.setTooltip("Basic footer node addition form");
-      item.setImage(WebResources.IMAGE_SANDBOX_32);
-      forms.add(item);
-      item = new UIListItem();
-      item.setValue("0003");
-      item.setLabel("Index Generator");
-      item.setDescription("Complete site index");
-      item.setTooltip("Complete site index generation form");
-      item.setImage(WebResources.IMAGE_SANDBOX_32);
-      forms.add(item);
-      return forms;
+      Collection<Form> forms = FormsService.getInstance().getForms();
+      List<UIListItem> items = new ArrayList<UIListItem>(forms.size());
+      for (Form form : forms)
+      {
+         UIListItem item = new UIListItem();
+         item.setValue(form.getName());
+         item.setLabel(form.getName());
+         item.setDescription((String)this.nodeService.getProperty(
+               form.getNodeRef(), ContentModel.PROP_DESCRIPTION));
+         item.setImage(WebResources.IMAGE_WEBFORM_32);
+         items.add(item);
+      }
+      this.formsList = items;
+      return items;
    }
    
-   public String[] getFormsSelectedValue()
+   /**
+    * Action handler called when the Add to List button is pressed for a form template
+    */
+   public void addForm(ActionEvent event)
    {
-      return testValue;
+      UISelectList selectList = (UISelectList)event.getComponent().findComponent(COMPONENT_FORMLIST);
+      int index = selectList.getRowIndex();
+      if (index != -1)
+      {
+         this.forms.add(new FormWrapper((String)this.formsList.get(index).getValue()));
+      }
    }
    
-   public void setFormsSelectedValue(String[] value)
+   /**
+    * Remove a template form from the selected list
+    */
+   public void removeForm(ActionEvent event)
    {
-      testValue = value;
+      FormWrapper wrapper = (FormWrapper)this.formsDataModel.getRowData();
+      if (wrapper != null)
+      {
+         this.forms.remove(wrapper);
+      }
    }
    
-   private String[] testValue = new String[] {"0001"};
+   /**
+    * Action method to navigate to setup a form dialog for the current row context
+    */
+   public void setupFormAction(ActionEvent event)
+   {
+      setActionForm( (FormWrapper)this.formsDataModel.getRowData() );
+   }
    
-   
+   /**
+    * @return the current action form for dialog context
+    */
+   public FormWrapper getActionForm()
+   {
+      return this.actionForm;
+   }
+
+   /**
+    * @param actionForm    For dialog context
+    */
+   public void setActionForm(FormWrapper actionForm)
+   {
+      this.actionForm = actionForm;
+   }
+
    /**
     * @return the InviteWebsiteUsersWizard delegate bean
     */
@@ -594,6 +661,53 @@ public class CreateWebsiteWizard extends BaseWizardBean
       for (QName name : props.keySet())
       {
          logger.debug("   " + name + ": " + props.get(name));
+      }
+   }
+   
+   
+   /**
+    * Wrapper class for a configurable template Form instance in the UI
+    */
+   public static class FormWrapper
+   {
+      private String name;
+      private String title;
+      private String description;
+      
+      FormWrapper(String name)
+      {
+         this.name = name;
+         this.title = name;
+      }
+      
+      public String getName()
+      {
+         return this.name;
+      }
+      
+      public String getTitle()
+      {
+         return this.title;
+      }
+      
+      public void setTitle(String title)
+      {
+         this.title = title;
+      }
+      
+      public String getDescription()
+      {
+         return this.description;
+      }
+
+      public void setDescription(String description)
+      {
+         this.description = description;
+      }
+
+      public String getDetails()
+      {
+         return "Using workflow 'default-workflow', <none> pre-script, <none> post-script, no templates selected.";
       }
    }
 }

@@ -121,7 +121,8 @@ public class XSLTRenderingEngine
       final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
       path = XSLTRenderingEngine.toAVMPath(ec, path);
       final Map<String, Document> resultMap = ef.parseXMLDocuments(formName, path);
-      LOGGER.debug("received " + resultMap.size() + " documents in " + path);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("received " + resultMap.size() + " documents in " + path);
 
       // create a root document for rooting all the results.  we do this
       // so that each document root element has a common parent node
@@ -154,7 +155,8 @@ public class XSLTRenderingEngine
          
          public void detach() 
          { 
-            LOGGER.debug("detaching NodeIterator");
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("detaching NodeIterator");
             resultMap.clear(); 
             documents.clear();
             this.detached = true;
@@ -189,7 +191,8 @@ public class XSLTRenderingEngine
          public Node nextNode()
             throws DOMException
          {
-            LOGGER.debug("NodeIterator.nextNode(" + index + ")");
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("NodeIterator.nextNode(" + index + ")");
             if (this.detached)
                throw new DOMException(DOMException.INVALID_STATE_ERR, null);
             if (index == documents.size())
@@ -200,7 +203,8 @@ public class XSLTRenderingEngine
          public Node previousNode()
             throws DOMException
          {
-            LOGGER.debug("NodeIterator.previousNode(" + index + ")");
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("NodeIterator.previousNode(" + index + ")");
             if (this.detached)
                throw new DOMException(DOMException.INVALID_STATE_ERR, null);
             if (index == -1)
@@ -337,14 +341,15 @@ public class XSLTRenderingEngine
             }
             try
             {
-               LOGGER.debug("loading " + uri);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("loading " + uri);
                final Document d = ts.parseXML(uri.toURL().openStream());
-               LOGGER.debug("loaded " + ts.writeXMLToString(d));
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("loaded " + ts.writeXMLToString(d));
                return new DOMSource(d);
             }
             catch (Exception e)
             {
-               LOGGER.warn(e);
                throw new TransformerException("unable to load " + uri, e);
             }
          }

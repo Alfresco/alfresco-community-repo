@@ -40,7 +40,6 @@ public class CreateFolderDialog extends BaseDialogBean
    
    protected AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
-   protected NodeService nodeService;
    
    private String name;
    private String description;
@@ -71,14 +70,6 @@ public class CreateFolderDialog extends BaseDialogBean
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
-   }
-   
-   /**
-    * @param nodeService   The NodeService to set.
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
    }
    
    /**

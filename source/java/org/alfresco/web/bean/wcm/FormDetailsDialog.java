@@ -21,10 +21,16 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.web.bean.TemplateSupportBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
 import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,9 +46,8 @@ public class FormDetailsDialog extends BaseDialogBean
    
    private String title;
    private String description;
-   private String preScript;
-   private String postScript;
-   private String[] workflowSelectedValue;
+   private String filenamePattern;
+   private String[] workflowSelectedValue = {"default"};
    
 
    /**
@@ -71,6 +76,14 @@ public class FormDetailsDialog extends BaseDialogBean
    {
       this.websiteWizard = wizard;
    }
+   
+   /**
+    * @return an object representing the form for the current action
+    */
+   public FormWrapper getActionForm()
+   {
+      return this.websiteWizard.getActionForm();
+   }
 
    /**
     * @return Returns the description.
@@ -79,7 +92,7 @@ public class FormDetailsDialog extends BaseDialogBean
    {
       if (this.description == null)
       {
-         this.description = this.websiteWizard.getActionForm().getDescription();
+         this.description = getActionForm().getDescription();
       }
       return this.description;
    }
@@ -99,7 +112,7 @@ public class FormDetailsDialog extends BaseDialogBean
    {
       if (this.title == null)
       {
-         this.title = this.websiteWizard.getActionForm().getTitle();
+         this.title = getActionForm().getTitle();
       }
       return this.title;
    }
@@ -113,35 +126,23 @@ public class FormDetailsDialog extends BaseDialogBean
    }
    
    /**
-    * @return Returns the post-save Script.
+    * @return Returns the filename pattern
     */
-   public String getPostScript()
+   public String getFilenamePattern()
    {
-      return this.postScript;
+      if (this.filenamePattern == null)
+      {
+         this.filenamePattern = getActionForm().getFilenamePattern();
+      }
+      return this.filenamePattern;
    }
 
    /**
-    * @param postScript The post-save Script to set.
+    * @param pattern The filename pattern to set.
     */
-   public void setPostScript(String postScript)
+   public void setFilenamePattern(String pattern)
    {
-      this.postScript = postScript;
-   }
-
-   /**
-    * @return Returns the pre-save Script.
-    */
-   public String getPreScript()
-   {
-      return this.preScript;
-   }
-
-   /**
-    * @param preScript The pre-save Script to set.
-    */
-   public void setPreScript(String preScript)
-   {
-      this.preScript = preScript;
+      this.filenamePattern = pattern;
    }
    
    /**
@@ -160,9 +161,19 @@ public class FormDetailsDialog extends BaseDialogBean
       this.workflowSelectedValue = workflowSelectedValue;
    }
    
+   /**
+    * @return List of UIListItem object representing the available workflows for the template
+    */
    public List<UIListItem> getWorkflowList()
    {
       List<UIListItem> items = new ArrayList<UIListItem>();
+      
+      UIListItem item = new UIListItem();
+      item.setValue("default");
+      item.setLabel("Default");
+      item.setDescription("Default adhoc workflow");
+      item.setImage(WebResources.IMAGE_WORKFLOW_32);
+      items.add(item);
       
       return items;
    }
@@ -177,7 +188,24 @@ public class FormDetailsDialog extends BaseDialogBean
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      // TODO: push values from title/description etc. back into action FormWrapper!
+      // push values from title/description etc. back into action FormWrapper
+      FormWrapper form = getActionForm();
+      if (this.title != null)
+      {
+         form.setTitle(this.title);
+      }
+      if (this.description != null)
+      {
+         form.setDescription(this.description);
+      }
+      if (this.filenamePattern != null)
+      {
+         form.setFilenamePattern(this.filenamePattern);
+      }
+      if (this.workflowSelectedValue != null && this.workflowSelectedValue.length != 0)
+      {
+         form.setWorkflow(this.workflowSelectedValue[0]);
+      }
       return outcome;
    }
 }

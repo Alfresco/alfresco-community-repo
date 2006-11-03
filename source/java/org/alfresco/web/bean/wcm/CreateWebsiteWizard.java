@@ -17,6 +17,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.RenderingEngine;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UISelectList;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -65,6 +67,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_NAME = "name";
    private static final String MSG_USERROLES = "create_website_summary_users";
+   private static final String MSG_FORM_SUMMARY = "website_form_summary";
+   private static final String MSG_NONE = "value_not_set";
 
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
 
@@ -108,7 +112,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.title = null;
       this.description = null;
       this.formsDataModel = null;
-      this.forms = new ArrayList<FormWrapper>();
+      this.forms = new ArrayList<FormWrapper>(8);
       
       // init the dependant bean we are using for the invite users pages
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
@@ -346,7 +350,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       for (Form form : forms)
       {
          UIListItem item = new UIListItem();
-         item.setValue(form.getName());
+         item.setValue(form);
          item.setLabel(form.getName());
          item.setDescription((String)this.nodeService.getProperty(
                form.getNodeRef(), ContentModel.PROP_DESCRIPTION));
@@ -366,7 +370,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       int index = selectList.getRowIndex();
       if (index != -1)
       {
-         this.forms.add(new FormWrapper((String)this.formsList.get(index).getValue()));
+         Form form = (Form)this.formsList.get(index).getValue();
+         this.forms.add(new FormWrapper(form));
       }
    }
    
@@ -670,19 +675,27 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public static class FormWrapper
    {
-      private String name;
+      private Form form;
       private String title;
       private String description;
+      private String workflow;
+      private String filenamePattern;
+      private List<PresentationTemplate> templates = new ArrayList<PresentationTemplate>(8);
       
-      FormWrapper(String name)
+      FormWrapper(Form form)
       {
-         this.name = name;
-         this.title = name;
+         this.form = form;
+         this.title = form.getName();
+      }
+      
+      public Form getForm()
+      {
+         return this.form;
       }
       
       public String getName()
       {
-         return this.name;
+         return this.form.getName();
       }
       
       public String getTitle()
@@ -705,9 +718,121 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.description = description;
       }
 
+      /**
+       * @return Returns the workflow.
+       */
+      public String getWorkflow()
+      {
+         return this.workflow;
+      }
+
+      /**
+       * @param workflow The workflow to set.
+       */
+      public void setWorkflow(String workflow)
+      {
+         this.workflow = workflow;
+      }
+
+      /**
+       * @return Returns the filename pattern.
+       */
+      public String getFilenamePattern()
+      {
+         return this.filenamePattern;
+      }
+
+      /**
+       * @param filenamePattern The filename pattern to set.
+       */
+      public void setFilenamePattern(String filenamePattern)
+      {
+         this.filenamePattern = filenamePattern;
+      }
+      
+      /**
+       * @return Returns the presentation templates.
+       */
+      public List<PresentationTemplate> getTemplates()
+      {
+         return this.templates;
+      }
+
+      /**
+       * @param templates The presentation templates to set.
+       */
+      public void setTemplates(List<PresentationTemplate> templates)
+      {
+         this.templates = templates;
+      }
+
+      /**
+       * @return Human readable summary of the configuration for this form
+       */
       public String getDetails()
       {
-         return "Using workflow 'default-workflow', <none> pre-script, <none> post-script, no templates selected.";
+         String none = '<' + Application.getMessage(FacesContext.getCurrentInstance(), MSG_NONE) + '>';
+         return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_FORM_SUMMARY),
+               this.workflow != null ? this.workflow : none,
+               this.filenamePattern != null ? this.filenamePattern : none,
+               this.templates != null ? this.templates.size() : 0);
+      }
+   }
+   
+   public static class PresentationTemplate
+   {
+      private RenderingEngine engine;
+      private String title;
+      private String description;
+      private String filenamePattern;
+      
+      public PresentationTemplate(RenderingEngine engine, String filenamePattern)
+      {
+         this.engine = engine;
+         this.filenamePattern = filenamePattern;
+      }
+      
+      public RenderingEngine getRenderingEngine()
+      {
+         return this.engine;
+      }
+      
+      public String getTitle()
+      {
+         if (this.title == null)
+         {
+            this.title = (String)Repository.getServiceRegistry(
+                  FacesContext.getCurrentInstance()).getNodeService().getProperty(
+                        engine.getNodeRef(), ContentModel.PROP_NAME);
+         }
+         return this.title;
+      }
+      
+      public String getDescription()
+      {
+         if (this.description == null)
+         {
+            this.description = (String)Repository.getServiceRegistry(
+                  FacesContext.getCurrentInstance()).getNodeService().getProperty(
+                        engine.getNodeRef(), ContentModel.PROP_DESCRIPTION);
+         }
+         return this.description;
+      }
+      
+      /**
+       * @return Returns the filename pattern.
+       */
+      public String getFilenamePattern()
+      {
+         return this.filenamePattern;
+      }
+
+      /**
+       * @param filenamePattern The filename pattern to set.
+       */
+      public void setFilenamePattern(String filenamePattern)
+      {
+         this.filenamePattern = filenamePattern;
       }
    }
 }

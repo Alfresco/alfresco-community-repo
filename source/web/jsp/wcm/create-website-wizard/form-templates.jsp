@@ -23,24 +23,21 @@
 <%@ page isELIgnored="false" %>
 
 <h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%">
-   <%-- Form selection list - scrollable DIV area --%>
-   <h:outputText styleClass="mainSubText" value="#{msg.website_select_form}:" />
+   <%-- Template selection list --%>
+   <h:outputText styleClass="mainSubText" value="#{msg.website_select_templates}:" />
    <h:panelGroup>
-      <f:verbatim><div style="height:108px;*height:112px;width:300px;overflow:auto" class='selectListTable'></f:verbatim>
-      <a:selectList id="form-list" activeSelect="true" style="width:276px" itemStyleClass="selectListItem">
-         <a:listItems value="#{WizardManager.bean.formsList}" />
-         <h:commandButton value="#{msg.add_to_list_button}" styleClass="dialogControls" actionListener="#{WizardManager.bean.addForm}" />
+      <a:selectList id="template-list" activeSelect="true" styleClass="selectListTable" itemStyleClass="selectListItem">
+         <a:listItems value="#{DialogManager.bean.templatesList}" />
+         <h:commandButton value="#{msg.add_to_list_button}" styleClass="dialogControls" actionListener="#{DialogManager.bean.addTemplate}" />
       </a:selectList>
-      <f:verbatim></div></f:verbatim>
    </h:panelGroup>
    
-   <%-- Selected Form table, with configuration buttons and info text --%>
-   <h:outputText styleClass="mainSubText" style="padding-top:8px" value="#{msg.website_selected_forms}:" />
-   <h:dataTable value="#{WizardManager.bean.formsDataModel}" var="row" 
+   <h:outputText styleClass="mainSubText" value="#{msg.website_selected_templates}:" style="padding-top:8px" />
+   <h:dataTable value="#{DialogManager.bean.templatesDataModel}" var="row" 
                 rowClasses="selectedItemsRow,selectedItemsRowAlt"
                 styleClass="selectedItems" headerClass="selectedItemsHeader"
                 cellspacing="0" cellpadding="4" 
-                rendered="#{WizardManager.bean.formsDataModel.rowCount != 0}">
+                rendered="#{DialogManager.bean.templatesDataModel.rowCount != 0}">
       <h:column>
          <f:facet name="header">
             <h:outputText value="#{msg.title}" />
@@ -49,25 +46,18 @@
       </h:column>
       <h:column>
          <f:facet name="header">
-            <h:outputText value="#{msg.details}" />
-         </f:facet>
-         <h:outputText value="#{row.details}" />
-      </h:column>
-      <h:column>
-         <f:facet name="header">
             <h:outputText value="#{msg.configure}" />
          </f:facet>
-         <h:commandButton value="#{msg.form_template_details}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
-         <h:commandButton value="#{msg.form_template_conf_workflow}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" disabled="#{row.workflow == null}" />
-         <h:commandButton value="#{msg.form_template_select_templates}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
+         <h:outputText value="#{msg.website_filename_pattern}:" style="padding-right:4px" />
+         <h:inputText value="#{row.filenamePattern}" />
       </h:column>
       <h:column>
-         <a:actionLink actionListener="#{WizardManager.bean.removeForm}" image="/images/icons/delete.gif"
+         <a:actionLink actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"
                        value="#{msg.remove}" showLink="false" style="padding-left:6px" />
       </h:column>
    </h:dataTable>
    
-   <a:panel id="no-items" rendered="#{WizardManager.bean.formsDataModel.rowCount == 0}">
+   <a:panel id="no-items" rendered="#{DialogManager.bean.templatesDataModel.rowCount == 0}">
       <h:panelGrid columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
          <h:outputText id="no-items-name" value="#{msg.name}" />
          <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />

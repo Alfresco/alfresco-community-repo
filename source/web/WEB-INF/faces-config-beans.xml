@@ -2534,6 +2534,27 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <description>
+         The bean that backs up the Form Template Details dialog
+      </description>
+      <managed-bean-name>FormTemplatesDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.FormTemplatesDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>createWebsiteWizard</property-name>
+         <value>#{CreateWebsiteWizard}</value>
+      </managed-property>
+   </managed-bean>
+   
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>
       <description>

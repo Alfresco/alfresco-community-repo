@@ -25,4 +25,5 @@ public class WebResources extends org.alfresco.web.ui.repo.WebResources
    public static final String IMAGE_SANDBOX_32 = "/images/icons/sandbox_large.gif";
    public static final String IMAGE_USERSANDBOX_32 = "/images/icons/user_sandbox_large.gif";
    public static final String IMAGE_WEBFORM_32 = "/images/icons/webform_large.gif";
+   public static final String IMAGE_TEMPLATE_32 = "/images/icons/template_large.gif";
 }

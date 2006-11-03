@@ -146,9 +146,13 @@
                  managed-bean="EditFolderPropertiesDialog" icon="/images/icons/details_large.gif"
                  title-id="edit_folder_properties" description-id="edit_folder_description" />
          
-         <dialog name="formDetails" page="/jsp/wcm/create-website-wizard/form-details.jsp" managed-bean="FormDetailsDialog"
+         <dialog name="formTemplateDetails" page="/jsp/wcm/create-website-wizard/form-details.jsp" managed-bean="FormDetailsDialog"
                  icon="/images/icons/webform_large.gif" title-id="form_template_details" 
                  description-id="form_template_details_desc" />
+         
+         <dialog name="formTemplateTemplates" page="/jsp/wcm/create-website-wizard/form-templates.jsp" managed-bean="FormTemplatesDialog"
+                 icon="/images/icons/template_large.gif" title-id="form_template_templates" 
+                 description-id="form_template_templates_desc" />
       </dialogs>
    </config>
    

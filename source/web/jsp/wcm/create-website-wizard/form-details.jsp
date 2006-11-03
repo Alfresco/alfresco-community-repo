@@ -22,19 +22,49 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
+<f:verbatim>
+<script type="text/javascript">
+   window.onload = pageLoaded;
+   
+   function pageLoaded()
+   {
+      document.getElementById("dialog:dialog-body:title").focus();
+      checkButtonState();
+   }
+
+   function checkButtonState()
+   {
+      if (document.getElementById("dialog:dialog-body:title").value.length == 0)
+      {
+         document.getElementById("dialog:finish-button").disabled = true;
+      }
+      else
+      {
+         document.getElementById("dialog:finish-button").disabled = false;
+      }
+   }
+   
+</script>
+</f:verbatim>
+
 <h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%">
    <%-- Form properties --%>
    <h:panelGroup>
       <f:verbatim>
       <table cellpadding="3" cellspacing="2" border="0" width="100%">
          <tr>
-            <td colspan="2" class="wizardSectionHeading">
+            <td colspan="3" class="wizardSectionHeading">
                </f:verbatim>
                <h:outputText value="#{msg.properties}"/>
                <f:verbatim>
             </td>
          </tr>
          <tr>
+            <td align="middle">
+               </f:verbatim>
+               <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+               <f:verbatim>
+            </td>
             <td>
                </f:verbatim>
                <h:outputText value="#{msg.title}:" />
@@ -42,11 +72,12 @@
             </td>
             <td>
                </f:verbatim>
-               <h:inputText id="title" value="#{DialogManager.bean.title}" size="35" maxlength="1024" />
+               <h:inputText id="title" value="#{DialogManager.bean.title}" size="35" maxlength="1024" onkeyup="javascript:checkButtonState();" />
                <f:verbatim>
             </td>
          </tr>
          <tr>
+            <td></td>
             <td>
                </f:verbatim>
                <h:outputText value="#{msg.description}:"/>
@@ -62,49 +93,33 @@
       </f:verbatim>
    </h:panelGroup>
    
-   <%-- Save scripts --%>
+   <%-- Save location --%>
    <h:panelGroup>
       <f:verbatim>
       <table cellpadding="3" cellspacing="2" border="0" width="100%">
          <tr>
             <td colspan="2" class="wizardSectionHeading">
                </f:verbatim>
-               <h:outputText value="#{msg.website_save_scripts}"/>
+               <h:outputText value="#{msg.website_save_location}"/>
                <f:verbatim>
             </td>
          </tr>
          <tr>
             <td colspan="2">
                </f:verbatim>
-               <h:outputText value="#{msg.website_save_scripts_info}:" />
+               <h:outputText value="#{msg.website_save_location_info}:" />
                <f:verbatim>
             </td>
          </tr>
          <tr>
             <td>
                </f:verbatim>
-               <h:outputText value="#{msg.website_pre_script}:"/>
+               <h:outputText value="#{msg.website_filename_pattern}:"/>
                <f:verbatim>
             </td>
             <td>
                </f:verbatim>
-               <h:selectOneMenu id="pre-script" value="#{DialogManager.bean.preScript}">
-                  <f:selectItems value="#{TemplateSupportBean.scriptFiles}" />
-               </h:selectOneMenu>
-               <f:verbatim>
-            </td>
-         </tr>
-         <tr>
-            <td>
-               </f:verbatim>
-               <h:outputText value="#{msg.website_post_script}:"/>
-               <f:verbatim>
-            </td>
-            <td>
-               </f:verbatim>
-               <h:selectOneMenu id="post-script" value="#{DialogManager.bean.postScript}">
-                  <f:selectItems value="#{TemplateSupportBean.scriptFiles}" />
-               </h:selectOneMenu>
+                <h:inputText id="filepattern" value="#{DialogManager.bean.filenamePattern}" size="35" maxlength="1024" />
                <f:verbatim>
             </td>
          </tr>

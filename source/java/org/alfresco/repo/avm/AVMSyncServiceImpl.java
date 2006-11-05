@@ -280,10 +280,12 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param overrideConflicts If this is true the update will override conflicting
      * AVMDifferences and replace the destination with the conflicting source.
      * @param overrideOlder If this is true the update will override AVMDifferences
+     * @param tag Short update blurb.
+     * @param description Full update blurb.
      * in which the source is older than the destination and overwrite the destination.
      */
     public void update(List<AVMDifference> diffList, boolean ignoreConflicts, boolean ignoreOlder,
-                       boolean overrideConflicts, boolean overrideOlder)
+                       boolean overrideConflicts, boolean overrideOlder, String tag, String description)
     {
         Map<String, Integer> storeVersions = new HashMap<String, Integer>();
         Set<String> destStores = new HashSet<String>();
@@ -310,7 +312,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 }
                 else
                 {
-                    version = fAVMService.createSnapshot(storeName);
+                    version = fAVMService.createSnapshot(storeName, "Snapshotted for submit.", null);
                 }
             }
             AVMNodeDescriptor srcDesc = fAVMService.lookup(version,
@@ -401,7 +403,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         for (String storeName : destStores)
         {
-            fAVMService.createSnapshot(storeName);
+            fAVMService.createSnapshot(storeName, tag, description);
         }
     }
 

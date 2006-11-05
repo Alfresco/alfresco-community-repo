@@ -83,4 +83,16 @@ public interface VersionRoot
      * @return The version id.
      */
     public int getVersionID();
+    
+    /**
+     * Get the tag (short description).
+     * @return The tag.
+     */
+    public String getTag();
+    
+    /**
+     * Get the thick description.
+     * @return The thick description.
+     */
+    public String getDescription();
 }

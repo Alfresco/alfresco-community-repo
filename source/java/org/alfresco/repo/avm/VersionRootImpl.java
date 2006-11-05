@@ -59,6 +59,16 @@ class VersionRootImpl implements VersionRoot, Serializable
     private DirectoryNode fRoot;
 
     /**
+     * The short description.
+     */
+    private String fTag;
+
+    /**
+     * The thick description.
+     */
+    private String fDescription;
+    
+    /**
      * A default constructor.
      */
     public VersionRootImpl()
@@ -77,13 +87,17 @@ class VersionRootImpl implements VersionRoot, Serializable
                            DirectoryNode root,
                            int versionID,
                            long createDate,
-                           String creator)
+                           String creator,
+                           String tag,
+                           String description)
     {
         fAVMStore = store;
         fRoot = root;
         fVersionID = versionID;
         fCreateDate = createDate;
         fCreator = creator;
+        fTag = tag;
+        fDescription = description;
     }
     
     public long getCreateDate()
@@ -183,6 +197,42 @@ class VersionRootImpl implements VersionRoot, Serializable
     public int hashCode()
     {
         return fAVMStore.hashCode() + fVersionID;
+    }
+    
+    /**
+     * Get the tag (short description).
+     * @return The tag.
+     */
+    public String getTag()
+    {
+        return fTag;
+    }
+    
+    /**
+     * Set the tag (short description).
+     * @param tag The short description.
+     */
+    public void setTag(String tag)
+    {
+        fTag = tag;
+    }
+    
+    /**
+     * Get the thick description.
+     * @return The thick description.
+     */
+    public String getDescription()
+    {
+        return fDescription;
+    }
+    
+    /**
+     * Set the thick description.
+     * @param description The thick discription.
+     */
+    public void setDescription(String description)
+    {
+        fDescription = description;
     }
 }
 

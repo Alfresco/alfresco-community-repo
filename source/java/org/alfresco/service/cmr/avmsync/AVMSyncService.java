@@ -53,9 +53,11 @@ public interface AVMSyncService
      * AVMDifferences and replace the destination with the conflicting source.
      * @param overrideOlder If this is true the update will override AVMDifferences
      * in which the source is older than the destination and overwrite the destination.
+     * @param tag Short comment.
+     * @param description Full update blurb.
      */
     public void update(List<AVMDifference> diffList, boolean ignoreConflicts, boolean ignoreOlder,
-                       boolean overrideConflicts, boolean overrideOlder);
+                       boolean overrideConflicts, boolean overrideOlder, String tag, String description);
     
     /**
      * Flattens a layer so that all all nodes under and including

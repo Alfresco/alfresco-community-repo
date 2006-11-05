@@ -46,7 +46,7 @@ public class AVMServicePerfTest extends AVMServiceTestBase
                     System.out.println(ndir + "/file" + i);
                     out.close();
                 }
-                fService.createSnapshot("main");
+                fService.createSnapshot("main", null, null);
             }
             //            System.out.println(recursiveList("main", -1));
         }
@@ -78,7 +78,7 @@ public class AVMServicePerfTest extends AVMServiceTestBase
                     System.out.println(ndir + "/file" + i);
                     out.close();
                 }
-                fService.createSnapshot("main");
+                fService.createSnapshot("main", null, null);
             }
             //            System.out.println(recursiveList("main", -1));
         }
@@ -110,7 +110,7 @@ public class AVMServicePerfTest extends AVMServiceTestBase
                     System.out.println(ndir + "/file" + i);
                     out.close();
                 }
-                fService.createSnapshot("main");
+                fService.createSnapshot("main", null, null);
             }
             //            System.out.println(recursiveList("main", -1));
         }
@@ -142,7 +142,7 @@ public class AVMServicePerfTest extends AVMServiceTestBase
                     out.close();
                     System.out.println(ndir + "/file" + i);
                 }
-                fService.createSnapshot("main");
+                fService.createSnapshot("main", null, null);
             }
             //            System.out.println(recursiveList("main", -1));
         }

@@ -312,7 +312,7 @@ public class AVMRepository
             }
             if (version < 0)
             {
-                version = srcRepo.createSnapshot();
+                version = srcRepo.createSnapshot("Branch Snapshot", null);
             }
             sPath = srcRepo.lookup(version, pathParts[1], false, false);
             if (sPath == null)
@@ -592,7 +592,7 @@ public class AVMRepository
             {
                 throw new AVMNotFoundException("Store not found.");
             }
-            result.add(store.createSnapshot());
+            result.add(store.createSnapshot(null, null));
         }
         return result;
     }
@@ -600,16 +600,18 @@ public class AVMRepository
     /**
      * Create a snapshot of a single AVMStore.
      * @param store The name of the repository.
+     * @param tag The short description.
+     * @param description The thick description.
      * @return The version id of the newly snapshotted repository.
      */
-    public int createSnapshot(String storeName)
+    public int createSnapshot(String storeName, String tag, String description)
     {
         AVMStore store = getAVMStoreByName(storeName);
         if (store == null)
         {
             throw new AVMNotFoundException("Store not found.");
         }
-        return store.createSnapshot();
+        return store.createSnapshot(tag, description);
     }
 
     /**

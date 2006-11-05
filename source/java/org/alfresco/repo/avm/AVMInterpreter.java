@@ -301,7 +301,7 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                fService.createSnapshot(command[1]);
+                fService.createSnapshot(command[1], null, null);
             }
             else if (command[0].equals("cat"))
             {
@@ -482,7 +482,7 @@ public class AVMInterpreter
                                                        -1, command[3], AVMDifference.NEWER);
                 List<AVMDifference> diffs = new ArrayList<AVMDifference>();
                 diffs.add(diff);
-                fSyncService.update(diffs, false, false, false, false);
+                fSyncService.update(diffs, false, false, false, false, null, null);
             }
             else if (command[0].equals("resetLayer"))
             {

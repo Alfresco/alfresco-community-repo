@@ -146,7 +146,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createBranch(-1, "main:/a", "main:/", "abranch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             fService.createBranch(-1, "main:/a/b", "main:/", "bbranch");
             List<Pair<Integer, String>> paths = fService.getPaths(fService.lookup(-1, "main:/a/b/c/foo"));
             for (Pair<Integer, String> path : paths)
@@ -189,7 +189,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             diffs.add(new AVMDifference(-1, "layer:/a/b/c/foo",
                                         -1, "main:/a/b/c/foo",
                                         AVMDifference.NEWER));
-            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.update(diffs, false, false, false, false, null, null);
             fSyncService.flatten("layer:/a", "main:/a");
             AVMNodeDescriptor b = fService.lookup(-1, "layer:/a/b");
             assertTrue(b.isLayeredDirectory());
@@ -240,7 +240,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/", "appBase");
             fService.rename("main:/", "a", "main:/appBase", "a");
             fService.rename("main:/", "d", "main:/appBase", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             fService.createAVMStore("source");
             fService.createLayeredDirectory("main:/appBase", "source:/", "appBase");
             fService.getFileOutputStream("source:/appBase/a/b/c/foo").close();
@@ -284,7 +284,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                                          AVMDifference.NEWER));
             noodle.add(new AVMDifference(-1, "main:/d", -1, "staging:/d",
                                          AVMDifference.NEWER));
-            fSyncService.update(noodle, false, false, false, false);
+            fSyncService.update(noodle, false, false, false, false, null, null);
             diffs = fSyncService.compare(-1, "main:/", -1, "staging:/");
             assertEquals(1, diffs.size());
             assertEquals("main:/a/b/c/bar", diffs.get(0).getSourcePath());
@@ -381,20 +381,20 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createAVMStore("source");
             fService.createAVMStore("dest");
             loader.recursiveLoad("config/alfresco/bootstrap", "source:/");
-            int version1 = fService.createSnapshot("source");
+            int version1 = fService.createSnapshot("source", null, null);
             loader.recursiveLoad("config/alfresco/extension", "source:/");
-            int version2 = fService.createSnapshot("source");
+            int version2 = fService.createSnapshot("source", null, null);
             List<AVMDifference> diffs = 
                 fSyncService.compare(version1, "source:/", -1, "dest:/");
-            fService.createSnapshot("dest");
+            fService.createSnapshot("dest", null, null);
             assertEquals(1, diffs.size());
-            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.update(diffs, false, false, false, false, null, null);
             diffs = fSyncService.compare(version1, "source:/", -1, "dest:/");
             assertEquals(0, diffs.size());
             diffs = fSyncService.compare(version2, "source:/", -1, "dest:/");
             assertEquals(1, diffs.size());
-            fSyncService.update(diffs, false, false, false, false);
-            fService.createSnapshot("dest");
+            fSyncService.update(diffs, false, false, false, false, null, null);
+            fService.createSnapshot("dest", null, null);
             diffs = fSyncService.compare(version2, "source:/", -1, "dest:/");
             assertEquals(0, diffs.size());
         }
@@ -423,7 +423,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 fSyncService.compare(-1, "branch:/branch", -1, "main:/");
             assertEquals(3, diffs.size());
             // Now update.
-            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.update(diffs, false, false, false, false, null, null);
             diffs = fSyncService.compare(-1, "branch:/branch", -1, "main:/");
             assertEquals(0, diffs.size());
             fService.getFileOutputStream("branch:/branch/a/b/fing").close();
@@ -474,9 +474,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             loader.recursiveLoad("config/alfresco/bootstrap", "layer:/layer");
             List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/");
             assertEquals(1, diffs.size());
-            fService.createSnapshot("layer");
-            fSyncService.update(diffs, false, false, false, false);
-            fService.createSnapshot("main");
+            fService.createSnapshot("layer", null, null);
+            fSyncService.update(diffs, false, false, false, false, null, null);
+            fService.createSnapshot("main", null, null);
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/");
             assertEquals(0, diffs.size());
             fSyncService.flatten("layer:/layer", "main:/");
@@ -487,10 +487,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createAVMStore("layer2");
             fService.createLayeredDirectory("layer:/layer", "layer2:/", "layer");
             loader.recursiveLoad("config/alfresco/bootstrap", "layer2:/layer/bootstrap");
-            fService.createSnapshot("layer2");
+            fService.createSnapshot("layer2", null, null);
             diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer");
             assertEquals(1, diffs.size());
-            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.update(diffs, false, false, false, false, null, null);
             diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer");
             assertEquals(0, diffs.size());
             fSyncService.flatten("layer2:/layer", "layer:/layer");
@@ -519,12 +519,12 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             // Change some stuff.
             fService.createFile("main:/layer/b", "fig").close();
             fService.getFileOutputStream("main:/layer/b/c/foo").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             // Do a compare.
             List<AVMDifference> diffs = 
@@ -534,7 +534,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 System.out.println(diff);
             }
             // Update.
-            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.update(diffs, false, false, false, false, null, null);
             System.out.println(recursiveList("main", -1, true));
             // Flatten.
             fSyncService.flatten("main:/layer", "main:/a");
@@ -602,8 +602,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             diffs.add(new AVMDifference(-1, "main:/abranch/b/c/foo",
                                         -1, "main:/a/b/c/foo",
                                         AVMDifference.NEWER));
-            fSyncService.update(diffs, false, false, false, false);
-            fService.createSnapshot("main");
+            fSyncService.update(diffs, false, false, false, false, null, null);
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals(fService.lookup(-1, "main:/abranch/monkey").getId(),
                          fService.lookup(-1, "main:/a/monkey").getId());
@@ -623,9 +623,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             diffs.add(new AVMDifference(-1, "main:/abranch/monkey",
                                         -1, "main:/a/monkey",
                                         AVMDifference.NEWER));
-            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.update(diffs, false, false, false, false, null, null);
             assertEquals(0, fSyncService.compare(-1, "main:/abranch", -1, "main:/a").size());
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals(fService.lookup(-1, "main:/abranch/monkey", true).getId(),
                          fService.lookup(-1, "main:/a/monkey", true).getId());
@@ -644,7 +644,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                                         AVMDifference.NEWER));
             try
             {
-                fSyncService.update(diffs, false, false, false, false);
+                fSyncService.update(diffs, false, false, false, false, null, null);
                 fail();
             }
             catch (AVMSyncException se)
@@ -657,9 +657,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             diffs.add(new AVMDifference(-1, "main:/a/monkey",
                       -1, "main:/abranch/monkey",
                       AVMDifference.NEWER));
-            fSyncService.update(diffs, false, false, true, false);
+            fSyncService.update(diffs, false, false, true, false, null, null);
             assertEquals(0, fSyncService.compare(-1, "main:/abranch", -1, "main:/a").size());
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals(fService.lookup(-1, "main:/a/monkey", true).getId(),
                          fService.lookup(-1, "main:/abranch/monkey", true).getId());
@@ -685,9 +685,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             diffs.add(new AVMDifference(-1, "main:/layer/b/c/foo",
                                         -1, "main:/a/b/c/foo",
                                         AVMDifference.NEWER));
-            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.update(diffs, false, false, false, false, null, null);
             assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a").size());
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals(fService.lookup(-1, "main:/layer/monkey").getId(),
                          fService.lookup(-1, "main:/a/monkey").getId());
@@ -707,9 +707,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             diffs.add(new AVMDifference(-1, "main:/layer/monkey",
                                         -1, "main:/a/monkey",
                                         AVMDifference.NEWER));
-            fSyncService.update(diffs, false, false, false, false);
+            fSyncService.update(diffs, false, false, false, false, null, null);
             assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a").size());
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals(fService.lookup(-1, "main:/layer/monkey", true).getId(),
                          fService.lookup(-1, "main:/a/monkey", true).getId());
@@ -728,7 +728,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                                         AVMDifference.NEWER));
             try
             {
-                fSyncService.update(diffs, false, false, false, false);
+                fSyncService.update(diffs, false, false, false, false, null, null);
                 fail();
             }
             catch (AVMSyncException se)
@@ -741,9 +741,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             diffs.add(new AVMDifference(-1, "main:/a/monkey",
                                         -1, "main:/layer/monkey",
                                         AVMDifference.NEWER));
-            fSyncService.update(diffs, false, false, true, false);
+            fSyncService.update(diffs, false, false, true, false, null, null);
             assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a").size());
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals(fService.lookup(-1, "main:/a/monkey", true).getId(),
                          fService.lookup(-1, "main:/layer/monkey", true).getId());
@@ -787,7 +787,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // Delete /a/b/foo again in prep for layer tests.
             fService.removeNode("main:/a/b", "foo");
             System.out.println(recursiveList("main", -1, true));
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Create a layer do a link from /layer/b/c/bar to /layer/b
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
             fService.link("main:/layer/b", "bar", fService.lookup(-1, "main:/layer/b/c/bar"));
@@ -862,15 +862,15 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             List<String> deleted = fService.getDeleted(-1, "main:/layer/b/c");
             assertEquals(0, deleted.size());
             fService.removeNode("main:/a/b/c", "foo");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             deleted = fService.getDeleted(-1, "main:/a/b/c");
             assertEquals(0, deleted.size());
             fService.removeNode("main:/layer/b/c", "bar");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             deleted = fService.getDeleted(-1, "main:/layer/b/c");
             assertEquals(1, deleted.size());
         }
@@ -890,7 +890,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             Map<String, AVMNodeDescriptor> listing = 
                 fService.getDirectoryListingDirect(-1, 
                                                    "main:/layer");
@@ -900,11 +900,11 @@ public class AVMServiceTest extends AVMServiceTestBase
                                                    "main:/layer/b");
             assertEquals(0, listing.size());
             fService.createFile("main:/layer/b/c", "sigmoid").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             listing = fService.getDirectoryListingDirect(-1, "main:/layer");
             assertEquals(1, listing.size());
             fService.createFile("main:/layer", "lepton");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             listing = fService.getDirectoryListingDirect(-1, "main:/layer");
             assertEquals(2, listing.size());
             listing = fService.getDirectoryListingDirect(-1, "main:/layer/b/c");
@@ -929,7 +929,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             fService.createAVMStore("layer");
             fService.createLayeredDirectory("main:/a", "layer:/", "alayer");
-            fService.createSnapshot("layer");
+            fService.createSnapshot("layer", null, null);
             LayeringDescriptor info = fService.getLayeringInfo(-1, "layer:/alayer");
             assertFalse(info.isBackground());
             assertEquals("layer", info.getPathAVMStore().getName());
@@ -939,7 +939,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("layer", info.getPathAVMStore().getName());
             assertEquals("main", info.getNativeAVMStore().getName());
             fService.createFile("layer:/alayer/b", "figs").close();
-            fService.createSnapshot("layer");
+            fService.createSnapshot("layer", null, null);
             info = fService.getLayeringInfo(-1, "layer:/alayer/b/figs");
             assertFalse(info.isBackground());
             assertEquals("layer", info.getPathAVMStore().getName());
@@ -949,7 +949,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("layer", info.getPathAVMStore().getName());
             assertEquals("main", info.getNativeAVMStore().getName());
             fService.createLayeredDirectory("layer:/alayer/b", "layer:/", "blayer");
-            fService.createSnapshot("layer");
+            fService.createSnapshot("layer", null, null);
             info = fService.getLayeringInfo(-1, "layer:/blayer/c");
             assertEquals("main", info.getNativeAVMStore().getName());
             info = fService.getLayeringInfo(-1, "layer:/blayer/figs");
@@ -976,19 +976,19 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/a", "c");
             fService.createFile("main:/a/b", "foo", new ByteArrayInputStream("I am foo.".getBytes()));
             fService.createFile("main:/a/c", "bar", new ByteArrayInputStream("I am bar.".getBytes()));
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History is unchanged.
             checkHistory(history, "main");
             // Make a layer to a.
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History is unchanged.
             checkHistory(history, "main");
             // /a and /layer should have identical contents.
             assertEquals(recursiveContents("main:/a", -1, true), recursiveContents("main:/layer", -1, true));
             // Now rename /layer/c/bar to /layer/b/bar
             fService.rename("main:/layer/c", "bar", "main:/layer/b", "bar");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History is unchanged.
             checkHistory(history, "main");
             // /layer/c should be empty.
@@ -1012,7 +1012,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("bar", list.get(0));
             // Now make a file in /a/b
             fService.createFile("main:/a/b", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History is unchanged.
             checkHistory(history, "main");
             // /a/b should contain baz and foo.
@@ -1031,7 +1031,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("foo", list.get(2));
             // Remove baz from /layer/b
             fService.removeNode("main:/layer/b", "baz");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History is unchanged.
             checkHistory(history, "main");
             System.out.println(recursiveList("main", -1, true));
@@ -1070,28 +1070,28 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("main:/a/b", "bar").close();
             fService.createDirectory("main:/", "c");
             fService.createDirectory("main:/c", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a layer over /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Move /c/d to /layer
             fService.rename("main:/c", "d", "main:/layer", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Now make a file in /layer/d
             fService.createFile("main:/layer/d", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make /a/d/figs and see the wackiness.
             fService.createDirectory("main:/a", "d");
             fService.createFile("main:/a/d", "figs").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/d should no contain baz and figs.
@@ -1127,28 +1127,28 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("main:/a/b", "bar").close();
             fService.createDirectory("main:/", "c");
             fService.createDirectory("main:/c", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a layer over /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Move /c/d to /layer
             fService.rename("main:/c", "d", "main:/layer", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a file in /layer/d
             fService.createFile("main:/layer/d", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make /a/d/figs and see the wackiness.
             fService.createDirectory("main:/a", "d");
             fService.createFile("main:/a/d", "figs").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/d should now contain baz and figs.
@@ -1160,7 +1160,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // Rename /layer/d to /layer/e and uncover /layer/d
             fService.rename("main:/layer", "d", "main:/layer", "e");
             fService.uncover("main:/layer", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/d contains figs.
@@ -1200,22 +1200,22 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("main:/a/b", "bar").close();
             fService.createDirectory("main:/", "c");
             fService.createDirectory("main:/c", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a layer over /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Move /layer/b to /b
             fService.rename("main:/layer", "b", "main:/", "b");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Add something to /a/b and it should show up in /b.
             fService.createFile("main:/a/b", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /b should have foo and bar and baz.
@@ -1227,7 +1227,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("foo", list.get(2));
             // Add something to /a and it will show up in /layer.
             fService.createFile("main:/a", "figs").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer should have figs in it.
@@ -1261,12 +1261,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             // Make a branch from /a
             fService.createBranch(-1, "main:/a", "main:/", "abranch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a branch in something that has been branched.
             fService.createBranch(-1, "main:/a/b", "main:/a", "bbranch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged
             checkHistory(history, "main");
             // Everything under /abranch should be identical in this version 
@@ -1276,7 +1276,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/abranch", version - 2, true));
             // Make a branch within a branch.
             fService.createBranch(-1, "main:/abranch/b/c", "main:/abranch/b", "cbranch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged
             checkHistory(history, "main");
             // Everything under /a should be unchanged between this version and the last.
@@ -1285,12 +1285,12 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/a", version - 2, true));
             // Make a branch to something outside of a branch inside a branch.
             fService.createBranch(-1, "main:/d", "main:/abranch", "dbranch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make something ind /abranch/dbranch.
             fService.createFile("main:/abranch/dbranch/e/f", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // d should not have changed since the previous version.
@@ -1322,22 +1322,22 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             // Create a layer to /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a layer inside of a layer pointing to d.
             fService.createLayeredDirectory("main:/d", "main:/layer", "under");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create a file in /layer/under/e/f.
             fService.createFile("main:/layer/under/e/f", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create a file in /d/e.
             fService.createFile("main:/d/e", "bow").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/under/e should contain bow and f.
@@ -1350,12 +1350,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/", "g");
             fService.createDirectory("main:/g", "h");
             fService.createDirectory("main:/g/h", "i");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a layer in /d to /g.
             fService.createLayeredDirectory("main:/g", "main:/d", "gover");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /d/gover should be identical to /layer/under/gover
@@ -1363,7 +1363,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/layer/under/gover", -1, true));
             // Create a file in /layer/under/gover/h/i
             fService.createFile("main:/layer/under/gover/h/i", "moo").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /d should be unchanged before this version and the last
@@ -1375,7 +1375,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/g", version - 2, true));
             // Add a file through /d/gover/h/i
             fService.createFile("main:/d/gover/h/i", "cow").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /g should not have changed since its last version.
@@ -1390,7 +1390,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("moo", list.get(1));
             // Rename /layer/under/gover to /layer/b/gover and see what happens.
             fService.rename("main:/layer/under", "gover", "main:/layer/b", "gover");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // moo  should be in /layer/b/gover/h/i
@@ -1400,7 +1400,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("moo", list.get(0));
             // Add a new file to /layer/b/gover/h/i
             fService.createFile("main:/layer/b/gover/h/i", "oink").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/b/gover/h/i should contain moo, oink.
@@ -1435,12 +1435,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/a/b", "c");
             fService.createFile("main:/a/b/c", "foo").close();
             fService.createFile("main:/a/b/c", "bar").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create a layer over /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /a and /layer should have identical contents.
@@ -1448,12 +1448,12 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/layer", -1, true));
             // Make a modification in /layer
             fService.createFile("main:/layer/b", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Branch off layer.
             fService.createBranch(-1, "main:/layer", "main:/", "branch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/b and /branch/b should have identical contents.
@@ -1461,7 +1461,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/branch/b", -1, true));
             // Create /branch/b/c/foo
             fService.createFile("main:/branch/b/c", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer should not have changed.
@@ -1470,7 +1470,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/layer", version - 2, true));
             // Change something in /layer
             fService.createFile("main:/layer/b/c", "fig").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /branch should not have changed.
@@ -1479,17 +1479,17 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/branch", version - 2, true));
             // Create another layer on /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer2");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Branch from /layer2/b.
             fService.createBranch(-1, "main:/layer2/b", "main:/", "branch2");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create something in the branch.
             fService.createFile("main:/branch2", "goofy").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer2 should be unchanged.
@@ -1498,7 +1498,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/layer2", version - 2, true));
             // Remove something from /layer2
             fService.removeNode("main:/layer2/b/c", "foo");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /branch2 is unchanged.
@@ -1539,23 +1539,23 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/d/e", "f");
             fService.createFile("main:/d/e/f", "moo").close();
             fService.createFile("main:/d/e/f", "cow").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a layer to /a and a layer to /d
             fService.createLayeredDirectory("main:/a", "main:/", "la");
             fService.createLayeredDirectory("main:/d", "main:/", "ld");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Move /la/b/c to /ld/e/c.
             fService.rename("main:/la/b", "c", "main:/ld/e", "c");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create file /ld/e/c/baz.
             fService.createFile("main:/ld/e/c", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Here's the thing we'd like to assert.
@@ -1587,7 +1587,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             fService.createDirectory("main:/", "testdir");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             assertEquals(AVMNodeType.PLAIN_DIRECTORY, fService.lookup(-1, "main:/").getType());
         }
         catch (Exception e)
@@ -1607,14 +1607,14 @@ public class AVMServiceTest extends AVMServiceTestBase
             testCreateDirectory();
             fService.createFile("main:/testdir", "testfile").close();
             fService.createFile("main:/", "testfile2").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/testdir/testfile"));
             out.println("This is testdir/testfile");
             out.close();
             out = new PrintStream(fService.getFileOutputStream("main:/testfile2"));
             out.println("This is testfile2");
             out.close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             List<VersionDescriptor> versions = fService.getAVMStoreVersions("main");
             for (VersionDescriptor version : versions)
             {
@@ -1647,7 +1647,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createBranch(-1, "main:/a", "main:/d/e", "abranch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             List<VersionDescriptor> versions = fService.getAVMStoreVersions("main");
             for (VersionDescriptor version : versions)
             {
@@ -1676,7 +1676,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createLayeredDirectory("main:/a", "main:/d/e", "alayer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals("main:/a", fService.getIndirectionPath(-1, "main:/d/e/alayer"));
             assertEquals(recursiveContents("main:/a", -1, true),
@@ -1684,7 +1684,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/d/e/alayer/b/c/foo"));
             out.println("I am main:/d/e/alayer/b/c/foo");
             out.close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             BufferedReader reader = 
                 new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/b/c/foo")));
             String line = reader.readLine();
@@ -1708,7 +1708,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createLayeredFile("main:/a/b/c/foo", "main:/d", "lfoo");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals("main:/a/b/c/foo", fService.lookup(-1, "main:/d/lfoo").getIndirection());
             BufferedReader reader = 
@@ -1719,7 +1719,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/d/lfoo"));
             out.println("I am main:/d/lfoo");
             out.close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             reader = 
                 new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/b/c/foo")));
@@ -1748,7 +1748,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.rename("main:/a", "b", "main:/d/e", "brenamed");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertEquals(recursiveContents("main:/a/b", 1, true),
                          recursiveContents("main:/d/e/brenamed", 2, true));
@@ -1772,13 +1772,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             System.out.println(history.get(0));
             fService.removeNode("main:/a/b/c", "foo");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             checkHistory(history, "main");
             System.out.println(history.get(1));
             Map<String, AVMNodeDescriptor> l = fService.getDirectoryListing(-1, "main:/a/b/c");
             assertEquals(1, l.size());
             fService.removeNode("main:/d", "e");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             checkHistory(history, "main");
             System.out.println(history.get(2));
             l = fService.getDirectoryListing(-1, "main:/d");
@@ -1805,7 +1805,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             System.out.println(repos.get(0));
             System.out.println(repos.get(1));
             fService.createBranch(-1, "main:/", "second:/", "main");
-            fService.createSnapshot("second");
+            fService.createSnapshot("second", null, null);
             System.out.println(recursiveList("second", -1, true));
             assertEquals(recursiveContents("main:/", -1, true),
                          recursiveContents("second:/main", -1, true));
@@ -1815,7 +1815,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 new PrintStream(fService.getFileOutputStream("second:/main/a/b/c/foo"));
             out.println("I am second:/main/a/b/c/foo");
             out.close();
-            fService.createSnapshot("second");
+            fService.createSnapshot("second", null, null);
             System.out.println(recursiveList("second", -1, true));
             BufferedReader reader = 
                 new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/a/b/c/foo")));
@@ -1840,7 +1840,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             fService.createAVMStore("second");
             fService.createLayeredDirectory("main:/", "second:/", "main");
-            fService.createSnapshot("second");
+            fService.createSnapshot("second", null, null);
             System.out.println(recursiveList("second", -1, true));
             assertEquals(recursiveContents("main:/", -1, true),
                          recursiveContents("second:/main", -1, true));
@@ -1849,7 +1849,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             PrintStream out = new PrintStream(fService.getFileOutputStream("second:/main/a/b/c/foo"));
             out.println("I am second:/main/a/b/c/foo");
             out.close();
-            fService.createSnapshot("second");
+            fService.createSnapshot("second", null, null);
             System.out.println(recursiveList("second", -1, true));
             BufferedReader reader = 
                 new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "second:/main/a/b/c/foo")));
@@ -1910,7 +1910,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // are added in the two layers.
             fService.createDirectory("main:/", "a");
             fService.createDirectory("main:/a", "b");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/a");
             assertEquals(1, listing.size());
             List<String> list = new ArrayList<String>(listing.keySet());
@@ -1918,14 +1918,14 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createLayeredDirectory("main:/a", "main:/", "c");
             fService.createLayeredDirectory("main:/c", "main:/", "d");
             fService.createFile("main:/d/b", "foo.txt").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             listing = fService.getDirectoryListing(-1, "main:/d/b");
             assertEquals(1, listing.size());
             list = new ArrayList<String>(listing.keySet());
             assertEquals("foo.txt", list.get(0));
             fService.createFile("main:/c/b", "bar.txt").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             listing = fService.getDirectoryListing(-1, "main:/c/b");
             assertEquals(1, listing.size());
@@ -1937,7 +1937,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("bar.txt", list.get(0));
             assertEquals("foo.txt", list.get(1));
             fService.rename("main:/", "c", "main:/", "e");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             listing = fService.getDirectoryListing(-1, "main:/d/b");
             assertEquals(1, listing.size());
@@ -1964,17 +1964,17 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("main:/a/b", "c.txt").close();
             fService.createFile("main:/a/b", "d.txt").close();
             fService.createFile("main:/a", "e.txt").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Make a branch off of a.
             fService.createBranch(-1, "main:/a", "main:/", "branch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // The branch should contain exactly the same things as the thing
             // it branched from.
             assertEquals(recursiveContents("main:/a", -1, true),
                          recursiveContents("main:/branch", -1, true));
             // Make a layer pointing to /branch/b
             fService.createLayeredDirectory("main:/branch/b", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // The new layer should contain exactly the same things as the thing it is layered to.
             assertEquals(recursiveContents("main:/branch/b", -1, true),
                          recursiveContents("main:/layer", -1, true));
@@ -1982,7 +1982,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/a/b/c.txt"));
             out.println("I am c, modified in main:/a/b.");
             out.close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // The layer should still have identical content to /branch/b.
             assertEquals(recursiveContents("main:/branch/b", -1, true),
                          recursiveContents("main:/layer", -1, true));
@@ -1992,7 +1992,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             out = new PrintStream(fService.getFileOutputStream("main:/branch/b/d.txt"));
             out.println("I am d, modified in main:/branch/b");
             out.close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // The layer contents should be identical to the latest contents of /branch/b.
             assertEquals(recursiveContents("main:/branch/b", -1, true),
                          recursiveContents("main:/layer", -1, true));
@@ -2016,12 +2016,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/a", "b");
             fService.createDirectory("main:/a/b", "c");
             fService.createDirectory("main:/a/b/c", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Now make some layers.  Three to be precise.
             fService.createLayeredDirectory("main:/a", "main:/", "e");
             fService.createLayeredDirectory("main:/e", "main:/", "f");
             fService.createLayeredDirectory("main:/f", "main:/", "g");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // e, f, g should all have the same contents as a.
             String a = recursiveContents("main:/a", -1, true);
             String e = recursiveContents("main:/e", -1, true);
@@ -2033,7 +2033,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // Now make a file in /g/b/c/d and /f/b/c/d
             fService.createFile("main:/g/b/c/d", "foo").close();
             fService.createFile("main:/f/b/c/d", "bar").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // /g/b/c/d should contain foo and bar.
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/g/b/c/d");
             assertEquals(2, listing.size());
@@ -2047,7 +2047,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("bar", list.get(0));
             // Now do something in the bottom layer.
             fService.createFile("main:/a/b/c", "baz").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // /e/b/c should contain baz and d
             listing = fService.getDirectoryListing(-1, "main:/e/b/c");
             assertEquals(2, listing.size());
@@ -2056,7 +2056,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("d", list.get(1));
             // Now add something in the e layer.
             fService.createFile("main:/e/b/c/d", "bing").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // /f/b/c/d should now contain bar and bing.
             listing = fService.getDirectoryListing(-1, "main:/f/b/c/d");
             assertEquals(2, listing.size());
@@ -2084,16 +2084,16 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/a", "b");
             fService.createDirectory("main:/a/b", "c");
             fService.createDirectory("main:/a", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Now make a layer to a.
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // /layer should have the same contents as /a at this point.
             assertEquals(recursiveContents("main:/a", -1, true),
                          recursiveContents("main:/layer", -1, true));
             // Now we will rename /layer/d to /layer/moved
             fService.rename("main:/layer", "d", "main:/layer", "moved");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // /layer should contain b and moved
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer");
             assertEquals(2, listing.size());
@@ -2102,7 +2102,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("moved", list.get(1));
             // Now rename moved back to d.
             fService.rename("main:/layer", "moved", "main:/layer", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // /layer should contain b and d.
             listing = fService.getDirectoryListing(-1, "main:/layer");
             assertEquals(2, listing.size());
@@ -2130,22 +2130,22 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             // Create layered directory /d/e/f/ to /a
             fService.createLayeredDirectory("main:/a", "main:/d/e/f", "l0");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create layered directory /d/l1 to /d/e/f.
             fService.createLayeredDirectory("main:/d/e/f", "main:/d", "l1");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create layered directory /l2 to /d
             fService.createLayeredDirectory("main:/d", "main:/", "l2");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create /l2/l1/l0/a/foo.
             fService.createFile("main:/l2/l1/l0/b", "foo").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /l2/l1/l0 should now point at /d/l1/l0
@@ -2177,17 +2177,17 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             // Make a layer to /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make /layer/b/c primary.
             fService.makePrimary("main:/layer/b/c");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Rename /layer/b/c to /layer/c
             fService.rename("main:/layer/b", "c", "main:/layer", "c");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /a/b/c should have identical contents to /layer/c
@@ -2201,7 +2201,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.makePrimary("main:/layer2/b/c");
             // Rename /layer2/b/c to /layer2/c
             fService.rename("main:/layer2/b", "c", "main:/layer2", "c");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer2/c should contain foo bar and baz.
@@ -2236,12 +2236,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             // Make a layer to /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Retarget /layer/b/c to /d.
             fService.retargetLayeredDirectory("main:/layer/b/c", "main:/d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/b/c should contain e.
@@ -2251,7 +2251,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("e", list.get(0));
             // Rename /layer/b/c to /layer/c
             fService.rename("main:/layer/b", "c", "main:/layer", "c");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /d should have identical contents to /layer/c
@@ -2265,7 +2265,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.retargetLayeredDirectory("main:/layer2/b/c", "main:/d");
             // Rename /layer2/b/c to /layer2/c
             fService.rename("main:/layer2/b", "c", "main:/layer2", "c");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer2/c should have baz and e in it.
@@ -2305,18 +2305,18 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/d/e", "f");
             fService.createFile("main:/d/e/f", "moo").close();
             fService.createFile("main:/d/e/f", "cow").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make branches.
             fService.createBranch(-1, "main:/a/b", "main:/", "abranch");
             fService.createBranch(-1, "main:/d/e", "main:/", "dbranch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Move /abranch/c/foo /dbranch/foo
             fService.rename("main:/abranch/c", "foo", "main:/dbranch", "foo");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Confirm that /a and /d are unchanged.
@@ -2327,7 +2327,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                          recursiveContents("main:/d", version - 2, true));
             // Move /dbranch/f to /abranch/c/f
             fService.rename("main:/dbranch", "f", "main:/abranch/c", "f");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Confirm that /a and /d are unchanged.
             version = fService.getLatestVersionID("main");
             assertEquals(recursiveContents("main:/a", version - 1, true),
@@ -2367,23 +2367,23 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/d/e", "f");
             fService.createFile("main:/d/e/f", "moo").close();
             fService.createFile("main:/d/e/f", "cow").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create a layer to /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Now create a branch from /d in /layer/a/b.
             fService.createBranch(-1, "main:/d", "main:/layer/b", "branch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Now modify /layer/b/branch/e/f/moo.
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/layer/b/branch/e/f/moo"));
             out.println("moo modified.");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/b/branch/e/f should contain moo and cow.
@@ -2423,24 +2423,24 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/d/e", "f");
             fService.createFile("main:/d/e/f", "moo").close();
             fService.createFile("main:/d/e/f", "cow").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Create a layer to /a
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Now rename /d into /layer/a/b.
             fService.rename("main:/", "d", "main:/layer/b", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Now modify /layer/b/branch/e/f/moo.
             PrintStream out = new PrintStream(fService.getFileOutputStream("main:/layer/b/d/e/f/moo"));
             out.println("moo modified.");
             out.close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/b/branch/e/f should contain moo and cow.
@@ -2476,7 +2476,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/a/b/c", "d");
             fService.createDirectory("main:/a/b/c/d", "e");
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             fService.createDirectory("main:/", "f");
@@ -2484,23 +2484,23 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/f/g", "h");
             fService.createLayeredDirectory("main:/f", "main:/", "flayer");
             fService.createLayeredDirectory("main:/flayer", "main:/layer/b/c", "fover");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             fService.createDirectory("main:/", "i");
             fService.createDirectory("main:/i", "j");
             fService.createDirectory("main:/i/j", "k");
             fService.createLayeredDirectory("main:/i", "main:/f/g/h", "iover");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             fService.createFile("main:/layer/b/c/fover/g/h/iover/j/k", "foo").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // Make a file in /i/j/k
             fService.createFile("main:/i/j/k", "pismo").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/b/c/fover/g/h/iover/j/k should contain pismo and foo.
@@ -2511,7 +2511,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("pismo", list.get(1));
             // Make a file in /flayer/g/h/iover/j/k
             fService.createFile("main:/flayer/g/h/iover/j/k", "zuma").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // History unchanged.
             checkHistory(history, "main");
             // /layer/b/c/fover/g/h/iover/j/k should contain foo, pismo, and zuma.
@@ -2544,12 +2544,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             out.print("version1");
             out.close();
             fService.createLayeredFile("main:/foo", "main:/", "afoo");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             assertEquals(8, fService.lookup(-1, "main:/foo").getLength());
             out = new PrintStream(fService.getFileOutputStream("main:/foo"));
             out.print("version2");
             out.close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             BufferedReader reader = 
                 new BufferedReader(new InputStreamReader(fService.getFileInputStream(1, "main:/afoo")));
             assertEquals("version2", reader.readLine());
@@ -2578,17 +2578,17 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/", "a");
             fService.createDirectory("main:/a", "b");
             fService.createDirectory("main:/a/b", "c");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Make a layer to /a.
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Force a copy on write in the layer.
             fService.createFile("main:/layer/b/c", "foo").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             assertEquals("main:/a/b/c", fService.lookup(-1, "main:/layer/b/c").getIndirection());
             // Now rename.
             fService.rename("main:/layer/b", "c", "main:/layer/b", "d");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             assertEquals("main:/a/b/d", fService.lookup(-1, "main:/layer/b/d").getIndirection());
         }
         catch (Exception e)
@@ -2612,32 +2612,32 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/", "d");
             fService.createDirectory("main:/d", "e");
             fService.createDirectory("main:/d/e", "f");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Make a layer over each.
             fService.createLayeredDirectory("main:/a", "main:/", "la");
             fService.createLayeredDirectory("main:/d", "main:/", "ld");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // rename from down in one layer to another.
             fService.rename("main:/ld/e", "f", "main:/la/b", "f");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             AVMNodeDescriptor desc = fService.lookup(-1, "main:/la/b/f");
             assertTrue(desc.isPrimary());
             assertEquals("main:/d/e/f", desc.getIndirection());
             // Now rename in in the layer.
             fService.rename("main:/la/b", "f", "main:/la/b/c", "f");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             desc = fService.lookup(-1, "main:/la/b/c/f");
             assertTrue(desc.isPrimary());
             assertEquals("main:/d/e/f", desc.getIndirection());  
             // Now create a directory in the layered f.
             fService.createDirectory("main:/la/b/c/f", "dir");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             desc = fService.lookup(-1, "main:/la/b/c/f/dir");
             assertFalse(desc.isPrimary());
             assertEquals("main:/d/e/f/dir", desc.getIndirection());
             // Now rename that and see where it points.
             fService.rename("main:/la/b/c/f", "dir", "main:/la/b", "dir");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             desc = fService.lookup(-1, "main:/la/b/dir");
             assertFalse(desc.isPrimary());
             assertEquals("main:/a/b/dir", desc.getIndirection());
@@ -2661,18 +2661,18 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("main:/a", "b");
             fService.createDirectory("main:/a/b", "c");
             fService.createFile("main:/", "foo").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Make a layer.
             fService.createLayeredDirectory("main:/a", "main:/", "la");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             // Make a layered file.
             fService.createLayeredFile("main:/foo", "main:/la/b", "foo");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             AVMNodeDescriptor desc = fService.lookup(-1, "main:/la/b/foo");
             assertEquals("main:/foo", desc.getIndirection());
             // Now rename it. It should still point at the same place.
             fService.rename("main:/la/b", "foo", "main:/la", "foo");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             desc = fService.lookup(-1, "main:/la/foo");
             assertEquals("main:/foo", desc.getIndirection());
         }
@@ -2703,7 +2703,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             }
             file.write(buff);
             file.close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
         }
         catch (Exception e)
         {
@@ -2731,7 +2731,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("main:/d/e/f/layer/b/c", "fink").close();
             // Create /l2/e/f/layer/b/c/nottle
             fService.createFile("main:/l2/e/f/layer/b/c", "nottle").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
             assertFalse(fService.lookup(-1, "main:/d/e/f/layer/b/c").getId() ==
                         fService.lookup(-1, "main:/l2/e/f/layer/b/c").getId());
@@ -2780,13 +2780,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             loader.setAvmService(fService);
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             times.add(System.currentTimeMillis());
-            assertEquals(1, fService.createSnapshot("main"));
+            assertEquals(1, fService.createSnapshot("main", null, null));
             loader.recursiveLoad("source/java/org/alfresco/repo/action", "main:/");
             times.add(System.currentTimeMillis());
-            assertEquals(2, fService.createSnapshot("main"));
+            assertEquals(2, fService.createSnapshot("main", null, null));
             loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
             times.add(System.currentTimeMillis());
-            assertEquals(3, fService.createSnapshot("main"));
+            assertEquals(3, fService.createSnapshot("main", null, null));
             assertEquals(1, fService.getAVMStoreVersions("main", null, new Date(times.get(0))).size());
             assertEquals(3, fService.getAVMStoreVersions("main", new Date(times.get(0)), null).size());
             assertEquals(2, fService.getAVMStoreVersions("main", new Date(times.get(1)),
@@ -2838,24 +2838,24 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             fService.createFile("main:/layer/b/c", "baz").close();
             fService.createFile("main:/layer/b/c", "fig").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/layer/b/c");
             assertEquals(4, listing.size());
             System.out.println(recursiveList("main", -1, true));
             // Setting the opacity of layer to true will make no difference to what we see through 
             // main:/layer/b/c.
             fService.setOpacity("main:/layer", true);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             assertTrue(fService.lookup(-1, "main:/layer").getOpacity());
             assertEquals(4, fService.getDirectoryListing(-1, "main:/layer/b/c").size());
             System.out.println(recursiveList("main", -1, true));
             // If main:/layer/b/c is opaque, however, we'll only see two items in it.
             fService.setOpacity("main:/layer", false);
             fService.setOpacity("main:/layer/b/c", true);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             assertFalse(fService.lookup(-1, "main:/layer").getOpacity());
             assertTrue(fService.lookup(-1, "main:/layer/b/c").getOpacity());
             assertEquals(2, fService.getDirectoryListing(-1, "main:/layer/b/c").size());
@@ -2863,7 +2863,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // Gratuitous test of retarget.
             fService.retargetLayeredDirectory("main:/layer", "main:/d");
             fService.setOpacity("main:/layer/b/c", false);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             assertFalse(fService.lookup(-1, "main:/layer/b/c").getOpacity());
             assertEquals(2, fService.getDirectoryListing(-1, "main:/layer/b/c").size());
             // This is just testing that opacity setting works on latent
@@ -2887,11 +2887,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             fService.createBranch(-1, "main:/a", "main:/", "branch");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             AVMNodeDescriptor ancestor = fService.lookup(-1, "main:/a/b/c/foo");
             fService.getFileOutputStream("main:/a/b/c/foo").close();
             fService.getFileOutputStream("main:/branch/b/c/foo").close();
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             AVMNodeDescriptor main = fService.lookup(-1, "main:/a/b/c/foo");
             AVMNodeDescriptor branch = fService.lookup(-1, "main:/branch/b/c/foo");
             AVMNodeDescriptor ca = fService.getCommonAncestor(main, branch);
@@ -2915,7 +2915,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             QName name = QName.createQName("silly.uri", "SillyProperty");
             PropertyValue value = new PropertyValue(name, "Silly Property Value");
             fService.setNodeProperty("main:/a/b/c/foo", name, value);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             PropertyValue returned = fService.getNodeProperty(-1, "main:/a/b/c/foo", name);
             assertEquals(value.toString(), returned.toString());
             Map<QName, PropertyValue> props = fService.getNodeProperties(-1, "main:/a/b/c/foo");
@@ -2932,20 +2932,20 @@ public class AVMServiceTest extends AVMServiceTestBase
             PropertyValue p3 = new PropertyValue(null, 42);
             props.put(n3, p3);
             fService.setNodeProperties("main:/a/b/c/bar", props);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(3, props.size());
             assertEquals(p1.toString(), props.get(n1).toString());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
             fService.deleteNodeProperty("main:/a/b/c/bar", n1);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(2, props.size());
             assertEquals(p2.toString(), props.get(n2).toString());
             assertEquals(p3.toString(), props.get(n3).toString());
             fService.deleteNodeProperties("main:/a/b/c/bar");
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(0, props.size());
         }
@@ -3004,13 +3004,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             List<QName> names = fService.getAspects(-1, "main:/a/b/c/foo");
             assertEquals(2, names.size());
             assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
             assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUTHOR));
             fService.removeAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             fService.getFileOutputStream("main:/a/b/c/foo").close();
             assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
             assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE));
@@ -3062,7 +3062,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                                PermissionService.ADMINISTRATOR_AUTHORITY,
                                PermissionService.ALL_PERMISSIONS,
                                true);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             fService.getFileOutputStream("main:/a/b/c/foo").close();
             Set<AccessPermission> perms = 
                 perm.getPermissions(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"));
@@ -3117,7 +3117,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                                      properties) != null);
             assertTrue(ns.getProperty(AVMNodeConverter.ToNodeRef(-1, "main:/foo"),
                                       WCMModel.PROP_AVM_FILE_INDIRECTION) != null);
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
         }
         catch (Exception e)

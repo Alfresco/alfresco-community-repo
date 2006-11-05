@@ -470,15 +470,17 @@ public class AVMServiceImpl implements AVMService
     /**
      * Snapshot an AVMRepository.
      * @param store The name of the AVMStore.
+     * @param tag The short description.
+     * @param description The thick description.
      * @return The id of the new version.
      */
-    public int createSnapshot(String store)
+    public int createSnapshot(String store, String tag, String description)
     {
         if (store == null)
         {
             throw new AVMBadArgumentException("Store is null.");
         }
-        return fAVMRepository.createSnapshot(store);
+        return fAVMRepository.createSnapshot(store, tag, description);
     }
 
     /**

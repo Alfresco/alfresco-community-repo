@@ -122,7 +122,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                                       fRoot,
                                                       fNextVersionID,
                                                       time,
-                                                      creator);
+                                                      creator,
+                                                      "Initial Empty Version.",
+                                                      "Initial Empty Version.");
         fNextVersionID++;
         AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
     }
@@ -142,7 +144,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @return The version id of the new snapshot.
      */
     @SuppressWarnings("unchecked")
-    public int createSnapshot()
+    public int createSnapshot(String tag, String description)
     {
         // If the root isn't new, we can't take a snapshot since nothing has changed.
         if (!fRoot.getIsNew())
@@ -166,7 +168,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                                       fRoot,
                                                       fNextVersionID,
                                                       System.currentTimeMillis(),
-                                                      user);
+                                                      user,
+                                                      tag,
+                                                      description);
         AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
         // Increment the version id.
         fNextVersionID++;

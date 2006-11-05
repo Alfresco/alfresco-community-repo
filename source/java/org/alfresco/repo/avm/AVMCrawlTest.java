@@ -45,7 +45,7 @@ public class AVMCrawlTest extends AVMServiceTestBase
         {
             fService.createAVMStore("d" + i);
             loader.recursiveLoad("source", "d" + i + ":/");
-            fService.createSnapshot("d" + i);
+            fService.createSnapshot("d" + i, null, null);
         }
         long startTime = System.currentTimeMillis();
         List<AVMCrawler> crawlers = new ArrayList<AVMCrawler>();

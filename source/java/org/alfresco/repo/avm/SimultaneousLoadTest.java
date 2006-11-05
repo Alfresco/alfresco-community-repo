@@ -39,7 +39,7 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
             {
                 fService.createDirectory("main:/", "d" + i);
             }
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
             Thread [] threads = new Thread[n];
             for (int i = 0; i < n; i++)
             {

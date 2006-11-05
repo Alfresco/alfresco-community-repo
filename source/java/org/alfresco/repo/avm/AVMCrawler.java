@@ -219,7 +219,7 @@ class AVMCrawler implements Runnable
             }
             if (fRandom.nextInt(16) == 0)
             {
-                fService.createSnapshot(repDesc.getName());
+                fService.createSnapshot(repDesc.getName(), null, null);
                 fOpCount++;
             }
         }

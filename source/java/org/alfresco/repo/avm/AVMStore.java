@@ -55,9 +55,11 @@ public interface AVMStore
      * Snapshots this store.  This sets all nodes in the
      * the store to the should be copied state, and creates
      * a new version root.
+     * @param tag The short description.
+     * @param description The long description.
      * @return The version id of the newly created snapshot.
      */
-    public int createSnapshot();
+    public int createSnapshot(String tag, String Description);
 
     /**
      * Create a new directory.

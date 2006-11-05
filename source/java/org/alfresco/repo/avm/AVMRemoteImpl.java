@@ -586,6 +586,7 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
         return fAVMService.createSnapshot(stores);
     }
     
+    // TODO update this if it's ever needed.
     /**
      * Snapshot an AVMStore.
      * @param store The name of the AVMStore to snapshot.
@@ -593,7 +594,7 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      */
     public int createSnapshot(String store)
     {
-        return fAVMService.createSnapshot(store);
+        return fAVMService.createSnapshot(store, null, null);
     }
     
     /**

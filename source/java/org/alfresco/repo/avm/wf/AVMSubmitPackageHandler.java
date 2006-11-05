@@ -86,7 +86,8 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
             diffs.add(diff);
             storesHit.put(storePath[0], stagingName);
         }
-        fAVMSyncService.update(diffs, true, true, false, false);
+        // TODO fix update comments if needed.
+        fAVMSyncService.update(diffs, true, true, false, false, null, null);
         for (Map.Entry<String, String> entry : storesHit.entrySet())
         {
             fAVMSyncService.flatten(entry.getKey() + ":/appBase", 

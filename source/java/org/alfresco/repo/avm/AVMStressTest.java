@@ -44,7 +44,7 @@ public class AVMStressTest extends AVMServiceTestBase
             {
                 fService.createDirectory("main:/", "" + i);
                 loader.recursiveLoad("source", "main:/" + i);
-                fService.createSnapshot("main");
+                fService.createSnapshot("main", null, null);
             }
             System.out.println("Load time: " + (System.currentTimeMillis() - start));
             List<AVMTester> testers = new ArrayList<AVMTester>();

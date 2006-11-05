@@ -317,9 +317,11 @@ public interface AVMService
     /**
      * Snapshot the given AVMStore.
      * @param store The name of the AVMStore to snapshot.
+     * @param tag The short description.
+     * @param description The thick description.
      * @throws AVMNotFoundException If <code>store</code> does not exist.
      */
-    public int createSnapshot(String store);
+    public int createSnapshot(String store, String tag, String description);
     
     /**
      * Get the set of versions in an AVMStore

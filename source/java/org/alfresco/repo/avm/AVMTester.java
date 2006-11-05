@@ -478,7 +478,7 @@ class AVMTester implements Runnable
         System.out.println("snapshot");
         try
         {
-            fService.createSnapshot("main");
+            fService.createSnapshot("main", null, null);
         }
         catch (Exception e)
         {

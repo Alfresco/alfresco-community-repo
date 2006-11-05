@@ -734,4 +734,14 @@ public interface AVMService
      * @param path The path to force.
      */
     public AVMNodeDescriptor forceCopy(String path);
+    
+    /**
+     * Copy (possibly recursively) the source into the destination
+     * directory.
+     * @param srcVersion The version of the source.
+     * @param srcPath The path to the source.
+     * @param dstPath The destination directory.
+     * @param name The name to give the destination.
+     */
+    public void copy(int srcVersion, String srcPath, String dstPath, String name);
 }

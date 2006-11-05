@@ -67,6 +67,43 @@ import org.alfresco.util.Pair;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test copy.
+     */
+    public void testCopy()
+    {
+        try
+        {
+            setupBasicTree();
+            // Copy a file.
+            fService.copy(-1, "main:/a/b/c/foo", "main:/d", "fooCopy");
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/d/fooCopy");
+            assertTrue(desc.isFile());
+            // Copy a whole tree
+            fService.copy(-1, "main:/a", "main:/d/e", "aCopy");
+            desc = fService.lookup(-1, "main:/d/e/aCopy");
+            assertTrue(desc.isDirectory());
+            desc = fService.lookup(-1, "main:/a/b/c/bar");
+            AVMNodeDescriptor desc2 = fService.lookup(-1, "main:/d/e/aCopy/b/c/bar");
+            assertTrue(desc2.isFile());
+            assertEquals(desc.getLength(), desc2.getLength());
+            // Check that it rejects infinite copies.
+            try
+            {
+                fService.copy(-1, "main:/", "main://d/e", "illegal");
+                fail();
+            }
+            catch (AVMException ae)
+            {
+                // This is a success.
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    /**
      * Test cyclic lookup behavior.
      */
     public void testCyclicLookup()

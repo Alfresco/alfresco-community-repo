@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.avm.AVMRepository;
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -1175,5 +1176,82 @@ public class AVMServiceImpl implements AVMService
             throw new AVMBadArgumentException("Null Path.");
         }
         return fAVMRepository.forceCopy(path);
+    }
+    
+    /**
+     * Copy (possibly recursively) the source into the destination
+     * directory.
+     * @param srcVersion The version of the source.
+     * @param srcPath The path to the source.
+     * @param dstPath The destination directory.
+     * @param name The name to give the copy.
+     */
+    public void copy(int srcVersion, String srcPath, String dstPath, String name)
+    {
+        if (srcPath == null || dstPath == null)
+        {
+            throw new AVMBadArgumentException("Null Path.");
+        }
+        if (srcVersion < 0)
+        {
+            String canonicalSrc = 
+                AVMNodeConverter.ToAVMVersionPath(
+                        AVMNodeConverter.ToNodeRef(srcVersion, srcPath)).getSecond();
+            String canonicalDst =
+                AVMNodeConverter.ToAVMVersionPath(
+                        AVMNodeConverter.ToNodeRef(-1, dstPath)).getSecond();
+            if (!canonicalSrc.endsWith("/"))
+            {
+                canonicalSrc = canonicalSrc + "/";
+            }
+            if (canonicalDst.indexOf(canonicalSrc) == 0)
+            {
+                throw new AVMBadArgumentException("Infinite Copy.");
+            }
+        }
+        if (!FileNameValidator.IsValid(name))
+        {
+            throw new AVMBadArgumentException("Illegal name.");
+        }
+        AVMNodeDescriptor srcDesc = lookup(srcVersion, srcPath);
+        recursiveCopy(srcVersion, srcDesc, dstPath, name);
+    }
+    
+    /**
+     * Do the actual work of copying.
+     * @param desc The src descriptor.
+     * @param path The destination parent path.
+     * @param name The name to give the copy.
+     */
+    private void recursiveCopy(int version, AVMNodeDescriptor desc, String path, String name)
+    {
+        String newPath = path + '/' + name;
+        if (desc.isFile())
+        {
+            InputStream in = getFileInputStream(version, desc.getPath());
+            createFile(path, name, in);
+        }
+        else // desc is a directory.
+        {
+            createDirectory(path, name);
+            Map<String, AVMNodeDescriptor> listing = getDirectoryListing(desc); 
+            for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
+            {
+                recursiveCopy(version, entry.getValue(), newPath, entry.getKey()); 
+            }
+        }
+        // In either case copy properties, aspects, and acls.
+        Map<QName, PropertyValue> props = getNodeProperties(version, desc.getPath());
+        setNodeProperties(newPath, props);
+        List<QName> aspects = getAspects(version, desc.getPath());
+        for (QName aspect : aspects)
+        {
+            addAspect(newPath, aspect);
+        }
+        DbAccessControlList acl = fAVMRepository.getACL(version, desc.getPath());
+        if (acl != null)
+        {
+            fAVMRepository.setACL(newPath, acl.getCopy());
+        }
     }
 }

@@ -212,7 +212,8 @@ public class ImportWebsiteDialog
                   processZipImport(this.file, importRef);
                   
                   // After an import it's a good idea to snapshot the staging store
-                  this.avmService.createSnapshot(store);
+                  // TODO Maybe a nice auto generated comment.
+                  this.avmService.createSnapshot(store, null, null);
                }
             }
             else

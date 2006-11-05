@@ -46,6 +46,7 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.forms.xforms.SchemaFormBuilder;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.*;
@@ -126,6 +127,7 @@ public class CreateFormWizard extends BaseWizardBean
    
    private String schemaRootElementName;
    private String formName;
+   private String formTitle;
    private String formDescription;
    private Class renderingEngineType = null;
    protected ContentService contentService;
@@ -172,7 +174,7 @@ public class CreateFormWizard extends BaseWizardBean
 
       // apply the titled aspect - title and description
       Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(ContentModel.PROP_TITLE, this.getFormName());
+      props.put(ContentModel.PROP_TITLE, this.getFormTitle());
       props.put(ContentModel.PROP_DESCRIPTION, this.getFormDescription());
       this.nodeService.addAspect(schemaNodeRef, ContentModel.ASPECT_TITLED, props);
 
@@ -228,6 +230,7 @@ public class CreateFormWizard extends BaseWizardBean
       this.removeUploadedRenderingEngineFile();
       this.schemaRootElementName = null;
       this.formName = null;
+      this.formTitle = null;
       this.formDescription = null;
       this.renderingEngineType = null;
       this.renderingEngines = new ArrayList<RenderingEngineData>();
@@ -575,9 +578,9 @@ public class CreateFormWizard extends BaseWizardBean
       final List<SelectItem> result = new LinkedList<SelectItem>();
       if (this.getSchemaFile() != null)
       {
+         final FormsService ts = FormsService.getInstance();
          try
          {
-            final FormsService ts = FormsService.getInstance();
             final Document d = ts.parseXML(this.getSchemaFile());
             final XSModel xsm = SchemaFormBuilder.loadSchema(d);
             final XSNamedMap elementsMap = xsm.getComponents(XSConstants.ELEMENT_DECLARATION);
@@ -591,6 +594,7 @@ public class CreateFormWizard extends BaseWizardBean
          {
             final String msg = "unable to parse " + this.getSchemaFileName();
             this.removeUploadedSchemaFile();
+            Utils.addErrorMessage(msg, e);
             throw new AlfrescoRuntimeException(msg, e);
          }
       }
@@ -613,6 +617,24 @@ public class CreateFormWizard extends BaseWizardBean
       return (this.formName == null && this.getSchemaFileName() != null
               ? this.getSchemaFileName().replaceAll("(.+)\\..*", "$1")
               : this.formName);
+   }
+
+   /**
+    * Sets the title for this form.
+    */
+   public void setFormTitle(final String formTitle)
+   {
+      this.formTitle = formTitle;
+   }
+
+   /**
+    * @return the title for this form.
+    */
+   public String getFormTitle()
+   {
+      return (this.formTitle == null && this.getSchemaFileName() != null
+              ? this.getSchemaFileName().replaceAll("(.+)\\..*", "$1")
+              : this.formTitle);
    }
 
    /**

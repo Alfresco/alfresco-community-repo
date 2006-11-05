@@ -104,14 +104,29 @@ if (upload == null || upload.getFile() == null)
      <f:selectItems id="schema-root-element-name-choices"
 		    value="#{WizardManager.bean.schemaRootElementNameChoices}"/>
    </h:selectOneMenu>
-   <h:graphicImage id="graphic_image_name" value="/images/icons/required_field.gif" alt="Required Field" />
 
+   <h:graphicImage id="graphic_image_name" 
+		   value="/images/icons/required_field.gif" 
+		   alt="Required Field" />
    <h:outputText id="output_text_name" value="#{msg.name}:"/>
-   <h:inputText id="file-name" value="#{WizardManager.bean.formName}" 
-                maxlength="1024" size="35"/>
+   <h:inputText id="file-name" 
+		value="#{WizardManager.bean.formName}" 
+                maxlength="1024" 
+		size="35"/>
+
+   <h:graphicImage id="graphic_image_title" 
+		   value="/images/icons/required_field.gif" 
+		   alt="Required Field" />
+   <h:outputText id="output_text_title" value="#{msg.title}:"/>
+   <h:inputText id="title" 
+		value="#{WizardManager.bean.formTitle}" 
+                maxlength="1024" 
+		size="35"/>
 
    <h:outputText id="no_graphic_image_description" value=""/>
    <h:outputText id="output_text_description" value="#{msg.description}:"/>
-   <h:inputText id="description" value="#{WizardManager.bean.formDescription}" 
-                maxlength="1024" size="35"/>
+   <h:inputText id="description" 
+		value="#{WizardManager.bean.formDescription}" 
+                maxlength="1024" 
+		size="35"/>
 </h:panelGrid>

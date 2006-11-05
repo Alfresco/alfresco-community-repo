@@ -38,24 +38,20 @@ tinyMCE.init({
 dojo.declare("alfresco.xforms.Widget",
 	     null,
 	     {
-  	       initializer: function(xform, node) 
+  	       initializer: function(xform, xformsNode) 
   	       {
 		 this.xform = xform;
-		 this.node = node;
+		 this.xformsNode = xformsNode;
 //XXXarielb this has to come back
 //		 this.node.widget = this;
-		 this.id = this.node.getAttribute("id");
+		 this.id = this.xformsNode.getAttribute("id");
 		 this.modified = false;
 		 this.valid = true;
 	       },
-	       node: null,
+	       xformsNode: null,
                labelNode: null,
 	       parent: null,
 	       domContainer: null,
-	       _getBinding: function()
-	       {
-		 return this.xform.getBinding(this.node);
-	       },
 	       setModified: function(b)
                {
                  this.modified = b;
@@ -96,17 +92,17 @@ dojo.declare("alfresco.xforms.Widget",
                },
       	       isRequired: function()
                {
-                 var binding = this._getBinding();
+                 var binding = this.xform.getBinding(this.xformsNode);
                  return binding && binding.required == "true()";
                },
       	       isReadonly: function()
                {
-                 var binding = this._getBinding();
+                 var binding = this.xform.getBinding(this.xformsNode);
                  return binding && binding.readonly == "true()";
                },
                getInitialValue: function()
                {
-                 var chibaData = _getElementsByTagNameNS(this.node, 
+                 var chibaData = _getElementsByTagNameNS(this.xformsNode, 
   							 CHIBA_NS, 
 	  						 CHIBA_NS_PREFIX, 
 							 "data");
@@ -115,7 +111,7 @@ dojo.declare("alfresco.xforms.Widget",
                  
                  chibaData = chibaData[chibaData.length - 1];
                  var xpath = chibaData.getAttribute("chiba:xpath");
-                 var d = this.node.ownerDocument;
+                 var d = this.xformsNode.ownerDocument;
                  var contextNode = this.xform.getInstance();
                  dojo.debug("locating " + xpath + 
                             " from " + chibaData.nodeName + 
@@ -131,24 +127,24 @@ dojo.declare("alfresco.xforms.Widget",
                },
     	       _getLabelNode: function()
                {
-                 var labels = _getElementsByTagNameNS(this.node, XFORMS_NS, XFORMS_NS_PREFIX, "label");
+                 var labels = _getElementsByTagNameNS(this.xformsNode, XFORMS_NS, XFORMS_NS_PREFIX, "label");
                  for (var i = 0; i < labels.length; i++)
                  {
                    dojo.debug("parent " + labels[i].parentNode.nodeName + 
-                              " o " + this.node.nodeName);
-                   if (labels[i].parentNode == this.node)
+                              " o " + this.xformsNode.nodeName);
+                   if (labels[i].parentNode == this.xformsNode)
                      return labels[i];
                  }
                  return null;
                },
     	       _getAlertNode: function()
                {
-                 var labels = _getElementsByTagNameNS(this.node, XFORMS_NS, XFORMS_NS_PREFIX, "alert");
+                 var labels = _getElementsByTagNameNS(this.xformsNode, XFORMS_NS, XFORMS_NS_PREFIX, "alert");
                  for (var i = 0; i < labels.length; i++)
                  {
                    dojo.debug("parent " + labels[i].parentNode.nodeName + 
-                              " o " + this.node.nodeName);
-                   if (labels[i].parentNode == this.node)
+                              " o " + this.xformsNode.nodeName);
+                   if (labels[i].parentNode == this.xformsNode)
                      return labels[i];
                  }
                  return null;
@@ -188,9 +184,9 @@ dojo.declare("alfresco.xforms.Widget",
 dojo.declare("alfresco.xforms.DatePicker",
 	     alfresco.xforms.Widget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	       },
 	       render: function(attach_point)
 	       {
@@ -250,9 +246,9 @@ dojo.declare("alfresco.xforms.DatePicker",
 dojo.declare("alfresco.xforms.TextField",
 	     alfresco.xforms.Widget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	       },
 	       render: function(attach_point)
                {
@@ -265,7 +261,7 @@ dojo.declare("alfresco.xforms.TextField",
                  this.widget.setAttribute("type", "text");
                  this.widget.setAttribute("id", this.id + "-widget");
                  this.widget.setAttribute("value", initial_value);
-                 if (this.xform.getType(this.node) == "string")
+                 if (this.xform.getType(this.xformsNode) == "string")
                    this.widget.style.width = "100%";
 
                  this.domNode.appendChild(this.widget);
@@ -302,9 +298,9 @@ dojo.declare("alfresco.xforms.TextField",
 dojo.declare("alfresco.xforms.TextArea",
 	     alfresco.xforms.Widget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	       },
 	       render: function(attach_point)
 	       {
@@ -331,14 +327,14 @@ dojo.declare("alfresco.xforms.TextArea",
 dojo.declare("alfresco.xforms.AbstractSelectWidget",
 	     alfresco.xforms.Widget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	       },
 	       getValues: function()
 	       {
-	         var binding = this._getBinding();
-	         var values = _getElementsByTagNameNS(this.node, XFORMS_NS, XFORMS_NS_PREFIX, "item");
+	         var binding = this.xform.getBinding(this.xformsNode);
+	         var values = _getElementsByTagNameNS(this.xformsNode, XFORMS_NS, XFORMS_NS_PREFIX, "item");
 	         var result = [];
 	         for (var v = 0; v < values.length; v++)
 	         {
@@ -368,9 +364,9 @@ dojo.declare("alfresco.xforms.AbstractSelectWidget",
 dojo.declare("alfresco.xforms.Select",
 	     alfresco.xforms.AbstractSelectWidget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	       },
 	       render: function(attach_point)
                {
@@ -455,9 +451,9 @@ dojo.declare("alfresco.xforms.Select",
 dojo.declare("alfresco.xforms.Select1",
 	     alfresco.xforms.AbstractSelectWidget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	       },
 	       render: function(attach_point)
                {
@@ -543,9 +539,9 @@ dojo.declare("alfresco.xforms.Select1",
 dojo.declare("alfresco.xforms.Checkbox",
 	     alfresco.xforms.Widget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	       },
 	       render: function(attach_point)
 	       {
@@ -572,9 +568,9 @@ dojo.declare("alfresco.xforms.Checkbox",
 dojo.declare("alfresco.xforms.Group",
 	     alfresco.xforms.Widget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	         this.children = [];
 	       },
 	       children: null,
@@ -598,8 +594,9 @@ dojo.declare("alfresco.xforms.Group",
 	       {
 	         for (var i = 0; i < this.children.length; i++)
 	         {
-	       	 dojo.debug(this.id + "[" + i + "]: " + 
-	       		    " is " + this.children[i].id + " the same as " + child.id + "?");
+                   dojo.debug(this.id + "[" + i + "]: " + 
+                              " is " + this.children[i].id + 
+                              " the same as " + child.id + "?");
 	       	 if (this.children[i] == child)
 	       	   return i;
 	         }
@@ -754,9 +751,9 @@ dojo.declare("alfresco.xforms.Group",
 dojo.declare("alfresco.xforms.Repeat",
 	     alfresco.xforms.Group,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
                {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 	       },
                _selectedIndex: -1,
                insertChildAt: function(child, position)
@@ -819,7 +816,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	         this.setFocusedChild(event.target.repeatItem);
 	         if (!this.insertRepeatItemAfterTrigger)
 	           this.insertRepeatItemAfterTrigger = 
-	             _findElementById(this.node.parentNode, this.id + "-insert_after");
+	             _findElementById(this.xformsNode.parentNode, this.id + "-insert_after");
 	         this.xform.fireAction(this.insertRepeatItemAfterTrigger.getAttribute("id"));
 	       },
 	       _insertRepeatItemBefore_handler: function(event)
@@ -828,7 +825,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	         this.setFocusedChild(event.target.repeatItem);
 	         if (!this.insertRepeatItemBeforeTrigger)
 	           this.insertRepeatItemBeforeTrigger = 
-	             _findElementById(this.node.parentNode, this.id + "-insert_before");
+	             _findElementById(this.xformsNode.parentNode, this.id + "-insert_before");
 	         this.xform.fireAction(this.insertRepeatItemBeforeTrigger.getAttribute("id"));
 	       },
 	       _removeRepeatItem_handler: function(event)
@@ -836,7 +833,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	         dojo.event.browser.stopEvent(event);
 	         this.setFocusedChild(event.target.repeatItem);
 	         if (!this.removeRepeatItemTrigger)
-	           this.removeRepeatItemTrigger = _findElementById(this.node.parentNode, 
+	           this.removeRepeatItemTrigger = _findElementById(this.xformsNode.parentNode, 
                                                                    this.id + "-delete");
 	         this.xform.fireAction(this.removeRepeatItemTrigger.getAttribute("id"));
 	       },
@@ -884,6 +881,19 @@ dojo.declare("alfresco.xforms.Repeat",
                  this.children[toIndex] = fromChild;
                  this._selectedIndex = toIndex;
                  this._updateDisplay();
+
+                 var req = create_ajax_request(this.xform,
+                                               "swapRepeatItems",
+                                               {
+                                                 fromItemId: fromChild.xformsNode.getAttribute("id"),
+                                                 toItemId: toChild.xformsNode.getAttribute("id"),
+                                                 instanceId: this.xform.getInstance().getAttribute("id")
+                                               },
+                                               function(type, data, event)
+                                               {
+                                                 this.xform._handleEventLog(data.documentElement)
+                                               });
+                 send_ajax_request(req);
 	       },
 	       setFocusedChild: function(child)
 	       {
@@ -968,7 +978,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	       handlePrototypeCloned: function(prototypeId)
 	       {
 	         dojo.debug(this.id + ".handlePrototypeCloned("+ prototypeId +")");
-	         var chibaData = _getElementsByTagNameNS(this.node, CHIBA_NS, CHIBA_NS_PREFIX, "data");
+	         var chibaData = _getElementsByTagNameNS(this.xformsNode, CHIBA_NS, CHIBA_NS_PREFIX, "data");
 	         chibaData = chibaData[chibaData.length - 1];
 	         dojo.debug("chiba:data == " + dojo.dom.innerXML(chibaData));
 	         var prototypeToClone = dojo.dom.firstElement(chibaData);
@@ -983,7 +993,7 @@ dojo.declare("alfresco.xforms.Repeat",
 	          	  ", " + position + ")");
 	         var w = this.xform.createWidget(clonedPrototype);
 	         this.insertChildAt(w, position);
-	         this.xform.loadWidgets(w.node, w);
+	         this.xform.loadWidgets(w.xformsNode, w);
 	       },
 	       handleItemDeleted: function(position)
 	       {
@@ -995,9 +1005,9 @@ dojo.declare("alfresco.xforms.Repeat",
 dojo.declare("alfresco.xforms.Trigger",
 	     alfresco.xforms.Widget,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
                {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
                },
 	       render: function(attach_point)
                {
@@ -1021,9 +1031,9 @@ dojo.declare("alfresco.xforms.Trigger",
 dojo.declare("alfresco.xforms.Submit",
 	     alfresco.xforms.Trigger,
 	     {
-	       initializer: function(xform, node) 
+	       initializer: function(xform, xformsNode) 
 	       {
-	         this.inherited("initializer", [ xform, node ]);
+	         this.inherited("initializer", [ xform, xformsNode ]);
 		 var submit_buttons = _xforms_getSubmitButtons();
 		 for (var i = 0; i < submit_buttons.length; i++)
 		 {
@@ -1105,7 +1115,7 @@ dojo.declare("alfresco.xforms.XForm",
 	       _loadHandler: function(xformDocument)
 	       {
 	         this.xformDocument = xformDocument;
-	         this.node = xformDocument.documentElement;
+	         this.xformsNode = xformDocument.documentElement;
 	         this._bindings = this._loadBindings(this.getModel());
                
 	         var bindings = this.getBindings();
@@ -1177,29 +1187,29 @@ dojo.declare("alfresco.xforms.XForm",
 	           throw new Error("unknown type " + node.nodeName);
 	         }
 	       },
-	       loadWidgets: function(modelNode, parentWidget)
+	       loadWidgets: function(xformsNode, parentWidget)
                {
-                 for (var i = 0; i < modelNode.childNodes.length; i++)
+                 for (var i = 0; i < xformsNode.childNodes.length; i++)
                  {
-                   if (modelNode.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
+                   if (xformsNode.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
                    {
-                     dojo.debug("loading " + modelNode.childNodes[i] + 
-				" nodeName " + modelNode.childNodes[i].nodeName + 
+                     dojo.debug("loading " + xformsNode.childNodes[i] + 
+				" nodeName " + xformsNode.childNodes[i].nodeName + 
 				" into " + parentWidget.id);
-                     var w = this.createWidget(modelNode.childNodes[i]);
+                     var w = this.createWidget(xformsNode.childNodes[i]);
                      if (w != null)
 	             {
-		       dojo.debug("created " + w.id + " for " + modelNode.childNodes[i].nodeName);
+		       dojo.debug("created " + w.id + " for " + xformsNode.childNodes[i].nodeName);
 	               parentWidget.addChild(w);
 	               if (w instanceof alfresco.xforms.Group)
-	                 this.loadWidgets(modelNode.childNodes[i], w);
+	                 this.loadWidgets(xformsNode.childNodes[i], w);
                      }
                    }
                  }
                },
 	       getModel: function()
 	       {
-	         return _getElementsByTagNameNS(this.node, 
+	         return _getElementsByTagNameNS(this.xformsNode, 
 						XFORMS_NS, 
 						XFORMS_NS_PREFIX, 
 						"model")[0];
@@ -1214,7 +1224,7 @@ dojo.declare("alfresco.xforms.XForm",
 	       },
 	       getBody: function()
 	       {
-	         var b = _getElementsByTagNameNS(this.node,
+	         var b = _getElementsByTagNameNS(this.xformsNode,
 						 XHTML_NS,
 						 XHTML_NS_PREFIX,
 						 "body");

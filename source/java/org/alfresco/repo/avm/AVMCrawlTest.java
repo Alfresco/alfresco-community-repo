@@ -35,87 +35,87 @@ public class AVMCrawlTest extends AVMServiceTestBase
      */
     public void testCrawl()
     {
-        int n = 1;               // Number of Threads.
-        int m = 1;              // How many multiples of content to start with.
-        long runTime = 120000;  // 2 minutes
-        fService.purgeAVMStore("main");
-        BulkLoader loader = new BulkLoader();
-        loader.setAvmService(fService);
-        for (int i = 0; i < m; i++)
-        {
-            fService.createAVMStore("d" + i);
-            loader.recursiveLoad("source", "d" + i + ":/");
-            fService.createSnapshot("d" + i, null, null);
-        }
-        long startTime = System.currentTimeMillis();
-        List<AVMCrawler> crawlers = new ArrayList<AVMCrawler>();
-        List<Thread> threads = new ArrayList<Thread>();
-        for (int i = 0; i < n; i++)
-        {
-            crawlers.add(new AVMCrawler(fService));
-            threads.add(new Thread(crawlers.get(i)));
-            threads.get(i).start();
-        }
-        while (true)
-        {
-            try
-            {
-                Thread.sleep(5000);
-                // Check that none of the crawlers has errored out.
-                for (AVMCrawler crawler : crawlers)
-                {
-                    if (crawler.getError())
-                    {
-                        for (AVMCrawler craw : crawlers)
-                        {
-                            craw.setDone();
-                        }
-                        for (Thread thread : threads)
-                        {
-                            try
-                            {
-                                thread.join();
-                            }
-                            catch (InterruptedException ie)
-                            {
-                                // Do nothing.
-                            }
-                        }
-                        fail();
-                    }
-                }
-            }
-            catch (InterruptedException ie)
-            {
-                // Do nothing.
-            }
-            long now = System.currentTimeMillis();
-            if (now - startTime > runTime)
-            {
-                break;
-            }
-        }
-        for (AVMCrawler crawler : crawlers)
-        {
-            crawler.setDone();
-        }
-        for (Thread thread : threads)
-        {
-            try
-            {
-                thread.join();
-            }
-            catch (InterruptedException ie)
-            {
-                // Do nothing.
-            }
-        }
-        long ops = 0L;
-        for (AVMCrawler crawler : crawlers)
-        {
-            ops += crawler.getOpCount();
-        }
-        long time = System.currentTimeMillis() - startTime;
-        System.out.println("Ops/Sec: " + (ops * 1000L / time));
+//        int n = 1;               // Number of Threads.
+//        int m = 1;              // How many multiples of content to start with.
+//        long runTime = 120000;  // 2 minutes
+//        fService.purgeAVMStore("main");
+//        BulkLoader loader = new BulkLoader();
+//        loader.setAvmService(fService);
+//        for (int i = 0; i < m; i++)
+//        {
+//            fService.createAVMStore("d" + i);
+//            loader.recursiveLoad("source", "d" + i + ":/");
+//            fService.createSnapshot("d" + i, null, null);
+//        }
+//        long startTime = System.currentTimeMillis();
+//        List<AVMCrawler> crawlers = new ArrayList<AVMCrawler>();
+//        List<Thread> threads = new ArrayList<Thread>();
+//        for (int i = 0; i < n; i++)
+//        {
+//            crawlers.add(new AVMCrawler(fService));
+//            threads.add(new Thread(crawlers.get(i)));
+//            threads.get(i).start();
+//        }
+//        while (true)
+//        {
+//            try
+//            {
+//                Thread.sleep(5000);
+//                // Check that none of the crawlers has errored out.
+//                for (AVMCrawler crawler : crawlers)
+//                {
+//                    if (crawler.getError())
+//                    {
+//                        for (AVMCrawler craw : crawlers)
+//                        {
+//                            craw.setDone();
+//                        }
+//                        for (Thread thread : threads)
+//                        {
+//                            try
+//                            {
+//                                thread.join();
+//                            }
+//                            catch (InterruptedException ie)
+//                            {
+//                                // Do nothing.
+//                            }
+//                        }
+//                        fail();
+//                    }
+//                }
+//            }
+//            catch (InterruptedException ie)
+//            {
+//                // Do nothing.
+//            }
+//            long now = System.currentTimeMillis();
+//            if (now - startTime > runTime)
+//            {
+//                break;
+//            }
+//        }
+//        for (AVMCrawler crawler : crawlers)
+//        {
+//            crawler.setDone();
+//        }
+//        for (Thread thread : threads)
+//        {
+//            try
+//            {
+//                thread.join();
+//            }
+//            catch (InterruptedException ie)
+//            {
+//                // Do nothing.
+//            }
+//        }
+//        long ops = 0L;
+//        for (AVMCrawler crawler : crawlers)
+//        {
+//            ops += crawler.getOpCount();
+//        }
+//        long time = System.currentTimeMillis() - startTime;
+//        System.out.println("Ops/Sec: " + (ops * 1000L / time));
     }
 }

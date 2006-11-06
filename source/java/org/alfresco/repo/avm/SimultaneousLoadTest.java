@@ -30,33 +30,33 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
      */
     public void testSimultaneousLoad()
     {
-        try
-        {
-            int n = 1;
-            int m = 1;
-            fReaper.setInactiveBaseSleep(60000);
-            for (int i = 0; i < n; i++)
-            {
-                fService.createDirectory("main:/", "d" + i);
-            }
-            fService.createSnapshot("main", null, null);
-            Thread [] threads = new Thread[n];
-            for (int i = 0; i < n; i++)
-            {
-                Loader loader = new Loader("/Users/britt/stuff/" + i, "main:/d" + i, m);
-                threads[i] = new Thread(loader);
-                threads[i].start();
-            }
-            for (int i = 0; i < n; i++)
-            {
-                threads[i].join();
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            fail();
-        }
+//        try
+//        {
+//            int n = 1;
+//            int m = 1;
+//            fReaper.setInactiveBaseSleep(60000);
+//            for (int i = 0; i < n; i++)
+//            {
+//                fService.createDirectory("main:/", "d" + i);
+//            }
+//            fService.createSnapshot("main", null, null);
+//            Thread [] threads = new Thread[n];
+//            for (int i = 0; i < n; i++)
+//            {
+//                Loader loader = new Loader("/Users/britt/stuff/" + i, "main:/d" + i, m);
+//                threads[i] = new Thread(loader);
+//                threads[i].start();
+//            }
+//            for (int i = 0; i < n; i++)
+//            {
+//                threads[i].join();
+//            }
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace(System.err);
+//            fail();
+//        }
     }
     
     private class Loader implements Runnable

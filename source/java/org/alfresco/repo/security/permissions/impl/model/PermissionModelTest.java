@@ -79,7 +79,8 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(new SimplePermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Coordinator"));
 
-        assertEquals(59, grantees.size());
+        // NB This has gone from 59 to 63, I believe, because of the for new WCM roles.
+        assertEquals(63, grantees.size());
     }
     
     public void testIncludePermissionGroups6()
@@ -94,11 +95,13 @@ public class PermissionModelTest extends AbstractPermissionTest
     {
         Set<PermissionReference> granters = permissionModelDAO.getGrantingPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "ReadProperties"));
-        assertEquals(10, granters.size());
+        // NB This has gone from 10 to 14 because of the new WCM roles, I believe.
+        assertEquals(14, granters.size());
         
         granters = permissionModelDAO.getGrantingPermissions(new SimplePermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "_ReadProperties"));
-        assertEquals(11, granters.size());
+        // NB 11 to 15 as above.
+        assertEquals(15, granters.size());
     }
     
     public void testGlobalPermissions()

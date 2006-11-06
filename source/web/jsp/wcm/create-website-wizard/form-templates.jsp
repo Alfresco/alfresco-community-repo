@@ -40,7 +40,7 @@
                 rendered="#{DialogManager.bean.templatesDataModel.rowCount != 0}">
       <h:column>
          <f:facet name="header">
-            <h:outputText value="#{msg.title}" />
+            <h:outputText value="#{msg.name}" />
          </f:facet>
          <h:outputText value="#{row.title}" />
       </h:column>

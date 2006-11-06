@@ -94,6 +94,9 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    /** list of user/group role wrapper objects */
    private List<UserGroupRole> userGroupRoles = null;
    
+   /** True to allow duplicate authorities (with a different role) */
+   protected boolean allowDuplicateAuthorities = true;
+   
    /** dialog state */
    private String notify = NOTIFY_YES;
    
@@ -387,7 +390,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                {
                   UserGroupRole wrapper = this.userGroupRoles.get(n);
                   if (authority.equals(wrapper.getAuthority()) &&
-                      role.equals(wrapper.getRole()))
+                      (!this.allowDuplicateAuthorities || role.equals(wrapper.getRole())))
                   {
                      foundExisting = true;
                      break;

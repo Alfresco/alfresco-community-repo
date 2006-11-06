@@ -52,7 +52,15 @@
 </script>
 </f:verbatim>
 
-<h:outputText styleClass="mainSubTitle" value="#{msg.email_message}" />
+<h:panelGrid style="padding-bottom:12px" columns="1" cellpadding="2" cellspacing="2" border="0" width="100%">
+   <h:outputText value="#{msg.send_email}" />
+   <h:selectOneRadio value="#{InviteWebsiteUsersWizard.notify}">
+      <f:selectItem itemValue="yes" itemLabel="#{msg.yes}" />
+      <f:selectItem itemValue="no" itemLabel="#{msg.no}" />
+   </h:selectOneRadio>
+</h:panelGrid>
+
+<h:outputText value="#{msg.email_message}" styleClass="mainSubTitle" />
 <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" width="100%">
    <h:outputText value="#{msg.subject}:" />
    <h:panelGroup>

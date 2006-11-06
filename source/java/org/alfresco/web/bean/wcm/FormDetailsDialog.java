@@ -21,13 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.bean.TemplateSupportBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -35,6 +31,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Backing bean for the Website Project Form Details dialog.
+ * Launched from the Form Details button on the Define Web Content Forms page.
+ * 
  * @author Kevin Roast
  */
 public class FormDetailsDialog extends BaseDialogBean
@@ -47,7 +46,7 @@ public class FormDetailsDialog extends BaseDialogBean
    private String title;
    private String description;
    private String filenamePattern;
-   private String[] workflowSelectedValue = {"default"};
+   private String[] workflowSelectedValue;
    
 
    /**
@@ -59,6 +58,8 @@ public class FormDetailsDialog extends BaseDialogBean
       super.init(parameters);
       this.title = null;
       this.description = null;
+      this.filenamePattern = null;
+      this.workflowSelectedValue = null;
    }
    
    /**
@@ -150,6 +151,14 @@ public class FormDetailsDialog extends BaseDialogBean
     */
    public String[] getWorkflowSelectedValue()
    {
+      if (this.workflowSelectedValue == null)
+      {
+         String workflow = getActionForm().getWorkflow();
+         if (workflow != null)
+         {
+            this.workflowSelectedValue = new String[] {workflow};
+         }
+      }
       return this.workflowSelectedValue;
    }
 
@@ -168,6 +177,7 @@ public class FormDetailsDialog extends BaseDialogBean
    {
       List<UIListItem> items = new ArrayList<UIListItem>();
       
+      // TODO: add list of workflows from config
       UIListItem item = new UIListItem();
       item.setValue("default");
       item.setLabel("Default");

@@ -29,15 +29,18 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.PresentationTemplate;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.RenderingEngine;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UISelectList;
 import org.alfresco.web.ui.wcm.WebResources;
-import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.RenderingEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Backing bean for the Website Project Form Templates dialog.
+ * Launched from the Select Templates button on the Define Web Content Forms page.
+ * 
  * @author Kevin Roast
  */
 public class FormTemplatesDialog extends BaseDialogBean
@@ -94,6 +97,9 @@ public class FormTemplatesDialog extends BaseDialogBean
       return this.websiteWizard.getActionForm();
    }
    
+   /**
+    * @return JSF data model wrapping the templates selected by the user
+    */
    public DataModel getTemplatesDataModel()
    {
       if (this.templatesDataModel == null)
@@ -106,6 +112,9 @@ public class FormTemplatesDialog extends BaseDialogBean
       return this.templatesDataModel;
    }
 
+   /**
+    * @param templatesDataModel  JSF data model wrapping the templates
+    */
    public void setTemplatesDataModel(DataModel templatesDataModel)
    {
       this.templatesDataModel = templatesDataModel;

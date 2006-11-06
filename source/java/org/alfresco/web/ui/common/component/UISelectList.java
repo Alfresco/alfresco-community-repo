@@ -441,17 +441,20 @@ public class UISelectList extends UIInput implements NamingContainer
     */
    public void setRowIndex(int rowIndex)
    {
-      this.rowIndex = rowIndex;
-      for (Iterator itr=getChildren().iterator(); itr.hasNext(); /**/)
+      if (isActiveSelect())
       {
-         UIComponent child = (UIComponent)itr.next();
-         if (child instanceof UIListItem == false && child instanceof UIListItems == false)
+         this.rowIndex = rowIndex;
+         for (Iterator itr=getChildren().iterator(); itr.hasNext(); /**/)
          {
-            // forces a reset of the clientId for the component
-            // This is then regenerated - relative to this naming container which itself uses the
-            // current row index as part of the Id. This is what facilities the correct component
-            // rendering submit script and then identified during the decode() phase.
-            child.setId(child.getId());
+            UIComponent child = (UIComponent)itr.next();
+            if (child instanceof UIListItem == false && child instanceof UIListItems == false)
+            {
+               // forces a reset of the clientId for the component
+               // This is then regenerated - relative to this naming container which itself uses the
+               // current row index as part of the Id. This is what facilities the correct component
+               // rendering submit script and then identified during the decode() phase.
+               child.setId(child.getId());
+            }
          }
       }
    }

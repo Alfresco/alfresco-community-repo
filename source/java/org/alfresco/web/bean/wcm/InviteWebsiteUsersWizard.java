@@ -25,6 +25,18 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
    
    private Node website;
    
+   
+   /**
+    * @see org.alfresco.web.bean.wizard.InviteUsersWizard#init()
+    */
+   @Override
+   public void init()
+   {
+      super.init();
+      // only allow one selection per authority
+      allowDuplicateAuthorities = false;
+   }
+
    /**
     * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getWizardDescription()
     */

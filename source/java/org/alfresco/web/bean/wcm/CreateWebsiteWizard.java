@@ -64,6 +64,7 @@ import org.apache.commons.logging.LogFactory;
 public class CreateWebsiteWizard extends BaseWizardBean
 {
    private static final String COMPONENT_FORMLIST = "form-list";
+   private static final String COMPONENT_WORKFLOWLIST = "workflow-list";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_NAME = "name";
    private static final String MSG_USERROLES = "create_website_summary_users";
@@ -90,11 +91,20 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /** transient list of form UIListItem objects */
    private List<UIListItem> formsList = null;
    
-   /** list of forms wrapper objects */
+   /** list of form wrapper objects */
    private List<FormWrapper> forms = null;
    
    /** Current form action dialog context */
    private FormWrapper actionForm = null;
+   
+   /** datamodel for table of selected workflows */
+   private DataModel workflowsDataModel = null;
+   
+   /** transient list of workflow UIListItem objects */
+   private List<UIListItem> workflowsList = null;
+   
+   /** list of workflow wrapper objects */
+   private List<WorkflowWrapper> workflows = null;
    
    
    // ------------------------------------------------------------------------------
@@ -113,6 +123,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.description = null;
       this.formsDataModel = null;
       this.forms = new ArrayList<FormWrapper>(8);
+      this.workflowsDataModel = null;
+      this.workflows = new ArrayList<WorkflowWrapper>(4);
       
       // init the dependant bean we are using for the invite users pages
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
@@ -208,6 +220,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
       return outcome;
    }
    
+   
+   // ------------------------------------------------------------------------------
+   // Service setters
+   
    /**
     * @param avmService The AVMService to set.
     */
@@ -224,6 +240,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.permissionService = permissionService;
    }
 
+   
+   // ------------------------------------------------------------------------------
+   // Bean getters and setters
+   
    /**
     * @return Returns the name.
     */
@@ -239,26 +259,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       this.name = name;
    }
-   
-   public DataModel getFormsDataModel()
-   {
-      if (this.formsDataModel == null)
-      {
-         this.formsDataModel = new ListDataModel();
-      }
-      
-      this.formsDataModel.setWrappedData(this.forms);
-      
-      return this.formsDataModel;
-   }
-
-   public void setFormsDataModel(DataModel formsDataModel)
-   {
-      this.formsDataModel = formsDataModel;
-   }
 
    /**
-    * @return
+    * @return DNS name
     */
    public String getDnsName()
    {
@@ -266,7 +269,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
 
    /**
-    * @param dnsName
+    * @param DNS name
     */
    public void setDnsName(String dnsName)
    {
@@ -340,8 +343,35 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new String[] {this.name, this.description, buf.toString()});
    }
    
+   
+   // ------------------------------------------------------------------------------
+   // Define Web Content Workflows page
+   
    /**
-    * @return List of UI items to represent the available Forms for all websites
+    * @return JSF data model for the Form templates
+    */
+   public DataModel getFormsDataModel()
+   {
+      if (this.formsDataModel == null)
+      {
+         this.formsDataModel = new ListDataModel();
+      }
+      
+      this.formsDataModel.setWrappedData(this.forms);
+      
+      return this.formsDataModel;
+   }
+
+   /**
+    * @param formsDataModel   JSF data model for the Form templates
+    */
+   public void setFormsDataModel(DataModel formsDataModel)
+   {
+      this.formsDataModel = formsDataModel;
+   }
+   
+   /**
+    * @return List of UI items to represent the available Workflows for all websites
     */
    public List<UIListItem> getFormsList()
    {
@@ -410,7 +440,83 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       this.actionForm = actionForm;
    }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Specify Settings (ah-hoc Workflows) page
+   
+   /**
+    * @return JSF data model for the Workflow templates
+    */
+   public DataModel getWorkflowsDataModel()
+   {
+      if (this.workflowsDataModel == null)
+      {
+         this.workflowsDataModel = new ListDataModel();
+      }
+      
+      this.workflowsDataModel.setWrappedData(this.workflows);
+      
+      return this.workflowsDataModel;
+   }
 
+   /**
+    * @param workflowsDataModel   JSF data model for the Workflow templates
+    */
+   public void setWorkflowsDataModel(DataModel workflowsDataModel)
+   {
+      this.workflowsDataModel = workflowsDataModel;
+   }
+   
+   /**
+    * @return List of UI items to represent the available Workflows for all websites
+    */
+   public List<UIListItem> getWorkflowsList()
+   {
+      List<UIListItem> items = new ArrayList<UIListItem>();
+      
+      // TODO: add list of workflows from config
+      UIListItem item = new UIListItem();
+      item.setValue("default");
+      item.setLabel("Default");
+      item.setDescription("Default adhoc workflow");
+      item.setImage(WebResources.IMAGE_WORKFLOW_32);
+      items.add(item);
+      
+      this.workflowsList = items;
+      return items;
+   }
+   
+   /**
+    * Action handler called when the Add to List button is pressed for a workflow
+    */
+   public void addWorkflow(ActionEvent event)
+   {
+      UISelectList selectList = (UISelectList)event.getComponent().findComponent(COMPONENT_WORKFLOWLIST);
+      int index = selectList.getRowIndex();
+      if (index != -1)
+      {
+         String workflow = (String)this.workflowsList.get(index).getValue();
+         this.workflows.add(new WorkflowWrapper(workflow, null));
+      }
+   }
+   
+   /**
+    * Remove a workflow from the selected list
+    */
+   public void removeWorkflow(ActionEvent event)
+   {
+      WorkflowWrapper wrapper = (WorkflowWrapper)this.workflowsDataModel.getRowData();
+      if (wrapper != null)
+      {
+         this.workflows.remove(wrapper);
+      }
+   }
+
+   
+   // ------------------------------------------------------------------------------
+   // Invite users page
+   
    /**
     * @return the InviteWebsiteUsersWizard delegate bean
     */
@@ -419,6 +525,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
       return (InviteWebsiteUsersWizard)FacesHelper.getManagedBean(
             FacesContext.getCurrentInstance(), "InviteWebsiteUsersWizard");
    }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Helper methods
    
    /**
     * Helper to get the ID of the 'Websites' system folder
@@ -670,8 +780,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    
+   // ------------------------------------------------------------------------------
+   // Inner classes
+   
    /**
-    * Wrapper class for a configurable template Form instance in the UI
+    * Wrapper class for a configurable template Form instance
     */
    public static class FormWrapper
    {
@@ -779,6 +892,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
    }
    
+   /**
+    * Class to represent a single configured Presentation Template instance
+    */
    public static class PresentationTemplate
    {
       private RenderingEngine engine;
@@ -819,6 +935,45 @@ public class CreateWebsiteWizard extends BaseWizardBean
          return this.description;
       }
       
+      /**
+       * @return Returns the filename pattern.
+       */
+      public String getFilenamePattern()
+      {
+         return this.filenamePattern;
+      }
+
+      /**
+       * @param filenamePattern The filename pattern to set.
+       */
+      public void setFilenamePattern(String filenamePattern)
+      {
+         this.filenamePattern = filenamePattern;
+      }
+   }
+   
+   /**
+    * Class to represent a single configured Workflow instance
+    */
+   public static class WorkflowWrapper
+   {
+      private String name;
+      private String filenamePattern;
+      
+      public WorkflowWrapper(String name, String filenamePattern)
+      {
+         this.name = name;
+         this.filenamePattern = filenamePattern;
+      }
+      
+      /**
+       * @return Returns the name of the workflow.
+       */
+      public String getName()
+      {
+         return this.name;
+      }
+
       /**
        * @return Returns the filename pattern.
        */

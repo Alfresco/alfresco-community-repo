@@ -31,7 +31,7 @@ tinyMCE.init({
       theme_advanced_toolbar_location: "top",
       theme_advanced_toolbar_align: "left",
       theme_advanced_buttons1: "bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect",
-      theme_advanced_buttons2: "link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bulllist,numlist,separator,undo,redo,separator,forecolor,backcolor",
+      theme_advanced_buttons2: "link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bullist,numlist,separator,undo,redo,separator,forecolor,backcolor",
       theme_advanced_buttons3: ""
 });
 

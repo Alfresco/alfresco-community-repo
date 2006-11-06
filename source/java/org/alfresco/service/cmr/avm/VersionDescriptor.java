@@ -49,6 +49,16 @@ public class VersionDescriptor implements Serializable
     private long fCreateDate;
     
     /**
+     * The short description.
+     */
+    private String fTag;
+
+    /**
+     * The long description.
+     */
+    private String fDescription;
+    
+    /**
      * New one up.
      * @param storeName The store name.
      * @param versionID The version id.
@@ -58,12 +68,16 @@ public class VersionDescriptor implements Serializable
     public VersionDescriptor(String storeName,
                              int versionID,
                              String creator,
-                             long createDate)
+                             long createDate,
+                             String tag,
+                             String description)
     {
         fAVMStoreName = storeName;
         fVersionID = versionID;
         fCreator = creator;
         fCreateDate = createDate;
+        fTag = tag;
+        fDescription = description;
     }
     
     /**
@@ -102,6 +116,24 @@ public class VersionDescriptor implements Serializable
         return fCreateDate;
     }
     
+    /**
+     * Get the short description.
+     * @return The short description.
+     */
+    public String getTag()
+    {
+        return fTag;
+    }
+    
+    /**
+     * Get the long description.
+     * @return
+     */
+    public String getDescription()
+    {
+        return fDescription;
+    }
+    
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
@@ -113,6 +145,8 @@ public class VersionDescriptor implements Serializable
         builder.append(fCreator);
         builder.append(":");
         builder.append(new Date(fCreateDate).toString());
+        builder.append(":");
+        builder.append(fTag);
         builder.append("]");
         return builder.toString();
     }

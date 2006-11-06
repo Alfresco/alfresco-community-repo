@@ -531,7 +531,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 new VersionDescriptor(fName,
                                       vr.getVersionID(),
                                       vr.getCreator(),
-                                      vr.getCreateDate());
+                                      vr.getCreateDate(),
+                                      vr.getTag(),
+                                      vr.getDescription());
             descs.add(desc);
         }
         return descs;
@@ -555,7 +557,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 new VersionDescriptor(fName,
                                       vr.getVersionID(),
                                       vr.getCreator(),
-                                      vr.getCreateDate());
+                                      vr.getCreateDate(),
+                                      vr.getTag(),
+                                      vr.getDescription());
             descs.add(desc);
         }
         return descs;

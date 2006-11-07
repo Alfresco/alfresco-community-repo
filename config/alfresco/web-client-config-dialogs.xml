@@ -153,6 +153,10 @@
          <dialog name="formTemplateTemplates" page="/jsp/wcm/create-website-wizard/form-templates.jsp" managed-bean="FormTemplatesDialog"
                  icon="/images/icons/template_large.gif" title-id="form_template_templates" 
                  description-id="form_template_templates_desc" />
+         
+         <dialog name="formTemplateWorkflow" page="/jsp/wcm/create-website-wizard/form-workflow.jsp" managed-bean="FormWorkflowDialog"
+                 icon="/images/icons/manage_workflow_task_large.gif" title-id="form_template_workflow" 
+                 description-id="form_template_workflow_desc" />
       </dialogs>
    </config>
    

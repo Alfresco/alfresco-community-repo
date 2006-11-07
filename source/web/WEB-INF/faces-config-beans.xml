@@ -2136,6 +2136,10 @@
          <property-name>permissionService</property-name>
          <value>#{PermissionService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -2525,18 +2529,18 @@
          <value>#{AVMService}</value>
       </managed-property>
       <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>createWebsiteWizard</property-name>
          <value>#{CreateWebsiteWizard}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
    
    <managed-bean>
       <description>
-         The bean that backs up the Form Template Details dialog
+         The bean that backs up the Form Template Templates dialog
       </description>
       <managed-bean-name>FormTemplatesDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.wcm.FormTemplatesDialog</managed-bean-class>
@@ -2546,12 +2550,25 @@
          <value>#{AVMService}</value>
       </managed-property>
       <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
+         <property-name>createWebsiteWizard</property-name>
+         <value>#{CreateWebsiteWizard}</value>
       </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Form Template Workflow dialog
+      </description>
+      <managed-bean-name>FormWorkflowDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.FormWorkflowDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>createWebsiteWizard</property-name>
          <value>#{CreateWebsiteWizard}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
    

@@ -28,7 +28,7 @@
    <h:panelGroup>
       <f:verbatim><div style="height:108px;*height:112px;width:300px;overflow:auto" class='selectListTable'></f:verbatim>
       <a:selectList id="workflow-list" activeSelect="true" style="width:276px" itemStyleClass="selectListItem">
-         <a:listItems value="#{WizardManager.bean.workflowsList}" />
+         <a:listItems value="#{WizardManager.bean.workflowList}" />
          <h:commandButton value="#{msg.add_to_list_button}" styleClass="dialogControls" actionListener="#{WizardManager.bean.addWorkflow}" />
       </a:selectList>
       <f:verbatim></div></f:verbatim>
@@ -53,7 +53,7 @@
          </f:facet>
          <h:outputText value="#{msg.website_filename_pattern}:" style="padding-right:4px" />
          <h:inputText value="#{row.filenamePattern}" />
-         <h:commandButton value="#{msg.form_template_conf_workflow}" style="margin-left:4px" styleClass="dialogControls" />
+         <h:commandButton value="#{msg.form_template_conf_workflow}" style="margin-left:4px" styleClass="dialogControls" action="dialog:formTemplateWorkflow" actionListener="#{WizardManager.bean.setupWorkflowAction}" />
       </h:column>
       <h:column>
          <a:actionLink actionListener="#{WizardManager.bean.removeWorkflow}" image="/images/icons/delete.gif"

@@ -39,6 +39,8 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -47,6 +49,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
 import org.alfresco.web.forms.Form;
@@ -84,6 +87,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    
    protected AVMService avmService;
    protected PermissionService permissionService;
+   protected WorkflowService workflowService;
    
    /** datamodel for table of selected forms */
    private DataModel formsDataModel = null;
@@ -94,7 +98,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /** list of form wrapper objects */
    private List<FormWrapper> forms = null;
    
-   /** Current form action dialog context */
+   /** Current form for dialog context */
    private FormWrapper actionForm = null;
    
    /** datamodel for table of selected workflows */
@@ -105,6 +109,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
    
    /** list of workflow wrapper objects */
    private List<WorkflowWrapper> workflows = null;
+   
+   /** Current workflow for dialog context */
+   private WorkflowWrapper actionWorkflow = null;
    
    
    // ------------------------------------------------------------------------------
@@ -238,6 +245,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public void setPermissionService(PermissionService permissionService)
    {
       this.permissionService = permissionService;
+   }
+   
+   /**
+    * @param workflowService  The WorkflowService to set.
+    */
+   public void setWorkflowService(WorkflowService workflowService)
+   {
+      this.workflowService = workflowService;
    }
 
    
@@ -418,7 +433,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    /**
-    * Action method to navigate to setup a form dialog for the current row context
+    * Action method to setup a form for dialog context for the current row
     */
    public void setupFormAction(ActionEvent event)
    {
@@ -439,6 +454,38 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public void setActionForm(FormWrapper actionForm)
    {
       this.actionForm = actionForm;
+      if (actionForm != null)
+      {
+         setActionWorkflow(actionForm.getWorkflow());
+      }
+      else
+      {
+         setActionWorkflow(null);
+      }
+   }
+   
+   /**
+    * Action method to setup a workflow for dialog context for the current row
+    */
+   public void setupWorkflowAction(ActionEvent event)
+   {
+      setActionWorkflow( (WorkflowWrapper)this.workflowsDataModel.getRowData() );
+   }
+   
+   /**
+    * @return Returns the action Workflow for dialog context
+    */
+   public WorkflowWrapper getActionWorkflow()
+   {
+      return this.actionWorkflow;
+   }
+
+   /**
+    * @param actionWorkflow   The action Workflow to set for dialog context
+    */
+   public void setActionWorkflow(WorkflowWrapper actionWorkflow)
+   {
+      this.actionWorkflow = actionWorkflow;
    }
    
    
@@ -471,18 +518,21 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * @return List of UI items to represent the available Workflows for all websites
     */
-   public List<UIListItem> getWorkflowsList()
+   public List<UIListItem> getWorkflowList()
    {
-      List<UIListItem> items = new ArrayList<UIListItem>();
-      
       // TODO: add list of workflows from config
-      UIListItem item = new UIListItem();
-      item.setValue("default");
-      item.setLabel("Default");
-      item.setDescription("Default adhoc workflow");
-      item.setImage(WebResources.IMAGE_WORKFLOW_32);
-      items.add(item);
-      
+      // @see org.alfresco.web.wcm.FormDetailsDialog#getWorkflowList()
+      List<WorkflowDefinition> workflowDefs =  this.workflowService.getDefinitions();
+      List<UIListItem> items = new ArrayList<UIListItem>(workflowDefs.size());
+      for (WorkflowDefinition workflowDef : workflowDefs)
+      {
+         UIListItem item = new UIListItem();
+         item.setValue(workflowDef.name);
+         item.setLabel(workflowDef.title);
+         item.setDescription(workflowDef.description);
+         item.setImage(WebResources.IMAGE_WORKFLOW_32);
+         items.add(item);
+      }
       this.workflowsList = items;
       return items;
    }
@@ -497,7 +547,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (index != -1)
       {
          String workflow = (String)this.workflowsList.get(index).getValue();
-         this.workflows.add(new WorkflowWrapper(workflow, null));
+         this.workflows.add(new WorkflowWrapper(workflow));
       }
    }
    
@@ -791,7 +841,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private Form form;
       private String title;
       private String description;
-      private String workflow;
+      private WorkflowWrapper workflow;
       private String filenamePattern;
       private List<PresentationTemplate> templates = new ArrayList<PresentationTemplate>(8);
       
@@ -834,7 +884,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       /**
        * @return Returns the workflow.
        */
-      public String getWorkflow()
+      public WorkflowWrapper getWorkflow()
       {
          return this.workflow;
       }
@@ -842,7 +892,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       /**
        * @param workflow The workflow to set.
        */
-      public void setWorkflow(String workflow)
+      public void setWorkflow(WorkflowWrapper workflow)
       {
          this.workflow = workflow;
       }
@@ -886,7 +936,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          String none = '<' + Application.getMessage(FacesContext.getCurrentInstance(), MSG_NONE) + '>';
          return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_FORM_SUMMARY),
-               this.workflow != null ? this.workflow : none,
+               this.workflow != null ? this.workflow.name : none,
                this.filenamePattern != null ? this.filenamePattern : none,
                this.templates != null ? this.templates.size() : 0);
       }
@@ -959,8 +1009,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       private String name;
       private String filenamePattern;
+      private QName type;
+      private Map<QName, Serializable> params;
       
-      public WorkflowWrapper(String name, String filenamePattern)
+      public WorkflowWrapper(String name)
       {
          this.name = name;
          this.filenamePattern = filenamePattern;
@@ -988,6 +1040,38 @@ public class CreateWebsiteWizard extends BaseWizardBean
       public void setFilenamePattern(String filenamePattern)
       {
          this.filenamePattern = filenamePattern;
+      }
+
+      /**
+       * @return Returns the workflow params.
+       */
+      public Map<QName, Serializable> getParams()
+      {
+         return this.params;
+      }
+
+      /**
+       * @param params The workflow params to set.
+       */
+      public void setParams(Map<QName, Serializable> params)
+      {
+         this.params = params;
+      }
+
+      /**
+       * @return Returns the type.
+       */
+      public QName getType()
+      {
+         return this.type;
+      }
+
+      /**
+       * @param type The type to set.
+       */
+      public void setType(QName type)
+      {
+         this.type = type;
       }
    }
 }

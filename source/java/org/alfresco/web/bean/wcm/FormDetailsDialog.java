@@ -21,10 +21,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
+import org.alfresco.web.bean.wcm.CreateWebsiteWizard.WorkflowWrapper;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.logging.Log;
@@ -42,6 +46,7 @@ public class FormDetailsDialog extends BaseDialogBean
    
    protected AVMService avmService;
    protected CreateWebsiteWizard websiteWizard;
+   protected WorkflowService workflowService;
    
    private String title;
    private String description;
@@ -76,6 +81,14 @@ public class FormDetailsDialog extends BaseDialogBean
    public void setCreateWebsiteWizard(CreateWebsiteWizard wizard)
    {
       this.websiteWizard = wizard;
+   }
+   
+   /**
+    * @param workflowService  The WorkflowService to set.
+    */
+   public void setWorkflowService(WorkflowService workflowService)
+   {
+      this.workflowService = workflowService;
    }
    
    /**
@@ -153,10 +166,10 @@ public class FormDetailsDialog extends BaseDialogBean
    {
       if (this.workflowSelectedValue == null)
       {
-         String workflow = getActionForm().getWorkflow();
+         WorkflowWrapper workflow = getActionForm().getWorkflow();
          if (workflow != null)
          {
-            this.workflowSelectedValue = new String[] {workflow};
+            this.workflowSelectedValue = new String[] {workflow.getName()};
          }
       }
       return this.workflowSelectedValue;
@@ -175,15 +188,19 @@ public class FormDetailsDialog extends BaseDialogBean
     */
    public List<UIListItem> getWorkflowList()
    {
-      List<UIListItem> items = new ArrayList<UIListItem>();
-      
       // TODO: add list of workflows from config
-      UIListItem item = new UIListItem();
-      item.setValue("default");
-      item.setLabel("Default");
-      item.setDescription("Default adhoc workflow");
-      item.setImage(WebResources.IMAGE_WORKFLOW_32);
-      items.add(item);
+      // @see org.alfresco.web.wcm.CreateWebsiteWizard#getWorkflowList()
+      List<WorkflowDefinition> workflowDefs =  this.workflowService.getDefinitions();
+      List<UIListItem> items = new ArrayList<UIListItem>(workflowDefs.size());
+      for (WorkflowDefinition workflowDef : workflowDefs)
+      {
+         UIListItem item = new UIListItem();
+         item.setValue(workflowDef.name);
+         item.setLabel(workflowDef.title);
+         item.setDescription(workflowDef.description);
+         item.setImage(WebResources.IMAGE_WORKFLOW_32);
+         items.add(item);
+      }
       
       return items;
    }
@@ -214,7 +231,7 @@ public class FormDetailsDialog extends BaseDialogBean
       }
       if (this.workflowSelectedValue != null && this.workflowSelectedValue.length != 0)
       {
-         form.setWorkflow(this.workflowSelectedValue[0]);
+         form.setWorkflow(new CreateWebsiteWizard.WorkflowWrapper(this.workflowSelectedValue[0]));
       }
       return outcome;
    }

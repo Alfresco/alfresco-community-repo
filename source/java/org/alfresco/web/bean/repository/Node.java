@@ -89,7 +89,7 @@ public class Node implements Serializable
    /**
     * @return All the properties known about this node.
     */
-   public final Map<String, Object> getProperties()
+   public Map<String, Object> getProperties()
    {
       if (this.propsRetrieved == false)
       {

@@ -941,19 +941,6 @@ public abstract class BaseAssociationEditor extends UIInput
                logger.debug("Added lastname as sort column to query for people");
          }
          
-         SearchParameters searchParams = new SearchParameters();
-         searchParams.addStore(Repository.getStoreRef());
-         searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
-         searchParams.setQuery(query.toString());
-         
-         if (type.equals(ContentModel.TYPE_PERSON.toString()))
-         {
-            searchParams.addSort("@" + ContentModel.PROP_LASTNAME, true);
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Added lastname as sort column to query for people");
-         }
-         
          ResultSet results = null;
          try
          {

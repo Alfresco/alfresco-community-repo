@@ -27,7 +27,7 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.WorkflowWrapper;
-import org.alfresco.web.bean.workflow.WorkflowBean;
+import org.alfresco.web.bean.workflow.WorkflowUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -86,11 +86,10 @@ public class FormWorkflowDialog extends BaseDialogBean
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      // TODO: marshall params using WorkflowBean.prepareTaskParams()
-      //       store params back into workflow object
+      // push serialized params back into workflow object
       if (this.workflowNode != null)
       {
-         getActionWorkflow().setParams( WorkflowBean.prepareTaskParams(this.workflowNode) );
+         getActionWorkflow().setParams( WorkflowUtil.prepareTaskParams(this.workflowNode) );
          getActionWorkflow().setType(this.workflowNode.getType());
       }
       return outcome;

@@ -95,13 +95,13 @@ public class Node implements Serializable, Scopeable
     protected Scriptable scope;
     
     /** Node Value Converter */
-    private NodeValueConverter converter = null;
+    protected NodeValueConverter converter = null;
     
     /** Cached values */
-    private NodeRef nodeRef;
+    protected NodeRef nodeRef;
     private String name;
     private QName type;
-    private String id;
+    protected String id;
     /** The aspects applied to this node */
     private Set<QName> aspects = null;
     /** The associations from this node */
@@ -116,7 +116,7 @@ public class Node implements Serializable, Scopeable
     private Boolean isContainer = null;
     private String displayPath = null;
     protected TemplateImageResolver imageResolver = null;
-    private Node parent = null;
+    protected Node parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
     // NOTE: see the reset() method when adding new cached members!
     
@@ -162,6 +162,14 @@ public class Node implements Serializable, Scopeable
         this.nodeService = services.getNodeService();
         this.imageResolver = resolver;
         this.scope = scope;
+    }
+    
+    /**
+     * Factory method
+     */
+    public Node newInstance(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver, Scriptable scope)
+    {
+        return new Node(nodeRef, services, resolver, scope);
     }
     
     /**
@@ -283,7 +291,7 @@ public class Node implements Serializable, Scopeable
             for (int i=0; i<childRefs.size(); i++)
             {
                 // create our Node representation from the NodeRef
-                Node child = new Node(
+                Node child = newInstance(
                         childRefs.get(i).getChildRef(), this.services, this.imageResolver, this.scope);
                 this.children[i] = child;
             }
@@ -374,7 +382,7 @@ public class Node implements Serializable, Scopeable
                     System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
                     nodes = newNodes;
                 }
-                nodes[nodes.length - 1] = new Node(
+                nodes[nodes.length - 1] = newInstance(
                         ref.getTargetRef(), this.services, this.imageResolver, this.scope);
                 
                 this.assocs.put(ref.getTypeQName().toString(), nodes);
@@ -657,7 +665,7 @@ public class Node implements Serializable, Scopeable
             // handle root node (no parent!)
             if (parentRef != null)
             {
-                parent = new Node(parentRef, this.services, this.imageResolver, this.scope);
+                parent = newInstance(parentRef, this.services, this.imageResolver, this.scope);
             }
         }
         
@@ -721,10 +729,15 @@ public class Node implements Serializable, Scopeable
     public void setContent(String content)
     {
         ScriptContentData contentData = (ScriptContentData)getProperties().get(ContentModel.PROP_CONTENT);
-        if (contentData != null)
+        if (contentData == null)
         {
-            contentData.setContent(content);
+            // guess a mimetype based on the filename
+            String mimetype = this.services.getMimetypeService().guessMimetype(getName());
+            ContentData cdata = new ContentData(null, mimetype, 0L, "UTF-8");
+            contentData = new ScriptContentData(cdata, ContentModel.PROP_CONTENT);
+            getProperties().put(ContentModel.PROP_CONTENT.toString(), contentData);
         }
+        contentData.setContent(content);
     }
     
     public void jsSet_content(String content)
@@ -1018,7 +1031,7 @@ public class Node implements Serializable, Scopeable
             {
                 FileInfo fileInfo = this.services.getFileFolderService().create(
                         this.nodeRef, name, ContentModel.TYPE_CONTENT);
-                node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver, this.scope);
+                node = newInstance(fileInfo.getNodeRef(), this.services, this.imageResolver, this.scope);
             }
         }
         catch (FileExistsException fileErr)
@@ -1051,7 +1064,7 @@ public class Node implements Serializable, Scopeable
             {
                 FileInfo fileInfo = this.services.getFileFolderService().create(
                         this.nodeRef, name, ContentModel.TYPE_FOLDER);
-                node = new Node(fileInfo.getNodeRef(), this.services, this.imageResolver, this.scope);
+                node = newInstance(fileInfo.getNodeRef(), this.services, this.imageResolver, this.scope);
             }
         }
         catch (FileExistsException fileErr)
@@ -1092,7 +1105,7 @@ public class Node implements Serializable, Scopeable
                         QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
                         createQName(type),
                         props);
-                node = new Node(childAssocRef.getChildRef(), this.services, this.imageResolver, this.scope);
+                node = newInstance(childAssocRef.getChildRef(), this.services, this.imageResolver, this.scope);
             }
         }
         catch (AccessDeniedException accessErr)
@@ -1165,7 +1178,7 @@ public class Node implements Serializable, Scopeable
                         ContentModel.ASSOC_CONTAINS,
                         getPrimaryParentAssoc().getQName(),
                         deepCopy);
-                copy = new Node(copyRef, this.services, this.imageResolver, this.scope);
+                copy = newInstance(copyRef, this.services, this.imageResolver, this.scope);
             }
         }
         catch (AccessDeniedException accessErr)
@@ -1302,7 +1315,7 @@ public class Node implements Serializable, Scopeable
     public Node checkout()
     {
         NodeRef workingCopyRef = this.services.getCheckOutCheckInService().checkout(this.nodeRef);
-        Node workingCopy = new Node(workingCopyRef, this.services, this.imageResolver, this.scope);
+        Node workingCopy = newInstance(workingCopyRef, this.services, this.imageResolver, this.scope);
         
         // reset the aspect and properties as checking out a document causes changes
         this.properties = null;
@@ -1323,7 +1336,7 @@ public class Node implements Serializable, Scopeable
         ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(destination.getNodeRef());
         NodeRef workingCopyRef = this.services.getCheckOutCheckInService().checkout(this.nodeRef,
                 destination.getNodeRef(), ContentModel.ASSOC_CONTAINS, childAssocRef.getQName());
-        Node workingCopy = new Node(workingCopyRef, this.services, this.imageResolver, this.scope);
+        Node workingCopy = newInstance(workingCopyRef, this.services, this.imageResolver, this.scope);
         
         // reset the aspect and properties as checking out a document causes changes
         this.properties = null;
@@ -1374,7 +1387,7 @@ public class Node implements Serializable, Scopeable
         props.put(Version.PROP_DESCRIPTION, history);
         props.put(VersionModel.PROP_VERSION_TYPE, majorVersion ? VersionType.MAJOR : VersionType.MINOR);
         NodeRef original = this.services.getCheckOutCheckInService().checkin(this.nodeRef, props);
-        return new Node(original, this.services, this.imageResolver, this.scope);
+        return newInstance(original, this.services, this.imageResolver, this.scope);
     }
     
     /**
@@ -1387,7 +1400,7 @@ public class Node implements Serializable, Scopeable
     public Node cancelCheckout()
     {
         NodeRef original = this.services.getCheckOutCheckInService().cancelCheckout(this.nodeRef);
-        return new Node(original, this.services, this.imageResolver, this.scope);
+        return newInstance(original, this.services, this.imageResolver, this.scope);
     }
     
     
@@ -1435,7 +1448,7 @@ public class Node implements Serializable, Scopeable
                     try
                     {
                         contentService.transform(reader, writer);
-                        transformedNode = new Node(nodeRef, services, imageResolver, scope);
+                        transformedNode = newInstance(nodeRef, services, imageResolver, scope);
                     }
                     catch (NoTransformerException err)
                     {
@@ -1570,7 +1583,7 @@ public class Node implements Serializable, Scopeable
                     Map<String, Object> opts = new HashMap<String, Object>(1);
                     opts.put(ImageMagickContentTransformer.KEY_OPTIONS, options != null ? options : "");
                     contentService.getImageTransformer().transform(reader, writer, opts);
-                    transformedNode = new Node(nodeRef, services, imageResolver, scope);
+                    transformedNode = newInstance(nodeRef, services, imageResolver, scope);
                 }
                 catch (NoTransformerException err)
                 {
@@ -1783,7 +1796,7 @@ public class Node implements Serializable, Scopeable
                 if (nodes.size() != 0)
                 {
                     result = new Node[1];
-                    result[0] = new Node(nodes.get(0), this.services, this.imageResolver, this.scope);
+                    result[0] = newInstance(nodes.get(0), this.services, this.imageResolver, this.scope);
                 }
             }
             // or all the results
@@ -1793,7 +1806,7 @@ public class Node implements Serializable, Scopeable
                 for (int i=0; i<nodes.size(); i++)
                 {
                     NodeRef ref = nodes.get(i);
-                    result[i] = new Node(ref, this.services, this.imageResolver, this.scope);
+                    result[i] = newInstance(ref, this.services, this.imageResolver, this.scope);
                 }
             }
         }

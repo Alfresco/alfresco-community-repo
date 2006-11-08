@@ -36,13 +36,19 @@ public class ClientConfigElement extends ConfigElementAdapter
    private int searchMinimum = 3;
    private boolean forceAndTerms = false;
    private int searchMaxResults = -1;
+   private int selectorsSearchMaxResults = 500;
    private String helpUrl = null;
    private String editLinkType = "http";
    private String homeSpacePermission = null;
+<<<<<<< .working
    private boolean ajaxEnabled = false;
    private String initialLocation = "myalfresco";
    private String wcmDomain = null;
    private String wcmPort = null;
+=======
+   private boolean ajaxEnabled = false;
+   private String initialLocation = "myalfresco";
+>>>>>>> .merge-right.r4305
    
    /**
     * Default Constructor
@@ -137,17 +143,34 @@ public class ClientConfigElement extends ConfigElementAdapter
          combinedElement.setSearchMaxResults(newElement.getSearchMaxResults());
       }
       
+<<<<<<< .working
       if (newElement.isShelfVisible() != combinedElement.isShelfVisible())
+=======
+      if (newElement.getSelectorsSearchMaxResults() != combinedElement.getSelectorsSearchMaxResults())
+>>>>>>> .merge-right.r4305
       {
+<<<<<<< .working
          combinedElement.setShelfVisible(newElement.isShelfVisible());
+=======
+         combinedElement.setSelectorsSearchMaxResults(newElement.getSelectorsSearchMaxResults());
+>>>>>>> .merge-right.r4305
       }
       
+<<<<<<< .working
       if (newElement.getFromEmailAddress() != null && 
           (newElement.getFromEmailAddress().equals(combinedElement.getFromEmailAddress()) == false))
+=======
+      if (newElement.isShelfVisible() != combinedElement.isShelfVisible())
+>>>>>>> .merge-right.r4305
       {
+<<<<<<< .working
          combinedElement.setFromEmailAddress(newElement.getFromEmailAddress());
+=======
+         combinedElement.setShelfVisible(newElement.isShelfVisible());
+>>>>>>> .merge-right.r4305
       }
       
+<<<<<<< .working
       if (newElement.isAjaxEnabled() != combinedElement.isAjaxEnabled())
       {
          combinedElement.setAjaxEnabled(newElement.isAjaxEnabled());
@@ -178,6 +201,26 @@ public class ClientConfigElement extends ConfigElementAdapter
       }
       
       return combinedElement;
+=======
+      if (newElement.getFromEmailAddress() != null && 
+          (newElement.getFromEmailAddress().equals(combinedElement.getFromEmailAddress()) == false))
+      {
+         combinedElement.setFromEmailAddress(newElement.getFromEmailAddress());
+      }
+      
+      if (newElement.isAjaxEnabled() != combinedElement.isAjaxEnabled())
+      {
+         combinedElement.setAjaxEnabled(newElement.isAjaxEnabled());
+      }
+      
+      if (newElement.getInitialLocation() != null &&
+          newElement.getInitialLocation().equals(combinedElement.getInitialLocation()) == false)
+      {
+         combinedElement.setInitialLocation(newElement.getInitialLocation());
+      }
+      
+      return combinedElement;
+>>>>>>> .merge-right.r4305
    }
    
    /**
@@ -330,10 +373,9 @@ public class ClientConfigElement extends ConfigElementAdapter
     * 
     * @return
     */
-   
    public int getSearchMaxResults()
    {
-       return searchMaxResults;
+       return this.searchMaxResults;
    }
 
    /**
@@ -345,6 +387,29 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setSearchMaxResults(int searchMaxResults)
    {
        this.searchMaxResults = searchMaxResults;
+   }
+   
+   /**
+    * If positive, this will limit the size of the result set from the search
+    * used in selector components.
+    * 
+    * @return The maximum number of results to display
+    */
+   public int getSelectorsSearchMaxResults()
+   {
+       return this.selectorsSearchMaxResults;
+   }
+
+   /**
+    * Set if the the result set from a search for the selector components
+    * will be of limited size. If negative it is unlimited, by default, 
+    * this is set to 500.
+    * 
+    * @param selectorsSearchMaxResults
+    */
+   /*package*/ void setSelectorsSearchMaxResults(int selectorsSearchMaxResults)
+   {
+       this.selectorsSearchMaxResults = selectorsSearchMaxResults;
    }
 
    /**
@@ -362,6 +427,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    {
       this.homeSpacePermission = homeSpacePermission;
    }
+<<<<<<< .working
    
    /**
     * @return Returns whether AJAX support is enabled in the client
@@ -428,4 +494,40 @@ public class ClientConfigElement extends ConfigElementAdapter
    {
       this.wcmPort = wcmPort;
    }
+=======
+   
+   /**
+    * @return Returns whether AJAX support is enabled in the client
+    */
+   public boolean isAjaxEnabled()
+   {
+      return this.ajaxEnabled;
+   }
+   
+   /**
+    * Sets whether AJAX support is enabled in the client
+    * 
+    * @param ajaxEnabled
+    */
+   /*package*/ void setAjaxEnabled(boolean ajaxEnabled)
+   {
+      this.ajaxEnabled = ajaxEnabled;
+   }
+   
+   /**
+    * @return Returns the default initial location for the user.
+    */
+   public String getInitialLocation()
+   {
+      return this.initialLocation;
+   }
+
+   /**
+    * @param initialLocation  The initial location to set.
+    */
+   /*package*/ void setInitialLocation(String initialLocation)
+   {
+      this.initialLocation = initialLocation;
+   }
+>>>>>>> .merge-right.r4305
 }

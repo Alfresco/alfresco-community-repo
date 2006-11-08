@@ -126,12 +126,6 @@
                                     <tr>
                                        <td><a:actionLink value="#{msg.node_browser}" image="/images/icons/node_browser.gif" action="dialog:showNodeBrowser" styleClass="title" /></td>
                                     </tr>
-                                    <tr>
-                                       <td>
-                                          <img src="<%=request.getContextPath()%>/images/icons/workflow.gif" align="absmiddle" />
-                                          <h:outputLink value="/alfresco/faces/jbpm/home.jsp" styleClass="title"><h:outputText value="jBPM Console" /></h:outputLink>
-                                       </td>
-                                    </tr>
                                  </table>
                                  <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "ballongrey"); %>
                            

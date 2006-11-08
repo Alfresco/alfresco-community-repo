@@ -71,14 +71,14 @@ public final class DialogManager
                "' does not implement the required IDialogBean interface");
       }
       
+      // create the DialogState object
+      this.currentDialogState = new DialogState(config, dialog);
+      
       // initialise the managed bean
       dialog.init(this.paramsToApply);
       
       // reset the current parameters so subsequent dialogs don't get them
       this.paramsToApply = null;
-      
-      // create the DialogState object
-      this.currentDialogState = new DialogState(config, dialog);
    }
    
    /**

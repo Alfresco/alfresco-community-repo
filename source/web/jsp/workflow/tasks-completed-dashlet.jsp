@@ -43,52 +43,41 @@
       </f:facet>
       <h:outputText id="col3-txt" value="#{r['bpm:taskId']}" />
    </a:column>
-      
-   <%-- Source column --%>
-   <a:column id="col4" style="padding:2px;text-align:left">
-      <f:facet name="header">
-         <a:sortLink id="col4-sort" label="#{msg.source}" value="sourceSpaceName" styleClass="header"/>
-      </f:facet>
-      <a:actionLink id="col4-act1" value="#{r.sourceSpaceName}" 
-                    actionListener="#{BrowseBean.clickSpace}" action="browse">
-         <f:param name="id" value="#{r.sourceSpaceId}" />
-      </a:actionLink>
-   </a:column>
    
    <%-- Created Date column --%>
-   <a:column id="col5" style="padding:2px;text-align:left">
+   <a:column id="col4" style="padding:2px;text-align:left">
       <f:facet name="header">
-         <a:sortLink id="col5-sort" label="#{msg.created}" value="created" styleClass="header"/>
+         <a:sortLink id="col4-sort" label="#{msg.created}" value="created" styleClass="header"/>
       </f:facet>
-      <h:outputText id="col5-txt" value="#{r.created}">
+      <h:outputText id="col4-txt" value="#{r.created}">
          <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
       </h:outputText>
    </a:column>
    
    <%-- Completed date column --%>
-   <a:column id="col6" style="padding:2px;text-align:left">
+   <a:column id="col5" style="padding:2px;text-align:left">
       <f:facet name="header">
-         <a:sortLink id="col6-sort" label="#{msg.completed_on}" value="bpm:completionDate" styleClass="header"/>
+         <a:sortLink id="col5-sort" label="#{msg.completed_on}" value="bpm:completionDate" styleClass="header"/>
       </f:facet>
-      <h:outputText id="col6-txt" value="#{r['bpm:completionDate']}">
+      <h:outputText id="col5-txt" value="#{r['bpm:completionDate']}">
          <a:convertXMLDate type="both" pattern="#{msg.date_pattern}" />
       </h:outputText>
    </a:column>
    
    <%-- Outcome column --%>
-   <a:column id="col7" style="padding:2px;text-align:left">
+   <a:column id="col6" style="padding:2px;text-align:left">
       <f:facet name="header">
-         <a:sortLink id="col7-sort" label="#{msg.outcome}" value="outcome" styleClass="header"/>
+         <a:sortLink id="col6-sort" label="#{msg.outcome}" value="outcome" styleClass="header"/>
       </f:facet>
-      <h:outputText id="col7-txt" value="#{r.outcome}" />
+      <h:outputText id="col6-txt" value="#{r.outcome}" />
    </a:column>
    
    <%-- Actions column --%>
-   <a:column id="col8" actions="true" style="padding:2px;text-align:left">
+   <a:column id="col7" actions="true" style="padding:2px;text-align:left">
       <f:facet name="header">
-         <h:outputText id="col8-txt" value="#{msg.actions}"/>
+         <h:outputText id="col7-txt" value="#{msg.actions}"/>
       </f:facet>
-      <r:actions id="col8-actions" value="dashlet_completed_actions" context="#{r}" showLink="false" 
+      <r:actions id="col7-actions" value="dashlet_completed_actions" context="#{r}" showLink="false" 
                  styleClass="inlineAction" />
    </a:column>
    

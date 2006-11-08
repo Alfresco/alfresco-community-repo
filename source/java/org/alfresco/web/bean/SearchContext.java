@@ -86,6 +86,7 @@ public final class SearchContext implements Serializable
    private static final char OP_WILDCARD = '*';
    private static final char OP_AND = '+';
    private static final char OP_NOT = '-';
+   private static final String STR_OP_WILDCARD = "" + OP_WILDCARD;
    
    /** Search mode constants */
    public final static int SEARCH_ALL = 0;
@@ -174,21 +175,7 @@ public final class SearchContext implements Serializable
                   nameAttrBuf.append(OP_NOT);
                }
                
-               // simple single word text search
-               if (text.charAt(0) != OP_WILDCARD)
-               {
-                  // escape characters and append the wildcard character
-                  String safeText = QueryParser.escape(text);
-                  fullTextBuf.append("TEXT:").append(safeText).append(OP_WILDCARD);
-                  nameAttrBuf.append("@").append(nameAttr).append(":").append(safeText).append(OP_WILDCARD);
-               }
-               else
-               {
-                  // found a leading wildcard - prepend it again after escaping the other characters
-                  String safeText = QueryParser.escape(text.substring(1));
-                  fullTextBuf.append("TEXT:*").append(safeText).append(OP_WILDCARD);
-                  nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeText).append(OP_WILDCARD);
-               }
+               processSearchTextAttribute(nameAttr, text, nameAttrBuf, fullTextBuf);
             }
          }
          else
@@ -253,18 +240,8 @@ public final class SearchContext implements Serializable
                         nameAttrBuf.append(OP_AND);
                      }
                      
-                     if (term.charAt(0) != OP_WILDCARD)
-                     {
-                        String safeTerm = QueryParser.escape(term);
-                        fullTextBuf.append("TEXT:").append(safeTerm).append(OP_WILDCARD);
-                        nameAttrBuf.append("@").append(nameAttr).append(":").append(safeTerm).append(OP_WILDCARD);
-                     }
-                     else
-                     {
-                        String safeTerm = QueryParser.escape(term.substring(1));
-                        fullTextBuf.append("TEXT:*").append(safeTerm).append(OP_WILDCARD);
-                        nameAttrBuf.append("@").append(nameAttr).append(":*").append(safeTerm).append(OP_WILDCARD);
-                     }
+                     processSearchTextAttribute(nameAttr, term, nameAttrBuf, fullTextBuf);
+                     
                      fullTextBuf.append(' ');
                      nameAttrBuf.append(' ');
                      
@@ -317,11 +294,9 @@ public final class SearchContext implements Serializable
          for (QName qname : queryAttributes.keySet())
          {
             String value = queryAttributes.get(qname).trim();
-            if (value.length() != 0 && value.length() >= minimum)
+            if (value.length() >= minimum)
             {
-               String escapedName = Repository.escapeQName(qname);
-               attributeQuery.append(" +@").append(escapedName)
-                             .append(":").append(QueryParser.escape(value)).append(OP_WILDCARD);
+               processSearchAttribute(qname, value, attributeQuery);
             }
          }
          
@@ -478,6 +453,114 @@ public final class SearchContext implements Serializable
          logger.debug("Query: " + query);
       
       return query;
+   }
+   
+   /**
+    * Build the lucene search terms required for the specified attribute and append to a buffer.
+    * Supports text values with a wildcard '*' character as the prefix and/or the suffix. 
+    * 
+    * @param qname      QName of the attribute
+    * @param value      Non-null value of the attribute
+    * @param buf        Buffer to append lucene terms to
+    */
+   private static void processSearchAttribute(QName qname, String value, StringBuilder buf)
+   {
+      if (value.indexOf(' ') == -1)
+      {
+         String safeValue;
+         String prefix = "";
+         String suffix = "";
+         
+         // look for a wildcard suffix
+         if (value.charAt(value.length() - 1) != OP_WILDCARD)
+         {
+            // look for wildcard prefix
+            if (value.charAt(0) != OP_WILDCARD)
+            {
+               safeValue = QueryParser.escape(value);
+            }
+            else
+            {
+               safeValue = QueryParser.escape(value.substring(1));
+               prefix = STR_OP_WILDCARD;
+            }
+         }
+         else
+         {
+            // found a wildcard suffix - append it again after escaping the other characters
+            suffix = STR_OP_WILDCARD;
+            
+            // look for wildcard prefix
+            if (value.charAt(0) != OP_WILDCARD)
+            {
+               safeValue = QueryParser.escape(value.substring(0, value.length() - 1));
+            }
+            else
+            {
+               safeValue = QueryParser.escape(value.substring(1, value.length() - 1));
+               prefix = STR_OP_WILDCARD;
+            }
+         }
+         
+         buf.append(" +@").append(Repository.escapeQName(qname)).append(":")
+            .append(prefix).append(safeValue).append(suffix);
+      }
+      else
+      {
+         // phrase multi-word search
+         String safeValue = QueryParser.escape(value);
+         buf.append(" +@").append(Repository.escapeQName(qname)).append(":\"").append(safeValue).append('"');
+      }
+   }
+   
+   /**
+    * Build the lucene search terms required for the specified attribute and append to multiple buffers.
+    * Supports text values with a wildcard '*' character as the prefix and/or the suffix. 
+    * 
+    * @param qname      QName.toString() of the attribute
+    * @param value      Non-null value of the attribute
+    * @param attrBuf    Attribute search buffer to append lucene terms to
+    * @param textBuf    Text search buffer to append lucene terms to
+    */
+   private static void processSearchTextAttribute(String qname, String value, StringBuilder attrBuf, StringBuilder textBuf)
+   {
+      String safeValue;
+      String suffix = "";
+      String prefix = "";
+      
+      if (value.charAt(value.length() - 1) != OP_WILDCARD)
+      {
+         // look for wildcard prefix
+         if (value.charAt(0) != OP_WILDCARD)
+         {
+            safeValue = QueryParser.escape(value);
+         }
+         else
+         {
+            // found a leading wildcard - prepend it again after escaping the other characters
+            prefix = STR_OP_WILDCARD;
+            safeValue = QueryParser.escape(value.substring(1));
+         }
+      }
+      else
+      {
+         suffix = STR_OP_WILDCARD;
+         
+         // look for wildcard prefix
+         if (value.charAt(0) != OP_WILDCARD)
+         {
+            safeValue = QueryParser.escape(value.substring(0, value.length() - 1));
+         }
+         else
+         {
+            prefix = STR_OP_WILDCARD;
+            safeValue = QueryParser.escape(value.substring(1, value.length() - 1));
+         }
+      }
+      
+      textBuf.append("TEXT:").append(prefix).append(safeValue).append(suffix);
+      attrBuf.append("@").append(qname).append(":")
+             .append(prefix).append(safeValue).append(suffix);
    }
    
    /**

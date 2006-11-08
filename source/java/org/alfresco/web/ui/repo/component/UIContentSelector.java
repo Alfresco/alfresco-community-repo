@@ -30,7 +30,9 @@ import javax.faces.el.ValueBinding;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -353,15 +355,30 @@ public class UIContentSelector extends UIInput
          
          query.append(":*" + safeContains + "*");
       }
+
+      int maxResults = Application.getClientConfig(context).getSelectorsSearchMaxResults();
       
       if (logger.isDebugEnabled())
+      {
          logger.debug("Query: " + query.toString());
+         logger.debug("Max results size: " + maxResults);
+      }
+      
+      // setup search parameters, including limiting the results
+      SearchParameters searchParams = new SearchParameters();
+      searchParams.addStore(Repository.getStoreRef());
+      searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
+      searchParams.setQuery(query.toString());
+      if (maxResults > 0)
+      {
+         searchParams.setLimit(maxResults);
+         searchParams.setLimitBy(LimitBy.FINAL_SIZE);
+      }
       
       ResultSet results = null;
       try
       {
-         results = Repository.getServiceRegistry(context).getSearchService().query(
-               Repository.getStoreRef(), SearchService.LANGUAGE_LUCENE, query.toString());
+         results = Repository.getServiceRegistry(context).getSearchService().query(searchParams);
          this.availableOptions = results.getNodeRefs();
       }
       finally

@@ -70,6 +70,9 @@ public class TransientNode extends Node
       // setup the transient node so that the super class methods work
       // and do not need to go back to the repository
       
+      if (logger.isDebugEnabled())
+         logger.debug("Initialising transient node with data: " + data);
+      
       DictionaryService ddService = this.getServiceRegistry().getDictionaryService();
       
       // marshall the given properties and associations into the internal maps
@@ -94,25 +97,11 @@ public class TransientNode extends Node
                {
                   if (assocDef.isChild())
                   {
-                     // TODO: handle lists of NodeRef's
-                     NodeRef child = null;
                      Object obj = data.get(item);
-                     if (obj instanceof String)
+                     if (obj instanceof NodeRef)
                      {
-                        child = new NodeRef((String)obj);
-                     }
-                     else if (obj instanceof NodeRef)
-                     {
-                        child = (NodeRef)obj;
-                     }
-                     else if (obj instanceof List)
-                     {
-                        if (logger.isWarnEnabled())
-                           logger.warn("0..* child associations are not supported yet");
-                     }
-                     
-                     if (child != null)
-                     {
+                        NodeRef child = (NodeRef)obj;
+                        
                         // create a child association reference, add it to a list and add the list
                         // to the list of child associations for this node
                         List<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>(1);
@@ -122,28 +111,36 @@ public class TransientNode extends Node
                         
                         this.childAssociations.put(item, assocs);
                      }
+                     else if (obj instanceof List)
+                     {
+                        List targets = (List)obj;
+                        
+                        List<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>(targets.size());
+                        
+                        for (Object target : targets)
+                        {
+                           if (target instanceof NodeRef)
+                           {
+                              NodeRef currentChild = (NodeRef)target;
+                              ChildAssociationRef childRef = new ChildAssociationRef(assocDef.getName(),
+                                    this.nodeRef, null, currentChild);
+                              assocs.add(childRef);
+                           }
+                        }
+                        
+                        if (assocs.size() > 0)
+                        {
+                           this.childAssociations.put(item, assocs);
+                        }
+                     }
                   }
                   else
                   {
-                     // TODO: handle lists of NodeRef's
-                     NodeRef target = null;
                      Object obj = data.get(item);
-                     if (obj instanceof String)
+                     if (obj instanceof NodeRef)
                      {
-                        target = new NodeRef((String)obj);
-                     }
-                     else if (obj instanceof NodeRef)
-                     {
-                        target = (NodeRef)obj;
-                     }
-                     else if (obj instanceof List)
-                     {
-                        if (logger.isWarnEnabled())
-                           logger.warn("0..* associations are not supported yet");
-                     }
-                     
-                     if (target != null)
-                     {
+                        NodeRef target = (NodeRef)obj;
+                        
                         // create a association reference, add it to a list and add the list
                         // to the list of associations for this node
                         List<AssociationRef> assocs = new ArrayList<AssociationRef>(1);
@@ -151,6 +148,27 @@ public class TransientNode extends Node
                         assocs.add(assocRef);
                         
                         this.associations.put(item, assocs);
+                     }
+                     else if (obj instanceof List)
+                     {
+                        List targets = (List)obj;
+                        
+                        List<AssociationRef> assocs = new ArrayList<AssociationRef>(targets.size());
+                        
+                        for (Object target : targets)
+                        {
+                           if (target instanceof NodeRef)
+                           {
+                              NodeRef currentTarget = (NodeRef)target;
+                              AssociationRef assocRef = new AssociationRef(this.nodeRef, assocDef.getName(), currentTarget);
+                              assocs.add(assocRef);
+                           }
+                        }
+                        
+                        if (assocs.size() > 0)
+                        {
+                           this.associations.put(item, assocs);
+                        }
                      }
                   }
                }

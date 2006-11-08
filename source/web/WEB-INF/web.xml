@@ -202,6 +202,11 @@
    </servlet>
    
    <servlet>
+      <servlet-name>guestTemplateContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.GuestTemplateContentServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
       <servlet-name>externalAccess</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.ExternalAccessServlet</servlet-class>
    </servlet>
@@ -264,6 +269,11 @@
    <servlet-mapping>
       <servlet-name>guestDownloadContent</servlet-name>
       <url-pattern>/guestDownload/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>guestTemplateContent</servlet-name>
+      <url-pattern>/guestTemplate/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>

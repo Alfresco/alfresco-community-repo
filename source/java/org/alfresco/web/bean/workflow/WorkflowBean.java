@@ -1,25 +1,19 @@
 package org.alfresco.web.bean.workflow;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
@@ -31,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Managed bean used for handling workflow related features
+ * Managed bean used for providing support for the workflow task dashlets
  * 
  * @author gavinc
  */
@@ -55,40 +49,43 @@ public class WorkflowBean
     */
    public List<Node> getTasksToDo()
    {
-      // get the current username
-      FacesContext context = FacesContext.getCurrentInstance();
-      User user = Application.getCurrentUser(context);
-      String userName = ISO9075.encode(user.getUserName());
-      
-      UserTransaction tx = null;
-      try
+      if (this.tasks == null)
       {
-         tx = Repository.getUserTransaction(context, true);
-         tx.begin();
+         // get the current username
+         FacesContext context = FacesContext.getCurrentInstance();
+         User user = Application.getCurrentUser(context);
+         String userName = ISO9075.encode(user.getUserName());
          
-         // get the current in progress tasks for the current user
-         List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(
-               userName, WorkflowTaskState.IN_PROGRESS);
-         
-         // create a list of transient nodes to represent
-         this.tasks = new ArrayList<Node>(tasks.size());
-         for (WorkflowTask task : tasks)
+         UserTransaction tx = null;
+         try
          {
-            Node node = createTask(task);
-            this.tasks.add(node);
+            tx = Repository.getUserTransaction(context, true);
+            tx.begin();
             
-            if (logger.isDebugEnabled())
-               logger.debug("Added to do task: " + node);
+            // get the current in progress tasks for the current user
+            List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(
+                  userName, WorkflowTaskState.IN_PROGRESS);
+            
+            // create a list of transient nodes to represent
+            this.tasks = new ArrayList<Node>(tasks.size());
+            for (WorkflowTask task : tasks)
+            {
+               Node node = createTask(task);
+               this.tasks.add(node);
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Added to do task: " + node);
+            }
+            
+            // commit the changes
+            tx.commit();
          }
-         
-         // commit the changes
-         tx.commit();
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage("Failed to get to do tasks: " + e.toString(), e);
+         catch (Throwable e)
+         {
+            // rollback the transaction
+            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+            Utils.addErrorMessage("Failed to get to do tasks: " + e.toString(), e);
+         }
       }
       
       return this.tasks;
@@ -102,40 +99,43 @@ public class WorkflowBean
     */
    public List<Node> getTasksCompleted()
    {
-      // get the current username
-      FacesContext context = FacesContext.getCurrentInstance();
-      User user = Application.getCurrentUser(context);
-      String userName = ISO9075.encode(user.getUserName());
-      
-      UserTransaction tx = null;
-      try
+      if (this.completedTasks == null)
       {
-         tx = Repository.getUserTransaction(context, true);
-         tx.begin();
+         // get the current username
+         FacesContext context = FacesContext.getCurrentInstance();
+         User user = Application.getCurrentUser(context);
+         String userName = ISO9075.encode(user.getUserName());
          
-         // get the current in progress tasks for the current user
-         List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(
-               userName, WorkflowTaskState.COMPLETED);
-         
-         // create a list of transient nodes to represent
-         this.completedTasks = new ArrayList<Node>(tasks.size());
-         for (WorkflowTask task : tasks)
+         UserTransaction tx = null;
+         try
          {
-            Node node = createTask(task);
-            this.completedTasks.add(node);
+            tx = Repository.getUserTransaction(context, true);
+            tx.begin();
             
-            if (logger.isDebugEnabled())
-               logger.debug("Added completed task: " + node);
+            // get the current in progress tasks for the current user
+            List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(
+                  userName, WorkflowTaskState.COMPLETED);
+            
+            // create a list of transient nodes to represent
+            this.completedTasks = new ArrayList<Node>(tasks.size());
+            for (WorkflowTask task : tasks)
+            {
+               Node node = createTask(task);
+               this.completedTasks.add(node);
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Added completed task: " + node);
+            }
+            
+            // commit the changes
+            tx.commit();
          }
-         
-         // commit the changes
-         tx.commit();
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage("Failed to get completed tasks: " + e.toString(), e);
+         catch (Throwable e)
+         {
+            // rollback the transaction
+            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+            Utils.addErrorMessage("Failed to get completed tasks: " + e.toString(), e);
+         }  
       }
       
       return this.completedTasks;
@@ -163,47 +163,6 @@ public class WorkflowBean
    
    // ------------------------------------------------------------------------------
    // Helper methods
-
-   public static Map<QName, Serializable> prepareTaskParams(Node node)
-   {
-      Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-      
-      // marshal the properties and associations captured by the property sheet
-      // back into a Map to pass to the workflow service
-
-      // go through all the properties in the transient node and add them to
-      // params map
-      Map<String, Object> props = node.getProperties();
-      for (String propName : props.keySet())
-      {
-         QName propQName = Repository.resolveToQName(propName);
-         params.put(propQName, (Serializable)props.get(propName));
-      }
-      
-      // go through any associations that have been added to the start task
-      // and build a list of NodeRefs representing the targets
-      Map<String, Map<String, AssociationRef>> assocs = node.getAddedAssociations();
-      for (String assocName : assocs.keySet())
-      {
-         QName assocQName = Repository.resolveToQName(assocName);
-         
-         // get the associations added and create list of targets
-         Map<String, AssociationRef> addedAssocs = assocs.get(assocName);
-         List<NodeRef> targets = new ArrayList<NodeRef>(addedAssocs.size());
-         for (AssociationRef assoc : addedAssocs.values())
-         {
-            targets.add(assoc.getTargetRef());
-         }
-         
-         // add the targets for this particular association
-         if (targets.size() > 0)
-         {
-             params.put(assocQName, (Serializable)targets);
-         }
-      }
-      
-      return params;
-   }
    
    /**
     * Creates and populates a TransientNode to represent the given
@@ -224,15 +183,6 @@ public class WorkflowBean
       node.getProperties().put(ContentModel.PROP_NAME.toString(), task.title);
       node.getProperties().put("type", taskDef.metadata.getTitle());
       node.getProperties().put("id", task.id);
-      
-      // add the name of the source space (if there is one)
-      NodeRef context = (NodeRef)task.properties.get(WorkflowModel.PROP_CONTEXT);
-      if (context != null && this.nodeService.exists(context))
-      {
-         String name = Repository.getNameForNode(this.nodeService, context);
-         node.getProperties().put("sourceSpaceName", name);
-         node.getProperties().put("sourceSpaceId", context.getId());
-      }
       
       // add extra properties for completed tasks
       if (task.state.equals(WorkflowTaskState.COMPLETED))
@@ -260,6 +210,9 @@ public class WorkflowBean
          
          // add the workflow instance id and name this taks belongs to
          node.getProperties().put("workflowInstanceId", task.path.instance.id);
+         
+         // add the task itself as a property
+         node.getProperties().put("workflowTask", task);
       }
       
       return node;

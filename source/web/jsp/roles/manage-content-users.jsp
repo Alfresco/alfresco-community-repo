@@ -85,13 +85,14 @@
                               </r:permissionEvaluator>
                            </td>
                            
+                           <%-- View mode settings
                            <td class="separator" width=1></td>
                            <td width=100 valign=middle>
-                              <%-- View mode settings --%>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/Details.gif" value="0" menu="true" menuImage="/images/icons/menu.gif" styleClass="moreActionsMenu">
                                  <a:listItem value="0" label="#{msg.user_details}" />
                               </a:modeList>
                            </td>
+                           --%>
                         </tr>
                      </table>
                   </td>

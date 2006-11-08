@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.bean.WorkflowUtil;
+import org.alfresco.web.bean.workflow.WorkflowUtil;
 
 /**
  * Approve Workflow command implementation

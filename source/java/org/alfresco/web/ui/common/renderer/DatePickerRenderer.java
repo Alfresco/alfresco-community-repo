@@ -37,8 +37,6 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.web.app.Application;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author kevinr
@@ -58,8 +56,6 @@ public class DatePickerRenderer extends BaseRenderer
    private static final int CMD_SET = 1;
    private static final int CMD_RESET = 2;
    private static final int CMD_TODAY = 3;
-   
-   private static final Log logger = LogFactory.getLog(DatePickerRenderer.class);
 
    /**
     * @see javax.faces.render.Renderer#decode(javax.faces.context.FacesContext, javax.faces.component.UIComponent)

@@ -16,12 +16,8 @@
  */
 package org.alfresco.repo.jscript;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.mozilla.javascript.Scriptable;
@@ -89,12 +85,47 @@ public class AVMNode extends Node
         return getPath();
     }
     
-    /*@Override
+    /**
+     * Copy this Node into a new parent destination.
+     * 
+     * @param destination     Parent node for the copy
+     * 
+     * @return the copy of this node
+     */
+    @Override
     public Node copy(Node destination)
     {
-        AVM
-        this.services.getAVMService().
-    }*/
+        Node copy = null;
+        
+        if (destination instanceof AVMNode)
+        {
+            copy = copy(((AVMNode)destination).getPath());
+        }
+        
+        return copy;
+    }
+    
+    /**
+     * Copy this Node into a new parent destination.
+     * 
+     * @param destination     Parent path for the copy
+     * 
+     * @return the copy of this node
+     */
+    public Node copy(String destination)
+    {
+        Node copy = null;
+        
+        if (destination != null && destination.length() != 0)
+        {
+            this.services.getAVMService().copy(-1, getPath(), destination, getName());
+            copy = newInstance(
+                    AVMNodeConverter.ToNodeRef(-1, destination + '/' + getName()),
+                    this.services, null, this.scope);
+        }
+        
+        return copy;
+    }
     
     /**
      * Move this Node to a new parent destination node.

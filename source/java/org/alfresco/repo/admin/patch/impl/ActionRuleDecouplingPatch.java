@@ -54,6 +54,10 @@ public class ActionRuleDecouplingPatch extends AbstractPatch
         for (NodeRef origRuleNodeRef : resultSet.getNodeRefs())
         {
             // Check that this rule need updated
+            if (!this.nodeService.exists(origRuleNodeRef))
+            {
+                continue;
+            }
             Map<QName, Serializable> origProperties = this.nodeService.getProperties(origRuleNodeRef);
             if (origProperties.containsKey(RuleModel.PROP_EXECUTE_ASYNC) == false)
             {
@@ -79,21 +83,21 @@ public class ActionRuleDecouplingPatch extends AbstractPatch
                 Map<QName, Serializable> newProperties = this.nodeService.getProperties(newRuleNodeRef);
                 
                 // Set the rule type, execute async and applyToChildren properties on the rule
-                String ruleType = (String)origProperties.get(RuleModel.PROP_RULE_TYPE);
+                Serializable ruleType = origProperties.get(RuleModel.PROP_RULE_TYPE);
                 origProperties.remove(RuleModel.PROP_RULE_TYPE);
                 newProperties.put(RuleModel.PROP_RULE_TYPE, ruleType);
-                Boolean executeAsync = (Boolean)origProperties.get(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY);
+                Serializable executeAsync = origProperties.get(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY);
                 origProperties.remove(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY);
                 newProperties.put(RuleModel.PROP_EXECUTE_ASYNC, executeAsync);
-                Boolean applyToChildren = (Boolean)origProperties.get(RuleModel.PROP_APPLY_TO_CHILDREN);
+                Serializable applyToChildren = origProperties.get(RuleModel.PROP_APPLY_TO_CHILDREN);
                 origProperties.remove(RuleModel.PROP_APPLY_TO_CHILDREN);
                 newProperties.put(RuleModel.PROP_APPLY_TO_CHILDREN, applyToChildren);                
                 origProperties.remove(QName.createQName(RuleModel.RULE_MODEL_URI, "owningNodeRef"));
                 
                 // Move the action and description values from the composite action onto the rule
-                String title = (String)origProperties.get(ActionModel.PROP_ACTION_TITLE);
+                Serializable title = origProperties.get(ActionModel.PROP_ACTION_TITLE);
                 origProperties.remove(ActionModel.PROP_ACTION_TITLE);
-                String description = (String)origProperties.get(ActionModel.PROP_ACTION_DESCRIPTION);
+                Serializable description = origProperties.get(ActionModel.PROP_ACTION_DESCRIPTION);
                 origProperties.remove(ActionModel.PROP_ACTION_DESCRIPTION);
                 newProperties.put(ContentModel.PROP_TITLE, title);
                 newProperties.put(ContentModel.PROP_DESCRIPTION, description);

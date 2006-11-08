@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Schedule index tracking every 30s -->
+    <bean id="indexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="indexRecoveryComponent">
+                            <ref bean="indexTrackerComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>0,30 * * * * ?</value>
+        </property>
+    </bean>
+    
+    <bean
+          id="indexTrackerComponent"
+          class="org.alfresco.repo.node.index.IndexRemoteTransactionTracker"
+          parent="indexRecoveryComponentBase">
+        <property name="remoteOnly">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <!-- Forces the reindexing of nodes where content may have been missing before -->
+    <!--
+       This component can be triggered at intervals where asynchronous content sharing
+       between clustered servers has been set up.
+    -->
+    <bean id="missingContentReindexTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="indexRecoveryComponent">
+                            <ref bean="missingContentReindexComponent" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <!-- Give the server 5 minutes and then check for missing content -->
+        <property name="startDelayMinutes">
+            <value>5</value>
+        </property>
+        <property name="repeatCount">
+            <value>0</value>
+        </property>
+    </bean>
+
+</beans>

@@ -171,8 +171,8 @@
       <property name="patchDao">
          <ref bean="patchDaoComponent" />
       </property>
-      <property name="versionDao">
-         <ref bean="versionCounterDaoComponent" />
+      <property name="versionCounterService">
+         <ref bean="versionCounterService" />
       </property>
     </bean>
     
@@ -226,6 +226,9 @@
         </property>
         -->
 	</bean>
+
+    <bean id="storeImporterViews" class="org.alfresco.repo.importer.ImporterBootstrapViews" abstract="true">
+    </bean>
 
 
 	<!--  -->

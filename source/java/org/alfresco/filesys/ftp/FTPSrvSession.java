@@ -852,7 +852,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
             // DEBUG
             
             if ( logger.isDebugEnabled())
-                logger.debug("Logon failed", ex);
+                logger.debug("Logon failed for user " + cInfo.getUserName());
         }
 
         // Check if the logon was successful

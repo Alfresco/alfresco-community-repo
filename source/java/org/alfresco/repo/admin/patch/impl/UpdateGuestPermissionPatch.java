@@ -16,32 +16,27 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.service.cmr.admin.PatchException;
-import org.hibernate.SessionFactory;
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 
 /**
  * The permission 'Guest' has been renamed to 'Consumer'.
- * <p>
- * <b>WILL NOT EXECUTE ANYMORE</b>
  *
  * @author David Caruana
+ * @author Derek Hulley
  */
-public class UpdateGuestPermissionPatch extends AbstractPatch
+public class UpdateGuestPermissionPatch extends AbstractPermissionChangePatch
 {
-    private static final String MSG_UPGRADE = "patch.updateGuestPermission.upgrade";
-    
-    public UpdateGuestPermissionPatch()
-    {
-    }
-    
-    public void setSessionFactory(SessionFactory sessionFactory)
-    {
-    }
+    private static final String MSG_SUCCESS = "patch.updateGuestPermission.result";
     
     @Override
     protected String applyInternal() throws Exception
     {
-        throw new PatchException(MSG_UPGRADE);
+        int updateCount = super.renamePermission(ContentModel.TYPE_CMOBJECT, "Guest", ContentModel.TYPE_CMOBJECT, "Consumer");
+        
+        // build the result message
+        String msg = I18NUtil.getMessage(MSG_SUCCESS, updateCount);
+        // done
+        return msg;
     }
 }

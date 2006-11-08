@@ -19,7 +19,6 @@ package org.alfresco.filesys.smb.server.repo.pseudo;
 
 import java.io.IOException;
 
-import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.smb.SeekType;
@@ -222,9 +221,7 @@ public class MemoryNetworkFile extends NetworkFile
      */
     public void truncateFile(long siz) throws IOException
     {
-        // Do not allow the file to be written to
-        
-        throw new AccessDeniedException("Cannot truncate pseudo file");
+        // Allow the truncate, do not alter the pseduo file data
     }
 
     /**
@@ -236,9 +233,7 @@ public class MemoryNetworkFile extends NetworkFile
      */
     public void writeFile(byte[] buf, int len, int pos) throws java.io.IOException
     {
-        // Do not allow the file to be written to
-        
-        throw new AccessDeniedException("Cannot write to pseudo file");
+        // Allow the write, just do not do anything
     }
 
     /**
@@ -252,8 +247,6 @@ public class MemoryNetworkFile extends NetworkFile
      */
     public void writeFile(byte[] buf, int len, int pos, long offset) throws java.io.IOException
     {
-        // Do not allow the file to be written to
-        
-        throw new AccessDeniedException("Cannot write to pseudo file");
+        // Allow the write, just do not do anything
     }
 }

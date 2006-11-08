@@ -178,7 +178,7 @@ public class JCRSystemXMLExporter implements Exporter
             Value[] mixinValues = mixinTypes.getValues();
             for (int i = 0; i < mixinValues.length; i++)
             {
-                value(nodeRef, JCRMixinTypesProperty.PROPERTY_NAME, mixinValues[i], i);
+                value(nodeRef, JCRMixinTypesProperty.PROPERTY_NAME, mixinValues[i].getString(), i);
             }
             endProperty(nodeRef, JCRMixinTypesProperty.PROPERTY_NAME);
             

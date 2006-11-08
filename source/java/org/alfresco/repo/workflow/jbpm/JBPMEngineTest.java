@@ -341,8 +341,10 @@ public class JBPMEngineTest extends BaseSpringTest
      
     public void testSignal()
     {
+        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         WorkflowDefinition workflowDef = getTestDefinition();
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, null);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         WorkflowPath updatedPath = workflowComponent.signal(path.id, path.node.transitions[1].id);
         assertNotNull(updatedPath);
@@ -371,6 +373,26 @@ public class JBPMEngineTest extends BaseSpringTest
         assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.instance.id);
         assertEquals(1, assignedTasks.size());
         assertEquals("review", assignedTasks.get(0).name);
+    }
+
+    
+    public void xtestMultiAssign()
+    {
+        WorkflowDefinition workflowDef = getTestDefinition();
+        List<String> bpm_assignees = new ArrayList<String>();
+        bpm_assignees.add("admin");
+        bpm_assignees.add("bob");
+        bpm_assignees.add("fred");
+        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+        parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "assignees"), (Serializable)bpm_assignees);
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        assertNotNull(path);
+        List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.size());
+        WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).id, "multi");
+        assertNotNull(updatedTask);
     }
 
     

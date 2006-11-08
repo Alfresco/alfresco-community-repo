@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -46,6 +47,7 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,8 +55,6 @@ import org.apache.commons.logging.impl.Log4JLogger;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -62,7 +62,7 @@ import org.springframework.util.FileCopyUtils;
  * 
  * @author David Caruana
  */
-public class ImporterBootstrap implements ApplicationListener
+public class ImporterBootstrap extends AbstractLifecycleBean
 {
     // View Properties (used in setBootstrapViews)
     public static final String VIEW_PATH_PROPERTY = "path";
@@ -83,6 +83,7 @@ public class ImporterBootstrap implements ApplicationListener
     private NodeService nodeService;
     private ImporterService importerService;
     private List<Properties> bootstrapViews;
+    private List<Properties> extensionBootstrapViews;
     private StoreRef storeRef = null;
     private List<String> mustNotExistStoreUrls = null;
     private Properties configuration = null;
@@ -174,6 +175,20 @@ public class ImporterBootstrap implements ApplicationListener
     public void setBootstrapViews(List<Properties> bootstrapViews)
     {
         this.bootstrapViews = bootstrapViews;
+    }
+
+    /**
+     * Sets the bootstrap views
+     * 
+     * @param bootstrapViews
+     */
+    public void addBootstrapViews(List<Properties> bootstrapViews)
+    {
+        if (this.extensionBootstrapViews == null)
+        {
+            this.extensionBootstrapViews = new ArrayList<Properties>();
+        }
+        this.extensionBootstrapViews.addAll(bootstrapViews);
     }
 
     /**
@@ -348,6 +363,12 @@ public class ImporterBootstrap implements ApplicationListener
                 // bootstrap the store contents
                 if (bootstrapViews != null)
                 {
+                    // add-in any extended views
+                    if (extensionBootstrapViews != null)
+                    {
+                        bootstrapViews.addAll(extensionBootstrapViews);
+                    }
+                    
                     for (Properties bootstrapView : bootstrapViews)
                     {
                         String view = bootstrapView.getProperty(VIEW_LOCATION_VIEW);
@@ -643,16 +664,16 @@ public class ImporterBootstrap implements ApplicationListener
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
-    public void onApplicationEvent(ApplicationEvent event)
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        if (event instanceof ContextRefreshedEvent)
-        {
-            bootstrap();
-        }
+        bootstrap();
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        // NOOP
     }
     
 }

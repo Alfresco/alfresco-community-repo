@@ -311,10 +311,25 @@ public class JBPMEngine extends BPMEngine
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitionById(java.lang.String)
      */
-    public WorkflowDefinition getDefinitionById(String workflowDefinitionId)
+    public WorkflowDefinition getDefinitionById(final String workflowDefinitionId)
     {
-        // TODO
-        throw new UnsupportedOperationException();
+        try
+        {
+            return (WorkflowDefinition)jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // retrieve process
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessDefinition processDefinition = graphSession.getProcessDefinition(getJbpmId(workflowDefinitionId));
+                    return processDefinition == null ? null : createWorkflowDefinition(processDefinition);
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to retrieve workflow definition '" + workflowDefinitionId + "'", e);
+        }
     }
 
     /* (non-Javadoc)
@@ -1714,7 +1729,7 @@ public class JBPMEngine extends BPMEngine
         workflowTransition.id = transition.getName();
         Node node = transition.getFrom();
         workflowTransition.isDefault = node.getDefaultLeavingTransition().equals(transition);
-        if (workflowTransition.id.length() == 0)
+        if (workflowTransition.id == null || workflowTransition.id.length() == 0)
         {
             workflowTransition.title = getLabel(DEFAULT_TRANSITION_LABEL, TITLE_LABEL, workflowTransition.id);
             workflowTransition.description = getLabel(DEFAULT_TRANSITION_LABEL, DESC_LABEL, workflowTransition.title);

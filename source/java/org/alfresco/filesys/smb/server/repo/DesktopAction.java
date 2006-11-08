@@ -19,10 +19,12 @@ package org.alfresco.filesys.smb.server.repo;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLDecoder;
 
 import org.alfresco.config.ConfigElement;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.smb.server.repo.pseudo.LocalPseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
@@ -88,7 +90,11 @@ public abstract class DesktopAction {
     public static final int StsLaunchURL		= 7;
     public static final int StsCommandLine		= 8;
     
-	// Action name
+    // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
+
+    private static final String TokenLocalName = "${localname}";
+
+    // Action name
 	
 	private String m_name;
 	
@@ -109,6 +115,10 @@ public abstract class DesktopAction {
 	private ContentDiskDriver m_contentDriver;
 	private ContentContext m_contentContext;
 
+	// Webapp URL
+	
+	private String m_webappURL;
+	
 	// Debug enable flag
 	
 	private boolean m_debug;
@@ -255,6 +265,26 @@ public abstract class DesktopAction {
 	}
 
 	/**
+	 * Check if the webapp URL is set
+	 * 
+	 * @return boolean
+	 */
+	public final boolean hasWebappURL()
+	{
+		return m_webappURL != null ? true : false;
+	}
+	
+	/**
+	 * Return the webapp URL
+	 * 
+	 * @return String
+	 */
+	public final String getWebappURL()
+	{
+		return m_webappURL;
+	}
+	
+	/**
 	 * Initialize the desktop action
 	 * 
 	 * @param global ConfigElement
@@ -348,7 +378,50 @@ public abstract class DesktopAction {
 		
 		if ( findConfigElement("noConfirm", global, config) != null && hasPreProcessAction(PreConfirmAction))
 			setPreProcessActions(getPreProcessActions() - PreConfirmAction);
+		
+		// Check if the webapp URL has been specified
+		
+		ConfigElement webURL = findConfigElement("webpath", global, config);
+		if ( webURL != null)
+		{
+	        // Check if the path name contains the local name token
+
+			String webPath = webURL.getValue();
+            if ( webPath.endsWith("/") == false)
+                webPath = webPath + "/";
 			
+	        int pos = webPath.indexOf(TokenLocalName);
+	        if (pos != -1)
+	        {
+
+	            // Get the local server name
+
+	            String srvName = "localhost";
+	            
+	            try
+	            {
+	            	srvName = InetAddress.getLocalHost().getHostName();
+	            }
+	            catch ( Exception ex)
+	            {
+	            }
+
+	            // Rebuild the host name substituting the token with the local server name
+
+	            StringBuilder hostStr = new StringBuilder();
+
+	            hostStr.append(webPath.substring(0, pos));
+	            hostStr.append(srvName);
+
+	            pos += TokenLocalName.length();
+	            if (pos < webPath.length())
+	                hostStr.append(webPath.substring(pos));
+
+	            webPath = hostStr.toString();
+	            setWebappURL( webPath);
+	        }
+		}
+		
 		// Check if debug output is enabled for the action
 		
 		ConfigElement debug = findConfigElement("debug", global, config);
@@ -511,6 +584,16 @@ public abstract class DesktopAction {
 		m_debug = ena;
 	}
 
+	/**
+	 * Set the webapp URL
+	 * 
+	 * @param urlStr String
+	 */
+	public final void setWebappURL(String urlStr)
+	{
+		m_webappURL = urlStr;
+	}
+	
 	/**
 	 * Equality check
 	 * 

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -51,6 +53,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class UniqueChildNamePatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.uniqueChildName.result";
+    private static final String ERR_UNABLE_TO_FIX = "patch.uniqueChildName.err.unable_to_fix";
     private static final String MSG_COPY_OF = "patch.uniqueChildName.copyOf";
     /** the number of associations to process at a time */
     private static final int MAX_RESULTS = 1000;
@@ -143,6 +146,7 @@ public class UniqueChildNamePatch extends AbstractPatch
             @SuppressWarnings("unused")
             List<QName> assocTypeQNames = getUsedAssocQNames();
             
+            boolean unableToFix = false;
             int fixed = 0;
             int processed = 0;
             // check loop through all associations, looking for duplicates
@@ -185,8 +189,10 @@ public class UniqueChildNamePatch extends AbstractPatch
                         String usedChildName = childName;
                         processed++;
                         boolean duplicate = false;
+                        int duplicateNumber = 0;
                         while(true)
                         {
+                            duplicateNumber++;
                             try
                             {
                                 // push the name back to the node
@@ -195,11 +201,46 @@ public class UniqueChildNamePatch extends AbstractPatch
                             }
                             catch (DuplicateChildNodeNameException e)
                             {
-                                // there was a duplicate, so adjust the name and change the node property
-                                duplicate = true;
-                                // assign a new name
-                                usedChildName = childName + I18NUtil.getMessage(MSG_COPY_OF, processed);
-                                // try again
+                                if (duplicateNumber == 10)
+                                {
+                                    // Try removing the secondary parent associations
+                                    writeLine("   Removing secondary parents of node " + childNode.getId());
+                                    Collection<ChildAssoc> parentAssocs = childNode.getParentAssocs();
+                                    for (ChildAssoc parentAssoc : parentAssocs)
+                                    {
+                                        if (!parentAssoc.getIsPrimary())
+                                        {
+                                            write("      - ").writeLine(parentAssoc);
+                                            // remove it
+                                            getSession().delete(parentAssoc);
+                                        }
+                                    }
+                                    // flush to ensure the database gets the changes
+                                    getSession().flush();
+                                    // try again to be sure
+                                    continue;
+                                }
+                                else if (duplicateNumber > 10)
+                                {
+                                    // after 10 attempts, we have to admit defeat.  Perhaps there is a larger issue.
+                                    Collection<ChildAssoc> parentAssocs = childNode.getParentAssocs();
+                                    write("   Unable to set child name '" + usedChildName + "' for node " + childNode.getId());
+                                    writeLine(" with parent associations:");
+                                    for (ChildAssoc parentAssoc : parentAssocs)
+                                    {
+                                        write("      - ").writeLine(parentAssoc);
+                                    }
+                                    duplicate = false;
+                                    unableToFix = true;
+                                    break;
+                                }
+                                else
+                                {
+                                    // there was a duplicate, so adjust the name and change the node property
+                                    duplicate = true;
+                                    // assign a new name
+                                    usedChildName = childName + I18NUtil.getMessage(MSG_COPY_OF, processed, duplicateNumber);
+                                }
                             }
                         }
                         // if duplicated, report it
@@ -209,11 +250,11 @@ public class UniqueChildNamePatch extends AbstractPatch
                             // get the node path
                             NodeRef parentNodeRef = childAssoc.getParent().getNodeRef();
                             Path path = nodeService.getPath(parentNodeRef);
-                            writeLine("  Changed duplicated child name:");
-                            writeLine("     Parent:         " + parentNodeRef);
-                            writeLine("     Parent path:    " + path);
-                            writeLine("     Duplicate name: " + childName);
-                            writeLine("     Replaced with:  " + usedChildName);
+                            writeLine("   Changed duplicated child name:");
+                            writeLine("      Parent:         " + parentNodeRef);
+                            writeLine("      Parent path:    " + path);
+                            writeLine("      Duplicate name: " + childName);
+                            writeLine("      Replaced with:  " + usedChildName);
                         }
                     }
                     // clear the session to preserve memory
@@ -222,10 +263,17 @@ public class UniqueChildNamePatch extends AbstractPatch
                 }
             }
             
-            
-            // build the result message
-            String msg = I18NUtil.getMessage(MSG_SUCCESS, processed, fixed, logFile);
-            return msg;
+            // check if it was successful or not
+            if (unableToFix)
+            {
+                throw new PatchException(ERR_UNABLE_TO_FIX, logFile);
+            }
+            else
+            {
+                // build the result message
+                String msg = I18NUtil.getMessage(MSG_SUCCESS, processed, fixed, logFile);
+                return msg;
+            }
         }
         
         @SuppressWarnings("unchecked")

@@ -21,27 +21,25 @@ import java.util.List;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Transaction;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Component to check and recover the indexes.
+ * Component to check and recover the indexes.  By default, the server is
+ * put into read-only mode during the reindex process in order to prevent metadata changes.
+ * This is not critical and can be {@link #setLockServer(boolean) switched off} if the
+ * server is required immediately. 
  * 
  * @author Derek Hulley
  */
 public class FullIndexRecoveryComponent extends AbstractReindexComponent
 {
-    private static final String ERR_STORE_NOT_UP_TO_DATE = "index.recovery.store_not_up_to_date";
+    private static final String ERR_INDEX_OUT_OF_DATE = "index.recovery.out_of_date";
     private static final String MSG_RECOVERY_STARTING = "index.recovery.starting";
     private static final String MSG_RECOVERY_COMPLETE = "index.recovery.complete";
     private static final String MSG_RECOVERY_PROGRESS = "index.recovery.progress";
@@ -51,17 +49,25 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     
     public static enum RecoveryMode
     {
-        /** Do nothing - not even a check */
+        /** Do nothing - not even a check. */
         NONE,
-        /** Perform a quick check on the state of the indexes only */
+        /**
+         * Perform a quick check on the state of the indexes only.
+         */
         VALIDATE,
-        /** Performs a quick validation and then starts a full pass-through on failure */
+        /**
+         * Performs a validation and starts a quick recovery, if necessary.
+         */
         AUTO,
-        /** Performs a full pass-through of all recorded transactions to ensure that the indexes are up to date */
+        /**
+         * Performs a full pass-through of all recorded transactions to ensure that the indexes
+         * are up to date.
+         */
         FULL;
     }
     
     private RecoveryMode recoveryMode;
+    private boolean lockServer;
     
     public FullIndexRecoveryComponent()
     {
@@ -69,7 +75,8 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     }
 
     /**
-     * Set the type of recovery to perform.
+     * Set the type of recovery to perform.  Default is {@link RecoveryMode#VALIDATE to validate}
+     * the indexes only.
      * 
      * @param recoveryMode one of the {@link RecoveryMode } values
      */
@@ -77,7 +84,18 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     {
         this.recoveryMode = RecoveryMode.valueOf(recoveryMode);
     }
-    
+
+    /**
+     * Set this on to put the server into READ-ONLY mode for the duration of the index recovery.
+     * The default is <tt>true</tt>, i.e. the server will be locked against further updates.
+     * 
+     * @param lockServer true to force the server to be read-only
+     */
+    public void setLockServer(boolean lockServer)
+    {
+        this.lockServer = lockServer;
+    }
+
     @Override
     protected void reindexImpl()
     {
@@ -99,25 +117,22 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         }
         else                                                    // validate first
         {
-            List<StoreRef> storeRefs = nodeService.getStores();
-            for (StoreRef storeRef : storeRefs)
+            Transaction txn = nodeDaoService.getLastTxn();
+            if (txn == null)
             {
-                // get the last txn ID in the database
-                Transaction txn = nodeDaoService.getLastTxn(storeRef);
-                boolean lastChangeTxnIdInIndex = isTxnIdPresentInIndex(storeRef, txn);
-                if (lastChangeTxnIdInIndex)
-                {
-                    // this store is good
-                    continue;
-                }
-                // this store isn't up to date
-                String msg = I18NUtil.getMessage(ERR_STORE_NOT_UP_TO_DATE, storeRef);
+                // no transactions - just bug out
+                return;
+            }
+            long txnId = txn.getId();
+            boolean txnInIndex = isTxnIdPresentInIndex(txnId);
+            if (!txnInIndex)
+            {
+                String msg = I18NUtil.getMessage(ERR_INDEX_OUT_OF_DATE);
                 logger.warn(msg);
-                // the store is out of date - validation failed
+                // this store isn't up to date
                 if (recoveryMode == RecoveryMode.VALIDATE)
                 {
-                    // next store
-                    continue;
+                    // the store is out of date - validation failed
                 }
                 else if (recoveryMode == RecoveryMode.AUTO)
                 {
@@ -130,8 +145,11 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         boolean allowWrite = !transactionService.isReadOnly();
         try
         {
-            // set the server into read-only mode
-            transactionService.setAllowWrite(false);
+            if (lockServer)
+            {
+                // set the server into read-only mode
+                transactionService.setAllowWrite(false);
+            }
             
             // do we need to perform a full recovery
             if (fullRecoveryRequired)
@@ -160,8 +178,9 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         Transaction lastTxn = null;
         while(true)
         {
+            long lastTxnId = (lastTxn == null) ? -1L : lastTxn.getId().longValue();
             List<Transaction> nextTxns = nodeDaoService.getNextTxns(
-                    lastTxn,
+                    lastTxnId,
                     MAX_TRANSACTIONS_PER_ITERATION);
 
             // reindex each transaction
@@ -255,126 +274,5 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         };
         TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, reindexWork, true);
         // done
-    }
-    
-    private boolean isTxnIdPresentInIndex(StoreRef storeRef, Transaction txn)
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Checking for transaction in index: \n" +
-                    "   store: " + storeRef + "\n" +
-                    "   txn: " + txn);
-        }
-        
-        String changeTxnId = txn.getChangeTxnId();
-        // count the changes in the transaction
-        int updateCount = nodeDaoService.getTxnUpdateCountForStore(storeRef, txn.getId());
-        int deleteCount = nodeDaoService.getTxnDeleteCountForStore(storeRef, txn.getId());
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Transaction has " + updateCount + " updates and " + deleteCount + " deletes: " + txn);
-        }
-        
-        // do the most update check, which is most common
-        if (deleteCount == 0 && updateCount == 0)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("No changes in transaction: " + txn);
-            }
-            // there's nothing to check for
-            return true;
-        }
-        else if (updateCount > 0)
-        {
-            ResultSet results = null;
-            try
-            {
-                SearchParameters sp = new SearchParameters();
-                sp.addStore(storeRef);
-                // search for it in the index, sorting with youngest first, fetching only 1
-                sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-                sp.setQuery("TX:" + LuceneQueryParser.escape(changeTxnId));
-                sp.setLimit(1);
-                
-                results = searcher.query(sp);
-                
-                if (results.length() > 0)
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Index has results for txn (OK): " + txn);
-                    }
-                    return true;        // there were updates/creates and results for the txn were found
-                }
-                else
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Index has no results for txn (Index out of date): " + txn);
-                    }
-                    return false;
-                }
-            }
-            finally
-            {
-                if (results != null) { results.close(); }
-            }
-        }
-        // there have been deletes, so we have to ensure that none of the nodes deleted are present in the index
-        // get all node refs for the transaction
-        Long txnId = txn.getId();
-        List<NodeRef> nodeRefs = nodeDaoService.getTxnChangesForStore(storeRef, txnId);
-        for (NodeRef nodeRef : nodeRefs)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Searching for node in index: \n" +
-                        "   node: " + nodeRef + "\n" +
-                        "   txn: " + txn);
-            }
-            // we know that these are all deletions
-            ResultSet results = null;
-            try
-            {
-                SearchParameters sp = new SearchParameters();
-                sp.addStore(storeRef);
-                // search for it in the index, sorting with youngest first, fetching only 1
-                sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-                sp.setQuery("ID:" + LuceneQueryParser.escape(nodeRef.toString()));
-                sp.setLimit(1);
-                
-                results = searcher.query(sp);
-                
-                if (results.length() == 0)
-                {
-                    // no results, as expected
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(" --> Node not found (OK)");
-                    }
-                    continue;
-                }
-                else
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(" --> Node found (Index out of date)");
-                    }
-                    return false;
-                }
-            }
-            finally
-            {
-                if (results != null) { results.close(); }
-            }
-        }
-        
-        // all tests passed
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Index is in synch with transaction: " + txn);
-        }
-        return true;
     }
 }

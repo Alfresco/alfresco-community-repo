@@ -39,6 +39,10 @@ public class NTLMLogonDetails
     
     private String m_authSrvAddr;
     
+    // Date/time authentication was started
+    
+    private long m_createTime;
+    
     // Date/time the user was authenticated
     
     private long m_authTime;
@@ -61,6 +65,7 @@ public class NTLMLogonDetails
      */
     public NTLMLogonDetails()
     {
+    	m_createTime = System.currentTimeMillis();
     }
     
     /**
@@ -74,6 +79,8 @@ public class NTLMLogonDetails
      */
     public NTLMLogonDetails(String user, String wks, String domain, boolean guest, String authSrv)
     {
+    	m_createTime = System.currentTimeMillis();
+    	
         setDetails(user, wks, domain, guest, authSrv);
     }
     
@@ -117,6 +124,16 @@ public class NTLMLogonDetails
         return m_authSrvAddr;
     }
 
+    /**
+     * Return the date/time the authentication was started
+     * 
+     * @return long
+     */
+    public final long createdAt()
+    {
+    	return m_createTime;
+    }
+    
     /**
      * Return the date/time the user was authenticated
      * 

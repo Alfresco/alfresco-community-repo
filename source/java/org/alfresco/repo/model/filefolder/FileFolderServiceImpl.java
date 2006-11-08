@@ -503,7 +503,7 @@ public class FileFolderServiceImpl implements FileFolderService
      */
     public FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException
     {
-        return move(sourceNodeRef, null, newName);
+        return moveOrCopy(sourceNodeRef, null, newName, true);
     }
 
     /**
@@ -815,12 +815,25 @@ public class FileFolderServiceImpl implements FileFolderService
         for (int i = 0; i < folderCount; i++)
         {
             String pathElement = pathElements.get(i);
-            FileInfo pathElementInfo = getPathElementInfo(currentPath, rootNodeRef, parentNodeRef, pathElement, true);
-            parentNodeRef = pathElementInfo.getNodeRef();
+            NodeRef folderNodeRef = searchSimple(parentNodeRef, pathElement);
+            if (folderNodeRef == null)
+            {
+                StringBuilder sb = new StringBuilder(128);
+                sb.append("Folder not found: " + currentPath);
+                throw new FileNotFoundException(sb.toString());
+            }
+            parentNodeRef = folderNodeRef;
         }
         // we have resolved the folder path - resolve the last component
         String pathElement = pathElements.get(pathElements.size() - 1);
-        FileInfo result = getPathElementInfo(currentPath, rootNodeRef, parentNodeRef, pathElement, false);
+        NodeRef fileNodeRef = searchSimple(parentNodeRef, pathElement);
+        if (fileNodeRef == null)
+        {
+            StringBuilder sb = new StringBuilder(128);
+            sb.append("File not found: " + currentPath);
+            throw new FileNotFoundException(sb.toString());
+        }
+        FileInfo result = getFileInfo(fileNodeRef);
         // found it
         if (logger.isDebugEnabled())
         {
@@ -830,42 +843,6 @@ public class FileFolderServiceImpl implements FileFolderService
                     "   node: " + result);
         }
         return result;
-    }
-    
-    /**
-     * Helper method to dig down a level for a node based on name
-     */
-    private FileInfo getPathElementInfo(
-            StringBuilder currentPath,
-            NodeRef rootNodeRef,
-            NodeRef parentNodeRef,
-            String pathElement,
-            boolean folderOnly) throws FileNotFoundException
-    {
-        currentPath.append("/").append(pathElement);
-        
-        boolean includeFiles = (folderOnly ? false : true);
-        List<FileInfo> pathElementInfos = search(parentNodeRef, pathElement, includeFiles, true, false);
-        // check
-        if (pathElementInfos.size() == 0)
-        {
-            StringBuilder sb = new StringBuilder(128);
-            sb.append(folderOnly ? "Folder" : "File or folder").append(" not found: \n")
-              .append("   root: ").append(rootNodeRef).append("\n")
-              .append("   path: ").append(currentPath);
-            throw new FileNotFoundException(sb.toString());
-        }
-        else if (pathElementInfos.size() > 1)
-        {
-            // we have detected a duplicate name - warn, but allow
-            StringBuilder sb = new StringBuilder(128);
-            sb.append("Duplicate file or folder found: \n")
-              .append("   root: ").append(rootNodeRef).append("\n")
-              .append("   path: ").append(currentPath);
-            logger.warn(sb);
-        }
-        FileInfo pathElementInfo = pathElementInfos.get(0);
-        return pathElementInfo;
     }
 
     public FileInfo getFileInfo(NodeRef nodeRef)

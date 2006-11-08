@@ -1,0 +1,174 @@
+##
+##  Meta commands 
+## 
+
+ok> help 
+
+    List this help. 
+
+ok> r 
+
+    Repeat last command. 
+
+ok> user [<userName>] 
+
+    Switch to specified <userName>.  If <userName> is omitted, the currently 
+    selected user is shown. 
+
+ok> use
+
+    Show current workflow context.
+
+## 
+##  Workflow Definition Commands 
+## 
+
+ok> deploy <definitionClassPath> 
+
+    Deploy workflow definition to Alfresco server. 
+
+    <definitionClassPath> class path to workflow definition. 
+
+ok> redeploy
+
+    Redeploy the last workflow definition.
+
+ok> show definitions 
+
+    List all deployed workflow definitions. 
+
+ok> use definition [<workflowDefId>] 
+
+    Switch to use the workflow definition identified by <workflowDefId>.  If 
+    <workflowDefId> is ommited, the currently selected workflow definition 
+    is shown. 
+
+## 
+##  Variable Commands 
+## 
+
+ok> var 
+
+    Show all defined variables. 
+
+ok> var <varName>[*]=<varValue> 
+
+    Define or update a variable. 
+
+    <varName> variable name 
+    [*] if specified, define a collection 
+    <varValue> variable value (comma-seperate to specify a list of values) 
+
+    e.g. 
+
+    set bpm:assignee*=admin,fred 
+    set wf:notifyMe=true 
+
+ok> var <varName>[*] person <varValue> 
+
+    Define or update a (cm:person) node ref variable. 
+
+    <varName> variable name 
+    [*] if specified, define a collection 
+    <varValue> variable value (comma-seperate to specify a list of values) 
+
+    e.g. 
+    
+    set bpm:assignee* person admin,fred 
+
+ok> var <varName>= 
+
+    Delete an existing variable. 
+
+    <varName> variable name 
+
+## 
+##  Workflow Commands 
+## 
+    
+ok> start [<varName[=varValue>]]* 
+
+    Start a new workflow using the currently selected workflow definition.  Start 
+    Task parameters are provided as name/value pairs or references to pre-defined 
+    variables. 
+    
+    e.g. 
+    
+    start bpm:assignee=david wf:predefined 
+    
+ok> show workflows 
+
+    Display the list of active workflows for the currently selected workflow 
+    definition. 
+
+ok> use workflow <workflowId>
+
+    Use the specified <workflowId>.
+
+ok> show paths [<workflowId>] 
+
+    Display the workflow paths for the specified <workflowId>.  If <workflowId> 
+    is omitted, the paths for the currently started workflow are shown. 
+
+ok> show transitions [<workflowId>] 
+
+    Display all available transitions for the specified <workflowId>.  If 
+    <workflowId> is omitted, the transitions for the currently started workflow 
+    are shown. 
+
+ok> signal <pathId> [<transitionName>] 
+
+    Signal transition on specified <pathId>.  If <transitionName> is omitted, the 
+    default transition is taken. 
+
+ok> desc workflow <workflowId> 
+
+    Describe the specified <workflowId>. 
+
+ok> end workflow <workflowId> 
+
+    End (cancel) the specified <workflowId>. 
+
+## 
+##  Task Commands 
+## 
+
+ok> show my tasks 
+
+    List tasks assigned to the currently selected user. 
+
+ok> show my completed 
+
+    List tasks completed by the currently selected user. 
+
+ok> show tasks [<pathId>] 
+
+    List tasks associated with the specified workflow <pathId>.  If <pathId> is 
+    omitted, the tasks associated with the currently selected workflow path are 
+    shown. 
+
+ok> desc task <taskId> 
+
+    Describe the task identified by <taskId>. 
+
+ok> update task <taskid> [<varName[=varValue>]]* 
+
+    Update the state of the specified <taskId>.  Task properties are provided as 
+    name/value pairs or references to pre-defined variables. 
+
+   <varName> variable name 
+    [*] if specified, define a collection 
+    <varValue> variable value (comma-seperate to specify a list of values) 
+    
+    e.g. 
+    
+    update task jbpm$122 bpm:assignee=fred wf:notifyMe=false 
+
+ok> end task <taskId> [<transitionName>] 
+
+    End the task identified by <taskId>.  If <transitionName> is omitted, the 
+    default transition is taken. 
+    
+## 
+##  end 
+## 

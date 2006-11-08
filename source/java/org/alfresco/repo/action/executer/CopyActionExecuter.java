@@ -162,7 +162,7 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
             else
             {
                 // Create a new copy of the node
-                this.copyService.copy(
+                this.copyService.copyAndRename(
 	                actionedUponNodeRef, 
 	                destinationParent,
 	                destinationAssocTypeQName,

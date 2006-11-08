@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.security.permissions.dynamic;
 
+import java.io.Serializable;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.service.cmr.lock.LockService;
@@ -44,9 +46,13 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
         }
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            NodeRef original = DefaultTypeConverter.INSTANCE.convert(
-                    NodeRef.class, nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE));
-            if (nodeService.exists(original))
+            NodeRef original = null;
+            Serializable reference = nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
+            if (reference != null)
+            {
+                original = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, reference);
+            }
+            if (original != null && nodeService.exists(original))
             {
                 return (lockService.getLockStatus(original) == LockStatus.LOCK_OWNER);
             }

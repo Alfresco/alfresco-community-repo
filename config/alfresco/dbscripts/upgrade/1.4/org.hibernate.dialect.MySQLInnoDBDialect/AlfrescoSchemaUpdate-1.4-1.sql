@@ -1,5 +1,5 @@
 -- ------------------------------------------------------
--- Alfresco Schema conversion V1.3 to V1.4 Part 1
+-- Alfresco Schema conversion V1.3 to V1.4 Part 1 (MySQL)
 --
 -- Adds the columns required to enforce the duplicate name detection
 -- 
@@ -26,6 +26,11 @@ DROP TABLE IF EXISTS T_store;
 DROP TABLE IF EXISTS T_version_count;
 
 --
+-- Upgrades to 1.3 of MyIsam tables could have missed the applied_patch table InnoDB
+--
+ALTER TABLE applied_patch        ENGINE = InnoDB;
+
+--
 -- Unique name constraint
 --
 
@@ -47,20 +52,70 @@ ALTER TABLE node_assoc
 --
 -- Rename tables to give 'alf_' prefix
 --
-ALTER TABLE access_control_entry RENAME TO alf_access_control_entry;
-ALTER TABLE access_control_list RENAME TO alf_access_control_list;
-ALTER TABLE applied_patch RENAME TO alf_applied_patch;
-ALTER TABLE auth_ext_keys RENAME TO alf_auth_ext_keys;
-ALTER TABLE authority RENAME TO alf_authority;
-ALTER TABLE child_assoc RENAME TO alf_child_assoc;
-ALTER TABLE node RENAME TO alf_node;
-ALTER TABLE node_aspects RENAME TO alf_node_aspects;
-ALTER TABLE node_assoc RENAME TO alf_node_assoc;
-ALTER TABLE node_properties RENAME TO alf_node_properties;
-ALTER TABLE node_status RENAME TO alf_node_status;
-ALTER TABLE permission RENAME TO alf_permission;
-ALTER TABLE store RENAME TO alf_store;
-ALTER TABLE version_count RENAME TO alf_version_count;
+ALTER TABLE access_control_entry  RENAME TO alf_access_control_entry;
+ALTER TABLE access_control_list   RENAME TO alf_access_control_list;
+ALTER TABLE applied_patch         RENAME TO alf_applied_patch;
+ALTER TABLE auth_ext_keys         RENAME TO alf_auth_ext_keys;
+ALTER TABLE authority             RENAME TO alf_authority;
+ALTER TABLE child_assoc           RENAME TO alf_child_assoc;
+ALTER TABLE node                  RENAME TO alf_node;
+ALTER TABLE node_aspects          RENAME TO alf_node_aspects;
+ALTER TABLE node_assoc            RENAME TO alf_node_assoc;
+ALTER TABLE node_properties       RENAME TO alf_node_properties;
+ALTER TABLE node_status           RENAME TO alf_node_status;
+ALTER TABLE permission            RENAME TO alf_permission;
+ALTER TABLE store                 RENAME TO alf_store;
+ALTER TABLE version_count         RENAME TO alf_version_count;
+
+--
+-- The table renames will cause Hibernate to rehash the FK constraint names.
+-- For MySQL, Hibernate will generate scripts to add the appropriate constraints
+-- and indexes.
+--
+ALTER TABLE alf_access_control_entry
+  DROP FOREIGN KEY FKF064DF7560601995,
+  DROP INDEX       FKF064DF7560601995,
+  DROP FOREIGN KEY FKF064DF75B25A50BF,
+  DROP INDEX       FKF064DF75B25A50BF,
+  DROP FOREIGN KEY FKF064DF75B9553F6C,
+  DROP INDEX       FKF064DF75B9553F6C;
+ALTER TABLE alf_auth_ext_keys
+  DROP FOREIGN KEY FK31D3BA097B7FDE43,
+  DROP INDEX       FK31D3BA097B7FDE43;
+ALTER TABLE alf_child_assoc
+  DROP FOREIGN KEY FKC6EFFF3274173FF4,
+  DROP INDEX       FKC6EFFF3274173FF4,
+  DROP FOREIGN KEY FKC6EFFF328E50E582,
+  DROP INDEX       FKC6EFFF328E50E582;(optional)
+ALTER TABLE alf_child_assoc
+  DROP FOREIGN KEY FKFFC5468E74173FF4,
+  DROP INDEX       FKFFC5468E74173FF4,
+  DROP FOREIGN KEY FKFFC5468E8E50E582,
+  DROP INDEX       FKFFC5468E8E50E582;(optional)
+ALTER TABLE alf_node
+  DROP FOREIGN KEY FK33AE02B9553F6C,
+  DROP INDEX       FK33AE02B9553F6C;
+ALTER TABLE alf_node
+  DROP FOREIGN KEY FK33AE02D24ADD25,
+  DROP INDEX       FK33AE02D24ADD25;
+ALTER TABLE alf_node_properties
+  DROP FOREIGN KEY FKC962BF907F2C8017,
+  DROP INDEX       FKC962BF907F2C8017;
+ALTER TABLE alf_node_aspects
+  DROP FOREIGN KEY FK2B91A9DE7F2C8017,
+  DROP INDEX       FK2B91A9DE7F2C8017;
+ALTER TABLE alf_node_assoc
+  DROP FOREIGN KEY FK5BAEF398B69C43F3,
+  DROP INDEX       FK5BAEF398B69C43F3;
+ALTER TABLE alf_node_assoc
+  DROP FOREIGN KEY FK5BAEF398A8FC7769,
+  DROP INDEX       FK5BAEF398A8FC7769;
+ALTER TABLE alf_node_status
+  DROP FOREIGN KEY FK38ECB8CF7F2C8017,
+  DROP INDEX       FK38ECB8CF7F2C8017;
+ALTER TABLE alf_store
+  DROP FOREIGN KEY FK68AF8E122DBA5BA,
+  DROP INDEX       FK68AF8E122DBA5BA;
 
 --
 -- Record script finish

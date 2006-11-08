@@ -60,7 +60,7 @@ import freemarker.ext.dom.NodeModel;
  * 
  * @author Kevin Roast
  */
-public final class TemplateNode implements Serializable
+public class TemplateNode implements Serializable
 {
     private static final long serialVersionUID = 1234390333739034171L;
     
@@ -78,7 +78,7 @@ public final class TemplateNode implements Serializable
     private Map<String, List<TemplateNode>> assocs = null;
     
     /** Cached values */
-    private NodeRef nodeRef;
+    protected NodeRef nodeRef;
     private String name;
     private QName type;
     private String path;
@@ -87,15 +87,16 @@ public final class TemplateNode implements Serializable
     private QNameMap<String, Object> properties;
     private List<String> permissions = null;
     private boolean propsRetrieved = false;
-    private ServiceRegistry services = null;
+    protected ServiceRegistry services = null;
     private Boolean isDocument = null;
     private Boolean isContainer = null;
     private String displayPath = null;
     private String mimetype = null;
     private Long size = null;
-    private TemplateImageResolver imageResolver = null;
+    protected TemplateImageResolver imageResolver = null;
     private TemplateNode parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
+    private Boolean isCategory = null;
     
     
     // ------------------------------------------------------------------------------
@@ -361,6 +362,20 @@ public final class TemplateNode implements Serializable
     }
     
     /**
+     * @return true if the node is a Category instance
+     */
+    public boolean getIsCategory()
+    {
+        if (isCategory == null)
+        {
+            DictionaryService dd = this.services.getDictionaryService();
+            isCategory = Boolean.valueOf(dd.isSubClass(getType(), ContentModel.TYPE_CATEGORY));
+        }
+
+        return isCategory.booleanValue();
+    }
+    
+    /**
      * @return the parent node
      */
     public TemplateNode getParent()
@@ -482,17 +497,17 @@ public final class TemplateNode implements Serializable
      */
     public NodeModel getXmlNodeModel()
     {
-       try
-       {
-          return NodeModel.parse(new InputSource(new StringReader(getContent())));
-       }
-       catch (Throwable err)
-       {
-          if (logger.isDebugEnabled())
-             logger.debug(err.getMessage(), err);
-          
-          return null;
-       }
+        try
+        {
+            return NodeModel.parse(new InputSource(new StringReader(getContent())));
+        }
+        catch (Throwable err)
+        {
+            if (logger.isDebugEnabled())
+                logger.debug(err.getMessage(), err);
+            
+            return null;
+        }
     }
     
     /**
@@ -661,13 +676,17 @@ public final class TemplateNode implements Serializable
     }
     
     
+    // ------------------------------------------------------------------------------
     // Audit API
     
-    
+    /**
+     * @return a list of AuditInfo objects describing the Audit Trail for this node instance
+     */
     public List<AuditInfo> getAuditTrail()
     {
         return this.services.getAuditService().getAuditTrail(this.nodeRef);
     }
+    
     
     // ------------------------------------------------------------------------------
     // Misc helpers 

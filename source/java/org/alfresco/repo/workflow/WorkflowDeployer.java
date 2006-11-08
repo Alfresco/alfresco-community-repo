@@ -31,11 +31,10 @@ import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.ClassPathResource;
 
 
@@ -44,7 +43,7 @@ import org.springframework.core.io.ClassPathResource;
  * 
  * @author davidc
  */
-public class WorkflowDeployer implements ApplicationListener
+public class WorkflowDeployer extends AbstractLifecycleBean
 {
     // Logging support
     private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");
@@ -222,16 +221,16 @@ public class WorkflowDeployer implements ApplicationListener
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
-    public void onApplicationEvent(ApplicationEvent event)
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        if (event instanceof ContextRefreshedEvent)
-        {
-            deploy();
-        }
+        deploy();
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        // NOOP
     }
 
 }

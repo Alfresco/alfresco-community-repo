@@ -149,7 +149,8 @@ public class RuleServiceCoverageTest extends TestCase
         this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         
         //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        authenticationComponent.setSystemUserAsCurrentUser();
+        //authenticationComponent.setSystemUserAsCurrentUser();
+        authenticationComponent.setCurrentUser("admin");
             
         this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);

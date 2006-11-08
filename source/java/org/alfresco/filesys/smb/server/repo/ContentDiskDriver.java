@@ -18,6 +18,7 @@ package org.alfresco.filesys.smb.server.repo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.List;
 
 import javax.transaction.UserTransaction;
@@ -58,7 +59,6 @@ import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -66,6 +66,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -91,6 +92,10 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     private static final String KEY_ROOT_PATH = "rootPath";
     private static final String KEY_RELATIVE_PATH = "relativePath";
 
+    // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
+
+    private static final String TokenLocalName = "${localname}";
+
     // Services and helpers
     
     private CifsHelper cifsHelper;
@@ -102,6 +107,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     private PermissionService permissionService;
     
     private AuthenticationComponent authComponent;
+    private AuthenticationService authService;
     
     // Service registry for desktop actions
     
@@ -125,6 +131,16 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     public final CifsHelper getCifsHelper()
     {
     	return this.cifsHelper;
+    }
+    
+    /**
+     * Return the authentication service
+     * 
+     * @return AuthenticationService
+     */
+    public final AuthenticationService getAuthenticationService()
+    {
+    	return authService;
     }
     
     /**
@@ -185,7 +201,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     {
     	return this.serviceRegistry;
     }
-    
+
     /**
      * @param contentService the content service
      */
@@ -254,6 +270,16 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     public void setAuthenticationComponent(AuthenticationComponent authComponent)
     {
         this.authComponent = authComponent;
+    }
+
+    /**
+     * Set the authentication service
+     * 
+     * @param authService AuthenticationService
+     */
+    public void setAuthenticationService(AuthenticationService authService)
+    {
+    	this.authService = authService;
     }
     
     /**
@@ -418,7 +444,39 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
                 if ( pseudoName.getValue().endsWith(".url") == false)
                     throw new DeviceContextException("URL link file must end with .url, " + pseudoName.getValue());
                 
-                // Set the URL link file name and web path
+    	        // Check if the URL path name contains the local name token
+
+    	        int pos = path.indexOf(TokenLocalName);
+    	        if (pos != -1)
+    	        {
+
+    	            // Get the local server name
+
+    	            String srvName = "localhost";
+    	            
+    	            try
+    	            {
+    	            	srvName = InetAddress.getLocalHost().getHostName();
+    	            }
+    	            catch ( Exception ex)
+    	            {
+    	            }
+
+    	            // Rebuild the host name substituting the token with the local server name
+
+    	            StringBuilder hostStr = new StringBuilder();
+
+    	            hostStr.append( path.substring(0, pos));
+    	            hostStr.append(srvName);
+
+    	            pos += TokenLocalName.length();
+    	            if (pos < path.length())
+    	                hostStr.append( path.substring(pos));
+
+    	            path = hostStr.toString();
+    	        }
+
+    	        // Set the URL link file name and web path
                 
                 context.setURLFileName( pseudoName.getValue());
                 context.setURLPrefix( path);

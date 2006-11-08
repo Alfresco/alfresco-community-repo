@@ -202,7 +202,7 @@ public interface ActionService
 	 * @param nodeRef	the node reference
 	 * @param action	the action
 	 */
-    @Auditable(key = Auditable.Key.ARG_1, parameters = {"nodeRef", "action" })
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "action" })
 	void saveAction(NodeRef nodeRef, Action action);
 	
 	/**
@@ -211,7 +211,7 @@ public interface ActionService
 	 * @param nodeRef	the node reference
 	 * @return			the list of actions
 	 */
-    @Auditable(key = Auditable.Key.ARG_1, parameters = {"nodeRef"})
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
 	List<Action> getActions(NodeRef nodeRef);
 	
 	/**

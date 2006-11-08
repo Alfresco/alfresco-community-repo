@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CopyServiceException;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -65,8 +67,12 @@ import org.alfresco.util.ParameterCheck;
  */
 public class CopyServiceImpl implements CopyService
 {
+	/** I18N labels */
+	private String COPY_OF_LABEL = "copy_service.copy_of_label";
+	
     /** The node service */
     private NodeService nodeService;
+    private NodeService internalNodeService;
 	
 	/** The dictionary service*/
 	private DictionaryService dictionaryService; 	
@@ -99,6 +105,16 @@ public class CopyServiceImpl implements CopyService
     {
         this.nodeService = nodeService;
     }
+    
+    /**
+     * Sets the internal node service
+     * 
+     * @param internalNodeService	the internal node service
+     */
+    public void setInternalNodeService(NodeService internalNodeService) 
+    {
+		this.internalNodeService = internalNodeService;
+	}
 	
 	/**
 	 * Sets the dictionary service
@@ -233,7 +249,32 @@ public class CopyServiceImpl implements CopyService
         
         return copy;
     }
-    
+	
+    public NodeRef copyAndRename(NodeRef sourceNodeRef, NodeRef destinationParent, QName destinationAssocTypeQName, QName destinationQName, boolean copyChildren) 
+    {
+    	// Make a note of the source name and do the copy
+    	String sourceName = (String)this.internalNodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
+		NodeRef copy = copy(sourceNodeRef, destinationParent, destinationAssocTypeQName, destinationQName, copyChildren);
+		
+		// Do the rename, iterating until a non-duplicate name is found
+		boolean bDone = false;
+		while (bDone == false)
+		{
+			try
+			{
+				this.internalNodeService.setProperty(copy, ContentModel.PROP_NAME, sourceName);
+				bDone = true;
+			}
+			catch(DuplicateChildNodeNameException exception)
+			{
+				sourceName = I18NUtil.getMessage(COPY_OF_LABEL, sourceName);
+			}
+		}		
+		
+		// Return the copy
+		return copy;
+	}
+	
     /**
      * Invokes the copy complete policy for the node reference provided
      * 

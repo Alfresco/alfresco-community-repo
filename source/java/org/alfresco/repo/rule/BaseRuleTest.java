@@ -118,7 +118,8 @@ public class BaseRuleTest extends BaseSpringTest
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
 
-        authenticationComponent.setSystemUserAsCurrentUser();
+        //authenticationComponent.setSystemUserAsCurrentUser();
+        authenticationComponent.setCurrentUser("admin");
         
         // Get the rule type
         this.ruleType = this.ruleService.getRuleType(RULE_TYPE_NAME);

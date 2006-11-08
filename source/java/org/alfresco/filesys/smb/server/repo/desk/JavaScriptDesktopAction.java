@@ -284,6 +284,11 @@ public class JavaScriptDesktopAction extends DesktopAction {
             model.put("deskParams", params);
             model.put("out", System.out);
 			
+            // Add the webapp URL, if valid
+            
+            if ( hasWebappURL())
+            	model.put("webURL", getWebappURL());
+            
             // Start a transaction
             
     		params.getSession().beginTransaction(getTransactionService(), false);

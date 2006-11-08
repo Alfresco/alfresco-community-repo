@@ -49,6 +49,9 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.SearchLanguageConversion;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
@@ -230,7 +233,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
                         switch (sd.getSortType())
                         {
                         case FIELD:
-                            if (searcher.getReader().getFieldNames().contains(sd.getField()))
+                            if (fieldHasTerm(searcher.getReader(), sd.getField()))
                             {
                                 fields[index++] = new SortField(sd.getField(), !sd.isAscending());
                             }
@@ -306,6 +309,35 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
         {
             throw new SearcherException("Unknown query language: " + searchParameters.getLanguage());
         }
+    }
+
+    private static boolean fieldHasTerm(IndexReader indexReader, String field)
+    {
+        try
+        {
+            TermEnum termEnum = indexReader.terms(new Term(field, ""));
+            try
+            {
+                if (termEnum.next())
+                {
+                    Term first = termEnum.term();
+                    return first.field().equals(field);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                termEnum.close();
+            }
+        }
+        catch (IOException e)
+        {
+            throw new SearcherException("Could not find terms for sort field ", e);
+        }
+
     }
 
     public ResultSet query(StoreRef store, String language, String query)

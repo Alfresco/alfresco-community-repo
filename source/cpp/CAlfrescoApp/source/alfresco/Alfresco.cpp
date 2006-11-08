@@ -309,7 +309,7 @@ DesktopResponse AlfrescoInterface::runAction(AlfrescoActionInfo& action, Desktop
 	// Build the run action I/O control request
 
 	DataBuffer reqbuf( 1024);
-	DataBuffer respbuf( 256);
+	DataBuffer respbuf( 4096);
 
 	reqbuf.putFixedString( IOSignature, IOSignatureLen);
 	reqbuf.putString( action.getName());

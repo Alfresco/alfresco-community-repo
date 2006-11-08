@@ -83,4 +83,12 @@ public interface ScriptService
     @Auditable(parameters = {"script", "model"})
     public Object executeScriptString(String script, Map<String, Object> model)
         throws ScriptException;
+    
+    /**
+     * Registers a script implementation with the script service
+     * 
+     * @param script	the script implementation
+     */
+    @Auditable(parameters = {"script"})
+    public void registerScript(ScriptImplementation script);
 }

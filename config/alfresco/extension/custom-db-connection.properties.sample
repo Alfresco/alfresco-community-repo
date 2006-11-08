@@ -9,7 +9,13 @@
 #db.pool.max=100
 
 #
-# MySQL connection (This is default and requires mysql-connector-java-3.1.12-bin.jar, which ships with the Alfresco server)
+# HSQL connection
+#
+#db.driver=org.hsqldb.jdbcDriver
+#db.url=jdbc:hsqldb:file:alf_data/hsql_data/alfresco;ifexists=true;shutdown=true;
+
+#
+# MySQL connection (This is default and requires mysql-connector-java-5.0.3-bin.jar, which ships with the Alfresco server)
 #
 #db.driver=org.gjt.mm.mysql.Driver
 #db.url=jdbc:mysql://localhost/alfresco

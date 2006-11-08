@@ -21,6 +21,9 @@
 	    <property name="dictionaryService">
 		    <ref bean="dictionaryService"/>
 	    </property>
+	    <property name="permissionService">
+	    	<ref bean="permissionService"/>
+	    </property>
 	    <property name="rulesDisabled">
 	    	<value>false</value>
 	    </property>

@@ -92,7 +92,7 @@ public class Node implements Serializable, Scopeable
     private final static String FOLDER_BROWSE_URL   = "/navigate/browse/{0}/{1}/{2}";
     
     /** Root scope for this object */
-    private Scriptable scope;
+    protected Scriptable scope;
     
     /** Node Value Converter */
     private NodeValueConverter converter = null;
@@ -110,16 +110,15 @@ public class Node implements Serializable, Scopeable
     private Node[] children = null;
     /** The properties of this node */
     private ScriptableQNameMap<String, Serializable> properties = null;
-    private ServiceRegistry services = null;
+    protected ServiceRegistry services = null;
     private NodeService nodeService = null;
     private Boolean isDocument = null;
     private Boolean isContainer = null;
     private String displayPath = null;
-    private TemplateImageResolver imageResolver = null;
+    protected TemplateImageResolver imageResolver = null;
     private Node parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
     // NOTE: see the reset() method when adding new cached members!
-    
     
     
     // ------------------------------------------------------------------------------
@@ -428,7 +427,7 @@ public class Node implements Serializable, Scopeable
     /**
      * @return true if this Node is a container (i.e. a folder)
      */
-    public boolean isContainer()
+    public boolean getIsContainer()
     {
         if (isContainer == null)
         {
@@ -442,13 +441,13 @@ public class Node implements Serializable, Scopeable
     
     public boolean jsGet_isContainer()
     {
-        return isContainer();
+        return getIsContainer();
     }
     
     /**
      * @return true if this Node is a Document (i.e. with content)
      */
-    public boolean isDocument()
+    public boolean getIsDocument()
     {
         if (isDocument == null)
         {
@@ -461,7 +460,21 @@ public class Node implements Serializable, Scopeable
     
     public boolean jsGet_isDocument()
     {
-        return isDocument();
+        return getIsDocument();
+    }
+    
+    /**
+     * @return true if the Node is a Category
+     */
+    public boolean getIsCategory()
+    {
+        // this valid is overriden by the CategoryNode sub-class
+        return false;
+    }
+    
+    public boolean jsGet_isCategory()
+    {
+        return getIsCategory();
     }
     
     /**
@@ -554,7 +567,7 @@ public class Node implements Serializable, Scopeable
     {
         if (this.imageResolver != null)
         {
-            if (isDocument())
+            if (getIsDocument())
             {
                 return this.imageResolver.resolveImagePathForName(getName(), true);
             }
@@ -581,7 +594,7 @@ public class Node implements Serializable, Scopeable
     {
         if (this.imageResolver != null)
         {
-            if (isDocument())
+            if (getIsDocument())
             {
                 return this.imageResolver.resolveImagePathForName(getName(), false);
             }
@@ -727,7 +740,7 @@ public class Node implements Serializable, Scopeable
      */
     public String getUrl()
     {
-        if (isDocument() == true)
+        if (getIsDocument() == true)
         {
            try
            {
@@ -890,7 +903,8 @@ public class Node implements Serializable, Scopeable
        this.services.getPermissionService().deletePermission(this.nodeRef, authority, permission);
     }
     
-    // -------------
+    
+    // ------------------------------------------------------------------------------
     // Ownership API
     
     /**
@@ -1145,7 +1159,7 @@ public class Node implements Serializable, Scopeable
         {
             if (destination != null)
             {
-                NodeRef copyRef = this.services.getCopyService().copy(
+                NodeRef copyRef = this.services.getCopyService().copyAndRename(
                         this.nodeRef,
                         destination.getNodeRef(),
                         ContentModel.ASSOC_CONTAINS,
@@ -1632,7 +1646,7 @@ public class Node implements Serializable, Scopeable
                 this.imageResolver);
         
         // add the current node as either the document/space as appropriate
-        if (this.isDocument())
+        if (this.getIsDocument())
         {
             model.put("document", new TemplateNode(this.nodeRef, this.services, this.imageResolver));
             model.put("space", new TemplateNode(getPrimaryParentAssoc().getParentRef(), this.services, this.imageResolver));
@@ -1724,7 +1738,7 @@ public class Node implements Serializable, Scopeable
     /**
      * Reset the Node cached state
      */
-    private void reset()
+    public void reset()
     {
        this.name = null;
        this.type = null;

@@ -301,6 +301,13 @@ public class FreeMarkerProcessor implements TemplateProcessor
         // current date/time is useful to have and isn't supplied by FreeMarker by default
         model.put("date", new Date());
         
+        // Session support
+        model.put("session", new Session(services, imageResolver));
+        
+        // Classification support
+        
+        model.put("classification", new Classification(companyHome.getStoreRef(), services, imageResolver));
+        
         // add custom method objects
         model.put("hasAspect", new HasAspectMethod());
         model.put("message", new I18NMessageMethod());

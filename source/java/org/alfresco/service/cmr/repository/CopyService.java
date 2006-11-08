@@ -74,6 +74,7 @@ public interface CopyService
      * @param destinationAssocTypeQName the type of the new child assoc         
      * @param destinationQName 			the qualified name of the child association from the 
      *                                  parent to the new node
+     * @param copyChildren				indicates that the children of the node should also be copied                                 
      * 
      * @return                          the new node reference
      */
@@ -86,9 +87,31 @@ public interface CopyService
             boolean copyChildren);
     
     /**
+     * @see CopyService#copy(NodeRef, NodeRef, QName, QName, boolean)
+     * 
+     * Ensures the copy name is the same as the origional or is renamed to prevent duplicate names.
+     * 
+     * @param sourceNodeRef             the node reference used as the source of the copy
+     * @param destinationParent  		the intended parent of the new node
+     * @param destinationAssocTypeQName the type of the new child assoc         
+     * @param destinationQName 			the qualified name of the child association from the 
+     *                                  parent to the new node
+     * @param copyChildren				indicates that the children of the node should also be copied                                 
+     * 
+     * @return                          the new node reference
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "destinationParent", "destinationAssocTypeQName", "destinationQName", "copyChildren"})
+    public NodeRef copyAndRename(
+            NodeRef sourceNodeRef,            
+            NodeRef destinationParent,
+            QName destinationAssocTypeQName, 
+            QName destinationQName, 
+            boolean copyChildren);
+    
+    /**
      * By default children of the source node are not copied.
      * 
-     * @see NodeCopyService#copy(NodeRef, NodeRef, QName, QName, boolean)
+     * @see CopyService#copy(NodeRef, NodeRef, QName, QName, boolean)
      * 
      * @param sourceNodeRef             the node reference used as the source of the copy
      * @param destinationParent  		the intended parent of the new node
@@ -142,4 +165,5 @@ public interface CopyService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public List<NodeRef> getCopies(NodeRef nodeRef);
+    
 }

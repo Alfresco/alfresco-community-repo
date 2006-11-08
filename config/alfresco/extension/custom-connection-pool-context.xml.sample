@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!--
+   An example of how to override the dataSource bean.
+   If an alternative pool is desired, such as C3P0, then it can be referenced by
+   changing the 'class' attribute and adding or removing the required properties.
+   The required libraries can be dropped into the servers extension lib folders.
+-->
+<beans>
+
+    <!-- Datasource bean -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <!-- connection settings -->
+        <property name="driverClassName">
+            <value>${db.driver}</value>
+        </property>
+        <property name="url">
+            <value>${db.url}</value>
+        </property>
+        <property name="username">
+            <value>${db.username}</value>
+        </property>
+        <property name="password">
+            <value>${db.password}</value>
+        </property>
+        <property name="defaultAutoCommit" >
+            <value>false</value>
+        </property>
+        <!-- pool settings -->
+        <property name="initialSize" >
+            <value>${db.pool.initial}</value>
+        </property>
+        <property name="maxActive" >
+            <value>${db.pool.max}</value>
+        </property>
+        <property name="timeBetweenEvictionRunsMillis" >
+            <value>300000</value>
+        </property>
+        <property name="minEvictableIdleTimeMillis" >
+            <value>-1</value>
+        </property>
+        <property name="testOnBorrow" >
+            <value>false</value>
+        </property>
+        <property name="maxWait" >
+            <value>50000</value>
+        </property>
+        <property name="testWhileIdle" >
+            <value>true</value>
+        </property>
+        <property name="validationQuery" >
+            <value>select 1</value>
+        </property>
+    </bean>
+          
+</beans>

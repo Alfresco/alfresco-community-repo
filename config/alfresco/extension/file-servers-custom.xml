@@ -1,0 +1,55 @@
+<alfresco-config area="file-servers">
+
+   <!-- To override the default Alfresco filesystem use replace="true", to -->
+   <!-- add additional filesystems remove the replace="true" attribute     -->
+   
+   <config evaluator="string-compare" condition="Filesystems" replace="true">
+      <filesystems>
+
+         <filesystem name="Alfresco">
+            <store>workspace://SpacesStore</store>
+            <rootPath>/app:company_home</rootPath>
+
+            <!-- Add a URL file to each folder that links back to the web client -->
+            <urlFile>
+               <filename>__Alfresco.url</filename>
+               <webpath>http://${localname}:8080/alfresco/</webpath>
+            </urlFile>
+
+            <!-- Mark locked files as offline -->
+            <offlineFiles/>
+
+            <!-- Desktop actions -->
+
+            <desktopActions>
+               <global>
+                  <path>alfresco/desktop/Alfresco.exe</path>
+                  <webpath>http://${localname}:8080/alfresco/</webpath>
+               </global>
+               <action>
+                  <class>org.alfresco.filesys.smb.server.repo.desk.CheckInOutDesktopAction</class>
+                  <name>CheckInOut</name>
+                  <filename>__CheckInOut.exe</filename>
+               </action>
+               <action>
+                  <class>org.alfresco.filesys.smb.server.repo.desk.JavaScriptDesktopAction</class>
+                  <name>JavaScriptURL</name>
+                  <filename>__ShowDetails.exe</filename>
+                  <script>alfresco/desktop/showDetails.js</script>
+                  <attributes>anyFiles</attributes>
+                  <preprocess>copyToTarget</preprocess>
+               </action>
+
+            </desktopActions>
+
+<!--
+            <accessControl default="Write">
+               <user name="admin" access="Write"/>
+               <address subnet="90.1.0.0" mask="255.255.0.0" access="Write"/>
+            </accessControl>
+-->
+         </filesystem>
+      </filesystems>
+   </config>
+
+</alfresco-config>

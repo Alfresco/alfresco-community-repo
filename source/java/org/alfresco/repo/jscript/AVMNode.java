@@ -27,6 +27,9 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.mozilla.javascript.Scriptable;
 
 /**
+ * Represents a AVM specific node in the Script context. Provides specific implementations
+ * of AVM specific methods such as copy, move, rename etc. 
+ * 
  * @author Kevin Roast
  */
 public class AVMNode extends Node

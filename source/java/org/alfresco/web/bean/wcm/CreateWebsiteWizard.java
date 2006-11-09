@@ -16,6 +16,10 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -33,10 +37,13 @@ import javax.faces.model.ListDataModel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -49,7 +56,6 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
 import org.alfresco.web.forms.Form;
@@ -219,12 +225,142 @@ public class CreateWebsiteWizard extends BaseWizardBean
          // set the property on the node to reference the AVM store
          this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, avmStore);
          
+         // persist the forms, templates, workflows and workflow defaults to the model for this web project
+         saveWebProjectModel(nodeRef);
+         
          // navigate to the Websites folder so we can see the newly created folder
          this.navigator.setCurrentNodeId(websiteParentId);
          
          outcome = AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
       }
       return outcome;
+   }
+   
+   /**
+    * Persist the forms, templates, workflows and workflow defaults to the model for this web project
+    * 
+    * @param nodeRef        NodeRef to the web project
+    */
+   private void saveWebProjectModel(NodeRef nodeRef)
+   {
+      Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
+      
+      // first walk each form object, saving templates and workflow defaults for each
+      for (FormWrapper form : this.forms)
+      {
+         // create web form with name as per the name of the form object in the DD
+         props.put(ContentModel.PROP_FORMNAME, form.getName());
+         NodeRef formRef = this.nodeService.createNode(nodeRef,
+                  ContentModel.ASSOC_WEBFORM,
+                  ContentModel.ASSOC_WEBFORM,
+                  ContentModel.TYPE_WEBFORM,
+                  props).getChildRef();
+         
+         // add title aspect for user defined title and description labels
+         props.clear();
+         props.put(ContentModel.PROP_TITLE, form.getTitle());
+         props.put(ContentModel.PROP_DESCRIPTION, form.getDescription());
+         this.nodeService.addAspect(formRef, ContentModel.ASPECT_TITLED, props);
+         
+         // add filename pattern aspect if a filename pattern has been applied
+         if (form.getFilenamePattern() != null)
+         {
+            props.clear();
+            props.put(ContentModel.PROP_FILENAMEPATTERN, form.getFilenamePattern());
+            this.nodeService.addAspect(formRef, ContentModel.ASPECT_FILENAMEPATTERN, props);
+         }
+         
+         // associate to workflow defaults if any are present
+         if (form.getWorkflow() != null)
+         {
+            WorkflowWrapper workflow = form.getWorkflow();
+            props.clear();
+            props.put(ContentModel.PROP_WORKFLOWNAME, workflow.getName());
+            NodeRef workflowRef = this.nodeService.createNode(formRef,
+                  ContentModel.ASSOC_WORKFLOWDEFAULTS,
+                  ContentModel.ASSOC_WORKFLOWDEFAULTS,
+                  ContentModel.TYPE_WORKFLOWDEFAULTS,
+                  props).getChildRef();
+            
+            // persist workflow default params
+            if (workflow.getParams() != null)
+            {
+               serializeWorkflowParams((Serializable)workflow.getParams(), workflowRef);
+            }
+         }
+         
+         // associate to a web form template for each template applied to the form
+         for (PresentationTemplate template : form.getTemplates())
+         {
+            props.clear();
+            props.put(ContentModel.PROP_ENGINE, template.getRenderingEngine().getNodeRef());
+            NodeRef templateRef = this.nodeService.createNode(formRef,
+                  ContentModel.ASSOC_WEBFORMTEMPLATE,
+                  ContentModel.ASSOC_WEBFORMTEMPLATE,
+                  ContentModel.TYPE_WEBFORMTEMPLATE,
+                  props).getChildRef();
+            
+            // add filename pattern aspect if a filename pattern has been applied
+            if (template.getFilenamePattern() != null)
+            {
+               props.clear();
+               props.put(ContentModel.PROP_FILENAMEPATTERN, template.getFilenamePattern());
+               this.nodeService.addAspect(templateRef, ContentModel.ASPECT_FILENAMEPATTERN, props);
+            }
+         }
+      }
+      
+      // finally walk each web project workflow definition and save defaults for each
+      for (WorkflowWrapper workflow : this.workflows)
+      {
+         props.clear();
+         props.put(ContentModel.PROP_NAME, workflow.getName());
+         NodeRef workflowRef = this.nodeService.createNode(nodeRef,
+               ContentModel.ASSOC_WEBWORKFLOWDEFAULTS,
+               ContentModel.ASSOC_WEBWORKFLOWDEFAULTS,
+               ContentModel.TYPE_WEBWORKFLOWDEFAULTS,
+               props).getChildRef();
+         
+         // persist workflow default params
+         if (workflow.getParams() != null)
+         {
+            serializeWorkflowParams((Serializable)workflow.getParams(), workflowRef);
+         }
+         
+         // add filename pattern aspect if a filename pattern has been applied
+         if (workflow.getFilenamePattern() != null)
+         {
+            props.clear();
+            props.put(ContentModel.PROP_FILENAMEPATTERN, workflow.getFilenamePattern());
+            this.nodeService.addAspect(workflowRef, ContentModel.ASPECT_FILENAMEPATTERN, props);
+         }
+      }
+   }
+
+   /**
+    * Serialize the workflow params to a content stream
+    * 
+    * @param params             Serializable workflow params
+    * @param workflowRef        The noderef to write the property too
+    */
+   private void serializeWorkflowParams(Serializable params, NodeRef workflowRef)
+   {
+      try
+      {
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         ObjectOutputStream oos = new ObjectOutputStream(baos);
+         oos.writeObject(params);
+         oos.close();
+         // write the serialized Map as a binary content stream - like database blob!
+         ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+         ContentWriter writer = cs.getWriter(workflowRef, ContentModel.PROP_WORKFLOWDEFAULTS, true);
+         writer.setMimetype(MimetypeMap.MIMETYPE_BINARY);
+         writer.putContent(new ByteArrayInputStream(baos.toByteArray()));
+      }
+      catch (IOException ioerr)
+      {
+         throw new AlfrescoRuntimeException("Unable to serialize workflow default parameters: " + ioerr.getMessage());
+      }
    }
    
    
@@ -843,7 +979,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private String description;
       private WorkflowWrapper workflow;
       private String filenamePattern;
-      private List<PresentationTemplate> templates = new ArrayList<PresentationTemplate>(8);
+      private List<PresentationTemplate> templates = new ArrayList<PresentationTemplate>(4);
       
       FormWrapper(Form form)
       {

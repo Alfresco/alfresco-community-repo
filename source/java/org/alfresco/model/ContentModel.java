@@ -236,9 +236,35 @@ public interface ContentModel
     static final QName TYPE_AVMWEBFOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webfolder");
     static final QName PROP_AVMSTORE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "avmstore");
     static final QName ASSOC_WEBUSER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webuser");
+    static final QName ASSOC_WEBFORM = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webform");
+    static final QName ASSOC_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webworkflowdefaults");
+    
+    // AVM web user reference
     static final QName TYPE_WEBUSER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webuser");
     static final QName PROP_WEBUSERNAME = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "username");
     static final QName PROP_WEBUSERROLE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "role");
+    
+    // AVM web form
+    static final QName TYPE_WEBFORM = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webform");
+    static final QName PROP_FORMNAME = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "formname");
+    static final QName ASSOC_WEBFORMTEMPLATE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webformtemplate");
+    static final QName ASSOC_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowdefaults");
+    
+    // AVM web form template
+    static final QName TYPE_WEBFORMTEMPLATE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webformtemplate");
+    static final QName PROP_ENGINE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "engine");
+    
+    // AVM workflow defaults
+    static final QName TYPE_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowdefaults");
+    static final QName PROP_WORKFLOWNAME = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowname");
+    static final QName PROP_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "defaults");
+    
+    // AVM web workflow defaults
+    static final QName TYPE_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webworkflowdefaults");
+    
+    // AVM filename pattern aspect
+    static final QName ASPECT_FILENAMEPATTERN = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "filenamepattern");
+    static final QName PROP_FILENAMEPATTERN = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "filenamepattern");
     
     
     //

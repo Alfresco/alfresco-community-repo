@@ -62,17 +62,6 @@
             </property>
          </properties>
          <associations>
-            <child-association name="app:formtriples">
-               <source>
-                  <mandatory>false</mandatory>
-                  <many>false</many>
-               </source>
-               <target>
-                  <class>app:formtriple</class>
-                  <mandatory>false</mandatory>
-                  <many>true</many>
-               </target>
-            </child-association>
             <child-association name="app:webuser">
                <source>
                   <mandatory>false</mandatory>
@@ -84,25 +73,29 @@
                   <many>true</many>
                </target>
             </child-association>
+            <child-association name="app:webform">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>app:webform</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="app:webworkflowdefaults">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>app:webworkflowdefaults</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
          </associations>
-      </type>
-      
-      <type name="app:formtriple">
-         <title>Website Form Triple</title>
-         <parent>sys:base</parent>
-         <properties>
-            <property name="app:form">
-               <type>d:noderef</type>
-               <mandatory>true</mandatory>
-            </property>
-            <property name="app:workflow">
-               <type>d:noderef</type>
-               <mandatory>true</mandatory>
-            </property>
-            <property name="app:script">
-               <type>d:noderef</type>
-            </property>
-         </properties>
       </type>
       
       <type name="app:webuser">
@@ -118,6 +111,83 @@
                <mandatory>true</mandatory>
             </property>
          </properties>
+      </type>
+      
+      <type name="app:webform">
+         <title>Website Web Form</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="app:formname">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="app:webformtemplate">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>app:webformtemplate</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="app:workflowdefaults">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>app:workflowdefaults</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>
+         <mandatory-aspects>
+				<aspect>cm:titled</aspect>
+				<aspect>app:filenamepattern</aspect>
+			</mandatory-aspects>
+      </type>
+      
+      <type name="app:webformtemplate">
+         <title>Website Web Form Template</title>
+         <parent>sys:base</parent>
+			<properties>
+            <property name="app:engine">
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+         <mandatory-aspects>
+				<aspect>app:filenamepattern</aspect>
+			</mandatory-aspects>
+      </type>
+      
+      <type name="app:workflowdefaults">
+         <title>Workflow Defaults</title>
+         <parent>sys:base</parent>
+			<properties>
+            <property name="app:workflowname">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="app:defaults">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+               <index enabled="false" />
+            </property>
+         </properties>
+      </type>
+      
+      <type name="app:webworkflowdefaults">
+         <title>Web Workflow Defaults</title>
+         <parent>app:workflowdefaults</parent>
+         <mandatory-aspects>
+				<aspect>app:filenamepattern</aspect>
+			</mandatory-aspects>
       </type>
 
 	</types>
@@ -201,6 +271,15 @@
                <title>Feed Template</title>
                <type>d:noderef</type>
                <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="app:filenamepattern">
+         <title>Filename Pattern</title>
+         <properties>
+            <property name="app:filenamepattern">
+               <type>d:text</type>
             </property>
          </properties>
       </aspect>

@@ -18,7 +18,9 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +79,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
    
    private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
    
+   private static final String ACT_PANEL = "_panel";
+   
    private static final String MSG_MODIFIED_ITEMS = "modified_items";
    private static final String MSG_SIZE = "size";
    private static final String MSG_CREATED = "created_date";
@@ -92,9 +96,18 @@ public class UIUserSandboxes extends SelfRenderingComponent
    /** website to show sandboxes for */
    private NodeRef value;
    
+   /** cached converter instance */
    private ByteSizeConverter sizeConverter = null;
    
+   /** set of exanded user panels */
    private Set<String> expandedPanels = new HashSet<String>();
+   
+   /** map of users to modified item nodes - used for multi-select action lookup */
+   private Map<Integer, String> userToRowLookup = new HashMap<Integer, String>(8, 1.0f);
+   private Map<String, Integer> rowToUserLookup = new HashMap<String, Integer>(8, 1.0f);
+   private Map<String, List<AVMNodeDescriptor>> userNodes = new HashMap<String, List<AVMNodeDescriptor>>(8, 1.0f);
+   
+   private String[] checkedItems = null;
    
    
    // ------------------------------------------------------------------------------
@@ -115,15 +128,23 @@ public class UIUserSandboxes extends SelfRenderingComponent
       super.restoreState(context, values[0]);
       this.value = (NodeRef)values[1];
       this.expandedPanels = (Set)values[2];
+      this.userToRowLookup = (Map)values[3];
+      this.rowToUserLookup = (Map)values[4];
+      this.userNodes = (Map)values[5];
+      this.checkedItems = (String[])values[6];
    }
    
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[3];
+      Object values[] = new Object[7];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.value;
       values[2] = this.expandedPanels;
+      values[3] = this.userToRowLookup;
+      values[4] = this.rowToUserLookup;
+      values[5] = this.userNodes;
+      values[6] = this.checkedItems;
       return values;
    }
    
@@ -149,9 +170,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
    public void decode(FacesContext context)
    {
       Map requestMap = context.getExternalContext().getRequestParameterMap();
-      String fieldId = getClientId(context);
-      String value = (String)requestMap.get(fieldId);
+      Map valuesMap = context.getExternalContext().getRequestParameterValuesMap();
       
+      // detect if a panel has been expanded/collapsed
+      String fieldId = getClientId(context) + ACT_PANEL;
+      String value = (String)requestMap.get(fieldId);
       if (value != null && value.length() != 0)
       {
          // expand/collapse the specified users panel
@@ -166,6 +189,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
             this.expandedPanels.add(value);
          }
       }
+      
+      // store the list of checked items for multi-select action context
+      this.checkedItems = (String[])valuesMap.get(getClientId(context));
    }
    
    /**
@@ -180,6 +206,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
       }
       
       ResponseWriter out = context.getResponseWriter();
+      
+      this.rowToUserLookup.clear();
+      this.userToRowLookup.clear();
+      this.userNodes.clear();
       
       ResourceBundle bundle = Application.getBundle(context);
       AVMService avmService = getAVMService(context);
@@ -209,6 +239,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
             String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
             String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
             
+            // create the lookup value of sandbox index to username 
+            this.userToRowLookup.put(index, username);
+            this.rowToUserLookup.put(username, index);
+            
             // build the name of the main store for this user
             String mainStore = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
             
@@ -224,6 +258,17 @@ public class UIUserSandboxes extends SelfRenderingComponent
                {
                   if (logger.isDebugEnabled())
                      logger.debug("Building sandbox view for user store: " + mainStore);
+                  
+                  // output a javascript function we need for multi-select functionality
+                  out.write("<script>function _sb_select(obj) {" + 
+                        "var prefix = obj.value + '_';" + 
+                        "var boxes = document.getElementsByTagName('input');" + 
+                        "for (var i=0; i<boxes.length; i++) {" + 
+                        "  if (boxes[i].value.indexOf(prefix, 0) != -1) {" + 
+                        "    boxes[i].checked = obj.checked;\r\n" + 
+                        "  }" + 
+                        "}" + 
+                        "}</script>");
                   
                   // for each user sandbox, generate an outer panel table
                   PanelGenerator.generatePanelStart(out,
@@ -254,7 +299,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                         null, null, sandboxUrl));
                   out.write("&nbsp;");
                   
-                  // TODO: add this action back once we can create in a specific sub-folder
+                  // TODO: add this action back once we can create via configured form attached to website project
                   /*Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, "sandbox_create", "/images/icons/new_content.gif",
                         "#{AVMBrowseBean.setupSandboxAction}", "wizard:createWebContent", null));
@@ -278,7 +323,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                      panelImage = WebResources.IMAGE_EXPANDED;
                   }
                   out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
-                        Utils.generateFormSubmit(context, this, getClientId(context), username)));
+                        Utils.generateFormSubmit(context, this, getClientId(context) + ACT_PANEL, username)));
                   out.write("&nbsp;<b>");
                   out.write(bundle.getString(MSG_MODIFIED_ITEMS));
                   out.write("</b>");
@@ -287,7 +332,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                      out.write("<div style='padding:2px'></div>");
    
                      // list the modified docs for this sandbox user
-                     renderUserFiles(context, out, username, storeRoot);
+                     renderUserFiles(context, out, username, index, storeRoot);
                   }
                   out.write("</td></tr></table>");
                   
@@ -320,11 +365,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * @param fc         FacesContext
     * @param out        ResponseWriter
     * @param username   The username to render the modified files for
+    * @param index      Index of the sandbox in the list of sandboxes
     * @param storeRoot  Root name of the store containing the users sandbox
     * 
     * @throws IOException
     */
-   private void renderUserFiles(FacesContext fc, ResponseWriter out, String username, String storeRoot)
+   private void renderUserFiles(FacesContext fc, ResponseWriter out, String username, int index, String storeRoot)
       throws IOException
    {
       AVMSyncService avmSyncService = getAVMSyncService(fc);
@@ -349,15 +395,28 @@ public class UIUserSandboxes extends SelfRenderingComponent
       UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER, userStorePrefix);
       UIActions uiDeletedActions = aquireUIActions(ACTIONS_DELETED, userStorePrefix);
       
+      String id = getClientId(fc);
+      
       // use the sync service to get the list of diffs between the stores
       List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore);
       if (diffs.size() != 0)
       {
+         // store lookup of username to list of modified nodes
+         List<AVMNodeDescriptor> nodes = new ArrayList<AVMNodeDescriptor>(diffs.size());
+         this.userNodes.put(username, nodes);
+         
          // output the table of modified items
          out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=2 border=0 width=100%>");
          
          // header row
-         out.write("<tr align=left><th width=16></th><th>");
+         out.write("<tr align=left><th>");
+         // multi-select checkbox
+         out.write("<input type='checkbox' value='");
+         out.write(Integer.toString(index));
+         out.write("' onclick='");
+         out.write("javascript:_sb_select(this);");
+         out.write("'></th>");
+         out.write("</th><th width=16></th><th>");
          out.write(bundle.getString(MSG_NAME));
          out.write("</th><th>");
          out.write(bundle.getString(MSG_CREATED));
@@ -370,12 +429,40 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write("</th></tr>");
          
          // output each of the modified files as a row in the table
+         int rowIndex = 0;
          for (AVMDifference diff : diffs)
          {
-            // TODO: display cases for diff.getDifferenceCode()?
+            // TODO: different display cases for diff.getDifferenceCode()?
+            boolean isGhost = false;
             String sourcePath = diff.getSourcePath();
             AVMNodeDescriptor node = avmService.lookup(-1, sourcePath);
-            if (node != null)
+            if (node == null)
+            {
+               // may have been deleted from this sandbox - which is a ghost node
+               node = avmService.lookup(-1, diff.getSourcePath(), true);
+               isGhost = true;
+            }
+            
+            // handle missing node case by skipping the row rendering
+            if (node == null)
+            {
+               continue;
+            }
+            
+            // save reference to this node for multi-select action lookup later
+            nodes.add(node);
+            
+            // output multi-select checkbox
+            out.write("<tr><td><input type='checkbox' name='");
+            out.write(id);
+            out.write("' id='");
+            out.write(id);
+            out.write("' value='");
+            // the value is a username index followed by a node lookup index
+            out.write(Integer.toString(index) + '_' + Integer.toString(rowIndex++));
+            out.write("'></td>");
+            
+            if (isGhost == false)
             {
                // icon and name of the file/folder - files are clickable to see the content
                String name = node.getName();
@@ -384,7 +471,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                      fc.getExternalContext().getRequestContextPath() +
                      DownloadContentServlet.generateBrowserURL(AVMNodeConverter.ToNodeRef(-1, sourcePath), name) +
                      "\" target='new'>";
-               out.write("<tr><td width=16>");
+               out.write("<td width=16>");
                if (node.isFile())
                {
                   out.write(linkPrefix);
@@ -435,55 +522,54 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   uiFolderActions.setContext(avmNode);
                   Utils.encodeRecursive(fc, uiFolderActions);
                }
-               out.write("</td></tr>");
             }
             else
             {
-               // must have been deleted from this sandbox - show ghosted
-               AVMNodeDescriptor ghost = avmService.lookup(-1, diff.getSourcePath(), true);
-               if (ghost != null)
+               // must have been deleted from this sandbox - show as ghosted
+               String name = node.getName();
+               out.write("<td width=16>");
+               if (node.isFile())
                {
-                  // icon and name of the file/folder - files are clickable to see the content
-                  String name = ghost.getName();
-                  out.write("<tr><td width=16>");
-                  if (ghost.isFile())
-                  {
-                     out.write(Utils.buildImageTag(fc, Utils.getFileTypeImage(fc, name, true), ""));
-                     out.write("</td><td style='color:#aaaaaa'>");
-                     out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
-                     out.write("</a>");
-                  }
-                  else
-                  {
-                     out.write(Utils.buildImageTag(fc, SPACE_ICON, 16, 16, ""));
-                     out.write("</td><td style='color:#aaaaaa'>");
-                     out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
-                  }
+                  out.write(Utils.buildImageTag(fc, Utils.getFileTypeImage(fc, name, true), ""));
                   out.write("</td><td style='color:#aaaaaa'>");
-                  
-                  // created date
-                  out.write(df.format(new Date(ghost.getCreateDate())));
-                  out.write("</td><td style='color:#aaaaaa'>");
-                  
-                  // modified date
-                  out.write(df.format(new Date(ghost.getModDate())));
-                  out.write("</td><td style='color:#aaaaaa'>");
-                  
-                  // size of files
-                  if (ghost.isFile())
-                  {
-                     out.write(getSizeConverter().getAsString(fc, this, ghost.getLength()));
-                  }
-                  out.write("</td><td style='color:#aaaaaa'>");
-                  
-                  // deleted UI actions for this item
-                  uiDeletedActions.setContext(new AVMNode(ghost, true));
-                  Utils.encodeRecursive(fc, uiDeletedActions);
-                  
-                  out.write("</td></tr>");
+                  out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
+                  out.write("</a>");
                }
+               else
+               {
+                  out.write(Utils.buildImageTag(fc, SPACE_ICON, 16, 16, ""));
+                  out.write("</td><td style='color:#aaaaaa'>");
+                  out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
+               }
+               out.write("</td><td style='color:#aaaaaa'>");
+               
+               // created date
+               out.write(df.format(new Date(node.getCreateDate())));
+               out.write("</td><td style='color:#aaaaaa'>");
+               
+               // modified date
+               out.write(df.format(new Date(node.getModDate())));
+               out.write("</td><td style='color:#aaaaaa'>");
+               
+               // size of files
+               if (node.isFile())
+               {
+                  out.write(getSizeConverter().getAsString(fc, this, node.getLength()));
+               }
+               out.write("</td><td style='color:#aaaaaa'>");
+               
+               // deleted UI actions for this item
+               uiDeletedActions.setContext(new AVMNode(node, true));
+               Utils.encodeRecursive(fc, uiDeletedActions);
             }
+            out.write("</td></tr>");
          }
+         
+         out.write("<tr><td colspan=8>");
+         Utils.encodeRecursive(fc, aquireAction(
+               fc, userStorePrefix, username, "sandbox_submitselected", "/images/icons/submit.gif",
+               "#{AVMBrowseBean.submitSelected}", null, null));
+         out.write("</td></tr>");
          
          // end table
          out.write("</table>");
@@ -708,5 +794,57 @@ public class UIUserSandboxes extends SelfRenderingComponent
    public void setValue(NodeRef value)
    {
       this.value = value;
+   }
+   
+   /**
+    * Get the selected nodes for a specified sandbox user
+    * 
+    * @param username   User in the user sandbox list
+    * 
+    * @return List of AVMNodeDescriptor object representing the selected items
+    */
+   public List<AVMNodeDescriptor> getSelectedNodes(String username)
+   {
+      return getSelectedNodes(username, this.rowToUserLookup.get(username));
+   }
+   
+   /**
+    * Get the selected nodes for a specified sandbox index
+    * 
+    * @param sandbox    Index of sandbox in the user sandbox list
+    * 
+    * @return List of AVMNodeDescriptor object representing the selected items
+    */
+   public List<AVMNodeDescriptor> getSelectedNodes(int sandbox)
+   {
+      return getSelectedNodes(this.userToRowLookup.get(sandbox), sandbox);
+   }
+   
+   private List<AVMNodeDescriptor> getSelectedNodes(String username, int sandbox)
+   {
+      List<AVMNodeDescriptor> nodes = null;
+      
+      if (username != null)
+      {
+         List<AVMNodeDescriptor> paths = this.userNodes.get(username);
+         if (paths != null)
+         {
+            nodes = new ArrayList<AVMNodeDescriptor>(paths.size());
+            String sandboxPrefix = Integer.toString(sandbox) + '_';
+            
+            // check against the selected items
+            for (int i=0; i<this.checkedItems.length; i++)
+            {
+               String value = checkedItems[i];
+               if (value.startsWith(sandboxPrefix))
+               {
+                  int pathIndex = Integer.valueOf(value.substring(sandboxPrefix.length()));
+                  nodes.add(paths.get(pathIndex));
+               }
+            }
+         }
+      }
+      
+      return nodes;
    }
 }

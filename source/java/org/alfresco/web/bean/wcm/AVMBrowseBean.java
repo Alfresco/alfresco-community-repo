@@ -807,6 +807,16 @@ public class AVMBrowseBean implements IContextListener
       }
    }
    
+   public void submitSelected(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String store = params.get("store");
+      String username = params.get("username");
+      
+      List<AVMNodeDescriptor> selected = this.userSandboxes.getSelectedNodes(username);
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Private helpers

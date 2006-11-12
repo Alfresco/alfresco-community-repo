@@ -24,28 +24,16 @@ package org.alfresco.repo.avm;
 public interface ChildEntry
 {
     /**
-     * Set the name of the child. 
-     * @param name 
+     * Set the key for this ChildEntry.
+     * @param key The ChildKey.
      */
-    public void setName(String name);
+    public void setKey(ChildKey key);
     
     /**
-     * Get the name of the child.
-     * @return The child's name.
+     * Get the ChildKey for this ChildEntry.
+     * @return
      */
-    public String getName();
-    
-    /**
-     * Set the parent in this entry.
-     * @param parent
-     */
-    public void setParent(DirectoryNode parent);
-    
-    /**
-     * Get the parent of this child.
-     * @return The parent.
-     */
-    public DirectoryNode getParent();
+    public ChildKey getKey();
     
     /**
      * Set the child in this entry.

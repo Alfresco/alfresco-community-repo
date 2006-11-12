@@ -1145,9 +1145,9 @@ public class AVMRepository
         List<ChildEntry> entries = AVMDAOs.Instance().fChildEntryDAO.getByChild(node);
         for (ChildEntry entry : entries)
         {
-            String name = entry.getName();
+            String name = entry.getKey().getName();
             components.add(name);
-            AVMNode parent = entry.getParent();
+            AVMNode parent = entry.getKey().getParent();
             recursiveGetPaths(parent, components, paths);
             components.remove(components.size() - 1);
         }
@@ -1175,9 +1175,9 @@ public class AVMRepository
         List<ChildEntry> entries = AVMDAOs.Instance().fChildEntryDAO.getByChild(node);
         for (ChildEntry entry : entries)
         {
-            String name = entry.getName();
+            String name = entry.getKey().getName();
             components.add(name);
-            AVMNode parent = entry.getParent();
+            AVMNode parent = entry.getKey().getParent();
             recursiveGetHeadPaths(parent, components, paths);
             components.remove(components.size() - 1);
         }
@@ -1201,9 +1201,9 @@ public class AVMRepository
         List<ChildEntry> entries = AVMDAOs.Instance().fChildEntryDAO.getByChild(node);
         for (ChildEntry entry : entries)
         {
-            String name = entry.getName();
+            String name = entry.getKey().getName();
             components.add(name);
-            AVMNode parent = entry.getParent();
+            AVMNode parent = entry.getKey().getParent();
             recursiveGetHeadPaths(parent, components, paths);
             components.remove(components.size() - 1);
         }

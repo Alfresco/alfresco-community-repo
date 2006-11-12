@@ -37,7 +37,7 @@ public interface ChildEntryDAO
      * @param parent The parent to look in.
      * @return The ChildEntry or null if not foun.
      */
-    public ChildEntry getByNameParent(String name, DirectoryNode parent);
+    public ChildEntry get(ChildKey key);
     
     /**
      * Get all the children of a given parent.

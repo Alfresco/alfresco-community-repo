@@ -135,19 +135,15 @@
 		<property name="tag" type="string" length="255" column="tag"/>
 		<property name="description" type="string" length="8192" column="description"/>
 	</class>
-	<class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries" optimistic-lock="version">
- 		<cache usage="read-write"/>
-		<id name="id" column="id" type="long">
-			<generator class="native"/>
-		</id>
-		<natural-id>
-			<property name="name" type="string" length="160" column="name" index="child_name_index" not-null="true"/>
-			<many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl" not-null="true"/>
-		</natural-id>
-		<version name="vers" column="vers" type="long"/>
-		<many-to-one name="child" column="child_id" class="AVMNodeImpl"
-			not-null="true"/>
-	</class>
+    <class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries">
+         <cache usage="read-write"/>
+         <composite-id name="key" class="ChildKey">
+             <key-many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl"/>
+             <key-property name="name" column="name" type="string" length="160"/>
+         </composite-id>
+         <many-to-one name="child" column="child_id" class="AVMNodeImpl"
+	     not-null="true"/>
+    </class>
 	<class name="HistoryLinkImpl" proxy="HistoryLink" table="avm_history_links">
 		<composite-id>
 			<key-many-to-one name="ancestor" class="AVMNodeImpl" column="ancestor"/>
@@ -204,31 +200,10 @@
 		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
 		<property name="name" column="qname" type="QName" length="200"/>
 	</class>
-	<query name="ChildEntry.ByNameParent">
-	<![CDATA[
-		from ChildEntryImpl ce
-		where
-		    ce.name = :name and ce.parent = :parent
-    ]]>
-    </query>
-    <query name="ChildEntry.ByParent">
-    <![CDATA[
-        from ChildEntryImpl ce
-        where
-        	ce.parent = :parent
-    ]]>
-    </query>
-    <query name="ChildEntry.ByParentChild">
-    <![CDATA[
-    	from ChildEntryImpl ce
-    	where
-    	    ce.child = :child and ce.parent = :parent
-    ]]>
-    </query>
     <query name="ChildEntry.DeleteByParent">
     <![CDATA[
     	delete ChildEntryImpl ce
-    	where ce.parent = :parent
+    	where ce.key.parent = :parent
     ]]>
     </query>
     <query name="AVMNode.GetNewInStore">

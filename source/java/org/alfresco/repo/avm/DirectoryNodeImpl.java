@@ -63,7 +63,8 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
             throw new AVMBadArgumentException("Non primary layered directories cannot be linked.");
         }
         // Make the new ChildEntry and save.
-        ChildEntry newChild = new ChildEntryImpl(name, this, node);
+        ChildKey key = new ChildKey(this, name);
+        ChildEntry newChild = new ChildEntryImpl(key, node);
         AVMDAOs.Instance().fChildEntryDAO.save(newChild);
     }    
 }

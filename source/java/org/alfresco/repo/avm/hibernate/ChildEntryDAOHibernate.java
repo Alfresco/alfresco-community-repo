@@ -21,7 +21,9 @@ import java.util.List;
 
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.ChildEntry;
+import org.alfresco.repo.avm.ChildEntryImpl;
 import org.alfresco.repo.avm.ChildEntryDAO;
+import org.alfresco.repo.avm.ChildKey;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -56,13 +58,9 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
      * @param parent The parent to look in.
      * @return The ChildEntry or null if not foun.
      */
-    public ChildEntry getByNameParent(String name, DirectoryNode parent)
+    public ChildEntry get(ChildKey key)
     {
-        Query query = getSession().createQuery(
-                "from ChildEntryImpl ce where ce.name = :name and ce.parent = :parent");
-        query.setString("name", name);
-        query.setEntity("parent", parent);
-        return (ChildEntry)query.uniqueResult();
+        return (ChildEntry)getSession().get(ChildEntryImpl.class, key);
     }
     
     /**
@@ -73,7 +71,8 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
     @SuppressWarnings("unchecked")
     public List<ChildEntry> getByParent(DirectoryNode parent)
     {
-        Query query = getSession().getNamedQuery("ChildEntry.ByParent");
+        Query query =
+            getSession().createQuery("from ChildEntryImpl ce where ce.key.parent = :parent");
         query.setEntity("parent", parent);
         return (List<ChildEntry>)query.list();
     }
@@ -86,7 +85,9 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
      */
     public ChildEntry getByParentChild(DirectoryNode parent, AVMNode child)
     {
-        Query query = getSession().getNamedQuery("ChildEntry.ByParentChild");
+        Query query =
+            getSession().createQuery("from ChildEntryImpl ce where ce.key.parent = :parent " +
+                                     "and ce.child = :child");
         query.setEntity("parent", parent);
         query.setEntity("child", child);
         return (ChildEntry)query.uniqueResult();
@@ -124,6 +125,7 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
         getSession().delete(child);
     }
 
+    // TODO Does this have dangerous interactions with the cache?
     /**
      * Delete all children of the given parent.
      * @param parent The parent.

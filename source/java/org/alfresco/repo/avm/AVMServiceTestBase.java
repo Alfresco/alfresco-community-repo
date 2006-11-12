@@ -72,7 +72,7 @@ public class AVMServiceTestBase extends TestCase
     {
         if (fContext == null)
         {
-            fContext = new FileSystemXmlApplicationContext("config/alfresco/avm-test-context.xml");
+            fContext = new FileSystemXmlApplicationContext("config/alfresco/application-context.xml");
             fService = (AVMService)fContext.getBean("AVMService");
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");

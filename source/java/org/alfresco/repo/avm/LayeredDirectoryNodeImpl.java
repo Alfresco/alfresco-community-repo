@@ -108,8 +108,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other))
         {
-            ChildEntryImpl newChild = new ChildEntryImpl(child.getName(),
-                                                         this,
+            ChildKey key = new ChildKey(this, child.getKey().getName());
+            ChildEntryImpl newChild = new ChildEntryImpl(key,                                                         
                                                          child.getChild());
             AVMDAOs.Instance().fChildEntryDAO.save(newChild);
         }
@@ -142,8 +142,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other))
             {
-                ChildEntryImpl newChild = new ChildEntryImpl(child.getName(),
-                                                             this,
+                ChildKey key = new ChildKey(this, child.getKey().getName());
+                ChildEntryImpl newChild = new ChildEntryImpl(key,
                                                              child.getChild());
                 AVMDAOs.Instance().fChildEntryDAO.save(newChild);
             }
@@ -280,7 +280,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void putChild(String name, AVMNode node)
     {
-        ChildEntry existing = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
+        ChildKey key = new ChildKey(this, name);
+        ChildEntry existing = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (existing != null)
         {
             existing.setChild(node);
@@ -288,7 +289,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         else
         {
-            ChildEntry entry = new ChildEntryImpl(name, this, node);
+            ChildEntry entry = new ChildEntryImpl(key, node);
             AVMDAOs.Instance().fAVMNodeDAO.flush();
             AVMDAOs.Instance().fChildEntryDAO.save(entry);
         }
@@ -337,11 +338,11 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
-                listing.remove(entry.getName());
+                listing.remove(entry.getKey().getName());
             }
             else
             {
-                listing.put(entry.getName(), entry.getChild());
+                listing.put(entry.getKey().getName(), entry.getChild());
             }
         }
         return listing;
@@ -359,7 +360,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             if (includeDeleted || entry.getChild().getType() != AVMNodeType.DELETED_NODE)
             {
-                listing.put(entry.getName(), entry.getChild());
+                listing.put(entry.getKey().getName(), entry.getChild());
             }
         }
         return listing;
@@ -384,8 +385,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 continue;
             }
             AVMNodeDescriptor childDesc =
-                childNode.getDescriptor(dir.getPath(), child.getName(), dir.getIndirection());
-            listing.put(child.getName(), childDesc);
+                childNode.getDescriptor(dir.getPath(), child.getKey().getName(), dir.getIndirection());
+            listing.put(child.getKey().getName(), childDesc);
         }
         return listing;
     }
@@ -425,13 +426,13 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             if (!includeDeleted && child.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
-                baseListing.remove(child.getName());
+                baseListing.remove(child.getKey().getName());
             }
             else
             {
-                baseListing.put(child.getName(),
+                baseListing.put(child.getKey().getName(),
                         child.getChild().getDescriptor(dir.getPath(),
-                                child.getName(),
+                                child.getKey().getName(),
                                 dir.getIndirection()));
             }
         }
@@ -450,7 +451,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             if (entry.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
-                listing.add(entry.getName());
+                listing.add(entry.getKey().getName());
             }
         }
         return listing;
@@ -467,7 +468,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     @SuppressWarnings("unchecked")
     public AVMNode lookupChild(Lookup lPath, String name, boolean includeDeleted)
     {
-        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
+        ChildKey key = new ChildKey(this, name);
+        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (entry != null)
         {
             if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
@@ -508,7 +510,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
+        ChildKey key = new ChildKey(this, name);        
+        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (entry != null)
         {
             if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
@@ -549,7 +552,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     @SuppressWarnings("unchecked")
     public void removeChild(Lookup lPath, String name)
     {
-        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
+        ChildKey key = new ChildKey(this, name);
+        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         AVMNode child = null;
         if (entry != null)
         {
@@ -627,7 +631,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void uncover(Lookup lPath, String name)
     {
-        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
+        ChildKey key = new ChildKey(this, name);
+        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (entry.getChild().getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMException("One can only uncover deleted nodes.");
@@ -798,6 +803,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         // Look for an existing child of that name.
         AVMNode existing = lookupChild(lPath, name, true);
+        ChildKey key = new ChildKey(this, name);
         if (existing != null)
         {
             if (existing.getType() != AVMNodeType.DELETED_NODE)
@@ -809,13 +815,13 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             // directory do we delete it.
             if (directlyContains(existing))
             {
-                ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
+                ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
                 AVMDAOs.Instance().fChildEntryDAO.delete(entry);
                 AVMDAOs.Instance().fAVMNodeDAO.flush();
             }
         }
         // Make the new ChildEntry and save.
-        ChildEntry newChild = new ChildEntryImpl(name, this, node);
+        ChildEntry newChild = new ChildEntryImpl(key, node);
         AVMDAOs.Instance().fChildEntryDAO.save(newChild);
     }
     
@@ -825,7 +831,8 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void flatten(String name)
     {
-        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.getByNameParent(name, this);
+        ChildKey key = new ChildKey(this, name);
+        ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (entry != null)
         {
             AVMDAOs.Instance().fChildEntryDAO.delete(entry);

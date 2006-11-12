@@ -23,34 +23,19 @@ import java.io.Serializable;
  * An entry in a directory. Contains a name, parent, and child.
  * @author britt
  */
-class ChildEntryImpl implements ChildEntry, Serializable
+public class ChildEntryImpl implements ChildEntry, Serializable
 {
     private static final long serialVersionUID = -307752114272916930L;
 
     /**
-     * The primary key.
+     * The key.
      */
-    private Long fID;
-    
-    /**
-     * The name of the entry.
-     */
-    private String fName;
-    
-    /**
-     * The parent.
-     */
-    private DirectoryNode fParent;
+    private ChildKey fKey;
     
     /**
      * The child.
      */
     private AVMNode fChild;
-    
-    /**
-     * The Optimistic lock version
-     */
-    private long fVers;
     
     /**
      * Default constructor for Hibernate.
@@ -61,55 +46,34 @@ class ChildEntryImpl implements ChildEntry, Serializable
 
     /**
      * Make up a brand new entry.
-     * @param name
-     * @param parent
-     * @param child
+     * @param key The ChildKey.
+     * @param child The child.
      */
-    public ChildEntryImpl(String name,
-                          DirectoryNode parent,
+    public ChildEntryImpl(ChildKey key,
                           AVMNode child)
     {
-        fName = name;
-        fParent = parent;
+        fKey = key;
         fChild = child;
+    }
+
+    /**
+     * Set the key for this ChildEntry.
+     * @param key The ChildKey.
+     */
+    public void setKey(ChildKey key)
+    {
+        fKey = key;
     }
     
     /**
-     * Set the name of this entry.
-     * @param name
+     * Get the ChildKey for this ChildEntry.
+     * @return
      */
-    public void setName(String name)
+    public ChildKey getKey()
     {
-        fName = name;
+        return fKey;
     }
-
-    /**
-     * Get the name of this entry.
-     * @return The name of this entry.
-     */
-    public String getName()
-    {
-        return fName;
-    }
-
-    /**
-     * Set the parent in this entry.
-     * @param parent
-     */
-    public void setParent(DirectoryNode parent)
-    {
-        fParent = parent;
-    }
-
-    /**
-     * Get the parent in this entry.
-     * @return  The parent.
-     */
-    public DirectoryNode getParent()
-    {
-        return fParent;
-    }
-
+    
     /**
      * Set the child in this entry.
      * @param child
@@ -145,7 +109,7 @@ class ChildEntryImpl implements ChildEntry, Serializable
             return false;
         }
         ChildEntry other = (ChildEntry)obj;
-        return fName.equals(other.getName()) && fParent.equals(other.getParent());
+        return fKey.equals(other.getKey());
     }
 
     /**
@@ -155,42 +119,6 @@ class ChildEntryImpl implements ChildEntry, Serializable
     @Override
     public int hashCode()
     {
-        return fName.hashCode() + fParent.hashCode();
-    }
-
-    /**
-     * Get the version for optimistic locking.
-     * @return The version for optimistic locking.
-     */
-    protected long getVers()
-    {
-        return fVers;
-    }
-
-    /**
-     * Set the version for optimistic locking.
-     * @param vers the vers to set
-     */
-    protected void setVers(long vers)
-    {
-        fVers = vers;
-    }
-    
-    /**
-     * Set the primary key. (For Hibernate)
-     * @param id
-     */
-    protected void setId(Long id)
-    {
-        fID = id;
-    }
-
-    /**
-     * Get the primary key. (For Hibernate).
-     * @return The primary key.
-     */
-    protected Long getId()
-    {
-        return fID;
+        return fKey.hashCode();
     }
 }

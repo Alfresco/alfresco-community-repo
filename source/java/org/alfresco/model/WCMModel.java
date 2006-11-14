@@ -39,21 +39,26 @@ public interface WCMModel
     
     // The XForms data capture form aspect.
     public static final QName ASPECT_FORM = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "form");
-    public static final QName PROP_SCHEMA_ROOT_ELEMENT_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "schemarootelementname");
-    public static final QName ASSOC_RENDERING_ENGINES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingengines");
+    public static final QName PROP_XML_SCHEMA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "schema");
+    public static final QName PROP_XML_SCHEMA_ROOT_ELEMENT_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "xmlschemarootelementname");
+    public static final QName PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "outputpathpatternforforminstancedata");
+    public static final QName ASSOC_RENDERING_ENGINE_TEMPLATES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingenginetemplates");
     
     // An XML to something else tranformer aspect.
-    public static final QName ASPECT_RENDERING_ENGINE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingengine");
-    public static final QName PROP_RENDERING_ENGINE_TYPE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingenginetype");
-    public static final QName PROP_FILE_EXTENSION_FOR_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "fileextensionforrendition");
-    public static final QName PROP_MIMETYPE_FOR_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "mimetypeforrendition");
+    public static final QName ASPECT_RENDERING_ENGINE_TEMPLATE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingenginetemplate");
+    public static final QName PROP_PARENT_RENDERING_ENGINE_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentrenderingenginename");
     public static final QName PROP_FORM_SOURCE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "formsource");
+    public static final QName ASSOC_RENDITION_PROPERTIES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renditionproperties");
 
     public static final QName ASPECT_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "forminstancedata");
     public static final QName PROP_PARENT_FORM = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentform");
     public static final QName PROP_PARENT_FORM_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentformname");
 
     public static final QName ASPECT_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "rendition");
-    public static final QName PROP_PARENT_RENDERING_ENGINE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentrenderingengine");
+    public static final QName PROP_PARENT_RENDERING_ENGINE_TEMPLATE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentrenderingenginetemplate");
     public static final QName PROP_PRIMARY_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "primaryforminstancedata");
+
+    public static final QName TYPE_RENDITION_PROPERTIES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renditionproperties");
+    public static final QName PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "outputpathpatternforrendition");
+    public static final QName PROP_MIMETYPE_FOR_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "mimetypeforrendition");
 }

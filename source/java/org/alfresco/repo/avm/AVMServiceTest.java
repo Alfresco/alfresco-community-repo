@@ -33,9 +33,11 @@ import java.util.TreeMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.avm.actions.AVMRevertListAction;
 import org.alfresco.repo.avm.actions.SimpleAVMPromoteAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.repo.avm.util.VersionPathStuffer;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
@@ -230,6 +232,56 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
     
     /**
+     * Test the revert list action.
+     */
+    public void testRevertListAction()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createAVMStore("area");
+            fService.createLayeredDirectory("main:/a", "area:/", "a");
+            fService.getFileOutputStream("area:/a/b/c/foo").close();
+            List<AVMDifference> diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a");
+            assertEquals(1, diffs.size());
+            fSyncService.update(diffs, false, false, false, false, null, null);
+            fService.getFileOutputStream("area:/a/b/c/bar").close();
+            diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a");
+            assertEquals(1, diffs.size());
+            final ActionImpl action = new ActionImpl(null,
+                                                     GUID.generate(),
+                                                     AVMRevertListAction.NAME);
+            VersionPathStuffer stuffer = new VersionPathStuffer();
+            stuffer.add(-1, "area:/a/b");
+            String nodeList = stuffer.toString();
+            action.setParameterValue(AVMRevertListAction.PARAM_VERSION, 1);
+            action.setParameterValue(AVMRevertListAction.PARAM_NODE_LIST, nodeList);
+            action.setParameterValue(AVMRevertListAction.PARAM_FLATTEN, true);
+            action.setParameterValue(AVMRevertListAction.PARAM_STORE, "area");
+            action.setParameterValue(AVMRevertListAction.PARAM_STAGING, "main");
+            action.setParameterValue(AVMRevertListAction.PARAM_FLATTEN_PATH, "/a");
+            final AVMRevertListAction revert = (AVMRevertListAction)fContext.getBean("avm-revert-list");
+            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            {
+                public Object doWork() throws Exception
+                {
+                    revert.execute(action, null);
+                    return null;
+                }
+            };
+            TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
+                    new TxnWork());
+            diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a");
+            assertEquals(0, diffs.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
+    /**
      * Test the promote action.
      */
     public void testPromoteAction()
@@ -258,7 +310,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 }
             };
             TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
-                                                     new TxnWork());
+                    new TxnWork());
             assertEquals(0, fSyncService.compare(-1, "source:/appBase", -1, "main:/appBase").size());
         }
         catch (Exception e)

@@ -727,23 +727,6 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, false);
          tx.begin();
          
-//         NodeRef nodeRef = getAvmActionNode().getNodeRef();
-//         String name = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-//         NodeRef workflowPackage = this.workflowService.createPackage(null);
-//         ChildAssociationRef childRef = 
-//             this.nodeService.createNode(workflowPackage, ContentModel.ASSOC_CONTAINS,
-//                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
-//                                                           name), ContentModel.TYPE_CMOBJECT);
-//         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
-//         aspectProperties.put(ContentModel.PROP_NODE_REF, nodeRef);
-//         NodeRef childNodeRef = childRef.getChildRef();
-//         this.nodeService.addAspect(childNodeRef, ContentModel.ASPECT_REFERENCES_NODE, aspectProperties);
-//             
-//         Map<String, Serializable> actionParams = new HashMap<String, Serializable>();
-//         actionParams.put(StartAVMWorkflowAction.PARAM_WORKFLOW_NAME, "jbpm$wcmwf:submit");
-//         Action action = this.actionService.createAction(ACTION_AVM_WORKFLOW, actionParams);
-//         this.actionService.executeAction(action, workflowPackage);
-
          Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
          this.actionService.executeAction(action, getAvmActionNode().getNodeRef());
          
@@ -807,6 +790,9 @@ public class AVMBrowseBean implements IContextListener
       }
    }
    
+   /**
+    * Submit items selected using multi-select
+    */
    public void submitSelected(ActionEvent event)
    {
       UIActionLink link = (UIActionLink)event.getComponent();
@@ -815,6 +801,61 @@ public class AVMBrowseBean implements IContextListener
       String username = params.get("username");
       
       List<AVMNodeDescriptor> selected = this.userSandboxes.getSelectedNodes(username);
+      if (selected != null)
+      {
+         UserTransaction tx = null;
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context, false);
+            tx.begin();
+            
+            for (AVMNodeDescriptor node : selected)
+            {
+               Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
+               this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, node.getPath()));
+            }
+            
+            // commit the transaction
+            tx.commit();
+            
+            // if we get here, all was well - output friendly status message to the user
+            // TODO: different message once the submit screen is available
+            String msg = MessageFormat.format(Application.getMessage(
+                  context, MSG_SUBMITALL_SUCCESS), username);
+            FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+            String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
+            context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+         }
+         catch (Throwable err)
+         {
+            err.printStackTrace(System.err);
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+      }
+   }
+   
+   /**
+    * Undo changes to a single node
+    */
+   public void revertNode(ActionEvent event)
+   {
+   }
+   
+   /**
+    * Undo changes to the entire sandbox
+    */
+   public void revertAll(ActionEvent event)
+   {
+   }
+   
+   /**
+    * Undo changes to items selected using multi-select
+    */
+   public void revertSelected(ActionEvent event)
+   {
    }
    
    

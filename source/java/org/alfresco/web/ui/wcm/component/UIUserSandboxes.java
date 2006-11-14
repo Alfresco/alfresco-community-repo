@@ -79,9 +79,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
    
    private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
    
-   private static final String ACT_PANEL = "_panel";
+   private static final String ACT_MODIFIED_PANEL = "_items";
+   private static final String ACT_FORMS_PANEL = "_forms";
    
    private static final String MSG_MODIFIED_ITEMS = "modified_items";
+   private static final String MSG_CONTENT_FORMS = "content_forms";
    private static final String MSG_SIZE = "size";
    private static final String MSG_CREATED = "created_date";
    private static final String MSG_USERNAME = "username";
@@ -90,6 +92,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String MSG_MODIFIED = "modified_date";
    private static final String MSG_ACTIONS = "actions";
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
+   private static final String MSG_SELECTED = "selected";
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    
@@ -108,6 +111,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private Map<String, List<AVMNodeDescriptor>> userNodes = new HashMap<String, List<AVMNodeDescriptor>>(8, 1.0f);
    
    private String[] checkedItems = null;
+   
+   /** transient list of available web forms */
+   private List<NodeRef> forms = null;
    
    
    // ------------------------------------------------------------------------------
@@ -172,9 +178,14 @@ public class UIUserSandboxes extends SelfRenderingComponent
       Map requestMap = context.getExternalContext().getRequestParameterMap();
       Map valuesMap = context.getExternalContext().getRequestParameterValuesMap();
       
-      // detect if a panel has been expanded/collapsed
-      String fieldId = getClientId(context) + ACT_PANEL;
+      // detect if Modified Items or Available Content Forms panel has been expanded/collapsed
+      String fieldId = getClientId(context) + ACT_FORMS_PANEL;
       String value = (String)requestMap.get(fieldId);
+      if (value == null || value.length() == 0)
+      {
+         fieldId = getClientId(context) + ACT_MODIFIED_PANEL;
+         value = (String)requestMap.get(fieldId);
+      }
       if (value != null && value.length() != 0)
       {
          // expand/collapse the specified users panel
@@ -210,6 +221,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       this.rowToUserLookup.clear();
       this.userToRowLookup.clear();
       this.userNodes.clear();
+      this.forms = null;
       
       ResourceBundle bundle = Application.getBundle(context);
       AVMService avmService = getAVMService(context);
@@ -311,6 +323,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, "sandbox_revertall", "/images/icons/revert.gif",
+                        "#{AVMBrowseBean.revertAll}", null, null));
+                  out.write("&nbsp;");
+                  
+                  Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, "sandbox_browse", "/images/icons/space_small.gif",
                         "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
                   out.write("</nobr></td></tr>");
@@ -318,21 +335,42 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   // modified items panel
                   out.write("<tr><td></td><td colspan=2>");
                   String panelImage = WebResources.IMAGE_COLLAPSED;
-                  if (this.expandedPanels.contains(username))
+                  if (this.expandedPanels.contains(username + ACT_MODIFIED_PANEL))
                   {
                      panelImage = WebResources.IMAGE_EXPANDED;
                   }
                   out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
-                        Utils.generateFormSubmit(context, this, getClientId(context) + ACT_PANEL, username)));
+                        Utils.generateFormSubmit(context, this, getClientId(context) + ACT_MODIFIED_PANEL, username + ACT_MODIFIED_PANEL)));
                   out.write("&nbsp;<b>");
                   out.write(bundle.getString(MSG_MODIFIED_ITEMS));
                   out.write("</b>");
-                  if (this.expandedPanels.contains(username))
+                  if (this.expandedPanels.contains(username + ACT_MODIFIED_PANEL))
                   {
                      out.write("<div style='padding:2px'></div>");
    
                      // list the modified docs for this sandbox user
-                     renderUserFiles(context, out, username, index, storeRoot);
+                     renderUserFiles(context, out, username, storeRoot, index);
+                  }
+                  out.write("</td></tr>");
+                  
+                  // content forms panel
+                  out.write("<tr style='padding-top:4px'><td></td><td colspan=2>");
+                  panelImage = WebResources.IMAGE_COLLAPSED;
+                  if (this.expandedPanels.contains(username + ACT_FORMS_PANEL))
+                  {
+                     panelImage = WebResources.IMAGE_EXPANDED;
+                  }
+                  out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
+                        Utils.generateFormSubmit(context, this, getClientId(context) + ACT_FORMS_PANEL, username + ACT_FORMS_PANEL)));
+                  out.write("&nbsp;<b>");
+                  out.write(bundle.getString(MSG_CONTENT_FORMS));
+                  out.write("</b>");
+                  if (this.expandedPanels.contains(username + ACT_FORMS_PANEL))
+                  {
+                     out.write("<div style='padding:2px'></div>");
+                     
+                     // list the content forms for this sandbox user
+                     renderContentForms(context, out, websiteRef, username, storeRoot);
                   }
                   out.write("</td></tr></table>");
                   
@@ -370,8 +408,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * 
     * @throws IOException
     */
-   private void renderUserFiles(FacesContext fc, ResponseWriter out, String username, int index, String storeRoot)
-      throws IOException
+   private void renderUserFiles(
+         FacesContext fc, ResponseWriter out, String username, String storeRoot, int index)
+         throws IOException
    {
       AVMSyncService avmSyncService = getAVMSyncService(fc);
       AVMService avmService = getAVMService(fc);
@@ -406,7 +445,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          this.userNodes.put(username, nodes);
          
          // output the table of modified items
-         out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=2 border=0 width=100%>");
+         out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=1 border=0 width=100%>");
          
          // header row
          out.write("<tr align=left><th>");
@@ -415,8 +454,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write(Integer.toString(index));
          out.write("' onclick='");
          out.write("javascript:_sb_select(this);");
-         out.write("'></th>");
-         out.write("</th><th width=16></th><th>");
+         out.write("'></th><th width=16></th><th>");
          out.write(bundle.getString(MSG_NAME));
          out.write("</th><th>");
          out.write(bundle.getString(MSG_CREATED));
@@ -565,10 +603,17 @@ public class UIUserSandboxes extends SelfRenderingComponent
             out.write("</td></tr>");
          }
          
+         // output multi-select actions for this user
          out.write("<tr><td colspan=8>");
+         out.write(bundle.getString(MSG_SELECTED));
+         out.write(":&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
                fc, userStorePrefix, username, "sandbox_submitselected", "/images/icons/submit.gif",
                "#{AVMBrowseBean.submitSelected}", null, null));
+         out.write("&nbsp;");
+         Utils.encodeRecursive(fc, aquireAction(
+               fc, userStorePrefix, username, "sandbox_revertselected", "/images/icons/revert.gif",
+               "#{AVMBrowseBean.revertSelected}", null, null));
          out.write("</td></tr>");
          
          // end table
@@ -577,6 +622,69 @@ public class UIUserSandboxes extends SelfRenderingComponent
       else
       {
          // TODO: output "no modified files found" message
+      }
+   }
+   
+   /**
+    * Render the list of content forms available for this sandbox.
+    * 
+    * @param fc         FacesContext
+    * @param out        ResponseWriter
+    * 
+    * @throws IOException
+    */
+   private void renderContentForms(
+         FacesContext fc, ResponseWriter out, NodeRef websiteRef, String username, String storeRoot)
+         throws IOException
+   {
+      NodeService nodeService = getNodeService(fc);
+      String userStorePrefix = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
+      
+      // only need to collect the list of forms once per render
+      // TODO: execute permission evaluations on a per user basis against each form?
+      if (this.forms == null)
+      {
+         List<ChildAssociationRef> webFormRefs = nodeService.getChildAssocs(
+               websiteRef, ContentModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
+         this.forms = new ArrayList<NodeRef>(webFormRefs.size());
+         for (ChildAssociationRef ref : webFormRefs)
+         {
+            this.forms.add(ref.getChildRef());
+         }
+      }
+      if (this.forms.size() != 0)
+      {
+         ResourceBundle bundle = Application.getBundle(fc);
+         
+         // output the table of available forms
+         out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=1 border=0 width=100%>");
+         
+         // header row
+         out.write("<tr align=left><th>");
+         out.write(bundle.getString(MSG_NAME));
+         out.write("</th><th>");
+         out.write(bundle.getString(MSG_DESCRIPTION));
+         out.write("</th><th>");
+         out.write(bundle.getString(MSG_ACTIONS));
+         out.write("</th></tr>");
+         
+         for (NodeRef formRef : this.forms)
+         {
+            out.write("<tr><td>");
+            String title = (String)nodeService.getProperty(formRef, ContentModel.PROP_TITLE);
+            out.write(title != null ? title : "");
+            out.write("</td><td>");
+            String desc = (String)nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION);
+            out.write(desc != null ? desc : "");
+            out.write("</td><td>");
+            // actions 
+            Utils.encodeRecursive(fc, aquireAction(
+               fc, userStorePrefix, username, "create_form_content", "/images/icons/new_content.gif",
+               null, "wizard:createWebContent", null));
+            out.write("</td></tr>");
+         }
+         
+         out.write("</table>");
       }
    }
    

@@ -75,7 +75,7 @@ public class RenderingEngineTemplateImpl
    {
       return (String)
          this.nodeService.getProperty(this.nodeRef, 
-                                      ContentModel.PROP_TITLE);
+                                      ContentModel.PROP_NAME);
    }
 
    public String getDescription()

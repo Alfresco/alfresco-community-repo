@@ -85,6 +85,19 @@
             </params>
          </action>
          
+         <!-- Revert AVM node -->
+         <action id="revert">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
+            <label-id>revert</label-id>
+            <image>/images/icons/revert.gif</image>
+            <action-listener>#{AVMBrowseBean.revertNode}</action-listener>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
          <!-- Preview folder -->
          <action id="preview_folder">
             <label-id>folder_preview</label-id>
@@ -199,6 +212,7 @@
             <action idref="edit_file" />
             <action idref="update_file" />
             <action idref="submit" />
+            <action idref="revert" />
             <action idref="preview_file" />
             <action idref="file_details" />
             <action idref="delete_file" />
@@ -208,6 +222,7 @@
          <action-group id="avm_folder_modified">
             <show-link>false</show-link>
             <action idref="submit" />
+            <action idref="revert" />
             <action idref="preview_folder" />
             <action idref="folder_details" />
             <action idref="delete_folder" />
@@ -217,6 +232,7 @@
          <action-group id="avm_deleted_modified">
             <show-link>false</show-link>
             <action idref="submit" />
+            <action idref="revert" />
          </action-group>
          
          <!-- Actions for the Create menu in the sandbox browse screen -->

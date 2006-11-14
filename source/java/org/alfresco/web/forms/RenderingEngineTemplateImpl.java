@@ -84,6 +84,13 @@ public class RenderingEngineTemplateImpl
          this.nodeService.getProperty(this.nodeRef, 
                                       ContentModel.PROP_DESCRIPTION);
    }
+   
+   public String getOutputPathPattern()
+   {
+      return (String)
+         this.nodeService.getProperty(this.renditionPropertiesNodeRef, 
+                                      WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION);
+   }
 
    public NodeRef getNodeRef()
    {
@@ -132,7 +139,6 @@ public class RenderingEngineTemplateImpl
 
       final TemplateHashModel formInstanceDataModel = new TemplateHashModel()
       {
-
          private TemplateModel formInstanceDataModel; 
 
          public TemplateModel get(final String key)

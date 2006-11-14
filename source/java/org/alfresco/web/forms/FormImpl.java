@@ -86,6 +86,13 @@ public class FormImpl
          this.nodeService.getProperty(this.folderNodeRef, 
                                       ContentModel.PROP_DESCRIPTION);
    }
+   
+   public String getOutputPathPattern()
+   {
+      return (String)
+         this.nodeService.getProperty(this.folderNodeRef,
+                                      WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA);
+   }
 
    public String getOutputPathForFormInstanceData(final String parentAVMPath,
                                                   final String formInstanceDataFileName,
@@ -175,9 +182,10 @@ public class FormImpl
 
    public List<RenderingEngineTemplate> getRenderingEngineTemplates()
    {
-      final List<RenderingEngineTemplate> result = new ArrayList<RenderingEngineTemplate>();
-      for (AssociationRef assoc : this.nodeService.getTargetAssocs(this.folderNodeRef, 
-                                                                   WCMModel.ASSOC_RENDERING_ENGINE_TEMPLATES))
+      final List<AssociationRef> refs = this.nodeService.getTargetAssocs(this.folderNodeRef, 
+                                                                   WCMModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
+      final List<RenderingEngineTemplate> result = new ArrayList<RenderingEngineTemplate>(refs.size());
+      for (AssociationRef assoc : refs)
       {
          final NodeRef retNodeRef = assoc.getTargetRef();
          for (ChildAssociationRef assoc2 : this.nodeService.getChildAssocs(retNodeRef,

@@ -130,7 +130,7 @@ public class FormTemplatesDialog extends BaseDialogBean
       List<UIListItem> items = new ArrayList<UIListItem>(engines.size());
       for (RenderingEngineTemplate engine : engines)
       {
-         PresentationTemplate wrapper = new PresentationTemplate(engine, null);
+         PresentationTemplate wrapper = new PresentationTemplate(engine);
          UIListItem item = new UIListItem();
          item.setValue(wrapper);
          item.setLabel(wrapper.getTitle());

@@ -32,7 +32,8 @@
       </a:selectList>
    </h:panelGroup>
    
-   <h:outputText styleClass="mainSubText" value="#{msg.website_selected_templates}:" style="padding-top:8px" />
+   <f:verbatim><div style='padding:4px'></div></f:verbatim>
+   <h:outputText styleClass="mainSubText" value="#{msg.website_selected_templates}:" />
    <h:dataTable value="#{DialogManager.bean.templatesDataModel}" var="row" 
                 rowClasses="selectedItemsRow,selectedItemsRowAlt"
                 styleClass="selectedItems" headerClass="selectedItemsHeader"

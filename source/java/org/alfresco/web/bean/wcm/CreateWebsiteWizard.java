@@ -978,7 +978,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private String description;
       private WorkflowWrapper workflow;
       private String filenamePattern;
-      private List<PresentationTemplate> templates = new ArrayList<PresentationTemplate>(4);
+      private List<PresentationTemplate> templates = null;
       
       FormWrapper(Form form)
       {
@@ -1037,6 +1037,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
        */
       public String getFilenamePattern()
       {
+         if (this.filenamePattern == null)
+         {
+            this.filenamePattern = this.form.getOutputPathPattern();
+         }
          return this.filenamePattern;
       }
 
@@ -1053,6 +1057,15 @@ public class CreateWebsiteWizard extends BaseWizardBean
        */
       public List<PresentationTemplate> getTemplates()
       {
+         if (this.templates == null)
+         {
+            List<RenderingEngineTemplate> templates = this.form.getRenderingEngineTemplates();
+            this.templates = new ArrayList<PresentationTemplate>(templates.size());
+            for (RenderingEngineTemplate template : templates)
+            {
+               this.templates.add(new PresentationTemplate(template));
+            }
+         }
          return this.templates;
       }
 
@@ -1071,9 +1084,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          String none = '<' + Application.getMessage(FacesContext.getCurrentInstance(), MSG_NONE) + '>';
          return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_FORM_SUMMARY),
-               this.workflow != null ? this.workflow.name : none,
-               this.filenamePattern != null ? this.filenamePattern : none,
-               this.templates != null ? this.templates.size() : 0);
+               getWorkflow() != null ? this.workflow.name : none,
+               getFilenamePattern() != null ? this.filenamePattern : none,
+               getTemplates() != null ? this.templates.size() : 0);
       }
    }
    
@@ -1086,6 +1099,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private String title;
       private String description;
       private String filenamePattern;
+      
+      public PresentationTemplate(RenderingEngineTemplate ret)
+      {
+         this(ret, null);
+      }
       
       public PresentationTemplate(RenderingEngineTemplate ret, String filenamePattern)
       {
@@ -1121,6 +1139,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
        */
       public String getFilenamePattern()
       {
+         if (this.filenamePattern == null)
+         {
+            this.filenamePattern = ret.getOutputPathPattern();
+         }
          return this.filenamePattern;
       }
 

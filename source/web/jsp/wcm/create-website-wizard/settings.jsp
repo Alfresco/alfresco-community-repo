@@ -35,7 +35,8 @@
    </h:panelGroup>
    
    <%-- Selected Workflow table, with configuration buttons and info text --%>
-   <h:outputText styleClass="mainSubText" style="padding-top:8px" value="#{msg.website_selected_workflows}:" />
+   <f:verbatim><div style='padding:4px'></div></f:verbatim>
+   <h:outputText styleClass="mainSubText" value="#{msg.website_selected_workflows}:" />
    <h:dataTable value="#{WizardManager.bean.workflowsDataModel}" var="row" 
                 rowClasses="selectedItemsRow,selectedItemsRowAlt"
                 styleClass="selectedItems" headerClass="selectedItemsHeader"

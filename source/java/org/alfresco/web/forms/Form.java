@@ -41,6 +41,9 @@ public interface Form
 
    /** the root tag to use within the schema */
    public String getSchemaRootElementName();
+   
+   /** the output path pattern for form instance data */
+   public String getOutputPathPattern();
 
    /** the xml schema for this template type */
    public Document getSchema()

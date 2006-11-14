@@ -38,6 +38,9 @@ public interface RenderingEngineTemplate
    /** the description of the form */
    public String getDescription();
 
+   /** the output path pattern for renditions */
+   public String getOutputPathPattern();
+   
    /**
     * Provides the rendering engine to use to process this template.
     *

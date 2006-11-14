@@ -1175,15 +1175,6 @@ public class SchemaFormBuilder
                                   pathToRoot,
                                   relative,
                                   checkIfExtension);
-	
-      Element realModel = modelSection;
-      if (relative) 
-      {
-         //modelSection: find the last element put in the modelSection = bind
-         realModel = DOMUtil.getLastChildElement(modelSection);
-      }
-	
-      this.endFormGroup(groupElement, controlType, o, realModel);
    }
 
    private void addComplexTypeChildren(final Document xForm,
@@ -2265,18 +2256,18 @@ public class SchemaFormBuilder
       bindElement = this.startBindElement(bindElement, schema, controlType, owner, pathToRoot, o);
 
       // add a group if a repeat !
-      if (owner instanceof XSElementDeclaration && o.maximum != 1) 
-      {
-         Element groupElement = this.createGroup(xForm, 
-                                                 modelSection, 
-                                                 formSection, 
-                                                 (XSElementDeclaration) owner);
-         //set content
-         Element groupWrapper = groupElement;
-         if (groupElement != modelSection)
-            groupWrapper = this.wrapper.createGroupContentWrapper(groupElement);
-         formSection = groupWrapper;
-      }
+//      if (owner instanceof XSElementDeclaration && o.maximum != 1) 
+//      {
+//         Element groupElement = this.createGroup(xForm, 
+//                                                 modelSection, 
+//                                                 formSection, 
+//                                                 (XSElementDeclaration) owner);
+//         //set content
+//         Element groupWrapper = groupElement;
+//         if (groupElement != modelSection)
+//            groupWrapper = this.wrapper.createGroupContentWrapper(groupElement);
+//         formSection = groupWrapper;
+//      }
 
       //eventual repeat
       final Element repeatSection = this.addRepeatIfNecessary(xForm, 
@@ -3300,18 +3291,6 @@ public class SchemaFormBuilder
    public void endFormControl(Element controlElement,
                               XSTypeDefinition controlType,
                               Occurs occurs)
-   {
-   }
-
-   /**
-    * __UNDOCUMENTED__
-    *
-    * @param groupElement __UNDOCUMENTED__
-    */
-   public void endFormGroup(final Element groupElement,
-                            final XSTypeDefinition controlType,
-                            final Occurs o,
-                            final Element modelSection) 
    {
    }
 

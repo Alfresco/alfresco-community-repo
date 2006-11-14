@@ -30,7 +30,7 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.PresentationTemplate;
 import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.RenderingEngine;
+import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UISelectList;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -126,9 +126,9 @@ public class FormTemplatesDialog extends BaseDialogBean
    public List<UIListItem> getTemplatesList()
    {
       Form form = getActionForm().getForm();
-      List<RenderingEngine> engines = form.getRenderingEngines();
+      List<RenderingEngineTemplate> engines = form.getRenderingEngineTemplates();
       List<UIListItem> items = new ArrayList<UIListItem>(engines.size());
-      for (RenderingEngine engine : engines)
+      for (RenderingEngineTemplate engine : engines)
       {
          PresentationTemplate wrapper = new PresentationTemplate(engine, null);
          UIListItem item = new UIListItem();
@@ -153,7 +153,7 @@ public class FormTemplatesDialog extends BaseDialogBean
       {
          PresentationTemplate template = (PresentationTemplate)this.templateList.get(index).getValue();
          // clone the PresentationTemplate into one the user can modify
-         this.templates.add(new PresentationTemplate(template.getRenderingEngine(), template.getFilenamePattern()));
+         this.templates.add(new PresentationTemplate(template.getRenderingEngineTemplate(), template.getFilenamePattern()));
       }
    }
    

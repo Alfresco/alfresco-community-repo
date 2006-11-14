@@ -53,6 +53,7 @@ import org.w3c.dom.ls.*;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
+import org.xml.sax.SAXException;
 
 /**
  * Bean for interacting with the chiba processor from the ui using ajax requests.
@@ -150,6 +151,14 @@ public class XFormsBean
       catch (FormBuilderException fbe)
       {
          LOGGER.error(fbe);
+      }
+      catch (IOException ioe)
+      {
+         LOGGER.error(ioe);
+      }
+      catch (SAXException saxe)
+      {
+         LOGGER.error(saxe);
       }
    }
 
@@ -348,7 +357,9 @@ public class XFormsBean
                                final Form tt,
                                final String cwdAvmPath,
                                final HttpServletRequest request) 
-      throws FormBuilderException
+      throws FormBuilderException,
+      IOException,
+      SAXException
    {
       final Document schemaDocument = tt.getSchema();
       this.rewriteInlineURIs(schemaDocument, cwdAvmPath);
@@ -365,7 +376,7 @@ public class XFormsBean
       LOGGER.debug("building xform for schema " + tt.getName());
       final Document result = builder.buildForm(xmlContent, 
                                                 schemaDocument, 
-                                                tt.getRootTagName());
+                                                tt.getSchemaRootElementName());
       LOGGER.debug("generated xform: " + result);
       //	LOGGER.debug(ts.writeXMLToString(result));
       return result;

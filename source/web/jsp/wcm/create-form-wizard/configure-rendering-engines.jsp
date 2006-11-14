@@ -47,41 +47,52 @@
   <h:panelGrid id="panel_grid_3"
                columns="3" cellpadding="3" cellspacing="3" border="0"
                width="100%">
-    <h:graphicImage id="required_image_pt"
+    <h:graphicImage id="required_image_rendering_engine_template_file"
                     value="/images/icons/required_field.gif" alt="Required Field" />
-    <h:outputText id="output_text_pt"
+    <h:outputText id="output_text_rendering_engine_tempalte_file"
                   value="#{msg.rendering_engine_file}:"/>
+    <h:column id="column_pt">
 <%
 final FileUploadBean upload = (FileUploadBean)
-   session.getAttribute(FileUploadBean.getKey(CreateFormWizard.FILE_RENDERING_ENGINE));
+   session.getAttribute(FileUploadBean.getKey(CreateFormWizard.FILE_RENDERING_ENGINE_TEMPLATE));
 if (upload == null || upload.getFile() == null)
 {
 %>
-    <h:column id="column_pt">
+
       <f:verbatim>
-	<input type="hidden" name="upload-id" value="<%= CreateFormWizard.FILE_RENDERING_ENGINE %>"/>
+	<input type="hidden" name="upload-id" value="<%= CreateFormWizard.FILE_RENDERING_ENGINE_TEMPLATE %>"/>
 	<input type="hidden" name="return-page" value="<%= request.getContextPath() %>/faces<%= request.getServletPath() %>"/>
 	<input id="wizard:wizard-body:file-input" type="file" size="35" name="alfFileInput" onchange="javascript:upload_file(this)"/>
       </f:verbatim>
-    </h:column>
 <%
 } 
 else 
 {
 %>
     <h:outputText id="rendering-engine-file-name"
-                  value="#{WizardManager.bean.renderingEngineFileName}"/>
+                  value="#{WizardManager.bean.renderingEngineTemplateFileName}"/>
+    <h:outputText id="output_text_rendering_engine_template_space"
+                  value="&nbsp;"
+		  escape="false"/>
+    <a:actionLink id="action_link_remove_rendering_engine_template"
+		  image="/images/icons/delete.gif" 
+                  value="#{msg.remove}" 
+                  action="#{WizardManager.bean.removeUploadedRenderingEngineTemplateFile}"
+                  showLink="false" 
+		  target="top"/>
 <%
 }
 %>
+    </h:column>
+
     <h:graphicImage id="required-image-rendering-engine-type"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="rendering-engine-type-output-text"
                   value="#{msg.rendering_engine_type}:"/>
     <h:selectOneRadio id="rendering-engine-type" 
-		      value="#{WizardManager.bean.renderingEngineType}">
+		      value="#{WizardManager.bean.renderingEngineName}">
      <f:selectItems id="rendering-engine-type-choices"
-		    value="#{WizardManager.bean.renderingEngineTypeChoices}"/>
+		    value="#{WizardManager.bean.renderingEngineChoices}"/>
     </h:selectOneRadio>
 
     <h:graphicImage id="required-image-mimetype"
@@ -89,7 +100,8 @@ else
     <h:outputText id="mimetype-output-text"
 		  value="#{msg.mimetype_for_renditions}:"/>
     <h:selectOneMenu id="mimetype"
-		     value="#{WizardManager.bean.mimetype}">
+		     valueChangeListener="#{WizardManager.bean.mimetypeForRenditionChanged}" 
+		     value="#{WizardManager.bean.mimetypeForRendition}">
       <f:selectItems id="mimetype-choices"
 		     value="#{WizardManager.bean.mimeTypeChoices}" />
     </h:selectOneMenu>
@@ -99,31 +111,31 @@ else
     <h:outputText id="file-extension-output-text"
                   value="#{msg.extension_for_renditions}:"/>
     <h:inputText id="file-extension" 
-		 value="#{WizardManager.bean.fileExtension}"
-                 maxlength="10" size="10"/>
+		 value="#{WizardManager.bean.outputPathPatternForRendition}"
+		 style="width:100%;"/>
   </h:panelGrid>
 
   <h:panelGroup id="step-2-panel-group" styleClass="mainSubText">
     <h:outputText id="step-2-output-text" value="2." />
     <h:commandButton id="add-to-list-button" 
 		     value="#{msg.add_to_list_button}" 
-		     actionListener="#{WizardManager.bean.addSelectedRenderingEngine}" 
+		     actionListener="#{WizardManager.bean.addSelectedRenderingEngineTemplate}" 
 		     styleClass="wizardButton" 
 		     disabled="#{WizardManager.bean.addToListDisabled}" />
   </h:panelGroup>
-  <h:outputText id="selected-rendering-engines-output-text"
+  <h:outputText id="selected-rendering-engine-templates-output-text"
                 styleClass="mainSubText" 
 		value="#{msg.selected_rendering_engines}" />
   <h:panelGroup id="data-table-panel-group">
-    <h:dataTable id="rendering-engine-data-table"
-                 value="#{WizardManager.bean.renderingEnginesDataModel}" 
+    <h:dataTable id="rendering-engine-template-data-table"
+                 value="#{WizardManager.bean.renderingEngineTemplatesDataModel}" 
 		 var="row" 
                  rowClasses="selectedItemsRow,selectedItemsRowAlt"
                  styleClass="selectedItems" 
 		 headerClass="selectedItemsHeader"
                  cellspacing="0" 
 		 cellpadding="4" 
-                 rendered="#{WizardManager.bean.renderingEnginesDataModel.rowCount != 0}">
+                 rendered="#{WizardManager.bean.renderingEngineTemplatesDataModel.rowCount != 0}">
       <h:column id="data-table-column-1">
         <f:facet name="header">
           <h:outputText id="data-table-name-1" value="#{msg.file_name}" />
@@ -134,29 +146,29 @@ else
         <f:facet name="header">
           <h:outputText id="data-table-name-2" value="#{msg.type}" />
         </f:facet>
-        <h:outputText id="data-table-value-2" value="#{row.renderingEngineTypeName}" />
+        <h:outputText id="data-table-value-2" value="#{row.renderingEngine.name}" />
       </h:column>
       <h:column id="data-table-column-3">
         <f:facet name="header">
           <h:outputText id="data-table-name-3" value="#{msg.file_extension}" />
         </f:facet>
-        <h:outputText id="data-table-value-3" value="#{row.fileExtension}" />
+        <h:outputText id="data-table-value-3" value="#{row.outputPathPatternForRendition}" />
       </h:column>
       <h:column id="data-table-column-4">
         <f:facet name="header">
           <h:outputText id="data-table-name-4" value="#{msg.mimetype}" />
         </f:facet>
-        <h:outputText id="data-table-value-4" value="#{row.mimetype}" />
+        <h:outputText id="data-table-value-4" value="#{row.mimetypeForRendition}" />
       </h:column>
       <h:column id="data-table-column-5">
         <a:actionLink id="remove-select-rendering-engine-action-link"
-		      actionListener="#{WizardManager.bean.removeSelectedRenderingEngine}" 
+		      actionListener="#{WizardManager.bean.removeSelectedRenderingEngineTemplate}" 
 	              image="/images/icons/delete.gif"
                       value="#{msg.remove}" showLink="false" style="padding-left:6px" />
       </h:column>
     </h:dataTable>
     
-    <a:panel id="no-items" rendered="#{WizardManager.bean.renderingEnginesDataModel.rowCount == 0}">
+    <a:panel id="no-items" rendered="#{WizardManager.bean.renderingEngineTemplatesDataModel.rowCount == 0}">
       <h:panelGrid id="no-items-panel-grid" 
 		   columns="1" 
 		   cellpadding="2" 

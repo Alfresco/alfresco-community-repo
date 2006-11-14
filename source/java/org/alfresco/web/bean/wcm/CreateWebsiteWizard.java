@@ -60,7 +60,7 @@ import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormsService;
-import org.alfresco.web.forms.RenderingEngine;
+import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UISelectList;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -293,7 +293,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          for (PresentationTemplate template : form.getTemplates())
          {
             props.clear();
-            props.put(ContentModel.PROP_ENGINE, template.getRenderingEngine().getNodeRef());
+            props.put(ContentModel.PROP_ENGINE, template.getRenderingEngineTemplate().getNodeRef());
             NodeRef templateRef = this.nodeService.createNode(formRef,
                   ContentModel.ASSOC_WEBFORMTEMPLATE,
                   ContentModel.ASSOC_WEBFORMTEMPLATE,
@@ -533,8 +533,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          UIListItem item = new UIListItem();
          item.setValue(form);
          item.setLabel(form.getName());
-         item.setDescription((String)this.nodeService.getProperty(
-               form.getNodeRef(), ContentModel.PROP_DESCRIPTION));
+         item.setDescription(form.getDescription());
          item.setImage(WebResources.IMAGE_WEBFORM_32);
          items.add(item);
       }
@@ -1083,29 +1082,27 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public static class PresentationTemplate
    {
-      private RenderingEngine engine;
+      private RenderingEngineTemplate ret;
       private String title;
       private String description;
       private String filenamePattern;
       
-      public PresentationTemplate(RenderingEngine engine, String filenamePattern)
+      public PresentationTemplate(RenderingEngineTemplate ret, String filenamePattern)
       {
-         this.engine = engine;
+         this.ret = ret;
          this.filenamePattern = filenamePattern;
       }
       
-      public RenderingEngine getRenderingEngine()
+      public RenderingEngineTemplate getRenderingEngineTemplate()
       {
-         return this.engine;
+         return this.ret;
       }
       
       public String getTitle()
       {
          if (this.title == null)
          {
-            this.title = (String)Repository.getServiceRegistry(
-                  FacesContext.getCurrentInstance()).getNodeService().getProperty(
-                        engine.getNodeRef(), ContentModel.PROP_NAME);
+            this.title = ret.getName();
          }
          return this.title;
       }
@@ -1114,9 +1111,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          if (this.description == null)
          {
-            this.description = (String)Repository.getServiceRegistry(
-                  FacesContext.getCurrentInstance()).getNodeService().getProperty(
-                        engine.getNodeRef(), ContentModel.PROP_DESCRIPTION);
+            this.description = ret.getDescription();
          }
          return this.description;
       }

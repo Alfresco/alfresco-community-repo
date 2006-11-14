@@ -27,13 +27,16 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -57,7 +60,8 @@ import org.w3c.dom.Document;
  * 
  * @author arielb
  */
-public class CreateFormWizard extends BaseWizardBean
+public class CreateFormWizard 
+   extends BaseWizardBean
 {
 
    /////////////////////////////////////////////////////////////////////////////
@@ -65,35 +69,35 @@ public class CreateFormWizard extends BaseWizardBean
    /**
     * Simple wrapper class to represent a form data renderer
     */
-   public class RenderingEngineData
+   public class RenderingEngineTemplateData
    {
       private final String fileName;
       private final File file;
-      private final String fileExtension;
-      private final String mimetype;
-      private final Class renderingEngineType;
+      private final String mimetypeForRendition;
+      private final String outputPathPatternForRendition;
+      private final RenderingEngine renderingEngine;
 
-      public RenderingEngineData(final String fileName, 
-                                 final File file,
-                                 final String fileExtension,
-                                 final String mimetype,
-                                 final Class renderingEngineType)
+      public RenderingEngineTemplateData(final String fileName, 
+                                         final File file,
+                                         final String outputPathPatternForRendition,
+                                         final String mimetypeForRendition,
+                                         final RenderingEngine renderingEngine)
       {
          this.fileName = fileName;
          this.file = file;
-         this.fileExtension = fileExtension;
-         this.mimetype = mimetype;
-         this.renderingEngineType = renderingEngineType;
+         this.outputPathPatternForRendition = outputPathPatternForRendition;
+         this.mimetypeForRendition = mimetypeForRendition;
+         this.renderingEngine = renderingEngine;
       }
       
-      public String getFileExtension()
+      public String getOutputPathPatternForRendition()
       {
-         return this.fileExtension;
+         return this.outputPathPatternForRendition;
       }
 
-      public String getMimetype()
+      public String getMimetypeForRendition()
       {
-         return this.mimetype;
+         return this.mimetypeForRendition;
       }
       
       public String getFileName()
@@ -106,20 +110,26 @@ public class CreateFormWizard extends BaseWizardBean
          return this.file;
       }
 
-      public Class getRenderingEngineType()
+      public RenderingEngine getRenderingEngine()
       {
-         return this.renderingEngineType;
+         return this.renderingEngine;
       }
-      
-      public String getRenderingEngineTypeName()
+
+      public String toString()
       {
-         return CreateFormWizard.this.getRenderingEngineTypeName(this.getRenderingEngineType());
+         return (this.getClass().getName() + "{" +
+                 "fileName: " + this.getFileName() + "," +
+                 "mimetypeForRendition: " + this.getMimetypeForRendition() + "," +
+                 "outputPathPatternForRendition: " + this.getOutputPathPatternForRendition() + "," +
+                 "renderingEngine: " + this.getRenderingEngine().getName() + 
+                 "}");
       }
    }
 
    /////////////////////////////////////////////////////////////////////////////
    
-   public static final String FILE_RENDERING_ENGINE = "rendering-engine";
+   public static final String FILE_RENDERING_ENGINE_TEMPLATE = 
+      "rendering-engine-template";
 
    public static final String FILE_SCHEMA = "schema";
 
@@ -129,22 +139,25 @@ public class CreateFormWizard extends BaseWizardBean
    private String formName;
    private String formTitle;
    private String formDescription;
-   private Class renderingEngineType = null;
+   private RenderingEngine renderingEngine = null;
    protected ContentService contentService;
    protected MimetypeService mimetypeService;
-   private DataModel renderingEnginesDataModel;
-   private List<RenderingEngineData> renderingEngines = null;
-   private String fileExtension = null;
-   private String mimetype = null;
+   private DataModel renderingEngineTemplatesDataModel;
+   private List<RenderingEngineTemplateData> renderingEngineTemplates = null;
+   private String outputPathPatternForFormInstanceData = null;
+   private String outputPathPatternForRendition = null;
+   private String mimetypeForRendition = null;
    private List<SelectItem> mimetypeChoices = null;
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
    @Override
-   protected String finishImpl(FacesContext context, String outcome)
+   protected String finishImpl(final FacesContext context, final String outcome)
       throws Exception
    {
+      LOGGER.debug("creating form " + this.getFormName());
+
       final FormsService ts = FormsService.getInstance();
       // get the node ref of the node that will contain the content
       final NodeRef contentFormsNodeRef = ts.getContentFormsNodeRef();
@@ -157,18 +170,12 @@ public class CreateFormWizard extends BaseWizardBean
          this.fileFolderService.create(folderInfo.getNodeRef(),
                                        this.getSchemaFileName(),
                                        ContentModel.TYPE_CONTENT);
-      final NodeRef schemaNodeRef = fileInfo.getNodeRef();
-      
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Created file node for file: " + 
-                      this.getSchemaFileName());
-
       // get a writer for the content and put the file
-      ContentWriter writer = this.contentService.getWriter(schemaNodeRef, 
+      ContentWriter writer = this.contentService.getWriter(fileInfo.getNodeRef(),
                                                            ContentModel.PROP_CONTENT,
                                                            true);
       // set the mimetype and encoding
-      writer.setMimetype("text/xml");
+      writer.setMimetype(MimetypeMap.MIMETYPE_XML);
       writer.setEncoding("UTF-8");
       writer.putContent(this.getSchemaFile());
 
@@ -176,46 +183,74 @@ public class CreateFormWizard extends BaseWizardBean
       Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(ContentModel.PROP_TITLE, this.getFormTitle());
       props.put(ContentModel.PROP_DESCRIPTION, this.getFormDescription());
-      this.nodeService.addAspect(schemaNodeRef, ContentModel.ASPECT_TITLED, props);
+      this.nodeService.addAspect(folderInfo.getNodeRef(), ContentModel.ASPECT_TITLED, props);
 
-      props = new HashMap<QName, Serializable>(1, 1.0f);
-      props.put(WCMModel.PROP_SCHEMA_ROOT_ELEMENT_NAME, this.getSchemaRootElementName());
-      this.nodeService.addAspect(schemaNodeRef, WCMModel.ASPECT_FORM, props);
+      props = new HashMap<QName, Serializable>(3, 1.0f);
+      props.put(WCMModel.PROP_XML_SCHEMA, fileInfo.getNodeRef());
+      props.put(WCMModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME, 
+                this.getSchemaRootElementName());
+      props.put(WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA, 
+                this.getOutputPathPatternForFormInstanceData());
+      this.nodeService.addAspect(folderInfo.getNodeRef(), WCMModel.ASPECT_FORM, props);
          
-      for (RenderingEngineData tomd : this.renderingEngines)
+      for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
       {
-         fileInfo = this.fileFolderService.create(folderInfo.getNodeRef(),
-                                                  tomd.getFileName(),
-                                                  ContentModel.TYPE_CONTENT);
-         final NodeRef renderingEngineNodeRef = fileInfo.getNodeRef();
-      
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Created file node for file: " + tomd.getFileName());
-      
-         // get a writer for the content and put the file
-         writer = this.contentService.getWriter(renderingEngineNodeRef, 
-                                                ContentModel.PROP_CONTENT, 
-                                                true);
-         // set the mimetype and encoding
-         writer.setMimetype("text/xml");
-         writer.setEncoding("UTF-8");
-         writer.putContent(tomd.getFile());
+         LOGGER.debug("adding rendering engine template " + retd + 
+                      " to form " + this.getFormName());
 
-         this.nodeService.createAssociation(schemaNodeRef,
-                                            renderingEngineNodeRef,
-                                            WCMModel.ASSOC_RENDERING_ENGINES);
-      
-         props = new HashMap<QName, Serializable>(3, 1.0f);
-         props.put(WCMModel.PROP_RENDERING_ENGINE_TYPE, 
-                   tomd.getRenderingEngineType().getName());
-         props.put(WCMModel.PROP_FORM_SOURCE, schemaNodeRef);
-         props.put(WCMModel.PROP_FILE_EXTENSION_FOR_RENDITION, 
-                   tomd.getFileExtension());
+         NodeRef renderingEngineTemplateNodeRef = 
+            this.fileFolderService.searchSimple(folderInfo.getNodeRef(), retd.getFileName());
+         if (renderingEngineTemplateNodeRef == null)
+         {
+            try
+            {
+               fileInfo = this.fileFolderService.create(folderInfo.getNodeRef(),
+                                                        retd.getFileName(),
+                                                        ContentModel.TYPE_CONTENT);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("Created file node for file: " + retd.getFileName());
+               renderingEngineTemplateNodeRef = fileInfo.getNodeRef();            
+            }
+            catch (final FileExistsException fee)
+            {
+               LOGGER.error(fee.getName() + " already exists in " + 
+                            fee.getParentNodeRef());
+               throw fee;
+            }
+
+            // get a writer for the content and put the file
+            writer = this.contentService.getWriter(renderingEngineTemplateNodeRef, 
+                                                   ContentModel.PROP_CONTENT, 
+                                                   true);
+            // set the mimetype and encoding
+            // XXXarielb mime type of template isn't known
+            // writer.setMimetype("text/xml");
+            writer.setEncoding("UTF-8");
+            writer.putContent(retd.getFile());
+
+            this.nodeService.createAssociation(folderInfo.getNodeRef(),
+                                               renderingEngineTemplateNodeRef,
+                                               WCMModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
+            props = new HashMap<QName, Serializable>(2, 1.0f);
+            props.put(WCMModel.PROP_PARENT_RENDERING_ENGINE_NAME, 
+                      retd.getRenderingEngine().getName());
+            props.put(WCMModel.PROP_FORM_SOURCE, folderInfo.getNodeRef());
+            this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
+                                       WCMModel.ASPECT_RENDERING_ENGINE_TEMPLATE, 
+                                       props);
+         }
+
+         LOGGER.debug("adding rendition properties to " + renderingEngineTemplateNodeRef);
+         props = new HashMap<QName, Serializable>(2, 1.0f);
+         props.put(WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION, 
+                   retd.getOutputPathPatternForRendition());
          props.put(WCMModel.PROP_MIMETYPE_FOR_RENDITION, 
-                   tomd.getMimetype());
-         this.nodeService.addAspect(renderingEngineNodeRef, 
-                                    WCMModel.ASPECT_RENDERING_ENGINE, 
-                                    props);
+                   retd.getMimetypeForRendition());
+         this.nodeService.createNode(renderingEngineTemplateNodeRef,
+                                     WCMModel.ASSOC_RENDITION_PROPERTIES,
+                                     WCMModel.ASSOC_RENDITION_PROPERTIES,
+                                     WCMModel.TYPE_RENDITION_PROPERTIES,
+                                     props);
       }
       // return the default outcome
       return outcome;
@@ -227,22 +262,23 @@ public class CreateFormWizard extends BaseWizardBean
       super.init(parameters);
       
       this.removeUploadedSchemaFile();
-      this.removeUploadedRenderingEngineFile();
+      this.removeUploadedRenderingEngineTemplateFile();
       this.schemaRootElementName = null;
       this.formName = null;
       this.formTitle = null;
       this.formDescription = null;
-      this.renderingEngineType = null;
-      this.renderingEngines = new ArrayList<RenderingEngineData>();
-      this.fileExtension = null;
-      this.mimetype = null;
+      this.renderingEngine = null;
+      this.renderingEngineTemplates = new ArrayList<RenderingEngineTemplateData>();
+      this.outputPathPatternForFormInstanceData = null;
+      this.outputPathPatternForRendition = null;
+      this.mimetypeForRendition = null;
    }
    
    @Override
    public String cancel()
    {
       this.removeUploadedSchemaFile();
-      this.removeUploadedRenderingEngineFile();
+      this.removeUploadedRenderingEngineTemplateFile();
       return super.cancel();
    }
    
@@ -274,88 +310,100 @@ public class CreateFormWizard extends BaseWizardBean
     */
    public boolean getAddToListDisabled()
    {
-      return getRenderingEngineFileName() == null;
+      return this.getRenderingEngineTemplateFileName() == null;
    }
 
    /**
-    * @return Returns the fileExtension.
+    * @return Returns the output path for the rendition.
     */
-   public String getFileExtension()
+   public String getOutputPathPatternForRendition()
    {
-      if (this.fileExtension == null && this.mimetype != null)
+      if (this.outputPathPatternForRendition == null && this.mimetypeForRendition != null)
       {
-         this.fileExtension =  this.mimetypeService.getExtension(this.mimetype);
+         this.outputPathPatternForRendition = 
+            ("${formInstanceData.name}." + 
+             this.mimetypeService.getExtension(this.mimetypeForRendition));
       }
-      return this.fileExtension;
+      return this.outputPathPatternForRendition;
    }
 
    /**
-    * @param fileExtension The fileExtension to set.
+    * @param outputPathPatternForRendition The output path for the rendition.
     */
-   public void setFileExtension(String fileExtension)
+   public void setOutputPathPatternForRendition(final String outputPathPatternForRendition)
    {
-      this.fileExtension = fileExtension;
+      this.outputPathPatternForRendition = outputPathPatternForRendition;
    }
 
    /**
     * @return Returns the mimetype.
     */
-   public String getMimetype()
+   public String getMimetypeForRendition()
    {
-      if (this.mimetype == null && this.fileExtension != null)
+      if (this.mimetypeForRendition == null && this.outputPathPatternForRendition != null)
       {
-         this.mimetype = this.mimetypeService.guessMimetype(this.fileExtension);
+         this.mimetypeForRendition = 
+            this.mimetypeService.guessMimetype(this.outputPathPatternForRendition);
       }
-      return this.mimetype;
+      return this.mimetypeForRendition;
    }
 
    /**
     * @param mimetype The mimetype to set.
     */
-   public void setMimetype(String mimetype)
+   public void setMimetypeForRendition(final String mimetypeForRendition)
    {
-      this.mimetype = mimetype;
+      this.mimetypeForRendition = mimetypeForRendition;
    }
 
    /**
     * Add the selected rendering engine to the list
     */
-   public void addSelectedRenderingEngine(ActionEvent event)
+   public void addSelectedRenderingEngineTemplate(final ActionEvent event)
    {
-      for (RenderingEngineData tomd : this.renderingEngines)
+      for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
       {
-         if (tomd.getFileExtension().equals(this.fileExtension))
+         if (retd.getOutputPathPatternForRendition().equals(this.outputPathPatternForRendition))
          {
-            throw new AlfrescoRuntimeException("rendering engine with extension " + this.fileExtension +
+            throw new AlfrescoRuntimeException("rendering engine template with output path " + this.outputPathPatternForRendition +
                                                " already exists");
          }
       }
 
-      final RenderingEngineData data = 
-         this.new RenderingEngineData(this.getRenderingEngineFileName(),
-                                      this.getRenderingEngineFile(),
-                                      this.getFileExtension(),
-                                      this.getMimetype(),
-                                      this.renderingEngineType);
-      this.renderingEngines.add(data);
-      this.removeUploadedRenderingEngineFile();
-      this.renderingEngineType = null;
-      this.fileExtension = null;
-      this.mimetype = null;
+      final RenderingEngineTemplateData data = 
+         this.new RenderingEngineTemplateData(this.getRenderingEngineTemplateFileName(),
+                                              this.getRenderingEngineTemplateFile(),
+                                              this.getOutputPathPatternForRendition(),
+                                              this.getMimetypeForRendition(),
+                                              this.renderingEngine);
+      this.renderingEngineTemplates.add(data);
+      this.removeUploadedRenderingEngineTemplateFile();
+      this.renderingEngine = null;
+      this.outputPathPatternForRendition = null;
+      this.mimetypeForRendition = null;
    }
    
    /**
     * Action handler called when the Remove button is pressed to remove a 
     * rendering engine
     */
-   public void removeSelectedRenderingEngine(ActionEvent event)
+   public void removeSelectedRenderingEngineTemplate(final ActionEvent event)
    {
-      final RenderingEngineData wrapper = (RenderingEngineData)
-         this.renderingEnginesDataModel.getRowData();
+      final RenderingEngineTemplateData wrapper = (RenderingEngineTemplateData)
+         this.renderingEngineTemplatesDataModel.getRowData();
       if (wrapper != null)
       {
-         this.renderingEngines.remove(wrapper);
+         this.renderingEngineTemplates.remove(wrapper);
       }
+   }
+
+   /**
+    * Action handler called when the user changes the selected mimetype
+    */
+   public String mimetypeForRenditionChanged(final ValueChangeEvent vce)
+   {
+      // refresh the current page
+      return null;
    }
    
    /**
@@ -372,9 +420,9 @@ public class CreateFormWizard extends BaseWizardBean
    /**
     * Action handler called when the user wishes to remove an uploaded file
     */
-   public String removeUploadedRenderingEngineFile()
+   public String removeUploadedRenderingEngineTemplateFile()
    {
-      clearUpload(FILE_RENDERING_ENGINE);
+      clearUpload(FILE_RENDERING_ENGINE_TEMPLATE);
       
       // refresh the current page
       return null;
@@ -389,65 +437,58 @@ public class CreateFormWizard extends BaseWizardBean
     * 
     * @return JSF DataModel representing the current configured output methods
     */
-   public DataModel getRenderingEnginesDataModel()
+   public DataModel getRenderingEngineTemplatesDataModel()
    {
-      if (this.renderingEnginesDataModel == null)
+      if (this.renderingEngineTemplatesDataModel == null)
       {
-         this.renderingEnginesDataModel = new ListDataModel();
+         this.renderingEngineTemplatesDataModel = new ListDataModel();
       }
       
-      this.renderingEnginesDataModel.setWrappedData(this.renderingEngines);
+      this.renderingEngineTemplatesDataModel.setWrappedData(this.renderingEngineTemplates);
       
-      return this.renderingEnginesDataModel;
+      return this.renderingEngineTemplatesDataModel;
    }
    
    /**
     * @return Returns the mime type currenty selected
     */
-   public String getRenderingEngineType()
+   public String getRenderingEngineName()
    {
-      if (this.renderingEngineType == null &&
-          this.getRenderingEngineFileName() != null)
+      if (this.renderingEngine == null &&
+          this.getRenderingEngineTemplateFileName() != null)
       {
-         this.renderingEngineType =
-            (this.getRenderingEngineFileName().endsWith(".xsl")
-             ? XSLTRenderingEngine.class
-             : (this.getRenderingEngineFileName().endsWith(".ftl")
-                ? FreeMarkerRenderingEngine.class
-                : (this.getRenderingEngineFileName().endsWith(".fo")
-                   ? XSLFORenderingEngine.class
-                   : null)));
+         final FormsService fs = FormsService.getInstance();
+         this.renderingEngine = 
+            fs.guessRenderingEngine(this.getRenderingEngineTemplateFileName());
       }
-      return (this.renderingEngineType == null
+      return (this.renderingEngine == null
               ? null
-              : this.renderingEngineType.getName());
+              : this.renderingEngine.getName());
    }
    
    /**
-    * @param renderingEngineType Sets the currently selected mime type
+    * @param renderingEngineName Sets the currently selected rendering engine name
     */
-   public void setRenderingEngineType(final String renderingEngineType)
-      throws ClassNotFoundException
+   public void setRenderingEngineName(final String renderingEngineName)
    {
-      this.renderingEngineType = (renderingEngineType == null
-                                       ? null
-                                       : Class.forName(renderingEngineType));
+      final FormsService fs = FormsService.getInstance();
+      this.renderingEngine = (renderingEngineName == null
+                              ? null
+                              : fs.getRenderingEngine(renderingEngineName));
    }
    
    /**
     * @return Returns a list of mime types to allow the user to select from
     */
-   public List<SelectItem> getRenderingEngineTypeChoices()
+   public List<SelectItem> getRenderingEngineChoices()
    {
-      return (List<SelectItem>)Arrays.asList(new SelectItem[] 
+      final FormsService fs = FormsService.getInstance();
+      final List<SelectItem>  result = new LinkedList<SelectItem>();
+      for (RenderingEngine re : fs.getRenderingEngines())
       {
-         new SelectItem(FreeMarkerRenderingEngine.class.getName(), 
-                        getRenderingEngineTypeName(FreeMarkerRenderingEngine.class)),
-         new SelectItem(XSLTRenderingEngine.class.getName(), 
-                        getRenderingEngineTypeName(XSLTRenderingEngine.class)),
-         new SelectItem(XSLFORenderingEngine.class.getName(), 
-                        getRenderingEngineTypeName(XSLFORenderingEngine.class))
-      });
+         result.add(new SelectItem(re.getName(), re.getName()));
+      }
+      return result;
    }
    
    /**
@@ -479,17 +520,6 @@ public class CreateFormWizard extends BaseWizardBean
        return this.mimetypeChoices;
    }
 
-   private String getRenderingEngineTypeName(Class type)
-   {
-      return (FreeMarkerRenderingEngine.class.equals(type)
-              ? "FreeMarker"
-              : (XSLTRenderingEngine.class.equals(type)
-                 ? "XSLT"
-                 : (XSLFORenderingEngine.class.equals(type)
-                    ? "XSL-FO"
-                    : null)));
-   }
-   
    private FileUploadBean getFileUploadBean(final String id)
    {
       final FacesContext ctx = FacesContext.getCurrentInstance();
@@ -540,17 +570,17 @@ public class CreateFormWizard extends BaseWizardBean
    /**
     * @return Returns the schema file or <tt>null</tt>
     */
-   public String getRenderingEngineFileName()
+   public String getRenderingEngineTemplateFileName()
    {
-      return this.getFileName(FILE_RENDERING_ENGINE);
+      return this.getFileName(FILE_RENDERING_ENGINE_TEMPLATE);
    }
    
    /**
     * @return Returns the rendering engine file or <tt>null</tt>
     */
-   public File getRenderingEngineFile()
+   public File getRenderingEngineTemplateFile()
    {
-      return this.getFile(FILE_RENDERING_ENGINE);
+      return this.getFile(FILE_RENDERING_ENGINE_TEMPLATE);
    }
 
    /**
@@ -618,6 +648,25 @@ public class CreateFormWizard extends BaseWizardBean
               ? this.getSchemaFileName().replaceAll("(.+)\\..*", "$1")
               : this.formName);
    }
+   /**
+    * @return Returns the output path for form instance data.
+    */
+   public String getOutputPathPatternForFormInstanceData()
+   {
+      if (this.outputPathPatternForFormInstanceData == null)
+      {
+         this.outputPathPatternForFormInstanceData = "${formInstanceData.name}.xml";
+      }
+      return this.outputPathPatternForFormInstanceData;
+   }
+
+   /**
+    * @param outputPathPatternForFormInstanceData the output path for form instance data
+    */
+   public void setOutputPathPatternForFormInstanceData(final String outputPathPatternForFormInstanceData)
+   {
+      this.outputPathPatternForFormInstanceData = outputPathPatternForFormInstanceData;
+   }
 
    /**
     * Sets the title for this form.
@@ -659,16 +708,16 @@ public class CreateFormWizard extends BaseWizardBean
    public String getSummary()
    {
       final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      final String[] labels = new String[1 + this.renderingEngines.size()];
-      final String[] values = new String[1 + this.renderingEngines.size()];
+      final String[] labels = new String[1 + this.renderingEngineTemplates.size()];
+      final String[] values = new String[1 + this.renderingEngineTemplates.size()];
       labels[0] = "Schema File";
       values[0] = this.getSchemaFileName();
-      for (int i = 0; i < this.renderingEngines.size(); i++)
+      for (int i = 0; i < this.renderingEngineTemplates.size(); i++)
       {
-         final RenderingEngineData tomd = this.renderingEngines.get(i);
-         labels[1 + i] = ("RenderingEngine for " + tomd.getFileExtension() +
-                          " mimetype " + tomd.getMimetype());
-         values[1 + i] = tomd.getFileName();
+         final RenderingEngineTemplateData retd = this.renderingEngineTemplates.get(i);
+         labels[1 + i] = ("RenderingEngine for " + retd.getOutputPathPatternForRendition() +
+                          " mimetype " + retd.getMimetypeForRendition());
+         values[1 + i] = retd.getFileName();
       }
 
       return this.buildSummary(labels, values);
@@ -681,7 +730,7 @@ public class CreateFormWizard extends BaseWizardBean
    /**
     * @param contentService The contentService to set.
     */
-   public void setContentService(ContentService contentService)
+   public void setContentService(final ContentService contentService)
    {
       this.contentService = contentService;
    }
@@ -689,7 +738,7 @@ public class CreateFormWizard extends BaseWizardBean
    /**
     * @param mimetypeService The mimetypeService to set.
     */
-   public void setMimetypeService(MimetypeService mimetypeService)
+   public void setMimetypeService(final MimetypeService mimetypeService)
    {
       this.mimetypeService = mimetypeService;
    }

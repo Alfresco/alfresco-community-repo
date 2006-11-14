@@ -35,6 +35,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.forms.FormsService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,18 +60,26 @@ public class XSLTRenderingEngine
 
    private static final Log LOGGER = LogFactory.getLog(XSLTRenderingEngine.class);
 
-   public XSLTRenderingEngine(final NodeRef nodeRef,
-                              final NodeService nodeService,
-                              final ContentService contentService)
+   public XSLTRenderingEngine()
    {
-      super(nodeRef, nodeService, contentService);
+      super();
+   }
+
+   public String getName()
+   {
+      return "XSLT";
+   }
+
+   public String getDefaultTemplateFileExtension() 
+   {
+      return "xsl";
    }
 
    protected static String toAVMPath(final ExpressionContext ec, String path)
       throws TransformerException
    {
       final XObject o = ec.getVariableOrParam(new QName(ALFRESCO_NS, ALFRESCO_NS_PREFIX, "parent_path"));
-      return o == null ? null : XSLTRenderingEngine.toAVMPath(o.toString(), path);
+      return o == null ? null : AVMConstants.buildAbsoluteAVMPath(o.toString(), path);
    }
 
    /**
@@ -276,15 +285,17 @@ public class XSLTRenderingEngine
    }
 
    public void render(final Document formInstanceData,
+                      final RenderingEngineTemplate ret,
                       final Map<String, String> parameters,
                       final OutputStream out)
       throws IOException,
       RenderingEngine.RenderingException
    {
-      this.render(new DOMSource(formInstanceData), parameters, new StreamResult(out));
+      this.render(new DOMSource(formInstanceData), ret, parameters, new StreamResult(out));
    }
 
    protected void render(final Source formInstanceDataSource,
+                         final RenderingEngineTemplate ret,
                          final Map<String, String> parameters,
                          final Result result)
       throws IOException,
@@ -296,7 +307,7 @@ public class XSLTRenderingEngine
       Document xslTemplate = null;
       try
       {
-         xslTemplate = ts.parseXML(this.getNodeRef());
+         xslTemplate = ts.parseXML(ret.getInputStream());
       }
       catch (final SAXException sax)
       {

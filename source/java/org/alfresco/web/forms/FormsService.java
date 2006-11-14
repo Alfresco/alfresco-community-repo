@@ -26,12 +26,12 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import javax.faces.context.FacesContext;
 import javax.xml.parsers.DocumentBuilder;
@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -89,6 +90,13 @@ public final class FormsService
    
    /** internal storage of forms, keyed by the form name */
    private HashMap<String, Form> forms = new HashMap<String, Form>();
+
+   private static final RenderingEngine[] RENDERING_ENGINES = new RenderingEngine[] 
+   {
+      new FreeMarkerRenderingEngine(),
+      new XSLTRenderingEngine(),
+      new XSLFORenderingEngine()
+   };
    
    private final ContentService contentService;
    private final NodeService nodeService;
@@ -97,6 +105,7 @@ public final class FormsService
    private final NamespaceService namespaceService;
    private final SearchService searchService;
    private final AVMService avmService;
+   private final TemplateService templateService;
 
    private NodeRef contentFormsNodeRef;
    
@@ -107,7 +116,8 @@ public final class FormsService
                        final DictionaryService dictionaryService,
                        final NamespaceService namespaceService,
                        final SearchService searchService,
-                       final AVMService avmService)
+                       final AVMService avmService,
+                       final TemplateService templateService)
    {
       this.contentService = contentService;
       this.nodeService = nodeService;
@@ -116,6 +126,7 @@ public final class FormsService
       this.namespaceService = namespaceService;
       this.searchService = searchService;
       this.avmService = avmService;
+      this.templateService = templateService;
       if (INSTANCE == null)
          INSTANCE = this;
    }
@@ -124,6 +135,45 @@ public final class FormsService
    public static FormsService getInstance()
    {
       return FormsService.INSTANCE;
+   }
+
+   /**
+    * Provides all registered rendering engines.
+    */
+   public RenderingEngine[] getRenderingEngines()
+   {
+      return FormsService.RENDERING_ENGINES;
+   }
+
+   /**
+    * Returns the rendering engine with the given name.
+    *
+    * @param name the name of the rendering engine.
+    *
+    * @return the rendering engine or <tt>null</tt> if not found.
+    */
+   public RenderingEngine getRenderingEngine(final String name)
+   {
+      for (RenderingEngine re : this.getRenderingEngines())
+      {
+         if (re.getName().equals(name))
+         {
+            return re;
+         }
+      }
+      return null;
+   }
+
+   public RenderingEngine guessRenderingEngine(final String fileName)
+   {
+      for (RenderingEngine re : this.getRenderingEngines())
+      {
+         if (fileName.endsWith(re.getDefaultTemplateFileExtension()))
+         {
+            return re;
+         }
+      }
+      return null;
    }
 
    /**
@@ -169,7 +219,7 @@ public final class FormsService
       for (ResultSetRow row : rs)
       {
          final NodeRef nodeRef = row.getNodeRef();
-         result.add(this.newForm(nodeRef));
+         result.add(this.getForm(nodeRef));
       }
       return result;
    }
@@ -202,7 +252,7 @@ public final class FormsService
       }
       if (result == null && LOGGER.isDebugEnabled())
          LOGGER.debug("unable to find tempalte type " + name);
-      return result != null ? this.newForm(result) : null;
+      return result != null ? this.getForm(result) : null;
    }
 
    /**
@@ -214,113 +264,69 @@ public final class FormsService
     */
    public Form getForm(final NodeRef nodeRef)
    {
-      return this.newForm(nodeRef);
-   }
-   
-   /** 
-    * instantiate a form.  for now this will always generate the
-    * xforms implementation, but will at some point be configurable such that
-    * the form processor type implementation can be configured for the system,
-    * or specified in the gui.
-    */
-   private Form newForm(final NodeRef schemaNodeRef)
-   {
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("creating form for " + schemaNodeRef);
-      final String title = (String)
-         this.nodeService.getProperty(schemaNodeRef, ContentModel.PROP_TITLE);
+         LOGGER.debug("loading form for " + nodeRef);
+      final Form result = new FormImpl(nodeRef, 
+                                       this.nodeService, 
+                                       this.contentService,
+                                       this.templateService);
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("title is " + title);
-      final String schemaRootTagName = (String)
-         this.nodeService.getProperty(schemaNodeRef, WCMModel.PROP_SCHEMA_ROOT_ELEMENT_NAME);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("root tag name is " + schemaRootTagName);
-      final Form tt = new FormImpl(title, schemaNodeRef, schemaRootTagName);
-      for (AssociationRef assoc : this.nodeService.getTargetAssocs(schemaNodeRef, 
-                                                                   WCMModel.ASSOC_RENDERING_ENGINES))
-      {
-         final NodeRef tomNodeRef = assoc.getTargetRef();
-         try
-         {
-            final Class formDataRendererType = 
-               Class.forName((String)this.nodeService.getProperty(tomNodeRef,
-                                                                  WCMModel.PROP_RENDERING_ENGINE_TYPE));
-            
-            final Constructor c = formDataRendererType.getConstructor(NodeRef.class, NodeService.class, ContentService.class);
-            final RenderingEngine tom = (RenderingEngine)
-               c.newInstance(tomNodeRef, this.nodeService, this.contentService);
-            if (LOGGER.isDebugEnabled())
-            {
-               LOGGER.debug("loaded form data renderer type " + tom.getClass().getName() +
-                            " for extension " + tom.getFileExtensionForRendition() + 
-                            ", " + tomNodeRef);
-            }
-            tt.addRenderingEngine(tom);
-         }
-         catch (Exception e)
-         {
-            throw new AlfrescoRuntimeException(e.getMessage(), e);
-         }
-      }
-      return tt;
+         LOGGER.debug("loaded form " + result);
+      return result;
    }
    
    /**
     * Generates renditions for the provided formInstanceData.
     *
     * @param formInstanceDataNodeRef the noderef containing the form instance data
-    * @param formInstanceData the parsed contents of the form.
-    * @param form the form to use when generating renditions.
     */
-   public void generateRenditions(final NodeRef formInstanceDataNodeRef,
-                                  final Document formInstanceData, 
-                                  final Form form)
+   public void generateRenditions(final NodeRef formInstanceDataNodeRef)
       throws IOException,
+      SAXException,
       RenderingEngine.RenderingException
    {
-      final String formInstanceDataFileName = (String)
-         nodeService.getProperty(formInstanceDataNodeRef, ContentModel.PROP_NAME);
-      final String formInstanceDataAvmPath = AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
-      final String parentPath = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0];
+      final Form form = 
+         this.getForm((NodeRef)this.nodeService.getProperty(formInstanceDataNodeRef,
+                                                            WCMModel.PROP_PARENT_FORM));
+      final Document formInstanceData = this.parseXML(formInstanceDataNodeRef);
 
-      for (RenderingEngine re : form.getRenderingEngines())
+      final String formInstanceDataFileName = (String)
+         this.nodeService.getProperty(formInstanceDataNodeRef, ContentModel.PROP_NAME);
+      final String formInstanceDataAvmPath = 
+         AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
+      LOGGER.debug("generating renditions for " + formInstanceDataAvmPath);
+
+      for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
       {
          // get the node ref of the node that will contain the content
-         final String renditionFileName = 
-            (this.stripExtension(formInstanceDataFileName) + 
-             "." + re.getFileExtensionForRendition());
-         final OutputStream out = this.avmService.createFile(parentPath, renditionFileName);
-         final String renditionAvmPath = parentPath + '/' + renditionFileName;
+         final String renditionAvmPath = 
+            this.getOutputAvmPathForRendition(ret, formInstanceDataNodeRef);
+         final String parentAVMPath = AVMNodeConverter.SplitBase(renditionAvmPath)[0];
+         this.makeAllDirectories(parentAVMPath);
+         final OutputStream out = this.avmService.createFile(parentAVMPath,
+                                                             AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + renditionAvmPath);
 
          final HashMap<String, String> parameters =
-            this.getRenderingEngineParameters(formInstanceDataFileName, 
-                                              renditionFileName, 
-                                              parentPath);
-         re.render(formInstanceData, parameters, out);
+            this.getRenderingEngineParameters(formInstanceDataAvmPath,
+                                              renditionAvmPath);
+         ret.getRenderingEngine().render(formInstanceData, ret, parameters, out);
          out.close();
             
          final NodeRef renditionNodeRef = 
-            AVMNodeConverter.ToNodeRef(-1, parentPath + '/' + renditionFileName);
+            AVMNodeConverter.ToNodeRef(-1, renditionAvmPath);
 
-         Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-         props.put(WCMModel.PROP_PARENT_FORM, form.getNodeRef());
-         props.put(WCMModel.PROP_PARENT_FORM_NAME, form.getName());
-         nodeService.addAspect(renditionNodeRef, WCMModel.ASPECT_FORM_INSTANCE_DATA, props);
+         form.registerFormInstanceData(renditionNodeRef);
+         ret.registerRendition(renditionNodeRef, formInstanceDataNodeRef);
 
-         props = new HashMap<QName, Serializable>(2, 1.0f);
-         props.put(WCMModel.PROP_PARENT_RENDERING_ENGINE, re.getNodeRef());
-         props.put(WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA, formInstanceDataNodeRef);
-         nodeService.addAspect(renditionNodeRef, WCMModel.ASPECT_RENDITION, props);
-
-         props = new HashMap<QName, Serializable>(1, 1.0f);
-         props.put(ContentModel.PROP_TITLE, renditionFileName);
+         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+         props.put(ContentModel.PROP_TITLE, AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          nodeService.addAspect(renditionNodeRef, ContentModel.ASPECT_TITLED, props);
          
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("generated " + renditionFileName + " using " + re);
+            LOGGER.debug("generated " + renditionAvmPath + " using " + ret);
       }
    }
    
@@ -346,55 +352,99 @@ public final class FormsService
 
       // other parameter values passed to rendering engine
       final String formInstanceDataAvmPath = AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
-      final String parentPath = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0];
+      LOGGER.debug("regenerating renditions for " + formInstanceDataAvmPath);
 
-      for (RenderingEngine re : form.getRenderingEngines())
+      for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
       {
-         final String renditionFileName = 
-            (this.stripExtension(formInstanceDataFileName) + "." + 
-             re.getFileExtensionForRendition());
+         final String renditionAvmPath = 
+            this.getOutputAvmPathForRendition(ret, formInstanceDataNodeRef);
 
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("regenerating file node for : " + formInstanceDataFileName + 
                          " (" + formInstanceDataNodeRef.toString() + 
-                         ") to " + parentPath + 
-                         "/" + renditionFileName);
+                         ") to " + renditionAvmPath);
             
          // get a writer for the content and put the file
          OutputStream out = null;
          try
          {
-            out = this.avmService.getFileOutputStream(parentPath + "/" + renditionFileName);
+            out = this.avmService.getFileOutputStream(renditionAvmPath);
          }
          catch (AVMNotFoundException e)
          {
-            out = this.avmService.createFile(parentPath, renditionFileName);
+            out = this.avmService.createFile(AVMNodeConverter.SplitBase(renditionAvmPath)[0], 
+                                             AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          }
 
          final HashMap<String, String> parameters =
-            this.getRenderingEngineParameters(formInstanceDataFileName, 
-                                           renditionFileName, 
-                                           parentPath);
-         re.render(formInstanceData, parameters, out);
+            this.getRenderingEngineParameters(formInstanceDataAvmPath, renditionAvmPath);
+         ret.getRenderingEngine().render(formInstanceData, ret, parameters, out);
          out.close();
 
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("generated " + renditionFileName + " using " + re);
+            LOGGER.debug("generated " + renditionAvmPath + " using " + ret);
       }
    }
 
-   private static HashMap<String, String> getRenderingEngineParameters(final String formInstanceDataFileName,
-                                                                       final String renditionFileName,
-                                                                       final String parentAvmPath)
+   private static String getOutputAvmPathForRendition(final RenderingEngineTemplate ret,
+                                                      final NodeRef formInstanceDataNodeRef)
+   {
+      final String formInstanceDataAvmPath = 
+         AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
+      String formInstanceDataFileName = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[1];
+      formInstanceDataFileName = FormsService.stripExtension(formInstanceDataFileName);
+      String result = ret.getOutputPathForRendition(formInstanceDataNodeRef);
+      if (result != null && result.charAt(0) == '/')
+      {
+         
+      }
+      return result;
+   }
+
+   private static HashMap<String, String> getRenderingEngineParameters(final String formInstanceDataAvmPath,
+                                                                       final String renditionAvmPath)
    {
       final HashMap<String, String> parameters = new HashMap<String, String>();      
-      parameters.put("avm_sandbox_url", AVMConstants.buildAVMStoreUrl(parentAvmPath));
-      parameters.put("form_instance_data_file_name", formInstanceDataFileName);
-      parameters.put("rendition_file_name", renditionFileName);
-      parameters.put("parent_path", parentAvmPath);
+      parameters.put("avm_sandbox_url", AVMConstants.buildAVMStoreUrl(formInstanceDataAvmPath));
+      parameters.put("form_instance_data_file_name", AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[1]);
+      parameters.put("rendition_file_name", AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
+      parameters.put("parent_path", AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0]);
       final FacesContext fc = FacesContext.getCurrentInstance();
       parameters.put("request_context_path", fc.getExternalContext().getRequestContextPath());
       return parameters;
+   }
+
+   // XXXarielb relocate
+   public void makeAllDirectories(final String avmDirectoryPath)
+   {
+      LOGGER.debug("mkdir -p " + avmDirectoryPath);
+      String s = avmDirectoryPath;
+      final Stack<String[]> dirNames = new Stack<String[]>();
+      while (s != null)
+      {
+         try
+         {
+            if (this.avmService.lookup(-1, s) != null)
+            {
+               LOGGER.debug("path " + s + " exists");
+               break;
+            }
+         }
+         catch (AVMNotFoundException avmfe)
+         {
+         }
+         final String[] sb = AVMNodeConverter.SplitBase(s);
+         s = sb[0];
+         LOGGER.debug("pushing " + sb[1]);
+         dirNames.push(sb);
+      }
+
+      while (!dirNames.isEmpty())
+      {
+         final String[] sb = dirNames.pop();
+         LOGGER.debug("creating " + sb[1] + " in " + sb[0]);
+         this.avmService.createDirectory(sb[0], sb[1]);
+      }
    }
    
    /** utility function for creating a document */

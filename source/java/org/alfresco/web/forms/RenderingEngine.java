@@ -50,42 +50,35 @@ public interface RenderingEngine
 
    /////////////////////////////////////////////////////////////////////////////
 
-   /** 
-    * XXXarielb this shouldn't be in the interface... i'll figure out a 
-    * different id scheme once i make rendering engines configurable.
+   /**
+    * Returns the rendering engines name.
     *
-    * the noderef associated with this output method 
+    * @return the name of the rendering engine.
     */
-   public NodeRef getNodeRef();
+   public String getName();
+
+
+   /**
+    * Returns the default file extension for rendering engine templates for this
+    * rendering engine.
+    *
+    * @return the default file extension for rendering engine templates for this
+    * rendering engine.
+    */
+   public String getDefaultTemplateFileExtension();
 
    /**
     * Renders the xml data in to a presentation format.
     *
-    * @param formInstanceData the xml content to serialize
+    * @param formInstanceData the xml content to serialize.
+    * @param ret the rendering engine template
     * @param form the form that collected the xml content.
     * @param parameters the set of parameters to the rendering engine
     * @param out the output stream to serialize to.
     */
    public void render(final Document formInstanceData,
+                      final RenderingEngineTemplate ret,
                       final Map<String, String> parameters,
                       final OutputStream out)
       throws IOException, RenderingException;
-
-   /**
-    * Returns the file extension to use when generating content for this
-    * output method.
-    *
-    * @return the file extension to use when generating content for this
-    * output method, such as html, xml, pdf.
-    */
-   public String getFileExtensionForRendition();
-
-   /**
-    * Returns the mimetype to use when generating content for this
-    * output method.
-    *
-    * @return the mimetype to use when generating content for this
-    * output method, such as text/html, text/xml, application/pdf.
-    */
-   public String getMimetypeForRendition();
 }

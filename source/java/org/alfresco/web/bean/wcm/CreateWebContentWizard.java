@@ -102,22 +102,12 @@ public class CreateWebContentWizard extends BaseContentWizard
       
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         if (logger.isDebugEnabled())
-            logger.debug("generating form data renderer output for " + this.formName);
          final Form form = this.getForm();
-         final FormsService fs = FormsService.getInstance();
          final NodeRef formInstanceDataNodeRef = 
             AVMNodeConverter.ToNodeRef(-1, this.createdPath);
-         final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-         props.put(WCMModel.PROP_PARENT_FORM, form.getNodeRef());
-         props.put(WCMModel.PROP_PARENT_FORM_NAME, form.getName());
-         this.nodeService.addAspect(formInstanceDataNodeRef, 
-                                    WCMModel.ASPECT_FORM_INSTANCE_DATA,
-                                    props);
 
-         fs.generateRenditions(formInstanceDataNodeRef,
-                               fs.parseXML(this.content),
-                               form);
+         form.registerFormInstanceData(formInstanceDataNodeRef);
+         FormsService.getInstance().generateRenditions(formInstanceDataNodeRef);
       }
       
       // return the default outcome
@@ -137,7 +127,23 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       // get the parent path of the location to save the content
       String path = this.avmBrowseBean.getCurrentPath();
-      
+      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
+      {
+         final FormsService fs = FormsService.getInstance();
+         final Document formInstanceData = (fileContent != null 
+                                            ? fs.parseXML(fileContent)
+                                            : fs.parseXML(strContent));
+
+         path = this.getForm().getOutputPathForFormInstanceData(path, this.fileName, formInstanceData);
+         final String[] sb = AVMNodeConverter.SplitBase(path);
+         path = sb[0];
+         this.fileName = sb[1];
+         fs.makeAllDirectories(path);
+      }
+
+      if (logger.isDebugEnabled())
+         logger.debug("creating file " + this.fileName + " in " + path);
+
       // put the content of the file into the AVM store
       if (fileContent != null)
       {
@@ -193,16 +199,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
-
-   /**
-    * @param fileName The name of the file
-    */
-   public void setFileName(String fileName)
-   {
-      super.setFileName(fileName != null && fileName.indexOf('.') == -1 
-                        ? fileName + ".xml" 
-                        : fileName);
-   }
    
    /**
     * @return Returns the content from the edited form.
@@ -219,7 +215,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       this.content = content;
    }
-   
+
    /**
     * @return the available forms that can be created.
     */

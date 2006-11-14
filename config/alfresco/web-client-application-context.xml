@@ -57,6 +57,9 @@
       <constructor-arg>
          <ref bean="AVMService" />
       </constructor-arg>
+      <constructor-arg>
+         <ref bean="TemplateService" />
+      </constructor-arg>
    </bean>
    
 </beans>

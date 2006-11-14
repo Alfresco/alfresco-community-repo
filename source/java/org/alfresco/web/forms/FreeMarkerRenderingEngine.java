@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.chiba.xml.util.DOMUtil;
@@ -48,11 +49,19 @@ public class FreeMarkerRenderingEngine
 
    private static final Log LOGGER = LogFactory.getLog(FreeMarkerRenderingEngine.class);
 
-   public FreeMarkerRenderingEngine(final NodeRef nodeRef,
-                                    final NodeService nodeService,
-                                    final ContentService contentService)
+   public FreeMarkerRenderingEngine()
    {
-      super(nodeRef, nodeService, contentService);
+      super();
+   }
+
+   public String getName()
+   {
+      return "FreeMarker";
+   }
+
+   public String getDefaultTemplateFileExtension() 
+   {
+      return "ftl";
    }
 
    /**
@@ -62,25 +71,26 @@ public class FreeMarkerRenderingEngine
     * all parameters and all extension functions.
     */
    public void render(final Document xmlContent,
+                      final RenderingEngineTemplate ret,
                       final Map<String, String> parameters,
                       final OutputStream out)
       throws IOException,
       RenderingEngine.RenderingException
    {
-      final ContentReader contentReader = 
-         this.contentService.getReader(this.getNodeRef(), ContentModel.TYPE_CONTENT);
-      final Reader reader = new InputStreamReader(contentReader.getContentInputStream());
+
       final Configuration cfg = new Configuration();
       cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-      
-      final Template t = new Template("freemarker_template", reader, cfg);
+
+      final Template t = new Template("freemarker_template", 
+                                      new InputStreamReader(ret.getInputStream()),
+                                      cfg);
       
       // wrap the xml instance in a model
       final TemplateHashModel instanceDataModel = NodeModel.wrap(xmlContent);
 
       // build models for each of the extension functions
       final HashMap<String, TemplateMethodModel> methodModels =
-            new HashMap<String, TemplateMethodModel>(3, 1.0f);
+         new HashMap<String, TemplateMethodModel>(3, 1.0f);
       methodModels.put("parseXMLDocument", new TemplateMethodModel()
       {
          public Object exec(final List args)
@@ -89,8 +99,8 @@ public class FreeMarkerRenderingEngine
             try 
             {
                final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
-               final String path = FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
-                                                                       (String)args.get(0));
+               final String path = AVMConstants.buildAbsoluteAVMPath(parameters.get("parent_path"), 
+                                                                     (String)args.get(0));
                final Document d = ef.parseXMLDocument(path);
                return d != null ? d.getDocumentElement() : null;
             }
@@ -110,8 +120,8 @@ public class FreeMarkerRenderingEngine
             {
                final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
                final String path = 
-                  FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
-                                                      args.size() == 1 ? "" : (String)args.get(1));
+                  AVMConstants.buildAbsoluteAVMPath(parameters.get("parent_path"), 
+                                                    args.size() == 1 ? "" : (String)args.get(1));
                final Map<String, Document> resultMap = ef.parseXMLDocuments((String)args.get(0), path);
                LOGGER.debug("received " + resultMap.size() + " documents in " + path);
 
@@ -156,8 +166,8 @@ public class FreeMarkerRenderingEngine
          {
             try 
             {
-               return FreeMarkerRenderingEngine.toAVMPath(parameters.get("parent_path"), 
-                                                          (String)args.get(0));
+               return AVMConstants.buildAbsoluteAVMPath(parameters.get("parent_path"), 
+                                                        (String)args.get(0));
             }
             catch (Exception e)
             {

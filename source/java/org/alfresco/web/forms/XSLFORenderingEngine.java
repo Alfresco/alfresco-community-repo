@@ -49,14 +49,23 @@ public class XSLFORenderingEngine
 
    private static final Log LOGGER = LogFactory.getLog(XSLFORenderingEngine.class);
 
-   public XSLFORenderingEngine(final NodeRef nodeRef,
-                               final NodeService nodeService,
-                               final ContentService contentService)
+   public XSLFORenderingEngine()
    {
-      super(nodeRef, nodeService, contentService);
+      super();
+   }
+
+   public String getName()
+   {
+      return "XSL-FO";
+   }
+
+   public String getDefaultTemplateFileExtension() 
+   {
+      return "fo";
    }
 
    public void render(final Document xmlContent,
+                      final RenderingEngineTemplate ret,
                       final Map<String, String> parameters,
                       final OutputStream out)
       throws IOException,
@@ -67,7 +76,7 @@ public class XSLFORenderingEngine
       {
          final FopFactory fopFactory = FopFactory.newInstance();
          final FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
-         final Fop fop = fopFactory.newFop(this.getMimetypeForRendition(), 
+         final Fop fop = fopFactory.newFop(ret.getMimetypeForRendition(), 
                                            foUserAgent, 
                                            out);
          // Resulting SAX events (the generated FO) must be piped through to FOP
@@ -79,7 +88,6 @@ public class XSLFORenderingEngine
          throw new RenderingEngine.RenderingException(fope);
       }
          
-      super.render(new DOMSource(xmlContent), parameters, result);
-
+      super.render(new DOMSource(xmlContent), ret, parameters, result);
    }
 }

@@ -16,11 +16,28 @@
  */
 package org.alfresco.web.forms;
 
+import freemarker.ext.dom.NodeModel;
+import freemarker.template.SimpleDate;
+import freemarker.template.SimpleHash;
+import freemarker.template.SimpleScalar;
+import freemarker.template.TemplateHashModel;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
 import java.io.*;
 import java.net.URI;
+import java.io.Serializable;
 import java.util.*;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.forms.xforms.XFormsProcessor;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.apache.commons.logging.Log;
@@ -33,60 +50,116 @@ public class FormImpl
 {
    private static final Log LOGGER = LogFactory.getLog(FormImpl.class);
    
-   private transient Document schema;
-   private final NodeRef schemaNodeRef;
-   private final String name;
-   private final String rootTagName;
-   private final LinkedList<RenderingEngine> renderingEngines = 
-      new LinkedList<RenderingEngine>();
+   private final NodeRef folderNodeRef;
+   private final NodeService nodeService;
+   private final ContentService contentService;
+   private final TemplateService templateService;
+
    private final static LinkedList<FormProcessor> PROCESSORS = 
       new LinkedList<FormProcessor>();
-   
    static 
    {
-      PROCESSORS.add(new XFormsProcessor());
+      FormImpl.PROCESSORS.add(new XFormsProcessor());
    }
    
-   public FormImpl(final String name,
-                   final NodeRef schemaNodeRef,
-                   final String rootTagName) 
+   public FormImpl(final NodeRef folderNodeRef,
+                   final NodeService nodeService,
+                   final ContentService contentService,
+                   final TemplateService templateService)
    {
-      this.name = name;
-      this.schemaNodeRef = schemaNodeRef;
-      this.rootTagName = rootTagName;
-   }
-   
-   public String getName()
-   {
-      return this.name;
+      this.folderNodeRef = folderNodeRef;
+      this.nodeService = nodeService;
+      this.contentService = contentService;
+      this.templateService = templateService;
    }
 
-   public String getRootTagName()
+   public String getName()
    {
-      return this.rootTagName;
+      return (String)
+         this.nodeService.getProperty(this.folderNodeRef, 
+                                      ContentModel.PROP_TITLE);
+   }
+
+   public String getDescription()
+   {
+      return (String)
+         this.nodeService.getProperty(this.folderNodeRef, 
+                                      ContentModel.PROP_DESCRIPTION);
+   }
+
+   public String getOutputPathForFormInstanceData(final String parentAVMPath,
+                                                  final String formInstanceDataFileName,
+                                                  final Document formInstanceData)
+   {
+      final String outputPathPattern = (String)
+         this.nodeService.getProperty(this.folderNodeRef, 
+                                      WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA);
+
+      final TemplateHashModel formInstanceDataModel = new TemplateHashModel()
+      {
+
+         private TemplateModel formInstanceDataModel; 
+
+         public TemplateModel get(final String key)
+         {
+            LOGGER.debug("looking up property " + key);
+            if ("xml".equals(key))
+            {
+               try
+               {
+                  if (formInstanceDataModel == null)
+                  {
+                     formInstanceDataModel = NodeModel.wrap(formInstanceData);
+                  }
+                  return formInstanceDataModel;
+               }
+               catch (Exception e)
+               {
+                  LOGGER.error(e);
+                  return null;
+               }
+            }
+            else if ("name".equals(key))
+            {
+               return new SimpleScalar(formInstanceDataFileName);
+            }
+            return null;
+         }
+
+         public boolean isEmpty()
+         {
+            return false;
+         }
+      };
+
+      final Map<String, TemplateModel> root = new HashMap<String, TemplateModel>();
+      root.put("formInstanceData", formInstanceDataModel);
+      root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
+
+      String result = templateService.processTemplateString(null, 
+                                                            outputPathPattern, 
+                                                            new SimpleHash(root));
+      result = AVMConstants.buildAbsoluteAVMPath(parentAVMPath, result);
+      LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
+      return result;
+   }
+
+   public String getSchemaRootElementName()
+   {
+      return (String)
+         this.nodeService.getProperty(folderNodeRef, 
+                                      WCMModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME);
    }
 
    public Document getSchema()
+      throws IOException, 
+      SAXException
    {
-      if (this.schema == null)
-      {
-         final FormsService ts = FormsService.getInstance();
-         try
-         {
-            //XXXarielb maybe cloneNode instead?
-            return /* this.schema = */ ts.parseXML(this.schemaNodeRef);
-         }
-         catch (Exception e)
-         {
-            LOGGER.error(e);
-         }
-      }
-      return this.schema;
-   }
-
-   public NodeRef getNodeRef()
-   {
-      return this.schemaNodeRef;
+      final FormsService ts = FormsService.getInstance();
+      final NodeRef schemaNodeRef = (NodeRef)
+         this.nodeService.getProperty(folderNodeRef,
+                                      WCMModel.PROP_XML_SCHEMA);
+      return ts.parseXML(schemaNodeRef);
    }
 
    public List<FormProcessor> getFormProcessors()
@@ -94,18 +167,57 @@ public class FormImpl
       return PROCESSORS;
    }
 
-   public void addRenderingEngine(final RenderingEngine output)
+   public void addRenderingEngineTemplate(final RenderingEngineTemplate ret)
    {
-      this.renderingEngines.add(output);
+//      this.renderingEngineTemplates.add(ret);
+      throw new UnsupportedOperationException();
    }
 
-   public List<RenderingEngine> getRenderingEngines()
+   public List<RenderingEngineTemplate> getRenderingEngineTemplates()
    {
-      return this.renderingEngines;
+      final List<RenderingEngineTemplate> result = new ArrayList<RenderingEngineTemplate>();
+      for (AssociationRef assoc : this.nodeService.getTargetAssocs(this.folderNodeRef, 
+                                                                   WCMModel.ASSOC_RENDERING_ENGINE_TEMPLATES))
+      {
+         final NodeRef retNodeRef = assoc.getTargetRef();
+         for (ChildAssociationRef assoc2 : this.nodeService.getChildAssocs(retNodeRef,
+                                                                           WCMModel.ASSOC_RENDITION_PROPERTIES,
+                                                                           RegexQNamePattern.MATCH_ALL))
+         {
+            final NodeRef renditionPropertiesNodeRef = assoc2.getChildRef();
+            
+            final RenderingEngineTemplate ret = 
+               new RenderingEngineTemplateImpl(retNodeRef,
+                                               renditionPropertiesNodeRef,
+                                               this.nodeService,
+                                               this.contentService,
+                                               this.templateService);
+            LOGGER.debug("loaded rendering engine template " + ret);
+            result.add(ret);
+         }
+      }
+      return result;
+   }
+
+   public void registerFormInstanceData(final NodeRef formInstanceDataNodeRef)
+   {
+      final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+      props.put(WCMModel.PROP_PARENT_FORM, this.folderNodeRef);
+      props.put(WCMModel.PROP_PARENT_FORM_NAME, this.getName());
+      this.nodeService.addAspect(formInstanceDataNodeRef, WCMModel.ASPECT_FORM_INSTANCE_DATA, props);
    }
 
    public int hashCode() 
    {
       return this.getName().hashCode();
+   }
+
+   public String toString()
+   {
+      return (this.getClass().getName() + "{" +
+              "name: " + this.getName() + "," +
+              "schemaRootElementName: " + this.getSchemaRootElementName() + "," +
+              "renderingEngineTemplates: " + this.getRenderingEngineTemplates() +
+              "}");
    }
 }

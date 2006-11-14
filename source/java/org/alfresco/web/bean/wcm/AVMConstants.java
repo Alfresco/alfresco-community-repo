@@ -18,6 +18,8 @@ package org.alfresco.web.bean.wcm;
 
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
 
@@ -121,6 +123,44 @@ public final class AVMConstants
       }
       
       return dns;
+   }
+
+   /**
+    * Converts the provided path to an absolute path within the avm.
+    *
+    * @param parentAVMPath used as the parent path if the provided path
+    * is relative, otherwise used to extract the parent path portion up until
+    * the webapp directory.
+    * @param path a path relative to the parentAVMPath path, or if it is
+    * absolute, it is relative to the webapp used in the parentAVMPath.
+    *
+    * @return an absolute path within the avm using the paths provided.
+    */
+   public static String buildAbsoluteAVMPath(final String parentAVMPath, final String path)
+   {
+      String parent = parentAVMPath;
+      if (path == null || path.length() == 0 || 
+          ".".equals(path) || "./".equals(path))
+      {
+         return parent;
+      }
+
+      if (path.charAt(0) == '/')
+      {
+         final Pattern p = Pattern.compile("([^:]+:/" + AVMConstants.DIR_APPBASE +
+                                           "/[^/]+/[^/]+).*");
+         final Matcher m = p.matcher(parent);
+         if (m.matches())
+         {
+            parent = m.group(1);
+         }
+      } 
+      else if (parent.charAt(parent.length() - 1) != '/')
+      {
+         parent = parent + '/';
+      }
+
+      return parent + path;
    }
    
    // names of the stores representing the layers for an AVM website

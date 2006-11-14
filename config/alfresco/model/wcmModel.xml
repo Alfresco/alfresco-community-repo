@@ -64,7 +64,7 @@
 
       <type name="wcm:renditionproperties">
          <title>Properties for renditions</title>
-	 <parent>sys:base</parent>
+	      <parent>sys:base</parent>
          <properties>
             <property name="wcm:outputpathpatternforrendition">
                <title>Type</title>

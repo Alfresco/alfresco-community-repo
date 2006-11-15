@@ -97,9 +97,14 @@
                <mandatory>true</mandatory>
             </property>
             <property name="wcm:outputpathpatternforforminstancedata">
-               <title>Type</title>
+               <title>Output path pattern for form instance data</title>
                <type>d:text</type>
                <mandatory>true</mandatory>
+            </property>
+            <property name="wcm:defaultworkflowid">
+               <title>Default Workflow ID</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
             </property>
          </properties>
          <associations>

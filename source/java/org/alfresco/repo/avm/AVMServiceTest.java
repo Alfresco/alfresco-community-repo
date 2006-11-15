@@ -254,7 +254,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             VersionPathStuffer stuffer = new VersionPathStuffer();
             stuffer.add(-1, "area:/a/b");
             String nodeList = stuffer.toString();
-            action.setParameterValue(AVMRevertListAction.PARAM_VERSION, 1);
+            action.setParameterValue(AVMRevertListAction.PARAM_VERSION, fService.getLatestSnapshotID("area"));
             action.setParameterValue(AVMRevertListAction.PARAM_NODE_LIST, nodeList);
             action.setParameterValue(AVMRevertListAction.PARAM_FLATTEN, true);
             action.setParameterValue(AVMRevertListAction.PARAM_STORE, "area");
@@ -273,6 +273,8 @@ public class AVMServiceTest extends AVMServiceTestBase
                     new TxnWork());
             diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a");
             assertEquals(0, diffs.size());
+            System.out.println(recursiveList("area", -1, true));
+            System.out.println(recursiveList("main", -1, true));
         }
         catch (Exception e)
         {

@@ -609,6 +609,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             dir = AVMDAOs.Instance().fAVMNodeDAO.getAVMStoreRoot(this, version);
         }
+        if (dir == null)
+        {
+            return null;
+        }
         // Add an entry for the root.
         result.add(dir, "", write);
         dir = (DirectoryNode)result.getCurrentNode();
@@ -796,6 +800,14 @@ public class AVMStoreImpl implements AVMStore, Serializable
         return fNextVersionID;
     }
     
+    /**
+     * This gets the last extant version id.
+     */
+    public int getLastVersionID()
+    {
+        return AVMDAOs.Instance().fVersionRootDAO.getMaxVersionID(this);
+    }
+
     /**
      * Set the root directory.  Hibernate.
      * @param root

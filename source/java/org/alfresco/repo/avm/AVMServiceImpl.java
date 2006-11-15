@@ -454,6 +454,21 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Get the latest snapshot id of a store. 
+     * @param storeName The store name.
+     * @return The id of the latest extant version of the store.
+     * @throws AVMNotFoundException If <code>storeName</code> does not exist.
+     */
+    public int getLatestSnapshotID(String storeName)
+    {
+        if (storeName == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        return fAVMRepository.getLatestSnapshotID(storeName);
+    }
+
+    /**
      * Create snapshots of a group of AVMStores.
      * @param stores A List of AVMStore names.
      * @return A List of the new version ids.

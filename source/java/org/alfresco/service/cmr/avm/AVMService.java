@@ -304,6 +304,14 @@ public interface AVMService
     public int getLatestVersionID(String storeName);
     
     /**
+     * Get the latest snapshot id of a store. 
+     * @param storeName The store name.
+     * @return The id of the latest extant version of the store.
+     * @throws AVMNotFoundException If <code>storeName</code> does not exist.
+     */
+    public int getLatestSnapshotID(String storeName);
+    
+    /**
      * Snapshot the given AVMStores.  When this is called everything that has been added,
      * deleted, or modified since the last time this function was called, is marked 
      * as needing to be copied, so that further modifications will trigger copy on write

@@ -966,6 +966,20 @@ public class AVMRepository
     }
     
     /**
+     * Get the latest extant snapshotted version id.
+     * @param name The store name.
+     */
+    public int getLatestSnapshotID(String name)
+    {
+        AVMStore store = getAVMStoreByName(name);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store not found.");
+        }
+        return store.getLastVersionID();
+    }
+    
+    /**
      * Get an AVMStore by name.
      * @param name The name of the AVMStore.
      * @return The AVMStore.

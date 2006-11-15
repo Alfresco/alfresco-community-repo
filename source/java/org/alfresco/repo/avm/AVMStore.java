@@ -44,6 +44,11 @@ public interface AVMStore
      * @return The next version to be snapshotted.
      */
     public int getNextVersionID();
+    
+    /**
+     * This gets the last extant version id.
+     */
+    public int getLastVersionID();
 
     /**
      * Set a new root for this store.

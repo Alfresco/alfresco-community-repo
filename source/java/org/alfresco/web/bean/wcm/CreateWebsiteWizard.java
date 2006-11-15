@@ -1021,6 +1021,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
        */
       public WorkflowWrapper getWorkflow()
       {
+         WorkflowDefinition wf = this.form.getDefaultWorkflow();
+         if (this.workflow == null && wf != null)
+         {
+            this.workflow = new WorkflowWrapper(wf.name);
+         }
          return this.workflow;
       }
 

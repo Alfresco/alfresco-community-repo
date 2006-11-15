@@ -17,6 +17,7 @@
 package org.alfresco.web.forms;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import java.io.IOException;
@@ -44,6 +45,12 @@ public interface Form
    
    /** the output path pattern for form instance data */
    public String getOutputPathPattern();
+
+   /** 
+    * @return the default workflow associated with this form or <tt>null</tt> 
+    * if none is configured. 
+    */
+   public WorkflowDefinition getDefaultWorkflow();
 
    /** the xml schema for this template type */
    public Document getSchema()

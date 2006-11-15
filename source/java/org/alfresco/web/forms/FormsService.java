@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateService;
@@ -105,7 +106,6 @@ public final class FormsService
    private final NamespaceService namespaceService;
    private final SearchService searchService;
    private final AVMService avmService;
-   private final TemplateService templateService;
 
    private NodeRef contentFormsNodeRef;
    
@@ -116,8 +116,7 @@ public final class FormsService
                        final DictionaryService dictionaryService,
                        final NamespaceService namespaceService,
                        final SearchService searchService,
-                       final AVMService avmService,
-                       final TemplateService templateService)
+                       final AVMService avmService)
    {
       this.contentService = contentService;
       this.nodeService = nodeService;
@@ -126,7 +125,6 @@ public final class FormsService
       this.namespaceService = namespaceService;
       this.searchService = searchService;
       this.avmService = avmService;
-      this.templateService = templateService;
       if (INSTANCE == null)
          INSTANCE = this;
    }
@@ -266,10 +264,7 @@ public final class FormsService
    {
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("loading form for " + nodeRef);
-      final Form result = new FormImpl(nodeRef, 
-                                       this.nodeService, 
-                                       this.contentService,
-                                       this.templateService);
+      final Form result = new FormImpl(nodeRef);
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("loaded form " + result);
       return result;

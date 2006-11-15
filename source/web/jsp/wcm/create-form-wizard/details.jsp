@@ -61,7 +61,9 @@
 
 <h:panelGrid id="panel_grid_2"
              columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
-  <h:outputText id="step-1-text" value="1. #{msg.create_form_details_step1_desc}" escape="false" />
+  <h:outputText id="step-1-text" 
+		value="1. #{msg.create_form_form_details_step1_desc}" 
+		escape="false" />
   
   <h:panelGrid id="schema_panel_grid"
                columns="3" cellpadding="3" cellspacing="3" border="0" width="100%">
@@ -113,11 +115,11 @@ if (upload == null || upload.getFile() == null)
     </h:selectOneMenu>
     <h:outputText id="schema-root-element-name-no-choices" 
 		  rendered="#{empty WizardManager.bean.schemaRootElementNameChoices}"
-		  value="#{msg.no_schema_selected}"/>
+		  value="#{msg.create_form_form_details_no_schema_selected}"/>
 
   </h:panelGrid>
 
-  <h:outputText id="step-2-text" value="2. #{msg.create_form_details_step2_desc}" escape="false" />
+  <h:outputText id="step-2-text" value="2. #{msg.create_form_form_details_step2_desc}" escape="false" />
   
   <h:panelGrid id="details_panel_grid"
                columns="3" cellpadding="3" cellspacing="3" border="0" width="100%">
@@ -149,7 +151,7 @@ if (upload == null || upload.getFile() == null)
 		    value="/images/icons/required_field.gif" 
 		    alt="Required Field" />
     <h:outputText id="output_text_form_instance_data_output_path_pattern" 
-		  value="#{msg.form_instance_data_output_path_pattern}:"/>
+		  value="#{msg.output_path_pattern}:"/>
     <h:inputText id="form_instance_data_output_path_pattern" 
 		 value="#{WizardManager.bean.outputPathPatternForFormInstanceData}" 
 		 style="width:100%"/>

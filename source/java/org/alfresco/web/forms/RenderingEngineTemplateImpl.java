@@ -29,15 +29,20 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,42 +59,32 @@ public class RenderingEngineTemplateImpl
 
    private final NodeRef nodeRef;
    private final NodeRef renditionPropertiesNodeRef;
-   private final NodeService nodeService;
-   private final ContentService contentService;
-   private final TemplateService templateService;
 
    protected RenderingEngineTemplateImpl(final NodeRef nodeRef,
-                                         final NodeRef renditionPropertiesNodeRef,
-                                         final NodeService nodeService,
-                                         final ContentService contentService,
-                                         final TemplateService templateService)
+                                         final NodeRef renditionPropertiesNodeRef)
    {
       this.nodeRef = nodeRef;
       this.renditionPropertiesNodeRef = renditionPropertiesNodeRef;
-      this.nodeService = nodeService;
-      this.contentService = contentService;
-      this.templateService = templateService;
    }
 
    public String getName()
    {
-      return (String)
-         this.nodeService.getProperty(this.nodeRef, 
-                                      ContentModel.PROP_NAME);
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
    }
 
    public String getDescription()
    {
-      return (String)
-         this.nodeService.getProperty(this.nodeRef, 
-                                      ContentModel.PROP_DESCRIPTION);
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      return (String)nodeService.getProperty(this.nodeRef, 
+                                             ContentModel.PROP_DESCRIPTION);
    }
    
    public String getOutputPathPattern()
    {
-      return (String)
-         this.nodeService.getProperty(this.renditionPropertiesNodeRef, 
-                                      WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION);
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      return (String)nodeService.getProperty(this.renditionPropertiesNodeRef, 
+                                             WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION);
    }
 
    public NodeRef getNodeRef()
@@ -105,8 +100,9 @@ public class RenderingEngineTemplateImpl
    public InputStream getInputStream()
       throws IOException
    {
+      final ContentService contentService = this.getServiceRegistry().getContentService();
       final ContentReader contentReader = 
-         this.contentService.getReader(this.nodeRef, ContentModel.TYPE_CONTENT);
+         contentService.getReader(this.nodeRef, ContentModel.TYPE_CONTENT);
       return contentReader.getContentInputStream();
    }
 
@@ -117,9 +113,10 @@ public class RenderingEngineTemplateImpl
     */
    public RenderingEngine getRenderingEngine()
    {
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final String renderingEngineName = (String)
-         this.nodeService.getProperty(this.nodeRef,
-                                      WCMModel.PROP_PARENT_RENDERING_ENGINE_NAME);
+         nodeService.getProperty(this.nodeRef,
+                                 WCMModel.PROP_PARENT_RENDERING_ENGINE_NAME);
       final FormsService fs = FormsService.getInstance();
       return fs.getRenderingEngine(renderingEngineName);
    }
@@ -131,62 +128,37 @@ public class RenderingEngineTemplateImpl
     */
    public String getOutputPathForRendition(final NodeRef formInstanceDataNodeRef)
    {
+      final ServiceRegistry sr = this.getServiceRegistry();
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final String outputPathPattern = (String)
-         this.nodeService.getProperty(this.renditionPropertiesNodeRef, 
-                                      WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION);
+         nodeService.getProperty(this.renditionPropertiesNodeRef, 
+                                 WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION);
       final String formInstanceDataAVMPath = 
          AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
 
-      final TemplateHashModel formInstanceDataModel = new TemplateHashModel()
+      final Map<String, Object> root = new HashMap<String, Object>();
+      
+      final String formInstanceDataName = (String)
+         sr.getNodeService().getProperty(formInstanceDataNodeRef, ContentModel.PROP_NAME);
+      root.put("name", 
+               formInstanceDataName.replaceAll("(.+)\\..*", "$1"));
+      root.put("extension", 
+               sr.getMimetypeService().getExtension(this.getMimetypeForRendition()));
+
+      try
       {
-         private TemplateModel formInstanceDataModel; 
+         final FormsService fs = FormsService.getInstance();
+         root.put("xml", NodeModel.wrap(fs.parseXML(formInstanceDataNodeRef)));
+      }
+      catch (Exception e)
+      {
+         LOGGER.error(e);
+      }
 
-         public TemplateModel get(final String key)
-         {
-            LOGGER.debug("looking up property " + key);
-            if ("xml".equals(key))
-            {
-               try
-               {
-                  if (formInstanceDataModel == null)
-                  {
-                     final FormsService fs = FormsService.getInstance();
-                     final Document formInstanceData = fs.parseXML(formInstanceDataNodeRef);
-                     formInstanceDataModel = NodeModel.wrap(formInstanceData);
-                  }
-                  return formInstanceDataModel;
-               }
-               catch (Exception e)
-               {
-                  LOGGER.error(e);
-                  return null;
-               }
-            }
-            else
-            {
-               final Map<QName, Serializable> properties = 
-                  nodeService.getProperties(formInstanceDataNodeRef);
-               for (QName qname : properties.keySet())
-               {
-                  if (qname.getLocalName().equals(key))
-                  {
-                     return new SimpleScalar((String)properties.get(qname));
-                  }
-               }
-            }
-            return null;
-         }
-
-         public boolean isEmpty()
-         {
-            return false;
-         }
-      };
-
-      final Map<String, TemplateModel> root = new HashMap<String, TemplateModel>();
-      root.put("formInstanceData", formInstanceDataModel);
+      root.put("node", new TemplateNode(formInstanceDataNodeRef, sr, null));
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
 
+      final TemplateService templateService = sr.getTemplateService();
       String result = templateService.processTemplateString(null, 
                                                             outputPathPattern, 
                                                             new SimpleHash(root));
@@ -203,17 +175,25 @@ public class RenderingEngineTemplateImpl
     */
    public String getMimetypeForRendition()
    {
-      return (String)
-         this.nodeService.getProperty(this.renditionPropertiesNodeRef, 
-                                      WCMModel.PROP_MIMETYPE_FOR_RENDITION);
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      return (String)nodeService.getProperty(this.renditionPropertiesNodeRef, 
+                                             WCMModel.PROP_MIMETYPE_FOR_RENDITION);
    }
 
    public void registerRendition(final NodeRef renditionNodeRef,
                                  final NodeRef primaryFormInstanceDataNodeRef)
    {
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(WCMModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE, this.nodeRef);
       props.put(WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA, primaryFormInstanceDataNodeRef);
-      this.nodeService.addAspect(renditionNodeRef, WCMModel.ASPECT_RENDITION, props);
+      nodeService.addAspect(renditionNodeRef, WCMModel.ASPECT_RENDITION, props);
+   }
+
+   private ServiceRegistry getServiceRegistry()
+   {
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      return Repository.getServiceRegistry(fc);
    }
 }
+

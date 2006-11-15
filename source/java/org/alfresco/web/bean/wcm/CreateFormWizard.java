@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
@@ -49,7 +51,9 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.forms.xforms.SchemaFormBuilder;
+import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.*;
@@ -135,13 +139,15 @@ public class CreateFormWizard
 
    private final static Log LOGGER = LogFactory.getLog(CreateFormWizard.class);
    
-   private String schemaRootElementName;
-   private String formName;
-   private String formTitle;
-   private String formDescription;
+   private String schemaRootElementName = null;
+   private String formName = null;
+   private String formTitle = null;
+   private String formDescription = null;
+   private String defaultWorkflowId = null;
    private RenderingEngine renderingEngine = null;
    protected ContentService contentService;
    protected MimetypeService mimetypeService;
+   protected WorkflowService workflowService;
    private DataModel renderingEngineTemplatesDataModel;
    private List<RenderingEngineTemplateData> renderingEngineTemplates = null;
    private String outputPathPatternForFormInstanceData = null;
@@ -191,6 +197,10 @@ public class CreateFormWizard
                 this.getSchemaRootElementName());
       props.put(WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA, 
                 this.getOutputPathPatternForFormInstanceData());
+      if (this.defaultWorkflowId != null)
+      {
+         props.put(WCMModel.PROP_DEFAULT_WORKFLOW_ID, this.defaultWorkflowId);
+      }
       this.nodeService.addAspect(folderInfo.getNodeRef(), WCMModel.ASPECT_FORM, props);
          
       for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
@@ -272,6 +282,7 @@ public class CreateFormWizard
       this.outputPathPatternForFormInstanceData = null;
       this.outputPathPatternForRendition = null;
       this.mimetypeForRendition = null;
+      this.defaultWorkflowId = null;
    }
    
    @Override
@@ -318,11 +329,9 @@ public class CreateFormWizard
     */
    public String getOutputPathPatternForRendition()
    {
-      if (this.outputPathPatternForRendition == null && this.mimetypeForRendition != null)
+      if (this.outputPathPatternForRendition == null)
       {
-         this.outputPathPatternForRendition = 
-            ("${formInstanceData.name}." + 
-             this.mimetypeService.getExtension(this.mimetypeForRendition));
+         this.outputPathPatternForRendition = "${name}.${extension}";
       }
       return this.outputPathPatternForRendition;
    }
@@ -655,7 +664,7 @@ public class CreateFormWizard
    {
       if (this.outputPathPatternForFormInstanceData == null)
       {
-         this.outputPathPatternForFormInstanceData = "${formInstanceData.name}.xml";
+         this.outputPathPatternForFormInstanceData = "${name}.xml";
       }
       return this.outputPathPatternForFormInstanceData;
    }
@@ -701,6 +710,54 @@ public class CreateFormWizard
    {
       return this.formDescription;
    }
+
+   public void setDefaultWorkflowId(final String[] defaultWorkflowId)
+   {
+      assert defaultWorkflowId.length == 1;
+      this.defaultWorkflowId = ("no_default_workflow_selected".equals(defaultWorkflowId[0])
+                                  ? null
+                                  : defaultWorkflowId[0]);
+   }
+
+
+   public String[] getDefaultWorkflowId()
+   {
+      return new String[] { 
+         (this.defaultWorkflowId == null 
+          ? "no_default_workflow_selected" 
+          : this.defaultWorkflowId)
+      };
+   }
+
+   /**
+    * @return List of UI items to represent the available Workflows for all websites
+    */
+   public List<UIListItem> getDefaultWorkflowChoices()
+   {
+      // TODO: add list of workflows from config
+      // @see org.alfresco.web.wcm.FormDetailsDialog#getWorkflowList()
+      final List<WorkflowDefinition> workflowDefs = this.workflowService.getDefinitions();
+      final List<UIListItem> result = new ArrayList<UIListItem>(workflowDefs.size() + 1);
+
+      UIListItem item = new UIListItem();
+      item.setValue("no_default_workflow_selected");
+      item.setLabel("None");
+      item.setDescription("");
+      item.setImage(WebResources.IMAGE_WORKFLOW_32);
+      result.add(item);
+
+      for (WorkflowDefinition workflowDef : workflowDefs)
+      {
+         item = new UIListItem();
+         item.setValue(workflowDef.id);
+         item.setLabel(workflowDef.title);
+         item.setDescription(workflowDef.description);
+         item.setImage(WebResources.IMAGE_WORKFLOW_32);
+         result.add(item);
+      }
+      return result;
+   }
+
    
    /**
     * @return Returns the summary data for the wizard.
@@ -741,6 +798,14 @@ public class CreateFormWizard
    public void setMimetypeService(final MimetypeService mimetypeService)
    {
       this.mimetypeService = mimetypeService;
+   }
+
+   /**
+    * @param workflowService The workflowService to set.
+    */
+   public void setWorkflowService(final WorkflowService workflowService)
+   {
+      this.workflowService = workflowService;
    }
    
    // ------------------------------------------------------------------------------

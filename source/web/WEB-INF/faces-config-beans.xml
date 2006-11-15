@@ -2070,6 +2070,10 @@
          <property-name>mimetypeService</property-name>
          <value>#{MimetypeService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

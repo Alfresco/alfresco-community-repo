@@ -296,6 +296,14 @@ public interface AVMService
     public void uncover(String dirPath, String name);
 
     /**
+     * Make name in dirPath transparent to what was underneath it. That is, this
+     * removes the offending node from its layered directory parent's direct ownership.
+     * @param dirPath The path to the layered directory.
+     * @param name The name of the item to flatten.
+     */
+    public void flatten(String dirPath, String name);
+    
+    /**
      * Get the latest version id of the AVMStore.
      * @param storeName The name of the AVMStore.
      * @return The latest version id of the AVMStore.

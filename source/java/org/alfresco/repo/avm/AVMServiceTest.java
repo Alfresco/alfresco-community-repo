@@ -34,6 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.avm.actions.AVMRevertListAction;
+import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.avm.actions.SimpleAVMPromoteAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
@@ -261,6 +262,53 @@ public class AVMServiceTest extends AVMServiceTestBase
             action.setParameterValue(AVMRevertListAction.PARAM_STAGING, "main");
             action.setParameterValue(AVMRevertListAction.PARAM_FLATTEN_PATH, "/a");
             final AVMRevertListAction revert = (AVMRevertListAction)fContext.getBean("avm-revert-list");
+            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            {
+                public Object doWork() throws Exception
+                {
+                    revert.execute(action, null);
+                    return null;
+                }
+            };
+            TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
+                    new TxnWork());
+            diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a");
+            assertEquals(0, diffs.size());
+            System.out.println(recursiveList("area", -1, true));
+            System.out.println(recursiveList("main", -1, true));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    /**
+     * Test the undo list action.
+     */
+    public void testUndoListAction()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.createAVMStore("area");
+            fService.createLayeredDirectory("main:/a", "area:/", "a");
+            fService.getFileOutputStream("area:/a/b/c/foo").close();
+            List<AVMDifference> diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a");
+            assertEquals(1, diffs.size());
+            fSyncService.update(diffs, false, false, false, false, null, null);
+            fService.getFileOutputStream("area:/a/b/c/bar").close();
+            diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a");
+            assertEquals(1, diffs.size());
+            final ActionImpl action = new ActionImpl(null,
+                                                     GUID.generate(),
+                                                     AVMUndoSandboxListAction.NAME);
+            VersionPathStuffer stuffer = new VersionPathStuffer();
+            stuffer.add(-1, "area:/a/b/c/bar");
+            String nodeList = stuffer.toString();
+            action.setParameterValue(AVMUndoSandboxListAction.PARAM_NODE_LIST, nodeList);
+            final AVMUndoSandboxListAction revert = (AVMUndoSandboxListAction)fContext.getBean("avm-undo-list");
             class TxnWork implements TransactionUtil.TransactionWork<Object>
             {
                 public Object doWork() throws Exception

@@ -440,6 +440,21 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Make name in dirPath transparent to what was underneath it. That is, this
+     * removes the offending node from its layered directory parent's direct ownership.
+     * @param dirPath The path to the layered directory.
+     * @param name The name of the item to flatten.
+     */
+    public void flatten(String dirPath, String name)
+    {
+        if (dirPath == null || name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        fAVMRepository.flatten(dirPath, name);
+    }
+
+    /**
      * Get the Latest Version ID for an AVMStore.
      * @param repName The name of the AVMStore.
      * @return The Latest Version ID.

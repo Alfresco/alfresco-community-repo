@@ -104,7 +104,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.mimeType = MimetypeMap.MIMETYPE_XML;
       
       // check for a form ID being passed in as a parameter
-      if (parameters.get("form-id") != null)
+      if (this.parameters.get("form-id") != null)
       {
          // it is used to init the dialog to a specific template
          String formId = parameters.get("form-id");

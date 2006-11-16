@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
@@ -106,6 +108,35 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Get a content reader from a file node.
+     * @param version The version of the file.
+     * @param path The path to the file.
+     * @return A ContentReader.
+     */
+    public ContentReader getContentReader(int version, String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        return fAVMRepository.getContentReader(version, path);
+    }
+    
+    /**
+     * Get a ContentWriter to a file node.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     */
+    public ContentWriter createContentWriter(String path)
+    {
+        if (path == null)
+        {
+            throw new AVMBadArgumentException("Null path.");
+        }
+        return fAVMRepository.createContentWriter(path);
+    }
+
+    /**
      * Get a directory listing.
      * @param version The version id to lookup.
      * @param path The path to lookup.
@@ -135,6 +166,47 @@ public class AVMServiceImpl implements AVMService
             throw new AVMBadArgumentException("Null path.");
         }
         return fAVMRepository.getListing(version, path, includeDeleted);        
+    }
+
+    /**
+     * Get a directory listing as an Array of AVMNodeDescriptors.
+     * @param version The version to look under.
+     * @param path The path to the directory to be listed.
+     * @param includeDeleted Whether to include ghosts.
+     * @return An array of AVMNodeDescriptors.
+     */
+    public AVMNodeDescriptor [] getDirectoryListingArray(int version, String path,
+                                                         boolean includeDeleted)
+    {
+        Map<String, AVMNodeDescriptor> listing =
+            getDirectoryListing(version, path, includeDeleted);
+        AVMNodeDescriptor [] result = new AVMNodeDescriptor[listing.size()];
+        int off = 0;
+        for (AVMNodeDescriptor desc : listing.values())
+        {
+            result[off++] = desc;
+        }
+        return result;
+    }
+
+    /**
+     * Get a directory listing as an Array of node descriptors.
+     * @param dir The descriptor pointing at the directory to list.
+     * @param includeDeleted Whether to show ghosts.
+     * @return An array of AVMNodeDescriptors.
+     */
+    public AVMNodeDescriptor [] getDirectoryListingArray(AVMNodeDescriptor dir,
+                                                         boolean includeDeleted)
+    {
+        Map<String, AVMNodeDescriptor> listing = 
+            getDirectoryListing(dir, includeDeleted);
+        AVMNodeDescriptor [] result = new AVMNodeDescriptor[listing.size()];
+        int off = 0;
+        for (AVMNodeDescriptor desc : listing.values())
+        {
+            result[off++] = desc;
+        }
+        return result;
     }
 
     /**

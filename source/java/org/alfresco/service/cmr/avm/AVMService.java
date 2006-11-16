@@ -26,6 +26,8 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -58,6 +60,21 @@ public interface AVMService
      * component that is not a directory, or if it is not pointing to a file.
      */
     public OutputStream getFileOutputStream(String path);
+    
+    /**
+     * Get a content reader from a file node.
+     * @param version The version of the file.
+     * @param path The path to the file.
+     * @return A ContentReader.
+     */
+    public ContentReader getContentReader(int version, String path);
+    
+    /**
+     * Get a ContentWriter to a file node.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     */
+    public ContentWriter createContentWriter(String path);   
     
     /**
      * Get a listing of a Folder by name.
@@ -117,6 +134,16 @@ public interface AVMService
         getDirectoryListingDirect(int version, String path, boolean includeDeleted);
 
     /**
+     * Get a directory listing as an Array of AVMNodeDescriptors.
+     * @param version The version to look under.
+     * @param path The path to the directory to be listed.
+     * @param includeDeleted Whether to include ghosts.
+     * @return An array of AVMNodeDescriptors.
+     */
+    public AVMNodeDescriptor [] getDirectoryListingArray(int version, String path,
+                                                      boolean includeDeleted);
+    
+    /**
      * Get a listing of all the directly contained children of a directory.
      * @param dir The directory descriptor.
      * @param includeDeleted Whether to include deleted children.
@@ -145,7 +172,16 @@ public interface AVMService
      * @throws AVMWrongTypeException If the descriptor does not point at a directory.
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir,
-                                                                    boolean includeDeleted); 
+                                                                    boolean includeDeleted);
+    
+    /**
+     * Get a directory listing as an Array of node descriptors.
+     * @param dir The descriptor pointing at the directory to list.
+     * @param includeDeleted Whether to show ghosts.
+     * @return An array of AVMNodeDescriptors.
+     */
+    public AVMNodeDescriptor [] getDirectoryListingArray(AVMNodeDescriptor dir,
+                                                         boolean includeDeleted);
     
     /**
      * Get the names of nodes that have been deleted in a directory.

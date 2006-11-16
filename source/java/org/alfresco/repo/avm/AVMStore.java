@@ -30,6 +30,8 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -115,6 +117,14 @@ public interface AVMStore
     public InputStream getInputStream(int version, String path);
     
     /**
+     * Get a ContentReader from a file.
+     * @param version The version to look under.
+     * @param path The path to the file.
+     * @return A ContentReader
+     */
+    public ContentReader getContentReader(int version, String path);    
+    
+    /**
      * Get a listing of the designated directory.
      * @param version The version to look under.
      * @param path The path to the directory.
@@ -148,6 +158,13 @@ public interface AVMStore
      * @return An OutputStream
      */
     public OutputStream getOutputStream(String path);
+    
+    /**
+     * Get a ContentWriter to a file.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     */
+    public ContentWriter createContentWriter(String path);
     
     /**
      * Remove a node and all of its contents.

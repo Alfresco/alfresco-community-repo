@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
@@ -396,6 +398,55 @@ public class AVMRepository
         {
             fLookupCount.set(null);
         }        
+    }
+    
+    /**
+     * Get a content reader from a file node.
+     * @param version The version of the file.
+     * @param path The path to the file.
+     * @return A ContentReader.
+     */
+    public ContentReader getContentReader(int version, String path)
+    {
+        fLookupCount.set(1);
+        try
+        {
+            String [] pathParts = SplitPath(path);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            if (store == null)
+            {
+                throw new AVMNotFoundException("Store not found: " + pathParts[0]);
+            }
+            return store.getContentReader(version, pathParts[1]);
+        }
+        finally
+        {
+            fLookupCount.set(null);   
+        }
+    }
+    
+    /**
+     * Get a ContentWriter to a file node.
+     * @param path The path to the file.
+     * @return A ContentWriter.
+     */
+    public ContentWriter createContentWriter(String path)
+    {
+        fLookupCount.set(1);
+        try
+        {
+            String [] pathParts = SplitPath(path);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            if (store == null)
+            {
+                throw new AVMNotFoundException("Store not found: " + pathParts[0]);
+            }
+            return store.createContentWriter(pathParts[1]);
+        }
+        finally
+        {
+            fLookupCount.set(null);
+        }
     }
     
     /**

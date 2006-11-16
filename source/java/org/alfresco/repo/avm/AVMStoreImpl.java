@@ -277,7 +277,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 RawServices.Instance().getMimetypeService().guessMimetype(name),
                 -1,
                 "UTF-8"));
-        ContentWriter writer = getWriter(AVMNodeConverter.ExtendAVMPath(path, name));
+        ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
         return writer.getContentOutputStream();
     }
 
@@ -307,7 +307,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 RawServices.Instance().getMimetypeService().guessMimetype(name),
                 -1,
                 "UTF-8"));
-        ContentWriter writer = getWriter(AVMNodeConverter.ExtendAVMPath(path, name));
+        ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
         writer.putContent(data);
     }
 
@@ -345,7 +345,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public InputStream getInputStream(int version, String path)
     {
-        ContentReader reader = getReader(version, path);
+        ContentReader reader = getContentReader(version, path);
         if (reader == null)
         {
             // TODO This is wrong, wrong, wrong. Do something about it
@@ -361,7 +361,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the file.
      * @return A ContentReader.
      */
-    private ContentReader getReader(int version, String path)
+    public ContentReader getContentReader(int version, String path)
     {
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, fName + ":" + path);
         return RawServices.Instance().getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT);
@@ -372,14 +372,14 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * @param path The path to the file.
      * @return A ContentWriter.
      */
-    private ContentWriter getWriter(String path)
+    public ContentWriter createContentWriter(String path)
     {
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, fName + ":" + path);
         ContentWriter writer = 
             RawServices.Instance().getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         return writer;
     }
-    
+
     /**
      * Get a listing from a directory.
      * @param version The version to look under.
@@ -466,7 +466,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public OutputStream getOutputStream(String path)
     {
-        ContentWriter writer = getWriter(path);
+        ContentWriter writer = createContentWriter(path);
         return writer.getContentOutputStream();
     }
 

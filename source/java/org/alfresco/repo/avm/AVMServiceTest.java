@@ -2038,6 +2038,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             list = new ArrayList<String>(listing.keySet());
             assertEquals("bar.txt", list.get(0));
             assertEquals("foo.txt", list.get(1));
+            AVMNodeDescriptor [] arrayListing = fService.getDirectoryListingArray(-1, "main:/d/b", false);
+            assertEquals("bar.txt", arrayListing[0].getName());
+            assertEquals("foo.txt", arrayListing[1].getName());
             fService.rename("main:/", "c", "main:/", "e");
             fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));

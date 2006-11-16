@@ -181,6 +181,11 @@
                <type>d:noderef</type>
                <mandatory>true</mandatory>
             </property>
+	    <property name="wcm:parentrenditionproperties">
+               <title>Rendition properties used for this rendition</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+	    </property>
             <property name="wcm:primaryforminstancedata">
                <title>Primary XML Asset used to generate this asset</title>
                <type>d:noderef</type>

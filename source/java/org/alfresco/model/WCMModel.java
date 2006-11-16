@@ -57,6 +57,7 @@ public interface WCMModel
 
     public static final QName ASPECT_RENDITION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "rendition");
     public static final QName PROP_PARENT_RENDERING_ENGINE_TEMPLATE = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentrenderingenginetemplate");
+    public static final QName PROP_PARENT_RENDITION_PROPERTIES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "parentrenditionproperties");
     public static final QName PROP_PRIMARY_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "primaryforminstancedata");
 
     public static final QName TYPE_RENDITION_PROPERTIES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renditionproperties");

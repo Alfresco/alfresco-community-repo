@@ -13,7 +13,7 @@ import org.alfresco.util.Pair;
  * by VersionPathUnStuffer.
  * @author britt
  */
-public class VersionPathStuffer 
+public final class VersionPathStuffer 
 {
     /**
      * The internal buffer.
@@ -37,7 +37,7 @@ public class VersionPathStuffer
     /**
      * Add a version path expressed by the version and path.
      */
-    public void add(int version, String path)
+    public VersionPathStuffer add(int version, String path)
     {
         if (fAnyAdded)
         {
@@ -47,16 +47,18 @@ public class VersionPathStuffer
         fBuilder.append('@');
         fBuilder.append(version);
         fAnyAdded = true;
+        return this;
     }
     
     /**
      * Add a version path expressed as a NodeRef.
      */
-    public void add(NodeRef nodeRef)
+    public VersionPathStuffer add(NodeRef nodeRef)
     {
         Pair<Integer, String> versionPath =
             AVMNodeConverter.ToAVMVersionPath(nodeRef);
         add(versionPath.getFirst(), versionPath.getSecond());
+        return this;
     }
     
     /**

@@ -15,7 +15,7 @@ import org.alfresco.util.Pair;
  * by VersionPathStuffer) and gives you back a list of Version/Paths
  * @author britt
  */
-public class VersionPathUnstuffer 
+public final class VersionPathUnstuffer 
 {
     /**
      * The unpacked version paths.

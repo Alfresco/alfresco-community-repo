@@ -370,15 +370,6 @@ public class CreateFormWizard
     */
    public void addSelectedRenderingEngineTemplate(final ActionEvent event)
    {
-      for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
-      {
-         if (retd.getOutputPathPatternForRendition().equals(this.outputPathPatternForRendition))
-         {
-            throw new AlfrescoRuntimeException("rendering engine template with output path " + this.outputPathPatternForRendition +
-                                               " already exists");
-         }
-      }
-
       final RenderingEngineTemplateData data = 
          this.new RenderingEngineTemplateData(this.getRenderingEngineTemplateFileName(),
                                               this.getRenderingEngineTemplateFile(),

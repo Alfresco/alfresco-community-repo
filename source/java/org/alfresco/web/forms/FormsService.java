@@ -275,7 +275,7 @@ public final class FormsService
     *
     * @param formInstanceDataNodeRef the noderef containing the form instance data
     */
-   public void generateRenditions(final NodeRef formInstanceDataNodeRef)
+   public List<Rendition> generateRenditions(final NodeRef formInstanceDataNodeRef)
       throws IOException,
       SAXException,
       RenderingEngine.RenderingException
@@ -291,6 +291,7 @@ public final class FormsService
          AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
       LOGGER.debug("generating renditions for " + formInstanceDataAvmPath);
 
+      final List<Rendition> result = new LinkedList<Rendition>();
       for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
       {
          // get the node ref of the node that will contain the content
@@ -312,17 +313,17 @@ public final class FormsService
             
          final NodeRef renditionNodeRef = 
             AVMNodeConverter.ToNodeRef(-1, renditionAvmPath);
-
          form.registerFormInstanceData(renditionNodeRef);
          ret.registerRendition(renditionNodeRef, formInstanceDataNodeRef);
 
          Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
          props.put(ContentModel.PROP_TITLE, AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          nodeService.addAspect(renditionNodeRef, ContentModel.ASPECT_TITLED, props);
-         
+         result.add(new RenditionImpl(renditionNodeRef));
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("generated " + renditionAvmPath + " using " + ret);
       }
+      return result;
    }
    
    /**
@@ -330,7 +331,7 @@ public final class FormsService
     *
     * @param formInstanceDataNodeRef the node ref containing the form instance data.
     */
-   public void regenerateRenditions(final NodeRef formInstanceDataNodeRef)
+   public List<Rendition> regenerateRenditions(final NodeRef formInstanceDataNodeRef)
       throws IOException,
       SAXException,
       RenderingEngine.RenderingException
@@ -348,7 +349,7 @@ public final class FormsService
       // other parameter values passed to rendering engine
       final String formInstanceDataAvmPath = AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
       LOGGER.debug("regenerating renditions for " + formInstanceDataAvmPath);
-
+      final List<Rendition> result = new LinkedList<Rendition>();
       for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
       {
          final String renditionAvmPath = 
@@ -376,9 +377,13 @@ public final class FormsService
          ret.getRenderingEngine().render(formInstanceData, ret, parameters, out);
          out.close();
 
+         final NodeRef renditionNodeRef = 
+            AVMNodeConverter.ToNodeRef(-1, renditionAvmPath);
+         result.add(new RenditionImpl(renditionNodeRef));
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("generated " + renditionAvmPath + " using " + ret);
+            LOGGER.debug("regenerated " + renditionAvmPath + " using " + ret);
       }
+      return result;
    }
 
    private static String getOutputAvmPathForRendition(final RenderingEngineTemplate ret,

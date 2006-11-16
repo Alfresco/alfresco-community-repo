@@ -50,7 +50,7 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-public class FormImpl 
+class FormImpl 
     implements Form
 {
    private static final Log LOGGER = LogFactory.getLog(FormImpl.class);

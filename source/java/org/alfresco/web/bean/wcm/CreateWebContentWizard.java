@@ -46,9 +46,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -64,7 +62,9 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String formName;
    protected List<SelectItem> createMimeTypes;
    protected String createdPath = null;
-   
+   protected List<Rendition> renditions = null;
+   protected FormInstanceData formInstanceData = null;
+
    /** AVM service bean reference */
    protected AVMService avmService;
    
@@ -88,7 +88,6 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.avmBrowseBean = avmBrowseBean;
    }
    
-   
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -96,19 +95,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String finishImpl(FacesContext context, String outcome)
       throws Exception
    {
-      if (logger.isDebugEnabled())
-         logger.debug("saving file content to " + this.fileName);
-      saveContent(null, this.content);
-      
-      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
-      {
-         final Form form = this.getForm();
-         final NodeRef formInstanceDataNodeRef = 
-            AVMNodeConverter.ToNodeRef(-1, this.createdPath);
-
-         form.registerFormInstanceData(formInstanceDataNodeRef);
-         FormsService.getInstance().generateRenditions(formInstanceDataNodeRef);
-      }
       
       // return the default outcome
       return outcome;
@@ -125,6 +111,8 @@ public class CreateWebContentWizard extends BaseContentWizard
     */
    protected void saveContent(File fileContent, String strContent) throws Exception
    {
+      if (logger.isDebugEnabled())
+         logger.debug("saving file content to " + this.fileName);
       // get the parent path of the location to save the content
       String path = this.avmBrowseBean.getCurrentPath();
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
@@ -158,10 +146,18 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.createdPath = path + '/' + this.fileName;
       
       // add titled aspect for the read/edit properties screens
-      NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, this.createdPath);
+      final NodeRef formInstanceDataNodeRef = AVMNodeConverter.ToNodeRef(-1, this.createdPath);
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
       titledProps.put(ContentModel.PROP_TITLE, this.fileName);
-      this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
+      this.nodeService.addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, titledProps);
+      this.formInstanceData = new FormInstanceDataImpl(formInstanceDataNodeRef);
+
+      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
+      {
+         final Form form = this.getForm();
+         form.registerFormInstanceData(formInstanceDataNodeRef);
+         this.renditions = FormsService.getInstance().generateRenditions(formInstanceDataNodeRef);
+      }
    }
    
    @Override
@@ -331,21 +327,37 @@ public class CreateWebContentWizard extends BaseContentWizard
          }
       };
    }
+
+   public FormInstanceData getFormInstanceData()
+      throws Exception
+   {
+      if (this.formInstanceData == null)
+      {
+         this.saveContent(null, this.content);
+      }
+      return this.formInstanceData;
+   }
    
+   public List<Rendition> getRenditions()
+   {
+      return this.renditions;
+   }
+
    /**
     * @return Returns the summary data for the wizard.
     */
    public String getSummary()
    {
+
       ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
       
       // TODO: show first few lines of content here?
       return buildSummary(
             new String[] {bundle.getString("file_name"), 
-                  bundle.getString("type"), 
-                  bundle.getString("content_type")},
-                  new String[] {this.fileName, getSummaryObjectType(), 
-                  getSummaryMimeType(this.mimeType)});
+                          bundle.getString("content_type"),
+                          bundle.getString("Location")},
+            new String[] {this.fileName, getSummaryObjectType(), 
+                          getSummaryMimeType(this.mimeType)});
    }
    
    

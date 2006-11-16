@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.*;
@@ -64,6 +65,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String createdPath = null;
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;
+   protected boolean formSelectDisabled = false;
 
    /** AVM service bean reference */
    protected AVMService avmService;
@@ -92,6 +94,30 @@ public class CreateWebContentWizard extends BaseContentWizard
    // Wizard implementation
    
    @Override
+   public void init(Map<String, String> parameters)
+   {
+      super.init(parameters);
+      
+      this.content = null;
+      this.inlineEdit = true;
+      this.formName = null;
+      this.mimeType = MimetypeMap.MIMETYPE_XML;
+      
+      // check for a form ID being passed in as a parameter
+      if (parameters.get("form-id") != null)
+      {
+         // it is used to init the dialog to a specific template
+         String formId = parameters.get("form-id");
+         Form form = FormsService.getInstance().getForm(new NodeRef(Repository.getStoreRef(), formId));
+         if (form != null)
+         {
+            this.formName = form.getName();
+            this.formSelectDisabled = true;
+         }
+      }
+   }
+   
+   @Override
    protected String finishImpl(FacesContext context, String outcome)
       throws Exception
    {
@@ -100,15 +126,34 @@ public class CreateWebContentWizard extends BaseContentWizard
       return outcome;
    }
    
-   // ------------------------------------------------------------------------------
-   // Helper methods
-
+   @Override
+   public boolean getNextButtonDisabled()
+   {
+      // TODO: Allow the next button state to be configured so that
+      //       wizard implementations don't have to worry about 
+      //       checking step numbers
+      
+      boolean disabled = false;
+      int step = Application.getWizardManager().getCurrentStep();
+      switch(step)
+      {
+         case 1:
+         {
+            disabled = (this.fileName == null || this.fileName.length() == 0);
+            break;
+         }
+      }
+      
+      return disabled;
+   }
+   
    /**
     * Save the specified content using the currently set wizard attributes
     * 
     * @param fileContent      File content to save
     * @param strContent       String content to save
     */
+   @Override
    protected void saveContent(File fileContent, String strContent) throws Exception
    {
       if (logger.isDebugEnabled())
@@ -158,38 +203,6 @@ public class CreateWebContentWizard extends BaseContentWizard
          form.registerFormInstanceData(formInstanceDataNodeRef);
          this.renditions = FormsService.getInstance().generateRenditions(formInstanceDataNodeRef);
       }
-   }
-   
-   @Override
-   public void init(Map<String, String> parameters)
-   {
-      super.init(parameters);
-      
-      this.content = null;
-      this.inlineEdit = true;
-      this.formName = null;
-      this.mimeType = MimetypeMap.MIMETYPE_XML;
-   }
-   
-   @Override
-   public boolean getNextButtonDisabled()
-   {
-      // TODO: Allow the next button state to be configured so that
-      //       wizard implementations don't have to worry about 
-      //       checking step numbers
-      
-      boolean disabled = false;
-      int step = Application.getWizardManager().getCurrentStep();
-      switch(step)
-      {
-         case 1:
-         {
-            disabled = (this.fileName == null || this.fileName.length() == 0);
-            break;
-         }
-      }
-      
-      return disabled;
    }
    
    
@@ -341,6 +354,16 @@ public class CreateWebContentWizard extends BaseContentWizard
    public List<Rendition> getRenditions()
    {
       return this.renditions;
+   }
+   
+   public boolean getFormSelectDisabled()
+   {
+      return this.formSelectDisabled;
+   }
+
+   public void setFormSelectDisabled(boolean formSelectDisabled)
+   {
+      this.formSelectDisabled = formSelectDisabled;
    }
 
    /**

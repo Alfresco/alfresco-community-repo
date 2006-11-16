@@ -16,10 +16,12 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -31,11 +33,16 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
+import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
+import org.alfresco.repo.avm.util.VersionPathStuffer;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -49,10 +56,12 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wizard.WizardManager;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
@@ -73,6 +82,9 @@ public class AVMBrowseBean implements IContextListener
 {
    private static Log logger = LogFactory.getLog(AVMBrowseBean.class);
    
+   private static final String MSG_REVERT_SUCCESS = "revert_success";
+   private static final String MSG_REVERTALL_SUCCESS = "revertall_success";
+   private static final String MSG_REVERTSELECTED_SUCCESS = "revertselected_success";
    private static final String MSG_SANDBOXTITLE = "sandbox_title";
    private static final String MSG_SANDBOXSTAGING = "sandbox_staging";
    private static final String MSG_CREATED_ON = "store_created_on";
@@ -80,13 +92,10 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_WORKING_USERS = "store_working_users";
    private static final String MSG_SUBMIT_SUCCESS = "submit_success";
    private static final String MSG_SUBMITALL_SUCCESS = "submitall_success";
+   private static final String MSG_SUBMITSELECTED_SUCCESS = "submitselected_success";
    
    /** Component id the status messages are tied too */
    private static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
-   
-   /** Action bean Id for the AVM Submit action*/
-   private static final String ACTION_AVM_SUBMIT = "simple-avm-submit";
-   private static final String ACTION_AVM_WORKFLOW = "start-avm-workflow";
    
    /** Content Manager role name */
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
@@ -139,6 +148,9 @@ public class AVMBrowseBean implements IContextListener
    /** AVM service bean reference */
    protected AVMService avmService;
    
+   /** AVM Sync service bean reference */
+   protected AVMSyncService avmSyncService;
+   
    /** Action service bean reference */
    protected ActionService actionService; 
    
@@ -167,6 +179,14 @@ public class AVMBrowseBean implements IContextListener
       this.avmService = avmService;
    }
    
+   /**
+    * @param avmSyncService   The AVMSyncService to set.
+    */
+   public void setAvmSyncService(AVMSyncService avmSyncService)
+   {
+      this.avmSyncService = avmSyncService;
+   }
+
    /**
     * @param nodeService The NodeService to set.
     */
@@ -718,7 +738,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public void submitNode(ActionEvent event)
    {
-      setupContentAction(event);
+      String path = getPathFromEventArgs(event);
       
       UserTransaction tx = null;
       try
@@ -727,15 +747,20 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, false);
          tx.begin();
          
-         Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
-         this.actionService.executeAction(action, getAvmActionNode().getNodeRef());
+         AVMNodeDescriptor node = this.avmService.lookup(-1, path, true);
+         if (node != null)
+         {
+            Action action = this.actionService.createAction(SimpleAVMSubmitAction.NAME);
+            this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, path));
+         }
          
          // commit the transaction
          tx.commit();
          
          // if we get here, all was well - output friendly status message to the user
+         
          String msg = MessageFormat.format(Application.getMessage(
-               context, MSG_SUBMIT_SUCCESS), getAvmActionNode().getName());
+               context, MSG_SUBMIT_SUCCESS), node.getName());
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
          String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
          context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
@@ -769,7 +794,7 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
+         Action action = this.actionService.createAction(SimpleAVMSubmitAction.NAME);
          this.actionService.executeAction(action, rootRef);
          
          // commit the transaction
@@ -797,7 +822,6 @@ public class AVMBrowseBean implements IContextListener
    {
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
-      String store = params.get("store");
       String username = params.get("username");
       
       List<AVMNodeDescriptor> selected = this.userSandboxes.getSelectedNodes(username);
@@ -810,9 +834,10 @@ public class AVMBrowseBean implements IContextListener
             tx = Repository.getUserTransaction(context, false);
             tx.begin();
             
+            // TODO: better to duplicate code in action rather than call multiple times?
             for (AVMNodeDescriptor node : selected)
             {
-               Action action = this.actionService.createAction(ACTION_AVM_SUBMIT);
+               Action action = this.actionService.createAction(SimpleAVMSubmitAction.NAME);
                this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, node.getPath()));
             }
             
@@ -822,7 +847,7 @@ public class AVMBrowseBean implements IContextListener
             // if we get here, all was well - output friendly status message to the user
             // TODO: different message once the submit screen is available
             String msg = MessageFormat.format(Application.getMessage(
-                  context, MSG_SUBMITALL_SUCCESS), username);
+                  context, MSG_SUBMITSELECTED_SUCCESS), username);
             FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
             String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
             context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
@@ -842,6 +867,42 @@ public class AVMBrowseBean implements IContextListener
     */
    public void revertNode(ActionEvent event)
    {
+      String path = getPathFromEventArgs(event);
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, false);
+         tx.begin();
+         
+         AVMNodeDescriptor node = this.avmService.lookup(-1, path, true);
+         if (node != null)
+         {
+            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+            String paths = new VersionPathStuffer().add(-1, path).toString();
+            args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, paths);
+            Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
+            this.actionService.executeAction(action, null); // dummy action ref
+         }
+         
+         // commit the transaction
+         tx.commit();
+         
+         // if we get here, all was well - output friendly status message to the user
+         String msg = MessageFormat.format(Application.getMessage(
+               context, MSG_REVERT_SUCCESS), node.getName());
+         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+         String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
+         context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+      }
+      catch (Throwable err)
+      {
+         err.printStackTrace(System.err);
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
    }
    
    /**
@@ -849,6 +910,47 @@ public class AVMBrowseBean implements IContextListener
     */
    public void revertAll(ActionEvent event)
    {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String store = params.get("store");
+      String username = params.get("username");
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         // calcluate the list of differences between the user store and the staging area
+         List<AVMDifference> diffs = this.avmSyncService.compare(-1, store + ":/", -1, getStagingStore() + ":/");
+         VersionPathStuffer stuffer = new VersionPathStuffer();
+         for (AVMDifference diff : diffs)
+         {
+            stuffer.add(-1, diff.getSourcePath());
+         }
+         String paths = stuffer.toString();
+         Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+         args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, paths);
+         Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
+         this.actionService.executeAction(action, null); // dummy action ref
+         
+         // commit the transaction
+         tx.commit();
+         
+         // if we get here, all was well - output friendly status message to the user
+         String msg = MessageFormat.format(Application.getMessage(
+               context, MSG_REVERTALL_SUCCESS), username);
+         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+         String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
+         context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
    }
    
    /**
@@ -856,6 +958,68 @@ public class AVMBrowseBean implements IContextListener
     */
    public void revertSelected(ActionEvent event)
    {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String username = params.get("username");
+      
+      List<AVMNodeDescriptor> selected = this.userSandboxes.getSelectedNodes(username);
+      if (selected != null)
+      {
+         UserTransaction tx = null;
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context, false);
+            tx.begin();
+            
+            VersionPathStuffer stuffer = new VersionPathStuffer();
+            for (AVMNodeDescriptor node : selected)
+            {
+               stuffer.add(-1, node.getPath());
+            }
+            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+            args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, stuffer.toString());
+            for (AVMNodeDescriptor node : selected)
+            {
+               Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
+               this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, node.getPath()));
+            }
+            
+            // commit the transaction
+            tx.commit();
+            
+            // if we get here, all was well - output friendly status message to the user
+            // TODO: different message once the submit screen is available
+            String msg = MessageFormat.format(Application.getMessage(
+                  context, MSG_REVERTSELECTED_SUCCESS), username);
+            FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+            String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
+            context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+         }
+         catch (Throwable err)
+         {
+            err.printStackTrace(System.err);
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+      }
+   }
+   
+   /**
+    * Create web content from a specific Form via the User Sandbox 'Available Forms' panel
+    */
+   public void createFormContent(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String id = params.get("form-id");
+      
+      // pass form ID to the wizard - to be picked up in init()
+      FacesContext fc = FacesContext.getCurrentInstance();
+      WizardManager manager = (WizardManager)FacesHelper.getManagedBean(fc, "WizardManager");
+      manager.setupParameters(event);
+      fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:createWebContent");
    }
    
    
@@ -874,6 +1038,16 @@ public class AVMBrowseBean implements IContextListener
    {
       this.location.add(new AVMBreadcrumbHandler(path));
       setCurrentPath(path);
+   }
+   
+   /**
+    * @return the path from the 'id' argument in the specified UIActionLink event
+    */
+   private String getPathFromEventArgs(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      return params.get("id");
    }
    
    

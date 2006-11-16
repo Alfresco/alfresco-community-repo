@@ -73,14 +73,23 @@ public class UIUserSandboxes extends SelfRenderingComponent
 {
    private static Log logger = LogFactory.getLog(UIUserSandboxes.class);
    
+   private static final String ACT_CREATE_FORM_CONTENT = "create_form_content";
+   private static final String ACT_SANDBOX_REVERTSELECTED = "sandbox_revertselected";
+   private static final String ACT_SANDBOX_SUBMITSELECTED = "sandbox_submitselected";
+   private static final String ACT_SANDBOX_BROWSE = "sandbox_browse";
+   private static final String ACT_SANDBOX_REVERTALL = "sandbox_revertall";
+   private static final String ACT_SANDBOX_SUBMITALL = "sandbox_submitall";
+   private static final String ACT_SANDBOX_PREVIEW = "sandbox_preview";
+   private static final String ACT_SANDBOX_ICON = "sandbox_icon";
+   
    private static final String ACTIONS_FILE = "avm_file_modified";
    private static final String ACTIONS_FOLDER = "avm_folder_modified";
    private static final String ACTIONS_DELETED = "avm_deleted_modified";
    
    private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
    
-   private static final String ACT_MODIFIED_PANEL = "_items";
-   private static final String ACT_FORMS_PANEL = "_forms";
+   private static final String PANEL_MODIFIED = "_items";
+   private static final String PANEL_FORMS = "_forms";
    
    private static final String MSG_MODIFIED_ITEMS = "modified_items";
    private static final String MSG_CONTENT_FORMS = "content_forms";
@@ -93,6 +102,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String MSG_ACTIONS = "actions";
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
    private static final String MSG_SELECTED = "selected";
+   
+   private static final String REQUEST_FORM_REF = "formref";
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    
@@ -179,11 +190,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
       Map valuesMap = context.getExternalContext().getRequestParameterValuesMap();
       
       // detect if Modified Items or Available Content Forms panel has been expanded/collapsed
-      String fieldId = getClientId(context) + ACT_FORMS_PANEL;
+      String fieldId = getClientId(context) + PANEL_FORMS;
       String value = (String)requestMap.get(fieldId);
       if (value == null || value.length() == 0)
       {
-         fieldId = getClientId(context) + ACT_MODIFIED_PANEL;
+         fieldId = getClientId(context) + PANEL_MODIFIED;
          value = (String)requestMap.get(fieldId);
       }
       if (value != null && value.length() != 0)
@@ -293,8 +304,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   // show the icon for the sandbox as a clickable browse link image
                   // this is currently identical to the sandbox_browse action as below
                   Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, "sandbox_icon", WebResources.IMAGE_USERSANDBOX_32,
-                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
+                        context, mainStore, username, ACT_SANDBOX_ICON, WebResources.IMAGE_USERSANDBOX_32,
+                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
                   out.write("</td><td width=100%>");
                   out.write("<b>");
                   out.write(bundle.getString(MSG_USERNAME));
@@ -307,44 +318,38 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   // direct actions for a sandbox
                   String sandboxUrl = AVMConstants.buildAVMStoreUrl(mainStore);
                   Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, "sandbox_preview", "/images/icons/preview_website.gif",
-                        null, null, sandboxUrl));
-                  out.write("&nbsp;");
-                  
-                  // TODO: add this action back once we can create via configured form attached to website project
-                  /*Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, "sandbox_create", "/images/icons/new_content.gif",
-                        "#{AVMBrowseBean.setupSandboxAction}", "wizard:createWebContent", null));
-                  out.write("&nbsp;");*/
-                  
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, "sandbox_submitall", "/images/icons/submit.gif",
-                        "#{AVMBrowseBean.submitAll}", null, null));
+                        context, mainStore, username, ACT_SANDBOX_PREVIEW, "/images/icons/preview_website.gif",
+                        null, null, sandboxUrl, null));
                   out.write("&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, "sandbox_revertall", "/images/icons/revert.gif",
-                        "#{AVMBrowseBean.revertAll}", null, null));
+                        context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit.gif",
+                        "#{AVMBrowseBean.submitAll}", null));
                   out.write("&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, "sandbox_browse", "/images/icons/space_small.gif",
-                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox", null));
+                        context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert.gif",
+                        "#{AVMBrowseBean.revertAll}", null));
+                  out.write("&nbsp;");
+                  
+                  Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif",
+                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
                   out.write("</nobr></td></tr>");
                   
                   // modified items panel
                   out.write("<tr><td></td><td colspan=2>");
                   String panelImage = WebResources.IMAGE_COLLAPSED;
-                  if (this.expandedPanels.contains(username + ACT_MODIFIED_PANEL))
+                  if (this.expandedPanels.contains(username + PANEL_MODIFIED))
                   {
                      panelImage = WebResources.IMAGE_EXPANDED;
                   }
                   out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
-                        Utils.generateFormSubmit(context, this, getClientId(context) + ACT_MODIFIED_PANEL, username + ACT_MODIFIED_PANEL)));
+                        Utils.generateFormSubmit(context, this, getClientId(context) + PANEL_MODIFIED, username + PANEL_MODIFIED)));
                   out.write("&nbsp;<b>");
                   out.write(bundle.getString(MSG_MODIFIED_ITEMS));
                   out.write("</b>");
-                  if (this.expandedPanels.contains(username + ACT_MODIFIED_PANEL))
+                  if (this.expandedPanels.contains(username + PANEL_MODIFIED))
                   {
                      out.write("<div style='padding:2px'></div>");
    
@@ -356,16 +361,16 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   // content forms panel
                   out.write("<tr style='padding-top:4px'><td></td><td colspan=2>");
                   panelImage = WebResources.IMAGE_COLLAPSED;
-                  if (this.expandedPanels.contains(username + ACT_FORMS_PANEL))
+                  if (this.expandedPanels.contains(username + PANEL_FORMS))
                   {
                      panelImage = WebResources.IMAGE_EXPANDED;
                   }
                   out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
-                        Utils.generateFormSubmit(context, this, getClientId(context) + ACT_FORMS_PANEL, username + ACT_FORMS_PANEL)));
+                        Utils.generateFormSubmit(context, this, getClientId(context) + PANEL_FORMS, username + PANEL_FORMS)));
                   out.write("&nbsp;<b>");
                   out.write(bundle.getString(MSG_CONTENT_FORMS));
                   out.write("</b>");
-                  if (this.expandedPanels.contains(username + ACT_FORMS_PANEL))
+                  if (this.expandedPanels.contains(username + PANEL_FORMS))
                   {
                      out.write("<div style='padding:2px'></div>");
                      
@@ -608,12 +613,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write(bundle.getString(MSG_SELECTED));
          out.write(":&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
-               fc, userStorePrefix, username, "sandbox_submitselected", "/images/icons/submit.gif",
-               "#{AVMBrowseBean.submitSelected}", null, null));
+               fc, userStorePrefix, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit.gif",
+               "#{AVMBrowseBean.submitSelected}", null));
          out.write("&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
-               fc, userStorePrefix, username, "sandbox_revertselected", "/images/icons/revert.gif",
-               "#{AVMBrowseBean.revertSelected}", null, null));
+               fc, userStorePrefix, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert.gif",
+               "#{AVMBrowseBean.revertSelected}", null));
          out.write("</td></tr>");
          
          // end table
@@ -638,6 +643,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          throws IOException
    {
       NodeService nodeService = getNodeService(fc);
+      Map requestMap = fc.getExternalContext().getRequestMap();
       String userStorePrefix = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
       
       // only need to collect the list of forms once per render
@@ -677,10 +683,21 @@ public class UIUserSandboxes extends SelfRenderingComponent
             String desc = (String)nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION);
             out.write(desc != null ? desc : "");
             out.write("</td><td>");
-            // actions 
-            Utils.encodeRecursive(fc, aquireAction(
-               fc, userStorePrefix, username, "create_form_content", "/images/icons/new_content.gif",
-               null, "wizard:createWebContent", null));
+            // actions
+            UIActionLink action = findAction(ACT_CREATE_FORM_CONTENT, userStorePrefix);
+            if (action == null)
+            {
+               // create content action passes the ID of the Form to uses
+               Map<String, String> params = new HashMap<String, String>(1, 1.0f);
+               // setup a data-binding param for the Form ID
+               params.put("form-id", "#{" + REQUEST_FORM_REF + ".id}");
+               action = createAction(fc, userStorePrefix, username, ACT_CREATE_FORM_CONTENT,
+                     "/images/icons/new_content.gif", "#{AVMBrowseBean.createFormContent}", null, null, params);
+            }
+            // set the form-id into the request scope for data binding
+            requestMap.put(REQUEST_FORM_REF, formRef);
+            Utils.encodeRecursive(fc, action);
+            requestMap.remove(REQUEST_FORM_REF);
             out.write("</td></tr>");
          }
          
@@ -751,17 +768,37 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * @param icon             Icon to display for the action
     * @param actionListener   Actionlistener for the action
     * @param outcome          Navigation outcome for the action
-    * @param url              HREF URL for the action
     * 
     * @return UIActionLink component
     */
    private UIActionLink aquireAction(FacesContext fc, String store, String username,
-         String name, String icon, String actionListener, String outcome, String url)
+         String name, String icon, String actionListener, String outcome)
    {
-      UIActionLink action = findAction(name, store, username);
+      return aquireAction(fc, store, username, name, icon, actionListener, outcome, null, null);
+   }
+   
+   /**
+    * Aquire a UIActionLink component for the specified action
+    * 
+    * @param fc               FacesContext
+    * @param store            Root store name for the user sandbox
+    * @param username         Username of the user for the action
+    * @param name             Action name - will be used for I18N message lookup
+    * @param icon             Icon to display for the action
+    * @param actionListener   Actionlistener for the action
+    * @param outcome          Navigation outcome for the action
+    * @param url              HREF URL for the action
+    * @param params           Parameters name/values for the action listener args
+    * 
+    * @return UIActionLink component
+    */
+   private UIActionLink aquireAction(FacesContext fc, String store, String username, String name,
+         String icon, String actionListener, String outcome, String url, Map<String, String> params)
+   {
+      UIActionLink action = findAction(name, store);
       if (action == null)
       {
-         action = createAction(fc, store, username, name, icon, actionListener, outcome, url);
+         action = createAction(fc, store, username, name, icon, actionListener, outcome, null, null);
       }
       return action;
    }
@@ -775,7 +812,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * 
     * @return UIActionLink component if found, else null if not created yet
     */
-   private UIActionLink findAction(String name, String store, String username)
+   private UIActionLink findAction(String name, String store)
    {
       UIActionLink action = null;
       String actionId = name + '_' + store;
@@ -805,11 +842,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * @param actionListener   Actionlistener for the action
     * @param outcome          Navigation outcome for the action
     * @param url              HREF URL for the action
+    * @param params           Parameters name/values for the action listener args
     * 
     * @return UIActionLink child component
     */
-   private UIActionLink createAction(FacesContext fc, String store, String username,
-         String name, String icon, String actionListener, String outcome, String url)
+   private UIActionLink createAction(FacesContext fc, String store, String username, String name,
+         String icon, String actionListener, String outcome, String url, Map<String, String> params)
    {
       javax.faces.application.Application facesApp = fc.getApplication();
       UIActionLink control = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
@@ -828,16 +866,42 @@ public class UIUserSandboxes extends SelfRenderingComponent
          control.setActionListener(facesApp.createMethodBinding(
                actionListener, UIActions.ACTION_CLASS_ARGS));
          
-         UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
-         param.setId(id + "_1");
-         param.setName("store");
-         param.setValue(store);
-         control.getChildren().add(param);
-         param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
-         param.setId(id + "_2");
-         param.setName("username");
-         param.setValue(username);
-         control.getChildren().add(param);
+         // add the store and username as default action listener parameters
+         if (params == null)
+         {
+            UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+            param.setId(id + "_1");
+            param.setName("store");
+            param.setValue(store);
+            control.getChildren().add(param);
+            param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+            param.setId(id + "_2");
+            param.setName("username");
+            param.setValue(username);
+            control.getChildren().add(param);
+         }
+         else
+         {
+            // if a specific set of parameters are supplied, then add them instead
+            int idIndex = 1;
+            for (String key : params.keySet())
+            {
+               UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+               param.setId(id + '_' + Integer.toString(idIndex++));
+               param.setName(key);
+               String value = params.get(key);
+               if (value.startsWith("#{") == true)
+               {
+                  ValueBinding vb = facesApp.createValueBinding(value);
+                  param.setValueBinding("value", vb);
+               }
+               else
+               {
+                  param.setValue(params.get(key));
+               }
+               control.getChildren().add(param);
+            }
+         }
       }
       if (outcome != null)
       {

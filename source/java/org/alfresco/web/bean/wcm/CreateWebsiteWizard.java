@@ -790,6 +790,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // tag the store with the DNS name property
       tagStoreDNSPath(stagingStore, name, "staging");
       
+      // snapshot the store
+      this.avmService.createSnapshot(stagingStore, null, null);
+      
+      
       // create the 'preview' store for the website
       String previewStore = AVMConstants.buildAVMStagingPreviewStoreName(name);
       this.avmService.createAVMStore(previewStore);
@@ -814,6 +818,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // tag the store with the DNS name property
       tagStoreDNSPath(previewStore, name, "preview");
+      
+      // snapshot the store
+      this.avmService.createSnapshot(previewStore, null, null);
       
       
       // tag all related stores to indicate that they are part of a single sandbox
@@ -889,6 +896,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // tag the store with the DNS name property
       tagStoreDNSPath(userStore, name, username);
       
+      // snapshot the store
+      this.avmService.createSnapshot(userStore, null, null);
+      
       
       // create the user 'preview' store
       String previewStore = AVMConstants.buildAVMUserPreviewStoreName(name, username);
@@ -919,6 +929,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // tag the store with the DNS name property
       tagStoreDNSPath(previewStore, name, username, "preview");
+      
+      // snapshot the store
+      this.avmService.createSnapshot(previewStore, null, null);
       
       
       // tag all related stores to indicate that they are part of a single sandbox

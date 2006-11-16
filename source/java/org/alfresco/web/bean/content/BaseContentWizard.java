@@ -83,6 +83,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
 	       this.mimeType == null);
    }
 
+   
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
 
@@ -307,10 +308,6 @@ public abstract class BaseContentWizard extends BaseWizardBean
       return this.objectTypes;
    }
    
-   // ------------------------------------------------------------------------------
-   // Action event handlers
-   
-   
    
    // ------------------------------------------------------------------------------
    // Service Injection
@@ -322,6 +319,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
    {
       this.contentService = contentService;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Helper methods

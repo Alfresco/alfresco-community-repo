@@ -1,6 +1,7 @@
 package org.alfresco.web.bean.dialog;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ public abstract class BaseDialogBean implements IDialogBean
       
       if (this.parameters == null)
       {
-         this.parameters = new HashMap<String, String>();
+         this.parameters = Collections.<String, String>emptyMap();
       }
       
       // reset the isFinished flag

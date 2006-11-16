@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.zip.ZipException;
@@ -212,7 +213,7 @@ public class ImportWebsiteDialog
                   processZipImport(this.file, importRef);
                   
                   // After an import it's a good idea to snapshot the staging store
-                  // TODO Maybe a nice auto generated comment.
+                  // TODO: Maybe a nice auto generated comment.
                   this.avmService.createSnapshot(store, null, null);
                }
             }

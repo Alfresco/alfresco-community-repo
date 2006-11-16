@@ -114,7 +114,7 @@
             <target>new</target>
          </action>
          
-         <!-- Create AVM Content -->
+         <!-- Create AVM ad-hoc Content -->
          <action id="create_avm_content">
             <permissions>
                <permission allow="true">CreateChildren</permission>

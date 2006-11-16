@@ -43,7 +43,7 @@
 <h:panelGrid id="general-properties-panel-grid" 
 	     columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%">
-  <h:outputText id="step-1-text" value="1. #{msg.configure_rendering_engines_step1_desc}" escape="false" />
+  <h:outputText id="step-1-text" value="1. #{msg.create_form_configure_rendering_engines_step1_desc}" escape="false" />
   <h:panelGrid id="panel_grid_3"
                columns="3" cellpadding="3" cellspacing="3" border="0"
                width="100%">

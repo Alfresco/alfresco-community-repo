@@ -230,12 +230,14 @@ public class AVMSearchContext extends SearchContext {
     {
     	// Range check the resume id
     	
-    	if ( resumeId < 0 || resumeId >= m_fileList.length)
+    	int resId = resumeId - 1;
+    	
+    	if ( resId < 0 || resId >= m_fileList.length)
     		return false;
     	
     	// Reset the current file index
     	
-    	m_fileIdx = resumeId;
+    	m_fileIdx = resId;
     	return true;
     }
 

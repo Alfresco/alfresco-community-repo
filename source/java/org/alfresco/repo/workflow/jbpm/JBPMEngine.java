@@ -1785,18 +1785,18 @@ public class JBPMEngine extends BPMEngine
      */
     protected WorkflowDefinition createWorkflowDefinition(ProcessDefinition definition)
     {
-        WorkflowDefinition workflowDef = new WorkflowDefinition();
-        workflowDef.id = createGlobalId(new Long(definition.getId()).toString());
-        workflowDef.name = definition.getName();
-        workflowDef.title = getLabel(workflowDef.name + ".workflow", TITLE_LABEL, workflowDef.name);
-        workflowDef.description = getLabel(workflowDef.name + ".workflow", DESC_LABEL, workflowDef.title);
-        workflowDef.version = new Integer(definition.getVersion()).toString();
-        Task startTask = definition.getTaskMgmtDefinition().getStartTask();
-        if (startTask != null)
-        {
-            workflowDef.startTaskDefinition = createWorkflowTaskDefinition(startTask);
-        }
-        return workflowDef;
+        final Task startTask = definition.getTaskMgmtDefinition().getStartTask();
+        final String name = definition.getName();
+        final String title = getLabel(name + ".workflow", TITLE_LABEL, name);
+        final String description = getLabel(name + ".workflow", DESC_LABEL, title);
+        return new WorkflowDefinition(createGlobalId(new Long(definition.getId()).toString()),
+                                      name,
+                                      new Integer(definition.getVersion()).toString(),
+                                      title,
+                                      description,
+                                      (startTask != null
+                                       ? createWorkflowTaskDefinition(startTask)
+                                       : null));
     }
     
     /**

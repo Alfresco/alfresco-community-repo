@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
-import org.alfresco.repo.avm.util.VersionPathUnstuffer;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -62,9 +61,8 @@ public class AVMRevertListAction extends ActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef) 
     {
         int revertVersion = (Integer)action.getParameterValue(PARAM_VERSION);
-        String packedNodes = (String)action.getParameterValue(PARAM_NODE_LIST);
-        VersionPathUnstuffer unstuffer = new VersionPathUnstuffer(packedNodes);
-        List<Pair<Integer, String>> versionPaths = unstuffer.getVersionPaths();
+        List<Pair<Integer, String>> versionPaths = 
+            (List<Pair<Integer, String>>)action.getParameterValue(PARAM_NODE_LIST);
         List<AVMDifference> diffs = new ArrayList<AVMDifference>();
         for (Pair<Integer, String> item : versionPaths)
         {
@@ -99,7 +97,7 @@ public class AVMRevertListAction extends ActionExecuterAbstractBase
                                         getParamDisplayLabel(PARAM_VERSION)));
         paramList.add(
             new ParameterDefinitionImpl(PARAM_NODE_LIST,
-                                        DataTypeDefinition.TEXT,
+                                        DataTypeDefinition.ANY,
                                         true,
                                         getParamDisplayLabel(PARAM_NODE_LIST)));
         paramList.add(

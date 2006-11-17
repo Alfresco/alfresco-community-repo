@@ -252,11 +252,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             final ActionImpl action = new ActionImpl(null,
                                                      GUID.generate(),
                                                      AVMRevertListAction.NAME);
-            VersionPathStuffer stuffer = new VersionPathStuffer();
-            stuffer.add(-1, "area:/a/b");
-            String nodeList = stuffer.toString();
+            List<Pair<Integer, String>> versionPaths = 
+                new ArrayList<Pair<Integer, String>>();
+            versionPaths.add(new Pair<Integer, String>(-1, "area:/a/b"));
             action.setParameterValue(AVMRevertListAction.PARAM_VERSION, fService.getLatestSnapshotID("area"));
-            action.setParameterValue(AVMRevertListAction.PARAM_NODE_LIST, nodeList);
+            action.setParameterValue(AVMRevertListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
             action.setParameterValue(AVMRevertListAction.PARAM_FLATTEN, true);
             action.setParameterValue(AVMRevertListAction.PARAM_STORE, "area");
             action.setParameterValue(AVMRevertListAction.PARAM_STAGING, "main");
@@ -304,10 +304,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             final ActionImpl action = new ActionImpl(null,
                                                      GUID.generate(),
                                                      AVMUndoSandboxListAction.NAME);
-            VersionPathStuffer stuffer = new VersionPathStuffer();
-            stuffer.add(-1, "area:/a/b/c/bar");
-            String nodeList = stuffer.toString();
-            action.setParameterValue(AVMUndoSandboxListAction.PARAM_NODE_LIST, nodeList);
+            List<Pair<Integer, String>> versionPaths = 
+                new ArrayList<Pair<Integer, String>>();
+            versionPaths.add(new Pair<Integer, String>(-1, "area:/a/b/c/bar"));
+            action.setParameterValue(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
             final AVMUndoSandboxListAction revert = (AVMUndoSandboxListAction)fContext.getBean("avm-undo-list");
             class TxnWork implements TransactionUtil.TransactionWork<Object>
             {

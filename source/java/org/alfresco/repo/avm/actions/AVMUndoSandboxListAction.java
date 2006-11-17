@@ -8,12 +8,10 @@ import java.util.List;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.util.VersionPathUnstuffer;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
@@ -49,9 +47,8 @@ public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef) 
     {
-        String packedNodes = (String)action.getParameterValue(PARAM_NODE_LIST);
-        VersionPathUnstuffer unstuffer = new VersionPathUnstuffer(packedNodes);
-        List<Pair<Integer, String>> versionPaths = unstuffer.getVersionPaths();
+        List<Pair<Integer, String>> versionPaths = 
+            (List<Pair<Integer, String>>)action.getParameterValue(PARAM_NODE_LIST);
         for (Pair<Integer, String> item : versionPaths)
         {
             AVMNodeDescriptor desc = fAVMService.lookup(-1, item.getSecond(), true);
@@ -80,7 +77,7 @@ public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase
     {
         paramList.add(
                 new ParameterDefinitionImpl(PARAM_NODE_LIST,
-                                            DataTypeDefinition.TEXT,
+                                            DataTypeDefinition.ANY,
                                             true,
                                             getParamDisplayLabel(PARAM_NODE_LIST)));
     }

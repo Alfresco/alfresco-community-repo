@@ -73,6 +73,13 @@ class FormImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.folderNodeRef, 
+                                             ContentModel.PROP_NAME);
+   }
+
+   public String getTitle()
+   {
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      return (String)nodeService.getProperty(this.folderNodeRef, 
                                              ContentModel.PROP_TITLE);
    }
 

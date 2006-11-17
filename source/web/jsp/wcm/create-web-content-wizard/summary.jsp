@@ -26,7 +26,7 @@
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%" rowClasses="wizardSectionHeading">
-  <h:outputText value="&nbsp;#{msg.create_form_summary_content_details}" escape="false" />
+  <h:outputText value="&nbsp;#{msg.create_web_content_summary_content_details}" escape="false" />
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
@@ -40,7 +40,7 @@
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%" rowClasses="wizardSectionHeading">
-  <h:outputText value="&nbsp;#{msg.create_form_summary_rendition_details}" escape="false" />
+  <h:outputText value="&nbsp;#{msg.create_web_content_summary_rendition_details}" escape="false" />
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
@@ -52,4 +52,4 @@
   </c:forEach>
 </h:panelGrid>
 
-<h:outputText value="&nbsp;#{msg.create_form_summary_submit_message}" escape="false" />
+<h:outputText value="&nbsp;#{msg.create_web_content_summary_submit_message}" escape="false" />

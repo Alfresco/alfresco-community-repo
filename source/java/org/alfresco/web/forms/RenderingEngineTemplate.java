@@ -32,10 +32,13 @@ import org.w3c.dom.Document;
 public interface RenderingEngineTemplate
    extends Serializable
 {
-   /** the name of the form, which must be unique within the FormsService */
+   /** the name of the rendering engine template */
    public String getName();
 
-   /** the description of the form */
+   /** the title of the rendering engine template */
+   public String getTitle();
+
+   /** the description of the rendering engine template */
    public String getDescription();
 
    /** the output path pattern for renditions */

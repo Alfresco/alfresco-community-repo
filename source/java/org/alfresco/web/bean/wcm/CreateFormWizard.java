@@ -448,6 +448,14 @@ public class CreateFormWizard
       
       return this.renderingEngineTemplatesDataModel;
    }
+
+   /**
+    * Returns all configured rendering engine templates.
+    */
+   public List<RenderingEngineTemplateData> getRenderingEngineTemplates()
+   {
+      return this.renderingEngineTemplates;
+   }
    
    /**
     * @return Returns the mime type currenty selected
@@ -710,6 +718,12 @@ public class CreateFormWizard
                                   : defaultWorkflowId[0]);
    }
 
+   public WorkflowDefinition getDefaultWorkflowDefinition()
+   {
+      return (this.defaultWorkflowId == null
+              ? null
+              : this.workflowService.getDefinitionById(this.defaultWorkflowId));
+   }
 
    public String[] getDefaultWorkflowId()
    {
@@ -740,9 +754,9 @@ public class CreateFormWizard
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          item = new UIListItem();
-         item.setValue(workflowDef.id);
-         item.setLabel(workflowDef.title);
-         item.setDescription(workflowDef.description);
+         item.setValue(workflowDef.getId());
+         item.setLabel(workflowDef.getTitle());
+         item.setDescription(workflowDef.getDescription());
          item.setImage(WebResources.IMAGE_WORKFLOW_32);
          result.add(item);
       }

@@ -37,6 +37,9 @@ public interface Form
    /** the name of the form, which must be unique within the FormsService */
    public String getName();
 
+   /** the title of the form */
+   public String getTitle();
+
    /** the description of the form */
    public String getDescription();
 

@@ -73,6 +73,12 @@ public class RenderingEngineTemplateImpl
       return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
    }
 
+   public String getTitle()
+   {
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE);
+   }
+
    public String getDescription()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();

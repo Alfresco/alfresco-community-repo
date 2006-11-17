@@ -35,7 +35,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
-import org.alfresco.repo.avm.util.VersionPathStuffer;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -52,6 +51,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -880,8 +880,10 @@ public class AVMBrowseBean implements IContextListener
          if (node != null)
          {
             Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-            String paths = new VersionPathStuffer().add(-1, path).toString();
-            args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, paths);
+            List<Pair<Integer, String>> versionPaths =
+                new ArrayList<Pair<Integer, String>>();
+            versionPaths.add(new Pair<Integer, String>(-1, path));
+            args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
             Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
             this.actionService.executeAction(action, null); // dummy action ref
          }
@@ -924,14 +926,14 @@ public class AVMBrowseBean implements IContextListener
          
          // calcluate the list of differences between the user store and the staging area
          List<AVMDifference> diffs = this.avmSyncService.compare(-1, store + ":/", -1, getStagingStore() + ":/");
-         VersionPathStuffer stuffer = new VersionPathStuffer();
+         List<Pair<Integer, String>> versionPaths = 
+            new ArrayList<Pair<Integer, String>>();
          for (AVMDifference diff : diffs)
          {
-            stuffer.add(-1, diff.getSourcePath());
+            versionPaths.add(new Pair<Integer, String>(-1, diff.getSourcePath()));
          }
-         String paths = stuffer.toString();
          Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-         args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, paths);
+         args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
          Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
          this.actionService.executeAction(action, null); // dummy action ref
          
@@ -972,13 +974,14 @@ public class AVMBrowseBean implements IContextListener
             tx = Repository.getUserTransaction(context, false);
             tx.begin();
             
-            VersionPathStuffer stuffer = new VersionPathStuffer();
+            List<Pair<Integer, String>> versionPaths = 
+                new ArrayList<Pair<Integer, String>>();
             for (AVMNodeDescriptor node : selected)
             {
-               stuffer.add(-1, node.getPath());
+               versionPaths.add(new Pair<Integer, String>(-1, node.getPath()));
             }
             Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-            args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, stuffer.toString());
+            args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
             for (AVMNodeDescriptor node : selected)
             {
                Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);

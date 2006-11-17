@@ -43,6 +43,9 @@
       <property name="diskInterface">
          <ref bean="contentDiskDriver"/>
       </property>
+	  <property name="avmDiskInterface">
+		 <ref bean="avmDiskDriver"/>
+	  </property>
    </bean>
    
    <!-- Filesystem Interface -->
@@ -70,4 +73,14 @@
       <property name="allowWrites"><value>${server.transaction.allow-writes}</value></property>
    </bean>
    
+	<!-- AVM Filesystem Interface -->
+   <bean id="avmDiskDriver" class="org.alfresco.filesys.avm.AVMDiskDriver" >
+	     <property name="avmService"><ref bean="avmService" /></property>
+         <property name="transactionService"><ref bean="transactionComponent" /></property>
+         <property name="authenticationComponent"><ref bean="authenticationComponent"/></property>
+	     <property name="authenticationService"><ref bean="authenticationService"/></property>
+		  <property name="mimetypeService"><ref bean="mimetypeService" /></property>
+	     <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
+   </bean>
+	
 </beans>

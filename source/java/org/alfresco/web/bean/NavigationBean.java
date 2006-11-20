@@ -493,7 +493,7 @@ public class NavigationBean
          // resolve CIFS network folder location for this node
          DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();
          
-         if (diskShare != null)
+         if (diskShare != null && diskShare.getContext() instanceof ContentContext)
          {
             ContentContext contentCtx = (ContentContext) diskShare.getContext();
             NodeRef rootNode = contentCtx.getRootNode();

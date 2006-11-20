@@ -19,6 +19,7 @@ package org.alfresco.filesys.avm;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.SortedMap;
 
 import javax.transaction.UserTransaction;
@@ -36,11 +37,10 @@ import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.FileStatus;
-import org.alfresco.filesys.server.filesys.FileSystem;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.SearchContext;
-import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -315,15 +316,6 @@ public class AVMDiskDriver implements DiskInterface {
             // Create the context
             
             context = new AVMContext(storePath, version);
-
-            // Default the filesystem to look like an 80Gb sized disk with 90% free space
-            
-            context.setDiskInformation(new SrvDiskInfo(2560000, 64, 512, 2304000));
-            
-            // Set parameters
-            
-            context.setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
-            		FileSystem.CaseSensitiveSearch);
         }
         catch (Exception ex)
         {
@@ -355,6 +347,71 @@ public class AVMDiskDriver implements DiskInterface {
         return context;
     }
 
+    /**
+     * Return a list of the available AVM store names
+     * 
+     * @return StringList
+     */
+    public final StringList getAVMStoreNames()
+    {
+        // Use the system user as the authenticated context to get the AVM store list
+        
+        m_authComponent.setCurrentUser( m_authComponent.getSystemUserName());
+        
+        // Wrap the service request in a transaction
+        
+        UserTransaction tx = m_transactionService.getUserTransaction(false);
+
+        StringList storeNames = new StringList();
+        
+        try
+        {
+            // Start the transaction
+            
+            if ( tx != null)
+                tx.begin();
+
+            // Get the list of AVM stores
+            
+            List<AVMStoreDescriptor> storeList = m_avmService.getAVMStores();
+            
+            if ( storeList != null)
+            {
+            	for ( AVMStoreDescriptor storeDesc : storeList)
+            		storeNames.addString( storeDesc.getName());
+            }
+
+            // Commit the transaction
+            
+            tx.commit();
+            tx = null;
+        }
+        catch (Exception ex)
+        {
+	        logger.error("Error during create context", ex);
+	    }
+	    finally
+	    {
+	        // If there is an active transaction then roll it back
+	        
+	        if ( tx != null)
+	        {
+	            try
+	            {
+	                tx.rollback();
+	            }
+	            catch (Exception ex)
+	            {
+	                logger.warn("Failed to rollback transaction", ex);
+	            }
+	        }
+	    }
+	    
+	    // Return the list of AVM store names
+	    
+	    return storeNames;
+    }
+    
     /**
      * Build the full store path for a file/folder using the share relative path
      * 

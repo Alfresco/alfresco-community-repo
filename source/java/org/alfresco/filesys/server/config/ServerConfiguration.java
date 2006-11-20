@@ -41,6 +41,8 @@ import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.avm.AVMContext;
+import org.alfresco.filesys.avm.AVMDiskDriver;
+import org.alfresco.filesys.avm.AVMShareMapper;
 import org.alfresco.filesys.ftp.FTPPath;
 import org.alfresco.filesys.ftp.InvalidPathException;
 import org.alfresco.filesys.netbios.NetBIOSName;
@@ -75,6 +77,7 @@ import org.alfresco.filesys.smb.server.repo.DesktopAction;
 import org.alfresco.filesys.smb.server.repo.DesktopActionException;
 import org.alfresco.filesys.smb.server.repo.DesktopActionTable;
 import org.alfresco.filesys.util.IPAddress;
+import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.X64;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.NTLMMode;
@@ -1773,6 +1776,77 @@ public class ServerConfiguration extends AbstractLifecycleBean
             
             logger.warn("No filesystems defined");
         }
+
+        // Check if shares should be added for all AVM stores
+        
+        ConfigElement avmAllStoresElem = config.getConfigElement( "avmAllStores");
+        
+        if ( avmAllStoresElem != null && getAvmDiskInterface() != null)
+        {
+        	// Get the list of store names
+        	
+        	AVMDiskDriver avmDriver = (AVMDiskDriver) getAvmDiskInterface();
+        	StringList storeNames = avmDriver.getAVMStoreNames();
+        	
+        	// Add shares for each of the store names, if the share name does not already exist
+        	
+        	if ( storeNames != null && storeNames.numberOfStrings() > 0)
+        	{
+        		// Add a share for each store
+        		
+        		for ( int i = 0; i < storeNames.numberOfStrings(); i++)
+        		{
+        			String storeName = storeNames.getStringAt( i);
+        			
+        			// Check if a share of the same name already exists
+        			
+        			if ( getShares().findShare( storeName, ShareType.DISK, true) == null)
+        			{
+        				// Create the new share for the store
+        				
+	                    AVMContext avmContext = new AVMContext( storeName + ":/", AVMContext.VERSION_HEAD);
+                		
+	                    // Create the shared filesystem
+	                	
+	                    addShare( new DiskSharedDevice( storeName, avmDriver, avmContext));
+	                    
+	                    // DEBUG
+	                    
+	                    if ( logger.isDebugEnabled())
+	                    	logger.debug( "Added AVM share " + storeName);
+        			}
+        		}
+        	}
+        }
+        
+        // Check for the AVM version share mapper
+        
+        ConfigElement avmMapperElem = config.getConfigElement( "avmVersionMapper");
+        
+        if ( avmMapperElem != null)
+        {
+            try
+            {
+                // Create the AVM version share mapper
+                
+                AVMShareMapper shareMapper = new AVMShareMapper();
+                shareMapper.initializeMapper( this, avmMapperElem);
+                
+                // Use the AVM version share mapper
+                
+                m_shareMapper = shareMapper;
+                
+                // Debug
+                
+                if ( logger.isDebugEnabled())
+                    logger.debug("Using AVM version share mapper");
+            }
+            catch (InvalidConfigurationException ex)
+            {
+                throw new AlfrescoRuntimeException("Failed to initialize AVM version share mapper", ex);
+            }
+        }
+        
     }
 
     /**

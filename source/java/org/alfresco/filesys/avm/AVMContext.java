@@ -19,6 +19,7 @@ package org.alfresco.filesys.avm;
 
 import org.alfresco.filesys.server.filesys.DiskDeviceContext;
 import org.alfresco.filesys.server.filesys.FileSystem;
+import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 
 /**
  * AVM Filesystem Context Class
@@ -59,6 +60,15 @@ public class AVMContext extends DiskDeviceContext {
     	// Set the store version to use
     	
     	m_version = version;
+    	
+        // Default the filesystem to look like an 80Gb sized disk with 90% free space
+        
+        setDiskInformation(new SrvDiskInfo(2560000, 64, 512, 2304000));
+        
+        // Set filesystem parameters
+        
+        setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
+        		FileSystem.CaseSensitiveSearch);
     }
 
     /**

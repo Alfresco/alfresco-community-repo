@@ -31,6 +31,7 @@ import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.util.RawServices;
+import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -583,70 +584,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public Lookup lookup(int version, String path, boolean write, boolean includeDeleted)
     {
-        // Make up a Lookup to hold the results.
-        Lookup result = new Lookup(this, fName);
-        if (path.length() == 0)
-        {
-            return null;
-        }
-        while (path.startsWith("/"))
-        {
-            path = path.substring(1);
-        }
-        while (path.endsWith("/"))
-        {
-            path = path.substring(0, path.length() - 1);
-        }
-        String[] pathElements = path.split("/+");
-        // Grab the root node to start the lookup.
-        DirectoryNode dir = null;
-        // Versions less than 0 mean get current.
-        if (version < 0)
-        {
-            dir = fRoot;
-        }
-        else
-        {
-            dir = AVMDAOs.Instance().fAVMNodeDAO.getAVMStoreRoot(this, version);
-        }
-        if (dir == null)
-        {
-            return null;
-        }
-        // Add an entry for the root.
-        result.add(dir, "", write);
-        dir = (DirectoryNode)result.getCurrentNode();
-        if (pathElements.length == 1 && pathElements[0].equals(""))
-        {
-            return result;
-        }
-        // Now look up each path element in sequence up to one
-        // before the end.
-        for (int i = 0; i < pathElements.length - 1; i++)
-        {
-            AVMNode child = dir.lookupChild(result, pathElements[i], includeDeleted);
-            if (child == null)
-            {
-                return null;
-            }
-            // Every element that is not the last needs to be a directory.
-            if (child.getType() != AVMNodeType.PLAIN_DIRECTORY &&
-                child.getType() != AVMNodeType.LAYERED_DIRECTORY)
-            {
-                return null;
-            }
-            result.add(child, pathElements[i], write);
-            dir = (DirectoryNode)result.getCurrentNode();
-        }
-        // Now look up the last element.
-        AVMNode child = dir.lookupChild(result, pathElements[pathElements.length - 1],
-                                        includeDeleted);
-        if (child == null)
-        {
-            return null;
-        }
-        result.add(child, pathElements[pathElements.length - 1], write);
-        return result;
+        SimplePath sPath = new SimplePath(path);
+        return RawServices.Instance().getLookupCache().lookup(this, version, sPath, write, includeDeleted);
     }
 
     /**

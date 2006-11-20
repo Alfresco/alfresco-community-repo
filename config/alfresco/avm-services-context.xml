@@ -123,6 +123,12 @@
 		</property>
 	</bean>
 	
+	<bean id="lookupCache" class="org.alfresco.repo.avm.LookupCache">
+	    <property name="avmNodeDAO">
+	        <ref bean="avmNodeDAO"/>
+	    </property>
+	</bean>
+	
 	<bean id="rawServices" class="org.alfresco.repo.avm.util.RawServices"/>
 	
 	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"

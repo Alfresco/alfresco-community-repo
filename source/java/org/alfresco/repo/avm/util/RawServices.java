@@ -3,6 +3,7 @@
  */
 package org.alfresco.repo.avm.util;
 
+import org.alfresco.repo.avm.LookupCache;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -51,6 +52,11 @@ public class RawServices implements ApplicationContextAware
      * The Content Store.
      */
     private ContentStore fContentStore;
+    
+    /**
+     * The LookupCache.
+     */
+    private LookupCache fLookupCache;
     
     /**
      * Default constructor.
@@ -118,6 +124,15 @@ public class RawServices implements ApplicationContextAware
                 (ContentStore)fContext.getBean("fileContentStore");
         }
         return fContentStore;
+    }
+    
+    public LookupCache getLookupCache()
+    {
+        if (fLookupCache == null)
+        {
+            fLookupCache = (LookupCache)fContext.getBean("lookupCache");
+        }
+        return fLookupCache;
     }
     
     public ApplicationContext getContext()

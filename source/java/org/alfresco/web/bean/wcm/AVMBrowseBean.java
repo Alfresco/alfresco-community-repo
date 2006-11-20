@@ -880,8 +880,7 @@ public class AVMBrowseBean implements IContextListener
          if (node != null)
          {
             Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-            List<Pair<Integer, String>> versionPaths =
-                new ArrayList<Pair<Integer, String>>();
+            List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
             versionPaths.add(new Pair<Integer, String>(-1, path));
             args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
             Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
@@ -926,8 +925,7 @@ public class AVMBrowseBean implements IContextListener
          
          // calcluate the list of differences between the user store and the staging area
          List<AVMDifference> diffs = this.avmSyncService.compare(-1, store + ":/", -1, getStagingStore() + ":/");
-         List<Pair<Integer, String>> versionPaths = 
-            new ArrayList<Pair<Integer, String>>();
+         List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
          for (AVMDifference diff : diffs)
          {
             versionPaths.add(new Pair<Integer, String>(-1, diff.getSourcePath()));
@@ -974,8 +972,7 @@ public class AVMBrowseBean implements IContextListener
             tx = Repository.getUserTransaction(context, false);
             tx.begin();
             
-            List<Pair<Integer, String>> versionPaths = 
-                new ArrayList<Pair<Integer, String>>();
+            List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
             for (AVMNodeDescriptor node : selected)
             {
                versionPaths.add(new Pair<Integer, String>(-1, node.getPath()));
@@ -1016,7 +1013,7 @@ public class AVMBrowseBean implements IContextListener
    {
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
-      String id = params.get("form-id");
+      String id = params.get(UIUserSandboxes.PARAM_FORM_ID);
       
       // pass form ID to the wizard - to be picked up in init()
       FacesContext fc = FacesContext.getCurrentInstance();

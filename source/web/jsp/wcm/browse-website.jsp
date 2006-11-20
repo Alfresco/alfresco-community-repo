@@ -106,8 +106,7 @@
                                  <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
                                  <td align=right>
                                     <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" showLink="false" href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
-                                    <%-- TODO: add this action back once we can create in a specific sub-folder --%>
-                                    <%--<a:actionLink id="actCreate" value="#{msg.sandbox_create}" image="/images/icons/new_content.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="wizard:createWebContent" />--%>
+                                    <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:snapshotSandbox" />
                                     <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
                                  </td>
                               </tr>

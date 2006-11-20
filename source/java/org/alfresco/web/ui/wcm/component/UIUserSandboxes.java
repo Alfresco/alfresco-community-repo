@@ -107,6 +107,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    
+   public static final String PARAM_FORM_ID = "form-id";
+   
    /** website to show sandboxes for */
    private NodeRef value;
    
@@ -690,7 +692,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                // create content action passes the ID of the Form to uses
                Map<String, String> params = new HashMap<String, String>(1, 1.0f);
                // setup a data-binding param for the Form ID
-               params.put("form-id", "#{" + REQUEST_FORM_REF + ".id}");
+               params.put(PARAM_FORM_ID, "#{" + REQUEST_FORM_REF + ".id}");
                action = createAction(fc, userStorePrefix, username, ACT_CREATE_FORM_CONTENT,
                      "/images/icons/new_content.gif", "#{AVMBrowseBean.createFormContent}", null, null, params);
             }

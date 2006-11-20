@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,18 +35,26 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.BaseContentWizard;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormInstanceData;
+import org.alfresco.web.forms.FormInstanceDataImpl;
+import org.alfresco.web.forms.FormProcessor;
+import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.Rendition;
+import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -104,11 +111,13 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.mimeType = MimetypeMap.MIMETYPE_XML;
       
       // check for a form ID being passed in as a parameter
-      if (this.parameters.get("form-id") != null)
+      if (this.parameters.get(UIUserSandboxes.PARAM_FORM_ID) != null)
       {
          // it is used to init the dialog to a specific template
-         String formId = parameters.get("form-id");
-         Form form = FormsService.getInstance().getForm(new NodeRef(Repository.getStoreRef(), formId));
+         String webFormId = parameters.get(UIUserSandboxes.PARAM_FORM_ID);
+         NodeRef webFormRef = new NodeRef(Repository.getStoreRef(), webFormId);
+         String formName = (String)this.nodeService.getProperty(webFormRef, ContentModel.PROP_FORMNAME);
+         Form form = FormsService.getInstance().getForm(formName);
          if (form != null)
          {
             this.formName = form.getName();
@@ -226,20 +235,32 @@ public class CreateWebContentWizard extends BaseContentWizard
    }
 
    /**
-    * @return the available forms that can be created.
+    * @return the available forms from this web project that can be created.
     */
    public List<SelectItem> getFormChoices()
    {
-      final Collection<Form> ttl = FormsService.getInstance().getForms();
-      final List<SelectItem> sil = new ArrayList<SelectItem>(ttl.size());
-      for (Form tt : ttl)
+      Node website = this.avmBrowseBean.getWebsite();
+      if (website == null)
       {
-         sil.add(new SelectItem(tt.getName(), tt.getName()));
+         throw new IllegalStateException("CreateWebContentWizard must be called within a Web Project context!");
+      }
+      List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
+            website.getNodeRef(), ContentModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
+      List<SelectItem> items = new ArrayList<SelectItem>(webFormRefs.size());
+      for (ChildAssociationRef ref : webFormRefs)
+      {
+         String formName = (String)this.nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_FORMNAME);
+         Form form = FormsService.getInstance().getForm(formName);
+         if (form != null)
+         {
+            items.add(new SelectItem(formName, formName));
+         }
       }
       
-      final QuickSort sorter = new QuickSort(sil, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+      final QuickSort sorter = new QuickSort(items, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
       sorter.sort();
-      return sil;
+      
+      return items;
    }
    
    /**

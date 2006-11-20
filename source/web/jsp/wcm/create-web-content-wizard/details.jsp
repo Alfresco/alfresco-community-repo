@@ -94,7 +94,7 @@
 
    <h:outputText value=""/>
    <h:outputText value="#{msg.form}:"/>
-   <h:selectOneMenu value="#{WizardManager.bean.formName}">
+   <h:selectOneMenu value="#{WizardManager.bean.formName}" disabled="#{WizardManager.bean.formSelectDisabled}">
       <f:selectItems value="#{WizardManager.bean.formChoices}" />
    </h:selectOneMenu>
 </h:panelGrid>

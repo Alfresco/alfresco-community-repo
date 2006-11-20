@@ -127,6 +127,9 @@
 	    <property name="avmNodeDAO">
 	        <ref bean="avmNodeDAO"/>
 	    </property>
+	    <property name="maxSize">
+	    	<value>200</value>
+	    </property>
 	</bean>
 	
 	<bean id="rawServices" class="org.alfresco.repo.avm.util.RawServices"/>

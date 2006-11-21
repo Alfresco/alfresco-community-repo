@@ -117,7 +117,8 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
             fAVMSyncService.compare(version, path, -1, avmDest);
         // TODO fix update comments at some point.
         // Do the update.
-        fAVMSyncService.update(diffs, false, false, true, true, null, null);
+        fAVMSyncService.update(diffs, false, false, true, true,
+              "Submit of item: " + AVMNodeConverter.SplitBase(path)[1], null);
         // Cleanup by flattening the source relative to the destination.
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");

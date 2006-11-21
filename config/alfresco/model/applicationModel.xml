@@ -60,6 +60,9 @@
             <property name="app:avmstore">
                <type>d:text</type>
             </property>
+            <property name="app:defaultwebapp">
+               <type>d:text</type>
+            </property>
          </properties>
          <associations>
             <child-association name="app:webuser">

@@ -190,7 +190,7 @@ public class CreateFormWizard
       props.put(ContentModel.PROP_TITLE, this.getFormTitle());
       props.put(ContentModel.PROP_DESCRIPTION, this.getFormDescription());
       this.nodeService.addAspect(folderInfo.getNodeRef(), ContentModel.ASPECT_TITLED, props);
-
+      
       props = new HashMap<QName, Serializable>(3, 1.0f);
       props.put(WCMModel.PROP_XML_SCHEMA, fileInfo.getNodeRef());
       props.put(WCMModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME, 

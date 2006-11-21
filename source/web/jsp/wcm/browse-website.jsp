@@ -112,8 +112,38 @@
                               </tr>
                               <tr>
                                  <td></td>
-                                 <td colspan=2 style='line-height:6px'>
-                                    <h:outputText value="#{AVMBrowseBean.stagingSummary}" escape="false" />
+                                 <td colspan=2>
+                                    <div style='line-height:6px'>
+                                       <h:outputText value="#{AVMBrowseBean.stagingSummary}" escape="false" />
+                                    </div>
+                                 </td>
+                              </tr>
+                              <tr>
+                                 <td></td>
+                                 <td colspan=2>
+                                    <a:panel id="snapshots-panel" rendered="#{AVMBrowseBean.isManagerRole}" label="#{msg.recent_snapshots}"
+                                          progressive="true" expanded="false" styleClass="mainSubTitle">
+                                    <div style='padding-left:16px;padding-top:8px;padding-bottom:4px'>
+                                       <%-- Sandbox snapshots list --%>
+                                       <table cellspacing=2 cellpadding=0 width=100% class="snapshotItemsList">
+                                          <tr>
+                                             <td><img src="<%=request.getContextPath()%>/images/icons/filter.gif" width=16 height=16></td>
+                                             <td style="padding-left:8px;width:120px"><nobr><h:outputText id="msg-date" value="#{msg.date_filter_when}" />:</nobr></td>
+                                             <td width=100%>
+                                                <a:modeList id="snap-filter" itemSpacing="2" iconColumnWidth="0" horizontal="true" selectedLinkStyle="font-weight:bold"
+                                                      value="#{AVMBrowseBean.snapshotDateFilter}" actionListener="#{AVMBrowseBean.snapshotDateFilterChanged}">
+                                                   <a:listItem id="f1" value="all" label="#{msg.date_filter_all}" />
+                                                   <a:listItem id="f2" value="today" label="#{msg.date_filter_today}" />
+                                                   <a:listItem id="f3" value="week" label="#{msg.date_filter_week}" />
+                                                   <a:listItem id="f4" value="month" label="#{msg.date_filter_month}" />
+                                                </a:modeList>
+                                             </td>
+                                          </tr>
+                                       </table>
+                                       <div style='padding:2px'></div>
+                                       <w:sandboxSnapshots id="snapshots" value="#{AVMBrowseBean.stagingStore}" dateFilter="#{AVMBrowseBean.snapshotDateFilter}" />
+                                    </div>
+                                    </a:panel>
                                  </td>
                               </tr>
                            </table>

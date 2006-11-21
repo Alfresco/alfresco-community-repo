@@ -81,6 +81,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private static final String MSG_NONE = "value_not_set";
 
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
+   
+   private static final String WEBAPP_DEFAULT = "ROOT";
 
    private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
    
@@ -88,6 +90,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected String title;
    protected String name;
    protected String description;
+   protected String webapp = WEBAPP_DEFAULT;
    
    private String websitesFolderId = null;
    
@@ -170,6 +173,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
       uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
       this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
       
+      // set the default webapp name for the project
+      String webapp = (this.webapp != null && this.webapp.length() != 0) ? this.webapp : WEBAPP_DEFAULT;
+      this.nodeService.setProperty(nodeRef, ContentModel.PROP_DEFAULTWEBAPP, webapp);
+      
+      // call the delegate wizard bean to provide invite user functionality
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
       wiz.setNode(new Node(nodeRef));
       outcome = wiz.finish();
@@ -459,6 +467,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.description = description;
    }
    
+   /**
+    * @return the default webapp name for the project
+    */
+   public String getWebapp()
+   {
+      return this.webapp;
+   }
+
+   /**
+    * @param webapp  The default webapp name for the project
+    */
+   public void setWebapp(String webapp)
+   {
+      this.webapp = webapp;
+   }
+
    /**
     * @return summary text for the wizard
     */

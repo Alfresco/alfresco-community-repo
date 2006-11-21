@@ -581,3 +581,11 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-style: solid;
    border-color: #DDDDDD;
 }
+
+.snapshotItemsList
+{
+   background-color: #c6d8eb;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #999999;
+}

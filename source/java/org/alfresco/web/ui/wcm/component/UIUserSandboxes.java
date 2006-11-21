@@ -452,6 +452,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          this.userNodes.put(username, nodes);
          
          // output the table of modified items
+         // TODO: apply tag style - removed hardcoded
          out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=1 border=0 width=100%>");
          
          // header row
@@ -665,6 +666,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          ResourceBundle bundle = Application.getBundle(fc);
          
          // output the table of available forms
+         // TODO: apply tag style - removed hardcoded
          out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=1 border=0 width=100%>");
          
          // header row
@@ -800,7 +802,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       UIActionLink action = findAction(name, store);
       if (action == null)
       {
-         action = createAction(fc, store, username, name, icon, actionListener, outcome, null, null);
+         action = createAction(fc, store, username, name, icon, actionListener, outcome, url, params);
       }
       return action;
    }
@@ -860,7 +862,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       control.setRendererType(UIActions.RENDERER_ACTIONLINK);
       control.setId(id);
       control.setValue(Application.getMessage(fc, name));
-      control.setShowLink(false);
+      control.setShowLink(icon != null ? false : true);
       control.setImage(icon);
       
       if (actionListener != null)

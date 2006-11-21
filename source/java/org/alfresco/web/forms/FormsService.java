@@ -233,7 +233,7 @@ public final class FormsService
       sp.addStore(Repository.getStoreRef());
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
       sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + 
-                  "\" AND @" + Repository.escapeQName(ContentModel.PROP_TITLE) + 
+                  "\" AND @" + Repository.escapeQName(ContentModel.PROP_NAME) + 
                   ":\"" + name + "\"");
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query [" + sp.getQuery() + "]");
@@ -242,14 +242,14 @@ public final class FormsService
       for (ResultSetRow row : rs)
       {
          final NodeRef nr = row.getNodeRef();
-         if (this.nodeService.getProperty(nr, ContentModel.PROP_TITLE).equals(name))
+         if (this.nodeService.getProperty(nr, ContentModel.PROP_NAME).equals(name))
          {
             result = nr;
             break;
          }
       }
       if (result == null && LOGGER.isDebugEnabled())
-         LOGGER.debug("unable to find tempalte type " + name);
+         LOGGER.debug("unable to find template type " + name);
       return result != null ? this.getForm(result) : null;
    }
 

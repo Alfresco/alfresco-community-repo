@@ -33,6 +33,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.service.cmr.action.Action;
@@ -67,8 +68,10 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIBreadcrumb;
+import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.wcm.WebResources;
+import org.alfresco.web.ui.wcm.component.UISandboxSnapshots;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -97,8 +100,14 @@ public class AVMBrowseBean implements IContextListener
    /** Component id the status messages are tied too */
    private static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
    
+   /** Top-level JSF form ID */
+   private static final String FORM_ID = "browse-website";
+   
    /** Content Manager role name */
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
+   
+   /** Snapshot date filter selection */
+   private String snapshotDateFilter = UISandboxSnapshots.FILTER_DATE_TODAY;
    
    private String sandbox;
    private String username;
@@ -437,6 +446,22 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @return Returns the Snapshot Date Filter.
+    */
+   public String getSnapshotDateFilter()
+   {
+      return this.snapshotDateFilter;
+   }
+
+   /**
+    * @param snapshotDateFilter The Snapshot Date Filter to set.
+    */
+   public void setSnapshotDateFilter(String snapshotDateFilter)
+   {
+      this.snapshotDateFilter = snapshotDateFilter;
+   }
+
+   /**
     * @return icon image for the appropriate sandbox type
     */
    public String getIcon()
@@ -666,6 +691,15 @@ public class AVMBrowseBean implements IContextListener
    }
 
    /**
+    * Action handler called when the Snapshot Date filter is changed by the user
+    */
+   public void snapshotDateFilterChanged(ActionEvent event)
+   {
+      UIModeList filterComponent = (UIModeList)event.getComponent();
+      setSnapshotDateFilter(filterComponent.getValue().toString());
+   }
+   
+   /**
     * Setup the context for a sandbox browse action
     */
    public void setupSandboxAction(ActionEvent event)
@@ -758,12 +792,9 @@ public class AVMBrowseBean implements IContextListener
          tx.commit();
          
          // if we get here, all was well - output friendly status message to the user
-         
          String msg = MessageFormat.format(Application.getMessage(
                context, MSG_SUBMIT_SUCCESS), node.getName());
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
-         context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+         displayStatusMessage(context, msg);
       }
       catch (Throwable err)
       {
@@ -803,9 +834,7 @@ public class AVMBrowseBean implements IContextListener
          // if we get here, all was well - output friendly status message to the user
          String msg = MessageFormat.format(Application.getMessage(
                context, MSG_SUBMITALL_SUCCESS), username);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
-         context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+         displayStatusMessage(context, msg);
       }
       catch (Throwable err)
       {
@@ -848,9 +877,7 @@ public class AVMBrowseBean implements IContextListener
             // TODO: different message once the submit screen is available
             String msg = MessageFormat.format(Application.getMessage(
                   context, MSG_SUBMITSELECTED_SUCCESS), username);
-            FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-            String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
-            context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+            displayStatusMessage(context, msg);
          }
          catch (Throwable err)
          {
@@ -893,9 +920,7 @@ public class AVMBrowseBean implements IContextListener
          // if we get here, all was well - output friendly status message to the user
          String msg = MessageFormat.format(Application.getMessage(
                context, MSG_REVERT_SUCCESS), node.getName());
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
-         context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+         displayStatusMessage(context, msg);
       }
       catch (Throwable err)
       {
@@ -941,9 +966,7 @@ public class AVMBrowseBean implements IContextListener
          // if we get here, all was well - output friendly status message to the user
          String msg = MessageFormat.format(Application.getMessage(
                context, MSG_REVERTALL_SUCCESS), username);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
-         context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+         displayStatusMessage(context, msg);
       }
       catch (Throwable err)
       {
@@ -952,7 +975,7 @@ public class AVMBrowseBean implements IContextListener
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
    }
-   
+
    /**
     * Undo changes to items selected using multi-select
     */
@@ -992,9 +1015,7 @@ public class AVMBrowseBean implements IContextListener
             // TODO: different message once the submit screen is available
             String msg = MessageFormat.format(Application.getMessage(
                   context, MSG_REVERTSELECTED_SUCCESS), username);
-            FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-            String formId = Utils.getParentForm(context, event.getComponent()).getClientId(context);
-            context.addMessage(formId + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+            displayStatusMessage(context, msg);
          }
          catch (Throwable err)
          {
@@ -1003,6 +1024,44 @@ public class AVMBrowseBean implements IContextListener
                   FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
+      }
+   }
+   
+   public void revertSnapshot(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String sandbox = params.get("sandbox");
+      String strVersion = params.get("version");
+      int version = Integer.valueOf(strVersion);
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, false);
+         tx.begin();
+         
+         Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+         args.put(AVMRevertStoreAction.PARAM_VERSION, version);
+         Action action = this.actionService.createAction(AVMRevertStoreAction.NAME, args);
+         this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, sandbox + ":/"));
+         
+         // commit the transaction
+         tx.commit();
+         
+         // if we get here, all was well - output friendly status message to the user
+         //String msg = MessageFormat.format(Application.getMessage(
+         //      context, MSG_REVERT_SUCCESS), node.getName());
+         //displayStatusMessage(context, msg);
+         displayStatusMessage(context, "Reverted to version: " + version);
+      }
+      catch (Throwable err)
+      {
+         err.printStackTrace(System.err);
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
    }
    
@@ -1025,6 +1084,18 @@ public class AVMBrowseBean implements IContextListener
    
    // ------------------------------------------------------------------------------
    // Private helpers
+   
+   /**
+    * Display a status message to the user
+    * 
+    * @param context
+    * @param msg        Text message to display
+    */
+   /*package*/ void displayStatusMessage(FacesContext context, String msg)
+   {
+      FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+      context.addMessage(FORM_ID + ':' + COMPONENT_SANDBOXESPANEL, facesMsg);
+   }
    
    /*package*/ boolean isCurrentPathNull()
    {

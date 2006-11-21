@@ -124,6 +124,19 @@
       <td></td>
       <td>
          </f:verbatim>
+         <h:outputText value="#{msg.website_webapp}:"/>
+         <f:verbatim>
+      </td>
+      <td width="85%">
+         </f:verbatim>
+         <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="35" maxlength="256" />
+         <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td></td>
+      <td>
+         </f:verbatim>
          <h:outputText value="#{msg.title}:" />
          <f:verbatim>
       </td>

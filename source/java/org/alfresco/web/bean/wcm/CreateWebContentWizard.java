@@ -293,7 +293,7 @@ public class CreateWebContentWizard extends BaseContentWizard
          Form form = FormsService.getInstance().getForm(formName);
          if (form != null)
          {
-            items.add(new SelectItem(formName, formName));
+            items.add(new SelectItem(formName, form.getTitle()));
          }
       }
       

@@ -1018,10 +1018,13 @@
 	    <property name="avmRepository">
 	    	<ref bean="avmRepository"/>
 	    </property>
+	    <property name="transactionListener">
+	        <ref bean="lookupCacheListener"/>
+	    </property>
 	</bean>
 	
     <bean id="AVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
-	<property name="proxyInterfaces">
+        <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.avm.AVMService</value>
         </property>
         <property name="target">
@@ -1029,9 +1032,9 @@
         </property>
         <property name="interceptorNames">
 	    <list>
-                <idref local="AVMService_transaction"/>
-                <idref local="AVMService_descriptor"/>
-            </list>
+        	<idref local="AVMService_transaction"/>
+            <idref local="AVMService_descriptor"/>
+        </list>
         </property>
     </bean>
 	

@@ -84,6 +84,31 @@ class Lookup
      */
     private boolean fNeedsCopying;
     
+    public Lookup(Lookup other, AVMNodeDAO nodeDAO, AVMStoreDAO storeDAO)
+    {
+        fAVMStore = storeDAO.getByName(other.fAVMStore.getName());
+        fStoreName = fAVMStore.getName();
+        fComponents = new ArrayList<LookupComponent>();
+        fLayeredYet = other.fLayeredYet;
+        if (other.fTopLayer != null)
+        {
+            fTopLayer = (LayeredDirectoryNode)nodeDAO.getByID(other.fTopLayer.getId());
+        }
+        fPosition = other.fPosition;
+        fTopLayerIndex = other.fTopLayerIndex;
+        fLowestLayerIndex = other.fLowestLayerIndex;
+        fNeedsCopying = other.fNeedsCopying;
+        fDirectlyContained = other.fDirectlyContained;
+        for (LookupComponent comp : other.fComponents)
+        {
+            LookupComponent newComp = new LookupComponent();
+            newComp.setName(comp.getName());
+            newComp.setIndirection(comp.getIndirection());
+            newComp.setNode(nodeDAO.getByID(comp.getNode().getId()));
+            fComponents.add(newComp);
+        }
+    }
+    
     /**
      * Create a new one.
      * @param store The AVMStore that's being looked in.

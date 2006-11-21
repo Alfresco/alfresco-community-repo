@@ -24,6 +24,10 @@
   window.onload = function() { document.getElementById("wizard:finish-button").focus(); }
 </script>
 
+<h:selectBooleanCheckbox id="startWorkflow"
+			 value="#{WizardManager.bean.startWorkflow}"/>
+<h:outputText value="&nbsp;#{msg.create_web_content_summary_submit_message}" escape="false" />
+
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%" rowClasses="wizardSectionHeading">
   <h:outputText value="&nbsp;#{msg.create_web_content_summary_content_details}" escape="false" />
@@ -46,10 +50,14 @@
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
   <c:forEach items="${WizardManager.bean.renditions}" var="rendition">
     <h:outputText value="#{msg.name}:"/>
-    <f:verbatim>${rendition.name}</f:verbatim>
+    <a:actionLink value="${rendition.name}" 
+		  image="/images/icons/preview_website.gif" 
+		  showLink="true" 
+		  href="${rendition.url}" 
+		  target="new">${rendition.name}</a:actionLink>
     <h:outputText value="#{msg.location}:"/>
     <f:verbatim>${rendition.webappRelativePath}</f:verbatim>
   </c:forEach>
 </h:panelGrid>
 
-<h:outputText value="&nbsp;#{msg.create_web_content_summary_submit_message}" escape="false" />
+

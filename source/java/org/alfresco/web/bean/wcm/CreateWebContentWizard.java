@@ -38,6 +38,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -73,9 +75,13 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;
    protected boolean formSelectDisabled = false;
+   protected boolean startWorkflow = false;
 
    /** AVM service bean reference */
    protected AVMService avmService;
+
+   /** AVM sync service bean reference */
+   protected AVMSyncService avmSyncService;
    
    /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
@@ -87,6 +93,14 @@ public class CreateWebContentWizard extends BaseContentWizard
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+
+   /**
+    * @param avmSyncService       The AVMSyncService to set.
+    */
+   public void setAvmSyncService(final AVMSyncService avmSyncService)
+   {
+      this.avmSyncService = avmSyncService;
    }
    
    /**
@@ -109,6 +123,9 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.inlineEdit = true;
       this.formName = null;
       this.mimeType = MimetypeMap.MIMETYPE_XML;
+      this.formInstanceData = null;
+      this.renditions = null;
+      this.startWorkflow = false;
       
       // check for a form ID being passed in as a parameter
       if (this.parameters.get(UIUserSandboxes.PARAM_FORM_ID) != null)
@@ -127,10 +144,32 @@ public class CreateWebContentWizard extends BaseContentWizard
    }
    
    @Override
-   protected String finishImpl(FacesContext context, String outcome)
+   protected String finishImpl(final FacesContext context, final String outcome)
       throws Exception
    {
-      
+      final List<AVMDifference> diffList = new ArrayList<AVMDifference>(1 + this.renditions.size());
+      diffList.add(new AVMDifference(-1, this.createdPath, 
+                                     -1, this.createdPath.replaceFirst(AVMConstants.STORE_PREVIEW, 
+                                                                       AVMConstants.STORE_MAIN), 
+                                     AVMDifference.NEWER));
+      for (Rendition rendition : this.renditions)
+      {
+         final String path = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
+         diffList.add(new AVMDifference(-1, path, 
+                                        -1, path.replaceFirst(AVMConstants.STORE_PREVIEW, 
+                                                              AVMConstants.STORE_MAIN), 
+                                        AVMDifference.NEWER));
+      }
+      this.avmSyncService.update(diffList, true, true, true, true, null, null);
+
+      if (this.startWorkflow)
+      {
+         System.err.println("************* starting workflow");
+      }
+      else
+      {
+         System.err.println("************* not starting workflow");
+      }
       // return the default outcome
       return outcome;
    }
@@ -169,6 +208,7 @@ public class CreateWebContentWizard extends BaseContentWizard
          logger.debug("saving file content to " + this.fileName);
       // get the parent path of the location to save the content
       String path = this.avmBrowseBean.getCurrentPath();
+      path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
          final FormsService fs = FormsService.getInstance();
@@ -385,6 +425,16 @@ public class CreateWebContentWizard extends BaseContentWizard
    public void setFormSelectDisabled(boolean formSelectDisabled)
    {
       this.formSelectDisabled = formSelectDisabled;
+   }
+
+   public void setStartWorkflow(final boolean startWorkflow)
+   {
+      this.startWorkflow = startWorkflow;
+   }
+
+   public boolean getStartWorkflow()
+   {
+      return this.startWorkflow;
    }
 
    /**

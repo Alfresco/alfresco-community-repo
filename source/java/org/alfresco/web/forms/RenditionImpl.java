@@ -93,6 +93,11 @@ public class RenditionImpl
       return this.nodeRef;
    }
 
+   public String getUrl()
+   {
+      return AVMConstants.buildAVMAssetUrl(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond());
+   }
+
    private ServiceRegistry getServiceRegistry()
    {
       final FacesContext fc = FacesContext.getCurrentInstance();

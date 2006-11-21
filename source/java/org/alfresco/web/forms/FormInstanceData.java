@@ -35,4 +35,7 @@ public interface FormInstanceData
 
    /** the path relative to the containing webapp */
    public String getWebappRelativePath();
+
+   /** the url to the asset */
+   public String getUrl();
 }

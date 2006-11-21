@@ -50,6 +50,11 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 public class UISandboxSnapshots extends SelfRenderingComponent
 {
+   private static final String ACT_SNAPSHOT_PREVIEW = "snapshot_preview";
+   private static final String ACT_SNAPSHOT_REVERT = "snapshot_revert";
+   
+   private static final String REQUEST_SNAPVERSION = "_snapVer";
+
    private static Log logger = LogFactory.getLog(UISandboxSnapshots.class);
    
    // snapshot date filters
@@ -192,6 +197,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             }
             versions = avmService.getAVMStoreVersions(sandbox, fromDate, toDate);
          }
+         Map requestMap = context.getExternalContext().getRequestMap();
          for (VersionDescriptor item : versions)
          {
             // only display snapshots with a valid tag - others are system generated snapshots
@@ -209,15 +215,23 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                out.write(Integer.toString(item.getVersionID()));
                out.write("</td><td><nobr>");
                // actions for the item
-               Map<String, String> params = new HashMap<String, String>(2, 1.0f);
-               params.put("sandbox", sandbox);
-               params.put("version", Integer.toString(item.getVersionID()));
-               Utils.encodeRecursive(context, aquireAction(
-                        context, sandbox, "snapshot_revert", null,
-                        "#{AVMBrowseBean.revertSnapshot}", null, null, params));
+               UIActionLink action = findAction(ACT_SNAPSHOT_REVERT, sandbox);
+               if (action == null)
+               {
+                  Map<String, String> params = new HashMap<String, String>(2, 1.0f);
+                  params.put("sandbox", sandbox);
+                  params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
+                  action = createAction(context, sandbox, ACT_SNAPSHOT_REVERT, null,
+                        "#{AVMBrowseBean.revertSnapshot}", null, null, params);
+                  
+               }
+               requestMap.put(REQUEST_SNAPVERSION, Integer.toString(item.getVersionID()));
+               Utils.encodeRecursive(context, action);
+               requestMap.remove(REQUEST_SNAPVERSION);
                out.write("&nbsp;");
+               
                Utils.encodeRecursive(context, aquireAction(
-                        context, sandbox, "snapshot_preview", null,
+                        context, sandbox, ACT_SNAPSHOT_PREVIEW, null,
                         null, null));
                out.write("&nbsp;");
                

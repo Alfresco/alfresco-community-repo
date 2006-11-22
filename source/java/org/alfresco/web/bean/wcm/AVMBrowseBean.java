@@ -88,6 +88,7 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_REVERT_SUCCESS = "revert_success";
    private static final String MSG_REVERTALL_SUCCESS = "revertall_success";
    private static final String MSG_REVERTSELECTED_SUCCESS = "revertselected_success";
+   private static final String MSG_REVERT_SANDBOX = "revert_sandbox_success";
    private static final String MSG_SANDBOXTITLE = "sandbox_title";
    private static final String MSG_SANDBOXSTAGING = "sandbox_staging";
    private static final String MSG_CREATED_ON = "store_created_on";
@@ -1012,7 +1013,6 @@ public class AVMBrowseBean implements IContextListener
             tx.commit();
             
             // if we get here, all was well - output friendly status message to the user
-            // TODO: different message once the submit screen is available
             String msg = MessageFormat.format(Application.getMessage(
                   context, MSG_REVERTSELECTED_SUCCESS), username);
             displayStatusMessage(context, msg);
@@ -1027,41 +1027,44 @@ public class AVMBrowseBean implements IContextListener
       }
    }
    
+   /**
+    * Revert a sandbox to a specific snapshot version ID
+    */
    public void revertSnapshot(ActionEvent event)
    {
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String sandbox = params.get("sandbox");
       String strVersion = params.get("version");
-      int version = Integer.valueOf(strVersion);
-      
-      UserTransaction tx = null;
-      try
+      if (sandbox != null && strVersion != null && strVersion.length() != 0)
       {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context, false);
-         tx.begin();
-         
-         Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-         args.put(AVMRevertStoreAction.PARAM_VERSION, version);
-         Action action = this.actionService.createAction(AVMRevertStoreAction.NAME, args);
-         this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, sandbox + ":/"));
-         
-         // commit the transaction
-         tx.commit();
-         
-         // if we get here, all was well - output friendly status message to the user
-         //String msg = MessageFormat.format(Application.getMessage(
-         //      context, MSG_REVERT_SUCCESS), node.getName());
-         //displayStatusMessage(context, msg);
-         displayStatusMessage(context, "Reverted to version: " + version);
-      }
-      catch (Throwable err)
-      {
-         err.printStackTrace(System.err);
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         UserTransaction tx = null;
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context, false);
+            tx.begin();
+            
+            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+            args.put(AVMRevertStoreAction.PARAM_VERSION, Integer.valueOf(strVersion));
+            Action action = this.actionService.createAction(AVMRevertStoreAction.NAME, args);
+            this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, sandbox + ":/"));
+            
+            // commit the transaction
+            tx.commit();
+            
+            // if we get here, all was well - output friendly status message to the user
+            String msg = MessageFormat.format(Application.getMessage(
+                  context, MSG_REVERT_SANDBOX), sandbox, strVersion);
+            displayStatusMessage(context, msg);
+         }
+         catch (Throwable err)
+         {
+            err.printStackTrace(System.err);
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
       }
    }
    

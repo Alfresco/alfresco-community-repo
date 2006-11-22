@@ -201,7 +201,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
          for (VersionDescriptor item : versions)
          {
             // only display snapshots with a valid tag - others are system generated snapshots
-            if (item.getTag() != null)
+            if (item.getTag() != null && item.getVersionID() != 0)
             {
                out.write("<tr><td>");
                out.write(item.getTag());

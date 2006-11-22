@@ -75,8 +75,18 @@
                               <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
                            </td>
                            <td align=right>
+                              <nobr>
+                              <%-- More actions menu --%>
+                              <a:menu id="actions-menu" itemSpacing="4" label="#{msg.actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                 <r:actions id="acts-website" value="browse_website_menu" context="#{NavigationBean.currentNode}" />
+                              </a:menu>
+                              </nobr>
+                           </td>
+                           <td align=right width=170>
+                              <nobr>
                               <%-- Import website content action --%>
                               <a:actionLink value="#{msg.import_website_content}" rendered="#{AVMBrowseBean.isManagerRole}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
+                              </nobr>
                            </td>
                         </tr>
                      </table>

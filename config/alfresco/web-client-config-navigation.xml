@@ -46,7 +46,7 @@
       <navigation>
          <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/wcm/browse-website.jsp" />
          <override from-outcome="browse" to-view-id="/jsp/wcm/browse-website.jsp" />
-         <!--<override from-outcome="showSpaceDetails" to-view-id="/jsp/forums/forums-details.jsp" />-->
+         <override from-outcome="showSpaceDetails" to-view-id="/jsp/wcm/website-details.jsp" />
       </navigation>
    </config>
    

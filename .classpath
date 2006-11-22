@@ -16,5 +16,6 @@
 	<classpathentry kind="lib" path="/3rd Party/lib/fop/xmlgraphics-commons-1.0.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/fop/fop-0.92beta.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/fop/avalon-framework-4.2.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MBean"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

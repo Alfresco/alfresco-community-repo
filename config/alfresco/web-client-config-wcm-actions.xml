@@ -262,6 +262,23 @@
             <action idref="delete_folder_browse" />
          </action-group>
          
+         <!-- Actions for the Web Project Details action menu -->
+         <action-group id="website_details_actions">
+            <show-link>false</show-link>
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
+            <action idref="take_ownership_space" />
+            <action idref="run_action" />
+         </action-group>
+         
+         <!-- Actions Menu for More Actions in Web Project screen -->
+         <action-group id="browse_website_menu">
+            <action idref="details_space" />
+            <action idref="delete_space" />
+            <!--<action idref="manage_space_users" />-->
+         </action-group>
+         
       </actions>
    </config>
 

@@ -24,7 +24,7 @@
       <antcall target="assemble-war-common" />
       <antcall target="assemble-war-tomcat" />
       <antcall target="assemble-war-jboss" />
-      <antcall target="sample-website" />
+      <!--<antcall target="sample-website" />-->
    </target>
    
    <target name="assemble-war-common">

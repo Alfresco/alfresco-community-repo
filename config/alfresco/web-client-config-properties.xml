@@ -313,4 +313,13 @@
       </property-sheet>
    </config>
    
+   <!-- Configuration for wcm types -->
+   <config evaluator="node-type" condition="app:webfolder">
+      <property-sheet>
+         <show-property name="app:avmstore" read-only="true" />
+         <show-property name="app:defaultwebapp" read-only="true" />
+         <show-property name="app:icon" show-in-view-mode="false" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
 </alfresco-config>

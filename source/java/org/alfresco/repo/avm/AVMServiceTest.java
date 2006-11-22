@@ -1052,6 +1052,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("main", info.getNativeAVMStore().getName());
             fService.createLayeredDirectory("layer:/alayer/b", "layer:/", "blayer");
             fService.createSnapshot("layer", null, null);
+            System.err.println(recursiveList("main", -1, true));
+            System.err.println(recursiveList("layer", -1, true));
             info = fService.getLayeringInfo(-1, "layer:/blayer/c");
             assertEquals("main", info.getNativeAVMStore().getName());
             info = fService.getLayeringInfo(-1, "layer:/blayer/figs");

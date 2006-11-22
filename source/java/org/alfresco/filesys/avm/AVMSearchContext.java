@@ -252,7 +252,12 @@ public class AVMSearchContext extends SearchContext {
     	// Search backwards from the current file
     	
     	int curFileIdx = m_fileIdx;
-    	
+
+        if (m_fileIdx >= m_fileList.length)
+        {
+            m_fileIdx = m_fileList.length - 1;
+        }
+        
     	while ( m_fileIdx > 0) {
     		
     		// Check if the current file is the required search restart point

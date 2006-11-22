@@ -57,6 +57,15 @@ public class LookupKey
         fIncludeDeleted = includeDeleted;
     }
     
+    public LookupKey(LookupKey other)
+    {
+        fVersion = other.fVersion;
+        fPath = other.fPath;
+        fStoreName = other.fStoreName;
+        fWrite = other.fWrite;
+        fIncludeDeleted = other.fIncludeDeleted;
+    }
+    
     /**
      * Set the writeness of this key.
      */
@@ -125,6 +134,6 @@ public class LookupKey
     @Override
     public String toString() 
     {
-        return fStoreName + ":" + fPath;
+        return fStoreName + ":" + fPath + "-" + fVersion + "-" + fWrite + "-" + fIncludeDeleted;
     }   
 }

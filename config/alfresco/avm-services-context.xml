@@ -127,8 +127,11 @@
 	    <property name="avmNodeDAO">
 	        <ref bean="avmNodeDAO"/>
 	    </property>
+	    <property name="avmStoreDAO">
+	        <ref bean="avmStoreDAO"/>
+	    </property>
 	    <property name="maxSize">
-	    	<value>200</value>
+	    	<value>50</value>
 	    </property>
 	</bean>
 	
@@ -168,6 +171,9 @@
 		</property>
 		<property name="layerIssuer">
 			<ref bean="layerIssuer"/>
+		</property>
+		<property name="lookupCache">
+		    <ref bean="lookupCache"/>
 		</property>
 	</bean>
 

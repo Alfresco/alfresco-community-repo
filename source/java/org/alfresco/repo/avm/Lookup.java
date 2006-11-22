@@ -29,6 +29,11 @@ import java.util.List;
 class Lookup
 {
     /**
+     * Is this lookup valid?
+     */
+    private boolean fValid;
+    
+    /**
      * The AVMStore.
      */
     private AVMStore fAVMStore;
@@ -86,13 +91,24 @@ class Lookup
     
     public Lookup(Lookup other, AVMNodeDAO nodeDAO, AVMStoreDAO storeDAO)
     {
+        fValid = true;
         fAVMStore = storeDAO.getByName(other.fAVMStore.getName());
+        if (fAVMStore == null)
+        {
+            fValid = false;
+            return;
+        }
         fStoreName = fAVMStore.getName();
         fComponents = new ArrayList<LookupComponent>();
         fLayeredYet = other.fLayeredYet;
         if (other.fTopLayer != null)
         {
             fTopLayer = (LayeredDirectoryNode)nodeDAO.getByID(other.fTopLayer.getId());
+            if (fTopLayer == null)
+            {
+                fValid = false;
+                return;
+            }
         }
         fPosition = other.fPosition;
         fTopLayerIndex = other.fTopLayerIndex;
@@ -105,7 +121,17 @@ class Lookup
             newComp.setName(comp.getName());
             newComp.setIndirection(comp.getIndirection());
             newComp.setNode(nodeDAO.getByID(comp.getNode().getId()));
+            if (newComp.getNode() == null)
+            {
+                fValid = false;
+                return;
+            }
             fComponents.add(newComp);
+        }
+        fFinalStore = storeDAO.getByName(other.fFinalStore.getName());
+        if (fFinalStore == null)
+        {
+            fValid = false;
         }
     }
     
@@ -116,6 +142,7 @@ class Lookup
      */
     public Lookup(AVMStore store, String storeName)
     {
+        fValid = true;
         fAVMStore = store;
         fStoreName = storeName;
         fComponents = new ArrayList<LookupComponent>();
@@ -127,6 +154,14 @@ class Lookup
         fNeedsCopying = false;
         fDirectlyContained = true;
         fFinalStore = store;
+    }
+    
+    /**
+     * Is this a valid lookup?
+     */
+    public boolean isValid()
+    {
+        return fValid;
     }
     
     // TODO This is badly in need of cleanup.

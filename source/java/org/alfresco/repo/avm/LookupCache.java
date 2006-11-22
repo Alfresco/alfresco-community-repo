@@ -52,6 +52,11 @@ public class LookupCache
     private AVMNodeDAO fAVMNodeDAO;
     
     /**
+     * Reference to the Store DAO.
+     */
+    private AVMStoreDAO fAVMStoreDAO;
+    
+    /**
      * Make one up.
      */
     public LookupCache()
@@ -70,6 +75,15 @@ public class LookupCache
     public void setAvmNodeDAO(AVMNodeDAO dao)
     {
         fAVMNodeDAO = dao;
+    }
+    
+    /**
+     * Set the store dao.
+     * @param dao The dao to set.
+     */
+    public void setAvmStoreDAO(AVMStoreDAO dao)
+    {
+        fAVMStoreDAO = dao;        
     }
     
     /**
@@ -165,6 +179,38 @@ public class LookupCache
      */
     private synchronized Lookup findInCache(LookupKey key)
     {
+        Lookup found = fCache.get(key);
+        if (found != null)
+        {
+            Lookup result = new Lookup(found, fAVMNodeDAO, fAVMStoreDAO);
+            if (!result.isValid())
+            {
+                fgLogger.error("Invalid entry in cache: " + key);
+                onRollback();
+                return null;
+            }
+            updateCache(key, found);
+            return result;
+        }
+        // Alternatively for a read lookup a write can match.
+        if (!key.isWrite())
+        {
+            LookupKey newKey = new LookupKey(key);
+            newKey.setWrite(true);
+            found = fCache.get(newKey);
+            if (found != null)
+            {
+                Lookup result = new Lookup(found, fAVMNodeDAO, fAVMStoreDAO);
+                if (!result.isValid())
+                {
+                    fgLogger.error("Invalid entry in cache: " + newKey);
+                    onRollback();
+                    return null;
+                }
+                updateCache(newKey, found);
+                return result;
+            }
+        }
         return null;
     }
     

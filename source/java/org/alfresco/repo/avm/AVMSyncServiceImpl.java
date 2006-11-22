@@ -317,10 +317,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
             AVMNodeDescriptor srcDesc = fAVMService.lookup(version,
                                                            diff.getSourcePath(), true);
-            if (srcDesc == null)
-            {
-                throw new AVMSyncException("Source node not found: " + diff.getSourcePath());
-            }
+//            if (srcDesc == null)
+//            {
+//                throw new AVMSyncException("Source node not found: " + diff.getSourcePath());
+//            }
             String [] dstParts = AVMNodeConverter.SplitBase(diff.getDestinationPath());
             if (dstParts[0] == null || diff.getDestinationVersion() >= 0)
             {
@@ -416,6 +416,12 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private void linkIn(String parentPath, String name, AVMNodeDescriptor toLink, boolean removeFirst)
     {
+        // This is a delete.
+        if (toLink == null)
+        {
+            fAVMService.removeNode(parentPath, name);
+            return;
+        }
         mkdirs(parentPath, AVMNodeConverter.SplitBase(toLink.getPath())[0]);
         if (removeFirst)
         {
@@ -484,6 +490,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private int compareOne(AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc)
     {
+        if (srcDesc == null)
+        {
+            return AVMDifference.OLDER;
+        }
         if (srcDesc.getId() == dstDesc.getId())
         {
             return AVMDifference.SAME;

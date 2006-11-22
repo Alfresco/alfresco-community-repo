@@ -32,11 +32,14 @@ public interface DeviceInterface
      * of the shared device. The same DeviceInterface implementation may be used for multiple
      * shares.
      * 
+     * @param devIface DeviceInterface
+     * @param name String
      * @param args ConfigElement
      * @return DeviceContext
      * @exception DeviceContextException
      */
-    public DeviceContext createContext(ConfigElement args) throws DeviceContextException;
+    public DeviceContext createContext(DeviceInterface devIface, String name, ConfigElement args)
+    	throws DeviceContextException;
 
     /**
      * Connection opened to this disk device

@@ -28,6 +28,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
+import org.alfresco.filesys.server.core.DeviceInterface;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.AccessMode;
 import org.alfresco.filesys.server.filesys.DiskInterface;
@@ -44,11 +45,13 @@ import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.server.state.FileState;
+import org.alfresco.filesys.server.state.FileStateReaper;
+import org.alfresco.filesys.server.state.FileState.FileStateStatus;
 import org.alfresco.filesys.smb.SMBException;
 import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.SharingMode;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
-import org.alfresco.filesys.smb.server.repo.FileState.FileStateStatus;
 import org.alfresco.filesys.smb.server.repo.pseudo.MemoryNetworkFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
@@ -112,6 +115,10 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     // Service registry for desktop actions
     
     private ServiceRegistry serviceRegistry;
+    
+    // File state reaper
+    
+    private FileStateReaper m_stateReaper;
     
     /**
      * Class constructor
@@ -203,6 +210,16 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
 
     /**
+     * Return the file state reaper
+     * 
+     * @return FileStateReaper
+     */
+    public final FileStateReaper getStateReaper()
+    {
+    	return m_stateReaper;
+    }
+    
+    /**
      * @param contentService the content service
      */
     public void setContentService(ContentService contentService)
@@ -283,15 +300,27 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
     
     /**
+     * Set the file state reaper
+     * 
+     * @param stateReaper FileStateReaper
+     */
+    public final void setStateReaper(FileStateReaper stateReaper)
+    {
+    	m_stateReaper = stateReaper;
+    }
+    
+    /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
      * shares.
      * 
+     * @param devIface DeviceInterface
+     * @param name String
      * @param args ConfigElement
      * @return DeviceContext
      * @exception DeviceContextException
      */
-    public DeviceContext createContext(ConfigElement cfg) throws DeviceContextException
+    public DeviceContext createContext(DeviceInterface devIface, String name, ConfigElement cfg) throws DeviceContextException
     {
         // Use the system user as the authenticated context for the filesystem initialization
         
@@ -389,7 +418,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // Create the context
             
-            context = new ContentContext(storeValue, rootPath, rootNodeRef);
+            context = new ContentContext(name, storeValue, rootPath, rootNodeRef);
 
             // Default the filesystem to look like an 80Gb sized disk with 90% free space
             
@@ -496,6 +525,10 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             logger.info("Locked files will be marked as offline");
         }
+        
+        // Enable file state caching
+        
+        context.enableStateTable( true, getStateReaper());
         
         // Return the context for this shared filesystem
         

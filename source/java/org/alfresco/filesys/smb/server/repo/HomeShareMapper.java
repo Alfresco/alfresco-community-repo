@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.server.filesys;
+package org.alfresco.filesys.smb.server.repo;
 
 import java.util.Enumeration;
 
@@ -29,7 +29,9 @@ import org.alfresco.filesys.server.core.ShareMapper;
 import org.alfresco.filesys.server.core.ShareType;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.core.SharedDeviceList;
+import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
+import org.alfresco.filesys.smb.server.repo.ContentDiskDriver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -317,13 +319,11 @@ public class HomeShareMapper implements ShareMapper
     {
         //  Create the disk driver and context
         
-        DiskInterface diskDrv = m_config.getDiskInterface();
-        DiskDeviceContext diskCtx = new ContentContext("", "", client.getHomeFolder());
-
-        //  Default the filesystem to look like an 80Gb sized disk with 90% free space
-
-        diskCtx.setDiskInformation(new SrvDiskInfo(2560, 64, 512, 2304));
+        ContentDiskDriver diskDrv = ( ContentDiskDriver) m_config.getDiskInterface();
+        ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", client.getHomeFolder());
         
+        diskCtx.enableStateTable( true, diskDrv.getStateReaper());
+
         //  Create a temporary shared device for the users home directory
         
         return new DiskSharedDevice(getHomeFolderName(), diskDrv, diskCtx, SharedDevice.Temporary);

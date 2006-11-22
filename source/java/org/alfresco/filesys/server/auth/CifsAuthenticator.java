@@ -836,7 +836,7 @@ public abstract class CifsAuthenticator
         // Create the disk driver and context
         
         DiskInterface diskDrv = m_config.getDiskInterface();
-        DiskDeviceContext diskCtx = new ContentContext("", "", client.getHomeFolder());
+        DiskDeviceContext diskCtx = new ContentContext(client.getUserName(), "", "", client.getHomeFolder());
 
         //  Default the filesystem to look like an 80Gb sized disk with 90% free space
 

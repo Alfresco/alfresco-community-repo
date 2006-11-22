@@ -19,6 +19,8 @@ package org.alfresco.filesys.smb.server.repo;
 import java.util.Enumeration;
 
 import org.alfresco.filesys.server.filesys.*;
+import org.alfresco.filesys.server.state.FileStateReaper;
+import org.alfresco.filesys.server.state.FileStateTable;
 import org.alfresco.filesys.smb.server.repo.pseudo.ContentPseudoFileImpl;
 import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
 import org.alfresco.service.cmr.repository.*;
@@ -41,9 +43,10 @@ public class ContentContext extends DiskDeviceContext
     
     private NodeRef m_rootNodeRef;
     
-    // File state table
+    // File state table and associated file state reaper
     
     private FileStateTable m_stateTable;
+    private FileStateReaper m_stateReaper;
     
     // URL pseudo file web path prefix (server/port/webapp) and link file name
     
@@ -65,13 +68,14 @@ public class ContentContext extends DiskDeviceContext
     /**
      * Class constructor
      *
+     *@param filesysName String
      * @param storeName String
      * @param rootPath String
      * @param rootNodeRef NodeRef
      */
-    public ContentContext(String storeName, String rootPath, NodeRef rootNodeRef)
+    public ContentContext(String filesysName, String storeName, String rootPath, NodeRef rootNodeRef)
     {
-        super(rootNodeRef.toString());
+        super(filesysName, rootNodeRef.toString());
         
         m_storeName = storeName;
         m_rootPath  = rootPath;
@@ -147,13 +151,31 @@ public class ContentContext extends DiskDeviceContext
      * Enable/disable the file state table
      * 
      * @param ena boolean
+     * @param stateReaper FileStateReaper
      */
-    public final void enableStateTable(boolean ena)
+    public final void enableStateTable(boolean ena, FileStateReaper stateReaper)
     {
         if ( ena == false)
+        {
+        	// Remove the state table from the reaper
+        	
+        	stateReaper.removeStateTable( getFilesystemName());
             m_stateTable = null;
+        }
         else if ( m_stateTable == null)
+        {
+        	// Create the file state table
+
             m_stateTable = new FileStateTable();
+            
+            // Register with the file state reaper
+            
+            stateReaper.addStateTable( getFilesystemName(), m_stateTable);
+        }
+        
+        // Save the reaper, for deregistering when the filesystem is closed
+        
+        m_stateReaper = stateReaper;
     }
     
     /**
@@ -354,14 +376,10 @@ public class ContentContext extends DiskDeviceContext
      */
 	public void CloseContext() {
 		
-		// Check if file states are enabled
+		//	Deregister the file state table from the reaper
 		
-		if ( hasStateTable())
-		{
-			//	Shutdown the file state checker thread
-			
-			getStateTable().shutdownRequest();
-		}
+		if ( m_stateTable != null)
+			enableStateTable( false, m_stateReaper);
 		
 		//	Call the base class
 		

@@ -28,6 +28,7 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
+import org.alfresco.filesys.server.core.DeviceInterface;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.DirectoryNotEmptyException;
 import org.alfresco.filesys.server.filesys.DiskInterface;
@@ -40,6 +41,7 @@ import org.alfresco.filesys.server.filesys.FileStatus;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.server.state.FileStateReaper;
 import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -93,6 +95,10 @@ public class AVMDiskDriver implements DiskInterface {
     
     private ServiceRegistry m_serviceRegistry;
 
+    // File state reaper
+    
+    private FileStateReaper m_stateReaper;
+    
     /**
      * Default constructor
      */
@@ -140,6 +146,16 @@ public class AVMDiskDriver implements DiskInterface {
     	return m_serviceRegistry;
     }
 
+    /**
+     * Return the file state reaper
+     * 
+     * @return FileStateReaper
+     */
+    public final FileStateReaper getStateReaper()
+    {
+    	return m_stateReaper;
+    }
+    
     /**
      * Set the AVM service
      * 
@@ -201,14 +217,26 @@ public class AVMDiskDriver implements DiskInterface {
     }
     
     /**
+     * Set the file state reaper
+     * 
+     * @param stateReaper FileStateReaper
+     */
+    public final void setStateReaper(FileStateReaper stateReaper)
+    {
+    	m_stateReaper = stateReaper;
+    }
+    
+    /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device.
      * 
+     * @param devIface DeviceInterface
+     * @param name String
      * @param cfg ConfigElement
      * @return DeviceContext
      * @exception DeviceContextException
      */
-    public DeviceContext createContext(ConfigElement cfg)
+    public DeviceContext createContext(DeviceInterface devIface, String name, ConfigElement cfg)
     	throws DeviceContextException
     {
         // Use the system user as the authenticated context for the filesystem initialization
@@ -315,7 +343,7 @@ public class AVMDiskDriver implements DiskInterface {
             
             // Create the context
             
-            context = new AVMContext(storePath, version);
+            context = new AVMContext( name, storePath, version);
         }
         catch (Exception ex)
         {
@@ -342,6 +370,10 @@ public class AVMDiskDriver implements DiskInterface {
             }
         }
 
+        // Enable file state caching
+        
+        context.enableStateTable( true, getStateReaper());
+        
         // Return the context for this shared filesystem
         
         return context;

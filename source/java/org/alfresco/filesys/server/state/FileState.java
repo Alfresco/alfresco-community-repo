@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.filesys.smb.server.repo;
+package org.alfresco.filesys.server.state;
 
 import org.alfresco.filesys.locking.FileLock;
 import org.alfresco.filesys.locking.FileLockList;

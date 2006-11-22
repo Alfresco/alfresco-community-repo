@@ -59,11 +59,12 @@ public class DiskDeviceContext extends DeviceContext
     /**
      * Class constructor
      * 
+     * @param filesysName String
      * @param devName String
      */
-    public DiskDeviceContext(String devName)
+    public DiskDeviceContext(String filesysName, String devName)
     {
-        super(devName);
+        super(filesysName, devName);
     }
 
     /**

@@ -249,12 +249,9 @@ public class AVMShareMapper implements ShareMapper {
 	                
 	                	// Create a dynamic share mapped to the AVM store/version
 	                	
-		                DiskDeviceContext avmCtx = new AVMContext( storePath, storeVersion);
+		                AVMContext avmCtx = new AVMContext( name, storePath, storeVersion);
+		                avmCtx.enableStateTable( true, avmDrv.getStateReaper());
 		
-		                //  Default the filesystem to look like an 80Gb sized disk with 90% free space
-		
-		                avmCtx.setDiskInformation(new SrvDiskInfo(2560, 64, 512, 2304));
-		                
 		                //  Create a dynamic shared device for the store version
 		                
 		                DiskSharedDevice diskShare = new DiskSharedDevice( name, avmDrv, avmCtx, SharedDevice.Temporary);

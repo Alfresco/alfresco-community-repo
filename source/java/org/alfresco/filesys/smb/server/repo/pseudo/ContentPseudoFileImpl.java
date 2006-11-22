@@ -21,11 +21,11 @@ import java.util.Enumeration;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.server.state.FileState;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.filesys.smb.server.repo.DesktopAction;
 import org.alfresco.filesys.smb.server.repo.DesktopActionTable;
-import org.alfresco.filesys.smb.server.repo.FileState;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -14,19 +14,20 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.filesys.smb.server.repo;
+package org.alfresco.filesys.server.state;
 
 import java.util.*;
-import java.io.*;
 
 import org.apache.commons.logging.*;
 
 /**
  * File State Table Class
- * <p>
- * Contains an indexed list of the currently open files/folders.
+ * 
+ * <p>Contains an indexed list of the currently open files/folders.
+ * 
+ * @author gkspencer
  */
-public class FileStateTable implements Runnable
+public class FileStateTable
 {
     private static final Log logger = LogFactory.getLog(FileStateTable.class);
 
@@ -34,30 +35,14 @@ public class FileStateTable implements Runnable
 
     private static final int INITIAL_SIZE = 100;
 
-    // Default expire check thread interval
-
-    private static final long DEFAULT_EXPIRECHECK = 15000;
-
     // File state table, keyed by file path
 
     private Hashtable<String, FileState> m_stateTable;
-
-    // Wakeup interval for the expire file state checker thread
-
-    private long m_expireInterval = DEFAULT_EXPIRECHECK;
 
     // File state expiry time in seconds
 
     private long m_cacheTimer = 2 * 60000L; // 2 minutes default
 
-    //	File state checker thread
-    
-    private Thread m_thread;
-    
-    //	Shutdown request flag
-    
-    private boolean m_shutdown;
-    
     /**
      * Class constructor
      */
@@ -67,20 +52,6 @@ public class FileStateTable implements Runnable
 
         // Start the expired file state checker thread
 
-        m_thread = new Thread(this);
-        m_thread.setDaemon(true);
-        m_thread.setName("FileStateExpire");
-        m_thread.start();
-    }
-
-    /**
-     * Return the expired file state checker interval, in milliseconds
-     * 
-     * @return long
-     */
-    public final long getCheckInterval()
-    {
-        return m_expireInterval;
     }
 
     /**
@@ -111,16 +82,6 @@ public class FileStateTable implements Runnable
     public final void setCacheTimer(long tmo)
     {
         m_cacheTimer = tmo;
-    }
-
-    /**
-     * Set the expired file state checker interval, in milliseconds
-     * 
-     * @param chkIntval long
-     */
-    public final void setCheckInterval(long chkIntval)
-    {
-        m_expireInterval = chkIntval;
     }
 
     /**
@@ -351,7 +312,7 @@ public class FileStateTable implements Runnable
                         // DEBUG
 
                         if (logger.isDebugEnabled())
-                            logger.debug("++ Expired file state: " + state);
+                            logger.debug("Expired file state: " + state);
 
                         // Update the expired count
 
@@ -367,79 +328,6 @@ public class FileStateTable implements Runnable
     }
 
     /**
-     * Expired file state checker thread
-     */
-    public void run()
-    {
-
-        // Loop forever
-
-    	m_shutdown = false;
-    	
-        while ( m_shutdown == false)
-        {
-
-            // Sleep for the required interval
-
-            try
-            {
-                Thread.sleep(getCheckInterval());
-            }
-            catch (InterruptedException ex)
-            {
-            }
-
-            //	Check for shutdown
-            
-            if ( m_shutdown == true)
-            {
-            	//	Debug
-            	
-            	if ( logger.isDebugEnabled())
-            		logger.debug("FileStateExpire thread closing");
-
-            	return;
-            }
-            	
-            try
-            {
-
-                // Check for expired file states
-
-                int cnt = removeExpiredFileStates();
-
-                // Debug
-
-                if (logger.isDebugEnabled() && cnt > 0)
-                {
-                    logger.debug("++ Expired " + cnt + " file states, cache=" + m_stateTable.size());
-                    Dump();
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.debug(ex);
-            }
-        }
-    }
-
-	/**
-	 * Request the file state checker thread to shutdown
-	 */
-	public final void shutdownRequest() {
-		m_shutdown = true;
-		
-		if ( m_thread != null)
-		{
-			try {
-				m_thread.interrupt();
-			}
-			catch (Exception ex) {
-			}
-		}
-	}
-    
-    /**
      * Dump the state cache entries to the specified stream
      */
     public final void Dump()
@@ -448,7 +336,7 @@ public class FileStateTable implements Runnable
         // Dump the file state cache entries to the specified stream
 
         if (m_stateTable.size() > 0)
-            logger.debug("++ FileStateCache Entries:");
+            logger.debug("FileStateCache Entries:");
 
         Enumeration enm = m_stateTable.keys();
         long curTime = System.currentTimeMillis();
@@ -458,7 +346,7 @@ public class FileStateTable implements Runnable
             String fname = (String) enm.nextElement();
             FileState state = m_stateTable.get(fname);
 
-            logger.debug("  ++  " + fname + "(" + state.getSecondsToExpire(curTime) + ") : " + state);
+            logger.debug("  " + fname + "(" + state.getSecondsToExpire(curTime) + ") : " + state);
         }
     }
 }

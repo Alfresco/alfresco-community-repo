@@ -69,13 +69,13 @@ import org.alfresco.filesys.server.core.SharedDeviceList;
 import org.alfresco.filesys.server.filesys.DefaultShareMapper;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.server.filesys.HomeShareMapper;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.TcpipSMB;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.filesys.smb.server.repo.DesktopAction;
 import org.alfresco.filesys.smb.server.repo.DesktopActionException;
 import org.alfresco.filesys.smb.server.repo.DesktopActionTable;
+import org.alfresco.filesys.smb.server.repo.HomeShareMapper;
 import org.alfresco.filesys.util.IPAddress;
 import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.X64;
@@ -1692,11 +1692,16 @@ public class ServerConfiguration extends AbstractLifecycleBean
 	                    // the new filesystem
 	                	
 	                    DiskInterface filesysDriver = this.avmDiskInterface;
-	                    AVMContext filesysContext = (AVMContext) filesysDriver.createContext(elem);
+	                    AVMContext filesysContext = (AVMContext) filesysDriver.createContext( filesysDriver, filesysName, elem);
+	                    filesysContext.setFilesystemName(filesysName);
                 		
 	                    // Create the shared filesystem
 	                	
 	                    filesys = new DiskSharedDevice(filesysName, filesysDriver, filesysContext);
+
+	                    // Start the filesystem
+	                	
+	                    filesysContext.startFilesystem(filesys);
                 	}
                 	else
                 	{
@@ -1704,7 +1709,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
 	                    // the new filesystem
 	                	
 	                    DiskInterface filesysDriver = this.diskInterface;
-	                    ContentContext filesysContext = (ContentContext) filesysDriver.createContext(elem);
+	                    ContentContext filesysContext = (ContentContext) filesysDriver.createContext( filesysDriver, filesysName, elem);
 	
 	                    // Check if an access control list has been specified
 	
@@ -1804,7 +1809,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
         			{
         				// Create the new share for the store
         				
-	                    AVMContext avmContext = new AVMContext( storeName + ":/", AVMContext.VERSION_HEAD);
+	                    AVMContext avmContext = new AVMContext( storeName, storeName + ":/", AVMContext.VERSION_HEAD);
                 		
 	                    // Create the shared filesystem
 	                	

@@ -3352,7 +3352,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
         //  Create the disk driver and context
         
         DiskInterface diskDrv = getServer().getConfiguration().getDiskInterface();
-        DiskDeviceContext diskCtx = new ContentContext("", "", client.getHomeFolder());
+        DiskDeviceContext diskCtx = new ContentContext( client.getUserName(), "", "", client.getHomeFolder());
 
         //  Default the filesystem to look like an 80Gb sized disk with 90% free space
 

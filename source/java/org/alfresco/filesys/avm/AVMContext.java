@@ -20,6 +20,8 @@ package org.alfresco.filesys.avm;
 import org.alfresco.filesys.server.filesys.DiskDeviceContext;
 import org.alfresco.filesys.server.filesys.FileSystem;
 import org.alfresco.filesys.server.filesys.SrvDiskInfo;
+import org.alfresco.filesys.server.state.FileStateReaper;
+import org.alfresco.filesys.server.state.FileStateTable;
 
 /**
  * AVM Filesystem Context Class
@@ -41,15 +43,21 @@ public class AVMContext extends DiskDeviceContext {
     private String m_storePath;
     private int m_version = VERSION_HEAD; 
 
+    // File state table and associated file state reaper
+    
+    private FileStateTable m_stateTable;
+    private FileStateReaper m_stateReaper;
+    
     /**
      * Class constructor
      * 
+     * @param filesysName String
      * @param storePath String
      * @param version int
      */
-    public AVMContext( String storePath, int version)
+    public AVMContext( String filesysName, String storePath, int version)
     {
-    	super( storePath + "(" + version + ")");
+    	super( filesysName, storePath + "(" + version + ")");
     	
     	// Set the store root path, remove any trailing slash as relative paths will be appended to this value
     	
@@ -106,8 +114,64 @@ public class AVMContext extends DiskDeviceContext {
      */
 	public void CloseContext() {
 		
+		//	Deregister the file state table from the reaper
+		
+		if ( m_stateTable != null)
+			enableStateTable( false, m_stateReaper);
+		
 		//	Call the base class
 		
 		super.CloseContext();
 	}
+	
+    /**
+     * Determine if the file state table is enabled
+     * 
+     * @return boolean
+     */
+    public final boolean hasStateTable()
+    {
+        return m_stateTable != null ? true : false;
+    }
+    
+    /**
+     * Return the file state table
+     * 
+     * @return FileStateTable
+     */
+    public final FileStateTable getStateTable()
+    {
+        return m_stateTable;
+    }
+    
+    /**
+     * Enable/disable the file state table
+     * 
+     * @param ena boolean
+     * @param stateReaper FileStateReaper
+     */
+    public final void enableStateTable(boolean ena, FileStateReaper stateReaper)
+    {
+        if ( ena == false)
+        {
+        	// Remove the state table from the reaper
+        	
+        	stateReaper.removeStateTable( getFilesystemName());
+            m_stateTable = null;
+        }
+        else if ( m_stateTable == null)
+        {
+        	// Create the file state table
+
+            m_stateTable = new FileStateTable();
+            
+            // Register with the file state reaper
+            
+            stateReaper.addStateTable( getFilesystemName(), m_stateTable);
+        }
+        
+        // Save the reaper, for deregistering when the filesystem is closed
+        
+        m_stateReaper = stateReaper;
+    }
 }

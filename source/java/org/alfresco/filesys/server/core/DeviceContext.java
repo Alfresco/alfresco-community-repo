@@ -29,14 +29,17 @@ public class DeviceContext
 
     private String m_devName;
 
+    // Filesystem name
+    
+    private String m_filesysName;
+    
     // Flag to indicate if the device is available. Unavailable devices will not be listed by the
-    // various
-    // protocol servers.
+    // various protocol servers.
 
     private boolean m_available = true;
 
     /**
-     * DeviceContext constructor.
+     * Default constructor
      */
     public DeviceContext()
     {
@@ -44,23 +47,37 @@ public class DeviceContext
     }
 
     /**
-     * DeviceContext constructor.
+     * Class constructor
+     * 
+     * @param filesysName String
+     * @param devName String
      */
-    public DeviceContext(String devName)
+    public DeviceContext(String filesysName, String devName)
     {
-        m_devName = devName;
+    	m_filesysName = filesysName;
+        m_devName     = devName;
     }
 
     /**
      * Return the device name.
      * 
-     * @return java.lang.String
+     * @return String
      */
     public final String getDeviceName()
     {
         return m_devName;
     }
 
+    /**
+     * Return the filesystem name
+     * 
+     * @return String
+     */
+    public final String getFilesystemName()
+    {
+    	return m_filesysName;
+    }
+    
     /**
      * Determine if the filesystem is available
      * 
@@ -84,13 +101,23 @@ public class DeviceContext
     /**
      * Set the device name.
      * 
-     * @param name java.lang.String
+     * @param name String
      */
     public final void setDeviceName(String name)
     {
         m_devName = name;
     }
 
+    /**
+     * Set the filesystem name
+     * 
+     * @param filesysName String
+     */
+    public final void setFilesystemName( String filesysName)
+    {
+    	m_filesysName = filesysName;
+    }
+    
     /**
      * Close the device context, free any resources allocated by the context
      */
@@ -108,6 +135,8 @@ public class DeviceContext
         StringBuffer str = new StringBuffer();
 
         str.append("[");
+        str.append(getFilesystemName());
+        str.append(",");
         str.append(getDeviceName());
         str.append("]");
 

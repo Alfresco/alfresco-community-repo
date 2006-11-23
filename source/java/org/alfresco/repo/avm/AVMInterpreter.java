@@ -73,8 +73,13 @@ public class AVMInterpreter
     public static void main(String[] args)
     {
         FileSystemXmlApplicationContext context = 
-            new FileSystemXmlApplicationContext("config/alfresco/avm-console-context.xml");
-        AVMInterpreter console = (AVMInterpreter)context.getBean("interactiveConsole");
+            new FileSystemXmlApplicationContext("config/alfresco/application-context.xml");
+        AVMInterpreter console = new AVMInterpreter();
+        console.setAvmService((AVMService)context.getBean("AVMService"));
+        console.setAvmSyncService((AVMSyncService)context.getBean("AVMSyncService"));
+        BulkLoader loader = new BulkLoader();
+        loader.setAvmService((AVMService)context.getBean("AVMService"));
+        console.setBulkLoader(loader);
         console.rep();
         context.close();
     }

@@ -17,6 +17,7 @@
 package org.alfresco.web.forms;
 
 import java.io.Serializable;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Encapsulation of form instance data.
@@ -38,4 +39,7 @@ public interface FormInstanceData
 
    /** the url to the asset */
    public String getUrl();
+
+   /** the noderef containing the form instance data */
+   public NodeRef getNodeRef();
 }

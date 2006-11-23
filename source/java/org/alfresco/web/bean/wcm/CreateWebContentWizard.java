@@ -16,11 +16,7 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,11 +33,13 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.workflow.*;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
@@ -56,6 +54,7 @@ import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
+import org.alfresco.web.forms.RenditionImpl;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -85,7 +84,9 @@ public class CreateWebContentWizard extends BaseContentWizard
    
    /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
-   
+
+   /** Workflow service bean reference */
+   protected WorkflowService workflowService;
    
    /**
     * @param avmService       The AVMService to set.
@@ -102,6 +103,15 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       this.avmSyncService = avmSyncService;
    }
+   
+   /**
+    * @param workflowService  The WorkflowService to set.
+    */
+   public void setWorkflowService(WorkflowService workflowService)
+   {
+      this.workflowService = workflowService;
+   }
+
    
    /**
     * @param avmBrowseBean    The AVMBrowseBean to set.
@@ -164,7 +174,92 @@ public class CreateWebContentWizard extends BaseContentWizard
 
       if (this.startWorkflow)
       {
-         System.err.println("************* starting workflow");
+         WorkflowDefinition wd = null;
+         Map<QName, Serializable> parameters = null;
+
+         // get the workflow definition and parameters
+         {
+            final Node website = this.avmBrowseBean.getWebsite();
+            final List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
+               website.getNodeRef(), ContentModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef ref : webFormRefs)
+            {
+               final String formName = (String)
+                  this.nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_FORMNAME);
+               if (formName.equals(this.getForm().getName()))
+               {
+                  System.err.println("loading workflowRefs for " + formName);
+                  final List<ChildAssociationRef> workflowRefs = 
+                     this.nodeService.getChildAssocs(ref.getChildRef(),
+                                                     ContentModel.ASSOC_WORKFLOWDEFAULTS,
+                                                     RegexQNamePattern.MATCH_ALL);
+                  if (workflowRefs.size() == 0)
+                  {
+                     throw new RuntimeException("no workflow parameters found for form " + formName);
+                  }
+                  if (workflowRefs.size() > 1)
+                  {
+                     throw new RuntimeException("found more than one workflow parameters node for " + formName);
+                  }
+
+                  final NodeRef workflowRef = workflowRefs.get(0).getChildRef();
+                  final String workflowId = (String)
+                     this.nodeService.getProperty(workflowRef, ContentModel.PROP_WORKFLOW_ID);
+                  if (workflowId == null)
+                  {
+                     throw new RuntimeException("no workflow found for form " + formName);
+                  }
+                  System.err.println("using workflow " + workflowId + " for form " + formName);
+                  wd = this.workflowService.getDefinitionById(workflowId);
+                  
+                  final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                  final ContentReader cr = this.contentService.getReader(workflowRef, ContentModel.PROP_WORKFLOWDEFAULTS);
+                  if (cr == null)
+                  {
+                     parameters = new HashMap<QName, Serializable>();
+                  }
+                  else
+                  {
+                     cr.getContent(baos);
+                     
+                     final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+                     final ObjectInputStream ois = new ObjectInputStream(bais);
+                     parameters = (Map<QName, Serializable>)ois.readObject();
+                  }
+                  break;
+               }
+            }
+         }
+
+         System.err.println("creating workflow package");
+         final NodeRef workflowPackageNodeRef = this.workflowService.createPackage(null);
+// doesn't work yet.  need to use ASPECT_REFERENCES_NODE to get it to deal with avm nodes
+// and we need some fixes from dave before we can enable.
+//         QName qn = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+//                                      QName.createValidLocalName(this.formInstanceData.getName()));
+//         String s = AVMNodeConverter.ToAVMVersionPath(this.formInstanceData.getNodeRef()).getSecond();
+//         s = s.replaceFirst(AVMConstants.STORE_PREVIEW, AVMConstants.STORE_MAIN);
+//         System.err.println("adding  " + s + " to workflow package with qname" + qn);
+//         this.nodeService.addChild(workflowPackageNodeRef,
+//                                   AVMNodeConverter.ToNodeRef(-1, s),
+//                                   ContentModel.ASSOC_CONTAINS,
+//                                   qn);
+//         for (Rendition rendition : this.getRenditions())
+//         {
+//            qn = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+//                                   QName.createValidLocalName(rendition.getName()));
+//            s = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
+//            s = s.replaceFirst(AVMConstants.STORE_PREVIEW, AVMConstants.STORE_MAIN);
+//            System.err.println("adding  " + s + " to workflow package with qname " + qn);
+//
+//            this.nodeService.addChild(workflowPackageNodeRef,
+//                                      AVMNodeConverter.ToNodeRef(-1, s),
+//                                      ContentModel.ASSOC_CONTAINS,
+//                                      qn);
+//         }
+         parameters.put(WorkflowModel.ASSOC_PACKAGE, workflowPackageNodeRef);
+         System.err.println("starting workflow " + wd + " with parameters " + parameters);
+         final WorkflowPath wp = this.workflowService.startWorkflow(wd.getId(), parameters);
       }
       else
       {
@@ -226,6 +321,9 @@ public class CreateWebContentWizard extends BaseContentWizard
       if (logger.isDebugEnabled())
          logger.debug("creating file " + this.fileName + " in " + path);
 
+      
+      this.avmSyncService.resetLayer(path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
+
       // put the content of the file into the AVM store
       if (fileContent != null)
       {
@@ -248,8 +346,7 @@ public class CreateWebContentWizard extends BaseContentWizard
 
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         final Form form = this.getForm();
-         form.registerFormInstanceData(formInstanceDataNodeRef);
+         this.getForm().registerFormInstanceData(formInstanceDataNodeRef);
          this.renditions = FormsService.getInstance().generateRenditions(formInstanceDataNodeRef);
       }
    }
@@ -279,18 +376,19 @@ public class CreateWebContentWizard extends BaseContentWizard
     */
    public List<SelectItem> getFormChoices()
    {
-      Node website = this.avmBrowseBean.getWebsite();
+      final Node website = this.avmBrowseBean.getWebsite();
       if (website == null)
       {
          throw new IllegalStateException("CreateWebContentWizard must be called within a Web Project context!");
       }
-      List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
+      final List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
             website.getNodeRef(), ContentModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
-      List<SelectItem> items = new ArrayList<SelectItem>(webFormRefs.size());
+      final List<SelectItem> items = new ArrayList<SelectItem>(webFormRefs.size());
       for (ChildAssociationRef ref : webFormRefs)
       {
-         String formName = (String)this.nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_FORMNAME);
-         Form form = FormsService.getInstance().getForm(formName);
+         final String formName = (String)
+            this.nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_FORMNAME);
+         final Form form = FormsService.getInstance().getForm(formName);
          if (form != null)
          {
             items.add(new SelectItem(formName, form.getTitle()));

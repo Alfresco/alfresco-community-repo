@@ -169,7 +169,7 @@ public class FormDetailsDialog extends BaseDialogBean
          WorkflowWrapper workflow = getActionForm().getWorkflow();
          if (workflow != null)
          {
-            this.workflowSelectedValue = new String[] {workflow.getName()};
+            this.workflowSelectedValue = new String[] {workflow.getId()};
          }
       }
       return this.workflowSelectedValue;
@@ -195,9 +195,9 @@ public class FormDetailsDialog extends BaseDialogBean
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          UIListItem item = new UIListItem();
-         item.setValue(workflowDef.name);
-         item.setLabel(workflowDef.title);
-         item.setDescription(workflowDef.description);
+         item.setValue(workflowDef.getId());
+         item.setLabel(workflowDef.getTitle());
+         item.setDescription(workflowDef.getDescription());
          item.setImage(WebResources.IMAGE_WORKFLOW_32);
          items.add(item);
       }
@@ -231,7 +231,7 @@ public class FormDetailsDialog extends BaseDialogBean
       }
       if (this.workflowSelectedValue != null && this.workflowSelectedValue.length != 0)
       {
-         form.setWorkflow(new CreateWebsiteWizard.WorkflowWrapper(this.workflowSelectedValue[0]));
+         form.setWorkflow(websiteWizard.getWorkflowWrapper(this.workflowSelectedValue[0]));
       }
       return outcome;
    }

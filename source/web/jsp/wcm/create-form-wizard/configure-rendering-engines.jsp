@@ -43,14 +43,16 @@
 <h:panelGrid id="general-properties-panel-grid" 
 	     columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%">
-  <h:outputText id="step-1-text" value="1. #{msg.create_form_configure_rendering_engines_step1_desc}" escape="false" />
+  <h:outputText id="step-1-text" 
+		value="1. #{msg.create_form_configure_rendering_engine_templates_step1_desc}" 
+		escape="false" />
   <h:panelGrid id="panel_grid_3"
                columns="3" cellpadding="3" cellspacing="3" border="0"
                width="100%">
     <h:graphicImage id="required_image_rendering_engine_template_file"
                     value="/images/icons/required_field.gif" alt="Required Field" />
-    <h:outputText id="output_text_rendering_engine_tempalte_file"
-                  value="#{msg.rendering_engine_file}:"/>
+    <h:outputText id="output_text_rendering_engine_template_file"
+                  value="#{msg.rendering_engine_template_file}:"/>
     <h:column id="column_pt">
 <%
 final FileUploadBean upload = (FileUploadBean)
@@ -69,7 +71,7 @@ if (upload == null || upload.getFile() == null)
 else 
 {
 %>
-    <h:outputText id="rendering-engine-file-name"
+    <h:outputText id="rendering-engine-template-file-name"
                   value="#{WizardManager.bean.renderingEngineTemplateFileName}"/>
     <h:outputText id="output_text_rendering_engine_template_space"
                   value="&nbsp;"
@@ -84,14 +86,22 @@ else
 }
 %>
     </h:column>
+  </h:panelGrid>
 
-    <h:graphicImage id="required-image-rendering-engine-type"
+  <h:outputText id="step-2-text" 
+		value="2. #{msg.create_form_configure_rendering_engine_templates_step2_desc}" 
+		escape="false" />
+  <h:panelGrid id="panel_grid_specify_details"
+               columns="3" cellpadding="3" cellspacing="3" border="0"
+               width="100%">
+
+    <h:graphicImage id="required-image-rendering-engine"
                     value="/images/icons/required_field.gif" alt="Required Field" />
-    <h:outputText id="rendering-engine-type-output-text"
-                  value="#{msg.rendering_engine_type}:"/>
-    <h:selectOneRadio id="rendering-engine-type" 
+    <h:outputText id="rendering-engine-output-text"
+                  value="#{msg.rendering_engine}:"/>
+    <h:selectOneRadio id="rendering-engine" 
 		      value="#{WizardManager.bean.renderingEngineName}">
-     <f:selectItems id="rendering-engine-type-choices"
+     <f:selectItems id="rendering-engine-choices"
 		    value="#{WizardManager.bean.renderingEngineChoices}"/>
     </h:selectOneRadio>
 
@@ -106,17 +116,17 @@ else
 		     value="#{WizardManager.bean.mimeTypeChoices}" />
     </h:selectOneMenu>
 
-    <h:graphicImage id="required-image-file-extension"
+    <h:graphicImage id="required-image-output-path-pattern"
                     value="/images/icons/required_field.gif" alt="Required Field" />
-    <h:outputText id="file-extension-output-text"
-                  value="#{msg.extension_for_renditions}:"/>
-    <h:inputText id="file-extension" 
+    <h:outputText id="output-path-pattern-output-text"
+                  value="#{msg.output_path_pattern}:"/>
+    <h:inputText id="output-path-pattern" 
 		 value="#{WizardManager.bean.outputPathPatternForRendition}"
 		 style="width:100%;"/>
   </h:panelGrid>
 
-  <h:panelGroup id="step-2-panel-group" styleClass="mainSubText">
-    <h:outputText id="step-2-output-text" value="2." />
+  <h:panelGroup id="step-3-panel-group" styleClass="mainSubText">
+    <h:outputText id="step-3-output-text" value="3. " />
     <h:commandButton id="add-to-list-button" 
 		     value="#{msg.add_to_list_button}" 
 		     actionListener="#{WizardManager.bean.addSelectedRenderingEngineTemplate}" 
@@ -125,7 +135,7 @@ else
   </h:panelGroup>
   <h:outputText id="selected-rendering-engine-templates-output-text"
                 styleClass="mainSubText" 
-		value="#{msg.selected_rendering_engines}" />
+		value="#{msg.selected_rendering_engine_templates}" />
   <h:panelGroup id="data-table-panel-group">
     <h:dataTable id="rendering-engine-template-data-table"
                  value="#{WizardManager.bean.renderingEngineTemplatesDataModel}" 
@@ -150,7 +160,7 @@ else
       </h:column>
       <h:column id="data-table-column-3">
         <f:facet name="header">
-          <h:outputText id="data-table-name-3" value="#{msg.file_extension}" />
+          <h:outputText id="data-table-name-3" value="#{msg.output_path_pattern}" />
         </f:facet>
         <h:outputText id="data-table-value-3" value="#{row.outputPathPatternForRendition}" />
       </h:column>

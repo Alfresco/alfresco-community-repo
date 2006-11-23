@@ -18,6 +18,7 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -181,7 +182,12 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             Date fromDate;
             if (FILTER_DATE_TODAY.equals(dateFilter))
             {
-               fromDate = new Date(toDate.getYear(), toDate.getMonth(), toDate.getDate(), 0, 0, 0);
+               final Calendar c = Calendar.getInstance();
+               c.setTime(toDate);
+               c.set(Calendar.HOUR, 0);
+               c.set(Calendar.MINUTE, 0);
+               c.set(Calendar.SECOND, 0);
+               fromDate = c.getTime();
             }
             else if (FILTER_DATE_WEEK.equals(dateFilter))
             {

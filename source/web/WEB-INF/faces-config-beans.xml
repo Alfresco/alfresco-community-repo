@@ -2112,6 +2112,10 @@
          <value>#{DictionaryService}</value>
       </managed-property>
       <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>avmService</property-name>
          <value>#{AVMService}</value>
       </managed-property>

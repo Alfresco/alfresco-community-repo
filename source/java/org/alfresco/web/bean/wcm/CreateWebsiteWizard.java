@@ -283,7 +283,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          {
             WorkflowWrapper workflow = form.getWorkflow();
             props.clear();
-            props.put(ContentModel.PROP_WORKFLOWNAME, workflow.getName());
+            props.put(ContentModel.PROP_WORKFLOW_ID, workflow.getId());
             NodeRef workflowRef = this.nodeService.createNode(formRef,
                   ContentModel.ASSOC_WORKFLOWDEFAULTS,
                   ContentModel.ASSOC_WORKFLOWDEFAULTS,
@@ -322,7 +322,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       for (WorkflowWrapper workflow : this.workflows)
       {
          props.clear();
-         props.put(ContentModel.PROP_NAME, workflow.getName());
+         props.put(ContentModel.PROP_NAME, workflow.getId());
          NodeRef workflowRef = this.nodeService.createNode(nodeRef,
                ContentModel.ASSOC_WEBWORKFLOWDEFAULTS,
                ContentModel.ASSOC_WEBWORKFLOWDEFAULTS,
@@ -575,7 +575,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (index != -1)
       {
          Form form = (Form)this.formsList.get(index).getValue();
-         this.forms.add(new FormWrapper(form));
+         this.forms.add(this.new FormWrapper(form));
       }
    }
    
@@ -686,7 +686,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          UIListItem item = new UIListItem();
-         item.setValue(workflowDef.name);
+         item.setValue(workflowDef.id);
          item.setLabel(workflowDef.title);
          item.setDescription(workflowDef.description);
          item.setImage(WebResources.IMAGE_WORKFLOW_32);
@@ -706,7 +706,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (index != -1)
       {
          String workflow = (String)this.workflowsList.get(index).getValue();
-         this.workflows.add(new WorkflowWrapper(workflow));
+         this.workflows.add(this.new WorkflowWrapper(workflow));
       }
    }
    
@@ -1008,7 +1008,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * Wrapper class for a configurable template Form instance
     */
-   public static class FormWrapper
+   public class FormWrapper
    {
       private Form form;
       private String title;
@@ -1061,7 +1061,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          WorkflowDefinition wf = this.form.getDefaultWorkflow();
          if (this.workflow == null && wf != null)
          {
-            this.workflow = new WorkflowWrapper(wf.name);
+            this.workflow = CreateWebsiteWizard.this.new WorkflowWrapper(wf.getId());
          }
          return this.workflow;
       }
@@ -1126,9 +1126,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          String none = '<' + Application.getMessage(FacesContext.getCurrentInstance(), MSG_NONE) + '>';
          return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_FORM_SUMMARY),
-               getWorkflow() != null ? this.workflow.name : none,
-               getFilenamePattern() != null ? this.filenamePattern : none,
-               getTemplates() != null ? this.templates.size() : 0);
+                                     getWorkflow() != null ? this.workflow.getName() : none,
+                                     getFilenamePattern() != null ? this.filenamePattern : none,
+                                     getTemplates() != null ? this.templates.size() : 0);
       }
    }
    
@@ -1197,28 +1197,41 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
    }
    
+   public WorkflowWrapper getWorkflowWrapper(String id)
+   {
+      return this.new WorkflowWrapper(id);
+   }
+
    /**
     * Class to represent a single configured Workflow instance
     */
-   public static class WorkflowWrapper
+   public class WorkflowWrapper
    {
-      private String name;
+      private String id;
       private String filenamePattern;
       private QName type;
       private Map<QName, Serializable> params;
       
-      public WorkflowWrapper(String name)
+      public WorkflowWrapper(String id)
       {
-         this.name = name;
+         this.id = id;
          this.filenamePattern = filenamePattern;
       }
       
+      /**
+       * @return Returns the id of the workflow.
+       */
+      public String getId()
+      {
+         return this.id;
+      }
+
       /**
        * @return Returns the name of the workflow.
        */
       public String getName()
       {
-         return this.name;
+         return workflowService.getDefinitionById(this.getId()).getName();
       }
 
       /**

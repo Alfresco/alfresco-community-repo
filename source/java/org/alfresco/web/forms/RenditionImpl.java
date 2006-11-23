@@ -16,6 +16,8 @@
  */
 package org.alfresco.web.forms;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
@@ -62,7 +64,12 @@ public class RenditionImpl
    /** the path relative to the containing webapp */
    public String getWebappRelativePath()
    {
-      return AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
+      final String path = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
+      final String p = ("[^:]+:/" + AVMConstants.DIR_APPBASE +
+                        "/" + AVMConstants.DIR_WEBAPPS +
+                        "/[^/]+(.*)/" + this.getName());
+      final Matcher m = Pattern.compile(p).matcher(path);
+      return m.matches() && m.group(1).length() != 0 ? m.group(1) : "/";
    }
 
    public FormInstanceData getPrimaryFormInstanceData()

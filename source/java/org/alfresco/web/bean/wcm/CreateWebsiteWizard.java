@@ -36,21 +36,16 @@ import javax.faces.model.ListDataModel;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -68,6 +63,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Backing bean for the Create Web Project wizard.
+ * 
  * @author Kevin Roast
  */
 public class CreateWebsiteWizard extends BaseWizardBean
@@ -80,8 +77,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private static final String MSG_FORM_SUMMARY = "website_form_summary";
    private static final String MSG_NONE = "value_not_set";
 
-   private static final String ROLE_CONTENT_MANAGER = "ContentManager";
-   
    private static final String WEBAPP_DEFAULT = "ROOT";
 
    private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
@@ -95,7 +90,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private String websitesFolderId = null;
    
    protected AVMService avmService;
-   protected PermissionService permissionService;
    protected WorkflowService workflowService;
    
    /** datamodel for table of selected forms */
@@ -144,7 +138,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // init the dependant bean we are using for the invite users pages
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
-      wiz.init();
+      wiz.init(null);
    }
    
    /**
@@ -177,58 +171,18 @@ public class CreateWebsiteWizard extends BaseWizardBean
       String webapp = (this.webapp != null && this.webapp.length() != 0) ? this.webapp : WEBAPP_DEFAULT;
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_DEFAULTWEBAPP, webapp);
       
-      // call the delegate wizard bean to provide invite user functionality
+      // call a delegate wizard bean to provide invite user functionality
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
       wiz.setNode(new Node(nodeRef));
+      wiz.setAvmStore(avmStore);
+      wiz.setStandalone(false);
+      // the wizard is responsible for notifying the invited users, setting the appropriate
+      // node permissions and also for creating user sandboxes and associations to the web folder node
       outcome = wiz.finish();
       if (outcome != null)
       {
-         // create a sandbox for each user appropriately with permissions based on role
-         // build a list of managers who will have full permissions on ALL staging areas
-         List<String> managers = new ArrayList<String>(4);
-         boolean foundCurrentUser = false;
-         List<UserGroupRole> invitedUserRoles = (List<UserGroupRole>)wiz.getUserRolesDataModel().getWrappedData();
-         String currentUser = Application.getCurrentUser(context).getUserName();
-         for (UserGroupRole userRole : invitedUserRoles)
-         {
-            String authority = userRole.getAuthority();
-            if (currentUser.equals(authority))
-            {
-               foundCurrentUser = true;
-            }
-            if (ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
-            {
-               managers.add(authority);
-            }
-         }
-         if (foundCurrentUser == false)
-         {
-            invitedUserRoles.add(new UserGroupRole(currentUser, ROLE_CONTENT_MANAGER, null));
-            managers.add(currentUser);
-         }
-         
-         // build the sandboxes now we have the manager list and complete user list
-         for (UserGroupRole userRole : invitedUserRoles)
-         {
-            createUserSandbox(avmStore, managers, userRole.getAuthority(), userRole.getRole());
-         }
-         
          // create the AVM stores to represent the newly created location website
-         createStagingSandbox(avmStore, managers);
-         
-         // save the list of invited users against the store
-         for (UserGroupRole userRole : invitedUserRoles)
-         {
-            // create an app:webuser instance for each authority and assoc to the website node
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-            props.put(ContentModel.PROP_WEBUSERNAME, userRole.getAuthority());
-            props.put(ContentModel.PROP_WEBUSERROLE, userRole.getRole());
-            this.nodeService.createNode(nodeRef,
-                  ContentModel.ASSOC_WEBUSER,
-                  ContentModel.ASSOC_WEBUSER,
-                  ContentModel.TYPE_WEBUSER,
-                  props);
-         }
+         SandboxFactory.createStagingSandbox(avmStore, wiz.getManagers());
          
          // set the property on the node to reference the AVM store
          this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, avmStore);
@@ -384,14 +338,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    /**
-    * @param permissionService The permissionService to set.
-    */
-   public void setPermissionService(PermissionService permissionService)
-   {
-      this.permissionService = permissionService;
-   }
-   
-   /**
     * @param workflowService  The WorkflowService to set.
     */
    public void setWorkflowService(WorkflowService workflowService)
@@ -508,7 +454,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       if (foundCurrentUser == false)
       {
-         buf.append(getInviteUsersWizard().buildLabelForUserAuthorityRole(currentUser, ROLE_CONTENT_MANAGER));
+         buf.append(getInviteUsersWizard().buildLabelForUserAuthorityRole(
+               currentUser, SandboxFactory.ROLE_CONTENT_MANAGER));
       }
       
       return buildSummary(
@@ -686,7 +633,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          UIListItem item = new UIListItem();
-         item.setValue(workflowDef.id);
+         item.setValue(workflowDef);
          item.setLabel(workflowDef.title);
          item.setDescription(workflowDef.description);
          item.setImage(WebResources.IMAGE_WORKFLOW_32);
@@ -705,8 +652,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       int index = selectList.getRowIndex();
       if (index != -1)
       {
-         String workflow = (String)this.workflowsList.get(index).getValue();
-         this.workflows.add(this.new WorkflowWrapper(workflow));
+         WorkflowDefinition workflow = (WorkflowDefinition)this.workflowsList.get(index).getValue();
+         this.workflows.add(new WorkflowWrapper(workflow.getId(), workflow.getTitle()));
       }
    }
    
@@ -770,237 +717,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
       return this.websitesFolderId;
    }
    
-   /**
-    * Create the staging sandbox for the named store.
-    * 
-    * A staging sandbox is comprised of two stores, the first named 'storename-staging' with a
-    * preview store named 'storename-preview' layered over the staging store.
-    * 
-    * Various store meta-data properties are set including:
-    * Identifier for store-types: .sandbox.staging.main and .sandbox.staging.preview
-    * Store-id: .sandbox-id.<guid> (unique across all stores in the sandbox)
-    * DNS: .dns.<store> = <path-to-webapps-root>
-    * Website Name: .website.name = website name
-    * 
-    * @param name       The store name to create the sandbox for
-    * @param managers   The list of authorities who have ContentManager role in the website 
-    */
-   private void createStagingSandbox(String name, List<String> managers)
-   {
-      // create the 'staging' store for the website
-      String stagingStore = AVMConstants.buildAVMStagingStoreName(name);
-      this.avmService.createAVMStore(stagingStore);
-      if (logger.isDebugEnabled())
-         logger.debug("Created staging sandbox store: " + stagingStore);
-      
-      // create the system directories 'appBase' and 'avm_webapps'
-      String path = stagingStore + ":/";
-      //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
-      this.avmService.createDirectory(path, AVMConstants.DIR_APPBASE);
-      NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
-      for (String manager : managers)
-      {
-         this.permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
-      }
-      path += AVMConstants.DIR_APPBASE;
-      //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_WEBAPPS, ContentModel.TYPE_AVM_PLAIN_FOLDER);
-      this.avmService.createDirectory(path, AVMConstants.DIR_WEBAPPS);
-      
-      // tag the store with the store type
-      this.avmService.setStoreProperty(stagingStore,
-            QName.createQName(null, AVMConstants.PROP_SANDBOX_STAGING_MAIN),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with the DNS name property
-      tagStoreDNSPath(stagingStore, name, "staging");
-      
-      // snapshot the store
-      this.avmService.createSnapshot(stagingStore, null, null);
-      
-      
-      // create the 'preview' store for the website
-      String previewStore = AVMConstants.buildAVMStagingPreviewStoreName(name);
-      this.avmService.createAVMStore(previewStore);
-      if (logger.isDebugEnabled())
-         logger.debug("Created staging sandbox store: " + previewStore);
-      
-      // create a layered directory pointing to 'appBase' in the staging area
-      path = previewStore + ":/";
-      String targetPath = name + AVMConstants.STORE_STAGING + ":/" + AVMConstants.DIR_APPBASE;
-      //this.fileFolderService.create(AVMNodeConverter.ToNodeRef(-1, path), AVMConstants.DIR_APPBASE, ContentModel.TYPE_AVM_PLAIN_FOLDER);
-      this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
-      dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
-      for (String manager : managers)
-      {
-         this.permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
-      }
-      
-      // tag the store with the store type
-      this.avmService.setStoreProperty(previewStore,
-            QName.createQName(null, AVMConstants.PROP_SANDBOX_STAGING_PREVIEW),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with the DNS name property
-      tagStoreDNSPath(previewStore, name, "preview");
-      
-      // snapshot the store
-      this.avmService.createSnapshot(previewStore, null, null);
-      
-      
-      // tag all related stores to indicate that they are part of a single sandbox
-      String sandboxIdProp = AVMConstants.PROP_SANDBOXID + GUID.generate();
-      this.avmService.setStoreProperty(stagingStore,
-            QName.createQName(null, sandboxIdProp),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      this.avmService.setStoreProperty(previewStore,
-            QName.createQName(null, sandboxIdProp),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      if (logger.isDebugEnabled())
-      {
-         dumpStoreProperties(stagingStore);
-         dumpStoreProperties(previewStore);
-      }
-   }
-   
-   /**
-    * Create a user sandbox for the named store.
-    * 
-    * A user sandbox is comprised of two stores, the first named 'storename-username-main' layered
-    * over the staging store with a preview store named 'storename-username-preview' layered over
-    * the main store.
-    * 
-    * Various store meta-data properties are set including:
-    * Identifier for store-types: .sandbox.author.main and .sandbox.author.preview
-    * Store-id: .sandbox-id.<guid> (unique across all stores in the sandbox)
-    * DNS: .dns.<store> = <path-to-webapps-root>
-    * Website Name: .website.name = website name
-    * 
-    * @param name       The store name to create the sandbox for
-    * @param managers   The list of authorities who have ContentManager role in the website
-    * @param username   Username of the user to create the sandbox for
-    * @param role       Role permission for the user
-    */
-   private void createUserSandbox(String name, List<String> managers, String username, String role)
-   {
-      // create the user 'main' store
-      String userStore = AVMConstants.buildAVMUserMainStoreName(name, username);
-      this.avmService.createAVMStore(userStore);
-      if (logger.isDebugEnabled())
-         logger.debug("Created staging sandbox store: " + userStore);
-      
-      // create a layered directory pointing to 'appBase' in the staging area
-      String path = userStore + ":/";
-      String targetPath = name + AVMConstants.STORE_STAGING + ":/" + AVMConstants.DIR_APPBASE;
-      this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
-      NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
-      this.permissionService.setPermission(dirRef, username, role, true);
-      for (String manager : managers)
-      {
-         this.permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
-      }
-      
-      // tag the store with the store type
-      this.avmService.setStoreProperty(userStore,
-            QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_MAIN),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with the base name of the website so that corresponding
-      // staging areas can be found.
-      this.avmService.setStoreProperty(userStore,
-            QName.createQName(null, AVMConstants.PROP_WEBSITE_NAME),
-            new PropertyValue(DataTypeDefinition.TEXT, name));
-      
-      // tag the store, oddly enough, with its own store name for querying.
-      // when will the madness end.
-      this.avmService.setStoreProperty(userStore,
-            QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + userStore),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with the DNS name property
-      tagStoreDNSPath(userStore, name, username);
-      
-      // snapshot the store
-      this.avmService.createSnapshot(userStore, null, null);
-      
-      
-      // create the user 'preview' store
-      String previewStore = AVMConstants.buildAVMUserPreviewStoreName(name, username);
-      this.avmService.createAVMStore(previewStore);
-      if (logger.isDebugEnabled())
-         logger.debug("Created staging sandbox store: " + previewStore);
-      
-      // create a layered directory pointing to 'appBase' in the user 'main' store
-      path = previewStore + ":/";
-      targetPath = userStore + ":/" + AVMConstants.DIR_APPBASE;
-      this.avmService.createLayeredDirectory(targetPath, path, AVMConstants.DIR_APPBASE);
-      dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
-      this.permissionService.setPermission(dirRef, username, role, true);
-      for (String manager : managers)
-      {
-         this.permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
-      }
-      
-      // tag the store with the store type
-      this.avmService.setStoreProperty(previewStore,
-            QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_PREVIEW),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with its own store name for querying.
-      this.avmService.setStoreProperty(previewStore,
-            QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + previewStore),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      // tag the store with the DNS name property
-      tagStoreDNSPath(previewStore, name, username, "preview");
-      
-      // snapshot the store
-      this.avmService.createSnapshot(previewStore, null, null);
-      
-      
-      // tag all related stores to indicate that they are part of a single sandbox
-      String sandboxIdProp = AVMConstants.PROP_SANDBOXID + GUID.generate();
-      this.avmService.setStoreProperty(userStore, QName.createQName(null, sandboxIdProp),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      this.avmService.setStoreProperty(previewStore, QName.createQName(null, sandboxIdProp),
-            new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-      if (logger.isDebugEnabled())
-      {
-         dumpStoreProperties(userStore);
-         dumpStoreProperties(previewStore);
-      }
-   }
-   
-   /**
-    * Tag a named store with a DNS path meta-data attribute.
-    * The DNS meta-data attribute is set to the system path 'store:/appBase/avm_webapps'
-    * 
-    * @param store  Name of the store to tag
-    */
-   private void tagStoreDNSPath(String store, String... components)
-   {
-      String path = store + ":/" + AVMConstants.DIR_APPBASE + '/' + AVMConstants.DIR_WEBAPPS;
-      // DNS name mangle the property name - can only contain value DNS characters!
-      String dnsProp = AVMConstants.PROP_DNS + DNSNameMangler.MakeDNSName(components);
-      this.avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
-            new PropertyValue(DataTypeDefinition.TEXT, path));
-   }
-   
-   /**
-    * Debug helper method to dump the properties of a store
-    *  
-    * @param store   Store name to dump properties for
-    */
-   private void dumpStoreProperties(String store)
-   {
-      Map<QName, PropertyValue> props = avmService.getStoreProperties(store);
-      for (QName name : props.keySet())
-      {
-         logger.debug("   " + name + ": " + props.get(name));
-      }
-   }
-   
    
    // ------------------------------------------------------------------------------
    // Inner classes
@@ -1061,7 +777,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          WorkflowDefinition wf = this.form.getDefaultWorkflow();
          if (this.workflow == null && wf != null)
          {
-            this.workflow = CreateWebsiteWizard.this.new WorkflowWrapper(wf.getId());
+            this.workflow = new WorkflowWrapper(wf.id, wf.getTitle());
          }
          return this.workflow;
       }
@@ -1126,9 +842,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          String none = '<' + Application.getMessage(FacesContext.getCurrentInstance(), MSG_NONE) + '>';
          return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_FORM_SUMMARY),
-                                     getWorkflow() != null ? this.workflow.getName() : none,
-                                     getFilenamePattern() != null ? this.filenamePattern : none,
-                                     getTemplates() != null ? this.templates.size() : 0);
+               getWorkflow() != null ? this.workflow.title : none,
+               getFilenamePattern() != null ? this.filenamePattern : none,
+               getTemplates() != null ? this.templates.size() : 0);
       }
    }
    
@@ -1197,24 +913,21 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
    }
    
-   public WorkflowWrapper getWorkflowWrapper(String id)
-   {
-      return this.new WorkflowWrapper(id);
-   }
-
    /**
     * Class to represent a single configured Workflow instance
     */
-   public class WorkflowWrapper
+   public static class WorkflowWrapper
    {
       private String id;
+      private String title;
       private String filenamePattern;
       private QName type;
       private Map<QName, Serializable> params;
       
-      public WorkflowWrapper(String id)
+      public WorkflowWrapper(String id, String title)
       {
          this.id = id;
+         this.title = title;
          this.filenamePattern = filenamePattern;
       }
       
@@ -1229,9 +942,17 @@ public class CreateWebsiteWizard extends BaseWizardBean
       /**
        * @return Returns the name of the workflow.
        */
-      public String getName()
+      //public String getName()
+      //{
+      //   return workflowService.getDefinitionById(this.getId()).getName();
+      //}
+      
+      /**
+       * @return the display label of the workflow.
+       */
+      public String getTitle()
       {
-         return workflowService.getDefinitionById(this.getId()).getName();
+         return this.title;
       }
 
       /**

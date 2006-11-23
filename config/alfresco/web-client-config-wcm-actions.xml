@@ -187,6 +187,21 @@
             </params>
          </action>
          
+         <!-- Invite Website Users -->
+         <action id="invite_website_users">
+            <permissions>
+               <permission allow="true">ChangePermissions</permission>
+            </permissions>
+            <label-id>invite_website_users</label-id>
+            <image>/images/icons/invite.gif</image>
+            <action>wizard:inviteWebUsers</action>
+            <!-- TODO: change this to setup avmstore prop on wizard -->
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
          
          <!-- Actions for a file in the AVM Browse screen -->
          <action-group id="avm_file_browse">
@@ -269,6 +284,7 @@
             <action idref="copy_node" />
             <action idref="delete_space" />
             <action idref="take_ownership_space" />
+            <action idref="invite_website_users" />
             <action idref="run_action" />
          </action-group>
          
@@ -276,7 +292,7 @@
          <action-group id="browse_website_menu">
             <action idref="details_space" />
             <action idref="delete_space" />
-            <!--<action idref="manage_space_users" />-->
+            <action idref="invite_website_users" />
          </action-group>
          
       </actions>

@@ -46,7 +46,7 @@
          <f:facet name="header">
             <h:outputText value="#{msg.name}" />
          </f:facet>
-         <h:outputText value="#{row.name}" />
+         <h:outputText value="#{row.title}" />
       </h:column>
       <h:column>
          <f:facet name="header">

@@ -58,9 +58,11 @@
          <properties>
             <!-- root name of the avm staging stores for this web folder -->
             <property name="app:avmstore">
+               <title>AVM Store Root</title>
                <type>d:text</type>
             </property>
             <property name="app:defaultwebapp">
+               <title>Default Webapp</title>
                <type>d:text</type>
             </property>
          </properties>

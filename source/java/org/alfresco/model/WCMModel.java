@@ -42,7 +42,7 @@ public interface WCMModel
     public static final QName PROP_XML_SCHEMA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "schema");
     public static final QName PROP_XML_SCHEMA_ROOT_ELEMENT_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "xmlschemarootelementname");
     public static final QName PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "outputpathpatternforforminstancedata");
-    public static final QName PROP_DEFAULT_WORKFLOW_ID = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "defaultworkflowid");
+    public static final QName PROP_DEFAULT_WORKFLOW_NAME = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "defaultworkflowname");
     public static final QName ASSOC_RENDERING_ENGINE_TEMPLATES = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "renderingenginetemplates");
     
     // An XML to something else tranformer aspect.

@@ -257,7 +257,7 @@ public interface ContentModel
     
     // AVM workflow defaults
     static final QName TYPE_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowdefaults");
-    static final QName PROP_WORKFLOW_ID = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowid");
+    static final QName PROP_WORKFLOW_NAME = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowname");
     static final QName PROP_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "defaults");
     
     // AVM web workflow defaults

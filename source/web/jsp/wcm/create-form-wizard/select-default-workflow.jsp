@@ -22,7 +22,7 @@
 <h:panelGroup>
    <f:verbatim><div style="height:108px;*height:112px;width:300px;overflow:auto" class="selectListTable"></f:verbatim>
    <a:selectList id="workflow-list" multiSelect="false" style="width:276px" itemStyleClass="selectListItem"
-		 value="#{WizardManager.bean.defaultWorkflowId}">
+		 value="#{WizardManager.bean.defaultWorkflowName}">
       <a:listItems value="#{WizardManager.bean.defaultWorkflowChoices}" />
    </a:selectList>
    <f:verbatim></div></f:verbatim>

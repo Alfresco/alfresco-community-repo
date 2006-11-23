@@ -122,7 +122,7 @@ public class FormWorkflowDialog extends BaseDialogBean
       if (this.workflowNode == null)
       {
          // TODO: remove the 'jbpm$' prefix once bug fix to WorkflowService has been merged across!
-         WorkflowDefinition flowDef = this.workflowService.getDefinitionById(getActionWorkflow().getId());
+         WorkflowDefinition flowDef = this.workflowService.getDefinitionByName("jbpm$" + getActionWorkflow().getName());
          
          if (logger.isDebugEnabled())
             logger.debug("Selected workflow: "+ flowDef);

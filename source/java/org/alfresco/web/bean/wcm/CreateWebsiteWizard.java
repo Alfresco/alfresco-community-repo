@@ -237,7 +237,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          {
             WorkflowWrapper workflow = form.getWorkflow();
             props.clear();
-            props.put(ContentModel.PROP_WORKFLOW_ID, workflow.getId());
+            props.put(ContentModel.PROP_WORKFLOW_NAME, workflow.getName());
             NodeRef workflowRef = this.nodeService.createNode(formRef,
                   ContentModel.ASSOC_WORKFLOWDEFAULTS,
                   ContentModel.ASSOC_WORKFLOWDEFAULTS,
@@ -276,7 +276,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       for (WorkflowWrapper workflow : this.workflows)
       {
          props.clear();
-         props.put(ContentModel.PROP_NAME, workflow.getId());
+         props.put(ContentModel.PROP_NAME, workflow.getName());
          NodeRef workflowRef = this.nodeService.createNode(nodeRef,
                ContentModel.ASSOC_WEBWORKFLOWDEFAULTS,
                ContentModel.ASSOC_WEBWORKFLOWDEFAULTS,
@@ -653,7 +653,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (index != -1)
       {
          WorkflowDefinition workflow = (WorkflowDefinition)this.workflowsList.get(index).getValue();
-         this.workflows.add(new WorkflowWrapper(workflow.getId(), workflow.getTitle()));
+         this.workflows.add(new WorkflowWrapper(workflow.getName(), workflow.getTitle()));
       }
    }
    
@@ -777,7 +777,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          WorkflowDefinition wf = this.form.getDefaultWorkflow();
          if (this.workflow == null && wf != null)
          {
-            this.workflow = new WorkflowWrapper(wf.id, wf.getTitle());
+            this.workflow = new WorkflowWrapper(wf.name, wf.getTitle());
          }
          return this.workflow;
       }
@@ -918,35 +918,27 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public static class WorkflowWrapper
    {
-      private String id;
+      private String name;
       private String title;
       private String filenamePattern;
       private QName type;
       private Map<QName, Serializable> params;
       
-      public WorkflowWrapper(String id, String title)
+      public WorkflowWrapper(String name, String title)
       {
-         this.id = id;
+         this.name = name;
          this.title = title;
          this.filenamePattern = filenamePattern;
       }
       
       /**
-       * @return Returns the id of the workflow.
+       * @return Returns the name key of the workflow.
        */
-      public String getId()
+      public String getName()
       {
-         return this.id;
+         return this.name;
       }
 
-      /**
-       * @return Returns the name of the workflow.
-       */
-      //public String getName()
-      //{
-      //   return workflowService.getDefinitionById(this.getId()).getName();
-      //}
-      
       /**
        * @return the display label of the workflow.
        */

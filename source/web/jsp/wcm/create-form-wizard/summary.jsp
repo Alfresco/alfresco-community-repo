@@ -72,14 +72,14 @@
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
   <h:outputText value="#{msg.apply_default_workflow}:"/>
   <c:choose>
-    <c:when test="${WizardManager.bean.defaultWorkflowId != null}">
+    <c:when test="${WizardManager.bean.defaultWorkflowName != null}">
       <h:outputText value="#{msg.yes}"/>
     </c:when>
     <c:otherwise>
       <h:outputText value="#{msg.no}"/>
     </c:otherwise>
   </c:choose>
-  <c:if test="${WizardManager.bean.defaultWorkflowId != null}">
+  <c:if test="${WizardManager.bean.defaultWorkflowName != null}">
     <h:outputText value="#{msg.name}:"/>
     <h:outputText value="#{WizardManager.bean.defaultWorkflowDefinition.name}"/>
     <h:outputText value="#{msg.description}:"/>

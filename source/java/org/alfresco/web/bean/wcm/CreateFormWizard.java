@@ -70,6 +70,8 @@ public class CreateFormWizard
 
    /////////////////////////////////////////////////////////////////////////////
 
+   private static final String NO_DEFAULT_WORKFLOW_SELECTED = "no_default_workflow_selected";
+
    /**
     * Simple wrapper class to represent a form data renderer
     */
@@ -143,7 +145,7 @@ public class CreateFormWizard
    private String formName = null;
    private String formTitle = null;
    private String formDescription = null;
-   private String defaultWorkflowId = null;
+   private String defaultWorkflowName = null;
    private RenderingEngine renderingEngine = null;
    protected ContentService contentService;
    protected MimetypeService mimetypeService;
@@ -197,9 +199,9 @@ public class CreateFormWizard
                 this.getSchemaRootElementName());
       props.put(WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA, 
                 this.getOutputPathPatternForFormInstanceData());
-      if (this.defaultWorkflowId != null)
+      if (this.defaultWorkflowName != null)
       {
-         props.put(WCMModel.PROP_DEFAULT_WORKFLOW_ID, this.defaultWorkflowId);
+         props.put(WCMModel.PROP_DEFAULT_WORKFLOW_NAME, this.defaultWorkflowName);
       }
       this.nodeService.addAspect(folderInfo.getNodeRef(), WCMModel.ASPECT_FORM, props);
          
@@ -282,7 +284,7 @@ public class CreateFormWizard
       this.outputPathPatternForFormInstanceData = null;
       this.outputPathPatternForRendition = null;
       this.mimetypeForRendition = null;
-      this.defaultWorkflowId = null;
+      this.defaultWorkflowName = null;
    }
    
    @Override
@@ -710,27 +712,27 @@ public class CreateFormWizard
       return this.formDescription;
    }
 
-   public void setDefaultWorkflowId(final String[] defaultWorkflowId)
+   public void setDefaultWorkflowName(final String[] defaultWorkflowName)
    {
-      assert defaultWorkflowId.length == 1;
-      this.defaultWorkflowId = ("no_default_workflow_selected".equals(defaultWorkflowId[0])
+      assert defaultWorkflowName.length == 1;
+      this.defaultWorkflowName = (NO_DEFAULT_WORKFLOW_SELECTED.equals(defaultWorkflowName[0])
                                   ? null
-                                  : defaultWorkflowId[0]);
+                                  : defaultWorkflowName[0]);
    }
 
    public WorkflowDefinition getDefaultWorkflowDefinition()
    {
-      return (this.defaultWorkflowId == null
+      return (this.defaultWorkflowName == null
               ? null
-              : this.workflowService.getDefinitionById(this.defaultWorkflowId));
+              : this.workflowService.getDefinitionByName("jbpm$" + this.defaultWorkflowName));
    }
 
-   public String[] getDefaultWorkflowId()
+   public String[] getDefaultWorkflowName()
    {
       return new String[] { 
-         (this.defaultWorkflowId == null 
-          ? "no_default_workflow_selected" 
-          : this.defaultWorkflowId)
+         (this.defaultWorkflowName == null 
+          ? NO_DEFAULT_WORKFLOW_SELECTED 
+          : this.defaultWorkflowName)
       };
    }
 
@@ -745,16 +747,15 @@ public class CreateFormWizard
       final List<UIListItem> result = new ArrayList<UIListItem>(workflowDefs.size() + 1);
 
       UIListItem item = new UIListItem();
-      item.setValue("no_default_workflow_selected");
+      item.setValue(NO_DEFAULT_WORKFLOW_SELECTED);
       item.setLabel("None");
-      item.setDescription("");
       item.setImage(WebResources.IMAGE_WORKFLOW_32);
       result.add(item);
 
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          item = new UIListItem();
-         item.setValue(workflowDef.getId());
+         item.setValue(workflowDef.getName());
          item.setLabel(workflowDef.getTitle());
          item.setDescription(workflowDef.getDescription());
          item.setImage(WebResources.IMAGE_WORKFLOW_32);

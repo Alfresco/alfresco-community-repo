@@ -100,11 +100,11 @@ class FormImpl
    public WorkflowDefinition getDefaultWorkflow()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final String defaultWorkflowId = (String)nodeService.getProperty(this.folderNodeRef,
-                                                                       WCMModel.PROP_DEFAULT_WORKFLOW_ID);
+      final String defaultWorkflowName = (String)nodeService.getProperty(this.folderNodeRef,
+                                                                       WCMModel.PROP_DEFAULT_WORKFLOW_NAME);
       final WorkflowService workflowService = this.getServiceRegistry().getWorkflowService();
-      return (defaultWorkflowId != null
-              ? workflowService.getDefinitionById(defaultWorkflowId)
+      return (defaultWorkflowName != null
+              ? workflowService.getDefinitionByName("jbpm$" + defaultWorkflowName)
               : null);
    }
 

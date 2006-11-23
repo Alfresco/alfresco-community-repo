@@ -203,14 +203,13 @@ public class CreateWebContentWizard extends BaseContentWizard
                   }
 
                   final NodeRef workflowRef = workflowRefs.get(0).getChildRef();
-                  final String workflowId = (String)
-                     this.nodeService.getProperty(workflowRef, ContentModel.PROP_WORKFLOW_ID);
-                  if (workflowId == null)
+                  final String workflowName = (String)this.nodeService.getProperty(workflowRef, ContentModel.PROP_WORKFLOW_NAME);
+                  if (workflowName == null)
                   {
                      throw new RuntimeException("no workflow found for form " + formName);
                   }
-                  System.err.println("using workflow " + workflowId + " for form " + formName);
-                  wd = this.workflowService.getDefinitionById(workflowId);
+                  System.err.println("using workflow " + workflowName + " for form " + formName);
+                  wd = this.workflowService.getDefinitionByName("jbpm$" + workflowName);
                   
                   final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                   final ContentReader cr = this.contentService.getReader(workflowRef, ContentModel.PROP_WORKFLOWDEFAULTS);

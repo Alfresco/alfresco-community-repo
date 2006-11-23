@@ -466,10 +466,6 @@
    <navigation-rule>
       <from-view-id>/jsp/roles/manage-invited-users.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>inviteUsers</from-outcome>
-         <to-view-id>/jsp/wizard/invite-users/invite.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>editRoles</from-outcome>
          <to-view-id>/jsp/roles/edit-user-roles.jsp</to-view-id>
       </navigation-case>
@@ -505,10 +501,6 @@
    
    <navigation-rule>
       <from-view-id>/jsp/roles/manage-content-users.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>inviteUsers</from-outcome>
-         <to-view-id>/jsp/wizard/invite-content-users/invite.jsp</to-view-id>
-      </navigation-case>
       <navigation-case>
          <from-outcome>editRoles</from-outcome>
          <to-view-id>/jsp/roles/edit-content-user-roles.jsp</to-view-id>

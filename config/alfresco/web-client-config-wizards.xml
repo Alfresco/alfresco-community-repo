@@ -71,6 +71,54 @@
             </step>
          </wizard>
          
+         <!-- Definition of Invite Space Users wizard -->
+         <wizard name="inviteSpaceUsers" managed-bean="InviteSpaceUsersWizard"
+                 title-id="invite_title" description-id="invite_desc"
+                 icon="/images/icons/users_large.gif">
+            <step name="invite" title-id="invite_step_1" description-id="invite_step1_desc">
+               <page path="/jsp/wizard/invite-users/invite.jsp"
+                     title-id="invite_step1_title"
+                     description-id="invite_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="notify" title-id="invite_step_2" description-id="invite_step2_desc">
+               <page path="/jsp/wizard/invite-users/notify.jsp"
+                     title-id="invite_step2_title"
+                     description-id="invite_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="invite_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of Invite Content Users wizard -->
+         <wizard name="inviteContentUsers" managed-bean="InviteContentUsersWizard"
+                 title-id="invite_content_title" description-id="invite_content_desc"
+                 icon="/images/icons/users_large.gif">
+            <step name="invite" title-id="invite_step_1" description-id="invite_content_step1_desc">
+               <page path="/jsp/wizard/invite-users/invite.jsp"
+                     title-id="invite_step1_title"
+                     description-id="invite_content_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="notify" title-id="invite_step_2" description-id="invite_step2_desc">
+               <page path="/jsp/wizard/invite-users/notify.jsp"
+                     title-id="invite_step2_title"
+                     description-id="invite_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="invite_finish_instruction" />
+            </step>
+         </wizard>
+         
          <!-- Definition of an advanced space wizard  -->
          <wizard name="createSpace" managed-bean="CreateSpaceWizard"
                  title-id="create_space_title" description-id="create_space_desc"

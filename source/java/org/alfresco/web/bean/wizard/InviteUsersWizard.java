@@ -61,6 +61,7 @@ public abstract class InviteUsersWizard extends BaseWizardBean
    private static Log logger = LogFactory.getLog(InviteUsersWizard.class);
    
    /** I18N message strings */
+   protected static final String MSG_USERROLES = "invite_users_summary";
    private static final String MSG_USERS  = "users";
    private static final String MSG_GROUPS = "groups";
    private static final String MSG_INVITED_TO = "invited_to";
@@ -547,6 +548,26 @@ public abstract class InviteUsersWizard extends BaseWizardBean
          .append(")");
       
       return buf.toString();
+   }
+   
+   /**
+    * @return summary text for the wizard
+    */
+   public String getSummary()
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      
+      // build a summary section to list the invited users and there roles
+      StringBuilder buf = new StringBuilder(128);
+      for (UserGroupRole userRole : this.userGroupRoles)
+      {
+         buf.append(userRole.getLabel());
+         buf.append("<br>");
+      }
+      
+      return buildSummary(
+            new String[] {Application.getMessage(fc, MSG_USERROLES)},
+            new String[] {buf.toString()});
    }
    
    

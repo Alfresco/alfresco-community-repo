@@ -18,7 +18,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.wizard.InviteUsersWizard;
-import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
 
 /**
  * Bean providing the ability to invite users to a web project space.
@@ -27,8 +26,6 @@ import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
  */
 public class InviteWebsiteUsersWizard extends InviteUsersWizard
 {
-   private static final String MSG_USERROLES = "invite_webusers_summary_users";
-   
    /** Cache of available folder permissions */
    Set<String> folderPermissions = null;
    

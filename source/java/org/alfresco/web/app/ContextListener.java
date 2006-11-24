@@ -53,7 +53,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 //        in order to make it easier to find in listing of all MBeans 
 //        within servlet container.
 //
-import org.alfresco.mbeans.AlfrescoVirtServer; 
+// import org.alfresco.mbeans.VirtServerRegistry; 
 
 
 /**
@@ -68,7 +68,7 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
    private static Log logger = LogFactory.getLog(ContextListener.class);
 
    private ServletContext servletContext;
-   private AlfrescoVirtServer alfrescoVirtServerMBean_;
+   // private VirtServerRegistry virtServerRegistryMBean;
 
    /**
     * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
@@ -132,11 +132,11 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
          // of changes within the WEB-INF dir of the webapps 
          // being virtualized (so that reloading can take place).
          //
-         // Note:  The AlfrescoVirtServer constructor registers the 
-         //        AlfrescoVirtServerMBean  into the MBean server,
+         // Note:  The VirtServerRegistry constructor registers the 
+         //        VirtServerRegistryMBean  into the MBean server,
          //        so all that's required here is to create an instance.
          //
-         alfrescoVirtServerMBean_ = new AlfrescoVirtServer();
+         // virtServerRegistryMBean = new VirtServerRegistry();
       }
       catch (Throwable e)
       {

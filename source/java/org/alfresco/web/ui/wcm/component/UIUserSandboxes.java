@@ -81,6 +81,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String ACT_SANDBOX_SUBMITALL = "sandbox_submitall";
    private static final String ACT_SANDBOX_PREVIEW = "sandbox_preview";
    private static final String ACT_SANDBOX_ICON = "sandbox_icon";
+   private static final String ACT_REMOVE_SANDBOX = "sandbox_remove";
    
    private static final String ACTIONS_FILE = "avm_file_modified";
    private static final String ACTIONS_FOLDER = "avm_folder_modified";
@@ -103,12 +104,26 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
    private static final String MSG_SELECTED = "selected";
    
+   /** Content Manager role name */
+   private static final String ROLE_CONTENT_MANAGER = "ContentManager";
+   
    private static final String REQUEST_FORM_REF = "formref";
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    
    public static final String PARAM_FORM_ID = "form-id";
    
+   private static final String SCRIPT_MULTISELECT =
+                        "<script>function _sb_select(obj) {" + 
+                        "var p = obj.value + '_';" + 
+                        "var b = document.getElementsByTagName('input');" + 
+                        "for (var i=0; i<b.length; i++) {" + 
+                        "  if (b[i].value.indexOf(p, 0) != -1) {" + 
+                        "    b[i].checked = obj.checked;\r\n" + 
+                        "  }" + 
+                        "}" + 
+                        "}</script>";
+
    /** website to show sandboxes for */
    private NodeRef value;
    
@@ -253,8 +268,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
          }
          String storeRoot = (String)nodeService.getProperty(websiteRef, ContentModel.PROP_AVMSTORE);
          
+         // find out if this user is a Content Manager
+         boolean isManager = isManagerRole(context, nodeService, websiteRef);
+         
          // get the list of users who have a sandbox in the website
-         String currentUser = Application.getCurrentUser(context).getUserName();
          int index = 0;
          List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
                websiteRef, ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
@@ -285,15 +302,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                      logger.debug("Building sandbox view for user store: " + mainStore);
                   
                   // output a javascript function we need for multi-select functionality
-                  out.write("<script>function _sb_select(obj) {" + 
-                        "var prefix = obj.value + '_';" + 
-                        "var boxes = document.getElementsByTagName('input');" + 
-                        "for (var i=0; i<boxes.length; i++) {" + 
-                        "  if (boxes[i].value.indexOf(prefix, 0) != -1) {" + 
-                        "    boxes[i].checked = obj.checked;\r\n" + 
-                        "  }" + 
-                        "}" + 
-                        "}</script>");
+                  out.write(SCRIPT_MULTISELECT);
                   
                   // for each user sandbox, generate an outer panel table
                   PanelGenerator.generatePanelStart(out,
@@ -333,6 +342,14 @@ public class UIUserSandboxes extends SelfRenderingComponent
                         context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert.gif",
                         "#{AVMBrowseBean.revertAll}", null));
                   out.write("&nbsp;");
+                  
+                  if (isManager)
+                  {
+                     Utils.encodeRecursive(context, aquireAction(
+                           context, mainStore, username, ACT_REMOVE_SANDBOX, "/images/icons/delete_sandbox.gif",
+                           "#{AVMBrowseBean.setupSandboxAction}", "dialog:deleteSandbox"));
+                     out.write("&nbsp;");
+                  }
                   
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif",
@@ -402,6 +419,29 @@ public class UIUserSandboxes extends SelfRenderingComponent
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          throw new RuntimeException(err);
       }
+   }
+
+   /**
+    * @return true if the current user is a Content Manager, false otherwise
+    */
+   private static boolean isManagerRole(FacesContext context, NodeService nodeService, NodeRef websiteRef)
+   {
+      boolean isManager = false;
+      String currentUser = Application.getCurrentUser(context).getUserName();
+      List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+            websiteRef, ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+      for (ChildAssociationRef ref : userInfoRefs)
+      {
+         NodeRef userInfoRef = ref.getChildRef();
+         String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
+         String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+         if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
+         {
+            isManager = true;
+            break;
+         }
+      }
+      return isManager;
    }
    
    /**

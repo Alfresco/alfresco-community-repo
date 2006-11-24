@@ -67,6 +67,8 @@ public abstract class InviteUsersWizard extends BaseWizardBean
    private static final String MSG_INVITED_TO = "invited_to";
    private static final String MSG_INVITED_ROLE  = "invite_role";
    
+   protected static final String STEP_NOTIFY = "notify";
+   
    private static final String NOTIFY_YES = "yes";
    
    /** NamespaceService bean reference */
@@ -234,6 +236,23 @@ public abstract class InviteUsersWizard extends BaseWizardBean
       return outcome;
    }
    
+   /**
+    * @see org.alfresco.web.bean.dialog.BaseDialogBean#getFinishButtonDisabled()
+    */
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      boolean disabled = true;
+      
+      String stepName = Application.getWizardManager().getCurrentStepName();
+      if (STEP_NOTIFY.equals(stepName))
+      {
+         disabled = false;
+      }
+      
+      return disabled;
+   }
+
    /**
     * Returns the properties for current user-roles JSF DataModel
     * 
@@ -462,7 +481,7 @@ public abstract class InviteUsersWizard extends BaseWizardBean
    {
       String stepName = Application.getWizardManager().getCurrentStepName();
       
-      if (stepName.equals("notify"))
+      if (STEP_NOTIFY.equals(stepName))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          

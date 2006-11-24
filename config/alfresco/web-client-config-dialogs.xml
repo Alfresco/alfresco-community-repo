@@ -122,6 +122,10 @@
                  icon="/images/icons/create_snapshot_large.gif" title-id="sandbox_snapshot" 
                  description-id="sandbox_snapshot_info" />
          
+         <dialog name="deleteSandbox" page="/jsp/dialog/delete.jsp" managed-bean="DeleteSandboxDialog"
+                 icon="/images/icons/delete_large.gif" title-id="delete_sandbox" 
+                 description-id="delete_sandbox_info" />
+         
          <dialog name="deleteAvmFile" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFileDialog"
                  icon="/images/icons/delete_large.gif" title-id="delete_file" 
                  description-id="delete_avm_file_info" />
@@ -141,7 +145,7 @@
          <dialog name="createAvmFolder" page="/jsp/wcm/create-folder-dialog.jsp" managed-bean="CreateFolderDialog"
                  icon="/images/icons/create_space_large.gif" title-id="create_folder" 
                  description-id="create_avm_folder_info" />
-                 
+         
          <dialog name="editAvmFileProperties" page="/jsp/content/edit-content-properties.jsp" 
                  managed-bean="EditFilePropertiesDialog" icon="/images/icons/details_large.gif"
                  title-id="edit_file_properties" description-id="edit_file_description" />

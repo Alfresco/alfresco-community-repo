@@ -47,15 +47,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 
-// Alfresco virtualization server registry
-//
-// Note:  This MBean class includes "Alfresco..." in the class name
-//        in order to make it easier to find in listing of all MBeans 
-//        within servlet container.
-//
-// import org.alfresco.mbeans.VirtServerRegistry; 
-
-
 /**
  * ServletContextListener implementation that initialises the application.
  * 
@@ -68,7 +59,6 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
    private static Log logger = LogFactory.getLog(ContextListener.class);
 
    private ServletContext servletContext;
-   // private VirtServerRegistry virtServerRegistryMBean;
 
    /**
     * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
@@ -126,17 +116,6 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
          
          // commit the transaction
          tx.commit();
-
-         // Create MBean to register attached virtualization servers.
-         // This MBean is used to notify virtualzation servers
-         // of changes within the WEB-INF dir of the webapps 
-         // being virtualized (so that reloading can take place).
-         //
-         // Note:  The VirtServerRegistry constructor registers the 
-         //        VirtServerRegistryMBean  into the MBean server,
-         //        so all that's required here is to create an instance.
-         //
-         // virtServerRegistryMBean = new VirtServerRegistry();
       }
       catch (Throwable e)
       {

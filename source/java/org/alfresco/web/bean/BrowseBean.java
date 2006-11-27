@@ -33,6 +33,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -623,7 +624,7 @@ public class BrowseBean implements IContextListener
                      this.contentNodes.add(node);
                   }
                   // look for File Link object node
-                  else if (ContentModel.TYPE_FILELINK.equals(type))
+                  else if (ApplicationModel.TYPE_FILELINK.equals(type))
                   {
                      // create our File Link Node representation
                      node = new MapNode(nodeRef, this.nodeService, true);
@@ -636,7 +637,7 @@ public class BrowseBean implements IContextListener
                      
                      this.contentNodes.add(node);
                   }
-                  else if (ContentModel.TYPE_FOLDERLINK.equals(type))
+                  else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
                   {
                      // create our Folder Link Node representation
                      node = new MapNode(nodeRef, this.nodeService, true);
@@ -787,7 +788,7 @@ public class BrowseBean implements IContextListener
                         this.contentNodes.add(node);
                      }
                      // look for File Link object node
-                     else if (ContentModel.TYPE_FILELINK.equals(type))
+                     else if (ApplicationModel.TYPE_FILELINK.equals(type))
                      {
                         // create our File Link Node representation
                         node = new MapNode(nodeRef, this.nodeService, false);
@@ -802,7 +803,7 @@ public class BrowseBean implements IContextListener
                         
                         this.contentNodes.add(node);
                      }
-                     else if (ContentModel.TYPE_FOLDERLINK.equals(type))
+                     else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
                      {
                         // create our Folder Link Node representation
                         node = new MapNode(nodeRef, this.nodeService, false);
@@ -1109,7 +1110,7 @@ public class BrowseBean implements IContextListener
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
             
             // handle special folder link node case
-            if (ContentModel.TYPE_FOLDERLINK.equals(this.nodeService.getType(ref)))
+            if (ApplicationModel.TYPE_FOLDERLINK.equals(this.nodeService.getType(ref)))
             {
                ref = (NodeRef)this.nodeService.getProperty(ref, ContentModel.PROP_LINK_DESTINATION);
             }
@@ -1320,7 +1321,7 @@ public class BrowseBean implements IContextListener
             Node node = new Node(ref);
             
             // store the URL to for downloading the content
-            if (ContentModel.TYPE_FILELINK.equals(node.getType()))
+            if (ApplicationModel.TYPE_FILELINK.equals(node.getType()))
             {
                node.addPropertyResolver("url", this.resolverLinkDownload);
             }

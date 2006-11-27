@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -73,9 +74,9 @@ public class EditSpaceDialog extends CreateSpaceDialog
       Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
       
       // add the "uifacets" aspect if required, properties will get set below
-      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_UIFACETS) == false)
+      if (this.nodeService.hasAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS) == false)
       {
-         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, null);
+         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
       }
       
       // overwrite the current properties with the edited ones

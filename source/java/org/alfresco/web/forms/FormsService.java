@@ -46,7 +46,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -207,7 +207,7 @@ public final class FormsService
       final SearchParameters sp = new SearchParameters();
       sp.addStore(Repository.getStoreRef());
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + "\"");
+      sp.setQuery("ASPECT:\"" + WCMAppModel.ASPECT_FORM + "\"");
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query [" + sp.getQuery() + "]");
       final ResultSet rs = this.searchService.query(sp);
@@ -232,7 +232,7 @@ public final class FormsService
       final SearchParameters sp = new SearchParameters();
       sp.addStore(Repository.getStoreRef());
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      sp.setQuery("ASPECT:\"" + WCMModel.ASPECT_FORM + 
+      sp.setQuery("ASPECT:\"" + WCMAppModel.ASPECT_FORM + 
                   "\" AND @" + Repository.escapeQName(ContentModel.PROP_NAME) + 
                   ":\"" + name + "\"");
       if (LOGGER.isDebugEnabled())
@@ -282,7 +282,7 @@ public final class FormsService
    {
       final Form form = 
          this.getForm((NodeRef)this.nodeService.getProperty(formInstanceDataNodeRef,
-                                                            WCMModel.PROP_PARENT_FORM));
+                                                            WCMAppModel.PROP_PARENT_FORM));
       final Document formInstanceData = this.parseXML(formInstanceDataNodeRef);
 
       final String formInstanceDataFileName = (String)
@@ -337,7 +337,7 @@ public final class FormsService
       RenderingEngine.RenderingException
    {
       final NodeRef formNodeRef = (NodeRef)
-         nodeService.getProperty(formInstanceDataNodeRef, WCMModel.PROP_PARENT_FORM);
+         nodeService.getProperty(formInstanceDataNodeRef, WCMAppModel.PROP_PARENT_FORM);
 
       final Form form = this.getForm(formNodeRef);
          

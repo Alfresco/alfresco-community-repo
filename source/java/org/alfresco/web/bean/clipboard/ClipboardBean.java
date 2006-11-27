@@ -27,6 +27,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.service.ServiceRegistry;
@@ -284,7 +285,7 @@ public class ClipboardBean
                               destRef,
                               ContentModel.ASSOC_CONTAINS,
                               assocRef.getQName(),
-                              ContentModel.TYPE_FILELINK,
+                              ApplicationModel.TYPE_FILELINK,
                               props);
                         
                         // apply the titled aspect - title and description
@@ -300,15 +301,15 @@ public class ClipboardBean
                               destRef,
                               ContentModel.ASSOC_CONTAINS,
                               assocRef.getQName(),
-                              ContentModel.TYPE_FOLDERLINK,
+                              ApplicationModel.TYPE_FOLDERLINK,
                               props);
                         
                         // apply the uifacets aspect - icon, title and description props
                         Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4, 1.0f);
-                        uiFacetsProps.put(ContentModel.PROP_ICON, "space-icon-link");
+                        uiFacetsProps.put(ApplicationModel.PROP_ICON, "space-icon-link");
                         uiFacetsProps.put(ContentModel.PROP_TITLE, name);
                         uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, name);
-                        this.nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+                        this.nodeService.addAspect(childRef.getChildRef(), ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
                      }
                      
                      // if we get here without an exception, the clipboard link operation was successful

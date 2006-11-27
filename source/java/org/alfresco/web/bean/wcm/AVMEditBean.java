@@ -24,7 +24,7 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -214,7 +214,7 @@ public class AVMEditBean
    {
       final NodeRef ttNodeRef = (NodeRef)
          this.nodeService.getProperty(this.getAvmNode().getNodeRef(), 
-                                      WCMModel.PROP_PARENT_FORM);
+                                      WCMAppModel.PROP_PARENT_FORM);
       final FormsService ts = FormsService.getInstance();
       return ts.getForm(ttNodeRef);
    }
@@ -265,11 +265,11 @@ public class AVMEditBean
       
       // retrieve the content reader for this node
       NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath());
-      if (this.nodeService.hasAspect(avmRef, WCMModel.ASPECT_RENDITION))
+      if (this.nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_RENDITION))
       {
          if (LOGGER.isDebugEnabled())
             LOGGER.debug(avmRef + " is a rendition, editing primary rendition instead");
-         avmRef = (NodeRef)this.nodeService.getProperty(avmRef, WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+         avmRef = (NodeRef)this.nodeService.getProperty(avmRef, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
 
          final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(avmRef);
          if (LOGGER.isDebugEnabled())
@@ -295,7 +295,7 @@ public class AVMEditBean
             
             // navigate to appropriate screen
             outcome = ((MimetypeMap.MIMETYPE_XML.equals(mimetype) && 
-                        this.nodeService.hasAspect(avmRef, WCMModel.ASPECT_FORM_INSTANCE_DATA))
+                        this.nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
                        ? "dialog:editAvmXmlInline"
                        : "dialog:editAvmTextInline");
          }
@@ -363,7 +363,7 @@ public class AVMEditBean
             tx.commit();
             
             // regenerate form content
-            if (nodeService.hasAspect(avmRef, WCMModel.ASPECT_FORM_INSTANCE_DATA))
+            if (nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
             {
                final FormsService fs = FormsService.getInstance();
                fs.regenerateRenditions(avmRef);

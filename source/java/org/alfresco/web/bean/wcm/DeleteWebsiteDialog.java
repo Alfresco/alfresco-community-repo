@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -47,14 +47,14 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
       Node websiteNode = this.browseBean.getActionSpace();
       
       // delete all attached website sandboxes in reverse order to the layering
-      String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
+      String storeRoot = (String)websiteNode.getProperties().get(WCMAppModel.PROP_AVMSTORE);
       
       // get the list of users who have a sandbox in the website
       List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-            websiteNode.getNodeRef(), ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            websiteNode.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
       for (ChildAssociationRef ref : userInfoRefs)
       {
-         String username = (String)nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_WEBUSERNAME);
+         String username = (String)nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
          
          // delete the preview store for this user
          deleteStore(AVMConstants.buildAVMUserPreviewStoreName(storeRoot, username));

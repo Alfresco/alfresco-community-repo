@@ -31,7 +31,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
@@ -290,7 +290,7 @@ public class AVMBrowseBean implements IContextListener
       FacesContext fc = FacesContext.getCurrentInstance();
       ResourceBundle msg = Application.getBundle(fc);
       Node websiteNode = this.navigator.getCurrentNode();
-      String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
+      String storeRoot = (String)websiteNode.getProperties().get(WCMAppModel.PROP_AVMSTORE);
       String stagingStore = getStagingStore();
       AVMStoreDescriptor store = this.avmService.getAVMStore(stagingStore);
       if (store != null)
@@ -319,7 +319,7 @@ public class AVMBrowseBean implements IContextListener
    public String getStagingStore()
    {
       Node websiteNode = this.navigator.getCurrentNode();
-      String storeRoot = (String)websiteNode.getProperties().get(ContentModel.PROP_AVMSTORE);
+      String storeRoot = (String)websiteNode.getProperties().get(WCMAppModel.PROP_AVMSTORE);
       return AVMConstants.buildAVMStagingStoreName(storeRoot);
    }
    
@@ -511,7 +511,7 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.currentPath == null)
       {
-         String webapp = (String)getWebsite().getProperties().get(ContentModel.PROP_DEFAULTWEBAPP);
+         String webapp = (String)getWebsite().getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
          this.currentPath = AVMConstants.buildAVMStoreWebappPath(getSandbox(), webapp);
       }
       return this.currentPath;
@@ -582,12 +582,12 @@ public class AVMBrowseBean implements IContextListener
          String currentUser = user.getUserName();
          Node websiteNode = this.navigator.getCurrentNode();
          List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
-               websiteNode.getNodeRef(), ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+               websiteNode.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
             {
                isManager = true;
@@ -732,7 +732,7 @@ public class AVMBrowseBean implements IContextListener
       {
          // get the staging store from the current website node
          setSandbox(AVMConstants.buildAVMStagingStoreName(
-               (String)getWebsite().getProperties().get(ContentModel.PROP_AVMSTORE)));
+               (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE)));
       }
       
       this.sandboxTitle = null;
@@ -1086,6 +1086,9 @@ public class AVMBrowseBean implements IContextListener
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String id = params.get(UIUserSandboxes.PARAM_FORM_ID);
+      
+      // setup the correct sandbox for the create action
+      setupSandboxAction(event);
       
       // pass form ID to the wizard - to be picked up in init()
       FacesContext fc = FacesContext.getCurrentInstance();

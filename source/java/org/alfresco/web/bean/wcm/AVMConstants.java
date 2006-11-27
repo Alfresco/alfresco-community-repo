@@ -26,6 +26,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
@@ -44,36 +45,76 @@ public final class AVMConstants
    
    public static String buildAVMStagingStoreName(String store)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
       return store + AVMConstants.STORE_STAGING;
    }
    
    public static String buildAVMStagingPreviewStoreName(String store)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
       return store + AVMConstants.STORE_PREVIEW;
    }
    
    public static String buildAVMUserMainStoreName(String store, String username)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
+      if (username == null || username.length() == 0)
+      {
+         throw new IllegalArgumentException("Username is mandatory.");
+      }
       return store + '-' + username + AVMConstants.STORE_MAIN;
    }
    
    public static String buildAVMUserPreviewStoreName(String store, String username)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
+      if (username == null || username.length() == 0)
+      {
+         throw new IllegalArgumentException("Username is mandatory.");
+      }
       return store + '-' + username + AVMConstants.STORE_PREVIEW;
    }
    
    public static String buildAVMStoreRootPath(String store)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
       return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS;
    }
    
    public static String buildAVMStoreWebappPath(String store, String webapp)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
+      if (webapp == null || webapp.length() == 0)
+      {
+         throw new IllegalArgumentException("Webapp name is mandatory.");
+      }
       return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS + '/' + webapp;
    }
    
    public static String buildAVMStoreUrl(String store)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
       if (store.indexOf(':') != -1)
       {
          store = store.substring(0, store.indexOf(':'));
@@ -84,6 +125,10 @@ public final class AVMConstants
    
    public static String buildAVMAssetUrl(final String avmPath)
    {
+      if (avmPath == null || avmPath.length() == 0)
+      {
+         throw new IllegalArgumentException("AVM path is mandatory.");
+      }
       final String[] s = avmPath.split(":");
       if (s.length != 2)
       {
@@ -94,12 +139,28 @@ public final class AVMConstants
    
    public static String buildAVMAssetUrl(String store, String assetPath)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
+      if (assetPath == null || assetPath.length() == 0)
+      {
+         throw new IllegalArgumentException("Asset path is mandatory.");
+      }
       ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
       return buildAVMAssetUrl(assetPath, config.getWCMDomain(), config.getWCMPort(), lookupStoreDNS(store));
    }
    
    public static String buildAVMAssetUrl(String assetPath, String domain, String port, String dns)
    {
+      if (domain == null || port == null || dns == null)
+      {
+         throw new IllegalArgumentException("Domain, port and dns name are mandatory.");
+      }
+      if (assetPath == null || assetPath.length() == 0)
+      {
+         throw new IllegalArgumentException("Asset path is mandatory.");
+      }
       if (assetPath.startsWith('/' + DIR_APPBASE + '/' + DIR_WEBAPPS))
       {
          assetPath = assetPath.substring(('/' + DIR_APPBASE + '/' + DIR_WEBAPPS).length());
@@ -118,6 +179,11 @@ public final class AVMConstants
    
    public static String lookupStoreDNS(String store)
    {
+      if (store == null || store.length() == 0)
+      {
+         throw new IllegalArgumentException("Store name is mandatory.");
+      }
+      
       String dns = null;
       
       AVMService avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();

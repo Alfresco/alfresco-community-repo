@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -90,7 +90,7 @@ public class RenderingEngineTemplateImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.renditionPropertiesNodeRef, 
-                                             WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION);
+                                             WCMAppModel.PROP_OUTPUT_PATH_PATTERN_RENDITION);
    }
 
    public NodeRef getNodeRef()
@@ -122,7 +122,7 @@ public class RenderingEngineTemplateImpl
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final String renderingEngineName = (String)
          nodeService.getProperty(this.nodeRef,
-                                 WCMModel.PROP_PARENT_RENDERING_ENGINE_NAME);
+                                 WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME);
       final FormsService fs = FormsService.getInstance();
       return fs.getRenderingEngine(renderingEngineName);
    }
@@ -138,7 +138,7 @@ public class RenderingEngineTemplateImpl
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final String outputPathPattern = (String)
          nodeService.getProperty(this.renditionPropertiesNodeRef, 
-                                 WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION);
+                                 WCMAppModel.PROP_OUTPUT_PATH_PATTERN_RENDITION);
       final String formInstanceDataAVMPath = 
          AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
 
@@ -183,7 +183,7 @@ public class RenderingEngineTemplateImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.renditionPropertiesNodeRef, 
-                                             WCMModel.PROP_MIMETYPE_FOR_RENDITION);
+                                             WCMAppModel.PROP_MIMETYPE_FOR_RENDITION);
    }
 
    public void registerRendition(final NodeRef renditionNodeRef,
@@ -191,9 +191,9 @@ public class RenderingEngineTemplateImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(WCMModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE, this.nodeRef);
-      props.put(WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA, primaryFormInstanceDataNodeRef);
-      nodeService.addAspect(renditionNodeRef, WCMModel.ASPECT_RENDITION, props);
+      props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE, this.nodeRef);
+      props.put(WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA, primaryFormInstanceDataNodeRef);
+      nodeService.addAspect(renditionNodeRef, WCMAppModel.ASPECT_RENDITION, props);
    }
 
    private ServiceRegistry getServiceRegistry()

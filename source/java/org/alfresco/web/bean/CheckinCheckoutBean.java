@@ -26,6 +26,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.version.VersionModel;
@@ -607,9 +608,9 @@ public class CheckinCheckoutBean
          Node node = setupContentDocument(id);
          
          // detect the inline editing aspect to see which edit mode to use
-         if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) &&
-             node.getProperties().get(ContentModel.PROP_EDITINLINE) != null &&
-             ((Boolean)node.getProperties().get(ContentModel.PROP_EDITINLINE)).booleanValue() == true)
+         if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) &&
+             node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
+             ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
          {
             // retrieve the content reader for this node
             ContentReader reader = getContentService().getReader(node.getNodeRef(), ContentModel.PROP_CONTENT);

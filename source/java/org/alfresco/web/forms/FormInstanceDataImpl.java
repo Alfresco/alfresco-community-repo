@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
@@ -77,7 +77,7 @@ public class FormInstanceDataImpl
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final NodeRef formNodeRef = (NodeRef)
          nodeService.getProperty(this.nodeRef, 
-                                 WCMModel.PROP_PARENT_FORM);
+                                 WCMAppModel.PROP_PARENT_FORM);
       return new FormImpl(formNodeRef);
    }
 

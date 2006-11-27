@@ -18,6 +18,7 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.web.action.ActionEvaluator;
@@ -46,7 +47,7 @@ public class EditDocHttpEvaluator implements ActionEvaluator
       // always be used otherwise the configured approach is used
       if (dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT))
       {
-         if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == true ||
+         if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) == true ||
              "http".equals(Application.getClientConfig(fc).getEditLinkType()))
          {
             if (node.isWorkingCopyOwner() == true ||

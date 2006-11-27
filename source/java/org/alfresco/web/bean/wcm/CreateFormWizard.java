@@ -33,7 +33,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -194,16 +194,16 @@ public class CreateFormWizard
       this.nodeService.addAspect(folderInfo.getNodeRef(), ContentModel.ASPECT_TITLED, props);
       
       props = new HashMap<QName, Serializable>(3, 1.0f);
-      props.put(WCMModel.PROP_XML_SCHEMA, fileInfo.getNodeRef());
-      props.put(WCMModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME, 
+      props.put(WCMAppModel.PROP_XML_SCHEMA, fileInfo.getNodeRef());
+      props.put(WCMAppModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME, 
                 this.getSchemaRootElementName());
-      props.put(WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA, 
+      props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN_FORM_INSTANCE_DATA, 
                 this.getOutputPathPatternForFormInstanceData());
       if (this.defaultWorkflowName != null)
       {
-         props.put(WCMModel.PROP_DEFAULT_WORKFLOW_NAME, this.defaultWorkflowName);
+         props.put(WCMAppModel.PROP_DEFAULT_WORKFLOW_NAME, this.defaultWorkflowName);
       }
-      this.nodeService.addAspect(folderInfo.getNodeRef(), WCMModel.ASPECT_FORM, props);
+      this.nodeService.addAspect(folderInfo.getNodeRef(), WCMAppModel.ASPECT_FORM, props);
          
       for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
       {
@@ -242,26 +242,26 @@ public class CreateFormWizard
 
             this.nodeService.createAssociation(folderInfo.getNodeRef(),
                                                renderingEngineTemplateNodeRef,
-                                               WCMModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
+                                               WCMAppModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
             props = new HashMap<QName, Serializable>(2, 1.0f);
-            props.put(WCMModel.PROP_PARENT_RENDERING_ENGINE_NAME, 
+            props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME, 
                       retd.getRenderingEngine().getName());
-            props.put(WCMModel.PROP_FORM_SOURCE, folderInfo.getNodeRef());
+            props.put(WCMAppModel.PROP_FORM_SOURCE, folderInfo.getNodeRef());
             this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
-                                       WCMModel.ASPECT_RENDERING_ENGINE_TEMPLATE, 
+                                       WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE, 
                                        props);
          }
 
          LOGGER.debug("adding rendition properties to " + renderingEngineTemplateNodeRef);
          props = new HashMap<QName, Serializable>(2, 1.0f);
-         props.put(WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_RENDITION, 
+         props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN_RENDITION, 
                    retd.getOutputPathPatternForRendition());
-         props.put(WCMModel.PROP_MIMETYPE_FOR_RENDITION, 
+         props.put(WCMAppModel.PROP_MIMETYPE_FOR_RENDITION, 
                    retd.getMimetypeForRendition());
          this.nodeService.createNode(renderingEngineTemplateNodeRef,
-                                     WCMModel.ASSOC_RENDITION_PROPERTIES,
-                                     WCMModel.ASSOC_RENDITION_PROPERTIES,
-                                     WCMModel.TYPE_RENDITION_PROPERTIES,
+                                     WCMAppModel.ASSOC_RENDITION_PROPERTIES,
+                                     WCMAppModel.ASSOC_RENDITION_PROPERTIES,
+                                     WCMAppModel.TYPE_RENDITION_PROPERTIES,
                                      props);
       }
       // return the default outcome

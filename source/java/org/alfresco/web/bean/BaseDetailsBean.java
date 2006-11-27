@@ -27,6 +27,7 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -291,25 +292,25 @@ public abstract class BaseDetailsBean
    public Map<String, Serializable> getWorkflowProperties()
    {
       if (this.workflowProperties == null && 
-          getNode().hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW))
+          getNode().hasAspect(ApplicationModel.ASPECT_SIMPLE_WORKFLOW))
       {
          // get the exisiting properties for the document
          Map<String, Object> props = getNode().getProperties();
          
          String approveStepName = (String)props.get(
-               ContentModel.PROP_APPROVE_STEP.toString());
+               ApplicationModel.PROP_APPROVE_STEP.toString());
          String rejectStepName = (String)props.get(
-               ContentModel.PROP_REJECT_STEP.toString());
+               ApplicationModel.PROP_REJECT_STEP.toString());
          
          Boolean approveMove = (Boolean)props.get(
-               ContentModel.PROP_APPROVE_MOVE.toString());
+               ApplicationModel.PROP_APPROVE_MOVE.toString());
          Boolean rejectMove = (Boolean)props.get(
-               ContentModel.PROP_REJECT_MOVE.toString());
+               ApplicationModel.PROP_REJECT_MOVE.toString());
          
          NodeRef approveFolder = (NodeRef)props.get(
-               ContentModel.PROP_APPROVE_FOLDER.toString());
+               ApplicationModel.PROP_APPROVE_FOLDER.toString());
          NodeRef rejectFolder = (NodeRef)props.get(
-               ContentModel.PROP_REJECT_FOLDER.toString());
+               ApplicationModel.PROP_REJECT_FOLDER.toString());
 
          // put the workflow properties in a separate map for use by the JSP
          this.workflowProperties = new HashMap<String, Serializable>(7);
@@ -375,7 +376,7 @@ public abstract class BaseDetailsBean
          // update the simple workflow properties
          
          // set the approve step name
-         updateProps.put(ContentModel.PROP_APPROVE_STEP,
+         updateProps.put(ApplicationModel.PROP_APPROVE_STEP,
                this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_STEP_NAME));
          
          // specify whether the approve step will copy or move the content
@@ -385,10 +386,10 @@ public abstract class BaseDetailsBean
          {
             approveMove = false;
          }
-         updateProps.put(ContentModel.PROP_APPROVE_MOVE, Boolean.valueOf(approveMove));
+         updateProps.put(ApplicationModel.PROP_APPROVE_MOVE, Boolean.valueOf(approveMove));
          
          // create node ref representation of the destination folder
-         updateProps.put(ContentModel.PROP_APPROVE_FOLDER,
+         updateProps.put(ApplicationModel.PROP_APPROVE_FOLDER,
                this.workflowProperties.get(SimpleWorkflowHandler.PROP_APPROVE_FOLDER));
          
          // determine whether there should be a reject step
@@ -403,7 +404,7 @@ public abstract class BaseDetailsBean
          if (requireReject)
          {
             // set the reject step name
-            updateProps.put(ContentModel.PROP_REJECT_STEP,
+            updateProps.put(ApplicationModel.PROP_REJECT_STEP,
                   this.workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_STEP_NAME));
          
             // specify whether the reject step will copy or move the content
@@ -414,19 +415,19 @@ public abstract class BaseDetailsBean
             {
                rejectMove = false;
             }
-            updateProps.put(ContentModel.PROP_REJECT_MOVE, Boolean.valueOf(rejectMove));
+            updateProps.put(ApplicationModel.PROP_REJECT_MOVE, Boolean.valueOf(rejectMove));
 
             // create node ref representation of the destination folder
-            updateProps.put(ContentModel.PROP_REJECT_FOLDER,
+            updateProps.put(ApplicationModel.PROP_REJECT_FOLDER,
                   this.workflowProperties.get(SimpleWorkflowHandler.PROP_REJECT_FOLDER));
          }
          else
          {
             // set all the reject properties to null to signify there should
             // be no reject step
-            updateProps.put(ContentModel.PROP_REJECT_STEP, null);
-            updateProps.put(ContentModel.PROP_REJECT_MOVE, null);
-            updateProps.put(ContentModel.PROP_REJECT_FOLDER, null);
+            updateProps.put(ApplicationModel.PROP_REJECT_STEP, null);
+            updateProps.put(ApplicationModel.PROP_REJECT_MOVE, null);
+            updateProps.put(ApplicationModel.PROP_REJECT_FOLDER, null);
          }
          
          // set the properties on the node
@@ -459,10 +460,10 @@ public abstract class BaseDetailsBean
    {
       String approveStepName = null;
       
-      if (getNode().hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW))
+      if (getNode().hasAspect(ApplicationModel.ASPECT_SIMPLE_WORKFLOW))
       {
          approveStepName = (String)getNode().getProperties().get(
-               ContentModel.PROP_APPROVE_STEP.toString());
+               ApplicationModel.PROP_APPROVE_STEP.toString());
       }
       
       return approveStepName; 
@@ -524,10 +525,10 @@ public abstract class BaseDetailsBean
    {
       String approveStepName = null;
       
-      if (getNode().hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW))
+      if (getNode().hasAspect(ApplicationModel.ASPECT_SIMPLE_WORKFLOW))
       {
          approveStepName = (String)getNode().getProperties().get(
-               ContentModel.PROP_REJECT_STEP.toString());
+               ApplicationModel.PROP_REJECT_STEP.toString());
       }
       
       return approveStepName;

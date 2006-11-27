@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -60,7 +61,7 @@ public class WorkflowUtil
    {
       Node docNode = new Node(ref);
       
-      if (docNode.hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW) == false)
+      if (docNode.hasAspect(ApplicationModel.ASPECT_SIMPLE_WORKFLOW) == false)
       {
          throw new AlfrescoRuntimeException("Cannot approve a node that is not part of a workflow.");
       }
@@ -68,11 +69,11 @@ public class WorkflowUtil
       // get the simple workflow aspect properties
       Map<String, Object> props = docNode.getProperties();
       
-      Boolean approveMove = (Boolean)props.get(ContentModel.PROP_APPROVE_MOVE.toString());
-      NodeRef approveFolder = (NodeRef)props.get(ContentModel.PROP_APPROVE_FOLDER.toString());
+      Boolean approveMove = (Boolean)props.get(ApplicationModel.PROP_APPROVE_MOVE.toString());
+      NodeRef approveFolder = (NodeRef)props.get(ApplicationModel.PROP_APPROVE_FOLDER.toString());
       
       // first we need to take off the simpleworkflow aspect
-      nodeService.removeAspect(ref, ContentModel.ASPECT_SIMPLE_WORKFLOW);
+      nodeService.removeAspect(ref, ApplicationModel.ASPECT_SIMPLE_WORKFLOW);
       
       if (approveMove.booleanValue())
       {
@@ -116,7 +117,7 @@ public class WorkflowUtil
    {
       Node docNode = new Node(ref);
       
-      if (docNode.hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW) == false)
+      if (docNode.hasAspect(ApplicationModel.ASPECT_SIMPLE_WORKFLOW) == false)
       {
          throw new AlfrescoRuntimeException("Cannot reject a node that is not part of a workflow.");
       }
@@ -124,9 +125,9 @@ public class WorkflowUtil
       // get the simple workflow aspect properties
       Map<String, Object> props = docNode.getProperties();
       
-      String rejectStep = (String)props.get(ContentModel.PROP_REJECT_STEP.toString());
-      Boolean rejectMove = (Boolean)props.get(ContentModel.PROP_REJECT_MOVE.toString());
-      NodeRef rejectFolder = (NodeRef)props.get(ContentModel.PROP_REJECT_FOLDER.toString());
+      String rejectStep = (String)props.get(ApplicationModel.PROP_REJECT_STEP.toString());
+      Boolean rejectMove = (Boolean)props.get(ApplicationModel.PROP_REJECT_MOVE.toString());
+      NodeRef rejectFolder = (NodeRef)props.get(ApplicationModel.PROP_REJECT_FOLDER.toString());
       
       if (rejectStep == null && rejectMove == null && rejectFolder == null)
       {
@@ -134,7 +135,7 @@ public class WorkflowUtil
       }
       
       // first we need to take off the simpleworkflow aspect
-      nodeService.removeAspect(ref, ContentModel.ASPECT_SIMPLE_WORKFLOW);
+      nodeService.removeAspect(ref, ApplicationModel.ASPECT_SIMPLE_WORKFLOW);
       
       if (rejectMove != null && rejectMove.booleanValue())
       {

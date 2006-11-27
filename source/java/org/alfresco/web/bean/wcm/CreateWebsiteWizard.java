@@ -35,7 +35,9 @@ import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -152,7 +154,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       FileInfo fileInfo = this.fileFolderService.create(
             new NodeRef(Repository.getStoreRef(), websiteParentId),
             this.name,
-            ContentModel.TYPE_AVMWEBFOLDER);
+            WCMAppModel.TYPE_AVMWEBFOLDER);
       NodeRef nodeRef = fileInfo.getNodeRef();
       
       if (logger.isDebugEnabled())
@@ -162,14 +164,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       // apply the uifacets aspect - icon, title and description props
       Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4);
-      uiFacetsProps.put(ContentModel.PROP_ICON, AVMConstants.SPACE_ICON_WEBSITE);
+      uiFacetsProps.put(ApplicationModel.PROP_ICON, AVMConstants.SPACE_ICON_WEBSITE);
       uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
       uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-      this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+      this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
       
       // set the default webapp name for the project
       String webapp = (this.webapp != null && this.webapp.length() != 0) ? this.webapp : WEBAPP_DEFAULT;
-      this.nodeService.setProperty(nodeRef, ContentModel.PROP_DEFAULTWEBAPP, webapp);
+      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, webapp);
       
       // call a delegate wizard bean to provide invite user functionality
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
@@ -189,7 +191,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.avmService.createDirectory(AVMConstants.buildAVMStoreRootPath(stagingStore), webapp);
          
          // set the property on the node to reference the root AVM store
-         this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, avmStore);
+         this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_AVMSTORE, avmStore);
          
          // persist the forms, templates, workflows and workflow defaults to the model for this web project
          saveWebProjectModel(nodeRef);
@@ -215,11 +217,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
       for (FormWrapper form : this.forms)
       {
          // create web form with name as per the name of the form object in the DD
-         props.put(ContentModel.PROP_FORMNAME, form.getName());
+         props.put(WCMAppModel.PROP_FORMNAME, form.getName());
          NodeRef formRef = this.nodeService.createNode(nodeRef,
-                  ContentModel.ASSOC_WEBFORM,
-                  ContentModel.ASSOC_WEBFORM,
-                  ContentModel.TYPE_WEBFORM,
+                  WCMAppModel.ASSOC_WEBFORM,
+                  WCMAppModel.ASSOC_WEBFORM,
+                  WCMAppModel.TYPE_WEBFORM,
                   props).getChildRef();
          
          // add title aspect for user defined title and description labels
@@ -232,8 +234,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
          if (form.getFilenamePattern() != null)
          {
             props.clear();
-            props.put(ContentModel.PROP_FILENAMEPATTERN, form.getFilenamePattern());
-            this.nodeService.addAspect(formRef, ContentModel.ASPECT_FILENAMEPATTERN, props);
+            props.put(WCMAppModel.PROP_FILENAMEPATTERN, form.getFilenamePattern());
+            this.nodeService.addAspect(formRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
          }
          
          // associate to workflow defaults if any are present
@@ -241,11 +243,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
          {
             WorkflowWrapper workflow = form.getWorkflow();
             props.clear();
-            props.put(ContentModel.PROP_WORKFLOW_NAME, workflow.getName());
+            props.put(WCMAppModel.PROP_WORKFLOW_NAME, workflow.getName());
             NodeRef workflowRef = this.nodeService.createNode(formRef,
-                  ContentModel.ASSOC_WORKFLOWDEFAULTS,
-                  ContentModel.ASSOC_WORKFLOWDEFAULTS,
-                  ContentModel.TYPE_WORKFLOWDEFAULTS,
+                  WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
+                  WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
+                  WCMAppModel.TYPE_WORKFLOWDEFAULTS,
                   props).getChildRef();
             
             // persist workflow default params
@@ -259,19 +261,19 @@ public class CreateWebsiteWizard extends BaseWizardBean
          for (PresentationTemplate template : form.getTemplates())
          {
             props.clear();
-            props.put(ContentModel.PROP_ENGINE, template.getRenderingEngineTemplate().getNodeRef());
+            props.put(WCMAppModel.PROP_ENGINE, template.getRenderingEngineTemplate().getNodeRef());
             NodeRef templateRef = this.nodeService.createNode(formRef,
-                  ContentModel.ASSOC_WEBFORMTEMPLATE,
-                  ContentModel.ASSOC_WEBFORMTEMPLATE,
-                  ContentModel.TYPE_WEBFORMTEMPLATE,
+                  WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                  WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                  WCMAppModel.TYPE_WEBFORMTEMPLATE,
                   props).getChildRef();
             
             // add filename pattern aspect if a filename pattern has been applied
             if (template.getFilenamePattern() != null)
             {
                props.clear();
-               props.put(ContentModel.PROP_FILENAMEPATTERN, template.getFilenamePattern());
-               this.nodeService.addAspect(templateRef, ContentModel.ASPECT_FILENAMEPATTERN, props);
+               props.put(WCMAppModel.PROP_FILENAMEPATTERN, template.getFilenamePattern());
+               this.nodeService.addAspect(templateRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
             }
          }
       }
@@ -282,9 +284,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
          props.clear();
          props.put(ContentModel.PROP_NAME, workflow.getName());
          NodeRef workflowRef = this.nodeService.createNode(nodeRef,
-               ContentModel.ASSOC_WEBWORKFLOWDEFAULTS,
-               ContentModel.ASSOC_WEBWORKFLOWDEFAULTS,
-               ContentModel.TYPE_WEBWORKFLOWDEFAULTS,
+               WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
+               WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
+               WCMAppModel.TYPE_WEBWORKFLOWDEFAULTS,
                props).getChildRef();
          
          // persist workflow default params
@@ -297,8 +299,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
          if (workflow.getFilenamePattern() != null)
          {
             props.clear();
-            props.put(ContentModel.PROP_FILENAMEPATTERN, workflow.getFilenamePattern());
-            this.nodeService.addAspect(workflowRef, ContentModel.ASPECT_FILENAMEPATTERN, props);
+            props.put(WCMAppModel.PROP_FILENAMEPATTERN, workflow.getFilenamePattern());
+            this.nodeService.addAspect(workflowRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
          }
       }
    }
@@ -319,7 +321,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          oos.close();
          // write the serialized Map as a binary content stream - like database blob!
          ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
-         ContentWriter writer = cs.getWriter(workflowRef, ContentModel.PROP_WORKFLOWDEFAULTS, true);
+         ContentWriter writer = cs.getWriter(workflowRef, WCMAppModel.PROP_WORKFLOWDEFAULTS, true);
          writer.setMimetype(MimetypeMap.MIMETYPE_BINARY);
          writer.putContent(new ByteArrayInputStream(baos.toByteArray()));
       }

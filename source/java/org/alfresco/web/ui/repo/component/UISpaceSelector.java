@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -143,7 +144,7 @@ public class UISpaceSelector extends AbstractItemSelector
     */
    public String getItemIcon(FacesContext context, NodeRef ref)
    {
-      String icon = (String)getNodeService(context).getProperty(ref, ContentModel.PROP_ICON);
+      String icon = (String)getNodeService(context).getProperty(ref, ApplicationModel.PROP_ICON);
       if (icon != null)
       {
          icon = "/images/icons/" + icon + "-16.gif";

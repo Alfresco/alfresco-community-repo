@@ -42,7 +42,7 @@
       </navigation>
    </config>
    
-   <config evaluator="node-type" condition="app:webfolder">
+   <config evaluator="node-type" condition="wca:webfolder">
       <navigation>
          <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/wcm/browse-website.jsp" />
          <override from-outcome="browse" to-view-id="/jsp/wcm/browse-website.jsp" />

@@ -18,6 +18,7 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.web.action.ActionEvaluator;
@@ -45,7 +46,7 @@ public class EditDocCIFSEvaluator implements ActionEvaluator
       // if the node is inline editable, the default http behaviour should always be used
       if (dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT))
       {
-         if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) == false &&
+         if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) == false &&
              "cifs".equals(Application.getClientConfig(fc).getEditLinkType()))
          {
             if (node.isWorkingCopyOwner() == true ||

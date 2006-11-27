@@ -35,7 +35,9 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
@@ -200,8 +202,8 @@ public class ImportWebsiteDialog
             
             // import the content into the appropriate store for the website
             Node website = this.navigationBean.getCurrentNode();
-            String storeRoot = (String)website.getProperties().get(ContentModel.PROP_AVMSTORE);
-            String webapp = (String)website.getProperties().get(ContentModel.PROP_DEFAULTWEBAPP);
+            String storeRoot = (String)website.getProperties().get(WCMAppModel.PROP_AVMSTORE);
+            String webapp = (String)website.getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
             if (storeRoot != null && webapp != null)
             {
                String store = AVMConstants.buildAVMStagingStoreName(storeRoot);
@@ -452,7 +454,7 @@ public class ImportWebsiteDialog
                // this.nodeService.addAspect(folderRef, ContentModel.ASPECT_UIFACETS, null);
                
                // for now use the AVM service directly
-               this.avmService.addAspect(folderPath, ContentModel.ASPECT_UIFACETS);
+               this.avmService.addAspect(folderPath, ApplicationModel.ASPECT_UIFACETS);
             }
          }
          catch (FileNotFoundException e)

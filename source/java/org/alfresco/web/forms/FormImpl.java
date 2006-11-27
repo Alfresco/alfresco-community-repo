@@ -29,7 +29,7 @@ import java.io.Serializable;
 import java.util.*;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -94,14 +94,14 @@ class FormImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.folderNodeRef,
-                                             WCMModel.PROP_OUTPUT_PATH_PATTERN_FOR_FORM_INSTANCE_DATA);
+                                             WCMAppModel.PROP_OUTPUT_PATH_PATTERN_FORM_INSTANCE_DATA);
    }
 
    public WorkflowDefinition getDefaultWorkflow()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final String defaultWorkflowName = (String)nodeService.getProperty(this.folderNodeRef,
-                                                                       WCMModel.PROP_DEFAULT_WORKFLOW_NAME);
+                                                                       WCMAppModel.PROP_DEFAULT_WORKFLOW_NAME);
       final WorkflowService workflowService = this.getServiceRegistry().getWorkflowService();
       return (defaultWorkflowName != null
               ? workflowService.getDefinitionByName("jbpm$" + defaultWorkflowName)
@@ -133,7 +133,7 @@ class FormImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(folderNodeRef, 
-                                             WCMModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME);
+                                             WCMAppModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME);
    }
 
    public Document getSchema()
@@ -143,7 +143,7 @@ class FormImpl
       final FormsService ts = FormsService.getInstance();
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final NodeRef schemaNodeRef = (NodeRef)nodeService.getProperty(folderNodeRef,
-                                                                     WCMModel.PROP_XML_SCHEMA);
+                                                                     WCMAppModel.PROP_XML_SCHEMA);
       return ts.parseXML(schemaNodeRef);
    }
 
@@ -162,13 +162,13 @@ class FormImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final List<AssociationRef> refs = nodeService.getTargetAssocs(this.folderNodeRef, 
-                                                                    WCMModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
+                                                                    WCMAppModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
       final List<RenderingEngineTemplate> result = new ArrayList<RenderingEngineTemplate>(refs.size());
       for (AssociationRef assoc : refs)
       {
          final NodeRef retNodeRef = assoc.getTargetRef();
          for (ChildAssociationRef assoc2 : nodeService.getChildAssocs(retNodeRef,
-                                                                      WCMModel.ASSOC_RENDITION_PROPERTIES,
+                                                                      WCMAppModel.ASSOC_RENDITION_PROPERTIES,
                                                                       RegexQNamePattern.MATCH_ALL))
          {
             final NodeRef renditionPropertiesNodeRef = assoc2.getChildRef();
@@ -186,9 +186,9 @@ class FormImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(WCMModel.PROP_PARENT_FORM, this.folderNodeRef);
-      props.put(WCMModel.PROP_PARENT_FORM_NAME, this.getName());
-      nodeService.addAspect(formInstanceDataNodeRef, WCMModel.ASPECT_FORM_INSTANCE_DATA, props);
+      props.put(WCMAppModel.PROP_PARENT_FORM, this.folderNodeRef);
+      props.put(WCMAppModel.PROP_PARENT_FORM_NAME, this.getName());
+      nodeService.addAspect(formInstanceDataNodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
    }
 
    public int hashCode() 

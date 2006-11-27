@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -63,17 +63,17 @@ public class DeleteSandboxDialog extends BaseDialogBean
          // remove the store reference from the website folder meta-data
          List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
                   website.getNodeRef(),
-                  ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+                  WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();
-            String user = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
-            String role = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+            String user = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String role = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             
             if (username.equals(user))
             {
                // found the sandbox to remove
-               String storeRoot = (String)website.getProperties().get(ContentModel.PROP_AVMSTORE);
+               String storeRoot = (String)website.getProperties().get(WCMAppModel.PROP_AVMSTORE);
                
                // TODO: would it be better to use the .sandbox-id. property to delete all sandboxes?
                

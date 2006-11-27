@@ -13,6 +13,7 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -371,8 +372,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
       if (this.inlineEdit == true)
       {
          Map<QName, Serializable> editProps = new HashMap<QName, Serializable>(1, 1.0f);
-         editProps.put(ContentModel.PROP_EDITINLINE, this.inlineEdit);
-         this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_INLINEEDITABLE, editProps);
+         editProps.put(ApplicationModel.PROP_EDITINLINE, this.inlineEdit);
+         this.nodeService.addAspect(fileNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, editProps);
          
          if (logger.isDebugEnabled())
             logger.debug("Added inlineeditable aspect with properties: " + editProps);

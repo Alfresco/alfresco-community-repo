@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
@@ -77,7 +77,7 @@ public class RenditionImpl
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final NodeRef fidNodeRef = (NodeRef)
          nodeService.getProperty(this.nodeRef, 
-                                 WCMModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+                                 WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
       return new FormInstanceDataImpl(fidNodeRef);
    }
 
@@ -87,10 +87,10 @@ public class RenditionImpl
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final NodeRef retNodeRef = (NodeRef)
          nodeService.getProperty(this.nodeRef, 
-                                 WCMModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
+                                 WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
       final NodeRef rpNodeRef = (NodeRef)
          nodeService.getProperty(this.nodeRef, 
-                                 WCMModel.PROP_PARENT_RENDITION_PROPERTIES);
+                                 WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES);
       return new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef);
    }
 

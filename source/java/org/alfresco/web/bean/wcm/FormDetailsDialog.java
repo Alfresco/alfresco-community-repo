@@ -195,7 +195,7 @@ public class FormDetailsDialog extends BaseDialogBean
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          UIListItem item = new UIListItem();
-         item.setValue(workflowDef.getId());
+         item.setValue(workflowDef.getName());
          item.setLabel(workflowDef.getTitle());
          item.setDescription(workflowDef.getDescription());
          item.setImage(WebResources.IMAGE_WORKFLOW_32);

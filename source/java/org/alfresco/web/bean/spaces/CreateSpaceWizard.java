@@ -13,6 +13,7 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -144,10 +145,10 @@ public class CreateSpaceWizard extends BaseWizardBean
 
          // apply the uifacets aspect - icon, title and description props
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
-         uiFacetsProps.put(ContentModel.PROP_ICON, this.icon);
+         uiFacetsProps.put(ApplicationModel.PROP_ICON, this.icon);
          uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
          uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
          
          if (logger.isDebugEnabled())
             logger.debug("Added uifacets aspect with properties: " + uiFacetsProps);
@@ -167,7 +168,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          // also need to set the new title, description and icon properties
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.setProperty(copiedNode, ContentModel.PROP_ICON, this.icon);
+         this.nodeService.setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
          
          newSpaceId = copiedNode.getId();
             
@@ -187,7 +188,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          // also need to set the new title, description and icon properties
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.setProperty(copiedNode, ContentModel.PROP_ICON, this.icon);
+         this.nodeService.setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
          
          newSpaceId = copiedNode.getId();
          

@@ -16,7 +16,7 @@
  */
 package org.alfresco.web.forms;
 
-import org.alfresco.model.WCMModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMRemote;
 import org.alfresco.repo.avm.AVMRemoteInputStream;
 import org.alfresco.repo.domain.PropertyValue;
@@ -102,7 +102,7 @@ public class FormDataFunctions
             PropertyValue pv = 
                this.avmRemote.getNodeProperty(-1, 
                                               avmPath + '/' + entryName,
-                                              WCMModel.PROP_PARENT_FORM_NAME);
+                                              WCMAppModel.PROP_PARENT_FORM_NAME);
             if (pv == null || 
                 pv.getStringValue() == null || 
                 !((String)pv.getStringValue()).equals(formName))
@@ -113,7 +113,7 @@ public class FormDataFunctions
 
             pv = this.avmRemote.getNodeProperty(-1, 
                                                 avmPath + '/' + entryName,
-                                                WCMModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
+                                                WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
             
             if (pv != null)
             {

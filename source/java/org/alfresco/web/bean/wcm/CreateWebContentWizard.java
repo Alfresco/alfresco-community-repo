@@ -31,6 +31,7 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -143,7 +144,7 @@ public class CreateWebContentWizard extends BaseContentWizard
          // it is used to init the dialog to a specific template
          String webFormId = parameters.get(UIUserSandboxes.PARAM_FORM_ID);
          NodeRef webFormRef = new NodeRef(Repository.getStoreRef(), webFormId);
-         String formName = (String)this.nodeService.getProperty(webFormRef, ContentModel.PROP_FORMNAME);
+         String formName = (String)this.nodeService.getProperty(webFormRef, WCMAppModel.PROP_FORMNAME);
          Form form = FormsService.getInstance().getForm(formName);
          if (form != null)
          {
@@ -181,17 +182,17 @@ public class CreateWebContentWizard extends BaseContentWizard
          {
             final Node website = this.avmBrowseBean.getWebsite();
             final List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
-               website.getNodeRef(), ContentModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
+               website.getNodeRef(), WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : webFormRefs)
             {
                final String formName = (String)
-                  this.nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_FORMNAME);
+                  this.nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
                if (formName.equals(this.getForm().getName()))
                {
                   System.err.println("loading workflowRefs for " + formName);
                   final List<ChildAssociationRef> workflowRefs = 
                      this.nodeService.getChildAssocs(ref.getChildRef(),
-                                                     ContentModel.ASSOC_WORKFLOWDEFAULTS,
+                                                     WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
                                                      RegexQNamePattern.MATCH_ALL);
                   if (workflowRefs.size() == 0)
                   {
@@ -203,7 +204,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                   }
 
                   final NodeRef workflowRef = workflowRefs.get(0).getChildRef();
-                  final String workflowName = (String)this.nodeService.getProperty(workflowRef, ContentModel.PROP_WORKFLOW_NAME);
+                  final String workflowName = (String)this.nodeService.getProperty(workflowRef, WCMAppModel.PROP_WORKFLOW_NAME);
                   if (workflowName == null)
                   {
                      throw new RuntimeException("no workflow found for form " + formName);
@@ -212,7 +213,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                   wd = this.workflowService.getDefinitionByName("jbpm$" + workflowName);
                   
                   final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                  final ContentReader cr = this.contentService.getReader(workflowRef, ContentModel.PROP_WORKFLOWDEFAULTS);
+                  final ContentReader cr = this.contentService.getReader(workflowRef, WCMAppModel.PROP_WORKFLOWDEFAULTS);
                   if (cr == null)
                   {
                      parameters = new HashMap<QName, Serializable>();
@@ -381,12 +382,12 @@ public class CreateWebContentWizard extends BaseContentWizard
          throw new IllegalStateException("CreateWebContentWizard must be called within a Web Project context!");
       }
       final List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
-            website.getNodeRef(), ContentModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
+            website.getNodeRef(), WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
       final List<SelectItem> items = new ArrayList<SelectItem>(webFormRefs.size());
       for (ChildAssociationRef ref : webFormRefs)
       {
          final String formName = (String)
-            this.nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_FORMNAME);
+            this.nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
          final Form form = FormsService.getInstance().getForm(formName);
          if (form != null)
          {

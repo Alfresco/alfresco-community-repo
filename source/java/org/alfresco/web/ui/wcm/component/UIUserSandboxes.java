@@ -35,6 +35,7 @@ import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -267,7 +268,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          {
             throw new IllegalArgumentException("Website NodeRef must be specified.");
          }
-         String storeRoot = (String)nodeService.getProperty(websiteRef, ContentModel.PROP_AVMSTORE);
+         String storeRoot = (String)nodeService.getProperty(websiteRef, WCMAppModel.PROP_AVMSTORE);
          
          // find out if this user is a Content Manager
          boolean isManager = isManagerRole(context, nodeService, websiteRef);
@@ -275,12 +276,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
          // get the list of users who have a sandbox in the website
          int index = 0;
          List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-               websiteRef, ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+               websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             
             // create the lookup value of sandbox index to username 
             this.userToRowLookup.put(index, username);
@@ -433,12 +434,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
       {
          String currentUser = user.getUserName();
          List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-               websiteRef, ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+               websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
             {
                isManager = true;
@@ -699,7 +700,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       if (this.forms == null)
       {
          List<ChildAssociationRef> webFormRefs = nodeService.getChildAssocs(
-               websiteRef, ContentModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
+               websiteRef, WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
          this.forms = new ArrayList<NodeRef>(webFormRefs.size());
          for (ChildAssociationRef ref : webFormRefs)
          {
@@ -737,9 +738,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
             if (action == null)
             {
                // create content action passes the ID of the Form to uses
-               Map<String, String> params = new HashMap<String, String>(1, 1.0f);
+               Map<String, String> params = new HashMap<String, String>(3, 1.0f);
                // setup a data-binding param for the Form ID
                params.put(PARAM_FORM_ID, "#{" + REQUEST_FORM_REF + ".id}");
+               params.put("username", username);
+               params.put("store", userStorePrefix);
                action = createAction(fc, userStorePrefix, username, ACT_CREATE_FORM_CONTENT,
                      "/images/icons/new_content.gif", "#{AVMBrowseBean.createFormContent}", null, null, params);
             }

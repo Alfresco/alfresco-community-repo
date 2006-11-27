@@ -14,6 +14,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -95,7 +96,7 @@ public class StartWorkflowWizard extends BaseWizardBean
          QName type = this.nodeService.getType(itemToWorkflow);
 
          if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
-             this.dictionaryService.isSubClass(type, ContentModel.TYPE_FILELINK))
+             this.dictionaryService.isSubClass(type, ApplicationModel.TYPE_FILELINK))
          {
             this.packageItemsToAdd.add(itemToWorkflow.toString());
          }

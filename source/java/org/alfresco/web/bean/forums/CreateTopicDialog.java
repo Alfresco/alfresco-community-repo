@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -74,8 +75,8 @@ public class CreateTopicDialog extends CreateSpaceDialog
          logger.debug("Added titled aspect with properties: " + titledProps);
       
       Map<QName, Serializable> editProps = new HashMap<QName, Serializable>(1, 1.0f);
-      editProps.put(ContentModel.PROP_EDITINLINE, true);
-      this.nodeService.addAspect(postNodeRef, ContentModel.ASPECT_INLINEEDITABLE, editProps);
+      editProps.put(ApplicationModel.PROP_EDITINLINE, true);
+      this.nodeService.addAspect(postNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, editProps);
       
       if (logger.isDebugEnabled())
          logger.debug("Added inlineeditable aspect with properties: " + editProps);

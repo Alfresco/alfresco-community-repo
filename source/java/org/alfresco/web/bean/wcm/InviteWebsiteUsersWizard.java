@@ -10,7 +10,7 @@ import java.util.Set;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -105,12 +105,12 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             }
          }
          List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
-            getNode().getNodeRef(), ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            getNode().getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userrole) &&
                 this.managers.contains(username) == false)
             {
@@ -140,12 +140,12 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          {
             // create an app:webuser instance for each authority and assoc to the website node
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-            props.put(ContentModel.PROP_WEBUSERNAME, authority);
-            props.put(ContentModel.PROP_WEBUSERROLE, userRole.getRole());
+            props.put(WCMAppModel.PROP_WEBUSERNAME, authority);
+            props.put(WCMAppModel.PROP_WEBUSERROLE, userRole.getRole());
             this.nodeService.createNode(getNode().getNodeRef(),
-                  ContentModel.ASSOC_WEBUSER,
-                  ContentModel.ASSOC_WEBUSER,
-                  ContentModel.TYPE_WEBUSER,
+                  WCMAppModel.ASSOC_WEBUSER,
+                  WCMAppModel.ASSOC_WEBUSER,
+                  WCMAppModel.TYPE_WEBUSER,
                   props);
          }
       }
@@ -189,7 +189,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       if (this.folderPermissions == null)
       {
          // get permissions and roles for a website folder type
-         this.folderPermissions = this.permissionService.getSettablePermissions(ContentModel.TYPE_AVMWEBFOLDER);
+         this.folderPermissions = this.permissionService.getSettablePermissions(WCMAppModel.TYPE_AVMWEBFOLDER);
       }
        
       return this.folderPermissions;
@@ -228,7 +228,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
    {
       if (this.avmStore == null)
       {
-         this.avmStore = (String)getNode().getProperties().get(ContentModel.PROP_AVMSTORE);
+         this.avmStore = (String)getNode().getProperties().get(WCMAppModel.PROP_AVMSTORE);
       }
       return this.avmStore;
    }

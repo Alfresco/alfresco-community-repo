@@ -11,6 +11,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -539,7 +540,7 @@ public class ManageTaskDialog extends BaseDialogBean
                      // look for content nodes or links to content
                      // NOTE: folders within workflow packages are ignored for now
                      if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
-                         ContentModel.TYPE_FILELINK.equals(type))
+                         ApplicationModel.TYPE_FILELINK.equals(type))
                      {
                         // if the node is not in the removed list then add create the 
                         // client side representation and add to the list

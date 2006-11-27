@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -826,7 +827,7 @@ public class CopyServiceImpl implements CopyService
 					QName childType = this.nodeService.getType(childRef);
 					
 					// TODO will need to remove this reference to the configurations association
-					if (this.dictionaryService.isSubClass(childType, ContentModel.TYPE_CONFIGURATIONS) == true ||
+					if (this.dictionaryService.isSubClass(childType, ApplicationModel.TYPE_CONFIGURATIONS) == true ||
 						copyDetails.isChildAssociationRefAlwaysTraversed(classRef, childAssoc) == true)
 					{
 						if (copiedChildren.containsKey(childRef) == false)

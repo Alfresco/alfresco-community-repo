@@ -1,0 +1,309 @@
+<model name="wca:applicationmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco WCM Application Model</description>
+   <author>Alfresco</author>
+   <published>2006-11-27</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <import uri="http://www.alfresco.org/model/wcmmodel/1.0" prefix="wcm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/wcmappmodel/1.0" prefix="wca"/>
+   </namespaces>
+   
+   
+   <types>
+   
+      <type name="wca:webfolder">
+         <title>AVM Website Folder</title>
+         <parent>wcm:avmfolder</parent>
+         <properties>
+            <!-- root name of the avm staging stores for this web folder -->
+            <property name="wca:avmstore">
+               <title>AVM Store Root</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:defaultwebapp">
+               <title>Default Webapp</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="wca:webuser">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:webuser</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="wca:webform">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:webform</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="wca:webworkflowdefaults">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:webworkflowdefaults</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
+      
+      <type name="wca:webuser">
+         <title>Website User Information</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="wca:username">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:role">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="wca:webform">
+         <title>Website Web Form</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="wca:formname">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="wca:webformtemplate">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:webformtemplate</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="wca:workflowdefaults">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:workflowdefaults</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>
+         <mandatory-aspects>
+				<aspect>cm:titled</aspect>
+				<aspect>wca:filenamepattern</aspect>
+			</mandatory-aspects>
+      </type>
+      
+      <type name="wca:webformtemplate">
+         <title>Website Web Form Template</title>
+         <parent>sys:base</parent>
+			<properties>
+            <property name="wca:engine">
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+         <mandatory-aspects>
+				<aspect>wca:filenamepattern</aspect>
+			</mandatory-aspects>
+      </type>
+      
+      <type name="wca:workflowdefaults">
+         <title>Workflow Defaults</title>
+         <parent>sys:base</parent>
+			<properties>
+            <property name="wca:workflowname">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:defaults">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+               <index enabled="false" />
+            </property>
+         </properties>
+      </type>
+      
+      <type name="wca:webworkflowdefaults">
+         <title>Web Workflow Defaults</title>
+         <parent>wca:workflowdefaults</parent>
+         <mandatory-aspects>
+				<aspect>wca:filenamepattern</aspect>
+			</mandatory-aspects>
+      </type>
+      
+      <type name="wca:renditionproperties">
+         <title>Properties for renditions</title>
+	      <parent>sys:base</parent>
+         <properties>
+            <property name="wca:outputpathpatternrendition">
+               <title>Type</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:mimetypeforrendition">
+               <title>Mimetype for generated assets</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </type>
+
+	</types>
+
+	<aspects>
+   
+      <aspect name="wca:filenamepattern">
+         <title>Filename Pattern</title>
+         <properties>
+            <property name="wca:filenamepattern">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+      
+   	<!-- An XForms capture form aspect. -->
+      <aspect name="wca:form">
+         <title>XForms Form</title>
+         <properties>
+            <property name="wca:xmlschemarootelementname">
+               <title>Schema Root Element Name</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:xmlschema">
+               <title>Schema</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:outputpathpatternforminstancedata">
+               <title>Output path pattern for form instance data</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:defaultworkflowid">
+               <title>Default Workflow ID</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <association name="wca:renderingenginetemplates">
+               <title>Form Data Renderers</title>
+               <source>
+                  <role>wca:capture</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:renderingenginetemplate</class>
+                  <role>wca:presentation</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+              </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <!-- An XML to something else transformer. -->
+      <aspect name="wca:renderingenginetemplate">
+         <title>A Rendering Engine</title>
+         <properties>
+            <property name="wca:parentrendereringenginename">
+               <title>Type</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:formsource">
+               <title>Form Source</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="wca:renditionproperties">
+               <title>Rendition Properties</title>
+               <source>
+                  <role>wca:capture</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:renditionproperties</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+              </target>
+            </child-association>
+         </associations>
+      </aspect>
+
+      <aspect name="wca:forminstancedata">
+         <title>XML file generated by a form</title>
+         <properties>
+            <property name="wca:parentform">
+               <title>Form that generated this asset</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:parentformname">
+               <title>Form that generated this asset</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="wca:rendition">
+         <title>XML file generated by a form</title>
+         <properties>
+            <property name="wca:parentrenderingenginetemplate">
+               <title>Form data renderer that generated this asset</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:parentrenditionproperties">
+               <title>Rendition properties used for this rendition</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:primaryforminstancedata">
+               <title>Primary XML Asset used to generate this asset</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
+	</aspects>
+	
+</model>

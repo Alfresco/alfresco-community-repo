@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
@@ -266,7 +267,7 @@ public class ScriptsFolderPatch extends AbstractPatch
         properties.put(ContentModel.PROP_NAME, folderName);
         properties.put(ContentModel.PROP_TITLE, folderName);
         properties.put(ContentModel.PROP_DESCRIPTION, folderDescription);
-        properties.put(ContentModel.PROP_ICON, PROPERTY_ICON);
+        properties.put(ApplicationModel.PROP_ICON, PROPERTY_ICON);
         
         // create the node
         ChildAssociationRef childAssocRef = nodeService.createNode(
@@ -278,7 +279,7 @@ public class ScriptsFolderPatch extends AbstractPatch
         scriptsFolderNodeRef = childAssocRef.getChildRef();
         
         // finally add the required aspects
-        nodeService.addAspect(scriptsFolderNodeRef, ContentModel.ASPECT_UIFACETS, null);
+        nodeService.addAspect(scriptsFolderNodeRef, ApplicationModel.ASPECT_UIFACETS, null);
     }
     
     private void importContent() throws IOException

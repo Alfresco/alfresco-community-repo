@@ -18,6 +18,7 @@ package org.alfresco.repo.configuration;
 
 import java.util.List;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -79,11 +80,11 @@ public class ConfigurableServiceImplTest extends BaseSpringTest
 	public void testMakeConfigurable()
 	{
 		this.configurableService.makeConfigurable(this.nodeRef);
-		assertTrue(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_CONFIGURABLE));
+		assertTrue(this.nodeService.hasAspect(this.nodeRef, ApplicationModel.ASPECT_CONFIGURABLE));
 		List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
                 this.nodeRef,
                 RegexQNamePattern.MATCH_ALL,
-                ContentModel.ASSOC_CONFIGURATIONS);
+                ApplicationModel.ASSOC_CONFIGURATIONS);
 		assertNotNull(assocs);
 		assertEquals(1, assocs.size());
 	}

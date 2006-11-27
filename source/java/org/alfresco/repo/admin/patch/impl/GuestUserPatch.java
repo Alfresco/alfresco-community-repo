@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -206,14 +207,14 @@ public class GuestUserPatch extends AbstractPatch
             properties.put(ContentModel.PROP_NAME, guestHomeName);
             properties.put(ContentModel.PROP_TITLE, guestHomeName);
             properties.put(ContentModel.PROP_DESCRIPTION, guestHomeDescription);
-            properties.put(ContentModel.PROP_ICON, "space-icon-default");
+            properties.put(ApplicationModel.PROP_ICON, "space-icon-default");
 
             ChildAssociationRef childAssocRef = nodeService.createNode(companyHomeRef, ContentModel.ASSOC_CONTAINS,
                     QName.createQName(guestHomeChildName, namespaceService), ContentModel.TYPE_FOLDER, properties);
 
             NodeRef nodeRef = childAssocRef.getChildRef();
             // add the required aspects
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, null);
+            nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
 
             setGuestHomePermissions(nodeRef);
 

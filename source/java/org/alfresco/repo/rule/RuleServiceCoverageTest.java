@@ -27,6 +27,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionServiceImplTest;
 import org.alfresco.repo.action.ActionServiceImplTest.AsyncTest;
@@ -318,9 +319,9 @@ public class RuleServiceCoverageTest extends TestCase
         assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));   
         
         Map<String, Serializable> params2 = new HashMap<String, Serializable>(2);
-        params2.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_SIMPLE_WORKFLOW);
-        params2.put(ContentModel.PROP_APPROVE_STEP.toString(), "approveStep");
-        params2.put(ContentModel.PROP_APPROVE_MOVE.toString(), false);
+        params2.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ApplicationModel.ASPECT_SIMPLE_WORKFLOW);
+        params2.put(ApplicationModel.PROP_APPROVE_STEP.toString(), "approveStep");
+        params2.put(ApplicationModel.PROP_APPROVE_MOVE.toString(), false);
         
         // Test that rule can be updated and execute correctly
         //rule.removeAllActions();
@@ -335,9 +336,9 @@ public class RuleServiceCoverageTest extends TestCase
                 ContentModel.TYPE_CONTENT,
                 getContentProperties()).getChildRef();           
         addContentToNode(newNodeRef2);
-        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_SIMPLE_WORKFLOW));
-        assertEquals("approveStep", this.nodeService.getProperty(newNodeRef2, ContentModel.PROP_APPROVE_STEP));
-        assertEquals(false, this.nodeService.getProperty(newNodeRef2, ContentModel.PROP_APPROVE_MOVE));
+        assertTrue(this.nodeService.hasAspect(newNodeRef2, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));
+        assertEquals("approveStep", this.nodeService.getProperty(newNodeRef2, ApplicationModel.PROP_APPROVE_STEP));
+        assertEquals(false, this.nodeService.getProperty(newNodeRef2, ApplicationModel.PROP_APPROVE_MOVE));
         
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));        
     }   
@@ -345,7 +346,7 @@ public class RuleServiceCoverageTest extends TestCase
     public void testDisableIndividualRules()
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-        params.put("aspect-name", ContentModel.ASPECT_CONFIGURABLE);        
+        params.put("aspect-name", ApplicationModel.ASPECT_CONFIGURABLE);        
         
         Rule rule = createRule(
                 RuleType.INBOUND, 
@@ -364,7 +365,7 @@ public class RuleServiceCoverageTest extends TestCase
                 ContentModel.TYPE_CONTENT,
                 getContentProperties()).getChildRef();         
         addContentToNode(newNodeRef);
-        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_CONFIGURABLE));  
+        assertFalse(this.nodeService.hasAspect(newNodeRef, ApplicationModel.ASPECT_CONFIGURABLE));  
         
         Rule rule2 = this.ruleService.getRule(rule.getNodeRef());
         rule2.setRuleDisabled(false);
@@ -378,7 +379,7 @@ public class RuleServiceCoverageTest extends TestCase
                 ContentModel.TYPE_CONTENT,
                 getContentProperties()).getChildRef();         
         addContentToNode(newNodeRef2);
-        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_CONFIGURABLE));  
+        assertTrue(this.nodeService.hasAspect(newNodeRef2, ApplicationModel.ASPECT_CONFIGURABLE));  
         
     }
     
@@ -535,14 +536,14 @@ public class RuleServiceCoverageTest extends TestCase
                 getContentProperties()).getChildRef();     
 		addContentToNode(newNodeRef);
         
-		assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_SIMPLE_WORKFLOW));   
-		assertEquals("approveStep", this.nodeService.getProperty(newNodeRef, ContentModel.PROP_APPROVE_STEP));
-		assertEquals(this.rootNodeRef, this.nodeService.getProperty(newNodeRef, ContentModel.PROP_APPROVE_FOLDER));
-		assertTrue(((Boolean)this.nodeService.getProperty(newNodeRef, ContentModel.PROP_APPROVE_MOVE)).booleanValue());
-		assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_SIMPLE_WORKFLOW));   
-		assertEquals("rejectStep", this.nodeService.getProperty(newNodeRef, ContentModel.PROP_REJECT_STEP));
-		assertEquals(this.rootNodeRef, this.nodeService.getProperty(newNodeRef, ContentModel.PROP_REJECT_FOLDER));
-		assertFalse(((Boolean)this.nodeService.getProperty(newNodeRef, ContentModel.PROP_REJECT_MOVE)).booleanValue());
+		assertTrue(this.nodeService.hasAspect(newNodeRef, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));   
+		assertEquals("approveStep", this.nodeService.getProperty(newNodeRef, ApplicationModel.PROP_APPROVE_STEP));
+		assertEquals(this.rootNodeRef, this.nodeService.getProperty(newNodeRef, ApplicationModel.PROP_APPROVE_FOLDER));
+		assertTrue(((Boolean)this.nodeService.getProperty(newNodeRef, ApplicationModel.PROP_APPROVE_MOVE)).booleanValue());
+		assertTrue(this.nodeService.hasAspect(newNodeRef, ApplicationModel.ASPECT_SIMPLE_WORKFLOW));   
+		assertEquals("rejectStep", this.nodeService.getProperty(newNodeRef, ApplicationModel.PROP_REJECT_STEP));
+		assertEquals(this.rootNodeRef, this.nodeService.getProperty(newNodeRef, ApplicationModel.PROP_REJECT_FOLDER));
+		assertFalse(((Boolean)this.nodeService.getProperty(newNodeRef, ApplicationModel.PROP_REJECT_MOVE)).booleanValue());
 		
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));
     } 

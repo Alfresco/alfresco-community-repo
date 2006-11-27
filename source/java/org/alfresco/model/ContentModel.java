@@ -153,8 +153,6 @@ public interface ContentModel
     static final QName PROP_ORGID = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "organizationId");
     static final QName PROP_HOME_FOLDER_PROVIDER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "homeFolderProvider");
     static final QName PROP_DEFAULT_HOME_FOLDER_PATH = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "defaultHomeFolderPath");
-
-    
     
     // Ownable aspect  
     static final QName ASPECT_OWNABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "ownable");
@@ -165,109 +163,40 @@ public interface ContentModel
     static final QName PROP_TEMPLATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "template");
     
     // Dictionary model
-    public static final QName TYPE_DICTIONARY_MODEL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "dictionaryModel");
-    public static final QName PROP_MODEL_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelName");
-    public static final QName PROP_MODEL_DESCRIPTION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelDescription");
-    public static final QName PROP_MODEL_AUTHOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelAuthor");
-    public static final QName PROP_MODEL_PUBLISHED_DATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelPublishedDate");
-    public static final QName PROP_MODEL_VERSION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelVersion");
-    public static final QName PROP_MODEL_ACTIVE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelActive");
+    static final QName TYPE_DICTIONARY_MODEL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "dictionaryModel");
+    static final QName PROP_MODEL_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelName");
+    static final QName PROP_MODEL_DESCRIPTION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelDescription");
+    static final QName PROP_MODEL_AUTHOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelAuthor");
+    static final QName PROP_MODEL_PUBLISHED_DATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelPublishedDate");
+    static final QName PROP_MODEL_VERSION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelVersion");
+    static final QName PROP_MODEL_ACTIVE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "modelActive");
     
     // referencing aspect
-    public static final QName ASPECT_REFERENCING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "referencing");
-    public static final QName ASSOC_REFERENCES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "references");
+    static final QName ASPECT_REFERENCING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "referencing");
+    static final QName ASSOC_REFERENCES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "references");
     
     // link object
-    public static final QName TYPE_LINK = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "link");
-    public static final QName PROP_LINK_DESTINATION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "destination");
+    static final QName TYPE_LINK = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "link");
+    static final QName PROP_LINK_DESTINATION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "destination");
     
     // email aspect
-    public static final QName ASPECT_MAILED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "emailed");
-    public static final QName PROP_SENTDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sentdate");
-    public static final QName PROP_ORIGINATOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "originator");
-    public static final QName PROP_ADDRESSEE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressee");
-    public static final QName PROP_ADDRESSEES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressees");
-    public static final QName PROP_SUBJECT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subjectline");
+    static final QName ASPECT_MAILED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "emailed");
+    static final QName PROP_SENTDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sentdate");
+    static final QName PROP_ORIGINATOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "originator");
+    static final QName PROP_ADDRESSEE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressee");
+    static final QName PROP_ADDRESSEES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "addressees");
+    static final QName PROP_SUBJECT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subjectline");
     
     // countable aspect
-    public static final QName ASPECT_COUNTABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "countable");
-    public static final QName PROP_HITS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "hits");
-    public static final QName PROP_COUNTER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "counter");
+    static final QName ASPECT_COUNTABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "countable");
+    static final QName PROP_HITS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "hits");
+    static final QName PROP_COUNTER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "counter");
     
     // References Node Aspect.
-    public static final QName ASPECT_REFERENCES_NODE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "referencesnode");
-    public static final QName PROP_NODE_REF = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "noderef");
+    static final QName ASPECT_REFERENCES_NODE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "referencesnode");
+    static final QName PROP_NODE_REF = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "noderef");
     
-    //
-    // Application Model Definitions
-    //
-    
-    // workflow
-    static final QName ASPECT_SIMPLE_WORKFLOW = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "simpleworkflow");
-    static final QName PROP_APPROVE_STEP = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveStep");
-    static final QName PROP_APPROVE_FOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveFolder");
-    static final QName PROP_APPROVE_MOVE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "approveMove");
-    static final QName PROP_REJECT_STEP = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectStep");
-    static final QName PROP_REJECT_FOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectFolder");
-    static final QName PROP_REJECT_MOVE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "rejectMove");
-	
-    // ui facets aspect
-    static final QName ASPECT_UIFACETS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "uifacets");
-    static final QName PROP_ICON = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "icon");
 
-    // inlineeditable aspect
-    static final QName ASPECT_INLINEEDITABLE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "inlineeditable");
-    static final QName PROP_EDITINLINE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline");
-
-    // configurable aspect
-    static final QName ASPECT_CONFIGURABLE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "configurable");
-    static final QName TYPE_CONFIGURATIONS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "configurations");
-    static final QName ASSOC_CONFIGURATIONS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "configurations");
-    
-    // object links
-    static final QName TYPE_FILELINK = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "filelink");
-    static final QName TYPE_FOLDERLINK = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "folderlink");
-    
-    // feed source aspect
-    static final QName ASPECT_FEEDSOURCE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "feedsource");
-    static final QName PROP_FEEDTEMPLATE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "template");
-    
-    // AVM web folder
-    static final QName TYPE_AVMWEBFOLDER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webfolder");
-    static final QName PROP_AVMSTORE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "avmstore");
-    static final QName PROP_DEFAULTWEBAPP = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "defaultwebapp");
-    static final QName ASSOC_WEBUSER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webuser");
-    static final QName ASSOC_WEBFORM = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webform");
-    static final QName ASSOC_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webworkflowdefaults");
-    
-    // AVM web user reference
-    static final QName TYPE_WEBUSER = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webuser");
-    static final QName PROP_WEBUSERNAME = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "username");
-    static final QName PROP_WEBUSERROLE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "role");
-    
-    // AVM web form
-    static final QName TYPE_WEBFORM = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webform");
-    static final QName PROP_FORMNAME = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "formname");
-    static final QName ASSOC_WEBFORMTEMPLATE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webformtemplate");
-    static final QName ASSOC_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowdefaults");
-    
-    // AVM web form template
-    static final QName TYPE_WEBFORMTEMPLATE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webformtemplate");
-    static final QName PROP_ENGINE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "engine");
-    
-    // AVM workflow defaults
-    static final QName TYPE_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowdefaults");
-    static final QName PROP_WORKFLOW_NAME = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "workflowname");
-    static final QName PROP_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "defaults");
-    
-    // AVM web workflow defaults
-    static final QName TYPE_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "webworkflowdefaults");
-    
-    // AVM filename pattern aspect
-    static final QName ASPECT_FILENAMEPATTERN = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "filenamepattern");
-    static final QName PROP_FILENAMEPATTERN = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "filenamepattern");
-    
-    
     //
     // User Model Definitions
     //

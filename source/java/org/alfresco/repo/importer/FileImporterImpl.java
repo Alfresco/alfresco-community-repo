@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
@@ -354,10 +355,10 @@ public class FileImporterImpl implements FileImporter
 
         // apply the uifacets aspect - icon, title and description props
         Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
-        uiFacetsProps.put(ContentModel.PROP_ICON, "space-icon-default");
+        uiFacetsProps.put(ApplicationModel.PROP_ICON, "space-icon-default");
         uiFacetsProps.put(ContentModel.PROP_TITLE, name);
         uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, path);
-        this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+        this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
         
         if (logger.isDebugEnabled())
            logger.debug("Added uifacets aspect with properties: " + uiFacetsProps);

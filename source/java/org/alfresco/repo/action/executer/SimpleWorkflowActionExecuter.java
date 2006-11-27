@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -83,21 +83,21 @@ public class SimpleWorkflowActionExecuter extends ActionExecuterAbstractBase
 			
 			// Set the property values
 			Map<QName, Serializable> propertyValues = new HashMap<QName, Serializable>();
-			propertyValues.put(ContentModel.PROP_APPROVE_STEP, approveStep);
-			propertyValues.put(ContentModel.PROP_APPROVE_FOLDER, approveFolder);
+			propertyValues.put(ApplicationModel.PROP_APPROVE_STEP, approveStep);
+			propertyValues.put(ApplicationModel.PROP_APPROVE_FOLDER, approveFolder);
 			if (approveMove != null)
 			{
-				propertyValues.put(ContentModel.PROP_APPROVE_MOVE, approveMove.booleanValue());
+				propertyValues.put(ApplicationModel.PROP_APPROVE_MOVE, approveMove.booleanValue());
 			}						
-			propertyValues.put(ContentModel.PROP_REJECT_STEP, rejectStep);
-			propertyValues.put(ContentModel.PROP_REJECT_FOLDER, rejectFolder);
+			propertyValues.put(ApplicationModel.PROP_REJECT_STEP, rejectStep);
+			propertyValues.put(ApplicationModel.PROP_REJECT_FOLDER, rejectFolder);
 	        if (rejectMove != null)
 	        {
-	        	propertyValues.put(ContentModel.PROP_REJECT_MOVE, rejectMove.booleanValue());
+	        	propertyValues.put(ApplicationModel.PROP_REJECT_MOVE, rejectMove.booleanValue());
 	        }
 			
 			// Apply the simple workflow aspect to the node
-			this.nodeService.addAspect(actionedUponNodeRef, ContentModel.ASPECT_SIMPLE_WORKFLOW, propertyValues);
+			this.nodeService.addAspect(actionedUponNodeRef, ApplicationModel.ASPECT_SIMPLE_WORKFLOW, propertyValues);
 		}
 	}
 }

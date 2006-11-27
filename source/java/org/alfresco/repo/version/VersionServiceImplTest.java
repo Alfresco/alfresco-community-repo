@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -250,7 +251,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	contentWriter.putContent(UPDATED_CONTENT_1);
     	
     	// Change the aspects on the node
-    	this.dbNodeService.addAspect(versionableNode, ContentModel.ASPECT_SIMPLE_WORKFLOW, null);
+    	this.dbNodeService.addAspect(versionableNode, ApplicationModel.ASPECT_SIMPLE_WORKFLOW, null);
     	
     	// Store the node details for later
     	Set<QName> origAspects2 = this.dbNodeService.getAspects(versionableNode);

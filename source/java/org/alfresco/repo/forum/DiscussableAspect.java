@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -240,15 +241,15 @@ public class DiscussableAspect
            
            ChildAssociationRef childRef = this.nodeService.createNode(destNodeRef, 
                ForumModel.ASSOC_DISCUSSION,
-               QName.createQName(ForumModel.FORUMS_MODEL_URI, "discussion"), 
+               QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion"), 
                ForumModel.TYPE_FORUM, forumProps);
          
            destinationForum = childRef.getChildRef();
 
            // apply the uifacets aspect
            Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
-           uiFacetsProps.put(ContentModel.PROP_ICON, "forum");
-           this.nodeService.addAspect(destinationForum, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+           uiFacetsProps.put(ApplicationModel.PROP_ICON, "forum");
+           this.nodeService.addAspect(destinationForum, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
         }
         
         return destinationForum;

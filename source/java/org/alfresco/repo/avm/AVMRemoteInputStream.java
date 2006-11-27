@@ -86,10 +86,7 @@ public class AVMRemoteInputStream extends InputStream
             {
                 return -1;
             }
-            for (int i = 0; i < buff.length; i++)
-            {
-                b[off + i] = buff[i];
-            }
+            System.arraycopy(buff, 0, b, off, buff.length);
             return buff.length;
         }
         catch (Exception e)

@@ -85,10 +85,7 @@ public class AVMRemoteOutputStream extends OutputStream
             else
             {
                 byte [] buff = new byte[len];
-                for (int i = 0; i < len; i++)
-                {
-                    buff[i] = b[i + off];
-                }
+                System.arraycopy(b, off, buff, 0, len);
                 fAVMRemote.writeOutput(fHandle, buff, len);
             }
         }

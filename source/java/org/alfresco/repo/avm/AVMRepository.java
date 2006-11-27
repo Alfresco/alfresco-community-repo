@@ -2185,7 +2185,7 @@ public class AVMRepository
             {
                 throw new AVMNotFoundException("Store not found.");
             }
-            fLookupCache.onWrite(pathParts[0]);
+            fLookupCache.onDelete(pathParts[0]);
             Lookup lPath = store.lookup(-1, pathParts[1], true, false);
             AVMNode node = lPath.getCurrentNode();
             if (node == null)

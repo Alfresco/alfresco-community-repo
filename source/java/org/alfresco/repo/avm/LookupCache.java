@@ -268,7 +268,8 @@ public class LookupCache
         for (Map.Entry<LookupKey, Lookup> entry : fCache.entrySet())
         {
             if ((entry.getKey().getStoreName().equals(storeName) &&
-                !entry.getKey().isWrite()) || entry.getValue().isLayered())
+                !entry.getKey().isWrite()) || 
+                (!entry.getKey().isWrite() && entry.getValue().isLayered()))
             {
                 toDelete.add(entry.getKey());
             }

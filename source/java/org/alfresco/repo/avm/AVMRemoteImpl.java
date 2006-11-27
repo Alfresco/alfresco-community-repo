@@ -577,6 +577,16 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
     }
     
     /**
+     * Get the id of the latest version snapshot.
+     * @param storeName The store name.
+     * @return The id.
+     */
+    public int getLatestSnapshotID(String storeName)
+    {
+        return fAVMService.getLatestSnapshotID(storeName);
+    }
+    
+    /**
      * Snapshot the given AVMStores.
      * @param stores A List of the names of the stores to snapshot.
      * @return A List of the version ids of the newly created snapshots.

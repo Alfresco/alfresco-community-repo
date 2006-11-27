@@ -199,6 +199,13 @@ public interface AVMRemote
      * @return The latest version id.
      */
     public int getLatestVersionID(String storeName);
+
+    /**
+     * Get the id of the latest extant snpashot.
+     * @param storeName The name of the store.
+     * @return The id.
+     */
+    public int getLatestSnapshotID(String storeName);
     
     /**
      * Snapshot the given AVMStores.

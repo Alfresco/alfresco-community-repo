@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo;
+package org.alfresco.filesys.alfresco;
 
 /**
  * Desktop Action Exception Class

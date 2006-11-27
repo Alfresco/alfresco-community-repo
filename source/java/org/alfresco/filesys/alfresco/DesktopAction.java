@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo;
+package org.alfresco.filesys.alfresco;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -24,16 +24,10 @@ import java.net.URL;
 import java.net.URLDecoder;
 
 import org.alfresco.config.ConfigElement;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.smb.server.repo.pseudo.LocalPseudoFile;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
+import org.alfresco.filesys.server.pseudo.LocalPseudoFile;
+import org.alfresco.filesys.server.pseudo.PseudoFile;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -112,8 +106,8 @@ public abstract class DesktopAction {
 	
 	// Filesystem driver and context
 	
-	private ContentDiskDriver m_contentDriver;
-	private ContentContext m_contentContext;
+	private AlfrescoDiskDriver m_filesysDriver;
+	private AlfrescoContext m_filesysContext;
 
 	// Webapp URL
 	
@@ -225,23 +219,23 @@ public abstract class DesktopAction {
 	}
 
 	/**
-	 * Return the content filesystem driver
+	 * Return the filesystem driver
 	 * 
-	 * @return ContentDiskDriver
+	 * @return AlfrescoDiskDriver
 	 */
-	public final ContentDiskDriver getDriver()
+	public final AlfrescoDiskDriver getDriver()
 	{
-		return m_contentDriver;
+		return m_filesysDriver;
 	}
 	
 	/**
 	 * Return the filesystem context
 	 * 
-	 * @return ContentContext
+	 * @return AlfrescoContext
 	 */
-	public final ContentContext getContext()
+	public final AlfrescoContext getContext()
 	{
-		return m_contentContext;
+		return m_filesysContext;
 	}
 	
 	/**
@@ -252,6 +246,16 @@ public abstract class DesktopAction {
 	public String getConfirmationString()
 	{
 		return null;
+	}
+	
+	/**
+	 * Return the service registry
+	 * 
+	 * @return ServiceRegistry
+	 */
+	public final ServiceRegistry getServiceRegistry()
+	{
+		return m_filesysDriver.getServiceRegistry();
 	}
 	
 	/**
@@ -313,13 +317,13 @@ public abstract class DesktopAction {
 	{
 		// Save the filesystem device and I/O handler
 		
-		if ( fileSys.getDiskInterface() instanceof ContentDiskDriver)
+		if ( fileSys.getContext() instanceof AlfrescoContext)
 		{
-			m_contentDriver = (ContentDiskDriver) fileSys.getDiskInterface();
-			m_contentContext = (ContentContext) fileSys.getDiskContext();
+			m_filesysDriver  = (AlfrescoDiskDriver) fileSys.getDiskInterface();
+			m_filesysContext = (AlfrescoContext) fileSys.getDiskContext();
 		}
 		else
-			throw new DesktopActionException("Desktop action requires content filesystem driver");
+			throw new DesktopActionException("Desktop action requires an Alfresco filesystem driver");
 		
 		// Check for standard config values
 		
@@ -463,77 +467,6 @@ public abstract class DesktopAction {
 	public abstract DesktopResponse runAction(DesktopParams params)
 		throws DesktopActionException;
 
-    /**
-     * Return the CIFS helper
-     * 
-     * @return CifsHelper
-     */
-    protected final CifsHelper getCifsHelper()
-    {
-    	return m_contentDriver.getCifsHelper();
-    }
-    
-    /**
-     * Return the transaction service
-     * 
-     * @return TransactionService
-     */
-    protected final TransactionService getTransactionService()
-    {
-    	return m_contentDriver.getTransactionService();
-    }
-    
-    /**
-     * Return the node service
-     * 
-     * @return NodeService
-     */
-    protected final NodeService getNodeService()
-    {
-    	return m_contentDriver.getNodeService();
-    }
-
-    
-    /**
-     * Return the content service
-     * 
-     * @return ContentService
-     */
-    public final ContentService getContentService()
-    {
-    	return m_contentDriver.getContentService();
-    }
-
-    /**
-     * Return the namespace service
-     * 
-     * @return NamespaceService
-     */
-    public final NamespaceService getNamespaceService()
-    {
-    	return m_contentDriver.getNamespaceService();
-    }
-    
-    /**
-     * Return the search service
-     * 
-     * @return SearchService
-     */
-    public final SearchService getSearchService()
-    {
-    	return m_contentDriver.getSearchService();
-    }
-
-    /**
-     * Return the service registry
-     * 
-     * @return ServiceRegistry
-     */
-    public final ServiceRegistry getServiceRegistry()
-    {
-    	return m_contentDriver.getServiceRegistry();
-    }
-    
     /**
 	 * Set the action attributes
 	 * 

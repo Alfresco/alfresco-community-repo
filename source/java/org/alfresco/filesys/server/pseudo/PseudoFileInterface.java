@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo.pseudo;
+package org.alfresco.filesys.server.pseudo;
 
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.filesys.TreeConnection;

@@ -20,21 +20,22 @@ package org.alfresco.filesys.avm;
 import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.SearchContext;
+import org.alfresco.filesys.server.pseudo.PseudoFile;
+import org.alfresco.filesys.server.pseudo.PseudoFileList;
 import org.alfresco.filesys.util.WildCard;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 
 /**
- * AVM Filesystem Search Context Class
+ * Pseudo File List Search Context Class
  * 
- * <p>Contains the details of a wildcard folder search.
+ * <p>Returns files from a pseudo file list for a wildcard search.
  *
- * @author GKSpencer
+ * @author gkspencer
  */
-public class AVMSearchContext extends SearchContext {
+public class PseudoFileListSearchContext extends SearchContext {
 
-	// File list and current index
+	// Pseudo file list and current index
 	
-	private AVMNodeDescriptor[] m_fileList;
+	private PseudoFileList m_fileList;
 	private int m_fileIdx;
 	
 	// File attributes
@@ -48,11 +49,11 @@ public class AVMSearchContext extends SearchContext {
 	/**
 	 * Class constructor
 	 * 
-	 * @param fileList SortedMap<String, AVMNodeDescriptor>
+	 * @param fileList PseudoFileList
 	 * @param attrib int
 	 * @param filter WildCard
 	 */
-	public AVMSearchContext( AVMNodeDescriptor[]  fileList, int attrib, WildCard filter)
+	public PseudoFileListSearchContext( PseudoFileList fileList, int attrib, WildCard filter)
 	{
 		m_attrib   = attrib;
 		m_filter   = filter;
@@ -66,7 +67,7 @@ public class AVMSearchContext extends SearchContext {
      */
     public boolean hasMoreFiles()
     {
-    	return m_fileIdx < m_fileList.length ? true : false;
+    	return m_fileIdx < m_fileList.numberOfFiles() ? true : false;
     }
 
     /**
@@ -80,54 +81,60 @@ public class AVMSearchContext extends SearchContext {
     {
     	// Check if there is another file record to return
     	
-    	if ( m_fileIdx >= m_fileList.length)
+    	if ( m_fileIdx >= m_fileList.numberOfFiles())
     		return false;
 
     	// Search for the next valid file
     	
         boolean foundMatch = false;
-    	AVMNodeDescriptor curFile = null;
+    	PseudoFile curFile = null;
     	
-        while (foundMatch == false && m_fileIdx < m_fileList.length)
+        while (foundMatch == false && m_fileIdx < m_fileList.numberOfFiles())
         {
         	// 	Get the next file from the list
         	
-        	curFile = m_fileList[ m_fileIdx++];
+        	curFile = m_fileList.getFileAt( m_fileIdx++);
         	
         	//	Check if the file name matches the search pattern
   				
-  			if ( m_filter.matchesPattern(curFile.getName()) == true)
+  			if ( m_filter != null)
   			{
-  					
-  				//  Check if the file matches the search attributes
-  	
-  				if (FileAttribute.hasAttribute(m_attrib, FileAttribute.Directory) &&
-  					curFile.isDirectory())
-  				{
-  	
-  					//  Found a match
-  	
-  					foundMatch = true;
-  				}
-  				else if ( curFile.isFile())
-  				{
-  	
-  					//  Found a match
-  	
-  					foundMatch = true;
-  				}
-
-  				//	Check if we found a match
+  				// Check if the current file matches the wildcard pattern
   				
-  				if ( foundMatch == false)
+  				if ( m_filter.matchesPattern(curFile.getFileName()) == true)
   				{
-  					
-  					//  Get the next file from the list
-
-  					if ( ++m_fileIdx < m_fileList.length)
-  			        	curFile = m_fileList[ m_fileIdx];
+	  				//  Check if the file matches the search attributes
+	  	
+	  				if (FileAttribute.hasAttribute(m_attrib, FileAttribute.Directory) &&
+	  					curFile.isDirectory())
+	  				{
+	  	
+	  					//  Found a match
+	  	
+	  					foundMatch = true;
+	  				}
+	  				else if ( curFile.isFile())
+	  				{
+	  	
+	  					//  Found a match
+	  	
+	  					foundMatch = true;
+	  				}
+	
+	  				//	Check if we found a match
+	  				
+	  				if ( foundMatch == false)
+	  				{
+	  					
+	  					//  Get the next file from the list
+	
+	  					if ( ++m_fileIdx < m_fileList.numberOfFiles())
+	  			        	curFile = m_fileList.getFileAt( m_fileIdx);
+	  				}
   				}
   			}
+  			else
+  				foundMatch = true;
         }
 
         // If we found a match then fill in the file information
@@ -136,30 +143,32 @@ public class AVMSearchContext extends SearchContext {
         {
         	// Fill in the file information
         	
-        	info.setFileName( curFile.getName());
+        	info.setFileName( curFile.getFileName());
+        	
+        	// Get the file information from the pseudo file
+        	
+        	FileInfo pfInfo = curFile.getFileInfo();
         	
         	if ( curFile.isFile())
         	{
-        		info.setFileSize( curFile.getLength());
-        		info.setAllocationSize((curFile.getLength() + 512L) & 0xFFFFFFFFFFFFFE00L);
+        		info.setFileSize( pfInfo.getSize());
+        		info.setAllocationSize( pfInfo.getAllocationSize());
         	}
         	else
         		info.setFileSize( 0L);
 
-        	info.setAccessDateTime( curFile.getAccessDate());
-        	info.setCreationDateTime( curFile.getCreateDate());
-        	info.setModifyDateTime( curFile.getModDate());
+        	info.setAccessDateTime( pfInfo.getAccessDateTime());
+        	info.setCreationDateTime( pfInfo.getCreationDateTime());
+        	info.setModifyDateTime( pfInfo.getModifyDateTime());
 
         	// Build the file attributes
         	
-        	int attr = 0;
+        	int attr = pfInfo.getFileAttributes();
         	
-        	if ( curFile.isDirectory())
-        		attr += FileAttribute.Directory;
-        	
-        	if ( curFile.getName().startsWith( ".") ||
-        			curFile.getName().equalsIgnoreCase( "Desktop.ini") ||
-        			curFile.getName().equalsIgnoreCase( "Thumbs.db"))
+        	if ( pfInfo.isHidden() == false &&
+        			curFile.getFileName().startsWith( ".") ||
+        			curFile.getFileName().equalsIgnoreCase( "Desktop.ini") ||
+        			curFile.getFileName().equalsIgnoreCase( "Thumbs.db"))
         		attr += FileAttribute.Hidden;
         	
         	info.setFileAttributes( attr);
@@ -182,11 +191,11 @@ public class AVMSearchContext extends SearchContext {
     	
     	//	Find the next matching file name
     	
-    	while ( m_fileIdx < m_fileList.length) {
+    	while ( m_fileIdx < m_fileList.numberOfFiles()) {
     		
     		//	Check if the current file name matches the search pattern
     		
-    		String fname = m_fileList[m_fileIdx++].getName();
+    		String fname = m_fileList.getFileAt( m_fileIdx++).getFileName();
     		
     		if ( m_filter.matchesPattern(fname))
     			return fname;
@@ -204,7 +213,7 @@ public class AVMSearchContext extends SearchContext {
      */
     public int numberOfEntries()
     {
-        return m_fileList.length;
+        return m_fileList.numberOfFiles();
     }
 
     /**
@@ -229,7 +238,7 @@ public class AVMSearchContext extends SearchContext {
     	
     	int resId = resumeId - 1;
     	
-    	if ( resId < 0 || resId >= m_fileList.length)
+    	if ( resId < 0 || resId >= m_fileList.numberOfFiles())
     		return false;
     	
     	// Reset the current file index
@@ -250,16 +259,16 @@ public class AVMSearchContext extends SearchContext {
     	
     	int curFileIdx = m_fileIdx;
 
-        if (m_fileIdx >= m_fileList.length)
+        if (m_fileIdx >= m_fileList.numberOfFiles())
         {
-            m_fileIdx = m_fileList.length - 1;
+            m_fileIdx = m_fileList.numberOfFiles() - 1;
         }
         
     	while ( m_fileIdx > 0) {
     		
     		// Check if the current file is the required search restart point
     		
-    		if ( m_fileList[ m_fileIdx].getName().equals( info.getFileName()))
+    		if ( m_fileList.getFileAt( m_fileIdx).getFileName().equals( info.getFileName()))
     			return true;
     		else
     			m_fileIdx--;

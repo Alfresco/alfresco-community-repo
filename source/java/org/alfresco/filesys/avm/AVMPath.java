@@ -36,11 +36,12 @@ public class AVMPath {
 	
 	// Version id string for the head version
 	
-	private static final String VersionNameHead	= "Head";
+	public static final String VersionNameHead	= "Head";
 	
     // AVM path seperator
     
-    public static final char AVM_SEPERATOR		= '/';
+    public static final char AVM_SEPERATOR			= '/';
+    public static final String AVM_SEPERATOR_STR	= "/";
 
     // Store name
 	
@@ -57,9 +58,18 @@ public class AVMPath {
 	// AVM style path
 	
 	private String m_avmPath;
+
+	/**
+	 * Default constructor
+	 */
+	public AVMPath()
+	{
+	}
 	
 	/**
 	 * Class constructor
+	 *
+	 * <p>Construct an AVM path for the virtualization view, with store and version folders
 	 * 
 	 * @param shrPath String
 	 */
@@ -68,6 +78,22 @@ public class AVMPath {
 		// Parse the path
 		
 		parsePath( shrPath);
+	}
+
+	/**
+	 * Class constructor
+	 * 
+	 * <p>Construct an AVM path for a standard view onto a store/version
+	 * 
+	 * @param storeName String
+	 * @param version int
+	 * @param path String
+	 */
+	public AVMPath(String storeName, int version, String path)
+	{
+		// Parse the path
+		
+		parsePath( storeName, version, path);
 	}
 	
 	/**
@@ -101,6 +127,28 @@ public class AVMPath {
 	}
 	
 	/**
+	 * Return the version as a string
+	 * 
+	 * @return String
+	 */
+	public final String getVersionString()
+	{
+		if ( m_version == -1)
+			return VersionNameHead;
+		return "" + m_version;
+	}
+	
+	/**
+	 * Check if there is a share relative path
+	 * 
+	 * @return boolean
+	 */
+	public final boolean hasRelativePath()
+	{
+		return m_path != null ? true : false;
+	}
+	
+	/**
 	 * Return the share relative path
 	 * 
 	 * @return String
@@ -127,22 +175,54 @@ public class AVMPath {
 	 */
 	public final boolean isValid()
 	{
-		return m_storeName == null ? false : true;
+		return m_storeName == null && m_path == null ? false : true;
 	}
 	
 	/**
-	 * Parse the path
+	 * Check if the path is to a pseudo folder in the virtualization view
+	 * 
+	 * @return boolean
+	 */
+	public final boolean isPseudoPath()
+	{
+		return m_version == InvalidVersionId || m_path == null ? true : false;
+	}
+	
+	/**
+	 * Check if the path is the root path
+	 * 
+	 * @return boolean
+	 */
+	public final boolean isRootPath()
+	{
+		if ( m_path != null && m_path.equals( FileName.DOS_SEPERATOR_STR))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Parse the path, for the virtualization view onto all stores/versions
 	 * 
 	 * @param path String
 	 */
-	private final void parsePath( String path)
+	public final void parsePath( String path)
 	{
+		// Clear current settings
+		
+		m_storeName = null;
+		m_version   = InvalidVersionId;
+		m_path    = null;
+		m_avmPath = null;
+		
 		// Split the path
 		
 		String[] paths = FileName.splitAllPaths(path);
 		
 		if ( paths == null || paths.length == 0)
+		{
+			m_path = FileName.DOS_SEPERATOR_STR;
 			return;
+		}
 		
 		// Set the store name
 		
@@ -206,7 +286,74 @@ public class AVMPath {
 				
 				m_avmPath = pathStr.toString();
 			}
+			else
+			{
+				// Share relative path is the root of the share
+				
+				m_path = FileName.DOS_SEPERATOR_STR;
+				
+				// Build the AVM path
+				
+				StringBuilder pathStr = new StringBuilder();
+				
+				pathStr.append( m_storeName);
+				pathStr.append( ":/");
+				
+				m_avmPath = pathStr.toString();
+			}
 		}
+	}
+	
+	/**
+	 * Parse the path, to generate a path for a single store/version
+	 * 
+	 * @param storeName String
+	 * @param version int
+	 * @param path String
+	 */
+	public final void parsePath( String storeName, int version, String path)
+	{
+		// Clear current settings
+		
+		m_storeName = null;
+		m_version   = InvalidVersionId;
+		m_path    = null;
+		m_avmPath = null;
+		
+		// Set the store/version
+		
+		m_storeName = storeName;
+		m_version   = version;
+
+		// Save the relative path
+		
+		m_path = path;
+		
+    	// Build the store path
+    	
+    	StringBuilder avmPath = new StringBuilder();
+    	avmPath.append( m_storeName);
+    	
+    	if ( storeName.indexOf( ":") == -1)
+    		avmPath.append( ":");
+    	
+    	if ( path == null || path.length() == 0)
+    	{
+    		avmPath.append( AVM_SEPERATOR);
+    		
+    		// Set the share relative path as the root path
+    		
+    		m_path = FileName.DOS_SEPERATOR_STR;
+    	}
+    	else
+    	{
+	    	if ( path.startsWith( FileName.DOS_SEPERATOR_STR) == false)
+	    		avmPath.append( AVM_SEPERATOR);
+	    	
+	    	avmPath.append( path.replace( FileName.DOS_SEPERATOR, AVM_SEPERATOR));
+    	}
+    	
+    	m_avmPath = avmPath.toString();
 	}
 	
 	/**

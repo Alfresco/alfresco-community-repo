@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo.pseudo;
+package org.alfresco.filesys.server.pseudo;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,8 +26,8 @@ import org.alfresco.filesys.smb.SeekType;
 
 /**
  * Pseudo File Network File Class
- * <p>
- * Represents an open pseudo file and provides access to the file data.
+ * 
+ * <p>Represents an open pseudo file and provides access to the file data.
  * 
  * @author gkspencer
  */

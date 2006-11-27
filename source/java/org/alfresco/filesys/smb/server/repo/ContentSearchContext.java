@@ -21,8 +21,8 @@ import java.util.List;
 
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.SearchContext;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileList;
+import org.alfresco.filesys.server.pseudo.PseudoFile;
+import org.alfresco.filesys.server.pseudo.PseudoFileList;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

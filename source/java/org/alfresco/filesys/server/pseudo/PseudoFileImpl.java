@@ -14,33 +14,36 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.filesys.smb.server.repo.pseudo;
+package org.alfresco.filesys.server.pseudo;
 
 import java.util.Enumeration;
 
+import org.alfresco.filesys.alfresco.DesktopAction;
+import org.alfresco.filesys.alfresco.DesktopActionTable;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.server.pseudo.MemoryPseudoFile;
+import org.alfresco.filesys.server.pseudo.PseudoFile;
+import org.alfresco.filesys.server.pseudo.PseudoFileInterface;
 import org.alfresco.filesys.server.state.FileState;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
-import org.alfresco.filesys.smb.server.repo.DesktopAction;
-import org.alfresco.filesys.smb.server.repo.DesktopActionTable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Content Filesystem Driver Pseudo File Implementation
+ * Alfresco Filesystem Driver Pseudo File Implementation
  *
- * <p>Pseudo file implementation for the content disk driver.
+ * <p>Pseudo file implementation for the Alfresco filesystem drivers.
  * 
  * @author gkspencer
  */
-public class ContentPseudoFileImpl implements PseudoFileInterface
+public class PseudoFileImpl implements PseudoFileInterface
 {
     // Logging
     
-    private static final Log logger = LogFactory.getLog(ContentPseudoFileImpl.class);
+    private static final Log logger = LogFactory.getLog(PseudoFileImpl.class);
     
     /**
      * Check if the specified path refers to a pseudo file

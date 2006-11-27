@@ -16,9 +16,9 @@
  */
 package org.alfresco.filesys.smb.server.repo.desk;
 
-import org.alfresco.filesys.smb.server.repo.DesktopAction;
-import org.alfresco.filesys.smb.server.repo.DesktopParams;
-import org.alfresco.filesys.smb.server.repo.DesktopResponse;
+import org.alfresco.filesys.alfresco.DesktopAction;
+import org.alfresco.filesys.alfresco.DesktopParams;
+import org.alfresco.filesys.alfresco.DesktopResponse;
 
 /**
  * Command Line Desktop Action Class

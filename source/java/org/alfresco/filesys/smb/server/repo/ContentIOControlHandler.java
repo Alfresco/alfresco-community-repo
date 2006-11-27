@@ -18,6 +18,15 @@ package org.alfresco.filesys.smb.server.repo;
 
 import java.io.FileNotFoundException;
 
+import org.alfresco.filesys.alfresco.AlfrescoContext;
+import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
+import org.alfresco.filesys.alfresco.DesktopAction;
+import org.alfresco.filesys.alfresco.DesktopActionTable;
+import org.alfresco.filesys.alfresco.DesktopParams;
+import org.alfresco.filesys.alfresco.DesktopResponse;
+import org.alfresco.filesys.alfresco.DesktopTarget;
+import org.alfresco.filesys.alfresco.IOControl;
+import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
@@ -28,7 +37,6 @@ import org.alfresco.filesys.smb.SMBException;
 import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.server.repo.CifsHelper;
 import org.alfresco.filesys.smb.server.repo.ContentDiskDriver;
-import org.alfresco.filesys.smb.server.repo.IOControlHandler;
 import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -69,13 +77,13 @@ public class ContentIOControlHandler implements IOControlHandler
     /**
      * Initalize the I/O control handler
      *
-     * @param contentDriver ContentDiskDriver
-     * @param contentContext ContentContext
+     * @param filesysDriver AlfrescoDiskDriver
+     * @param context AlfrescoContext
      */
-    public void initialize( ContentDiskDriver contentDriver, ContentContext contentContext)
+    public void initialize( AlfrescoDiskDriver filesysDriver, AlfrescoContext context)
     {
-        this.contentDriver  = contentDriver;
-        this.contentContext = contentContext;
+        this.contentDriver  = (ContentDiskDriver) filesysDriver;
+        this.contentContext = (ContentContext) context;
     }
 
     /**

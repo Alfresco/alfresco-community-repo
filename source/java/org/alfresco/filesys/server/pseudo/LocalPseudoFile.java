@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo.pseudo;
+package org.alfresco.filesys.server.pseudo;
 
 import java.io.File;
 
@@ -67,7 +67,7 @@ public class LocalPseudoFile extends PseudoFile
     {
         // Check if the file information is valid
         
-        if ( m_fileInfo == null) {
+        if ( getInfo() == null) {
             
             // Get the file details
             
@@ -76,23 +76,25 @@ public class LocalPseudoFile extends PseudoFile
             {
                 // Create the file information
                 
-                m_fileInfo = new FileInfo( getFileName(), localFile.length(), getAttributes());
+                FileInfo fInfo = new FileInfo( getFileName(), localFile.length(), getAttributes());
                 
                 // Set the file creation/modification times
                 
-                m_fileInfo.setModifyDateTime( localFile.lastModified());
-                m_fileInfo.setCreationDateTime( _creationDateTime);
-                m_fileInfo.setChangeDateTime( _creationDateTime);
+                fInfo.setModifyDateTime( localFile.lastModified());
+                fInfo.setCreationDateTime( _creationDateTime);
+                fInfo.setChangeDateTime( _creationDateTime);
 
                 // Set the allocation size, round up the actual length
                 
-                m_fileInfo.setAllocationSize(( localFile.length() + 512L) & 0xFFFFFFFFFFFFFE00L);
+                fInfo.setAllocationSize(( localFile.length() + 512L) & 0xFFFFFFFFFFFFFE00L);
+                
+                setFileInfo( fInfo);
             }            
         }
         
         // Return the file information
         
-        return m_fileInfo;
+        return getInfo();
     }
 
     /**

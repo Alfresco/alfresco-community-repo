@@ -17,11 +17,10 @@
 
 package org.alfresco.filesys.avm;
 
-import org.alfresco.filesys.server.filesys.DiskDeviceContext;
+import org.alfresco.filesys.alfresco.AlfrescoContext;
+import org.alfresco.filesys.alfresco.IOControlHandler;
+import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.FileSystem;
-import org.alfresco.filesys.server.filesys.SrvDiskInfo;
-import org.alfresco.filesys.server.state.FileStateReaper;
-import org.alfresco.filesys.server.state.FileStateTable;
 
 /**
  * AVM Filesystem Context Class
@@ -30,7 +29,7 @@ import org.alfresco.filesys.server.state.FileStateTable;
  *
  * @author GKSpencer
  */
-public class AVMContext extends DiskDeviceContext {
+public class AVMContext extends AlfrescoContext {
 
 	// Constants
 	//
@@ -43,13 +42,17 @@ public class AVMContext extends DiskDeviceContext {
     private String m_storePath;
     private int m_version = VERSION_HEAD; 
 
-    // File state table and associated file state reaper
-    
-    private FileStateTable m_stateTable;
-    private FileStateReaper m_stateReaper;
+    // Flag to indicate if the virtualization view is enabled
+    //
+    //	The first set of folders then map to the stores and the second layer map to the versions with
+    //  paths below.
+
+    private boolean m_virtualView;
     
     /**
      * Class constructor
+     * 
+     * <p>Construct a context for a normal view onto a single store/version within AVM.
      * 
      * @param filesysName String
      * @param storePath String
@@ -68,17 +71,24 @@ public class AVMContext extends DiskDeviceContext {
     	// Set the store version to use
     	
     	m_version = version;
-    	
-        // Default the filesystem to look like an 80Gb sized disk with 90% free space
-        
-        setDiskInformation(new SrvDiskInfo(2560000, 64, 512, 2304000));
-        
-        // Set filesystem parameters
-        
-        setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
-        		FileSystem.CaseSensitiveSearch);
     }
 
+    /**
+     * Class constructor
+     * 
+     * <p>Construct a context for a virtualization view onto all stores/versions within AVM.
+     * 
+     * @param filesysName String
+     */
+    public AVMContext( String filesysName)
+    {
+    	super( filesysName, "VirtualView");
+    	
+    	// Enable the virtualization view
+    	
+    	m_virtualView = true;
+    }
+    
     /**
      * Return the filesystem type, either FileSystem.TypeFAT or FileSystem.TypeNTFS.
      * 
@@ -110,14 +120,19 @@ public class AVMContext extends DiskDeviceContext {
     }
     
     /**
+     * Check if the virtualization view is enabled
+     * 
+     * @return boolean
+     */
+    public final boolean isVirtualizationView()
+    {
+    	return m_virtualView;
+    }
+    
+    /**
      * Close the filesystem context
      */
 	public void CloseContext() {
-		
-		//	Deregister the file state table from the reaper
-		
-		if ( m_stateTable != null)
-			enableStateTable( false, m_stateReaper);
 		
 		//	Call the base class
 		
@@ -125,53 +140,13 @@ public class AVMContext extends DiskDeviceContext {
 	}
 	
     /**
-     * Determine if the file state table is enabled
+     * Create the I/O control handler for this filesystem type
      * 
-     * @return boolean
+     * @param filesysDriver DiskInterface
+     * @return IOControlHandler
      */
-    public final boolean hasStateTable()
+    protected IOControlHandler createIOHandler( DiskInterface filesysDriver)
     {
-        return m_stateTable != null ? true : false;
-    }
-    
-    /**
-     * Return the file state table
-     * 
-     * @return FileStateTable
-     */
-    public final FileStateTable getStateTable()
-    {
-        return m_stateTable;
-    }
-    
-    /**
-     * Enable/disable the file state table
-     * 
-     * @param ena boolean
-     * @param stateReaper FileStateReaper
-     */
-    public final void enableStateTable(boolean ena, FileStateReaper stateReaper)
-    {
-        if ( ena == false)
-        {
-        	// Remove the state table from the reaper
-        	
-        	stateReaper.removeStateTable( getFilesystemName());
-            m_stateTable = null;
-        }
-        else if ( m_stateTable == null)
-        {
-        	// Create the file state table
-
-            m_stateTable = new FileStateTable();
-            
-            // Register with the file state reaper
-            
-            stateReaper.addStateTable( getFilesystemName(), m_stateTable);
-        }
-        
-        // Save the reaper, for deregistering when the filesystem is closed
-        
-        m_stateReaper = stateReaper;
+    	return null;
     }
 }

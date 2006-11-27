@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo.pseudo;
+package org.alfresco.filesys.server.pseudo;
 
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.NetworkFile;
@@ -55,26 +55,28 @@ public class MemoryPseudoFile extends PseudoFile
     {
         // Check if the file information is valid
         
-        if ( m_fileInfo == null) {
+        if ( getInfo() == null) {
             
             // Create the file information
             
-            m_fileInfo = new FileInfo( getFileName(), m_data != null ? m_data.length : 0, getAttributes());
+            FileInfo fInfo = new FileInfo( getFileName(), m_data != null ? m_data.length : 0, getAttributes());
                 
             // Set the file creation/modification times
             
-            m_fileInfo.setCreationDateTime( _creationDateTime);
-            m_fileInfo.setModifyDateTime( _creationDateTime);
-            m_fileInfo.setChangeDateTime( _creationDateTime);
+            fInfo.setCreationDateTime( _creationDateTime);
+            fInfo.setModifyDateTime( _creationDateTime);
+            fInfo.setChangeDateTime( _creationDateTime);
 
             // Set the allocation size, round up the actual length
             
-            m_fileInfo.setAllocationSize(( m_fileInfo.getSize() + 512L) & 0xFFFFFFFFFFFFFE00L);
+            fInfo.setAllocationSize(( fInfo.getSize() + 512L) & 0xFFFFFFFFFFFFFE00L);
+            
+            setFileInfo( fInfo);
         }
         
         // Return the file information
         
-        return m_fileInfo;
+        return getInfo();
     }
 
     /**

@@ -40,6 +40,9 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.alfresco.DesktopAction;
+import org.alfresco.filesys.alfresco.DesktopActionException;
+import org.alfresco.filesys.alfresco.DesktopActionTable;
 import org.alfresco.filesys.avm.AVMContext;
 import org.alfresco.filesys.avm.AVMDiskDriver;
 import org.alfresco.filesys.avm.AVMShareMapper;
@@ -72,9 +75,6 @@ import org.alfresco.filesys.server.filesys.DiskSharedDevice;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.TcpipSMB;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
-import org.alfresco.filesys.smb.server.repo.DesktopAction;
-import org.alfresco.filesys.smb.server.repo.DesktopActionException;
-import org.alfresco.filesys.smb.server.repo.DesktopActionTable;
 import org.alfresco.filesys.smb.server.repo.HomeShareMapper;
 import org.alfresco.filesys.util.IPAddress;
 import org.alfresco.filesys.util.StringList;
@@ -1810,6 +1810,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
         				// Create the new share for the store
         				
 	                    AVMContext avmContext = new AVMContext( storeName, storeName + ":/", AVMContext.VERSION_HEAD);
+	                    avmContext.enableStateTable( true, avmDriver.getStateReaper());
                 		
 	                    // Create the shared filesystem
 	                	

@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo.pseudo;
+package org.alfresco.filesys.server.pseudo;
 
 import java.io.IOException;
 
@@ -40,10 +40,6 @@ public class MemoryNetworkFile extends NetworkFile
     
     private byte[] m_data;
     
-    // End of file flag
-
-    private boolean m_eof;
-
     /**
      * Class constructor.
      * 
@@ -64,7 +60,6 @@ public class MemoryNetworkFile extends NetworkFile
         // Set the file size
 
         setFileSize( m_data.length);
-        m_eof = false;
 
         // Set the creation and modification date/times
 

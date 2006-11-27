@@ -15,11 +15,9 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo;
+package org.alfresco.filesys.alfresco;
 
 import org.alfresco.filesys.server.filesys.IOCtlInterface;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.transaction.TransactionService;
 
 /**
  * I/O Control Handler Interface
@@ -30,10 +28,9 @@ public interface IOControlHandler extends IOCtlInterface
 {
     /**
      * Initialize the I/O control handler
-     * 
      *
-     * @param contentDriver ContentDiskDriver
-     * @param contentContext ContentContext
+     * @param filesysDriver AlfrescoDiskDriver
+     * @param filesysContext AlfrescoContext
      */
-    public void initialize( ContentDiskDriver contentDriver, ContentContext contentContext);
+    public void initialize( AlfrescoDiskDriver filesysDriver, AlfrescoContext filesysContext);
 }

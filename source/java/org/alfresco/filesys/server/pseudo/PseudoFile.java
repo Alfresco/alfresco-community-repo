@@ -15,9 +15,7 @@
  * License.
  */
 
-package org.alfresco.filesys.smb.server.repo.pseudo;
-
-import java.io.File;
+package org.alfresco.filesys.server.pseudo;
 
 import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
@@ -47,7 +45,7 @@ public abstract class PseudoFile
     
     // File information, used for file information/folder searches
     
-    protected FileInfo m_fileInfo;
+    private FileInfo m_fileInfo;
     
     /**
      * Class constructor
@@ -92,6 +90,46 @@ public abstract class PseudoFile
     }
     
     /**
+     * Check if the pseudo file is a file
+     * 
+     * @return boolean
+     */
+    public final boolean isFile()
+    {
+    	return (m_fileFlags & FileAttribute.Directory) != 0 ? false : true;
+    }
+    
+    /**
+     * Check if the pseudo file is a folder
+     * 
+     * @return boolean
+     */
+    public final boolean isDirectory()
+    {
+    	return (m_fileFlags & FileAttribute.Directory) != 0 ? true : false;
+    }
+    
+    /**
+     * Check if the pseudo file is read-only
+     * 
+     * @return boolean
+     */
+    public final boolean isReadOnly()
+    {
+    	return (m_fileFlags & FileAttribute.ReadOnly) != 0 ? true : false;
+    }
+    
+    /**
+     * Check if the pseudo file is hidden
+     * 
+     * @return boolean
+     */
+    public final boolean isHidden()
+    {
+    	return (m_fileFlags & FileAttribute.Hidden) != 0 ? true : false;
+    }
+    
+    /**
      * Return the file information for the pseudo file
      *
      * @return FileInfo
@@ -105,6 +143,26 @@ public abstract class PseudoFile
      * @return NetworkFile
      */
     public abstract NetworkFile getFile(String netPath);
+    
+    /**
+     * Set the file information
+     * 
+     * @param fileInfo FileInfo
+     */
+    protected final void setFileInfo( FileInfo finfo)
+    {
+    	m_fileInfo = finfo;
+    }
+    
+    /**
+     * Return the file information
+     * 
+     * @return FileInfo
+     */
+    protected final FileInfo getInfo()
+    {
+    	return m_fileInfo;
+    }
     
     /**
      * Return the pseudo file as a string

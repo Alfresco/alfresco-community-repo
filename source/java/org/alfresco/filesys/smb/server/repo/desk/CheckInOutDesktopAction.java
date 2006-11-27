@@ -20,15 +20,17 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.filesys.alfresco.DesktopAction;
+import org.alfresco.filesys.alfresco.DesktopParams;
+import org.alfresco.filesys.alfresco.DesktopResponse;
+import org.alfresco.filesys.alfresco.DesktopTarget;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.NotifyChange;
-import org.alfresco.filesys.smb.server.repo.DesktopAction;
-import org.alfresco.filesys.smb.server.repo.DesktopParams;
-import org.alfresco.filesys.smb.server.repo.DesktopResponse;
-import org.alfresco.filesys.smb.server.repo.DesktopTarget;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Check In/Out Desktop Action Class
@@ -75,9 +77,14 @@ public class CheckInOutDesktopAction extends DesktopAction {
 		if ( params.numberOfTargetNodes() == 0)
 			return new DesktopResponse(StsSuccess);
 		
+		// Get required services
+		
+		TransactionService transService = getServiceRegistry().getTransactionService();
+		NodeService nodeService = getServiceRegistry().getNodeService();
+		
 		// Start a transaction
 		
-		params.getSession().beginTransaction(getTransactionService(), false);
+		params.getSession().beginTransaction( transService, false);
 		
 		// Process the list of target nodes
 
@@ -91,7 +98,7 @@ public class CheckInOutDesktopAction extends DesktopAction {
 			
 			// Check if the node is a working copy
 			
-            if ( getNodeService().hasAspect( target.getNode(), ContentModel.ASPECT_WORKING_COPY))
+            if ( nodeService.hasAspect( target.getNode(), ContentModel.ASPECT_WORKING_COPY))
             {
                 try
                 {
@@ -144,11 +151,11 @@ public class CheckInOutDesktopAction extends DesktopAction {
                 {
                 	// Check if the file is locked
                 	
-                	if ( getNodeService().hasAspect( target.getNode(), ContentModel.ASPECT_LOCKABLE)) {
+                	if ( nodeService.hasAspect( target.getNode(), ContentModel.ASPECT_LOCKABLE)) {
                 	
                 		// Get the lock type
                 		
-                		String lockTypeStr = (String) getNodeService().getProperty( target.getNode(), ContentModel.PROP_LOCK_TYPE);
+                		String lockTypeStr = (String) nodeService.getProperty( target.getNode(), ContentModel.PROP_LOCK_TYPE);
                 		if ( lockTypeStr != null) {
                 			response.setStatus(StsError, "Checkout failed, file is locked");
                 			return response;
@@ -161,7 +168,7 @@ public class CheckInOutDesktopAction extends DesktopAction {
 
                     // Get the working copy file name
                     
-                    String workingCopyName = (String) getNodeService().getProperty( workingCopyNode, ContentModel.PROP_NAME);
+                    String workingCopyName = (String) nodeService.getProperty( workingCopyNode, ContentModel.PROP_NAME);
                     
                     // Check out was successful, pack the working copy name
 

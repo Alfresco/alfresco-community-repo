@@ -25,6 +25,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
@@ -38,30 +39,21 @@ import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.FileSharingException;
 import org.alfresco.filesys.server.filesys.FileStatus;
-import org.alfresco.filesys.server.filesys.FileSystem;
-import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
-import org.alfresco.filesys.server.filesys.IOCtlInterface;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.SearchContext;
-import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.server.pseudo.MemoryNetworkFile;
+import org.alfresco.filesys.server.pseudo.PseudoFile;
+import org.alfresco.filesys.server.pseudo.PseudoFileInterface;
+import org.alfresco.filesys.server.pseudo.PseudoFileList;
+import org.alfresco.filesys.server.pseudo.PseudoNetworkFile;
 import org.alfresco.filesys.server.state.FileState;
-import org.alfresco.filesys.server.state.FileStateReaper;
 import org.alfresco.filesys.server.state.FileState.FileStateStatus;
-import org.alfresco.filesys.smb.SMBException;
-import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.SharingMode;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
-import org.alfresco.filesys.smb.server.repo.pseudo.MemoryNetworkFile;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileList;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoNetworkFile;
-import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -83,7 +75,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class ContentDiskDriver implements DiskInterface, IOCtlInterface
+public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 {
     // Logging
     
@@ -111,14 +103,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     
     private AuthenticationComponent authComponent;
     private AuthenticationService authService;
-    
-    // Service registry for desktop actions
-    
-    private ServiceRegistry serviceRegistry;
-    
-    // File state reaper
-    
-    private FileStateReaper m_stateReaper;
     
     /**
      * Class constructor
@@ -200,26 +184,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
 
     /**
-     * Return the service registry
-     * 
-     * @return ServiceRegistry
-     */
-    public final ServiceRegistry getServiceRegistry()
-    {
-    	return this.serviceRegistry;
-    }
-
-    /**
-     * Return the file state reaper
-     * 
-     * @return FileStateReaper
-     */
-    public final FileStateReaper getStateReaper()
-    {
-    	return m_stateReaper;
-    }
-    
-    /**
      * @param contentService the content service
      */
     public void setContentService(ContentService contentService)
@@ -270,16 +234,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
     
     /**
-     * Set the service registry
-     * 
-     * @param serviceRegistry
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-    	this.serviceRegistry = serviceRegistry;
-    }
-    
-    /**
      * Set the authentication component
      * 
      * @param authComponent AuthenticationComponent
@@ -297,16 +251,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     public void setAuthenticationService(AuthenticationService authService)
     {
     	this.authService = authService;
-    }
-    
-    /**
-     * Set the file state reaper
-     * 
-     * @param stateReaper FileStateReaper
-     */
-    public final void setStateReaper(FileStateReaper stateReaper)
-    {
-    	m_stateReaper = stateReaper;
     }
     
     /**
@@ -419,15 +363,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             // Create the context
             
             context = new ContentContext(name, storeValue, rootPath, rootNodeRef);
-
-            // Default the filesystem to look like an 80Gb sized disk with 90% free space
-            
-            context.setDiskInformation(new SrvDiskInfo(2560000, 64, 512, 2304000));
-            
-            // Set parameters
-            
-            context.setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
-            		FileSystem.CaseSensitiveSearch);
         }
         catch (Exception ex)
         {
@@ -2197,38 +2132,5 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     public void treeOpened(SrvSession sess, TreeConnection tree)
     {
         // Nothing to do
-    }
-    
-    /**
-     * Process a filesystem I/O control request
-     * 
-     * @param sess Server session
-     * @param tree Tree connection.
-     * @param ctrlCode I/O control code
-     * @param fid File id
-     * @param dataBuf I/O control specific input data
-     * @param isFSCtrl true if this is a filesystem control, or false for a device control
-     * @param filter if bit0 is set indicates that the control applies to the share root handle
-     * @return DataBuffer
-     * @exception IOControlNotImplementedException
-     * @exception SMBException
-     */
-    public DataBuffer processIOControl(SrvSession sess, TreeConnection tree, int ctrlCode, int fid, DataBuffer dataBuf,
-            boolean isFSCtrl, int filter)
-        throws IOControlNotImplementedException, SMBException
-    {
-        // Validate the file id
-        
-        NetworkFile netFile = tree.findFile(fid);
-        if ( netFile == null || netFile.isDirectory() == false)
-            throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
-        
-        // Check if the I/O control handler is enabled
-        
-        ContentContext ctx = (ContentContext) tree.getContext();
-        if ( ctx.hasIOHandler())
-            return ctx.getIOHandler().processIOControl( sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter);
-        else
-            throw new IOControlNotImplementedException();
     }
 }

@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.filesys.smb.server.repo;
+package org.alfresco.filesys.alfresco;
 
 import org.alfresco.filesys.smb.NTIOCtl;
 

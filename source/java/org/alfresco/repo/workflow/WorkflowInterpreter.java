@@ -29,9 +29,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
@@ -44,6 +50,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
@@ -57,6 +64,9 @@ public class WorkflowInterpreter
     // Service dependencies    
     private WorkflowService workflowService;
     private NamespaceService namespaceService;
+    private NodeService nodeService;
+    private AVMService avmService;
+    private AVMSyncService avmSyncService;
     private PersonService personService;
     
     /**
@@ -111,7 +121,31 @@ public class WorkflowInterpreter
     {
         this.workflowService = workflowService;
     }
+
+    /**
+     * @param nodeService The Node Service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * @param avmService  The AVM Service
+     */
+    public void setAVMService(AVMService avmService)
+    {
+    	this.avmService = avmService;
+    }
     
+    /**
+     * @param avmSyncService  The AVM Sync Service
+     */
+    public void setAVMSyncService(AVMSyncService avmSyncService)
+    {
+    	this.avmSyncService = avmSyncService;
+    }
+
     /**
      * @param namespaceService  namespaceService
      */
@@ -661,6 +695,49 @@ public class WorkflowInterpreter
                     }
                     out.println("set var " + qname + " = " + vars.get(qname));
                 }
+                
+                else if (command[2].equals("avmpackage"))
+                {
+                	// lookup source folder of changes
+                	AVMNodeDescriptor avmSource = avmService.lookup(-1, command[3]);
+                	if (avmSource == null || !avmSource.isDirectory())
+                	{
+                		return command[3] + " must refer to a directory.";
+                	}
+                	
+                	// create container for avm workflow packages
+                	String packagesPath = "workflow-system:/packages";
+                	AVMNodeDescriptor packagesDesc = avmService.lookup(-1, packagesPath);
+                	if (packagesDesc == null)
+                	{
+                		avmService.createAVMStore("workflow-system");
+                		avmService.createDirectory("workflow-system:/", "packages");
+                	}
+
+                	// create package (layered to target, if target is specified)
+                	String packageName = GUID.generate();
+                	String avmSourceIndirection = avmSource.getIndirection();
+                	if (avmSourceIndirection != null)
+                	{
+                    	avmService.createLayeredDirectory(avmSourceIndirection, packagesPath, packageName);
+                		List<AVMDifference> diff = avmSyncService.compare(-1, avmSource.getPath(), -1, packagesPath + "/" + packageName);
+                        avmSyncService.update(diff, true, true, false, false, null, null);
+                	}
+                	else
+                	{
+                		// copy source folder to package folder
+                		avmService.copy(-1, avmSource.getPath(), packagesPath, packageName);
+                	}
+
+                	// convert package to workflow package
+                	AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath + "/" + packageName);
+                	NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
+                	nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
+                    QName qname = QName.createQName(command[1], namespaceService);
+                	vars.put(qname, packageNodeRef);
+                    out.println("set var " + qname + " = " + vars.get(qname));
+                }
+                
                 else
                 {
                     return "Syntax Error.\n";

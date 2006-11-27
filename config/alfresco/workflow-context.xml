@@ -29,6 +29,9 @@
 
    <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter">
       <property name="workflowService" ref="WorkflowService"/>
+      <property name="AVMService" ref="AVMService"/>
+      <property name="AVMSyncService" ref="AVMSyncService"/>
+      <property name="nodeService" ref="NodeService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="personService" ref="PersonService"/>
    </bean>

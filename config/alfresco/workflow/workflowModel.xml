@@ -67,6 +67,23 @@
          <parent>bpm:workflowTask</parent>
       </type>
 
+
+      <!--                               -->
+      <!--  WCM Tasks -->               
+      <!--                               -->
+
+      <type name="wf:submitWebContentTask">
+         <parent>bpm:startTask</parent>
+         <properties>
+         	<property name="wf:from">
+         		<type>d:text</type>
+         	</property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
+      </type>
+
    </types>
 
 </model>

@@ -30,19 +30,19 @@
 
 
     <!-- Custom MBeanServer -->
-    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+    <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
 
     <bean id="registry"   class="org.springframework.remoting.rmi.RmiRegistryFactoryBean">
         <property name="port" value="${avm.jmxrmi.port}"/>
     </bean>
 
-    <!-- MBeanServer Connector (registers itself with custom mbeanServer) -->
+    <!-- MBeanServer Connector (registers itself with custom alfrescoMBeanServer) -->
     <bean id="serverConnector" 
           class="org.springframework.jmx.support.ConnectorServerFactoryBean"
           depends-on="registry">
 
+        <property name="server"      ref="alfrescoMBeanServer"/>
         <property name="objectName"  value="connector:name=rmi"/>
-        <property name="server" ref="mbeanServer"/>
         <property name="serviceUrl"  value="service:jmx:rmi://localhost/jndi/rmi://localhost:${avm.jmxrmi.port}/alfresco/jmxrmi" />
 
         <property name="environment">
@@ -55,18 +55,16 @@
     </bean>
 
     <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+       <property name="server" ref="alfrescoMBeanServer"/>
        <property name="beans">
          <map>
-
-           <!-- MBeans to register with mbeanServer -->
-           <entry key="Alfresco:Name=VirtServerRegistry" value-ref="VirtServerRegistry"/>
+           <!-- MBeans to register with alfrescoMBeanServer -->
+           <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
          </map>
-
        </property>
-       <property name="server" ref="mbeanServer"/>
      </bean>
 
-    <!-- MBeans registered with mbeanServer -->
+    <!-- MBeans registered with alfrescoMBeanServer -->
     <bean id="VirtServerRegistry" class="org.alfresco.mbeans.VirtServerRegistry">
         <property name="moo" value="1"/>
     </bean>

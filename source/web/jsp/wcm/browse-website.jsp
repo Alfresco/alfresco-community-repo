@@ -82,12 +82,14 @@
                               </a:menu>
                               </nobr>
                            </td>
+                           <a:panel id="import-panel" rendered="#{AVMBrowseBean.isManagerRole}">
                            <td align=right width=170>
                               <nobr>
                               <%-- Import website content action --%>
-                              <a:actionLink value="#{msg.import_website_content}" rendered="#{AVMBrowseBean.isManagerRole}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
+                              <a:actionLink value="#{msg.import_website_content}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
                               </nobr>
                            </td>
+                           </a:panel>
                         </tr>
                      </table>
                      

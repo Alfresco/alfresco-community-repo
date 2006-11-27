@@ -511,7 +511,8 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.currentPath == null)
       {
-         this.currentPath = AVMConstants.buildAVMStoreRootPath(getSandbox());
+         String webapp = (String)getWebsite().getProperties().get(ContentModel.PROP_DEFAULTWEBAPP);
+         this.currentPath = AVMConstants.buildAVMStoreWebappPath(getSandbox(), webapp);
       }
       return this.currentPath;
    }
@@ -530,40 +531,6 @@ public class AVMBrowseBean implements IContextListener
       
       // update UI state ready for screen refresh
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
-   }
-   
-   /**
-    * @return true if the current user has the manager role in the current website
-    */
-   public boolean getIsManagerRole()
-   {
-      boolean isManager = false;
-      
-      User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
-      if (user.isAdmin() == false)
-      {
-         String currentUser = user.getUserName();
-         Node websiteNode = this.navigator.getCurrentNode();
-         List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
-               websiteNode.getNodeRef(), ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : userInfoRefs)
-         {
-            NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
-            if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
-            {
-               isManager = true;
-               break;
-            }
-         }
-      }
-      else
-      {
-         isManager = true;
-      }
-      
-      return isManager;
    }
    
    /**
@@ -600,6 +567,40 @@ public class AVMBrowseBean implements IContextListener
    public void setLocation(List<IBreadcrumbHandler> location)
    {
       this.location = location;
+   }
+   
+   /**
+    * @return true if the current user has the manager role in the current website
+    */
+   public boolean getIsManagerRole()
+   {
+      boolean isManager = false;
+      
+      User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
+      if (user.isAdmin() == false)
+      {
+         String currentUser = user.getUserName();
+         Node websiteNode = this.navigator.getCurrentNode();
+         List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
+               websiteNode.getNodeRef(), ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+         for (ChildAssociationRef ref : userInfoRefs)
+         {
+            NodeRef userInfoRef = ref.getChildRef();
+            String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
+            String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+            if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
+            {
+               isManager = true;
+               break;
+            }
+         }
+      }
+      else
+      {
+         isManager = true;
+      }
+      
+      return isManager;
    }
    
    /**

@@ -50,6 +50,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.config.ClientConfigElement;
@@ -426,19 +427,23 @@ public class UIUserSandboxes extends SelfRenderingComponent
     */
    private static boolean isManagerRole(FacesContext context, NodeService nodeService, NodeRef websiteRef)
    {
-      boolean isManager = false;
-      String currentUser = Application.getCurrentUser(context).getUserName();
-      List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-            websiteRef, ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-      for (ChildAssociationRef ref : userInfoRefs)
+      User user = Application.getCurrentUser(context);
+      boolean isManager = user.isAdmin();
+      if (isManager == false)
       {
-         NodeRef userInfoRef = ref.getChildRef();
-         String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
-         String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
-         if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
+         String currentUser = user.getUserName();
+         List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+               websiteRef, ContentModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+         for (ChildAssociationRef ref : userInfoRefs)
          {
-            isManager = true;
-            break;
+            NodeRef userInfoRef = ref.getChildRef();
+            String username = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERNAME);
+            String userrole = (String)nodeService.getProperty(userInfoRef, ContentModel.PROP_WEBUSERROLE);
+            if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
+            {
+               isManager = true;
+               break;
+            }
          }
       }
       return isManager;

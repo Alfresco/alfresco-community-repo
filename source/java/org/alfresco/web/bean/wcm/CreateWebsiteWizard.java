@@ -181,10 +181,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       outcome = wiz.finish();
       if (outcome != null)
       {
-         // create the AVM stores to represent the newly created location website
+         // create the AVM staging store to represent the newly created location website
          SandboxFactory.createStagingSandbox(avmStore, wiz.getManagers());
          
-         // set the property on the node to reference the AVM store
+         // create the default webapp folder under the hidden system folders
+         String stagingStore = AVMConstants.buildAVMStagingStoreName(avmStore);
+         this.avmService.createDirectory(AVMConstants.buildAVMStoreRootPath(stagingStore), webapp);
+         
+         // set the property on the node to reference the root AVM store
          this.nodeService.setProperty(nodeRef, ContentModel.PROP_AVMSTORE, avmStore);
          
          // persist the forms, templates, workflows and workflow defaults to the model for this web project

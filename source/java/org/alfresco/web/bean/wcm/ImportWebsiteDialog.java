@@ -52,6 +52,7 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.tools.zip.ZipEntry;
@@ -198,15 +199,16 @@ public class ImportWebsiteDialog
             // TODO: explicit permission check for WRITE on website node for this user
             
             // import the content into the appropriate store for the website
-            String storeRoot = (String)this.navigationBean.getCurrentNode().getProperties().get(
-                  ContentModel.PROP_AVMSTORE);
-            if (storeRoot != null)
+            Node website = this.navigationBean.getCurrentNode();
+            String storeRoot = (String)website.getProperties().get(ContentModel.PROP_AVMSTORE);
+            String webapp = (String)website.getProperties().get(ContentModel.PROP_DEFAULTWEBAPP);
+            if (storeRoot != null && webapp != null)
             {
                String store = AVMConstants.buildAVMStagingStoreName(storeRoot);
                if (this.avmService.getAVMStore(store) != null)
                {
-                  // get the root path to the webapps import area of the store
-                  String rootPath = AVMConstants.buildAVMStoreRootPath(store);
+                  // get the path to the root webapp import area of the store
+                  String rootPath = AVMConstants.buildAVMStoreWebappPath(store, webapp);
                   
                   // convert the AVM path to a NodeRef so we can use the NodeService to perform import
                   NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
@@ -218,7 +220,7 @@ public class ImportWebsiteDialog
             }
             else
             {
-               // TODO: output an error to indicate we cannot find the store property on the website
+               throw new IllegalStateException("Unable to find root store/webapp property for website!");
             }
             
             tx.commit();

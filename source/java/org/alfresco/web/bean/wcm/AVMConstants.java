@@ -67,6 +67,11 @@ public final class AVMConstants
       return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS;
    }
    
+   public static String buildAVMStoreWebappPath(String store, String webapp)
+   {
+      return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS + '/' + webapp;
+   }
+   
    public static String buildAVMStoreUrl(String store)
    {
       if (store.indexOf(':') != -1)
@@ -144,12 +149,10 @@ public final class AVMConstants
       {
          return parent;
       }
-
+      
       if (path.charAt(0) == '/')
       {
-         final Pattern p = Pattern.compile("([^:]+:/" + AVMConstants.DIR_APPBASE +
-                                           "/[^/]+/[^/]+).*");
-         final Matcher m = p.matcher(parent);
+         final Matcher m = absoluteAVMPath.matcher(parent);
          if (m.matches())
          {
             parent = m.group(1);
@@ -189,4 +192,8 @@ public final class AVMConstants
    // URLs for preview of sandboxes and assets
    private final static String PREVIEW_SANDBOX_URL = "http://www-{0}.avm.{1}:{2}";
    private final static String PREVIEW_ASSET_URL = "http://www-{0}.avm.{1}:{2}{3}";
+   
+   // patter for absolute AVM Path
+   private final static Pattern absoluteAVMPath = Pattern.compile(
+         "([^:]+:/" + AVMConstants.DIR_APPBASE + "/[^/]+/[^/]+).*");
 }

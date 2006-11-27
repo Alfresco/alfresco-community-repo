@@ -577,7 +577,7 @@
             <action idref="checkout_doc" />
             <action idref="checkin_doc" />
             <action idref="details_doc" />
-            <action idref="preview_doc" />
+            <action idref="delete_doc" />
             
             <!-- Example action defined in-line rather than by reference
             <action id="example2_checkout_doc">
@@ -595,7 +595,7 @@
          
          <!-- Actions Menu for a document in the Browse screen -->
          <action-group id="document_browse_menu">
-            <action idref="delete_doc" />
+            <action idref="preview_doc" />
             <action idref="update_doc" />
             <action idref="cancelcheckout_doc" />
             <action idref="approve_doc" />
@@ -609,7 +609,7 @@
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
             
-            <action idref="preview_space" />
+            <action idref="delete_space" />
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="details_space" />
@@ -617,7 +617,7 @@
          
          <!-- Actions Menu for a space in the Browse screen -->
          <action-group id="space_browse_menu">
-            <action idref="delete_space" />
+            <action idref="preview_space" />
             <action idref="approve_space" />
             <action idref="reject_space" />
          </action-group>

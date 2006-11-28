@@ -62,8 +62,10 @@ import org.apache.log4j.Logger;
  */
 public class NavigationBean
 {
+   /** Public JSF Bean name */
+   public static final String BEAN_NAME = "NavigationBean";
+   
    private static final String OUTCOME_MYALFRESCO = "myalfresco";
-
    private static final String OUTCOME_BROWSE = "browse";
 
    /**

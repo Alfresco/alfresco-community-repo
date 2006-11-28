@@ -583,7 +583,7 @@ public final class Utils
             // get hold of the node service, cifsServer and navigation bean
             NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
             NavigationBean navBean = (NavigationBean)context.getExternalContext().
-                  getSessionMap().get("NavigationBean");
+                  getSessionMap().get(NavigationBean.BEAN_NAME);
             CIFSServer cifsServer = (CIFSServer)FacesContextUtils.getRequiredWebApplicationContext(
                   context).getBean("cifsServer");
             

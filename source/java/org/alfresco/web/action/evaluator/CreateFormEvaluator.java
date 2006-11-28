@@ -18,25 +18,29 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.action.ActionEvaluator;
-import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.forms.FormsService;
 
 /**
- * UI Action Evaluator - Create a shortcut to a node.
+ * UI Action Evaluator - Create Web Form in the Forms DataDictionary folder
  * 
  * @author Kevin Roast
  */
-public class ShortcutNodeEvaluator implements ActionEvaluator
+public class CreateFormEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */
    public boolean evaluate(Node node)
    {
-      NavigationBean nav =
-         (NavigationBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), NavigationBean.BEAN_NAME);
-      return (nav.getIsGuest() == false);
+      PermissionService service =
+         Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      return service.hasPermission(
+            FormsService.getInstance().getContentFormsNodeRef(),
+            PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED;
    }
 }

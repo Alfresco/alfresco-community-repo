@@ -374,6 +374,7 @@
          
          <!-- Create XML content type -->
          <action id="create_form">
+            <evaluator>org.alfresco.web.action.evaluator.CreateFormEvaluator</evaluator>
             <label-id>create_form</label-id>
             <image>/images/icons/new_content.gif</image>
             <action>wizard:createForm</action>
@@ -401,7 +402,7 @@
          
          <!-- Create Website Wizard -->
          <action id="create_website_wizard">
-            <!-- TODO: check for role and in Websites folder --> 
+            <evaluator>org.alfresco.web.action.evaluator.CreateWebProjectEvaluator</evaluator>
             <label-id>create_website</label-id>
             <image>/images/icons/create_website.gif</image>
             <action>wizard:createWebsite</action>
@@ -609,10 +610,10 @@
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
             
-            <action idref="delete_space" />
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="details_space" />
+            <action idref="delete_space" />
          </action-group>
          
          <!-- Actions Menu for a space in the Browse screen -->

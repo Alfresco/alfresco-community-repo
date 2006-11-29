@@ -365,7 +365,7 @@
    <!-- Permissions specific to avm website folder -->
    <!-- ========================================== -->
    
-   <permissionSet type="app:webfolder" expose="selected">
+   <permissionSet type="wca:webfolder" expose="selected">
 
       <!-- AVM website specific roles.                                               -->
       <permissionGroup name="ContentManager" allowFullControl="true" expose="true" />

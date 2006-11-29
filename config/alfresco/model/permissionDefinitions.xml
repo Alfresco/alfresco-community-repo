@@ -19,7 +19,7 @@
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
-      <namespace uri="http://www.alfresco.org/model/application/1.0" prefix="app"/>
+      <namespace uri="http://www.alfresco.org/model/wcmappmodel/1.0" prefix="wca"/>
    </namespaces>
 
    <!--                                                                                   -->

@@ -557,7 +557,7 @@ public class AVMServiceImpl implements AVMService
      * @param repName The name of the AVMStore.
      * @return The Latest Version ID.
      */
-    public int getLatestVersionID(String repName)
+    public int getNextVersionID(String repName)
     {
         if (repName == null)
         {
@@ -581,21 +581,7 @@ public class AVMServiceImpl implements AVMService
         return fAVMRepository.getLatestSnapshotID(storeName);
     }
 
-    /**
-     * Create snapshots of a group of AVMStores.
-     * @param stores A List of AVMStore names.
-     * @return A List of the new version ids.
-     */
-    public List<Integer> createSnapshot(List<String> stores)
-    {
-        if (stores == null)
-        {
-            throw new AVMBadArgumentException("Stores is null.");
-        }
-        return fAVMRepository.createSnapshot(stores);
-    }
-
-    /**
+    /*
      * Snapshot an AVMRepository.
      * @param store The name of the AVMStore.
      * @param tag The short description.

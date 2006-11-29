@@ -208,13 +208,6 @@ public interface AVMRemote
     public int getLatestSnapshotID(String storeName);
     
     /**
-     * Snapshot the given AVMStores.
-     * @param stores A List of the names of the stores to snapshot.
-     * @return A List of the version ids of the newly created snapshots.
-     */
-    public List<Integer> createSnapshot(List<String> stores);
-    
-    /**
      * Snapshot an AVMStore.
      * @param store The name of the AVMStore to snapshot.
      * @return The version id of the new snapshot.

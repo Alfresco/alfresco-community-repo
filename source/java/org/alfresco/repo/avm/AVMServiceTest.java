@@ -1375,7 +1375,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             // Everything under /abranch should be identical in this version 
             // and the previous.
-            int version = fService.getLatestVersionID("main");
+            int version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/abranch", version - 1, true),
                          recursiveContents("main:/abranch", version - 2, true));
             // Make a branch within a branch.
@@ -1384,7 +1384,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // History unchanged
             checkHistory(history, "main");
             // Everything under /a should be unchanged between this version and the last.
-            version = fService.getLatestVersionID("main");
+            version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/a", version - 1, true),
                          recursiveContents("main:/a", version - 2, true));
             // Make a branch to something outside of a branch inside a branch.
@@ -1398,7 +1398,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // History unchanged.
             checkHistory(history, "main");
             // d should not have changed since the previous version.
-            version = fService.getLatestVersionID("main");
+            version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/d", version - 1, true),
                          recursiveContents("main:/d", version - 2, true));
             for (String val : history.values())
@@ -1472,7 +1472,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             checkHistory(history, "main");
             // /d should be unchanged before this version and the last
             // and /g should be unchanged between this version and the last.
-            int version = fService.getLatestVersionID("main");
+            int version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/d", version - 1, true),
                          recursiveContents("main:/d", version - 2, true));
             assertEquals(recursiveContents("main:/g", version - 1, true),
@@ -1483,7 +1483,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // History unchanged.
             checkHistory(history, "main");
             // /g should not have changed since its last version.
-            version = fService.getLatestVersionID("main");
+            version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/g", version - 1, true),
                          recursiveContents("main:/g", version - 2, true));
             // /layer/under/gover/h/i shows both moo and cow.
@@ -1569,7 +1569,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // History unchanged.
             checkHistory(history, "main");
             // /layer should not have changed.
-            int version = fService.getLatestVersionID("main");
+            int version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/layer", version - 1, true),
                          recursiveContents("main:/layer", version - 2, true));
             // Change something in /layer
@@ -1578,7 +1578,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // History unchanged.
             checkHistory(history, "main");
             // /branch should not have changed.
-            version = fService.getLatestVersionID("main");
+            version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/branch", version - 1, true),
                          recursiveContents("main:/branch", version - 2, true));
             // Create another layer on /a
@@ -1597,7 +1597,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // History unchanged.
             checkHistory(history, "main");
             // /layer2 should be unchanged.
-            version = fService.getLatestVersionID("main");
+            version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/layer2", version - 1, true),
                          recursiveContents("main:/layer2", version - 2, true));
             // Remove something from /layer2
@@ -1606,7 +1606,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // History unchanged.
             checkHistory(history, "main");
             // /branch2 is unchanged.
-            version = fService.getLatestVersionID("main");
+            version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/branch2", version - 1, true),
                          recursiveContents("main:/branch2", version - 2, true));
             // /a is unchanged.
@@ -2427,7 +2427,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // History unchanged.
             checkHistory(history, "main");
             // Confirm that /a and /d are unchanged.
-            int version = fService.getLatestVersionID("main");
+            int version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/a", version - 1, true),
                          recursiveContents("main:/a", version - 2, true));
             assertEquals(recursiveContents("main:/d", version - 1, true),
@@ -2436,7 +2436,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.rename("main:/dbranch", "f", "main:/abranch/c", "f");
             fService.createSnapshot("main", null, null);
             // Confirm that /a and /d are unchanged.
-            version = fService.getLatestVersionID("main");
+            version = fService.getNextVersionID("main");
             assertEquals(recursiveContents("main:/a", version - 1, true),
                          recursiveContents("main:/a", version - 2, true));
             assertEquals(recursiveContents("main:/d", version - 1, true),

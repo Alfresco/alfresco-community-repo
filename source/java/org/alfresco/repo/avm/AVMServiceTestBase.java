@@ -19,7 +19,6 @@ package org.alfresco.repo.avm;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -177,9 +176,7 @@ public class AVMServiceTestBase extends TestCase
         out.println("I am main:/a/b/c/bar");
         out.flush();
         out.close();
-        ArrayList<String> toSnapshot = new ArrayList<String>();
-        toSnapshot.add("main");
-        fService.createSnapshot(toSnapshot);
+        fService.createSnapshot("main", null, null);
     }
     
     /**
@@ -191,7 +188,7 @@ public class AVMServiceTestBase extends TestCase
         {
             assertEquals(history.get(i), recursiveList(repName, i, false));
         }
-        int latest = fService.getLatestVersionID(repName);
+        int latest = fService.getNextVersionID(repName);
         history.put(latest - 1, recursiveList(repName, -1, false));
     }
 }

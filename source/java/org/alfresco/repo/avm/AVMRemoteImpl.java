@@ -573,7 +573,7 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      */
     public int getLatestVersionID(String storeName)
     {
-        return fAVMService.getLatestVersionID(storeName);
+        return fAVMService.getNextVersionID(storeName);
     }
     
     /**
@@ -584,16 +584,6 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
     public int getLatestSnapshotID(String storeName)
     {
         return fAVMService.getLatestSnapshotID(storeName);
-    }
-    
-    /**
-     * Snapshot the given AVMStores.
-     * @param stores A List of the names of the stores to snapshot.
-     * @return A List of the version ids of the newly created snapshots.
-     */
-    public List<Integer> createSnapshot(List<String> stores)
-    {
-        return fAVMService.createSnapshot(stores);
     }
     
     // TODO update this if it's ever needed.

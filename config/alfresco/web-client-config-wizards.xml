@@ -40,7 +40,7 @@
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
-               <page path="/jsp/wizard/summary.jsp"
+               <page path="/jsp/wcm/create-website-wizard/summary.jsp"
                      title-id="summary"
                      description-id="summary_desc"
                      instruction-id="create_website_finish_instruction" />

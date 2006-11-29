@@ -441,7 +441,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public String getSummary()
    {
       FacesContext fc = FacesContext.getCurrentInstance();
-      ResourceBundle bundle = Application.getBundle(fc);
       
       // build a summary section to list the invited users and there roles
       StringBuilder buf = new StringBuilder(128);
@@ -465,10 +464,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       
       return buildSummary(
-            new String[] {bundle.getString(MSG_NAME), 
-                          bundle.getString(MSG_DESCRIPTION),
-                          bundle.getString(MSG_USERROLES)},
-            new String[] {this.name, this.description, buf.toString()});
+            new String[] {Application.getMessage(fc, MSG_USERROLES)},
+            new String[] {buf.toString()});
    }
    
    
@@ -488,6 +485,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.formsDataModel.setWrappedData(this.forms);
       
       return this.formsDataModel;
+   }
+   
+   /**
+    * @return the List of selected and configured Form objects (for summary screen) 
+    */
+   public List<FormWrapper> getForms()
+   {
+      return this.forms;
    }
 
    /**
@@ -625,6 +630,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public void setWorkflowsDataModel(DataModel workflowsDataModel)
    {
       this.workflowsDataModel = workflowsDataModel;
+   }
+   
+   /**
+    * @return the list of workflows (for the summary screen)
+    */
+   public List<WorkflowWrapper> getWorkflows()
+   {
+      return this.workflows;
    }
    
    /**

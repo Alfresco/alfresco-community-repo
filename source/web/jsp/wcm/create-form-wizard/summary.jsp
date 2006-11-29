@@ -20,6 +20,7 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 <%@ page isELIgnored="false" %>
+
 <script type="text/javascript">
   window.onload = function() { document.getElementById("wizard:finish-button").focus(); }
 </script>

@@ -299,6 +299,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    @Override
    protected void saveContent(File fileContent, String strContent) throws Exception
    {
+      final FormsService fs = FormsService.getInstance();
       if (logger.isDebugEnabled())
          logger.debug("saving file content to " + this.fileName);
       // get the parent path of the location to save the content
@@ -306,7 +307,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         final FormsService fs = FormsService.getInstance();
+
          final Document formInstanceData = (fileContent != null 
                                             ? fs.parseXML(fileContent)
                                             : fs.parseXML(strContent));
@@ -315,14 +316,21 @@ public class CreateWebContentWizard extends BaseContentWizard
          final String[] sb = AVMNodeConverter.SplitBase(path);
          path = sb[0];
          this.fileName = sb[1];
-         fs.makeAllDirectories(path);
       }
+
+
+      if (logger.isDebugEnabled())
+         logger.debug("reseting layer " + path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
+
+      this.avmSyncService.resetLayer(path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
+
+      if (logger.isDebugEnabled())
+         logger.debug("creating all directories in path " + path);
+
+      fs.makeAllDirectories(path);
 
       if (logger.isDebugEnabled())
          logger.debug("creating file " + this.fileName + " in " + path);
-
-      
-      this.avmSyncService.resetLayer(path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
 
       // put the content of the file into the AVM store
       if (fileContent != null)

@@ -110,31 +110,30 @@
        <fileset dir="${dir.build}/sample-website"/>
      </delete>
      <mkdir dir="${dir.build}/sample-website/alfresco"/>
-     <copy todir="${dir.build}/sample-website/alfresco">
-       <fileset dir="${dir.src}/test-resources/websites/alfresco" excludes="**/.svn"/>
-     </copy>
+     <mkdir dir="${dir.build}/sample-website/alfresco/classes"/>
      <javac srcdir="${dir.src}/test-resources/websites/alfresco/ROOT/WEB-INF/classes"
-	    destdir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/classes"
+	    destdir="${dir.build}/sample-website/alfresco/classes"
             deprecation="on" debug="on" target="1.5" source="1.5"
 	    classpathref="classpath.compile"/>
-     <mkdir dir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib"/>
      <jar basedir="${dir.build}/classes"
-          destfile="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib/alfresco-form-data-functions.jar"
+          destfile="${dir.build}/sample-website/alfresco/alfresco-form-data-functions.jar"
 	  includes="org/alfresco/web/forms/*.class"/>
-     <jar basedir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/classes"
-	  destfile="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib/alfresco-sample-website.jar"
+     <jar basedir="${dir.build}/sample-website/alfresco/classes"
+	  destfile="${dir.build}/sample-website/alfresco/alfresco-sample-website.jar"
 	  includes="**/*.class"/>
-     <delete>
-       <fileset dir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/classes" includes="**/*.class"/>
-     </delete>
-     <copy todir="${dir.build}/sample-website/alfresco/ROOT/WEB-INF/lib">
-       <fileset dir="${dir.common.lib}">
+     <mkdir dir="${dir.dist}"/>
+     <war destfile="${dir.dist}/alfresco-sample-website.war"
+	  webxml="${dir.src}/test-resources/websites/alfresco/ROOT/WEB-INF/web.xml">
+       <lib dir="${dir.common.lib}">
 	 <include name="standard.jar"/>
 	 <include name="jstl.jar"/>
+       </lib>
+       <lib dir="${dir.build}/sample-website/alfresco"/>
+       <fileset dir="${dir.src}/test-resources/websites/alfresco/ROOT">
+	 <exclude name="WEB-INF/**"/>
+	 <exclude name="**/.svn"/>
        </fileset>
-     </copy>
-     <mkdir dir="${dir.dist}"/>
-     <zip destfile="${dir.dist}/alfresco-sample-website.zip" 
-	  basedir="${dir.build}/sample-website/alfresco"/>
+       <webinf file="${dir.src}/test-resources/websites/alfresco/ROOT/WEB-INF/pr.tld"/>
+     </war>
    </target>
 </project>

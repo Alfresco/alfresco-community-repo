@@ -16,8 +16,6 @@
  */
 package org.alfresco.repo.webdav;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 
@@ -32,7 +30,6 @@ public class OptionsMethod extends WebDAVMethod
     private static final String DAV_HEADER_CONTENT = "1,2";
     private static final String ALLOW_HEADER = "Allow";
     private static final String MS_HEADER = "MS-Author-Via";
-    private static final String CONTENT_LENGTH = "Content-Length";
 
     private static final String FILE_METHODS = "OPTIONS, GET, HEAD, POST, DELETE, PROPFIND, COPY, MOVE, LOCK, UNLOCK";
     private static final String COLLECTION_METHODS = FILE_METHODS + ", PUT";
@@ -80,24 +77,15 @@ public class OptionsMethod extends WebDAVMethod
         catch (FileNotFoundException e)
         {
             // Do nothing; just default to a folder
-        	
             isFolder = true;
         }
-        
         // Add the header to advertise the level of support the server has
-        
         m_response.addHeader(DAV_HEADER, DAV_HEADER_CONTENT);
 
         // Add the proprietary Microsoft header to make Microsoft clients behave
-        
         m_response.addHeader(MS_HEADER, DAV_HEADER);
 
         // Add the header to show what methods are allowed
-        
         m_response.addHeader(ALLOW_HEADER, isFolder ? COLLECTION_METHODS : FILE_METHODS);
-        
-        // Indicate no content
-        
-        m_response.addHeader(CONTENT_LENGTH, "0");
     }
 }

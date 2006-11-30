@@ -21,7 +21,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 
@@ -127,10 +126,6 @@ public class NTLMAuthenticationFilter implements Filter
     
     private String m_srvName;
     
-    // In progress NTLM logons for clients that are not using cookies
-
-    private Hashtable<String, NTLMLogonDetails> m_logonDetailsTable;
-
     /**
      * Initialize the filter
      * 
@@ -214,10 +209,6 @@ public class NTLMAuthenticationFilter implements Filter
             if ( logger.isDebugEnabled() && m_allowGuest)
                 logger.debug("NTLM filter guest access allowed");
         }
-
-        // Create the NTLM logon details hash table for clients that are not using cookies
-
-        m_logonDetailsTable = new Hashtable<String, NTLMLogonDetails>();
     }
 
     /**
@@ -329,7 +320,6 @@ public class NTLMAuthenticationFilter implements Filter
                 
                 Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
                 processType3(type3Msg, req, resp, httpSess, chain);
-                return;
             }                
         }
 
@@ -455,32 +445,8 @@ public class NTLMAuthenticationFilter implements Filter
             ntlmDetails = new NTLMLogonDetails();
             ntlmDetails.setType2Message( type2Msg);
             ntlmDetails.setAuthenticationToken(authToken);
-
-            // Check if the client supports cookies
-
-            if ( req.getCookies() != null)
-            {
-            	// Client appears to support cookies so we can store the NTLM details in the session
-
-            	httpSess.setAttribute(NTLM_AUTH_DETAILS, ntlmDetails);
-            }
-            else
-            {
-            	// Client does not support cookies so store the NTLM details in the logon details table
-
-            	StringBuilder keyStr = new StringBuilder();
-
-            	keyStr.append( req.getRemoteHost());
-            	keyStr.append( ":");
-            	keyStr.append( req.getRemotePort());
-
-            	m_logonDetailsTable.put( keyStr.toString(), ntlmDetails);
-
-            	// DEBUG
-
-            	if ( logger.isDebugEnabled())
-            		logger.debug( "Storing NTLM details for " + keyStr.toString() + " in logon table");
-            }
+            
+            httpSess.setAttribute(NTLM_AUTH_DETAILS, ntlmDetails);
             
             // Debug
             
@@ -529,30 +495,7 @@ public class NTLMAuthenticationFilter implements Filter
             ntlmDetails = (NTLMLogonDetails) httpSess.getAttribute(NTLM_AUTH_DETAILS);
             user = (WebDAVUser) httpSess.getAttribute(AUTHENTICATION_USER);
         }
-
-        // Check if the NTLM details are null and the client is not using cookies. The NTLM details will have been
-        // stored in the logon table.
-
-        if ( ntlmDetails == null && req.getCookies() == null)
-        {
-        	// Check if the NTLM details are in logon table
-
-        	StringBuilder keyStr = new StringBuilder();
-
-        	keyStr.append( req.getRemoteHost());
-        	keyStr.append( ":");
-        	keyStr.append( req.getRemotePort());
-
-        	// Remove the NTLM details from the logon table
-
-        	ntlmDetails = m_logonDetailsTable.remove( keyStr.toString());
-
-        	// DEBUG
-
-        	if ( logger.isDebugEnabled() && ntlmDetails != null)
-           		logger.debug( "Retrieved NTLM details for " + keyStr.toString() + " from logon table");
-        }
-
+        
         // Get the NTLM logon details
         
         String userName = type3Msg.getUserName();
@@ -625,7 +568,7 @@ public class NTLMAuthenticationFilter implements Filter
         }
         else
         {
-            // Check if we are using local MD4 password hashes or passthru authentication
+            // Cehck if we are using local MD4 password hashes or passthru authentication
             
             if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
@@ -721,16 +664,13 @@ public class NTLMAuthenticationFilter implements Filter
                     tx.begin();
 
                     // Get user details for the authenticated user
-                    
                     m_authComponent.setCurrentUser(userName.toLowerCase());
                     
                     // The user name used may be a different case to the NTLM supplied user name, read the current
                     // user and use that name
-                    
                     userName = m_authComponent.getCurrentUserName();
                     
                     // Setup User object and Home space ID etc.
-                    
                     NodeRef personNodeRef = m_personService.getPerson(userName);
                     String currentTicket = m_authService.getCurrentTicket();
                     user = new WebDAVUser(userName, currentTicket, personNodeRef);
@@ -738,8 +678,7 @@ public class NTLMAuthenticationFilter implements Filter
                     NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
                     user.setHomeNode(homeSpaceRef);
                     
-                    // Commit the transaction
-                    
+                    // commit
                     tx.commit();
                 }
                 catch (Throwable ex)

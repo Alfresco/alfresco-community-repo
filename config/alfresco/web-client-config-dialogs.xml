@@ -123,7 +123,7 @@
                  description-id="sandbox_snapshot_info" />
          
          <dialog name="deleteSandbox" page="/jsp/dialog/delete.jsp" managed-bean="DeleteSandboxDialog"
-                 icon="/images/icons/delete_large.gif" title-id="delete_sandbox" 
+                 icon="/images/icons/delete_sandbox_large.gif" title-id="delete_sandbox" 
                  description-id="delete_sandbox_info" />
          
          <dialog name="deleteAvmFile" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFileDialog"

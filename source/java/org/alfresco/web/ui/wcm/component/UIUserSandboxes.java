@@ -341,7 +341,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert.gif",
+                        context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert_all.gif",
                         "#{AVMBrowseBean.revertAll}", null));
                   out.write("&nbsp;");
                   
@@ -666,7 +666,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                "#{AVMBrowseBean.submitSelected}", null));
          out.write("&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
-               fc, userStorePrefix, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert.gif",
+               fc, userStorePrefix, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
                "#{AVMBrowseBean.revertSelected}", null));
          out.write("</td></tr>");
          

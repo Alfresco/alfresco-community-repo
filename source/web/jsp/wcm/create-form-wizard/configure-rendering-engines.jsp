@@ -151,47 +151,39 @@ else
   </h:panelGroup>
   <h:panelGroup id="data-table-panel-group">
     <h:dataTable id="rendering-engine-template-data-table"
-                 value="#{WizardManager.bean.renderingEngineTemplatesDataModel}" 
-		 var="row" 
+                 value="#{WizardManager.bean.renderingEngineTemplatesDataModel}" var="row" 
                  rowClasses="selectedItemsRow,selectedItemsRowAlt"
-                 styleClass="selectedItems" 
-		 headerClass="selectedItemsHeader"
-                 cellspacing="0" 
-		 cellpadding="4" 
-		 width="100%"
+                 styleClass="selectedItems" headerClass="selectedItemsHeader"
+                 cellspacing="0" cellpadding="4" width="100%"
                  rendered="#{WizardManager.bean.renderingEngineTemplatesDataModel.rowCount != 0}">
       <h:column id="data-table-column-0">
-        <f:facet name="header">
-          <h:outputText id="data-table-name-0" value="#{msg.selected_rendering_engine_templates}" />
-        </f:facet>
-	<f:verbatim>
-	  <span style="float:left">
-	    <img src="<%= request.getContextPath() %>/images/icons/template_large.gif"/>
-	  </span>
-	</f:verbatim>
-	<h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
-	<h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
-	<f:verbatim><br/></f:verbatim>
-	<h:outputText id="data-table-name-0-name" value="#{msg.file_name}: " />
-	<h:outputText id="data-table-value-0-name" value="#{row.fileName}" />
-	<f:verbatim><br/></f:verbatim>
-	<h:outputText id="data-table-name-0-title" value="#{msg.title}: " />
-	<h:outputText id="data-table-value-0-title" value="#{row.title}" />
-	<f:verbatim><br clear="all"/></f:verbatim>
-	<h:outputText id="data-table-name-0-description" value="#{msg.description}: " />
-	<h:outputText id="data-table-value-0-description" value="#{row.description}" />
-	<f:verbatim><br clear="all"/></f:verbatim>
-	<h:outputText id="data-table-name-0-mimetype" value="#{msg.mimetype_for_renditions}: " />
-	<h:outputText id="data-table-value-0-mimetype" value="#{row.mimetypeForRendition}" />
-	<f:verbatim><br clear="all"/></f:verbatim>
-	<h:outputText id="data-table-name-0-opp" value="#{msg.output_path_pattern}: " />
-	<h:outputText id="data-table-value-0-opp" value="#{row.outputPathPatternForRendition}" />
+         <f:facet name="header">
+            <h:outputText id="data-table-name-0" value="#{msg.selected_rendering_engine_templates}" />
+         </f:facet>
+         <f:verbatim>
+            <span style="float:left">
+               <img src="<%= request.getContextPath() %>/images/icons/template_large.gif"/>
+            </span>
+         </f:verbatim>
+         <h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
+         <h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
+         <f:verbatim><br></f:verbatim>
+         <h:outputText id="data-table-name-0-name" value="#{msg.file_name}: " />
+         <h:outputText id="data-table-value-0-name" value="#{row.fileName}" />
+         <f:verbatim><br></f:verbatim>
+         <h:outputText id="data-table-name-0-title" value="#{msg.title}: " />
+         <h:outputText id="data-table-value-0-title" value="#{row.title}" />
+         <f:verbatim><br clear="all"></f:verbatim>
+         <h:outputText id="data-table-name-0-mimetype" value="#{msg.mimetype_for_renditions}: " />
+         <h:outputText id="data-table-value-0-mimetype" value="#{row.mimetypeForRendition}" />
+         <f:verbatim><br clear="all"></f:verbatim>
+         <h:outputText id="data-table-name-0-opp" value="#{msg.output_path_pattern}: " />
+         <h:outputText id="data-table-value-0-opp" value="#{row.outputPathPatternForRendition}" />
       </h:column>
       <h:column id="data-table-column-5">
         <a:actionLink id="remove-select-rendering-engine-action-link"
 		      actionListener="#{WizardManager.bean.removeSelectedRenderingEngineTemplate}" 
-	              image="/images/icons/delete.gif"
-                      value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+	         image="/images/icons/delete.gif" value="#{msg.remove}" showLink="false" style="padding-left:6px" />
       </h:column>
     </h:dataTable>
     

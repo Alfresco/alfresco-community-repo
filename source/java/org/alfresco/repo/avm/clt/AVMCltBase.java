@@ -75,6 +75,10 @@ public abstract class AVMCltBase
         int pos = 0;
         while (pos < args.length)
         {
+            if (args[pos].equals("-h"))
+            {
+                usage(usageMessage);
+            }
             // If the argument is one of the accepted flags then it's
             // a flag.
             if (flagArgs.containsKey(args[pos]))
@@ -121,6 +125,41 @@ public abstract class AVMCltBase
         System.err.println(usageMessage);
         fContext.close();
         System.exit(1);
+    }
+    
+    /**
+     * Utility to split an AVM path into a parent path and a
+     * base name.
+     * @param path The path to split.
+     * @return An array of 1 or 2 Strings representing the parent path
+     * and the base name, or just the path if the path given is a root path.
+     */
+    protected String[] splitPath(String path)
+    {
+        if (path.endsWith(":/"))
+        {
+            String [] ret = { path };
+            return ret;
+        }
+        int lastSlash = path.lastIndexOf("/");
+        if (lastSlash == -1)
+        {
+            System.err.println("Malformed path: " + path);
+            fContext.close();
+            System.exit(1);
+        }
+        String name = path.substring(lastSlash + 1);
+        String parent = path.substring(0, lastSlash);
+        if (parent.endsWith(":"))
+        {
+            parent = parent + "/";
+        }
+        while (parent.endsWith("/") && !parent.endsWith(":/"))
+        {
+            parent = parent.substring(0, parent.length() - 1);
+        }
+        String [] ret = { parent, name };
+        return ret;
     }
     
     protected abstract void run(Map<String, List<String>> flags, List<String> args);

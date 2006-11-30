@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreExistsException;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -81,18 +82,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private static Log logger = LogFactory.getLog(DbNodeServiceImpl.class);
     private static Log loggerPaths = LogFactory.getLog(DbNodeServiceImpl.class.getName() + ".paths");
     
-    private DictionaryService dictionaryService;
     private NodeDaoService nodeDaoService;
     private StoreArchiveMap storeArchiveMap;
+    private NodeService avmNodeService;
     
     public DbNodeServiceImpl()
     {
         storeArchiveMap = new StoreArchiveMap();        // in case it is not set
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
     }
 
     public void setNodeDaoService(NodeDaoService nodeDaoService)
@@ -103,6 +99,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void setStoreArchiveMap(StoreArchiveMap storeArchiveMap)
     {
         this.storeArchiveMap = storeArchiveMap;
+    }
+
+    public void setAvmNodeService(NodeService avmNodeService)
+    {
+        this.avmNodeService = avmNodeService;
     }
 
     /**
@@ -164,7 +165,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             storeRefs.add(store.getStoreRef());
         }
-        // done
+        // Now get the AVMStores.
+        List<StoreRef> avmStores = avmNodeService.getStores();
+        storeRefs.addAll(avmStores);
+        // Return them all.
         return storeRefs;
     }
     
@@ -347,54 +351,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             
             // Now add any default aspects for this aspect
             addDefaultAspects(defaultAspectDef, node, properties);
-        }
-    }
-    
-    /**
-     * Sets the default property values
-     * 
-     * @param classDefinition
-     * @param properties
-     */
-    private void addDefaultPropertyValues(ClassDefinition classDefinition, Map<QName, Serializable> properties)
-    {
-        for (Map.Entry<QName, Serializable> entry : classDefinition.getDefaultValues().entrySet())
-        {
-            if (properties.containsKey(entry.getKey()))
-            {
-                // property is present
-                continue;
-            }
-            Serializable value = entry.getValue();
-            
-            // Check the type of the default property
-            PropertyDefinition prop = this.dictionaryService.getProperty(entry.getKey());
-            if (prop == null)
-            {
-                // dictionary doesn't have a default value present
-                continue;
-            }
-
-            // TODO: what other conversions are necessary here for other types of default values ?
-            
-            // ensure that we deliver the property in the correct form
-            if (DataTypeDefinition.BOOLEAN.equals(prop.getDataType().getName()) == true)
-            {
-                if (value instanceof String)
-                {
-                    if (((String)value).toUpperCase().equals("TRUE") == true)
-                    {
-                        value = Boolean.TRUE;
-                    }
-                    else if (((String)value).toUpperCase().equals("FALSE") == true)
-                    {
-                        value = Boolean.FALSE;
-                    }
-                }
-            }
-            
-            // Set the default value of the property
-            properties.put(entry.getKey(), value);
         }
     }
     

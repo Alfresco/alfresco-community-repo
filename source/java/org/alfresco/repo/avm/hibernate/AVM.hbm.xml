@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+<hibernate-mapping package="org.alfresco.repo.avm">
+
+	<typedef class="org.alfresco.repo.domain.hibernate.QNameUserType" name="QName"/>
+
+	<!-- AVMNodeBean is the abstract base for filesystem like objects.
+	     We're using the one table per class hierarchy strategy to implement
+	     polymorphism. -->
+	<class table="avm_nodes" abstract="true"
+		name="AVMNodeImpl"
+		proxy="AVMNode"
+		optimistic-lock="version" 
+		lazy="true">
+		<cache usage="read-write"/>
+		<!-- The id is set programmatically using an Issuer.  See below. -->
+		<id name="id" 
+			column="id" 
+			type="long"/>
+		<!-- I suppose this would be more efficient to encode type by an int. 
+		     We'll see if using a string makes a difference. -->
+		<discriminator column="class_type" 
+					   type="string" 
+					   length="20"/>
+		<!-- We're using hibernate's own versioning scheme for concurrency control.
+		     I don't know how well that will play with a full Spring-JTA stack. -->
+		<version column="vers" 
+				 name="vers" 
+				 type="long"/>
+		<!-- This should really be not null, but I haven't figured out
+			 the right way to build the relation so that nullability constraints
+			 won't cause violations in the db during saves. -->
+		<property name="versionID" type="int" column="version_id"
+			not-null="true"/>
+		<component name="basicAttributes" class="BasicAttributesImpl">
+			<property name="creator" type="string" not-null="true"/>
+			<property name="owner" type="string" not-null="true"/>
+			<property name="lastModifier" type="string" not-null="true"/>
+			<property name="createDate" type="long" not-null="true"/>
+			<property name="modDate" type="long" not-null="true"/>
+			<property name="accessDate" type="long" not-null="true"/>
+		</component>
+		<property name="isRoot" column="is_root" type="boolean"/>
+		<many-to-one name="storeNew" class="AVMStoreImpl" column="store_new_id"/>
+		<!-- ACL -->
+		<many-to-one name="acl" column="acl_id" 
+			class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
+		<!-- Deleted nodes -->
+		<subclass name="DeletedNodeImpl"
+			  proxy="DeletedNode"
+			  lazy="true"
+			  discriminator-value="deletednode">
+		</subclass>
+		<!-- Directories, two flavors. -->
+		<subclass name="DirectoryNodeImpl" 
+		          proxy="DirectoryNode" 
+		          abstract="true"
+		          lazy="true">
+		    <!-- A Layered Directory is our smart symlink thingy. -->
+		    <subclass name="LayeredDirectoryNodeImpl"
+		    	proxy="LayeredDirectoryNode"
+		    	discriminator-value="layereddirectory" lazy="true">
+		    	<!-- The layer id is an implementation trick to disambiguate
+		    		exactly what layer is being refered to in various circumstances. -->
+		    	<property name="layerID" column="layer_id" type="long"/>
+		    	<!-- The is the moral equivalent of the value of a symlink. -->
+		    	<property name="indirection" column="indirection"
+		    		type="string" length="511" />
+		    	<!-- This marks a layered directory as either knowing itself what
+		    		it points at (true) or inheriting what it points at from its
+		    		container (false). -->
+		    	<property name="primaryIndirection"
+		    		column="primary_indirection" type="boolean"/>
+		    	<property name="opacity" column="opacity" type="boolean"/>
+		    	<!-- Map of names to DirectoryEntries. -->
+		    </subclass>
+		    <!-- Just plain directories. -->
+			<subclass name="PlainDirectoryNodeImpl"
+				discriminator-value="plaindirectory" proxy="PlainDirectoryNode" lazy="true">
+			</subclass>
+		</subclass>
+		<!-- There are two kinds of files, plain and symlinky. -->
+		<subclass name="FileNodeImpl"
+			proxy="FileNode"
+			abstract="true"
+			lazy="false">
+			<!-- Plain files just have a reference to a Content object. -->
+			<subclass discriminator-value="plainfile"
+				name="PlainFileNodeImpl" proxy="PlainFileNode" lazy="true">
+				<property name="contentURL" column="content_url" type="string" length="128"/>
+				<property name="mimeType" column="mime_type" type="string" length="64"/>
+				<property name="encoding" column="encoding" type="string" length="16"/>
+				<property name="length" column="length" type="long"/>
+			</subclass>
+			<!-- Layered files are almost exactly copy on write symlinks. -->
+			<subclass name="LayeredFileNodeImpl"
+				discriminator-value="layeredfile" proxy="LayeredFileNode" lazy="true">
+				<property name="indirection" type="string" length="511"
+					column="indirection" />
+			</subclass>
+		</subclass>
+	</class>
+	<!-- A store is the what we used to call a virtual repository. -->
+	<class table="avm_stores" name="AVMStoreImpl"
+		proxy="AVMStore" optimistic-lock="version">
+		<cache usage="read-write"/>
+		<id name="name" column="name" type="string"/>
+		<version name="vers" column="vers" type="long"/>
+		<property type="int" name="nextVersionID"
+			column="next_version_id" not-null="true"/>
+		<!-- Every AVMStore has a root directory that is the current root directory. -->
+		<many-to-one name="root" class="DirectoryNodeImpl"
+			column="current_root_id" unique="true" cascade="save-update">
+		</many-to-one>
+	</class>
+	<class name="VersionRootImpl" proxy="VersionRoot" table="avm_version_roots">
+		<!-- <cache usage="read-write"/> -->
+		<id column="id" type="long">
+			<generator class="native"></generator>
+		</id>
+		<property name="versionID" type="int" not-null="true"
+			column="version_id" index="version_roots_version_id_index">
+		</property>
+		<property name="createDate" type="long" not-null="true" column="create_date">
+		</property>
+		<property name="creator" type="string" column="creator"
+			not-null="true">
+		</property>
+		<many-to-one name="avmStore" column="avm_store_id"
+			class="AVMStoreImpl" not-null="true">
+		</many-to-one>
+		<many-to-one name="root" class="DirectoryNodeImpl"
+			column="root_id" not-null="true">
+		</many-to-one>
+		<property name="tag" type="string" length="255" column="tag"/>
+		<property name="description" type="string" length="8192" column="description"/>
+	</class>
+    <class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries">
+         <cache usage="read-write"/>
+         <composite-id name="key" class="ChildKey">
+             <key-many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl"/>
+             <key-property name="name" column="name" type="string" length="160"/>
+         </composite-id>
+         <many-to-one name="child" column="child_id" class="AVMNodeImpl"
+	     not-null="true"/>
+    </class>
+	<class name="HistoryLinkImpl" proxy="HistoryLink" table="avm_history_links">
+		<composite-id>
+			<key-many-to-one name="ancestor" class="AVMNodeImpl" column="ancestor"/>
+			<key-many-to-one name="descendent" class="AVMNodeImpl" column="descendent"/>
+		</composite-id>
+	</class>
+	<class name="MergeLinkImpl" proxy="MergeLink" table="avm_merge_links">
+		<composite-id>
+			<key-many-to-one name="mfrom" class="AVMNodeImpl" column="mfrom"/>
+			<key-many-to-one name="mto" class="AVMNodeImpl" column="mto"/>
+		</composite-id>
+	</class>
+	<class name="AVMNodePropertyImpl" proxy="AVMNodeProperty" table="avm_node_properties">
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
+		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
+	    <property name="name" column="qname" type="QName" length="200" index="node_property_name_index"/>
+		<component class="org.alfresco.repo.domain.PropertyValue" name="value">
+            <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
+            <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
+            <property name="persistedType" column="persisted_type" type="string" length="15" not-null="true" />
+            <property name="booleanValue" column="boolean_value" type="boolean" />
+            <property name="longValue" column="long_value" type="long" />
+            <property name="floatValue" column="float_value" type="float" />
+            <property name="doubleValue" column="double_value" type="double" />
+            <property name="stringValue" column="string_value" type="string" length="1024"/>
+            <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
+       </component>
+	</class>
+	<class name="AVMStorePropertyImpl" proxy="AVMStoreProperty" table="avm_store_properties">
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
+		<many-to-one name="store" class="AVMStoreImpl" column="avm_store_id"/>
+		<property name="name" column="qname" type="QName" length="200" index="store_property_name_index"/>
+		<component class="org.alfresco.repo.domain.PropertyValue" name="value">
+            <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
+            <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
+            <property name="persistedType" column="persisted_type" type="string" length="15" not-null="true" />
+            <property name="booleanValue" column="boolean_value" type="boolean" />
+            <property name="longValue" column="long_value" type="long" />
+            <property name="floatValue" column="float_value" type="float" />
+            <property name="doubleValue" column="double_value" type="double" />
+            <property name="stringValue" column="string_value" type="string" length="1024"/>
+            <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
+       </component>
+	</class>
+	<!-- Aspect name table for AVM Nodes. -->		
+	<class name="AVMAspectNameImpl" proxy="AVMAspectName" table="avm_aspects">
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
+		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
+		<property name="name" column="qname" type="QName" length="200"/>
+	</class>
+    <query name="ChildEntry.DeleteByParent">
+    <![CDATA[
+    	delete ChildEntryImpl ce
+    	where ce.key.parent = :parent
+    ]]>
+    </query>
+    <query name="AVMNode.GetNewInStore">
+    <![CDATA[
+		from AVMNodeImpl an
+		where an.storeNew = :store
+    ]]>
+    </query>
+    <query name="AVMNode.GetDescendents">
+    <![CDATA[
+    	select hl.descendent 
+    	from HistoryLinkImpl hl
+    	where hl.ancestor = :node
+    ]]>
+    </query>
+    <query name="HistoryLink.ByAncestor">
+    <![CDATA[
+    	from HistoryLinkImpl hl
+    	where hl.ancestor = :node
+    ]]>
+    </query>
+    <query name="AVMNode.GetMergedTo">
+    <![CDATA[
+    	select ml.mto
+    	from MergeLinkImpl ml
+    	where ml.mfrom = :merged
+    ]]>
+    </query>
+    <query name="MergeLink.ByFrom">
+    <![CDATA[
+    	from MergeLinkImpl ml
+    	where ml.mfrom = :merged
+    ]]>
+    </query>
+    <query name="VersionRoot.GetVersionRoot">
+    <![CDATA[
+    	select v.root
+    	from VersionRootImpl v
+    	where
+    		v.avmStore = :store and v.versionID = :version
+    ]]>
+    </query>
+    <query name="VersionRoot.VersionByID">
+    <![CDATA[
+    	from VersionRootImpl v
+    	where
+    		v.avmStore = :store and v.versionID = :version
+    ]]>
+    </query>
+    <query name="FindOrphans">
+    <![CDATA[
+		from AVMNodeImpl an 
+		where
+			an not in ( select ce.child 
+						from ChildEntryImpl ce ) 
+		    and an.isRoot = false
+    ]]>
+    </query>
+    <query name="PlainFileNode.GetContentUrls">
+    <![CDATA[
+    	select
+    		pfn.contentURL
+    	from
+    		PlainFileNodeImpl pfn
+    	where pfn.contentURL is not null
+    ]]>
+    </query>
+    		
+</hibernate-mapping>

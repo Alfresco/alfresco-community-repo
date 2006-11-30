@@ -383,7 +383,7 @@ public class SharedDevice implements Comparable
      */
     public DeviceContext createContext(String[] args)
     {
-        return new DeviceContext(args[0]);
+        return new DeviceContext("", args[0]);
     }
 
     /**

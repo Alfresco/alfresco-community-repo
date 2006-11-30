@@ -152,8 +152,8 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         if ((attribute.getAttribute() != null)
                 && (attribute.getAttribute().startsWith(ACL_NODE)
                         || attribute.getAttribute().startsWith(ACL_PARENT)
-                        || attribute.getAttribute().startsWith(ACL_ALLOW) || attribute.getAttribute().startsWith(
-                        ACL_METHOD)))
+                        || attribute.getAttribute().startsWith(ACL_ALLOW)
+                        || attribute.getAttribute().startsWith(ACL_METHOD)))
         {
             return true;
         }

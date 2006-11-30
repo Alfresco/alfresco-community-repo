@@ -31,7 +31,7 @@
     </bean>
     <bean id="sessionFactoryBase" abstract="true">
         <property name="schemaUpdate">
-           <value>false</value>
+           <value>true</value>
         </property>
         <property name="mappingResources">
             <list>
@@ -45,6 +45,7 @@
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/AppliedPatch.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
+                <value>org/alfresco/repo/avm/hibernate/AVM.hbm.xml</value>
                 
                 <!-- Audit config -->
                 <!-- TODO: Move into org/alfresco/repo/domain/hibernate/ -->
@@ -205,9 +206,30 @@
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
+      <property name="protocolToACLDAO">
+         <map>
+            <entry key="workspace"><ref bean="nodeACLDAO"></ref></entry>
+            <entry key="avm"><ref bean="avmACLDAO"/></entry>
+         </map>
+      </property>
+      <property name="defaultACLDAO">
+ 		 <ref bean="nodeACLDAO"/>
+ 	  </property>
+   </bean>
+   
+	<bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.NodeAccessControlListDAO">
       <property name="nodeDaoService">
          <ref bean="nodeDaoService" />
       </property>
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmACLDAO" class="org.alfresco.repo.domain.hibernate.AVMAccessControlListDAO">
+		<property name="avmRepository">
+			<ref bean="avmRepository"/>
+		</property>
    </bean>
 	
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">

@@ -25,9 +25,11 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
+import org.alfresco.filesys.server.core.DeviceInterface;
 import org.alfresco.filesys.server.filesys.AccessDeniedException;
 import org.alfresco.filesys.server.filesys.AccessMode;
 import org.alfresco.filesys.server.filesys.DiskInterface;
@@ -37,28 +39,21 @@ import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.FileSharingException;
 import org.alfresco.filesys.server.filesys.FileStatus;
-import org.alfresco.filesys.server.filesys.FileSystem;
-import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
-import org.alfresco.filesys.server.filesys.IOCtlInterface;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.SearchContext;
-import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 import org.alfresco.filesys.server.filesys.TreeConnection;
-import org.alfresco.filesys.smb.SMBException;
-import org.alfresco.filesys.smb.SMBStatus;
+import org.alfresco.filesys.server.pseudo.MemoryNetworkFile;
+import org.alfresco.filesys.server.pseudo.PseudoFile;
+import org.alfresco.filesys.server.pseudo.PseudoFileInterface;
+import org.alfresco.filesys.server.pseudo.PseudoFileList;
+import org.alfresco.filesys.server.pseudo.PseudoNetworkFile;
+import org.alfresco.filesys.server.state.FileState;
+import org.alfresco.filesys.server.state.FileState.FileStateStatus;
 import org.alfresco.filesys.smb.SharingMode;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
-import org.alfresco.filesys.smb.server.repo.FileState.FileStateStatus;
-import org.alfresco.filesys.smb.server.repo.pseudo.MemoryNetworkFile;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFile;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileInterface;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoFileList;
-import org.alfresco.filesys.smb.server.repo.pseudo.PseudoNetworkFile;
-import org.alfresco.filesys.util.DataBuffer;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -80,7 +75,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class ContentDiskDriver implements DiskInterface, IOCtlInterface
+public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 {
     // Logging
     
@@ -108,10 +103,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     
     private AuthenticationComponent authComponent;
     private AuthenticationService authService;
-    
-    // Service registry for desktop actions
-    
-    private ServiceRegistry serviceRegistry;
     
     /**
      * Class constructor
@@ -193,16 +184,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
 
     /**
-     * Return the service registry
-     * 
-     * @return ServiceRegistry
-     */
-    public final ServiceRegistry getServiceRegistry()
-    {
-    	return this.serviceRegistry;
-    }
-
-    /**
      * @param contentService the content service
      */
     public void setContentService(ContentService contentService)
@@ -253,16 +234,6 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     }
     
     /**
-     * Set the service registry
-     * 
-     * @param serviceRegistry
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-    	this.serviceRegistry = serviceRegistry;
-    }
-    
-    /**
      * Set the authentication component
      * 
      * @param authComponent AuthenticationComponent
@@ -287,11 +258,13 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
      * of the shared device. The same DeviceInterface implementation may be used for multiple
      * shares.
      * 
+     * @param devIface DeviceInterface
+     * @param name String
      * @param args ConfigElement
      * @return DeviceContext
      * @exception DeviceContextException
      */
-    public DeviceContext createContext(ConfigElement cfg) throws DeviceContextException
+    public DeviceContext createContext(DeviceInterface devIface, String name, ConfigElement cfg) throws DeviceContextException
     {
         // Use the system user as the authenticated context for the filesystem initialization
         
@@ -389,16 +362,7 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             // Create the context
             
-            context = new ContentContext(storeValue, rootPath, rootNodeRef);
-
-            // Default the filesystem to look like an 80Gb sized disk with 90% free space
-            
-            context.setDiskInformation(new SrvDiskInfo(2560000, 64, 512, 2304000));
-            
-            // Set parameters
-            
-            context.setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
-            		FileSystem.CaseSensitiveSearch);
+            context = new ContentContext(name, storeValue, rootPath, rootNodeRef);
         }
         catch (Exception ex)
         {
@@ -496,6 +460,10 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
             
             logger.info("Locked files will be marked as offline");
         }
+        
+        // Enable file state caching
+        
+        context.enableStateTable( true, getStateReaper());
         
         // Return the context for this shared filesystem
         
@@ -2164,38 +2132,5 @@ public class ContentDiskDriver implements DiskInterface, IOCtlInterface
     public void treeOpened(SrvSession sess, TreeConnection tree)
     {
         // Nothing to do
-    }
-    
-    /**
-     * Process a filesystem I/O control request
-     * 
-     * @param sess Server session
-     * @param tree Tree connection.
-     * @param ctrlCode I/O control code
-     * @param fid File id
-     * @param dataBuf I/O control specific input data
-     * @param isFSCtrl true if this is a filesystem control, or false for a device control
-     * @param filter if bit0 is set indicates that the control applies to the share root handle
-     * @return DataBuffer
-     * @exception IOControlNotImplementedException
-     * @exception SMBException
-     */
-    public DataBuffer processIOControl(SrvSession sess, TreeConnection tree, int ctrlCode, int fid, DataBuffer dataBuf,
-            boolean isFSCtrl, int filter)
-        throws IOControlNotImplementedException, SMBException
-    {
-        // Validate the file id
-        
-        NetworkFile netFile = tree.findFile(fid);
-        if ( netFile == null || netFile.isDirectory() == false)
-            throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
-        
-        // Check if the I/O control handler is enabled
-        
-        ContentContext ctx = (ContentContext) tree.getContext();
-        if ( ctx.hasIOHandler())
-            return ctx.getIOHandler().processIOControl( sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter);
-        else
-            throw new IOControlNotImplementedException();
     }
 }

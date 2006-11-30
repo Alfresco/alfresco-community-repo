@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -234,7 +235,7 @@ public class SavedSearchFolderPatch extends AbstractPatch
         properties.put(ContentModel.PROP_NAME, savedSearchesName);
         properties.put(ContentModel.PROP_TITLE, savedSearchesName);
         properties.put(ContentModel.PROP_DESCRIPTION, savedSearchesDescription);
-        properties.put(ContentModel.PROP_ICON, PROPERTY_ICON);
+        properties.put(ApplicationModel.PROP_ICON, PROPERTY_ICON);
         // create the node
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 dictionaryNodeRef,
@@ -244,7 +245,7 @@ public class SavedSearchFolderPatch extends AbstractPatch
                 properties);
         savedSearchesFolderNodeRef = childAssocRef.getChildRef();
         // add the required aspects
-        nodeService.addAspect(savedSearchesFolderNodeRef, ContentModel.ASPECT_UIFACETS, null);
+        nodeService.addAspect(savedSearchesFolderNodeRef, ApplicationModel.ASPECT_UIFACETS, null);
         
         // done
     }

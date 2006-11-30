@@ -18,7 +18,7 @@ package org.alfresco.repo.configuration;
 
 import java.util.List;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -38,7 +38,7 @@ public class ConfigurableServiceImpl implements ConfigurableService
 
 	public boolean isConfigurable(NodeRef nodeRef)
 	{
-		return this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CONFIGURABLE);
+		return this.nodeService.hasAspect(nodeRef, ApplicationModel.ASPECT_CONFIGURABLE);
 	}
 
 	public void makeConfigurable(NodeRef nodeRef)
@@ -46,14 +46,14 @@ public class ConfigurableServiceImpl implements ConfigurableService
 		if (isConfigurable(nodeRef) == false)
 		{
 			// First apply the aspect
-			this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_CONFIGURABLE, null);
+			this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_CONFIGURABLE, null);
 			
 			// Next create and add the configurations folder
 			this.nodeService.createNode(
 					nodeRef,
-					ContentModel.ASSOC_CONFIGURATIONS,
-					ContentModel.ASSOC_CONFIGURATIONS,
-					ContentModel.TYPE_CONFIGURATIONS);
+					ApplicationModel.ASSOC_CONFIGURATIONS,
+					ApplicationModel.ASSOC_CONFIGURATIONS,
+					ApplicationModel.TYPE_CONFIGURATIONS);
 		}		
 	}
 	
@@ -65,7 +65,7 @@ public class ConfigurableServiceImpl implements ConfigurableService
 			List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
                     nodeRef,
                     RegexQNamePattern.MATCH_ALL,
-                    ContentModel.ASSOC_CONFIGURATIONS);
+                    ApplicationModel.ASSOC_CONFIGURATIONS);
 			if (assocs.size() != 0)
 			{
 				ChildAssociationRef assoc = assocs.get(0);

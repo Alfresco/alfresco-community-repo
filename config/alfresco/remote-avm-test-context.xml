@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+	"http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!-- RMI Proxy bean for avmRemote -->
+	
+	<bean id="avmRemote" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
+		<property name="serviceUrl">
+			<value>rmi://localhost:1313/avm</value>
+		</property>
+		<property name="serviceInterface">
+			<value>org.alfresco.repo.avm.AVMRemote</value>
+		</property>
+		<property name="refreshStubOnConnectFailure">
+			<value>true</value>
+		</property>
+	</bean>
+
+	<!-- RMI Proxy bean for avmSync -->
+	
+	<bean id="avmSync" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
+	    <property name="serviceUrl">
+	        <value>rmi://localhost:1313/avmsync</value>
+	    </property>
+	    <property name="serviceInterface">
+	        <value>org.alfresco.service.cmr.avmsync.AVMSyncService</value>
+	    </property>
+	    <property name="refreshStubOnConnectFailure">
+	        <value>true</value>
+	    </property>
+	</bean>
+	
+</beans>

@@ -8,6 +8,11 @@
     <!--  PERSISTENCE       -->
     <!--                    -->
 
+    <!-- Load runtime-dependent properties (e.g.: alfresco.jmx.dir).     -->
+    <!-- Note:  This bean relies on PropertyPlaceholderConfigurer        -->
+    <bean id="runtimeProperties"  class="org.alfresco.util.RuntimeSystemPropertiesSetter"/>
+
+
     <!-- load common properties -->
     <bean id="repository-properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
@@ -15,12 +20,57 @@
         </property>
         <property name="locations">
             <list>
+                <value>classpath:alfresco/alfresco-shared.properties</value>
                 <value>classpath:alfresco/repository.properties</value>
                 <value>classpath:alfresco/version.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
             </list>
         </property>
     </bean>
+
+
+    <!-- Custom MBeanServer -->
+    <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+
+    <bean id="registry"   class="org.springframework.remoting.rmi.RmiRegistryFactoryBean">
+        <property name="port" value="${avm.jmxrmi.port}"/>
+    </bean>
+
+    <!-- MBeanServer Connector (registers itself with custom alfrescoMBeanServer) -->
+    <bean id="serverConnector" 
+          class="org.springframework.jmx.support.ConnectorServerFactoryBean"
+          depends-on="registry">
+
+        <property name="server"      ref="alfrescoMBeanServer"/>
+        <property name="objectName"  value="connector:name=rmi"/>
+        <property name="serviceUrl"  value="service:jmx:rmi://localhost/jndi/rmi://localhost:${avm.jmxrmi.port}/alfresco/jmxrmi" />
+
+        <property name="environment">
+            <map>
+                <!-- The following keys are only valid when sun jmx is used -->
+                <entry key="jmx.remote.x.password.file" value="${alfresco.jmx.dir}/alfresco-jmxrmi.password"/>
+                <entry key="jmx.remote.x.access.file"   value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+       <property name="server" ref="alfrescoMBeanServer"/>
+       <property name="beans">
+         <map>
+           <!-- MBeans to register with alfrescoMBeanServer -->
+           <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
+         </map>
+       </property>
+     </bean>
+
+    <!-- MBeans registered with alfrescoMBeanServer -->
+    <bean id="VirtServerRegistry" class="org.alfresco.mbeans.VirtServerRegistry">
+        <property name="moo" value="1"/>
+    </bean>
+
+
+
 
     <!-- Datasource bean -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
@@ -159,6 +209,9 @@
                 <entry key="versionStore">
                     <ref bean="luceneIndexerAndSearcherFactory"></ref>
                 </entry>
+                <entry key="avm">
+                    <ref bean="luceneIndexerAndSearcherFactory"></ref>
+                </entry>
             </map>
         </property>
     </bean>
@@ -176,6 +229,9 @@
                     <ref bean="luceneCategoryService"></ref>
                 </entry>
                 <entry key="versionStore">
+                    <ref bean="luceneCategoryService"></ref>
+                </entry>
+                <entry key="avm">
                     <ref bean="luceneCategoryService"></ref>
                 </entry>
             </map>
@@ -410,9 +466,11 @@
                 <value>alfresco/model/systemModel.xml</value>
                 <value>alfresco/model/contentModel.xml</value>
                 <value>alfresco/model/bpmModel.xml</value>
+                <value>alfresco/model/wcmModel.xml</value>
                 <value>alfresco/model/applicationModel.xml</value>
+                <value>alfresco/model/wcmAppModel.xml</value>
                 <value>alfresco/model/forumModel.xml</value>
-
+                
                 <!-- Implementation models -->
                 <value>org/alfresco/repo/security/authentication/userModel.xml</value>
                 <value>org/alfresco/repo/action/actionModel.xml</value>

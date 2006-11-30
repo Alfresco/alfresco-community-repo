@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This describes a process for submitting changed content in a user -->
+<!-- sandbox, via an approver, to the staging sandbox. -->
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:submit">
+
+    <swimlane name="initiator"/>
+
+    <start-state name="start">
+        <task name="wf:submitWebContentTask" swimlane="initiator"/>
+        <transition name="" to="review"/>
+    </start-state>
+
+    <swimlane name="assignee">
+        <assignment actor-id="#{bpm_assignee.properties['cm:userName']}"/>
+    </swimlane>
+
+    <task-node name="review">
+        <task name="wf:reviewTask" swimlane="assignee"/>
+        <transition name="Approve" to="end">
+            <action class="org.alfresco.repo.avm.wf.AVMSubmitPackageHandler"/>
+        </transition>
+    </task-node>
+
+    <end-state name="end"/>
+
+</process-definition>

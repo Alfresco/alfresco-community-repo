@@ -19,9 +19,10 @@ package org.alfresco.filesys.smb.server.repo.desk;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.alfresco.filesys.smb.server.repo.DesktopAction;
-import org.alfresco.filesys.smb.server.repo.DesktopParams;
-import org.alfresco.filesys.smb.server.repo.DesktopResponse;
+import org.alfresco.filesys.alfresco.DesktopAction;
+import org.alfresco.filesys.alfresco.DesktopParams;
+import org.alfresco.filesys.alfresco.DesktopResponse;
+
 
 /**
  * URL Desktop Action Class

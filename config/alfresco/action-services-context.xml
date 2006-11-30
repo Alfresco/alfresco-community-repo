@@ -397,4 +397,63 @@
         </property>
     </bean>
     
+    <bean id="simple-avm-submit" class="org.alfresco.repo.avm.actions.SimpleAVMSubmitAction" parent="action-executer">
+        <property name="avmService">
+    	    <ref bean="avmService"/>
+    	</property>
+    	<property name="avmSyncService">
+    	    <ref bean="avmSyncService"/>
+    	</property>    
+    	<property name="publicAction">
+    	    <value>false</value>
+    	</property>
+    </bean>
+    
+    <bean id="start-avm-workflow" class="org.alfresco.repo.avm.actions.StartAVMWorkflowAction" parent="action-executer">
+      <property name="workflowService">
+         <ref bean="WorkflowService"/>
+      </property>
+      <property name="personService">
+         <ref bean="personService"/>
+      </property>
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+    </bean>
+    
+    <bean id="simple-avm-promote" class="org.alfresco.repo.avm.actions.SimpleAVMPromoteAction" parent="action-executer">
+    	<property name="avmSyncService">
+    	    <ref bean="avmSyncService"/>
+    	</property>
+    	<property name="publicAction">
+    	    <value>false</value>
+    	</property>
+    </bean>
+    
+    <bean id="avm-revert-store" class="org.alfresco.repo.avm.actions.AVMRevertStoreAction" parent="action-executer">
+        <property name="avmSyncService">
+            <ref bean="avmSyncService"/>
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="avm-revert-list" class="org.alfresco.repo.avm.actions.AVMRevertListAction" parent="action-executer">
+        <property name="avmSyncService">
+            <ref bean="avmSyncService"/>
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="avm-undo-list" class="org.alfresco.repo.avm.actions.AVMUndoSandboxListAction" parent="action-executer">
+    	<property name="avmService">
+    	    <ref bean="avmService"/>
+    	</property>
+    	<property name="publicAction">
+    	    <value>false</value>
+    	</property>
+    </bean>
 </beans>

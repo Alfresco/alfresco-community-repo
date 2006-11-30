@@ -7,7 +7,9 @@
 
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <import uri="http://www.alfresco.org/model/wcmmodel/1.0" prefix="wcm"/>
    </imports>
    
    <namespaces>
@@ -49,7 +51,7 @@
          <title>Folder Link Object</title>
          <parent>cm:link</parent>
       </type>
-
+      
 	</types>
 
 	<aspects>
@@ -134,7 +136,7 @@
             </property>
          </properties>
       </aspect>
-
+      
 	</aspects>
 	
 </model>

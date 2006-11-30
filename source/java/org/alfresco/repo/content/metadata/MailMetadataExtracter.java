@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -199,17 +200,19 @@ public class MailMetadataExtracter extends AbstractMetadataExtracter
                     if (dateIndex != -1)
                     {
                         dateIndex++;
+                        final Calendar c = Calendar.getInstance();
                         String strYear = date.substring(dateIndex, dateIndex + 2);
-                        int year = Integer.parseInt(strYear) + (2000 - 1900);
+                        c.set(Calendar.YEAR, Integer.parseInt(strYear) + (2000 - 1900));
                         String strMonth = date.substring(dateIndex + 2, dateIndex + 4);
-                        int month = Integer.parseInt(strMonth) - 1;
+                        c.set(Calendar.MONTH, Integer.parseInt(strMonth) - 1);
                         String strDay = date.substring(dateIndex + 4, dateIndex + 6);
-                        int day = Integer.parseInt(strDay);
+                        c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(strDay));
                         String strHour = date.substring(dateIndex + 6, dateIndex + 8);
-                        int hour = Integer.parseInt(strHour);
+                        c.set(Calendar.HOUR, Integer.parseInt(strHour));
                         String strMinute = date.substring(dateIndex + 10, dateIndex + 12);
-                        int minute = Integer.parseInt(strMinute);
-                        destination.put(ContentModel.PROP_SENTDATE, new Date(year, month, day, hour, minute));
+                        c.set(Calendar.MINUTE, Integer.parseInt(strMinute));
+                        c.set(Calendar.SECOND, 0);
+                        destination.put(ContentModel.PROP_SENTDATE, c.getTime());
                     }
                 }
             }

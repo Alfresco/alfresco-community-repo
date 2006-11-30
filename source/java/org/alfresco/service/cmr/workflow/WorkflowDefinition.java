@@ -24,30 +24,71 @@ package org.alfresco.service.cmr.workflow;
  */
 public class WorkflowDefinition
 {
-    /** Workflow Definition unique id */
-    public String id;
-    
-    /** Workflow Definition name */
-    public String name;
-    
-    /** Workflow Definition version */
-    public String version;
-    
-    /** Workflow Definition Title (Localised) */
-    public String title;
-    
-    /** Workflow Definition Description (Localised) */
-    public String description;
-    
-    /** Task Definition for Workflow Start Task (Optional) */
-    public WorkflowTaskDefinition startTaskDefinition;
+   //XXarielb these should most likely all be private
+   public final String id;
+   public final String name;
+   public final String version;
+   public final String title;
+   public final String description;
+   public final WorkflowTaskDefinition startTaskDefinition;
 
+   public WorkflowDefinition(final String id,
+                             final String name,
+                             final String version,
+                             final String title,
+                             final String description,
+                             final WorkflowTaskDefinition startTaskDefinition)
+   {
+      this.id = id;
+      this.name = name;
+      this.version = version;
+      this.title = title;
+      this.description = description;
+      this.startTaskDefinition = startTaskDefinition;
+   }
+   
+   /** Workflow Definition unique id */
+   public String getId()
+   {
+      return this.id;
+   }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    public String toString()
-    {
-        return "WorkflowDefinition[id=" + id + ",version=" + version + ",title=" + title + ",startTask=" + startTaskDefinition.toString() + "]";
-    }
+
+   /** Workflow Definition name */
+   public String getName()
+   {
+      return this.name;
+   }
+    
+   /** Workflow Definition version */
+   public String getVersion()
+   {
+      return this.version;
+   }
+    
+   /** Workflow Definition Title (Localised) */
+   public String getTitle()
+   {
+      return this.title;
+   }
+    
+   /** Workflow Definition Description (Localised) */
+   public String getDescription()
+   {
+      return this.description;
+   }
+
+   /** Task Definition for Workflow Start Task (Optional) */
+   public WorkflowTaskDefinition getStartTaskDefinition()
+   {
+      return this.startTaskDefinition;
+   }
+    
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   public String toString()
+   {
+      return "WorkflowDefinition[id=" + id + ",version=" + version + ",title=" + title + ",startTask=" + startTaskDefinition.toString() + "]";
+   }
 }

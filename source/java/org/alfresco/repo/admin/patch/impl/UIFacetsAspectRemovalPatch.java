@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.model.ContentModel;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -124,10 +124,10 @@ public class UIFacetsAspectRemovalPatch extends AbstractPatch
         for (NodeRef ref : nodeRefs)
         {
             // if the content has the uifacets aspect, then remove it and meaningless icon reference
-            if (nodeService.hasAspect(ref, ContentModel.ASPECT_UIFACETS))
+            if (nodeService.hasAspect(ref, ApplicationModel.ASPECT_UIFACETS))
             {
-                nodeService.removeAspect(ref, ContentModel.ASPECT_UIFACETS);
-                nodeService.setProperty(ref, ContentModel.PROP_ICON, null);
+                nodeService.removeAspect(ref, ApplicationModel.ASPECT_UIFACETS);
+                nodeService.setProperty(ref, ApplicationModel.PROP_ICON, null);
                 updated++;
             }
         }

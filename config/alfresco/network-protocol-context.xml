@@ -43,22 +43,26 @@
       <property name="diskInterface">
          <ref bean="contentDiskDriver"/>
       </property>
+      <property name="avmDiskInterface">
+         <ref bean="avmDiskDriver"/>
+      </property>
    </bean>
    
    <!-- Filesystem Interface -->
    <bean id="contentDiskDriver" class="org.alfresco.filesys.smb.server.repo.ContentDiskDriver" >
-         <constructor-arg>
-            <ref bean="cifsHelper" />
-         </constructor-arg>
-         <property name="transactionService"><ref bean="transactionComponent" /></property>
-         <property name="nodeService"><ref bean="NodeService" /></property>
-         <property name="searchService"><ref bean="SearchService" /></property>
-         <property name="namespaceService"><ref bean="namespaceService" /></property>
-         <property name="contentService"><ref bean="ContentService" /></property>
-         <property name="permissionService"><ref bean="permissionService"/></property>
-         <property name="authenticationComponent"><ref bean="authenticationComponent"/></property>
-	     <property name="authenticationService"><ref bean="authenticationService"/></property>
-	     <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
+      <constructor-arg>
+         <ref bean="cifsHelper" />
+      </constructor-arg>
+      <property name="transactionService"><ref bean="transactionComponent" /></property>
+      <property name="nodeService"><ref bean="NodeService" /></property>
+      <property name="searchService"><ref bean="SearchService" /></property>
+      <property name="namespaceService"><ref bean="namespaceService" /></property>
+      <property name="contentService"><ref bean="ContentService" /></property>
+      <property name="permissionService"><ref bean="permissionService"/></property>
+      <property name="authenticationComponent"><ref bean="authenticationComponent"/></property>
+	   <property name="authenticationService"><ref bean="authenticationService"/></property>
+	   <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
+      <property name="stateReaper"><ref bean="fileStateReaper"/></property>
    </bean>
    
    <bean id="cifsHelper" class="org.alfresco.filesys.smb.server.repo.CifsHelper">
@@ -70,4 +74,19 @@
       <property name="allowWrites"><value>${server.transaction.allow-writes}</value></property>
    </bean>
    
+	<!-- AVM Filesystem Interface -->
+   <bean id="avmDiskDriver" class="org.alfresco.filesys.avm.AVMDiskDriver" >
+	   <property name="avmService"><ref bean="avmService" /></property>
+      <property name="transactionService"><ref bean="transactionComponent" /></property>
+      <property name="authenticationComponent"><ref bean="authenticationComponent"/></property>
+	   <property name="authenticationService"><ref bean="authenticationService"/></property>
+		<property name="mimetypeService"><ref bean="mimetypeService" /></property>
+	   <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
+      <property name="stateReaper"><ref bean="fileStateReaper"/></property>
+   </bean>
+	
+   <!-- File State Reaper -->
+   <bean id="fileStateReaper" class="org.alfresco.filesys.server.state.FileStateReaper"
+      destroy-method="shutdownRequest"/>
+	   
 </beans>

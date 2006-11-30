@@ -692,6 +692,20 @@
          </properties>
       </aspect>
       
+      <!-- An aspect to make a node reference another node. Needed to
+           support cross repository references. There is a sys:reference type but
+           that is awkard for AVM Nodes which are less flexible as to type. -->
+      <aspect name="cm:referencesnode">
+         <title>References Node</title>
+         <properties>
+            <property name="cm:noderef">
+               <title>Node Reference</title>
+               <type>d:noderef</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+            
    </aspects>
 
 </model>

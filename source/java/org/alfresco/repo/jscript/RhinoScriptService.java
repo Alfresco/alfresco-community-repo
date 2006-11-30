@@ -234,7 +234,7 @@ public class RhinoScriptService implements ScriptService
             for (ScriptImplementation script : this.globalScripts) 
             {
             	model.put(script.getScriptName(), script);
-			}
+			   }
             
             // insert supplied object model into root of the default scope
             for (String key : model.keySet())

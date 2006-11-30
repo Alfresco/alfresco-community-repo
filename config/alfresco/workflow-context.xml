@@ -29,6 +29,9 @@
 
    <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter">
       <property name="workflowService" ref="WorkflowService"/>
+      <property name="AVMService" ref="AVMService"/>
+      <property name="AVMSyncService" ref="AVMSyncService"/>
+      <property name="nodeService" ref="NodeService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="personService" ref="PersonService"/>
    </bean>
@@ -46,7 +49,7 @@
    <!--                 -->
 
    <bean id="start-workflow" class="org.alfresco.repo.workflow.StartWorkflowActionExecuter" parent="action-executer">
-      <property name="publicAction"><value>true</value></property>
+      <property name="publicAction"><value>false</value></property>
       <property name="namespaceService" ref="NamespaceService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="workflowService" ref="WorkflowService"/>

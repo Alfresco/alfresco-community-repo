@@ -78,6 +78,13 @@
                   <cm:title>${spaces.scripts.name}</cm:title>
                   <cm:description>${spaces.scripts.description}</cm:description>
                </cm:folder>
+               <cm:folder view:childName="${spaces.content_forms.childname}">
+                  <app:uifacets />
+                  <cm:name>${spaces.content_forms.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.content_forms.name}</cm:title>
+                  <cm:description>${spaces.content_forms.description}</cm:description>
+               </cm:folder>
             </cm:contains>
             </cm:folder>
             <cm:folder view:childName="${spaces.guest_home.childname}">
@@ -96,6 +103,19 @@
             <app:icon>space-icon-default</app:icon>
             <cm:title>${spaces.guest_home.name}</cm:title>
             <cm:description>${spaces.guest_home.description}</cm:description>
+         </cm:folder>
+         <cm:folder view:childName="${spaces.wcm.childname}">
+            <view:acl view:inherit="false">
+               <view:ace view:access="ALLOWED">
+                  <view:authority>GROUP_EVERYONE</view:authority>
+                  <view:permission>Consumer</view:permission>
+               </view:ace>
+            </view:acl>
+            <app:uifacets/>
+            <cm:name>${spaces.wcm.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.wcm.name}</cm:title>
+            <cm:description>${spaces.wcm.description}</cm:description>
          </cm:folder>
       </cm:contains>
    </cm:folder>

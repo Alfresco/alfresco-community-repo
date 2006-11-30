@@ -3,7 +3,7 @@ package org.alfresco.repo.admin.patch.impl;
 import java.io.Serializable;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.model.ContentModel;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -71,14 +71,14 @@ public class ForumsIconsPatch extends AbstractPatch
                {
                    if (this.nodeService.exists(node))
                    {
-                       String icon = (String)this.nodeService.getProperty(node, ContentModel.PROP_ICON);
+                       String icon = (String)this.nodeService.getProperty(node, ApplicationModel.PROP_ICON);
                        if (icon != null && icon.length() > 0)
                        {
                            int idx = icon.indexOf("_large");
                            if (idx != -1)
                            {
                                String newIcon = icon.substring(0, idx);
-                               this.nodeService.setProperty(node, ContentModel.PROP_ICON, (Serializable)newIcon);
+                               this.nodeService.setProperty(node, ApplicationModel.PROP_ICON, (Serializable)newIcon);
                                changed++;
                            }
                        }

@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 
 public class DictionaryDAOTest extends TestCase
@@ -88,6 +89,7 @@ public class DictionaryDAOTest extends TestCase
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
         bootstrapModels.add("alfresco/model/systemModel.xml");
         bootstrapModels.add("alfresco/model/contentModel.xml");
+        bootstrapModels.add("alfresco/model/wcmModel.xml");
         bootstrapModels.add("alfresco/model/applicationModel.xml");
         
         bootstrapModels.add("org/alfresco/repo/security/authentication/userModel.xml");

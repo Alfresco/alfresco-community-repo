@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -123,7 +124,7 @@ public class ArchiveAndRestoreTest extends TestCase
             // Create the work store
             workStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
             workStoreRootNodeRef = nodeService.getRootNode(workStoreRef);
-            archiveStoreRef = nodeService.createStore("archive", getName() + System.currentTimeMillis());
+            archiveStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "archive" + getName() + System.currentTimeMillis());
             archiveStoreRootNodeRef = nodeService.getRootNode(archiveStoreRef);
             
             // Map the work store to the archive store.  This will already be wired into the NodeService.

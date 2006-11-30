@@ -15,6 +15,7 @@
          <map>
             <entry key="workspace"><ref bean="dbNodeService"></ref></entry>
             <entry key="versionStore"><ref bean="versionNodeService"></ref></entry>
+            <entry key="avm"><ref bean="avmNodeService"/></entry>
          </map>
       </property>
    </bean>
@@ -56,8 +57,24 @@
       <property name="storeArchiveMap">
          <ref bean="storeArchiveMap"/>
       </property>
+      <property name="avmNodeService">
+         <ref bean="avmNodeService"/>
+      </property>
    </bean>
    
+   <!-- AVMNodeService -->
+   <bean id="avmNodeService" class="org.alfresco.repo.avm.AVMNodeService" init-method="init">
+		<property name="dictionaryService">
+			<ref bean="dictionaryService"/>
+		</property>
+		<property name="avmService">
+			<ref bean="avmService"/>
+		</property>
+		<property name="policyComponent">
+			<ref bean="policyComponent"/>
+		</property>
+	</bean>
+		
    <!-- Handles policy callbacks to ensure that node hierarchy gets indexed -->
    <bean id="nodeIndexer" class="org.alfresco.repo.node.index.NodeIndexer" init-method="init">
       <property name="policyComponent">

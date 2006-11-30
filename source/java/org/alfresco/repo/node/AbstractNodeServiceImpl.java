@@ -50,8 +50,10 @@ import org.alfresco.repo.policy.AssociationPolicyDelegate;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.Indexer;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -89,6 +91,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private String uuid;
     /** controls policy delegates */
     private PolicyComponent policyComponent;
+    protected DictionaryService dictionaryService;
 
     /*
      * Policy delegates
@@ -127,6 +130,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         this.policyComponent = policyComponent;
     }
 
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+    
     /**
      * Checks equality by type and uuid
      */
@@ -580,7 +588,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      * @see RegexQNamePattern#MATCH_ALL
      * @see NodeService#getChildAssocs(NodeRef, QNamePattern, QNamePattern)
      */
-    public final List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL);
     }
@@ -691,6 +699,53 @@ public abstract class AbstractNodeServiceImpl implements NodeService
                     "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
                     "   property value: " + propertyValue,
                     e);
+        }
+    }
+    /**
+     * Sets the default property values
+     * 
+     * @param classDefinition
+     * @param properties
+     */
+    protected void addDefaultPropertyValues(ClassDefinition classDefinition, Map<QName, Serializable> properties)
+    {
+        for (Map.Entry<QName, Serializable> entry : classDefinition.getDefaultValues().entrySet())
+        {
+            if (properties.containsKey(entry.getKey()))
+            {
+                // property is present
+                continue;
+            }
+            Serializable value = entry.getValue();
+            
+            // Check the type of the default property
+            PropertyDefinition prop = this.dictionaryService.getProperty(entry.getKey());
+            if (prop == null)
+            {
+                // dictionary doesn't have a default value present
+                continue;
+            }
+
+            // TODO: what other conversions are necessary here for other types of default values ?
+            
+            // ensure that we deliver the property in the correct form
+            if (DataTypeDefinition.BOOLEAN.equals(prop.getDataType().getName()) == true)
+            {
+                if (value instanceof String)
+                {
+                    if (((String)value).toUpperCase().equals("TRUE") == true)
+                    {
+                        value = Boolean.TRUE;
+                    }
+                    else if (((String)value).toUpperCase().equals("FALSE") == true)
+                    {
+                        value = Boolean.FALSE;
+                    }
+                }
+            }
+            
+            // Set the default value of the property
+            properties.put(entry.getKey(), value);
         }
     }
 }

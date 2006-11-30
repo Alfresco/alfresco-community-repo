@@ -30,6 +30,7 @@ public final class StoreRef implements EntityRef, Serializable
     private static final long serialVersionUID = 3905808565129394486L;
 
     public static final String PROTOCOL_WORKSPACE = "workspace";
+    public static final String PROTOCOL_AVM = "avm";
     
     public static final String URI_FILLER = "://";
 

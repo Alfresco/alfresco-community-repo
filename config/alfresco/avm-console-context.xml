@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+	"http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+
+	<!-- Use substitution values in this config. -->
+	<bean id="configurationProperties" 
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>config/alfresco/avm-console.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+    <import resource="file:config/alfresco/avm-base-context.xml"/>
+	
+	<bean id="bulkLoader" class="org.alfresco.repo.avm.util.BulkLoader">
+		<property name="avmService">
+			<ref bean="avmService"/>
+		</property>
+	</bean>
+	
+	<bean id="interactiveConsole" class="org.alfresco.repo.avm.AVMInterpreter">
+		<property name="avmService">
+			<ref bean="avmService"/>
+		</property>
+		<property name="bulkLoader">
+			<ref bean="bulkLoader"/>
+		</property>
+	</bean>
+	
+</beans>

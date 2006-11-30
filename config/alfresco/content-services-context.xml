@@ -29,6 +29,9 @@
       <property name="nodeDaoService" >
          <ref bean="nodeDaoService" />
       </property>
+      <property name="avmNodeDAO">
+      	  <ref bean="avmNodeDAO"/>
+      </property>
       <property name="transactionService" >
          <ref bean="transactionComponent" />
       </property>
@@ -65,6 +68,9 @@
       </property>
       <property name="policyComponent">
           <ref bean="policyComponent" />
+      </property>
+      <property name="avmService">
+          <ref bean="avmService"/>
       </property>
       <property name="imageMagickContentTransformer">
          <ref bean="transformer.ImageMagick" />

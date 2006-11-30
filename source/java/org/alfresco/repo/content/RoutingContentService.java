@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.filestore.FileContentStore;
@@ -32,6 +34,7 @@ import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -45,10 +48,12 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,6 +72,8 @@ public class RoutingContentService implements ContentService
     private TransactionService transactionService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private AVMService avmService;
+    
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
     /** TEMPORARY until we have a map to choose from at runtime */
@@ -123,6 +130,11 @@ public class RoutingContentService implements ContentService
 	{
 		this.policyComponent = policyComponent;
 	}
+    
+    public void setAvmService(AVMService service)
+    {
+        this.avmService = service;
+    }
     
     public void setImageMagickContentTransformer(ImageMagickContentTransformer imageMagickContentTransformer) 
     {
@@ -320,8 +332,19 @@ public class RoutingContentService implements ContentService
         // can be wherever the store decides.
         ContentWriter writer = store.getWriter(existingContentReader, null);
 
+        // Special case for AVM repository.   
+        Serializable contentValue = null;
+        if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+        {
+            Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+            contentValue = avmService.getContentDataForWrite(avmVersionPath.getSecond());
+        }
+        else
+        {
+            contentValue = nodeService.getProperty(nodeRef, propertyQName);
+        }
+
         // set extra data on the reader if the property is pre-existing
-        Serializable contentValue = nodeService.getProperty(nodeRef, propertyQName);
         if (contentValue != null && contentValue instanceof ContentData)
         {
             ContentData contentData = (ContentData)contentValue;

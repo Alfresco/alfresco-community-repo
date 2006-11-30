@@ -40,6 +40,12 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.alfresco.DesktopAction;
+import org.alfresco.filesys.alfresco.DesktopActionException;
+import org.alfresco.filesys.alfresco.DesktopActionTable;
+import org.alfresco.filesys.avm.AVMContext;
+import org.alfresco.filesys.avm.AVMDiskDriver;
+import org.alfresco.filesys.avm.AVMShareMapper;
 import org.alfresco.filesys.ftp.FTPPath;
 import org.alfresco.filesys.ftp.InvalidPathException;
 import org.alfresco.filesys.netbios.NetBIOSName;
@@ -66,14 +72,12 @@ import org.alfresco.filesys.server.core.SharedDeviceList;
 import org.alfresco.filesys.server.filesys.DefaultShareMapper;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.server.filesys.HomeShareMapper;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.TcpipSMB;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
-import org.alfresco.filesys.smb.server.repo.DesktopAction;
-import org.alfresco.filesys.smb.server.repo.DesktopActionException;
-import org.alfresco.filesys.smb.server.repo.DesktopActionTable;
+import org.alfresco.filesys.smb.server.repo.HomeShareMapper;
 import org.alfresco.filesys.util.IPAddress;
+import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.X64;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.NTLMMode;
@@ -154,6 +158,10 @@ public class ServerConfiguration extends AbstractLifecycleBean
     
     private DiskInterface diskInterface;
 
+    // AVM filesystem interface
+    
+    private DiskInterface avmDiskInterface;
+    
     // Runtime platform type
 
     private PlatformType m_platform = PlatformType.Unknown;
@@ -376,47 +384,98 @@ public class ServerConfiguration extends AbstractLifecycleBean
         m_serverList = new NetworkServerList();
     }
     
+    /**
+     * Set the authentication manager
+     * 
+     * @param authenticationManager AuthenticationManager
+     */
     public void setAuthenticationManager(AuthenticationManager authenticationManager)
     {
         this.authenticationManager = authenticationManager;
     }
 
+    /**
+     * Set the authentication service
+     * 
+     * @param authenticationService AuthenticationService
+     */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
 
+    /**
+     * Set the configuration service
+     * 
+     * @param configService ConfigService
+     */
     public void setConfigService(ConfigService configService)
     {
         this.configService = configService;
     }
 
+    /**
+     * Set the filesystem driver for the node service based filesystem
+     * 
+     * @param diskInterface DiskInterface
+     */
     public void setDiskInterface(DiskInterface diskInterface)
     {
         this.diskInterface = diskInterface;
     }
 
+    /**
+     * Set the filesystem driver for the AVM based filesystem
+     * 
+     */
+    public void setAvmDiskInterface(DiskInterface diskInterface)
+    {
+        this.avmDiskInterface = diskInterface;
+    }
+    
+    /**
+     * Set the authentication component
+     * 
+     * @param component AuthenticationComponent
+     */
     public void setAuthenticationComponent(AuthenticationComponent component)
     {
         m_authenticationComponent = component;
     }
 
+    /**
+     * Set the node service
+     * 
+     * @param service NodeService
+     */
     public void setNodeService(NodeService service)
     {
         m_nodeService = service;
     }
 
+    /**
+     * Set the person service
+     * 
+     * @param service PersonService
+     */
     public void setPersonService(PersonService service)
     {
         m_personService = service;
     }
 
+    /**
+     * Set the transaction service
+     * 
+     * @param service TransactionService
+     */
     public void setTransactionService(TransactionService service)
     {
         m_transactionService = service;
     }
 
     /**
+     * Check if the configuration has been initialized
+     * 
      * @return Returns true if the configuration was fully initialised
      */
     public boolean isInitialised()
@@ -1617,68 +1676,94 @@ public class ServerConfiguration extends AbstractLifecycleBean
                 // Get the current filesystem configuration
 
                 ConfigElement elem = filesysElems.get(i);
+                
+                String filesysType = elem.getName();
                 String filesysName = elem.getAttribute("name");
 
                 try
                 {
-                    // Create a new filesystem driver instance and create a context for
-                    // the new filesystem
+                	// Check the filesystem type and use the appropriate driver
                 	
-                    DiskInterface filesysDriver = this.diskInterface;
-                    ContentContext filesysContext = (ContentContext) filesysDriver.createContext(elem);
+                	DiskSharedDevice filesys = null;
+                	
+                	if ( filesysType.equalsIgnoreCase("avmfilesystem"))
+                	{
+	                    // Create a new filesystem driver instance and create a context for
+	                    // the new filesystem
+	                	
+	                    DiskInterface filesysDriver = this.avmDiskInterface;
+	                    AVMContext filesysContext = (AVMContext) filesysDriver.createContext( filesysDriver, filesysName, elem);
+	                    filesysContext.setFilesystemName(filesysName);
+                		
+	                    // Create the shared filesystem
+	                	
+	                    filesys = new DiskSharedDevice(filesysName, filesysDriver, filesysContext);
 
-                    // Check if an access control list has been specified
-
-                    AccessControlList acls = null;
-                    ConfigElement aclElem = elem.getChild("accessControl");
-
-                    if (aclElem != null)
-                    {
-
-                        // Parse the access control list
-
-                        acls = processAccessControlList(aclElem);
-                    }
-                    else if (hasGlobalAccessControls())
-                    {
-
-                        // Use the global access control list for this disk share
-
-                        acls = getGlobalAccessControls();
-                    }
-
-                    // Check if change notifications are disabled
-
-                    boolean changeNotify = elem.getChild("disableChangeNotification") == null ? true : false;
-
-                    // Create the shared filesystem
-
-                    DiskSharedDevice filesys = new DiskSharedDevice(filesysName, filesysDriver, filesysContext);
-
-                    // Attach desktop actions to the filesystem
-                    
-                    ConfigElement deskActionsElem = elem.getChild("desktopActions");
-                    if ( deskActionsElem != null)
-                    {
-                    	// Get the desktop actions list
-                    	
-                    	DesktopActionTable desktopActions = processDesktopActions(deskActionsElem, filesys);
-                    	if ( desktopActions != null)
-                    		filesysContext.setDesktopActions( desktopActions, filesysDriver);
-                    }
-                    
-                    // Add any access controls to the share
-
-                    filesys.setAccessControlList(acls);
-
-                    // Enable/disable change notification for this device
-
-                    filesysContext.enableChangeHandler(changeNotify);
-
-                    // Start the filesystem
-
-                    filesysContext.startFilesystem(filesys);
-
+	                    // Start the filesystem
+	                	
+	                    filesysContext.startFilesystem(filesys);
+                	}
+                	else
+                	{
+	                    // Create a new filesystem driver instance and create a context for
+	                    // the new filesystem
+	                	
+	                    DiskInterface filesysDriver = this.diskInterface;
+	                    ContentContext filesysContext = (ContentContext) filesysDriver.createContext( filesysDriver, filesysName, elem);
+	
+	                    // Check if an access control list has been specified
+	
+	                    AccessControlList acls = null;
+	                    ConfigElement aclElem = elem.getChild("accessControl");
+	
+	                    if (aclElem != null)
+	                    {
+	
+	                        // Parse the access control list
+	
+	                        acls = processAccessControlList(aclElem);
+	                    }
+	                    else if (hasGlobalAccessControls())
+	                    {
+	
+	                        // Use the global access control list for this disk share
+	
+	                        acls = getGlobalAccessControls();
+	                    }
+	
+	                    // Check if change notifications are disabled
+	
+	                    boolean changeNotify = elem.getChild("disableChangeNotification") == null ? true : false;
+	
+	                    // Create the shared filesystem
+	
+	                    filesys = new DiskSharedDevice(filesysName, filesysDriver, filesysContext);
+	
+	                    // Attach desktop actions to the filesystem
+	                    
+	                    ConfigElement deskActionsElem = elem.getChild("desktopActions");
+	                    if ( deskActionsElem != null)
+	                    {
+	                    	// Get the desktop actions list
+	                    	
+	                    	DesktopActionTable desktopActions = processDesktopActions(deskActionsElem, filesys);
+	                    	if ( desktopActions != null)
+	                    		filesysContext.setDesktopActions( desktopActions, filesysDriver);
+	                    }
+	                    
+	                    // Add any access controls to the share
+	
+	                    filesys.setAccessControlList(acls);
+	
+	                    // Enable/disable change notification for this device
+	
+	                    filesysContext.enableChangeHandler(changeNotify);
+	
+	                    // Start the filesystem
+	
+	                    filesysContext.startFilesystem(filesys);
+                	}
+                	
                     // Create the shared device and add to the list of available
                     // shared filesystems
 
@@ -1696,6 +1781,78 @@ public class ServerConfiguration extends AbstractLifecycleBean
             
             logger.warn("No filesystems defined");
         }
+
+        // Check if shares should be added for all AVM stores
+        
+        ConfigElement avmAllStoresElem = config.getConfigElement( "avmAllStores");
+        
+        if ( avmAllStoresElem != null && getAvmDiskInterface() != null)
+        {
+        	// Get the list of store names
+        	
+        	AVMDiskDriver avmDriver = (AVMDiskDriver) getAvmDiskInterface();
+        	StringList storeNames = avmDriver.getAVMStoreNames();
+        	
+        	// Add shares for each of the store names, if the share name does not already exist
+        	
+        	if ( storeNames != null && storeNames.numberOfStrings() > 0)
+        	{
+        		// Add a share for each store
+        		
+        		for ( int i = 0; i < storeNames.numberOfStrings(); i++)
+        		{
+        			String storeName = storeNames.getStringAt( i);
+        			
+        			// Check if a share of the same name already exists
+        			
+        			if ( getShares().findShare( storeName, ShareType.DISK, true) == null)
+        			{
+        				// Create the new share for the store
+        				
+	                    AVMContext avmContext = new AVMContext( storeName, storeName + ":/", AVMContext.VERSION_HEAD);
+	                    avmContext.enableStateTable( true, avmDriver.getStateReaper());
+                		
+	                    // Create the shared filesystem
+	                	
+	                    addShare( new DiskSharedDevice( storeName, avmDriver, avmContext));
+	                    
+	                    // DEBUG
+	                    
+	                    if ( logger.isDebugEnabled())
+	                    	logger.debug( "Added AVM share " + storeName);
+        			}
+        		}
+        	}
+        }
+        
+        // Check for the AVM version share mapper
+        
+        ConfigElement avmMapperElem = config.getConfigElement( "avmVersionMapper");
+        
+        if ( avmMapperElem != null)
+        {
+            try
+            {
+                // Create the AVM version share mapper
+                
+                AVMShareMapper shareMapper = new AVMShareMapper();
+                shareMapper.initializeMapper( this, avmMapperElem);
+                
+                // Use the AVM version share mapper
+                
+                m_shareMapper = shareMapper;
+                
+                // Debug
+                
+                if ( logger.isDebugEnabled())
+                    logger.debug("Using AVM version share mapper");
+            }
+            catch (InvalidConfigurationException ex)
+            {
+                throw new AlfrescoRuntimeException("Failed to initialize AVM version share mapper", ex);
+            }
+        }
+        
     }
 
     /**
@@ -2289,6 +2446,16 @@ public class ServerConfiguration extends AbstractLifecycleBean
     public final DiskInterface getDiskInterface()
     {
         return diskInterface;
+    }
+    
+    /**
+     * Return the disk interface to be used to create AVM filesystem shares
+     * 
+     * @return DiskInterface
+     */
+    public final DiskInterface getAvmDiskInterface()
+    {
+        return avmDiskInterface;
     }
     
     /**

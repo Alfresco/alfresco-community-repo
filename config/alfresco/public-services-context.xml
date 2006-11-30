@@ -1012,6 +1012,107 @@
         </property>
     </bean>
     
+    <!-- The AVMService -->
+    
+    <bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl">
+	    <property name="avmRepository">
+	    	<ref bean="avmRepository"/>
+	    </property>
+	    <property name="transactionListener">
+	        <ref bean="lookupCacheListener"/>
+	    </property>
+	</bean>
+	
+    <bean id="AVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.avm.AVMService</value>
+        </property>
+        <property name="target">
+	    <ref bean="avmService"/>
+        </property>
+        <property name="interceptorNames">
+	    <list>
+        	<idref local="AVMService_transaction"/>
+            <idref local="AVMService_descriptor"/>
+        </list>
+        </property>
+    </bean>
+	
+    <bean id="AVMService_descriptor" parent="AlfrescoServiceDescriptor">
+        <property name="interface">
+            <value>org.alfresco.service.cmr.avm.AVMService</value>
+        </property>
+        <property name="description">
+            <value>AVM Service</value>
+        </property>
+    </bean>
+    
+    <bean id="AVMService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    	<property name="transactionManager">
+    		<ref bean="transactionManager"/>
+    	</property>
+    	<property name="transactionAttributes">
+    		<props>
+    			<prop key="hasAspect">${server.transaction.mode.readOnly}</prop>
+    			<prop key="getContentDataForWrite">${server.transaction.mode.default}</prop>
+    			<prop key="getFileOutputStream">${server.transaction.mode.default}</prop>
+    			<prop key="getAVMSystemStore">${server.transaction.mode.default}</prop>
+    			<prop key="get*">${server.transaction.mode.readOnly}</prop>
+    			<prop key="lookup">${server.transaction.mode.readOnly}</prop>
+    			<prop key="*">${server.transaction.mode.default}</prop>
+    		</props>
+    	</property>
+    </bean>
+    
+    <!-- The AVMSyncService -->
+    
+    <bean id="avmSyncService" class="org.alfresco.repo.avm.AVMSyncServiceImpl">
+        <property name="avmService">
+            <ref bean="avmService"/>
+        </property>
+        <property name="avmRepository">
+            <ref bean="avmRepository"/>
+        </property>
+    </bean>
+    
+    <bean id="AVMSyncService_descriptor" parent="AlfrescoServiceDescriptor">
+        <property name="interface">
+            <value>org.alfresco.service.cmr.avmsync.AVMSyncService</value>
+        </property>
+        <property name="description">
+            <value>AVM Tree Synchronization Service</value>
+        </property>
+    </bean>
+    
+    <bean id="AVMSyncService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="compare">${server.transaction.mode.readOnly}</prop>
+                <prop key="update">${server.transaction.mode.default}</prop>
+                <prop key="flatten">${server.transaction.mode.default}</prop>
+                <prop key="resetLayer">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="AVMSyncService" class="org.springframework.aop.framework.ProxyFactoryBean">
+	<property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.avmsync.AVMSyncService</value>
+        </property>
+        <property name="target">
+	    <ref bean="avmSyncService"/>
+        </property>
+        <property name="interceptorNames">
+	    <list>
+                <idref local="AVMSyncService_transaction"/>
+                <idref local="AVMSyncService_descriptor"/>
+            </list>
+        </property>
+    </bean>
+
     <!-- Workflow Service -->
     
     <bean id="WorkflowService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1026,7 +1127,7 @@
                 <idref local="WorkflowService_transaction"/>
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
-                <idref bean="WorkflowService_security"/>
+                 <idref bean="WorkflowService_security"/>
                 <idref local="WorkflowService_descriptor"/>
             </list>
         </property>

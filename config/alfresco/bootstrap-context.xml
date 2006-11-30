@@ -125,6 +125,10 @@
                     <prop key="messages">alfresco/messages/bootstrap-tutorial</prop>
                 </props>
                 <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.guest_home.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/wcmtutorial.xml</prop>
+                </props>
+                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</prop>
                     <prop key="location">alfresco/templates/software_engineering_project.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-templates</prop>
@@ -164,6 +168,12 @@
 					<prop key="mimetype">text/xml</prop>
 					<prop key="redeploy">false</prop>
 				</props>
+			    <props>
+			    	<prop key="engineId">jbpm</prop>
+			    	<prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
+			    	<prop key="mimetype">text/xml</prop>
+			    	<prop key="redeploy">false</prop>
+			    </props>
 			</list>
 		</property>
 		<property name="models">

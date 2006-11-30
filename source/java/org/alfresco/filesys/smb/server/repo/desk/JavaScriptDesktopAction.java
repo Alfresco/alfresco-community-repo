@@ -29,13 +29,14 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.alfresco.config.ConfigElement;
+import org.alfresco.filesys.alfresco.DesktopAction;
+import org.alfresco.filesys.alfresco.DesktopActionException;
+import org.alfresco.filesys.alfresco.DesktopParams;
+import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.smb.server.repo.DesktopAction;
-import org.alfresco.filesys.smb.server.repo.DesktopActionException;
-import org.alfresco.filesys.smb.server.repo.DesktopParams;
-import org.alfresco.filesys.smb.server.repo.DesktopResponse;
 import org.alfresco.service.cmr.repository.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Javascript Desktop Action Class
@@ -272,7 +273,8 @@ public class JavaScriptDesktopAction extends DesktopAction {
 			
 		// Start a transaction
 		
-		params.getSession().beginTransaction(getTransactionService(), false);
+		TransactionService transService = getServiceRegistry().getTransactionService();
+		params.getSession().beginTransaction( transService, false);
 
 		// Access the script service
 		
@@ -291,7 +293,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
             
             // Start a transaction
             
-    		params.getSession().beginTransaction(getTransactionService(), false);
+    		params.getSession().beginTransaction( transService, false);
 
     		// Run the script
     		

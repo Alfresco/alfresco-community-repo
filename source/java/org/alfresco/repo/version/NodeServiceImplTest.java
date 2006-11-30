@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -241,7 +242,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         
         boolean test1 = this.lightWeightVersionStoreNodeService.hasAspect(
                 version.getFrozenStateNodeRef(), 
-                ContentModel.ASPECT_UIFACETS);
+                ApplicationModel.ASPECT_UIFACETS);
         assertFalse(test1);
         
         boolean test2 = this.lightWeightVersionStoreNodeService.hasAspect(

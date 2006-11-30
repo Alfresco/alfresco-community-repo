@@ -33,64 +33,82 @@ import org.alfresco.service.PublicService;
 public interface NamespaceService extends NamespacePrefixResolver
 {
     /** Default Namespace URI */
-    public static final String DEFAULT_URI = "";
+    static final String DEFAULT_URI = "";
     
     /** Default Namespace Prefix */
-    public static final String DEFAULT_PREFIX = "";
+    static final String DEFAULT_PREFIX = "";
 
     /** Default Alfresco URI */
-    public static final String ALFRESCO_URI = "http://www.alfresco.org";
+    static final String ALFRESCO_URI = "http://www.alfresco.org";
     
     /** Default Alfresco Prefix */
-    public static final String ALFRESCO_PREFIX = "alf";
+    static final String ALFRESCO_PREFIX = "alf";
     
     /** Dictionary Model URI */
-    public static final String DICTIONARY_MODEL_1_0_URI = "http://www.alfresco.org/model/dictionary/1.0";
+    static final String DICTIONARY_MODEL_1_0_URI = "http://www.alfresco.org/model/dictionary/1.0";
     
     /** Dictionary Model Prefix */
-    public static final String DICTIONARY_MODEL_PREFIX = "d";
+    static final String DICTIONARY_MODEL_PREFIX = "d";
 
     /** System Model URI */
-    public static final String SYSTEM_MODEL_1_0_URI = "http://www.alfresco.org/model/system/1.0";
+    static final String SYSTEM_MODEL_1_0_URI = "http://www.alfresco.org/model/system/1.0";
 
     /** System Model Prefix */
-    public static final String SYSTEM_MODEL_PREFIX = "sys";
+    static final String SYSTEM_MODEL_PREFIX = "sys";
 
     /** Content Model URI */
-    public static final String CONTENT_MODEL_1_0_URI = "http://www.alfresco.org/model/content/1.0";
+    static final String CONTENT_MODEL_1_0_URI = "http://www.alfresco.org/model/content/1.0";
 
     /** Content Model Prefix */
-    public static final String CONTENT_MODEL_PREFIX = "cm";
+    static final String CONTENT_MODEL_PREFIX = "cm";
 
     /** Application Model URI */
-    public static final String APP_MODEL_1_0_URI = "http://www.alfresco.org/model/application/1.0";
+    static final String APP_MODEL_1_0_URI = "http://www.alfresco.org/model/application/1.0";
 
     /** Application Model Prefix */
-    public static final String APP_MODEL_PREFIX = "app";
+    static final String APP_MODEL_PREFIX = "app";
 
     /** Business Process Model URI */
-    public static final String BPM_MODEL_1_0_URI = "http://www.alfresco.org/model/bpm/1.0";
+    static final String BPM_MODEL_1_0_URI = "http://www.alfresco.org/model/bpm/1.0";
 
     /** Business Process Model Prefix */
-    public static final String BPM_MODEL_PREFIX = "bpm";
+    static final String BPM_MODEL_PREFIX = "bpm";
 
     /** Workflow Model URI */
-    public static final String WORKFLOW_MODEL_1_0_URI = "http://www.alfresco.org/model/workflow/1.0";
+    static final String WORKFLOW_MODEL_1_0_URI = "http://www.alfresco.org/model/workflow/1.0";
 
     /** Workflow Model Prefix */
-    public static final String WORKFLOW_MODEL_PREFIX = "wf";
+    static final String WORKFLOW_MODEL_PREFIX = "wf";
+    
+    /** Alfresco Forums URI */
+    static final String FORUMS_MODEL_1_0_URI = "http://www.alfresco.org/model/forum/1.0";
 
+    /** Alfresco Forums Prefix */
+    static final String FORUMS_MODEL_PREFIX = "fm";
+    
     /** Alfresco View Namespace URI */
-    public static final String REPOSITORY_VIEW_1_0_URI = "http://www.alfresco.org/view/repository/1.0";
+    static final String REPOSITORY_VIEW_1_0_URI = "http://www.alfresco.org/view/repository/1.0";
     
     /** Alfresco View Namespace Prefix */
-    public static final String REPOSITORY_VIEW_PREFIX = "view";
+    static final String REPOSITORY_VIEW_PREFIX = "view";
     
     /** Alfresco security URI */
-    public static final String SECURITY_MODEL_1_0_URI = "http://www.alfresco.org/model/security/1.0";
+    static final String SECURITY_MODEL_1_0_URI = "http://www.alfresco.org/model/security/1.0";
     
     /** Alfresco security Prefix */
-    public static final String SECURITY_MODEL_PREFIX = "security";
+    static final String SECURITY_MODEL_PREFIX = "security";
+    
+    /** Alfresco WCM URI */
+    static final String WCM_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmmodel/1.0";
+    
+    /** Alfresco WCM Prefix */
+    static final String WCM_MODEL_PREFIX = "wcm";
+    
+    /** WCM Application Model URI */
+    static final String WCMAPP_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmappmodel/1.0";
+    
+    /** WCM Application Model Prefix */
+    static final String WCMAPP_MODEL_PREFIX = "wca";
     
     
     /**

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+	"http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!-- ID Issuers. -->
+	
+	<bean id="nodeIssuer" class="org.alfresco.repo.avm.Issuer"
+		depends-on="avmDAOs" init-method="init">
+		<property name="name">
+			<value>node</value>
+		</property>
+		<property name="transactionService">
+			<ref bean="transactionComponent"/>
+		</property>
+	</bean>
+
+	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer"
+		depends-on="avmDAOs" init-method="init">
+		<property name="name">
+			<value>layer</value>
+		</property>
+		<property name="transactionService">
+			<ref bean="transactionComponent"/>
+		</property>
+	</bean>
+
+	<!-- DAOs for persistent data types -->
+	
+	<!-- Issuers are not actual entities. More like pseudo entities. -->
+	
+	<bean id="issuerDAO" class="org.alfresco.repo.avm.hibernate.IssuerDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmNodeDAO" class="org.alfresco.repo.avm.hibernate.AVMNodeDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmStoreDAO" class="org.alfresco.repo.avm.hibernate.AVMStoreDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="versionRootDAO" class="org.alfresco.repo.avm.hibernate.VersionRootDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="childEntryDAO" class="org.alfresco.repo.avm.hibernate.ChildEntryDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="historyLinkDAO" class="org.alfresco.repo.avm.hibernate.HistoryLinkDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="mergeLinkDAO" class="org.alfresco.repo.avm.hibernate.MergeLinkDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="avmNodePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMNodePropertyDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMStorePropertyDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmAspectNameDAO" class="org.alfresco.repo.avm.hibernate.AVMAspectNameDAOHibernate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+	
+	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs">
+		<property name="issuerDAO">
+			<ref bean="issuerDAO"/>
+		</property>
+		<property name="nodeDAO">
+			<ref bean="avmNodeDAO"/>
+		</property>
+		<property name="avmStoreDAO">
+			<ref bean="avmStoreDAO"/>
+		</property>
+		<property name="versionRootDAO">
+			<ref bean="versionRootDAO"/>
+		</property>
+		<property name="childEntryDAO">
+			<ref bean="childEntryDAO"/>
+		</property>
+		<property name="historyLinkDAO">
+			<ref bean="historyLinkDAO"/>
+		</property>
+		<property name="mergeLinkDAO">
+			<ref bean="mergeLinkDAO"/>
+		</property>
+		<property name="avmNodePropertyDAO">
+			<ref bean="avmNodePropertyDAO"/>
+		</property>
+		<property name="avmStorePropertyDAO">
+			<ref bean="avmStorePropertyDAO"/>
+		</property>
+		<property name="avmAspectNameDAO">
+			<ref bean="avmAspectNameDAO"/>
+		</property>
+	</bean>
+	
+	<bean id="lookupCache" class="org.alfresco.repo.avm.LookupCache">
+	    <property name="avmNodeDAO">
+	        <ref bean="avmNodeDAO"/>
+	    </property>
+	    <property name="avmStoreDAO">
+	        <ref bean="avmStoreDAO"/>
+	    </property>
+	    <property name="maxSize">
+	    	<value>50</value>
+	    </property>
+	</bean>
+	
+	<bean id="lookupCacheListener" class="org.alfresco.repo.avm.AVMLookupCacheListener">
+	    <property name="lookupCache">
+	        <ref bean="lookupCache"/>
+	    </property>
+	</bean>
+	
+	<bean id="rawServices" class="org.alfresco.repo.avm.util.RawServices"/>
+	
+	<bean id="orphanReaper" class="org.alfresco.repo.avm.OrphanReaper"
+		init-method="init" destroy-method="shutDown" depends-on="AVMService">
+		<property name="inactiveBaseSleep">
+			<value>60000</value>
+		</property>
+		<property name="activeBaseSleep">
+			<value>1000</value>
+		</property>
+		<property name="batchSize">
+		    <value>50</value>
+		</property>
+		<property name="maxQueueLength">
+			<value>1000</value>
+		</property>
+		<property name="transactionService">
+			<ref bean="transactionComponent"/>
+		</property>
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+
+	<bean id="avmRepository" class="org.alfresco.repo.avm.AVMRepository">
+		<property name="nodeIssuer">
+			<ref bean="nodeIssuer"/>
+		</property>
+		<property name="layerIssuer">
+			<ref bean="layerIssuer"/>
+		</property>
+		<property name="lookupCache">
+		    <ref bean="lookupCache"/>
+		</property>
+	</bean>
+
+	<!-- The remote interface implementation. -->
+	
+	<bean id="avmRemote" class="org.alfresco.repo.avm.AVMRemoteImpl"
+		init-method="init" destroy-method="shutDown">
+		<property name="idleTimeout">
+			<value>${avm.remote.idlestream.timeout}</value>
+		</property>
+		<property name="avmService">
+			<ref bean="AVMService"/>
+		</property>
+	</bean>
+	
+	<!-- The RMI wrapper around the AVM remote interface. -->
+	
+	<bean id="avmRemoteService" class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="avmRemote"/>
+		</property>
+		<property name="serviceInterface">
+			<value>org.alfresco.repo.avm.AVMRemote</value>
+		</property>
+		<property name="serviceName">
+			<value>avm</value>
+		</property>
+		<property name="registryPort">
+			<value>${avm.remote.port}</value>
+		</property>
+	</bean>
+			
+    <bean id="avmRemoteSyncService" class="org.springframework.remoting.rmi.RmiServiceExporter">
+        <property name="service">
+            <ref bean="AVMSyncService"/>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.avmsync.AVMSyncService</value>
+        </property>
+        <property name="serviceName">
+            <value>avmsync</value>
+        </property>
+        <property name="registryPort">
+            <value>${avm.remote.port}</value>
+        </property>
+    </bean>
+
+</beans>
+
+	
+	

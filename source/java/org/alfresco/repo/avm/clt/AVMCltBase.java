@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.alfresco.repo.avm.AVMRemote;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.util.Pair;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -43,7 +42,7 @@ public abstract class AVMCltBase
      */
     protected AVMCltBase()
     {
-        fContext = new ClassPathXmlApplicationContext("avm-clt-context.xml");
+        fContext = new ClassPathXmlApplicationContext("alfresco/avm-clt-context.xml");
         fAVMRemote = (AVMRemote)fContext.getBean("avmRemote");
         fAVMSyncService = (AVMSyncService)fContext.getBean("avmSyncService");
     }
@@ -76,32 +75,27 @@ public abstract class AVMCltBase
         int pos = 0;
         while (pos < args.length)
         {
-            // If the argument begins with "-" then this could be a
-            // flag.
-            if (args[pos].startsWith("-"))
+            // If the argument is one of the accepted flags then it's
+            // a flag.
+            if (flagArgs.containsKey(args[pos]))
             {
-                // If the argument is one of the accepted flags then it's
-                // a flag.
-                if (flagArgs.containsKey(args[pos]))
+                String flag = args[pos];
+                pos++;
+                int count = flagArgs.get(flag);
+                // Check for too few arguments
+                if (args.length - pos < count)
                 {
-                    String flag = args[pos];
-                    pos++;
-                    int count = flagArgs.get(flag);
-                    // Check for too few arguments
-                    if (args.length - pos < count)
-                    {
-                        usage(usageMessage);
-                    }
-                    // Stuff the parsed flag away.
-                    List<String> flArgs = new ArrayList<String>();
-                    for (int i = 0; i < count; i++)
-                    {
-                        flArgs.add(args[pos + i]);
-                    }
-                    flagValues.put(flag, flArgs);
-                    pos += count;
-                    continue;
+                    usage(usageMessage);
                 }
+                // Stuff the parsed flag away.
+                List<String> flArgs = new ArrayList<String>();
+                for (int i = 0; i < count; i++)
+                {
+                    flArgs.add(args[pos + i]);
+                }
+                flagValues.put(flag, flArgs);
+                pos += count;
+                continue;
             }
             // Otherwise its just a plain old arg.
             actualArgs.add(args[pos]);

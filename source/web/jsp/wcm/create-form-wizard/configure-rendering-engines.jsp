@@ -105,6 +105,22 @@ else
 		    value="#{WizardManager.bean.renderingEngineChoices}"/>
     </h:selectOneRadio>
 
+    <h:outputText id="no_graphic_image_title" value=""/>
+    <h:outputText id="title-output-text"
+                  value="#{msg.title}:"/>
+    <h:inputText id="title" 
+		 value="#{WizardManager.bean.renderingEngineTemplateTitle}"
+                 maxlength="1024" 
+		 size="35"/>
+
+    <h:outputText id="no_graphic_image_description" value=""/>
+    <h:outputText id="description-output-text"
+                  value="#{msg.description}:"/>
+    <h:inputText id="description" 
+		 value="#{WizardManager.bean.renderingEngineTemplateDescription}"
+                 maxlength="1024" 
+		 style="width:100%"/>
+
     <h:graphicImage id="required-image-mimetype"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="mimetype-output-text"
@@ -133,9 +149,6 @@ else
 		     styleClass="wizardButton" 
 		     disabled="#{WizardManager.bean.addToListDisabled}" />
   </h:panelGroup>
-  <h:outputText id="selected-rendering-engine-templates-output-text"
-                styleClass="mainSubText" 
-		value="#{msg.selected_rendering_engine_templates}" />
   <h:panelGroup id="data-table-panel-group">
     <h:dataTable id="rendering-engine-template-data-table"
                  value="#{WizardManager.bean.renderingEngineTemplatesDataModel}" 
@@ -145,30 +158,34 @@ else
 		 headerClass="selectedItemsHeader"
                  cellspacing="0" 
 		 cellpadding="4" 
+		 width="100%"
                  rendered="#{WizardManager.bean.renderingEngineTemplatesDataModel.rowCount != 0}">
-      <h:column id="data-table-column-1">
+      <h:column id="data-table-column-0">
         <f:facet name="header">
-          <h:outputText id="data-table-name-1" value="#{msg.file_name}" />
+          <h:outputText id="data-table-name-0" value="#{msg.selected_rendering_engine_templates}" />
         </f:facet>
-        <h:outputText id="data-table-value-1" value="#{row.fileName}" />
-      </h:column>
-      <h:column id="data-table-column-2">
-        <f:facet name="header">
-          <h:outputText id="data-table-name-2" value="#{msg.type}" />
-        </f:facet>
-        <h:outputText id="data-table-value-2" value="#{row.renderingEngine.name}" />
-      </h:column>
-      <h:column id="data-table-column-3">
-        <f:facet name="header">
-          <h:outputText id="data-table-name-3" value="#{msg.output_path_pattern}" />
-        </f:facet>
-        <h:outputText id="data-table-value-3" value="#{row.outputPathPatternForRendition}" />
-      </h:column>
-      <h:column id="data-table-column-4">
-        <f:facet name="header">
-          <h:outputText id="data-table-name-4" value="#{msg.mimetype}" />
-        </f:facet>
-        <h:outputText id="data-table-value-4" value="#{row.mimetypeForRendition}" />
+	<f:verbatim>
+	  <span style="float:left">
+	    <img src="<%= request.getContextPath() %>/images/icons/template_large.gif"/>
+	  </span>
+	</f:verbatim>
+	<h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
+	<h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
+	<f:verbatim><br/></f:verbatim>
+	<h:outputText id="data-table-name-0-name" value="#{msg.file_name}: " />
+	<h:outputText id="data-table-value-0-name" value="#{row.fileName}" />
+	<f:verbatim><br/></f:verbatim>
+	<h:outputText id="data-table-name-0-title" value="#{msg.title}: " />
+	<h:outputText id="data-table-value-0-title" value="#{row.title}" />
+	<f:verbatim><br clear="all"/></f:verbatim>
+	<h:outputText id="data-table-name-0-description" value="#{msg.description}: " />
+	<h:outputText id="data-table-value-0-description" value="#{row.description}" />
+	<f:verbatim><br clear="all"/></f:verbatim>
+	<h:outputText id="data-table-name-0-mimetype" value="#{msg.mimetype_for_renditions}: " />
+	<h:outputText id="data-table-value-0-mimetype" value="#{row.mimetypeForRendition}" />
+	<f:verbatim><br clear="all"/></f:verbatim>
+	<h:outputText id="data-table-name-0-opp" value="#{msg.output_path_pattern}: " />
+	<h:outputText id="data-table-value-0-opp" value="#{row.outputPathPatternForRendition}" />
       </h:column>
       <h:column id="data-table-column-5">
         <a:actionLink id="remove-select-rendering-engine-action-link"
@@ -183,8 +200,9 @@ else
 		   columns="1" 
 		   cellpadding="2" 
 		   styleClass="selectedItems" 
+		   width="100%"
 		   rowClasses="selectedItemsHeader,selectedItemsRow">
-        <h:outputText id="no-items-name" value="#{msg.name}" />
+        <h:outputText id="no-items-name" value="#{msg.selected_rendering_engine_templates}" />
         <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />
       </h:panelGrid>
     </a:panel>

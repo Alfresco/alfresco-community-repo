@@ -79,18 +79,24 @@ public class CreateFormWizard
    {
       private final String fileName;
       private final File file;
+      private final String title;
+      private final String description;
       private final String mimetypeForRendition;
       private final String outputPathPatternForRendition;
       private final RenderingEngine renderingEngine;
 
       public RenderingEngineTemplateData(final String fileName, 
                                          final File file,
+                                         final String title,
+                                         final String description,
                                          final String outputPathPatternForRendition,
                                          final String mimetypeForRendition,
                                          final RenderingEngine renderingEngine)
       {
          this.fileName = fileName;
          this.file = file;
+         this.title = title;
+         this.description = description;
          this.outputPathPatternForRendition = outputPathPatternForRendition;
          this.mimetypeForRendition = mimetypeForRendition;
          this.renderingEngine = renderingEngine;
@@ -114,6 +120,16 @@ public class CreateFormWizard
       public File getFile()
       {
          return this.file;
+      }
+
+      public String getTitle()
+      {
+         return this.title;
+      }
+
+      public String getDescription()
+      {
+         return this.description;
       }
 
       public RenderingEngine getRenderingEngine()
@@ -145,6 +161,8 @@ public class CreateFormWizard
    private String formName = null;
    private String formTitle = null;
    private String formDescription = null;
+   private String renderingEngineTemplateTitle = null;
+   private String renderingEngineTemplateDescription = null;
    private String defaultWorkflowName = null;
    private RenderingEngine renderingEngine = null;
    protected ContentService contentService;
@@ -250,6 +268,14 @@ public class CreateFormWizard
             this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
                                        WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE, 
                                        props);
+
+            // apply the titled aspect - title and description
+            props = new HashMap<QName, Serializable>(2, 1.0f);
+            props.put(ContentModel.PROP_TITLE, retd.getTitle());
+            props.put(ContentModel.PROP_DESCRIPTION, retd.getDescription());
+            this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
+                                       ContentModel.ASPECT_TITLED, 
+                                       props);
          }
 
          LOGGER.debug("adding rendition properties to " + renderingEngineTemplateNodeRef);
@@ -279,6 +305,8 @@ public class CreateFormWizard
       this.formName = null;
       this.formTitle = null;
       this.formDescription = null;
+      this.renderingEngineTemplateTitle = null;
+      this.renderingEngineTemplateDescription = null; 
       this.renderingEngine = null;
       this.renderingEngineTemplates = new ArrayList<RenderingEngineTemplateData>();
       this.outputPathPatternForFormInstanceData = null;
@@ -331,11 +359,9 @@ public class CreateFormWizard
     */
    public String getOutputPathPatternForRendition()
    {
-      if (this.outputPathPatternForRendition == null)
-      {
-         this.outputPathPatternForRendition = "${name}.${extension}";
-      }
-      return this.outputPathPatternForRendition;
+      return (this.outputPathPatternForRendition == null
+              ? "${name}.${extension}"
+              : this.outputPathPatternForRendition);
    }
 
    /**
@@ -375,6 +401,8 @@ public class CreateFormWizard
       final RenderingEngineTemplateData data = 
          this.new RenderingEngineTemplateData(this.getRenderingEngineTemplateFileName(),
                                               this.getRenderingEngineTemplateFile(),
+                                              this.getRenderingEngineTemplateTitle(),
+                                              this.getRenderingEngineTemplateDescription(),
                                               this.getOutputPathPatternForRendition(),
                                               this.getMimetypeForRendition(),
                                               this.renderingEngine);
@@ -383,6 +411,8 @@ public class CreateFormWizard
       this.renderingEngine = null;
       this.outputPathPatternForRendition = null;
       this.mimetypeForRendition = null;
+      this.renderingEngineTemplateTitle = null;
+      this.renderingEngineTemplateDescription = null;
    }
    
    /**
@@ -712,6 +742,40 @@ public class CreateFormWizard
       return this.formDescription;
    }
 
+   /**
+    * Sets the title for this renderingEngineTemplate.
+    */
+   public void setRenderingEngineTemplateTitle(final String renderingEngineTemplateTitle)
+   {
+      this.renderingEngineTemplateTitle = renderingEngineTemplateTitle;
+   }
+
+   /**
+    * @return the title for this renderingEngineTemplate.
+    */
+   public String getRenderingEngineTemplateTitle()
+   {
+      return (this.renderingEngineTemplateTitle == null && this.getRenderingEngineTemplateFileName() != null
+              ? this.getRenderingEngineTemplateFileName().replaceAll("(.+)\\..*", "$1")
+              : this.renderingEngineTemplateTitle);
+   }
+
+   /**
+    * Sets the description for this renderingEngineTemplate.
+    */
+   public void setRenderingEngineTemplateDescription(final String renderingEngineTemplateDescription)
+   {
+      this.renderingEngineTemplateDescription = renderingEngineTemplateDescription;
+   }
+
+   /**
+    * @return the description for this renderingEngineTemplate.
+    */
+   public String getRenderingEngineTemplateDescription()
+   {
+      return this.renderingEngineTemplateDescription;
+   }
+
    public void setDefaultWorkflowName(final String[] defaultWorkflowName)
    {
       assert defaultWorkflowName.length == 1;
@@ -764,29 +828,6 @@ public class CreateFormWizard
       return result;
    }
 
-   
-   /**
-    * @return Returns the summary data for the wizard.
-    */
-   public String getSummary()
-   {
-      final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      final String[] labels = new String[1 + this.renderingEngineTemplates.size()];
-      final String[] values = new String[1 + this.renderingEngineTemplates.size()];
-      labels[0] = "Schema File";
-      values[0] = this.getSchemaFileName();
-      for (int i = 0; i < this.renderingEngineTemplates.size(); i++)
-      {
-         final RenderingEngineTemplateData retd = this.renderingEngineTemplates.get(i);
-         labels[1 + i] = ("RenderingEngine for " + retd.getOutputPathPatternForRendition() +
-                          " mimetype " + retd.getMimetypeForRendition());
-         values[1 + i] = retd.getFileName();
-      }
-
-      return this.buildSummary(labels, values);
-   }
-   
-   
    // ------------------------------------------------------------------------------
    // Service Injection
    

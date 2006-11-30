@@ -24,9 +24,6 @@
   window.onload = function() { document.getElementById("wizard:finish-button").focus(); }
 </script>
 
-<h:selectBooleanCheckbox id="startWorkflow"
-			 value="#{WizardManager.bean.startWorkflow}"/>
-<h:outputText value="&nbsp;#{msg.create_web_content_summary_submit_message}" escape="false" />
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%" rowClasses="wizardSectionHeading">
@@ -47,17 +44,36 @@
   <h:outputText value="&nbsp;#{msg.create_web_content_summary_rendition_details}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
-  <c:forEach items="${WizardManager.bean.renditions}" var="rendition">
-    <h:outputText value="#{msg.name}:"/>
-    <a:actionLink value="${rendition.name}" 
-		  image="/images/icons/preview_website.gif" 
-		  showLink="true" 
-		  href="${rendition.url}" 
-		  target="new">${rendition.name}</a:actionLink>
-    <h:outputText value="#{msg.location}:"/>
-    <f:verbatim>${rendition.webappRelativePath}</f:verbatim>
-  </c:forEach>
+<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%">
+  <a:selectList id="rendition-list" 
+		multiSelect="false"
+		activeSelect="true" 
+		style="width:100%" 
+		itemStyleClass="selectListItem">
+    <c:forEach items="${WizardManager.bean.renditions}" var="rendition">
+      <a:listItem label="${rendition.name}"
+		  value="${rendition.name}"
+                  image="/images/icons/template_large.gif">
+	<jsp:attribute name="description">
+	  <span style="float:right">
+	    <a:actionLink value="${rendition.name}" 
+			  image="/images/icons/preview_website.gif"
+			  showLink="false" 
+			  href="${rendition.url}" 
+			  target="new"/>
+	  </span>
+	  Rendered by ${rendition.renderingEngineTemplate.name} into ${rendition.webappRelativePath}
+	</jsp:attribute>
+      </a:listItem>
+    </c:forEach>
+  </a:selectList>
 </h:panelGrid>
 
-
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%">
+  <h:column>
+    <h:selectBooleanCheckbox id="startWorkflow"
+			     value="#{WizardManager.bean.startWorkflow}"/>
+    <h:outputText value="&nbsp;#{msg.create_web_content_summary_submit_message}" escape="false" />
+  </h:column>
+</h:panelGrid>

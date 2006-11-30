@@ -31,14 +31,20 @@
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
-  <h:outputText value="#{msg.name}:"/>
-  <h:outputText value="#{WizardManager.bean.formName}"/>
-  <h:outputText value="#{msg.title}:"/>
-  <h:outputText value="#{WizardManager.bean.formTitle}"/>
-  <h:outputText value="#{msg.description}:"/>
-  <h:outputText value="#{WizardManager.bean.formDescription}"/>
-  <h:outputText value="#{msg.schema_root_element_name}:"/>
-  <h:outputText value="#{WizardManager.bean.schemaRootElementName}"/>
+  <a:selectList id="form-list" 
+		multiSelect="false"
+		activeSelect="true" 
+		style="width:100%" 
+		itemStyleClass="selectListItem">
+    <a:listItem label="${WizardManager.bean.formTitle}"
+		value="${WizardManager.bean.formName}"
+                image="/images/icons/webform_large.gif">
+      <jsp:attribute name="description">
+	<div>${WizardManager.bean.formDescription}</div>
+	<div>${msg.schema_root_element_name}: ${WizardManager.bean.schemaRootElementName}</div>
+      </jsp:attribute>
+    </a:listItem>
+  </a:selectList>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
@@ -46,23 +52,25 @@
   <h:outputText value="&nbsp;#{msg.rendering_engine_templates}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
-  <c:forEach items="${WizardManager.bean.renderingEngineTemplates}" var="ret">
-    <h:outputText value="#{msg.name}:"/>
-    <f:verbatim>${ret.fileName}</f:verbatim>
-<%--
-    <h:outputText value="#{msg.title}:"/>
-    <f:verbatim>${ret.title}</f:verbatim>
-    <h:outputText value="#{msg.description}:"/>
-    <f:verbatim>${ret.description}</f:verbatim>
---%>
-    <h:outputText value="#{msg.rendering_engine_type}:"/>
-    <f:verbatim>${ret.renderingEngine.name}</f:verbatim>
-    <h:outputText value="#{msg.output_path_pattern}:"/>
-    <f:verbatim>${ret.outputPathPatternForRendition}</f:verbatim>
-    <h:outputText value="#{msg.mimetype_for_renditions}:"/>
-    <f:verbatim>${ret.mimetypeForRendition}</f:verbatim>
-  </c:forEach>
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0">
+  <a:selectList id="rendering-engine-template-list" 
+		multiSelect="false"
+		activeSelect="true" 
+		style="width:100%" 
+		itemStyleClass="selectListItem">
+    <c:forEach items="${WizardManager.bean.renderingEngineTemplates}" var="ret">
+      <a:listItem label="${ret.title}"
+		  value="${ret.fileName}"
+                  image="/images/icons/template_large.gif">
+	<jsp:attribute name="description">
+	  <div>${msg.description}: ${ret.description}</div>
+	  <div>${msg.rendering_engine_type}: ${ret.renderingEngine.name}</div>
+	  <div>${msg.output_path_pattern}: ${ret.outputPathPatternForRendition}</div>
+	  <div>${msg.mimetype_for_renditions}: ${ret.mimetypeForRendition}</div>
+	</jsp:attribute>
+      </a:listItem>
+    </c:forEach>
+  </a:selectList>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
@@ -73,14 +81,14 @@
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
   <h:outputText value="#{msg.apply_default_workflow}:"/>
   <c:choose>
-    <c:when test="${WizardManager.bean.defaultWorkflowName != null}">
+    <c:when test="${WizardManager.bean.defaultWorkflowDefinition != null}">
       <h:outputText value="#{msg.yes}"/>
     </c:when>
     <c:otherwise>
       <h:outputText value="#{msg.no}"/>
     </c:otherwise>
   </c:choose>
-  <c:if test="${WizardManager.bean.defaultWorkflowName != null}">
+  <c:if test="${WizardManager.bean.defaultWorkflowDefinition != null}">
     <h:outputText value="#{msg.name}:"/>
     <h:outputText value="#{WizardManager.bean.defaultWorkflowDefinition.name}"/>
     <h:outputText value="#{msg.description}:"/>

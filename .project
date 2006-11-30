@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>3rd Party</project>
+		<project>MBean</project>
 		<project>Repository</project>
 	</projects>
 	<buildSpec>
@@ -17,4 +18,3 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
 </projectDescription>
- 

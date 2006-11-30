@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:simpleType name="attribute-choices" >
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="string1"/>
+      <xs:enumeration value="string2"/>
+      <xs:enumeration value="string3-is-the-default"/>
+      <xs:enumeration value="string4"/>
+      <xs:enumeration value="string5"/>
+      <xs:enumeration value="string6"/>
+      <xs:enumeration value="string7"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="attributes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="element_string_no_default" 
+	            type="xs:string" 
+	            minOccurs="1" 
+		    maxOccurs="1"/>
+        <xs:element name="element_string_with_default" 
+	            type="xs:string" 
+	            minOccurs="1" 
+		    maxOccurs="1"
+		    default="default string value"/>
+      </xs:sequence>
+      <xs:attribute name="required_string_no_default"
+                    type="xs:string"
+		    use="required"/>
+      <xs:attribute name="optional_string_no_default"
+                    type="xs:string"
+		    use="optional"/>
+      <xs:attribute name="required_string_with_default"
+                    type="xs:string"
+		    use="required"
+		    default="default string value"/>
+      <xs:attribute name="optional_string_with_default"
+                    type="xs:string"
+		    use="optional"
+		    default="default string value"/>
+      <xs:attribute name="fixed_string"
+                    type="xs:string"
+		    use="optional"
+		    fixed="fixed string value"/>
+      <xs:attribute name="required_choices_no_default"
+                    type="attribute-choices"
+		    use="required"/>
+      <xs:attribute name="optional_choices_no_default"
+                    type="attribute-choices"
+		    use="optional"/>
+      <xs:attribute name="required_choices_with_default"
+                    type="attribute-choices"
+		    use="required"
+		    default="string3-is-the-default"/>
+      <xs:attribute name="optional_choices_with_default"
+                    type="attribute-choices"
+		    use="optional"
+		    default="string3-is-the-default"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

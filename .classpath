@@ -6,5 +6,16 @@
 	<classpathentry kind="src" path="/Repository"/>
 	<classpathentry kind="src" path="/Core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Remote API"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/chiba/chiba-1.2.0.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/commons/commons-httpclient-3.0.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/commons/commons-jxpath-1.2.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/3rd Party"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/xercesImpl-2.8.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Jndi-Client"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/bsf-2.4.0.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/fop/xmlgraphics-commons-1.0.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/fop/fop-0.92beta.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/fop/avalon-framework-4.2.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MBean"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

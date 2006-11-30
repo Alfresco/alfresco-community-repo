@@ -336,7 +336,7 @@ public class ModeListRenderer extends BaseRenderer
          else
          {
             // else show the image set for the individual item 
-            String image = (String)item.getAttributes().get("image"); 
+            String image = item.getImage();
             if (image != null)
             {
                out.write( Utils.buildImageTag(context, image, item.getTooltip()) );

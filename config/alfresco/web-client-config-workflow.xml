@@ -1,0 +1,245 @@
+<alfresco-config>
+   
+   <!--            -->
+   <!-- Properties -->
+   <!--            -->
+   
+   <!-- Generic workflow task -->
+   
+   <config evaluator="node-type" condition="bpm:workflowTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" />
+         <show-property name="bpm:status" ignore-if-missing="false" />
+         <show-property name="bpm:dueDate" ignore-if-missing="false" />
+         <show-property name="bpm:priority" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <!-- Review and Approve workflow tasks -->
+   
+   <config evaluator="node-type" condition="wf:reviewTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" />
+         <show-property name="bpm:status" ignore-if-missing="false" />
+         <show-property name="bpm:dueDate" ignore-if-missing="false" />
+         <show-property name="bpm:priority" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wf:submitReviewTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wf:reviewPriority" ignore-if-missing="false" />
+         <show-property name="wf:reviewDueDate" ignore-if-missing="false" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="wf:reviewer" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <!-- Ad hoc workflow tasks -->
+
+   <config evaluator="node-type" condition="wf:submitAdhocTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wf:adhocDescription" ignore-if-missing="false" />
+         <show-property name="wf:adhocPriority" ignore-if-missing="false" />
+         <show-property name="wf:adhocDueDate" ignore-if-missing="false" />
+         <show-property name="wf:notifyMe" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="wf:assignee" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wf:adhocTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" />
+         <show-property name="wf:adhocDescription" ignore-if-missing="false" />
+         <show-property name="bpm:status" ignore-if-missing="false" />
+         <show-property name="bpm:dueDate" ignore-if-missing="false" />
+         <show-property name="bpm:priority" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wf:completedAdhocTask">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" ignore-if-missing="false" />
+         <show-property name="wf:adhocDescription" ignore-if-missing="false" />
+         <show-property name="bpm:dueDate" ignore-if-missing="false" />
+         <show-property name="bpm:priority" ignore-if-missing="false" />
+      </property-sheet>
+   </config>
+
+   <!-- WCM Workflow Submit. -->
+
+   <config evaluator="node-type" condition="wcmwf:startSubmit">
+       <property-sheet>
+           <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+           <show-property name="wcmwf:description" ignore-if-missing="false" />
+<!--           <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+           <show-association name="wcmwf:assignee" ignore-if-missing="false" /> -->
+       </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="wcmwf:setupSubmit">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator"/>
+         <show-property name="wcmwf:description" ignore-if-missing="false"/>
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator"/>
+         <show-association name="wcmwf:assignee" ignore-if-missing="false"/>
+      </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="wcmwf:review">
+       <property-sheet>
+           <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+           <show-property name="wcmwf:description" ignore-if-missing="false" />
+       </property-sheet>
+   </config>
+   
+   <!--         -->
+   <!-- Actions -->
+   <!--         -->
+   
+   <config>
+      <actions>
+         <action id="start_workflow">
+            <label-id>start_workflow</label-id>
+            <image>/images/icons/new_workflow.gif</image>
+            <action>wizard:startWorkflow</action>
+            <action-listener>#{WizardManager.setupParameters}</action-listener>
+            <params>
+               <param name="item-to-workflow">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action id="reassign_workflow">
+            <label-id>reassign</label-id>
+            <image>/images/icons/reassign_workflow_item.gif</image>
+            <action>dialog:reassignWorkItem</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="workitem-id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action id="cancel_workflow">
+            <label-id>cancel_workflow</label-id>
+            <image>/images/icons/cancel_workflow.gif</image>
+            <action>dialog:cancelWorkflow</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="workflow-instance-id">#{actionContext.workflowInstanceId}</param>
+               <param name="workflow-instance-name">#{actionContext.workflowInstanceName}</param>
+            </params>
+         </action>
+         
+         <action id="add_package_item">
+            <label-id>add</label-id>
+            <image>/images/icons/add_item.gif</image>
+            <action>null</action>
+         </action>
+         
+         <action id="remove_package_item">
+            <label-id>remove</label-id>
+            <image>/images/icons/remove_item.gif</image>
+            <action-listener>#{DialogManager.bean.removePackageItem}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <action-group id="document_browse_menu">
+            <action idref="start_workflow" />
+         </action-group>
+         
+         <action-group id="doc_details_actions">
+            <action idref="start_workflow" />
+         </action-group>
+         
+         <action-group id="dashlet_todo_actions">
+            <action idref="reassign_workflow" />
+         </action-group>
+         
+         <action-group id="dashlet_completed_actions">
+            <action idref="cancel_workflow" />
+         </action-group>
+         
+         <action-group id="workflow_item_read_actions">
+            <action idref="details_doc" />
+         </action-group>
+         
+         <action-group id="workflow_item_collection_actions">
+            <action idref="details_doc" />
+            <action idref="remove_package_item" />
+         </action-group>
+         
+         <action-group id="workflow_item_edit_actions">
+            <action idref="details_doc" />
+            <action idref="checkout_doc" />
+            <action idref="cancelcheckout_doc" />
+         </action-group>
+         
+         <action-group id="workflow_collection_actions">
+            <action idref="add_package_item" />
+         </action-group>
+      </actions>
+   </config>
+   
+   <!--         -->
+   <!-- Wizards -->
+   <!--         -->
+   
+   <config>
+      <wizards>
+         <wizard name="startWorkflow" managed-bean="StartWorkflowWizard"
+                 title-id="start_workflow_wizard" description-id="start_workflow_desc"
+                 icon="/images/icons/new_workflow_large.gif">
+            <step name="choose-workflow" title-id="step_choose_workflow" 
+                  description-id="start_workflow_choose_desc">
+               <page path="/jsp/workflow/start-workflow-wizard/choose-workflow.jsp" 
+                     title-id="start_workflow_choose_title" 
+                     description-id="start_workflow_choose_desc" 
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="options" title-id="step_workflow_options"
+                  description-id="start_workflow_options_desc">
+               <page path="/jsp/workflow/start-workflow-wizard/workflow-options.jsp" 
+                     title-id="start_workflow_options_title"
+                     description-id="start_workflow_options_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary" 
+                     description-id="summary_desc" 
+                     instruction-id="start_workflow_finish_instruction" />
+            </step>
+         </wizard>
+      </wizards>
+   </config>
+   
+   <!--         -->
+   <!-- Dialogs -->
+   <!--         -->
+   
+   <config>
+      <dialogs>
+         <dialog name="manageWorkItem" page="/jsp/workflow/manage-workitem-dialog.jsp"
+                 managed-bean="ManageWorkItemDialog" icon="/images/icons/manage_workflow_item_large.gif" 
+                 title-id="manage_workitem_title" description-id="manage_workitem_desc" />
+                 
+         <dialog name="cancelWorkflow" page="/jsp/workflow/cancel-workflow-dialog.jsp"
+                 managed-bean="CancelWorkflowDialog" icon="/images/icons/cancel_workflow_large.gif" 
+                 title-id="cancel_workflow" description-id="cancel_workflow_info" />
+                 
+         <dialog name="reassignWorkItem" page="/jsp/workflow/reassign-workitem-dialog.jsp"
+                 managed-bean="ReassignWorkItemDialog" icon="/images/icons/reassign_workflow_item_large.gif" 
+                 title-id="reassign_workitem_title" description-id="reassign_workitem_desc" />
+      </dialogs>
+   </config>
+   
+</alfresco-config>

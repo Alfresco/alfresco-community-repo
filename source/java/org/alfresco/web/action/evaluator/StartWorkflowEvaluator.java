@@ -36,7 +36,7 @@ public class StartWorkflowEvaluator implements ActionEvaluator
    public boolean evaluate(Node node)
    {
       NavigationBean nav =
-         (NavigationBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "NavigationBean");
+         (NavigationBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), NavigationBean.BEAN_NAME);
       return (nav.getIsGuest() == false);
    }
 }

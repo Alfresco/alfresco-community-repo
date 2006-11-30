@@ -13,6 +13,7 @@
             <value>classpath:alfresco/web-client-config-navigation.xml</value>
             <value>classpath:alfresco/web-client-config-actions.xml</value>
             <value>classpath:alfresco/web-client-config-forum-actions.xml</value>
+            <value>classpath:alfresco/web-client-config-wcm-actions.xml</value>
             <value>classpath:alfresco/web-client-config-workflow-actions.xml</value>
             <value>classpath:alfresco/extension/web-client-config-custom.xml</value>
             <value>classpath:alfresco/extension/web-client-rm-custom.xml</value>
@@ -30,6 +31,31 @@
    <bean id="dataDictionary" class="org.alfresco.web.bean.repository.DataDictionary">
       <constructor-arg>
          <ref bean="DictionaryService" />
+      </constructor-arg>
+   </bean>
+
+   <!-- NOTE: This references a bean in the repository Spring configuration -->
+   <bean id="formsSerivce" class="org.alfresco.web.forms.FormsService">
+      <constructor-arg>
+         <ref bean="ContentService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="NodeService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="FileFolderService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="DictionaryService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="NamespaceService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="SearchService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="AVMService" />
       </constructor-arg>
    </bean>
    

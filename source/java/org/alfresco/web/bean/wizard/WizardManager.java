@@ -36,6 +36,16 @@ public final class WizardManager
    /**
     * Action handler used to setup parameters for the wizard being launched
     * 
+    * @param params The parameters
+    */
+   public void setupParameters(Map<String, String> params)
+   {
+      this.paramsToApply = params;
+   }
+   
+   /**
+    * Action handler used to setup parameters for the wizard being launched
+    * 
     * @param event The event containing the parameters
     */
    public void setupParameters(ActionEvent event)
@@ -45,7 +55,7 @@ public final class WizardManager
       if (component instanceof UIActionLink)
       {
          // store the parameters
-         this.paramsToApply = ((UIActionLink)component).getParameterMap();
+         setupParameters( ((UIActionLink)component).getParameterMap() );
       }
    }
    
@@ -79,14 +89,14 @@ public final class WizardManager
                "' does not implement the required IWizardBean interface");
       }
       
-      // create the WizardState object
-      this.currentWizardState = new WizardState(config, wizard);
-      
       // initialise the managed bean
       wizard.init(this.paramsToApply);
       
       // reset the current parameters so subsequent wizards don't get them
       this.paramsToApply = null;
+      
+      // create the WizardState object
+      this.currentWizardState = new WizardState(config, wizard);
       
       // setup the first step
       determineCurrentPage();

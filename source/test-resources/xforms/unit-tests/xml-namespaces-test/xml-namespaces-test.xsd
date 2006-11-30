@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org/alf"
+           elementFormDefault="qualified"
+	   targetNamespace="http://www.alfresco.org/alf">
+  <xs:complexType name="multi">
+    <xs:sequence>
+      <xs:element name="multi1" type="xs:string"/>
+      <xs:element name="multi2" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="xml-namespaces-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="string_with_default" type="xs:string" default="default string value"/>
+        <xs:element name="string_no_default" type="xs:string"/>
+        <xs:element name="multi" type="alf:multi" minOccurs="2" maxOccurs="3"/>
+      </xs:sequence>
+      <xs:attribute name="string_attribute_with_default" type="xs:string" default="default string value"/>
+      <xs:attribute name="string_attribute_no_default" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

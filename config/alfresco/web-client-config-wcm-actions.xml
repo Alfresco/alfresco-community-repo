@@ -1,0 +1,301 @@
+<alfresco-config>
+
+   <config>
+      <actions>
+         
+         <!-- Edit WCM document -->
+         <action id="edit_file">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <label-id>edit</label-id>
+            <image>/images/icons/edit_icon.gif</image>
+            <action-listener>#{AVMEditBean.setupEditAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Delete AVM file -->
+         <action id="delete_file">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteAvmFile</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Delete AVM file, with a return navigation outcome parameter -->
+         <action id="delete_file_browse">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteAvmFileBrowse</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Delete AVM folder -->
+         <action id="delete_folder">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteAvmFolder</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Delete AVM folder, with a return navigation outcome parameter -->
+         <action id="delete_folder_browse">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>delete</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteAvmFolderBrowse</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Submit AVM node -->
+         <action id="submit">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
+            <label-id>submit</label-id>
+            <image>/images/icons/submit.gif</image>
+            <action-listener>#{AVMBrowseBean.submitNode}</action-listener>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Revert AVM node -->
+         <action id="revert">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
+            <label-id>revert</label-id>
+            <image>/images/icons/revert.gif</image>
+            <action-listener>#{AVMBrowseBean.revertNode}</action-listener>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Preview folder -->
+         <action id="preview_folder">
+            <label-id>folder_preview</label-id>
+            <image>/images/icons/preview_website.gif</image>
+            <href>#{actionContext.previewUrl}</href>
+            <target>new</target>
+         </action>
+         
+         <!-- Preview file -->
+         <action id="preview_file">
+            <label-id>file_preview</label-id>
+            <image>/images/icons/preview_website.gif</image>
+            <href>#{actionContext.previewUrl}</href>
+            <target>new</target>
+         </action>
+         
+         <!-- Create AVM ad-hoc Content -->
+         <action id="create_avm_content">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>sandbox_create</label-id>
+            <image>/images/icons/new_content.gif</image>
+            <action>wizard:createWebContent</action>
+         </action>
+         
+         <!-- Create AVM folder -->
+         <action id="create_folder">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>create_folder</label-id>
+            <image>/images/icons/create_space.gif</image>
+            <action>dialog:createAvmFolder</action>
+         </action>
+         
+         <!-- Upload Content -->
+         <action id="add_content">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>add_content</label-id>
+            <image>/images/icons/add.gif</image>
+            <action>addAvmContent</action>
+            <action-listener>#{AddAvmContentDialog.start}</action-listener>
+         </action>
+         
+         <!-- Update document -->
+         <action id="update_file">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <label-id>update</label-id>
+            <image>/images/icons/update.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:updateAvmFile</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- View File details -->
+         <action id="file_details">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:showFileDetails</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- View Folder details -->
+         <action id="folder_details">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
+            <label-id>view_details</label-id>
+            <image>/images/icons/View_details.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:showFolderDetails</action>
+            <params>
+               <param name="id">#{actionContext.path}</param>
+            </params>
+         </action>
+         
+         <!-- Invite Website Users -->
+         <action id="invite_website_users">
+            <permissions>
+               <permission allow="true">ChangePermissions</permission>
+            </permissions>
+            <label-id>invite_website_users</label-id>
+            <image>/images/icons/invite.gif</image>
+            <action>wizard:inviteWebUsers</action>
+            <!-- TODO: change this to setup avmstore prop on wizard -->
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         
+         <!-- Actions for a file in the AVM Browse screen -->
+         <action-group id="avm_file_browse">
+            <show-link>false</show-link>
+            <action idref="edit_file" />
+            <action idref="update_file" />
+            <action idref="preview_file" />
+            <action idref="file_details" />
+            <action idref="delete_file_browse" />
+         </action-group>
+         
+         <!-- Actions for a folder in the AVM Browse screen -->
+         <action-group id="avm_folder_browse">
+            <show-link>false</show-link>
+            <action idref="preview_folder" />
+            <action idref="folder_details" />
+            <action idref="delete_folder_browse" />
+         </action-group>
+         
+         <!-- Actions for a file in Modified Files list -->
+         <action-group id="avm_file_modified">
+            <show-link>false</show-link>
+            <action idref="edit_file" />
+            <action idref="update_file" />
+            <action idref="submit" />
+            <action idref="revert" />
+            <action idref="preview_file" />
+            <action idref="file_details" />
+            <action idref="delete_file" />
+         </action-group>
+         
+         <!-- Actions for a folder in Modified Files list -->
+         <action-group id="avm_folder_modified">
+            <show-link>false</show-link>
+            <action idref="submit" />
+            <action idref="revert" />
+            <action idref="preview_folder" />
+            <action idref="folder_details" />
+            <action idref="delete_folder" />
+         </action-group>
+         
+         <!-- Actions for a deleted node in Modified Files list -->
+         <action-group id="avm_deleted_modified">
+            <show-link>false</show-link>
+            <action idref="submit" />
+            <action idref="revert" />
+         </action-group>
+         
+         <!-- Actions for the Create menu in the sandbox browse screen -->
+         <action-group id="avm_create_menu">
+            <show-link>false</show-link>
+            <action idref="add_content" />
+            <action idref="create_avm_content" />
+            <action idref="create_folder" />
+         </action-group>
+         
+         <!-- Actions for the More Actions menu in the sandbox browse screen -->
+         <action-group id="avm_more_menu">
+            <show-link>false</show-link>
+         </action-group>
+         
+         <!-- Actions for the File Details action menu -->
+         <action-group id="avm_file_details">
+            <show-link>false</show-link>
+            <action idref="edit_file" />
+            <action idref="update_file" />
+            <action idref="delete_file_browse" />
+         </action-group>
+         
+         <!-- Actions for the Folder Details action menu -->
+         <action-group id="avm_folder_details">
+            <show-link>false</show-link>
+            <action idref="delete_folder_browse" />
+         </action-group>
+         
+         <!-- Actions for the Web Project Details action menu -->
+         <action-group id="website_details_actions">
+            <show-link>false</show-link>
+            <action idref="cut_node" />
+            <action idref="copy_node" />
+            <action idref="delete_space" />
+            <action idref="take_ownership_space" />
+            <action idref="invite_website_users" />
+            <action idref="run_action" />
+         </action-group>
+         
+         <!-- Actions Menu for More Actions in Web Project screen -->
+         <action-group id="browse_website_menu">
+            <action idref="details_space" />
+            <action idref="delete_space" />
+            <action idref="invite_website_users" />
+         </action-group>
+         
+      </actions>
+   </config>
+
+</alfresco-config>

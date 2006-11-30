@@ -48,6 +48,7 @@ public class ListItemTag extends BaseComponentTag
       super.setProperties(component);
       setStringProperty(component, "tooltip", this.tooltip);
       setStringProperty(component, "label", this.label);
+      setStringProperty(component, "description", this.description);
       setStringProperty(component, "image", this.image);
       setStringProperty(component, "value", this.value);
       setBooleanProperty(component, "disabled", this.disabled);
@@ -61,6 +62,7 @@ public class ListItemTag extends BaseComponentTag
       super.release();
       this.tooltip = null;
       this.label = null;
+      this.description = null;
       this.image = null;
       this.value = null;
       this.disabled = null;
@@ -84,6 +86,16 @@ public class ListItemTag extends BaseComponentTag
    public void setLabel(String label)
    {
       this.label = label;
+   }
+   
+   /**
+    * Set the description
+    *
+    * @param description     the description
+    */
+   public void setDescription(String description)
+   {
+      this.description = description;
    }
 
    /**
@@ -130,4 +142,7 @@ public class ListItemTag extends BaseComponentTag
    
    /** the disabled flag */
    private String disabled;
+   
+   /** the description */
+   private String description;
 }

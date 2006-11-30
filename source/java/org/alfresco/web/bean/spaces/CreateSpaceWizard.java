@@ -13,6 +13,7 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -144,10 +145,10 @@ public class CreateSpaceWizard extends BaseWizardBean
 
          // apply the uifacets aspect - icon, title and description props
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
-         uiFacetsProps.put(ContentModel.PROP_ICON, this.icon);
+         uiFacetsProps.put(ApplicationModel.PROP_ICON, this.icon);
          uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
          uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
          
          if (logger.isDebugEnabled())
             logger.debug("Added uifacets aspect with properties: " + uiFacetsProps);
@@ -167,7 +168,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          // also need to set the new title, description and icon properties
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.setProperty(copiedNode, ContentModel.PROP_ICON, this.icon);
+         this.nodeService.setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
          
          newSpaceId = copiedNode.getId();
             
@@ -187,7 +188,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          // also need to set the new title, description and icon properties
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
          this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.setProperty(copiedNode, ContentModel.PROP_ICON, this.icon);
+         this.nodeService.setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
          
          newSpaceId = copiedNode.getId();
          
@@ -504,7 +505,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          defaultItem.setValue(ContentModel.TYPE_FOLDER.toString());
          defaultItem.setLabel(defaultLabel);
          defaultItem.setTooltip(defaultLabel);
-         defaultItem.getAttributes().put("image", DEFAULT_SPACE_TYPE_ICON_PATH);
+         defaultItem.setImage(DEFAULT_SPACE_TYPE_ICON_PATH);
          this.folderTypes.add(defaultItem);
          
          UIDescription defaultDesc = new UIDescription();
@@ -561,10 +562,10 @@ public class CreateSpaceWizard extends BaseWizardBean
                         }
                         
                         UIListItem item = new UIListItem();
-                        item.getAttributes().put("value", idQName.toString());
-                        item.getAttributes().put("label", label);
-                        item.getAttributes().put("tooltip", label);
-                        item.getAttributes().put("image", icon);
+                        item.setValue(idQName.toString());
+                        item.setLabel(label);
+                        item.setTooltip(label);
+                        item.setImage(icon);
                         this.folderTypes.add(item);
                         
                         UIDescription desc = new UIDescription();
@@ -665,7 +666,7 @@ public class CreateSpaceWizard extends BaseWizardBean
                   
                   UIListItem item = new UIListItem();
                   item.setValue(iconName);
-                  item.getAttributes().put("image", iconPath);
+                  item.setImage(iconPath);
                   icons.add(item);
                   iconNames.add(iconName);
                }
@@ -681,7 +682,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          
          UIListItem item = new UIListItem();
          item.setValue(DEFAULT_SPACE_ICON_NAME);
-         item.getAttributes().put("image", "/images/icons/space-icon-default.gif");
+         item.setImage("/images/icons/space-icon-default.gif");
          icons.add(item);
          iconNames.add(DEFAULT_SPACE_ICON_NAME);
       }

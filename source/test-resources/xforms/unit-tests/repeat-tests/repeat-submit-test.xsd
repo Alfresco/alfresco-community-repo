@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:complexType name="multi-input">
+    <xs:sequence>
+      <xs:element name="string" type="xs:string"/>
+      <xs:element name="int" type="xs:int"/>
+      <xs:element name="date" type="xs:date"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="repeat-constraints">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="one-to-one" type="xs:integer" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="one-to-one-multi-input" type="multi-input" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="one-to-inf" type="xs:integer" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="zero-to-inf" type="xs:integer" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="two-to-four-date" type="xs:date" minOccurs="2" maxOccurs="4"/>
+        <xs:element name="two-to-four-integer-default" type="xs:integer" minOccurs="2" maxOccurs="4" default="224"/>
+        <xs:element name="three-to-five" type="xs:string" minOccurs="3" maxOccurs="5" default="default string value"/>
+        <xs:element name="one-to-five-multi-input" type="multi-input" minOccurs="1" maxOccurs="5"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

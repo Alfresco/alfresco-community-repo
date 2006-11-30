@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -31,8 +32,22 @@ public class EditSpaceDialog extends CreateSpaceDialog
       super.init(parameters);
       
       // setup the space being edited
-      this.editableNode = new Node(this.browseBean.getActionSpace().getNodeRef());
+      this.editableNode = initEditableNode();
       this.spaceType = this.editableNode.getType().toString();
+   }
+      
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return false;
+   }
+   
+   /**
+    * Init the editable Node
+    */
+   protected Node initEditableNode()
+   {
+      return new Node(this.browseBean.getActionSpace().getNodeRef());
    }
    
    @Override
@@ -42,26 +57,10 @@ public class EditSpaceDialog extends CreateSpaceDialog
    }
    
    @Override
-   public boolean getFinishButtonDisabled()
-   {
-      return false;
-   }
-   
-   /**
-    * Returns the editable node
-    * 
-    * @return The editable node
-    */
-   public Node getEditableNode()
-   {
-      return this.editableNode;
-   }
-
-   @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // update the existing node in the repository
-      NodeRef nodeRef = this.browseBean.getActionSpace().getNodeRef();
+      NodeRef nodeRef = this.editableNode.getNodeRef();
       Map<String, Object> editedProps = this.editableNode.getProperties();
       
       // handle the name property separately, perform a rename in case it changed
@@ -75,9 +74,9 @@ public class EditSpaceDialog extends CreateSpaceDialog
       Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
       
       // add the "uifacets" aspect if required, properties will get set below
-      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_UIFACETS) == false)
+      if (this.nodeService.hasAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS) == false)
       {
-         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, null);
+         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
       }
       
       // overwrite the current properties with the edited ones
@@ -164,5 +163,19 @@ public class EditSpaceDialog extends CreateSpaceDialog
       this.browseBean.getActionSpace().reset();
       
       return outcome;
+   }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Bean getters and setters
+
+   /**
+    * Returns the node being edited
+    * 
+    * @return The node being edited
+    */
+   public Node getEditableNode()
+   {
+      return this.editableNode;
    }
 }

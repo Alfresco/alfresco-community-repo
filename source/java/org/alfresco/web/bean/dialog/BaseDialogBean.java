@@ -1,6 +1,7 @@
 package org.alfresco.web.bean.dialog;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -51,7 +53,7 @@ public abstract class BaseDialogBean implements IDialogBean
       
       if (this.parameters == null)
       {
-         this.parameters = new HashMap<String, String>();
+         this.parameters = Collections.<String, String>emptyMap();
       }
       
       // reset the isFinished flag

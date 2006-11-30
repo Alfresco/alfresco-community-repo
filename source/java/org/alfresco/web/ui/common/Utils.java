@@ -583,7 +583,7 @@ public final class Utils
             // get hold of the node service, cifsServer and navigation bean
             NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
             NavigationBean navBean = (NavigationBean)context.getExternalContext().
-                  getSessionMap().get("NavigationBean");
+                  getSessionMap().get(NavigationBean.BEAN_NAME);
             CIFSServer cifsServer = (CIFSServer)FacesContextUtils.getRequiredWebApplicationContext(
                   context).getBean("cifsServer");
             
@@ -907,7 +907,7 @@ public final class Utils
       
       if (disabled == false)
       {
-         Object readOnlyAttr = component.getAttributes().get("disabled");
+         Object readOnlyAttr = component.getAttributes().get("readonly");
          if (readOnlyAttr != null)
          {
             readOnly = readOnlyAttr.equals(Boolean.TRUE);
@@ -1261,7 +1261,7 @@ public final class Utils
          // write out the scripts
          out.write("\n<script type=\"text/javascript\" src=\"");
          out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/dojo.js\"> </script>\n");
+         out.write("/scripts/ajax/dojo/dojo.js\"> </script>\n");
          out.write("<script type=\"text/javascript\" src=\"");
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/scripts/ajax/common.js\"> </script>\n");

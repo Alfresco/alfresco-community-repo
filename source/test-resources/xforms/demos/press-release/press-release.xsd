@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+Copyright (C) 2005 Alfresco, Inc.
+
+Licensed under the Mozilla Public License version 1.1 
+with a permitted attribution clause. You may obtain a
+copy of the License at
+
+  http://www.alfresco.org/legal/license.txt
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific
+language governing permissions and limitations under the
+License.
+
+Describes a press release and related assets.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:pr="http://www.alfresco.org/alfresco/pr"
+           targetNamespace="http://www.alfresco.org/alfresco/pr"
+           elementFormDefault="qualified">
+
+  <!-- dynamically loads the company footer choices simple type -->
+  <xs:include schemaLocation="/media/releases/get_company_footer_choices_simple_type.jsp"/>
+
+  <xs:simpleType name="category">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Product"/>
+      <xs:enumeration value="Partnership"/>
+      <xs:enumeration value="Company"/>
+      <xs:enumeration value="Event"/>
+      <xs:enumeration value="Training"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- defines the form for creating a press release -->
+  <xs:element name="press_release">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="title" type="xs:string"/>
+        <xs:element name="abstract" type="xs:string"/>
+        <xs:element name="location" type="xs:string"/>
+        <xs:element name="body" type="xs:anyType" minOccurs="1" maxOccurs="unbounded"/>
+	<xs:element name="include_company_footer" type="pr:company_footer_choices" minOccurs="1" maxOccurs="unbounded"/>
+	<xs:element name="include_media_contacts" type="xs:boolean" default="true"/>
+	<xs:element name="keywords" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element name="category" type="pr:category" default="Company"/>
+	<xs:element name="launch_date" type="xs:date"/>
+	<xs:element name="expiration_date" type="xs:date"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

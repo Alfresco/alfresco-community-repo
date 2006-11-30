@@ -559,3 +559,33 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 {
 	padding-bottom: 8px;
 }
+
+.selectListTable
+{
+   border: 1px solid #999999;
+   padding-top: 2px;
+   padding-left: 2px;
+   padding-right: 2px;
+}
+
+.selectListItem
+{
+   background-color: #eeeeee;
+   border-bottom: 2px solid #ffffff;
+}
+
+.modifiedItemsList
+{
+   background-color: #f8f8f8;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #DDDDDD;
+}
+
+.snapshotItemsList
+{
+   background-color: #c6d8eb;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #999999;
+}

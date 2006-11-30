@@ -1,11 +1,125 @@
 <alfresco-config>
 
-	<config>
+   <config>
       <wizard-container>/jsp/wizard/container.jsp</wizard-container>
       
       <wizards>
-      	
-      	<!-- Definition of an advanced space wizard  -->
+         
+         <!-- Definition of a create website wizard -->
+         <wizard name="createWebsite" managed-bean="CreateWebsiteWizard"
+                 title-id="create_website_title" description-id="create_website_desc"
+                 icon="/images/icons/create_website_large.gif">
+            <step name="details" title-id="website_details" description-id="create_website_step1_desc">
+               <page path="/jsp/wcm/create-website-wizard/details.jsp"
+                     title-id="create_website_step1_title"
+                     description-id="create_website_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="forms" title-id="website_forms" description-id="create_website_step2_desc">
+               <page path="/jsp/wcm/create-website-wizard/forms.jsp"
+                     title-id="create_website_step2_title"
+                     description-id="create_website_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="settings" title-id="website_settings" description-id="create_website_step3_desc">
+               <page path="/jsp/wcm/create-website-wizard/settings.jsp"
+                     title-id="create_website_step3_title"
+                     description-id="create_website_step3_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="invite" title-id="website_invite" description-id="create_website_step4_desc">
+               <page path="/jsp/wcm/create-website-wizard/invite.jsp"
+                     title-id="create_website_step4_title"
+                     description-id="create_website_step4_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="notify" title-id="website_notify" description-id="create_website_step5_desc">
+               <page path="/jsp/wcm/create-website-wizard/notify.jsp"
+                     title-id="create_website_step5_title"
+                     description-id="create_website_step5_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wcm/create-website-wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="create_website_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of a Invite Website Users wizard -->
+         <wizard name="inviteWebUsers" managed-bean="InviteWebsiteUsersWizard"
+                 title-id="invite_webusers_title" description-id="invite_webusers_desc"
+                 icon="/images/icons/users_large.gif">
+            <step name="invite" title-id="website_invite" description-id="invite_webusers_step1_desc">
+               <page path="/jsp/wcm/create-website-wizard/invite.jsp"
+                     title-id="invite_webusers_step1_title"
+                     description-id="invite_webusers_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="notify" title-id="website_notify" description-id="invite_webusers_step2_desc">
+               <page path="/jsp/wcm/create-website-wizard/notify.jsp"
+                     title-id="invite_webusers_step2_title"
+                     description-id="invite_webusers_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="invite_webusers_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of Invite Space Users wizard -->
+         <wizard name="inviteSpaceUsers" managed-bean="InviteSpaceUsersWizard"
+                 title-id="invite_title" description-id="invite_desc"
+                 icon="/images/icons/users_large.gif">
+            <step name="invite" title-id="invite_step_1" description-id="invite_step1_desc">
+               <page path="/jsp/wizard/invite-users/invite.jsp"
+                     title-id="invite_step1_title"
+                     description-id="invite_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="notify" title-id="invite_step_2" description-id="invite_step2_desc">
+               <page path="/jsp/wizard/invite-users/notify.jsp"
+                     title-id="invite_step2_title"
+                     description-id="invite_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="invite_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of Invite Content Users wizard -->
+         <wizard name="inviteContentUsers" managed-bean="InviteContentUsersWizard"
+                 title-id="invite_content_title" description-id="invite_content_desc"
+                 icon="/images/icons/users_large.gif">
+            <step name="invite" title-id="invite_step_1" description-id="invite_content_step1_desc">
+               <page path="/jsp/wizard/invite-users/invite.jsp"
+                     title-id="invite_step1_title"
+                     description-id="invite_content_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="notify" title-id="invite_step_2" description-id="invite_step2_desc">
+               <page path="/jsp/wizard/invite-users/notify.jsp"
+                     title-id="invite_step2_title"
+                     description-id="invite_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="invite_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of an advanced space wizard  -->
          <wizard name="createSpace" managed-bean="CreateSpaceWizard"
                  title-id="create_space_title" description-id="create_space_desc"
                  icon="/images/icons/create_space_large.gif">
@@ -127,7 +241,7 @@
             </step>
          </wizard>
          
-         <!-- Definition of the add content wizard -->
+         <!-- Definition of the Create Content wizard -->
          <wizard name="createContent" managed-bean="CreateContentWizard"
                  title-id="create_content_title" description-id="create_content_desc"
                  icon="/images/icons/new_content_large.gif">
@@ -152,6 +266,78 @@
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
                <page path="/jsp/wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="content_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of the Create Web Content wizard -->
+         <wizard name="createWebContent" managed-bean="CreateWebContentWizard"
+                 title-id="create_web_content_title" description-id="create_web_content_desc"
+                 icon="/images/icons/new_content_large.gif">
+            <step name="details" title-id="details" description-id="create_content_step1_desc">
+               <page path="/jsp/wcm/create-web-content-wizard/details.jsp" 
+                     title-id="create_content_step1_title"
+                     description-id="create_content_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="content" title-id="enter_content" description-id="create_content_step2_desc">
+               <condition if="#{CreateWebContentWizard.mimeType == 'text/html'}">
+                  <page path="/jsp/wcm/create-web-content-wizard/create-html.jsp"
+                        title-id="create_content_step2_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
+               <condition if="#{CreateWebContentWizard.mimeType == 'text/xml'}">
+                  <page path="/jsp/wcm/create-web-content-wizard/create-xml.jsp"
+                        title-id="create_content_step2_title"
+                        description-id="create_content_step2_desc"
+                        instruction-id="default_instruction" />
+               </condition>
+               <!-- Default to the inline text editor -->
+               <page path="/jsp/wcm/create-web-content-wizard/create-text.jsp"
+                     title-id="create_content_step2_title"
+                     description-id="create_content_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wcm/create-web-content-wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="create_web_content_summary_desc"
+                     instruction-id="content_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of the Create XML Type wizard -->
+         <wizard name="createForm" managed-bean="CreateFormWizard"
+                 title-id="create_form_title" description-id="create_form_desc"
+                 icon="/images/icons/new_content_large.gif">
+            <step name="form_details" title-id="create_form_form_details_title" 
+                  description-id="create_form_form_details_desc">
+               <page path="/jsp/wcm/create-form-wizard/details.jsp" 
+                     title-id="create_form_form_details_title"
+                     description-id="create_form_form_details_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="configure_rendering_engine_templates" 
+                  title-id="create_form_configure_rendering_engine_templates_title" 
+                  description-id="create_form_configure_rendering_engine_templates_desc">
+               <page path="/jsp/wcm/create-form-wizard/configure-rendering-engines.jsp"
+                     title-id="create_form_configure_rendering_engine_templates_title"
+                     description-id="create_form_configure_rendering_engine_templates_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="select_default_workflow" 
+                  title-id="create_form_select_default_workflow_title" 
+                  description-id="create_form_select_default_workflow_desc">
+               <page path="/jsp/wcm/create-form-wizard/select-default-workflow.jsp"
+                     title-id="create_form_select_default_workflow_title"
+                     description-id="create_form_select_default_workflow_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wcm/create-form-wizard/summary.jsp"
                      title-id="summary"
                      description-id="summary_desc"
                      instruction-id="content_finish_instruction" />

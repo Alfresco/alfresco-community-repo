@@ -90,7 +90,7 @@
          
          <!--                  -->
          <!-- Workflow Dialogs -->
-      
+         
          <dialog name="manageTask" page="/jsp/workflow/manage-task-dialog.jsp"
                  managed-bean="ManageTaskDialog" icon="/images/icons/manage_workflow_task_large.gif" 
                  description-id="manage_task_desc" />
@@ -114,6 +114,57 @@
          <dialog name="emailSpaceUsers" page="/jsp/users/email-space-users.jsp" managed-bean="EmailSpaceUsersDialog"
                  icon="/images/icons/email_users_large.gif" title-id="email_space_users" 
                  description-id="email_space_users_desc" />
+         
+         <!--             -->
+         <!-- WCM Dialogs -->
+         
+         <dialog name="snapshotSandbox" page="/jsp/wcm/snapshot-sandbox.jsp" managed-bean="SnapshotSandboxDialog"
+                 icon="/images/icons/create_snapshot_large.gif" title-id="sandbox_snapshot" 
+                 description-id="sandbox_snapshot_info" />
+         
+         <dialog name="deleteSandbox" page="/jsp/dialog/delete.jsp" managed-bean="DeleteSandboxDialog"
+                 icon="/images/icons/delete_sandbox_large.gif" title-id="delete_sandbox" 
+                 description-id="delete_sandbox_info" />
+         
+         <dialog name="deleteAvmFile" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFileDialog"
+                 icon="/images/icons/delete_large.gif" title-id="delete_file" 
+                 description-id="delete_avm_file_info" />
+         
+         <dialog name="deleteAvmFolder" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFolderDialog"
+                 icon="/images/icons/delete_large.gif" title-id="delete_folder" 
+                 description-id="delete_avm_folder_info" />
+                 
+         <dialog name="deleteAvmFileBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFileBrowseDialog"
+                 icon="/images/icons/delete_large.gif" title-id="delete_file" 
+                 description-id="delete_avm_file_info" />
+         
+         <dialog name="deleteAvmFolderBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFolderBrowseDialog"
+                 icon="/images/icons/delete_large.gif" title-id="delete_folder" 
+                 description-id="delete_avm_folder_info" />
+         
+         <dialog name="createAvmFolder" page="/jsp/wcm/create-folder-dialog.jsp" managed-bean="CreateFolderDialog"
+                 icon="/images/icons/create_space_large.gif" title-id="create_folder" 
+                 description-id="create_avm_folder_info" />
+         
+         <dialog name="editAvmFileProperties" page="/jsp/content/edit-content-properties.jsp" 
+                 managed-bean="EditFilePropertiesDialog" icon="/images/icons/details_large.gif"
+                 title-id="edit_file_properties" description-id="edit_file_description" />
+                 
+         <dialog name="editAvmFolderProperties" page="/jsp/wcm/edit-folder-properties.jsp" 
+                 managed-bean="EditFolderPropertiesDialog" icon="/images/icons/details_large.gif"
+                 title-id="edit_folder_properties" description-id="edit_folder_description" />
+         
+         <dialog name="formTemplateDetails" page="/jsp/wcm/create-website-wizard/form-details.jsp" managed-bean="FormDetailsDialog"
+                 icon="/images/icons/webform_large.gif" title-id="form_template_details" 
+                 description-id="form_template_details_desc" />
+         
+         <dialog name="formTemplateTemplates" page="/jsp/wcm/create-website-wizard/form-templates.jsp" managed-bean="FormTemplatesDialog"
+                 icon="/images/icons/template_large.gif" title-id="form_template_templates" 
+                 description-id="form_template_templates_desc" />
+         
+         <dialog name="formTemplateWorkflow" page="/jsp/wcm/create-website-wizard/form-workflow.jsp" managed-bean="FormWorkflowDialog"
+                 icon="/images/icons/manage_workflow_task_large.gif" title-id="form_template_workflow" 
+                 description-id="form_template_workflow_desc" />
       </dialogs>
    </config>
    
@@ -146,6 +197,14 @@
          <dialog name="deleteFile" page="/jsp/dialog/delete.jsp" managed-bean="DeletePostDialog" 
                  icon="/images/icons/delete_large.gif" title-id="delete_post" 
                  description-id="delete_post_info" />
+      </dialogs>
+   </config>
+   
+   <config evaluator="node-type" condition="wca:webfolder">
+      <dialogs>
+         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteWebsiteDialog"
+                 icon="/images/icons/delete_website_large.gif" title-id="delete_website" 
+                 description-id="delete_website_info" />
       </dialogs>
    </config>
 </alfresco-config>

@@ -1,0 +1,20 @@
+#form_tab			{ vertical-align: middle;}
+#form_tab .left		{ width:200px; text-align:left;}
+#form_tab .right	{ padding-right: 8px;}
+#form_tab .span		{ padding-top: 5px; }
+#form_tab .req		{ color:#FB9B84; font-weight: bold; }
+#form_tab select,textarea,.textbox {	background-color: #F9F9F9;
+										border-color: #669999;
+										border-style: solid;
+										border-width: 1px;
+										font-size:1em;
+										color: #333333;
+										padding: 2px;
+										margin-top: 2px;
+										text-align: left;
+										}
+
+.errorSPAN			{ vertical-align: top; padding: 2px; padding-right: 3px; font-weight: bold; background-color: #FB9B84; }
+.style1 {color: #FFFFFF}
+h3.buy {margin-top:0px;padding-top:0px;margin-bottom:2px;}
+p.buy {margin-top:0px;padding-top:2px;padding-bottom:0px;margin-bottom:4px;}

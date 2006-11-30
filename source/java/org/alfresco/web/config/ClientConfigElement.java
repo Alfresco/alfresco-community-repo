@@ -42,6 +42,8 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String homeSpacePermission = null;
    private boolean ajaxEnabled = false;
    private String initialLocation = "myalfresco";
+   private String wcmDomain = null;
+   private String wcmPort = null;
    
    /**
     * Default Constructor
@@ -161,6 +163,24 @@ public class ClientConfigElement extends ConfigElementAdapter
           newElement.getInitialLocation().equals(combinedElement.getInitialLocation()) == false)
       {
          combinedElement.setInitialLocation(newElement.getInitialLocation());
+      }
+      
+      if (newElement.getWCMDomain() == null)
+      {
+         combinedElement.setWCMDomain(this.wcmDomain);
+      }
+      else
+      {
+         combinedElement.setWCMDomain(newElement.wcmDomain);
+      }
+      
+      if (newElement.getWCMPort() == null)
+      {
+         combinedElement.setWCMPort(this.wcmPort);
+      }
+      else
+      {
+         combinedElement.setWCMPort(newElement.wcmPort);
       }
       
       return combinedElement;
@@ -403,5 +423,37 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setInitialLocation(String initialLocation)
    {
       this.initialLocation = initialLocation;
+   }
+
+   /**
+    * @return Returns the WCM Domain.
+    */
+   public String getWCMDomain()
+   {
+      return this.wcmDomain;
+   }
+
+   /**
+    * @param wcmDomain The WCM Domain to set.
+    */
+   /*package*/ void setWCMDomain(String wcmDomain)
+   {
+      this.wcmDomain = wcmDomain;
+   }
+
+   /**
+    * @return Returns the WCM Port.
+    */
+   public String getWCMPort()
+   {
+      return this.wcmPort;
+   }
+
+   /**
+    * @param wcmPort The WCM Port to set.
+    */
+   /*package*/ void setWCMPort(String wcmPort)
+   {
+      this.wcmPort = wcmPort;
    }
 }

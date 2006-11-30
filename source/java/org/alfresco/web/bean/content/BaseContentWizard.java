@@ -13,6 +13,7 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -53,7 +54,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
    protected List<SelectItem> objectTypes;
    protected ContentService contentService;
    
-   private static Log logger = LogFactory.getLog(BaseContentWizard.class);
+   protected static Log logger = LogFactory.getLog(BaseContentWizard.class);
+   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -77,18 +79,12 @@ public abstract class BaseContentWizard extends BaseWizardBean
    @Override
    public boolean getFinishButtonDisabled()
    {
-      if (this.fileName == null || 
-          this.fileName.length() == 0 ||
-          this.mimeType == null)
-      {
-         return true;
-      }
-      else
-      {
-         return false;
-      }
+       return (this.fileName == null || 
+	       this.fileName.length() == 0 ||
+	       this.mimeType == null);
    }
 
+   
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
 
@@ -313,10 +309,6 @@ public abstract class BaseContentWizard extends BaseWizardBean
       return this.objectTypes;
    }
    
-   // ------------------------------------------------------------------------------
-   // Action event handlers
-   
-   
    
    // ------------------------------------------------------------------------------
    // Service Injection
@@ -329,9 +321,10 @@ public abstract class BaseContentWizard extends BaseWizardBean
       this.contentService = contentService;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Helper methods
-   
+
    /**
     * Save the specified content using the currently set wizard attributes
     * 
@@ -379,8 +372,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
       if (this.inlineEdit == true)
       {
          Map<QName, Serializable> editProps = new HashMap<QName, Serializable>(1, 1.0f);
-         editProps.put(ContentModel.PROP_EDITINLINE, this.inlineEdit);
-         this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_INLINEEDITABLE, editProps);
+         editProps.put(ApplicationModel.PROP_EDITINLINE, this.inlineEdit);
+         this.nodeService.addAspect(fileNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, editProps);
          
          if (logger.isDebugEnabled())
             logger.debug("Added inlineeditable aspect with properties: " + editProps);
@@ -395,13 +388,9 @@ public abstract class BaseContentWizard extends BaseWizardBean
       {
          writer.putContent(fileContent);
       }
-      else if (strContent != null)
+      else 
       {
-         writer.putContent(strContent);
-      }
-      else
-      {
-         writer.putContent("");
+         writer.putContent(strContent == null ? "" : strContent);
       }
       
       // remember the created node now

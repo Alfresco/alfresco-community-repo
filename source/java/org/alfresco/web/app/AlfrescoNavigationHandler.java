@@ -54,8 +54,6 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    public final static String CLOSE_DIALOG_OUTCOME = DIALOG_PREFIX + "close";
    public final static String CLOSE_WIZARD_OUTCOME = WIZARD_PREFIX + "close";
    
-   protected final static String CONFIG_NAV_BEAN = "NavigationBean";
-   
    protected String dialogContainer = null;
    protected String wizardContainer = null;
    
@@ -400,7 +398,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       Node dispatchNode = null;
       
       NavigationBean navBean = (NavigationBean)context.getExternalContext().
-            getSessionMap().get(CONFIG_NAV_BEAN);
+            getSessionMap().get(NavigationBean.BEAN_NAME);
 
       if (navBean != null)
       {
@@ -488,7 +486,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
          
          // reset the dispatch context
          ((NavigationBean)context.getExternalContext().getSessionMap().
-               get(CONFIG_NAV_BEAN)).resetDispatchContext();
+               get(NavigationBean.BEAN_NAME)).resetDispatchContext();
       }
       else
       {

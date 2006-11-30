@@ -325,8 +325,7 @@ public class DashboardWizard extends BaseWizardBean
          item.setLabel(label);
          item.setTooltip(desc);
          item.setValue(layoutDef.Id);
-         // set the special attribute used by the imageRadioPicker component
-         item.getAttributes().put("image", layoutDef.Image);
+         item.setImage(layoutDef.Image);
          icons.add(item);
          
          // build UIDescription to represent the layout description text

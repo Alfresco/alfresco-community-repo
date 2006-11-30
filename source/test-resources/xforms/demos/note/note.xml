@@ -1,0 +1,6 @@
+<note important="true">
+  <to>me</to>
+  <from>you</from>
+  <subject>this is a very important note</subject>
+  <body>foo</body>
+</note>

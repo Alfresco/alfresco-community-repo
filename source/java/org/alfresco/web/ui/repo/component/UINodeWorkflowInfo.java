@@ -11,6 +11,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -161,25 +162,25 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
       }
       out.write("<div class=\"nodeWorkflowInfoText\">");
 
-      if (node.hasAspect(ContentModel.ASPECT_SIMPLE_WORKFLOW))
+      if (node.hasAspect(ApplicationModel.ASPECT_SIMPLE_WORKFLOW))
       {
          // get the simple workflow aspect properties
          Map<String, Object> props = node.getProperties();
 
          String approveStepName = (String)props.get(
-               ContentModel.PROP_APPROVE_STEP.toString());
+               ApplicationModel.PROP_APPROVE_STEP.toString());
          String rejectStepName = (String)props.get(
-               ContentModel.PROP_REJECT_STEP.toString());
+               ApplicationModel.PROP_REJECT_STEP.toString());
          
          Boolean approveMove = (Boolean)props.get(
-               ContentModel.PROP_APPROVE_MOVE.toString());
+               ApplicationModel.PROP_APPROVE_MOVE.toString());
          Boolean rejectMove = (Boolean)props.get(
-               ContentModel.PROP_REJECT_MOVE.toString());
+               ApplicationModel.PROP_REJECT_MOVE.toString());
          
          NodeRef approveFolder = (NodeRef)props.get(
-               ContentModel.PROP_APPROVE_FOLDER.toString());
+               ApplicationModel.PROP_APPROVE_FOLDER.toString());
          NodeRef rejectFolder = (NodeRef)props.get(
-               ContentModel.PROP_REJECT_FOLDER.toString());
+               ApplicationModel.PROP_REJECT_FOLDER.toString());
          
          String approveFolderName = null;
          String rejectFolderName = null;

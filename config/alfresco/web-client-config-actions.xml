@@ -372,6 +372,14 @@
             <action>wizard:createContent</action>
          </action>
          
+         <!-- Create XML content type -->
+         <action id="create_form">
+            <evaluator>org.alfresco.web.action.evaluator.CreateFormEvaluator</evaluator>
+            <label-id>create_form</label-id>
+            <image>/images/icons/new_content.gif</image>
+            <action>wizard:createForm</action>
+         </action>
+         
          <!-- Create space -->
          <action id="create_space">
             <permissions>
@@ -390,6 +398,14 @@
             <label-id>advanced_space_wizard</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>wizard:createSpace</action>
+         </action>
+         
+         <!-- Create Website Wizard -->
+         <action id="create_website_wizard">
+            <evaluator>org.alfresco.web.action.evaluator.CreateWebProjectEvaluator</evaluator>
+            <label-id>create_website</label-id>
+            <image>/images/icons/create_website.gif</image>
+            <action>wizard:createWebsite</action>
          </action>
          
          <!-- Manage Space Users -->
@@ -562,7 +578,7 @@
             <action idref="checkout_doc" />
             <action idref="checkin_doc" />
             <action idref="details_doc" />
-            <action idref="preview_doc" />
+            <action idref="delete_doc" />
             
             <!-- Example action defined in-line rather than by reference
             <action id="example2_checkout_doc">
@@ -580,7 +596,7 @@
          
          <!-- Actions Menu for a document in the Browse screen -->
          <action-group id="document_browse_menu">
-            <action idref="delete_doc" />
+            <action idref="preview_doc" />
             <action idref="update_doc" />
             <action idref="cancelcheckout_doc" />
             <action idref="approve_doc" />
@@ -594,15 +610,15 @@
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
             
-            <action idref="preview_space" />
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="details_space" />
+            <action idref="delete_space" />
          </action-group>
          
          <!-- Actions Menu for a space in the Browse screen -->
          <action-group id="space_browse_menu">
-            <action idref="delete_space" />
+            <action idref="preview_space" />
             <action idref="approve_space" />
             <action idref="reject_space" />
          </action-group>
@@ -610,6 +626,8 @@
          <!-- Actions Menu for Create in Browse screen -->
          <action-group id="browse_create_menu">
             <action idref="create_content" />
+            <action idref="create_form" />
+            <action idref="create_website_wizard" />
             <action idref="create_space" />
             <action idref="create_space_wizard" />
          </action-group>

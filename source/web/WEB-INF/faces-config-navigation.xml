@@ -102,6 +102,10 @@
    <navigation-rule>
       <from-view-id>/jsp/*</from-view-id>
       <navigation-case>
+         <from-outcome>addContent</from-outcome>
+         <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>checkoutFile</from-outcome>
          <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
       </navigation-case>
@@ -128,6 +132,10 @@
       <navigation-case>
          <from-outcome>editTextInline</from-outcome>
          <to-view-id>/jsp/dialog/edit-text-inline.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editXmlInline</from-outcome>
+         <to-view-id>/jsp/dialog/edit-xml-inline.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -241,6 +249,14 @@
    
    <navigation-rule>
       <from-view-id>/jsp/dialog/edit-html-inline.jsp</from-view-id>
+      <navigation-case>
+         <from-outcome>checkoutFile</from-outcome>
+         <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/dialog/edit-xml-inline.jsp</from-view-id>
       <navigation-case>
          <from-outcome>checkoutFile</from-outcome>
          <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
@@ -450,10 +466,6 @@
    <navigation-rule>
       <from-view-id>/jsp/roles/manage-invited-users.jsp</from-view-id>
       <navigation-case>
-         <from-outcome>inviteUsers</from-outcome>
-         <to-view-id>/jsp/wizard/invite-users/invite.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>editRoles</from-outcome>
          <to-view-id>/jsp/roles/edit-user-roles.jsp</to-view-id>
       </navigation-case>
@@ -489,10 +501,6 @@
    
    <navigation-rule>
       <from-view-id>/jsp/roles/manage-content-users.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>inviteUsers</from-outcome>
-         <to-view-id>/jsp/wizard/invite-content-users/invite.jsp</to-view-id>
-      </navigation-case>
       <navigation-case>
          <from-outcome>editRoles</from-outcome>
          <to-view-id>/jsp/roles/edit-content-user-roles.jsp</to-view-id>
@@ -787,16 +795,6 @@
            <to-view-id>/jsp/admin/node-browser.jsp</to-view-id>
        </navigation-case>
    </navigation-rule>
-
-   <!-- Workflow Admin -->
-   <navigation-rule>
-       <from-view-id>/jsp/workflow/workflow-console.jsp</from-view-id>
-       <navigation-case>
-           <from-action>#{WorkflowConsoleBean.submitCommand}</from-action>
-           <from-outcome>success</from-outcome>
-           <to-view-id>/jsp/workflow/workflow-console.jsp</to-view-id>
-       </navigation-case>
-   </navigation-rule>
    
    <!-- Forums screen action outcomes -->
    <navigation-rule>
@@ -881,6 +879,58 @@
       <navigation-case>
          <from-outcome>topicDeleted</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/*</from-view-id>
+      <navigation-case>
+         <from-outcome>browseSandbox</from-outcome>
+         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
+   
+   <navigation-rule>
+      <from-view-id>/jsp/wcm/*</from-view-id>
+      <navigation-case>
+         <from-outcome>importContent</from-outcome>
+         <to-view-id>/jsp/wcm/import-content-dialog.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>addAvmContent</from-outcome>
+         <to-view-id>/jsp/wcm/add-content-dialog.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editAvmFile</from-outcome>
+         <to-view-id>/jsp/wcm/edit-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editAvmHtmlInline</from-outcome>
+         <to-view-id>/jsp/wcm/edit-html-inline.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editAvmTextInline</from-outcome>
+         <to-view-id>/jsp/wcm/edit-text-inline.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>editAvmXmlInline</from-outcome>
+         <to-view-id>/jsp/wcm/edit-xml-inline.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>updateAvmFile</from-outcome>
+         <to-view-id>/jsp/wcm/update-file.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showFileDetails</from-outcome>
+         <to-view-id>/jsp/wcm/file-details.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
+         <from-outcome>showFolderDetails</from-outcome>
+         <to-view-id>/jsp/wcm/folder-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

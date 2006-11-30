@@ -62,8 +62,10 @@ import org.apache.log4j.Logger;
  */
 public class NavigationBean
 {
+   /** Public JSF Bean name */
+   public static final String BEAN_NAME = "NavigationBean";
+   
    private static final String OUTCOME_MYALFRESCO = "myalfresco";
-
    private static final String OUTCOME_BROWSE = "browse";
 
    /**
@@ -493,7 +495,7 @@ public class NavigationBean
          // resolve CIFS network folder location for this node
          DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();
          
-         if (diskShare != null)
+         if (diskShare != null && diskShare.getContext() instanceof ContentContext)
          {
             ContentContext contentCtx = (ContentContext) diskShare.getContext();
             NodeRef rootNode = contentCtx.getRootNode();

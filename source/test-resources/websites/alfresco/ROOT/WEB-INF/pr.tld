@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-jsptaglibrary_2_0.xsd"
+        version="2.0">
+
+    <tlib-version>1.0</tlib-version>
+    <short-name>pr</short-name>
+    <uri>http://www.alfresco.org/alfresco/pr</uri>
+    <function>
+      <name>getPressReleases</name>
+      <function-class>org.alfresco.web.pr.PressReleaseBean</function-class>
+      <function-signature>java.util.List getPressReleases(javax.servlet.jsp.PageContext)</function-signature>
+    </function>
+    <function>
+      <name>getPressReleasesInCategory</name>
+      <function-class>org.alfresco.web.pr.PressReleaseBean</function-class>
+      <function-signature>java.util.List getPressReleasesInCategory(javax.servlet.jsp.PageContext, java.lang.String)</function-signature>
+    </function>
+    <function>
+      <name>getPressReleaseCategories</name>
+      <function-class>org.alfresco.web.pr.PressReleaseBean</function-class>
+      <function-signature>java.util.Set getPressReleaseCategories(javax.servlet.jsp.PageContext)</function-signature>
+    </function>
+    <function>
+      <name>getCompanyFooterChoices</name>
+      <function-class>org.alfresco.web.pr.CompanyFooterBean</function-class>
+      <function-signature>java.util.List getCompanyFooterChoices(javax.servlet.jsp.PageContext)</function-signature>
+    </function>
+</taglib>

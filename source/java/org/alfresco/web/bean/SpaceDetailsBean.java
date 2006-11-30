@@ -27,6 +27,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateNode;
@@ -119,7 +120,7 @@ public class SpaceDetailsBean extends BaseDetailsBean
    protected Node getLinkResolvedNode()
    {
       Node space = getSpace();
-      if (ContentModel.TYPE_FOLDERLINK.equals(space.getType()))
+      if (ApplicationModel.TYPE_FOLDERLINK.equals(space.getType()))
       {
          NodeRef destRef = (NodeRef)space.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
          if (nodeService.exists(destRef))
@@ -483,8 +484,8 @@ public class SpaceDetailsBean extends BaseDetailsBean
     */
    public static boolean hasRSSFeed(Node space)
    {
-      return (space.hasAspect(ContentModel.ASPECT_FEEDSOURCE) &&
-              space.getProperties().get(ContentModel.PROP_FEEDTEMPLATE) != null);
+      return (space.hasAspect(ApplicationModel.ASPECT_FEEDSOURCE) &&
+              space.getProperties().get(ApplicationModel.PROP_FEEDTEMPLATE) != null);
    }
    
    /**
@@ -508,7 +509,7 @@ public class SpaceDetailsBean extends BaseDetailsBean
       // add the guest=true URL parameter - this is required for no login access and
       // add the mimetype=text/xml URL parameter - required to return correct stream type
       return GuestTemplateContentServlet.generateURL(space.getNodeRef(),
-                (NodeRef)space.getProperties().get(ContentModel.PROP_FEEDTEMPLATE))
+                (NodeRef)space.getProperties().get(ApplicationModel.PROP_FEEDTEMPLATE))
                     + "/rss.xml?mimetype=text%2Fxml";
    }
 
@@ -518,7 +519,7 @@ public class SpaceDetailsBean extends BaseDetailsBean
    public String getRSSTemplate()
    {
       // return current template if it exists
-      NodeRef ref = (NodeRef)getNode().getProperties().get(ContentModel.PROP_FEEDTEMPLATE);
+      NodeRef ref = (NodeRef)getNode().getProperties().get(ApplicationModel.PROP_FEEDTEMPLATE);
       return ref != null ? ref.getId() : this.rssTemplate;
    }
 
@@ -540,16 +541,16 @@ public class SpaceDetailsBean extends BaseDetailsBean
          try
          {
             // apply the feedsource aspect if required 
-            if (getNode().hasAspect(ContentModel.ASPECT_FEEDSOURCE) == false)
+            if (getNode().hasAspect(ApplicationModel.ASPECT_FEEDSOURCE) == false)
             {
-               this.nodeService.addAspect(getNode().getNodeRef(), ContentModel.ASPECT_FEEDSOURCE, null);
+               this.nodeService.addAspect(getNode().getNodeRef(), ApplicationModel.ASPECT_FEEDSOURCE, null);
             }
             
             // get the selected template Id from the Template Picker
             NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.rssTemplate);
             
             // set the template NodeRef into the templatable aspect property
-            this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_FEEDTEMPLATE, templateRef); 
+            this.nodeService.setProperty(getNode().getNodeRef(), ApplicationModel.PROP_FEEDTEMPLATE, templateRef); 
             
             // reset node details for next refresh of details page
             getNode().reset();
@@ -570,8 +571,8 @@ public class SpaceDetailsBean extends BaseDetailsBean
       try
       {
          // clear template property
-         this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_FEEDTEMPLATE, null);
-         this.nodeService.removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_FEEDSOURCE);
+         this.nodeService.setProperty(getNode().getNodeRef(), ApplicationModel.PROP_FEEDTEMPLATE, null);
+         this.nodeService.removeAspect(getNode().getNodeRef(), ApplicationModel.ASPECT_FEEDSOURCE);
          
          // reset node details for next refresh of details page
          getNode().reset();

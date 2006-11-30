@@ -154,7 +154,7 @@ public class ImagePickerRadioRenderer extends BaseRenderer
                   {
                      UIListItem item = new UIListItem();
                      item.setValue(iconName);
-                     item.getAttributes().put("image", iconPath);
+                     item.setImage(iconPath);
                      renderItem(context, out, imagePicker, item, onclick);
                   }
                }
@@ -324,7 +324,7 @@ public class ImagePickerRadioRenderer extends BaseRenderer
       out.write("</td><td align='center'>");
   
       // get the image and make sure there is one!
-      String image = (String)item.getAttributes().get("image");
+      String image = item.getImage();
       if (image == null)
       {
          throw new IllegalStateException("All child items must specify an image");

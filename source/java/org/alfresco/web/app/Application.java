@@ -75,6 +75,8 @@ public class Application
    private static String savedSearchesFolderName;
    private static String scriptsFolderName;
    private static String guestHomeFolderName;
+   private static String websitesFolderName;
+   private static String contentFormsFolderName;
    
    /**
     * Private constructor to prevent instantiation of this class 
@@ -439,6 +441,38 @@ public class Application
    public static String getGuestHomeFolderName(FacesContext context)
    {
       return getGuestHomeFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the Websites folder name
+    */
+   public static String getWebsitesFolderName(ServletContext context)
+   {
+      return getWebsitesFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the Websites folder name
+    */
+   public static String getWebsitesFolderName(FacesContext context)
+   {
+      return getWebsitesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the WCM Content Forms folder name
+    */
+   public static String getContentFormsFolderName(ServletContext context)
+   {
+      return getContentFormsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the WCM Content Forms folder name
+    */
+   public static String getContentFormsFolderName(FacesContext context)
+   {
+      return getContentFormsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
    /**
@@ -845,9 +879,45 @@ public class Application
    }
    
    /**
+    * Returns the Websites folder name
+    * 
+    * @param context The Spring context
+    * @return The Websites folder name
+    */
+   private static String getWebsitesFolderName(WebApplicationContext context)
+   {
+      if (websitesFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         websitesFolderName = configuration.getProperty("spaces.wcm.childname");
+      }
+      
+      return websitesFolderName;
+   }
+   
+   /**
+    * Returns the WCM Content Forms folder name
+    * 
+    * @param context The Spring context
+    * @return The WCM Content Forms folder name
+    */
+   private static String getContentFormsFolderName(WebApplicationContext context)
+   {
+      if (contentFormsFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         contentFormsFolderName = configuration.getProperty("spaces.content_forms.childname");
+      }
+      
+      return contentFormsFolderName;
+   }
+   
+   /**
     * Retrieves the configured error page for the application
     * 
-    * @param context The Spring contexr
+    * @param context The Spring context
     * @return The configured error page or null if the configuration is missing
     */
    private static String getErrorPage(WebApplicationContext context)

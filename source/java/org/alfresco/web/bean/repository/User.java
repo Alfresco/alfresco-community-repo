@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.configuration.ConfigurableService;
 import org.alfresco.service.ServiceRegistry;
@@ -175,7 +176,7 @@ public final class User
       ConfigurableService configurableService = Repository.getConfigurableService(fc);
       
       NodeRef person = Application.getCurrentUser(fc).getPerson();
-      if (nodeService.hasAspect(person, ContentModel.ASPECT_CONFIGURABLE) == false)
+      if (nodeService.hasAspect(person, ApplicationModel.ASPECT_CONFIGURABLE) == false)
       {
          // create the configuration folder for this Person node
      	   configurableService.makeConfigurable(person);

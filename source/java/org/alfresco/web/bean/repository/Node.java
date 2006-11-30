@@ -89,7 +89,7 @@ public class Node implements Serializable
    /**
     * @return All the properties known about this node.
     */
-   public final Map<String, Object> getProperties()
+   public Map<String, Object> getProperties()
    {
       if (this.propsRetrieved == false)
       {
@@ -289,7 +289,7 @@ public class Node implements Serializable
    /**
     * @return The display name for the node
     */
-   public final String getName()
+   public String getName()
    {
       if (this.name == null)
       {
@@ -339,20 +339,20 @@ public class Node implements Serializable
    public boolean hasPermission(String permission)
    {
       Boolean valid = null;
-      if (permissions != null)
+      if (this.permissions != null)
       {
-         valid = permissions.get(permission);
+         valid = this.permissions.get(permission);
       }
       else
       {
-         permissions = new HashMap<String, Boolean>(5, 1.0f);
+         this.permissions = new HashMap<String, Boolean>(8, 1.0f);
       }
       
       if (valid == null)
       {
          PermissionService service = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
          valid = Boolean.valueOf(service.hasPermission(this.nodeRef, permission) == AccessStatus.ALLOWED);
-         permissions.put(permission, valid);
+         this.permissions.put(permission, valid);
       }
       
       return valid.booleanValue();
@@ -369,7 +369,7 @@ public class Node implements Serializable
    /**
     * @return The path for the node
     */
-   public final String getPath()
+   public String getPath()
    {
       if (this.path == null)
       {

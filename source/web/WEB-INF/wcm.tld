@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN" "http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_2.dtd">
+
+<taglib>
+
+   <tlib-version>1.0</tlib-version>
+   <jsp-version>1.2</jsp-version>
+   <short-name>w</short-name>
+   <display-name>Alfresco WCM JSF Components</display-name>
+   <description>Tag library consisting of Alfresco WCM JSF components i.e. those that can only be used in Alfresco WCM based projects</description>
+
+   <tag>
+      <name>userSandboxes</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.UserSandboxesTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>User Sandboxes</display-name>
+      <description>Displays the user sandboxes for a website</description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The noderef of the website to display sandboxes for</description>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The value binding expression linking this component to a property in a backing bean</description>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>sandboxSnapshots</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.SandboxSnapshotsTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Sandbox Snapshots List</display-name>
+      <description>Displays the list of snapshots for a sandbox</description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The sandbox to show the list of snapshots for</description>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The value binding expression linking this component to a property in a backing bean</description>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>dateFilter</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+
+   <tag>
+      <name>formProcessor</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.FormProcessorTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Form Processor</display-name>
+      <description>Renders a form</description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+      
+      <attribute>
+         <name>formInstanceData</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The instance data for the form processor</description>
+      </attribute>
+
+      <attribute>
+         <name>form</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The form to use to render this form.</description>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The value binding expression linking this component to a property in a backing bean</description>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+</taglib>

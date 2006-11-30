@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE faces-config PUBLIC "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
+                              "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
+<faces-config>
+
+   <!-- ==================== COMPONENTS ==================== -->
+   <component>
+      <component-type>org.alfresco.faces.UserSandboxes</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIUserSandboxes</component-class>
+   </component>
+   
+   <component>
+      <component-type>org.alfresco.faces.UserSandboxes</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIUserSandboxes</component-class>
+   </component>
+
+   <component>
+      <component-type>org.alfresco.faces.SandboxSnapshots</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UISandboxSnapshots</component-class>
+   </component>
+
+   <component>
+      <component-type>org.alfresco.faces.FormProcessor</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIFormProcessor</component-class>
+   </component>
+   
+   
+   <!-- ==================== CONVERTERS ==================== -->
+   
+   
+   <!-- ==================== RENDERERS ==================== -->
+   
+   
+</faces-config>

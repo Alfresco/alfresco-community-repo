@@ -1055,18 +1055,6 @@
       </attribute>
       
       <attribute>
-         <name>style</name>
-         <required>false</required>
-         <rtexprvalue>true</rtexprvalue>
-      </attribute>
-      
-      <attribute>
-         <name>styleClass</name>
-         <required>false</required>
-         <rtexprvalue>true</rtexprvalue>
-      </attribute>
-      
-      <attribute>
          <name>tooltip</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
@@ -1074,6 +1062,12 @@
       
       <attribute>
          <name>label</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>description</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
@@ -1839,6 +1833,96 @@
 
       <attribute>
          <name>label</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>selectList</name>
+      <tag-class>org.alfresco.web.ui.common.tag.SelectListTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         The SelectList component displays a graphical list of items, each with a label and icon image.
+         The list has three selection modes; single select (radio), multi-select (checkbox) and active
+         selection mode (child action components).
+         The value for the component is collection of UIListItem objects or a UIListItems instance.
+         For passive single and multi-select modes, the selected value(s) can be retrieved from the component.
+         For active selection mode, appropriate child components such as Command buttons or Action Links
+         will be rendered for each item in the list, data-binding to the specified 'var' variable should be
+         used to bind required params. It is then up to the developer to retrieve the selected item param
+         from the actionListener of the appropriate child component.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>binding</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>style</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>styleClass</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>itemStyle</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>itemStyleClass</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>var</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>multiSelect</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+
+      <attribute>
+         <name>activeSelect</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>values</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>

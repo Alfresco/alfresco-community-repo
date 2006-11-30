@@ -33,7 +33,6 @@ import org.alfresco.config.Config;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.ActionsConfigElement;
 import org.alfresco.web.config.ActionsConfigElement.ActionDefinition;
 import org.alfresco.web.config.ActionsConfigElement.ActionGroup;
@@ -64,12 +63,13 @@ public class UIActions extends SelfRenderingComponent
    private static final String ATTR_STYLECLASS = "styleClass";
    private static final String ATTR_STYLE = "style";
    private static final String ACTION_CONTEXT = "actionContext";
-   private static final String RENDERER_ACTIONLINK = "org.alfresco.faces.ActionLinkRenderer";
-   private static final String COMPONENT_ACTIONLINK = "org.alfresco.faces.ActionLink";
-   private static final String COMPONENT_PERMISSIONEVAL = "org.alfresco.faces.PermissionEvaluator";
-   private static final String COMPONENT_ACTIONEVAL = "org.alfresco.faces.ActionInstanceEvaluator";
    
-   private final static Class ACTION_CLASS_ARGS[] = {javax.faces.event.ActionEvent.class};
+   public static final String RENDERER_ACTIONLINK = "org.alfresco.faces.ActionLinkRenderer";
+   public static final String COMPONENT_ACTIONLINK = "org.alfresco.faces.ActionLink";
+   public static final String COMPONENT_PERMISSIONEVAL = "org.alfresco.faces.PermissionEvaluator";
+   public static final String COMPONENT_ACTIONEVAL = "org.alfresco.faces.ActionInstanceEvaluator";
+   
+   public final static Class ACTION_CLASS_ARGS[] = {javax.faces.event.ActionEvent.class};
 
    /**
     * @see javax.faces.component.UIComponent#getFamily()
@@ -502,27 +502,27 @@ public class UIActions extends SelfRenderingComponent
    }
    
    /**
-    * Get the Node that forms the context object for this group of actions
+    * Get the object that forms the context for this group of actions
     *
     * @return the context
     */
-   public Node getContext()
+   public Object getContext()
    {
       ValueBinding vb = getValueBinding("context");
       if (vb != null)
       {
-         this.context = (Node)vb.getValue(getFacesContext());
+         this.context = vb.getValue(getFacesContext());
       }
       
       return this.context;
    }
 
    /**
-    * Set the the Node that forms the context object for this group of actions
+    * Set the the object that forms the context for this group of actions
     *
     * @param context     the context
     */
-   public void setContext(Node context)
+   public void setContext(Object context)
    {
       this.context = context;
    }
@@ -608,8 +608,8 @@ public class UIActions extends SelfRenderingComponent
    /** For this component the value is the ID of an Action Group config block */
    private String value = null;
    
-   /** The context Node for the action group */
-   private Node context = null;
+   /** The context object for the action group */
+   private Object context = null;
    
    /** Vertical layout spacing */
    private Integer verticalSpacing = null;

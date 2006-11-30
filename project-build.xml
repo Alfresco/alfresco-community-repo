@@ -24,6 +24,7 @@
       <antcall target="assemble-war-common" />
       <antcall target="assemble-war-tomcat" />
       <antcall target="assemble-war-jboss" />
+      <!--<antcall target="sample-website" />-->
    </target>
    
    <target name="assemble-war-common">
@@ -41,11 +42,29 @@
          <fileset dir="${dir.common.lib}/treecache" includes="*.jar" />
          <fileset dir="${dir.common.lib}/swarmcache" includes="*.jar" />
          <fileset dir="${dir.common.lib}/jbpm" includes="*.jar" />
+         <fileset dir="${dir.common.lib}/chiba" includes="*.jar" />
+	 <fileset dir="${dir.common.lib}/fop" includes="*.jar"/>
          <fileset dir="${dir.project.core}/build/dist" includes="${dir.name.core}.jar" />
          <fileset dir="${dir.project.repository}/build/dist" includes="${dir.name.repository}.jar" />
+         <fileset dir="${dir.project.mbeans}/build/dist" includes="alfresco-${dir.name.mbeans}.jar" />
          <fileset dir="${dir.project.remoteapi}/build/dist" includes="${dir.name.remoteapi}.jar" />
       </copy>
-      
+
+      <mkdir dir="${dir.assemble}/scripts/ajax"/>
+      <unzip src="${dir.common.lib}/dojo-0.3.1-ajax.zip"
+	     dest="${dir.assemble}/scripts/ajax"/>
+      <delete dir="${dir.assemble}/scripts/ajax/dojo"/>
+      <rename src="${dir.assemble}/scripts/ajax/dojo-0.3.1-ajax"
+        dest="${dir.assemble}/scripts/ajax/dojo"/>
+      <delete dir="${dir.assemble}/scripts/ajax/dojo/tests"/>
+      <delete dir="${dir.assemble}/scripts/ajax/dojo/demos"/>
+
+      <unzip src="${dir.common.lib}/tinymce_2_0_6_1.zip"
+	     dest="${dir.assemble}/scripts"/>
+      <move file="${dir.assemble}/scripts/tinymce/jscripts/tiny_mce"
+	    todir="${dir.assemble}/scripts/"/>
+      <delete dir="${dir.assemble}/scripts/tinymce"/>
+	    
       <!-- add config files to WEB-INF/classes -->
       <copy todir="${dir.assemble}/WEB-INF/classes">
          <fileset dir="${dir.config.repository}" excludes="**/*.sample" />
@@ -67,6 +86,7 @@
       <copy todir="${dir.assemble}/wsdl">
          <fileset dir="${dir.project.remoteapi}/source/wsdl" />
       </copy>
+      
    </target>
  
    <target name="assemble-war-tomcat" if="isTomcat">
@@ -84,5 +104,36 @@
          <fileset dir="${dir.assemble}/WEB-INF/lib" includes="${webinf.lib.delete.jboss}" />
       </delete>
    </target>
-  
+   
+   <target name="sample-website" depends="init">
+     <delete failonerror="false">
+       <fileset dir="${dir.build}/sample-website"/>
+     </delete>
+     <mkdir dir="${dir.build}/sample-website/alfresco"/>
+     <mkdir dir="${dir.build}/sample-website/alfresco/classes"/>
+     <javac srcdir="${dir.src}/test-resources/websites/alfresco/ROOT/WEB-INF/classes"
+	    destdir="${dir.build}/sample-website/alfresco/classes"
+            deprecation="on" debug="on" target="1.5" source="1.5"
+	    classpathref="classpath.compile"/>
+     <jar basedir="${dir.build}/classes"
+          destfile="${dir.build}/sample-website/alfresco/alfresco-form-data-functions.jar"
+	  includes="org/alfresco/web/forms/*.class"/>
+     <jar basedir="${dir.build}/sample-website/alfresco/classes"
+	  destfile="${dir.build}/sample-website/alfresco/alfresco-sample-website.jar"
+	  includes="**/*.class"/>
+     <mkdir dir="${dir.dist}"/>
+     <war destfile="${dir.dist}/alfresco-sample-website.war"
+	  webxml="${dir.src}/test-resources/websites/alfresco/ROOT/WEB-INF/web.xml">
+       <lib dir="${dir.common.lib}">
+	 <include name="standard.jar"/>
+	 <include name="jstl.jar"/>
+       </lib>
+       <lib dir="${dir.build}/sample-website/alfresco"/>
+       <fileset dir="${dir.src}/test-resources/websites/alfresco/ROOT">
+	 <exclude name="WEB-INF/**"/>
+	 <exclude name="**/.svn"/>
+       </fileset>
+       <webinf file="${dir.src}/test-resources/websites/alfresco/ROOT/WEB-INF/pr.tld"/>
+     </war>
+   </target>
 </project>

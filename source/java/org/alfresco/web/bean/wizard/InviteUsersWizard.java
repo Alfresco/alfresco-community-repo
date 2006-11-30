@@ -20,6 +20,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -39,7 +40,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.TemplateMailHelperBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -52,21 +52,22 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.mail.javamail.JavaMailSender;
 
 /**
+ * Backing bean for the Invite Users wizard(s)
+ * 
  * @author Kevin Roast
  */
-public abstract class InviteUsersWizard extends AbstractWizardBean
+public abstract class InviteUsersWizard extends BaseWizardBean
 {
    private static Log logger = LogFactory.getLog(InviteUsersWizard.class);
    
    /** I18N message strings */
+   protected static final String MSG_USERROLES = "invite_users_summary";
    private static final String MSG_USERS  = "users";
    private static final String MSG_GROUPS = "groups";
    private static final String MSG_INVITED_TO = "invited_to";
    private static final String MSG_INVITED_ROLE  = "invite_role";
-   private static final String STEP1_TITLE_ID = "invite_step1_title";
-   private static final String STEP2_TITLE_ID = "invite_step2_title";
-   private static final String STEP2_DESCRIPTION_ID = "invite_step2_desc";
-   private static final String FINISH_INSTRUCTION_ID = "invite_finish_instruction";
+   
+   protected static final String STEP_NOTIFY = "notify";
    
    private static final String NOTIFY_YES = "yes";
    
@@ -89,10 +90,13 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    protected TemplateMailHelperBean mailHelper;
    
    /** datamodel for table of roles for users */
-   private DataModel userRolesDataModel = null;
+   protected DataModel userRolesDataModel = null;
    
    /** list of user/group role wrapper objects */
-   private List<UserGroupRole> userGroupRoles = null;
+   protected List<UserGroupRole> userGroupRoles = null;
+   
+   /** True to allow duplicate authorities (with a different role) */
+   protected boolean allowDuplicateAuthorities = true;
    
    /** dialog state */
    private String notify = NOTIFY_YES;
@@ -106,11 +110,6 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
     * @return Returns the node that the permissions are being applied to
     */
    protected abstract Node getNode();
-   
-   /**
-    * @return The text to use for the description of step 1 (depends on the type being dealt with)
-    */
-   protected abstract String getStep1DescriptionText();
    
    /**
     * @param namespaceService   The NamespaceService to set.
@@ -155,9 +154,10 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    /**
     * Initialises the wizard
     */
-   public void init()
+   @Override
+   public void init(Map<String, String> parameters)
    {
-      super.init();
+      super.init(parameters);
       
       notify = NOTIFY_YES;
       userGroupRoles = new ArrayList<UserGroupRole>(8);
@@ -167,99 +167,92 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    }
 
    /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#finish()
+    * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
     */
-   public String finish()
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      String outcome = FINISH_OUTCOME;
-      
-      UserTransaction tx = null;
-      
-      try
+      User user = Application.getCurrentUser(context);
+      String from = (String)this.nodeService.getProperty(user.getPerson(), ContentModel.PROP_EMAIL);
+      if (from == null || from.length() == 0)
       {
-         FacesContext context = FacesContext.getCurrentInstance();
+         // if the user does not have an email address get the default one from the config service
+         from = Application.getClientConfig(context).getFromEmailAddress();
+      }
+      
+      // get the Space to apply changes too
+      NodeRef nodeRef = this.getNode().getNodeRef();
+      
+      // set permissions for each user and send them a mail
+      for (int i=0; i<this.userGroupRoles.size(); i++)
+      {
+         UserGroupRole userGroupRole = this.userGroupRoles.get(i);
+         String authority = userGroupRole.getAuthority();
          
-         tx = Repository.getUserTransaction(context);
-         tx.begin();
-         
-         User user = Application.getCurrentUser(context);
-         String from = (String)this.nodeService.getProperty(user.getPerson(), ContentModel.PROP_EMAIL);
-         if (from == null || from.length() == 0)
+         // find the selected permission ref from it's name and apply for the specified user
+         Set<String> perms = getPermissionsForType();
+         for (String permission : perms)
          {
-            // if the user does not have an email address get the default one from the config service
-            from = Application.getClientConfig(context).getFromEmailAddress();
+            if (userGroupRole.getRole().equals(permission))
+            {
+               this.permissionService.setPermission(
+                     nodeRef,
+                     authority,
+                     permission,
+                     true);
+               break;
+            }
          }
          
-         // get the Space to apply changes too
-         NodeRef nodeRef = this.getNode().getNodeRef();
-         
-         // set permissions for each user and send them a mail
-         for (int i=0; i<this.userGroupRoles.size(); i++)
+         // Create the mail message for sending to each User
+         if (NOTIFY_YES.equals(this.notify))
          {
-            UserGroupRole userGroupRole = this.userGroupRoles.get(i);
-            String authority = userGroupRole.getAuthority();
-            
-            // find the selected permission ref from it's name and apply for the specified user
-            Set<String> perms = getPermissionsForType();
-            for (String permission : perms)
+            // if User, email then, else if Group get all members and email them
+            AuthorityType authType = AuthorityType.getAuthorityType(authority);
+            if (authType.equals(AuthorityType.USER))
             {
-               if (userGroupRole.getRole().equals(permission))
+               if (this.personService.personExists(authority) == true)
                {
-                  this.permissionService.setPermission(
-                        nodeRef,
-                        authority,
-                        permission,
-                        true);
-                  break;
+                  this.mailHelper.notifyUser(
+                        this.personService.getPerson(authority), nodeRef, from, userGroupRole.getRole());
                }
             }
-            
-            // Create the mail message for sending to each User
-            if (NOTIFY_YES.equals(this.notify))
+            else if (authType.equals(AuthorityType.GROUP))
             {
-               // if User, email then, else if Group get all members and email them
-               AuthorityType authType = AuthorityType.getAuthorityType(authority);
-               if (authType.equals(AuthorityType.USER))
+               // else notify all members of the group
+               Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+               for (String userAuth : users)
                {
-                  if (this.personService.personExists(authority) == true)
+                  if (this.personService.personExists(userAuth) == true)
                   {
                      this.mailHelper.notifyUser(
-                           this.personService.getPerson(authority), nodeRef, from, userGroupRole.getRole());
-                  }
-               }
-               else if (authType.equals(AuthorityType.GROUP))
-               {
-                  // else notify all members of the group
-                  Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
-                  for (String userAuth : users)
-                  {
-                     if (this.personService.personExists(userAuth) == true)
-                     {
-                        this.mailHelper.notifyUser(
-                              this.personService.getPerson(userAuth), nodeRef, from, userGroupRole.getRole());
-                     }
+                           this.personService.getPerson(userAuth), nodeRef, from, userGroupRole.getRole());
                   }
                }
             }
          }
-         
-         // commit the transaction
-         tx.commit();
-         
-         UIContextService.getInstance(context).notifyBeans();
-      }
-      catch (Throwable e)
-      {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
-         outcome = null;
       }
       
       return outcome;
    }
    
+   /**
+    * @see org.alfresco.web.bean.dialog.BaseDialogBean#getFinishButtonDisabled()
+    */
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      boolean disabled = true;
+      
+      String stepName = Application.getWizardManager().getCurrentStepName();
+      if (STEP_NOTIFY.equals(stepName))
+      {
+         disabled = false;
+      }
+      
+      return disabled;
+   }
+
    /**
     * Returns the properties for current user-roles JSF DataModel
     * 
@@ -387,7 +380,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                {
                   UserGroupRole wrapper = this.userGroupRoles.get(n);
                   if (authority.equals(wrapper.getAuthority()) &&
-                      role.equals(wrapper.getRole()))
+                      (!this.allowDuplicateAuthorities || role.equals(wrapper.getRole())))
                   {
                      foundExisting = true;
                      break;
@@ -405,25 +398,13 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
                      if (authType == AuthorityType.GUEST || this.personService.personExists(authority) == true)
                      {
                         // found a User authority
-                        NodeRef ref = this.personService.getPerson(authority);
-                        String firstName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
-                        String lastName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
-                        
-                        label.append(firstName)
-                             .append(" ")
-                             .append(lastName != null ? lastName : "")
-                             .append(" (")
-                             .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
-                             .append(")");
+                        label.append(buildLabelForUserAuthorityRole(authority, role));
                      }
                   }
                   else
                   {
                      // found a group authority
-                     label.append(authority.substring(PermissionService.GROUP_PREFIX.length()))
-                          .append(" (")
-                          .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
-                          .append(")");
+                     label.append(buildLabelForGroupAuthorityRole(authority, role));
                   }
                   
                   this.userGroupRoles.add(new UserGroupRole(authority, role, label.toString()));
@@ -495,100 +476,19 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
       this.notify = notify;
    }
    
-   /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getStepDescription()
-    */
-   public String getStepDescription()
-   {
-      String stepDesc = null;
-      
-      switch (this.currentStep)
-      {
-         case 1:
-         {
-            stepDesc = Application.getMessage(FacesContext.getCurrentInstance(), getStep1DescriptionText());
-            break;
-         }
-         case 2:
-         {
-            stepDesc = Application.getMessage(FacesContext.getCurrentInstance(), STEP2_DESCRIPTION_ID);
-            break;
-         }
-         default:
-         {
-            stepDesc = "";
-         }
-      }
-      
-      return stepDesc;
-   }
-
-   /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getStepTitle()
-    */
-   public String getStepTitle()
-   {
-      String stepTitle = null;
-      
-      switch (this.currentStep)
-      {
-         case 1:
-         {
-            stepTitle = Application.getMessage(FacesContext.getCurrentInstance(), STEP1_TITLE_ID);
-            break;
-         }
-         case 2:
-         {
-            stepTitle = Application.getMessage(FacesContext.getCurrentInstance(), STEP2_TITLE_ID);
-            break;
-         }
-         default:
-         {
-            stepTitle = "";
-         }
-      }
-      
-      return stepTitle;
-   }
-   
-   /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#getStepInstructions()
-    */
-   public String getStepInstructions()
-   {
-      String stepInstruction = null;
-      
-      switch (this.currentStep)
-      {
-         case 2:
-         {
-            stepInstruction = Application.getMessage(FacesContext.getCurrentInstance(), FINISH_INSTRUCTION_ID);
-            break;
-         }
-         default:
-         {
-            stepInstruction = Application.getMessage(FacesContext.getCurrentInstance(), DEFAULT_INSTRUCTION_ID);
-         }
-      }
-      
-      return stepInstruction;
-   }
-   
-   /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#next()
-    */
+   @Override
    public String next()
    {
-      String outcome = super.next();
+      String stepName = Application.getWizardManager().getCurrentStepName();
       
-      if (outcome.equals("notify"))
+      if (STEP_NOTIFY.equals(stepName))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
          // prepare automatic text for email and display
          StringBuilder buf = new StringBuilder(256);
          
-         String personName = Application.getCurrentUser(context).getFullName(getNodeService());
+         String personName = Application.getCurrentUser(context).getFullName(this.nodeService);
          String msgInvitedTo = Application.getMessage(context, MSG_INVITED_TO);
          Node node = this.getNode();
          String path = this.nodeService.getPath(node.getNodeRef()).toDisplayPath(this.nodeService);
@@ -621,35 +521,7 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
          this.mailHelper.setBody(this.mailHelper.getAutomaticText());
       }
       
-      return outcome;
-   }
-   
-   /**
-    * @see org.alfresco.web.bean.wizard.AbstractWizardBean#determineOutcomeForStep(int)
-    */
-   protected String determineOutcomeForStep(int step)
-   {
-      String outcome = null;
-      
-      switch(step)
-      {
-         case 1:
-         {
-            outcome = "invite";
-            break;
-         }
-         case 2:
-         {
-            outcome = "notify";
-            break;
-         }
-         default:
-         {
-            outcome = CANCEL_OUTCOME;
-         }
-      }
-      
-      return outcome;
+      return null;
    }
    
    /**
@@ -659,6 +531,64 @@ public abstract class InviteUsersWizard extends AbstractWizardBean
    {
       return this.mailHelper;
    }
+   
+   /**
+    * Helper to build a label of the form:
+    *    Firstname Lastname (Role)
+    */
+   public String buildLabelForUserAuthorityRole(String authority, String role)
+   {
+      // found a User authority
+      NodeRef ref = this.personService.getPerson(authority);
+      String firstName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
+      String lastName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
+      
+      StringBuilder buf = new StringBuilder(100);
+      buf.append(firstName)
+         .append(" ")
+         .append(lastName != null ? lastName : "")
+         .append(" (")
+         .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
+         .append(")");
+      
+      return buf.toString();
+   }
+   
+   /**
+    * Helper to build a label for a Group authority of the form:
+    *    Groupname (role)
+    */
+   public String buildLabelForGroupAuthorityRole(String authority, String role)
+   {
+      StringBuilder buf = new StringBuilder(100);
+      buf.append(authority.substring(PermissionService.GROUP_PREFIX.length()))
+         .append(" (")
+         .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
+         .append(")");
+      
+      return buf.toString();
+   }
+   
+   /**
+    * @return summary text for the wizard
+    */
+   public String getSummary()
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      
+      // build a summary section to list the invited users and there roles
+      StringBuilder buf = new StringBuilder(128);
+      for (UserGroupRole userRole : this.userGroupRoles)
+      {
+         buf.append(userRole.getLabel());
+         buf.append("<br>");
+      }
+      
+      return buildSummary(
+            new String[] {Application.getMessage(fc, MSG_USERROLES)},
+            new String[] {buf.toString()});
+   }
+   
    
    /**
     * Simple wrapper class to represent a user/group and a role combination

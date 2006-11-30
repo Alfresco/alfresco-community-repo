@@ -31,8 +31,10 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,8 +55,10 @@ public class UploadFileServlet extends BaseServlet
    protected void service(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException
    {
+      String uploadId = null;
       String returnPage = null;
-      boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+      final RequestContext requestContext = new ServletRequestContext(request);
+      boolean isMultipart = ServletFileUpload.isMultipartContent(requestContext);
       
       try
       {
@@ -92,6 +96,10 @@ public class UploadFileServlet extends BaseServlet
                {
                   returnPage = item.getString();
                }
+	       else if (item.getFieldName().equalsIgnoreCase("upload-id"))
+               {
+                  uploadId = item.getString();
+               }
             }
             else
             {
@@ -121,9 +129,10 @@ public class UploadFileServlet extends BaseServlet
                   bean.setFile(tempFile);
                   bean.setFileName(filename);
                   bean.setFilePath(tempFile.getAbsolutePath());
-                  session.setAttribute(FileUploadBean.FILE_UPLOAD_BEAN_NAME, bean);
+                  session.setAttribute(FileUploadBean.getKey(uploadId), bean);
                   if (logger.isDebugEnabled())
-                     logger.debug("Temp file: " + tempFile.getAbsolutePath() + " created from upload filename: " + filename);
+                     logger.debug("Temp file: " + tempFile.getAbsolutePath() + 
+				  " created from upload filename: " + filename);
                }
             }
          }

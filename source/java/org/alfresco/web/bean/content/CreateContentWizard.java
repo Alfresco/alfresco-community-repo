@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2005 Alfresco, Inc.
+ *
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
+ *
+ *   http://www.alfresco.org/legal/license.txt
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
+ */
 package org.alfresco.web.bean.content;
 
 import java.util.ArrayList;
@@ -29,10 +45,10 @@ import org.apache.commons.logging.LogFactory;
 public class CreateContentWizard extends BaseContentWizard
 {
    protected String content = null;
-   
    protected List<SelectItem> createMimeTypes;
    
    private static Log logger = LogFactory.getLog(CreateContentWizard.class);
+
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -182,6 +198,7 @@ public class CreateContentWizard extends BaseContentWizard
                           getSummaryMimeType(this.mimeType)});
    }
    
+   
    // ------------------------------------------------------------------------------
    // Action event handlers
       
@@ -193,12 +210,4 @@ public class CreateContentWizard extends BaseContentWizard
       // clear the content as HTML is not compatible with the plain text box etc.
       this.content = null;
    }
-   
-   // ------------------------------------------------------------------------------
-   // Service Injection
-
-   
-   // ------------------------------------------------------------------------------
-   // Helper methods
-   
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:element name="note">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="to" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="from" type="xs:string"/>
+        <xs:element name="subject" type="xs:string"/>
+        <xs:element name="body" type="xs:anyType"/>
+      </xs:sequence>
+      <xs:attribute name="important" type="xs:boolean" default="false"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

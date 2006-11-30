@@ -9,10 +9,12 @@ import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
@@ -107,15 +109,15 @@ public class CreateDiscussionDialog extends CreateTopicDialog
          forumProps.put(ContentModel.PROP_NAME, forumName);
          ChildAssociationRef childRef = this.nodeService.createNode(this.discussingNodeRef, 
                ForumModel.ASSOC_DISCUSSION,
-               QName.createQName(ForumModel.FORUMS_MODEL_URI, "discussion"), 
+               QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion"), 
                ForumModel.TYPE_FORUM, forumProps);
          
          forumNodeRef = childRef.getChildRef();
 
          // apply the uifacets aspect
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
-         uiFacetsProps.put(ContentModel.PROP_ICON, "forum");
-         this.nodeService.addAspect(forumNodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+         uiFacetsProps.put(ApplicationModel.PROP_ICON, "forum");
+         this.nodeService.addAspect(forumNodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
          
          if (logger.isDebugEnabled())
             logger.debug("created forum for content: " + this.discussingNodeRef.toString());

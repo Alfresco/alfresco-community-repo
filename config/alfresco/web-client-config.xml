@@ -68,6 +68,10 @@
          
          <!-- the from address to use when sending emails from the client -->
          <from-email-address>alfresco@alfresco.org</from-email-address>
+         
+         <!-- WCM domain and port for virtualisation server -->
+         <wcm-domain>127-0-0-1.ip.alfrescodemo.net</wcm-domain>
+         <wcm-port>8180</wcm-port>
       </client>
    </config>
 
@@ -226,6 +230,7 @@
       <create-mime-types>
          <mime-type name="text/html" />
          <mime-type name="text/plain" />
+         <mime-type name="text/xml" />
       </create-mime-types>
       
       <!-- Controls the message regarding property editing after the content is created -->

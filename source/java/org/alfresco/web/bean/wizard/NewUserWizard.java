@@ -31,6 +31,7 @@ import javax.faces.validator.ValidatorException;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -899,9 +900,9 @@ public class NewUserWizard extends AbstractWizardBean
          
          // apply the uifacets aspect - icon, title and description props
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(3);
-         uiFacetsProps.put(ContentModel.PROP_ICON, CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
+         uiFacetsProps.put(ApplicationModel.PROP_ICON, CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
          uiFacetsProps.put(ContentModel.PROP_TITLE, spaceName);
-         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_UIFACETS, uiFacetsProps);
+         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
          
          setupHomeSpacePermissions(nodeRef);
          

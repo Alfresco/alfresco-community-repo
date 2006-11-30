@@ -26,6 +26,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.version.VersionModel;
@@ -607,9 +608,9 @@ public class CheckinCheckoutBean
          Node node = setupContentDocument(id);
          
          // detect the inline editing aspect to see which edit mode to use
-         if (node.hasAspect(ContentModel.ASPECT_INLINEEDITABLE) &&
-             node.getProperties().get(ContentModel.PROP_EDITINLINE) != null &&
-             ((Boolean)node.getProperties().get(ContentModel.PROP_EDITINLINE)).booleanValue() == true)
+         if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) &&
+             node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
+             ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
          {
             // retrieve the content reader for this node
             ContentReader reader = getContentService().getReader(node.getNodeRef(), ContentModel.PROP_CONTENT);
@@ -630,7 +631,16 @@ public class CheckinCheckoutBean
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();
                   this.navigator.setupDispatchContext(node);
-                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editTextInline");
+                  String outcome;
+                  if (MimetypeMap.MIMETYPE_XML.equals(mimetype))
+                  {
+                     outcome = "dialog:editXmlInline";
+                  }
+                  else
+                  {
+                     outcome = "dialog:editTextInline";
+                  }
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
                }
                else
                {
@@ -990,10 +1000,10 @@ public class CheckinCheckoutBean
    private static Log logger = LogFactory.getLog(CheckinCheckoutBean.class);
    
    /** I18N messages */
-   private static final String MSG_ERROR_CHECKIN = "error_checkin";
-   private static final String MSG_ERROR_CANCELCHECKOUT = "error_cancel_checkout";
-   private static final String MSG_ERROR_UPDATE = "error_update";
-   private static final String MSG_ERROR_CHECKOUT = "error_checkout";
+   public static final String MSG_ERROR_CHECKIN = "error_checkin";
+   public static final String MSG_ERROR_CANCELCHECKOUT = "error_cancel_checkout";
+   public static final String MSG_ERROR_UPDATE = "error_update";
+   public static final String MSG_ERROR_CHECKOUT = "error_checkout";
 
    /** constants for copy location selection */
    private static final String COPYLOCATION_CURRENT = "current";

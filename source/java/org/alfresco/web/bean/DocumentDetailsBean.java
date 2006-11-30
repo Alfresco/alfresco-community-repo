@@ -29,6 +29,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -145,7 +146,7 @@ public class DocumentDetailsBean extends BaseDetailsBean
    protected Node getLinkResolvedNode()
    {
       Node document = getDocument();
-      if (ContentModel.TYPE_FILELINK.equals(document.getType()))
+      if (ApplicationModel.TYPE_FILELINK.equals(document.getType()))
       {
          NodeRef destRef = (NodeRef)document.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
          if (nodeService.exists(destRef))
@@ -171,7 +172,7 @@ public class DocumentDetailsBean extends BaseDetailsBean
     */
    public boolean isInlineEditable()
    {
-      return getDocument().hasAspect(ContentModel.ASPECT_INLINEEDITABLE);
+      return getDocument().hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE);
    }
    
    /**
@@ -484,10 +485,10 @@ public class DocumentDetailsBean extends BaseDetailsBean
                 MimetypeMap.MIMETYPE_TEXT_CSS.equals(contentType) ||
                 MimetypeMap.MIMETYPE_JAVASCRIPT.equals(contentType))
             {
-               props.put(ContentModel.PROP_EDITINLINE, true);
+               props.put(ApplicationModel.PROP_EDITINLINE, true);
             }
          }
-         this.nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_INLINEEDITABLE, props);
+         this.nodeService.addAspect(getDocument().getNodeRef(), ApplicationModel.ASPECT_INLINEEDITABLE, props);
          
          // commit the transaction
          tx.commit();

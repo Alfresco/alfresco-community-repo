@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- The AuthenticationService exported as an RMI service. -->
+	<bean id="rmiAuthenticationService" class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="AuthenticationService"/>
+		</property>
+		<property name="serviceInterface">
+			<value>org.alfresco.service.cmr.security.AuthenticationService</value>
+		</property>
+		<property name="serviceName">
+			<value>authentication</value>
+		</property>
+		<property name="registryPort">
+			<value>${avm.remote.port}</value>
+		</property>
+	</bean>
+</beans>
+

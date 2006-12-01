@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.alfresco.repo.avm.AVMRemote;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -35,6 +36,11 @@ public abstract class AVMCltBase
     protected ConfigurableApplicationContext fContext;
     
     /**
+     * The Authentication Service.
+     */
+    protected AuthenticationService fAuthenticationService;
+    
+    /**
      * Construct a new one. This takes care of instantiating
      * the application context and grabs references to the
      * services. 
@@ -45,6 +51,7 @@ public abstract class AVMCltBase
         fContext = new ClassPathXmlApplicationContext("alfresco/avm-clt-context.xml");
         fAVMRemote = (AVMRemote)fContext.getBean("avmRemote");
         fAVMSyncService = (AVMSyncService)fContext.getBean("avmSyncService");
+        fAuthenticationService = (AuthenticationService)fContext.getBean("authenticationService");
     }
     
     /**

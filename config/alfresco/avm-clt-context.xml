@@ -26,4 +26,16 @@
             <value>true</value>
         </property>
     </bean>    
+    
+    <bean id="authenticationService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
+        <property name="serviceUrl">
+            <value>rmi://localhost:1313/authentication</value>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.security.AuthenticationService</value>
+        </property>
+        <property name="refreshStubOnConnectFailure">
+            <value>true</value>
+        </property>
+    </bean>
 </beans>

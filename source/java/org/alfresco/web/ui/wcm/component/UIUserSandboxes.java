@@ -336,7 +336,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit.gif",
+                        context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif",
                         "#{AVMBrowseBean.submitAll}", null));
                   out.write("&nbsp;");
                   
@@ -662,7 +662,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write(bundle.getString(MSG_SELECTED));
          out.write(":&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
-               fc, userStorePrefix, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit.gif",
+               fc, userStorePrefix, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
                "#{AVMBrowseBean.submitSelected}", null));
          out.write("&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(

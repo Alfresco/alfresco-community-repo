@@ -65,11 +65,31 @@
      </bean>
 
     <!-- MBeans registered with alfrescoMBeanServer -->
-    <bean id="VirtServerRegistry" class="org.alfresco.mbeans.VirtServerRegistry">
-        <property name="moo" value="1"/>
+    <bean id="VirtServerRegistry" 
+          class="org.alfresco.mbeans.VirtServerRegistry"
+          init-method="initialize" >
+
+        <!-- Authentication info to contact remote virtualization server  -->
+        <!-- NOTE:                                                        -->
+        <!--    On the machine hosting the virtualization server,         -->
+        <!--    $VIRTUAL_TOMCAT_HOME/conf/alfresco-jmxrmi.password and    -->
+        <!--    $VIRTUAL_TOMCAT_HOME/conf/alfresco-jmxrmi.access          -->
+        <!--    should have the same data as the corresponding files      -->
+        <!--    contained here within the Alfresco webapp server.         -->
+        <!--    By default, they do; however, if you change the password  -->
+        <!--    file on one server, be sure to change it on the other.    -->
+        <!--                                                              -->
+        <!-- WARNING:                                                     -->
+        <!--    For security, be certain that *only* the uid under which  -->
+        <!--    the servers run have read access to the password files    -->
+        <!--    (e.g.:  under Unix, chmod them to "400").                 -->
+
+        <property name="passwordFile" 
+                  value="${alfresco.jmx.dir}/alfresco-jmxrmi.password"/>
+
+        <property name="accessFile"   
+                  value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
     </bean>
-
-
 
 
     <!-- Datasource bean -->

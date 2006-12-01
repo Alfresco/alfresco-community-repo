@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -83,40 +82,42 @@ public class CreateWebsiteWizard extends BaseWizardBean
 
    private static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
    
+   protected boolean editMode = false;
+   
    protected String dnsName;
    protected String title;
    protected String name;
    protected String description;
    protected String webapp = WEBAPP_DEFAULT;
    
-   private String websitesFolderId = null;
+   protected String websitesFolderId = null;
    
    protected AVMService avmService;
    protected WorkflowService workflowService;
    
    /** datamodel for table of selected forms */
-   private DataModel formsDataModel = null;
+   protected DataModel formsDataModel = null;
    
    /** transient list of form UIListItem objects */
-   private List<UIListItem> formsList = null;
+   protected List<UIListItem> formsList = null;
    
    /** list of form wrapper objects */
-   private List<FormWrapper> forms = null;
+   protected List<FormWrapper> forms = null;
    
    /** Current form for dialog context */
-   private FormWrapper actionForm = null;
+   protected FormWrapper actionForm = null;
    
    /** datamodel for table of selected workflows */
-   private DataModel workflowsDataModel = null;
+   protected DataModel workflowsDataModel = null;
    
    /** transient list of workflow UIListItem objects */
-   private List<UIListItem> workflowsList = null;
+   protected List<UIListItem> workflowsList = null;
    
    /** list of workflow wrapper objects */
-   private List<WorkflowWrapper> workflows = null;
+   protected List<WorkflowWrapper> workflows = null;
    
    /** Current workflow for dialog context */
-   private WorkflowWrapper actionWorkflow = null;
+   protected WorkflowWrapper actionWorkflow = null;
    
    
    // ------------------------------------------------------------------------------
@@ -146,6 +147,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
     */
+   @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // create the website space in the correct parent folder
@@ -209,7 +211,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     * 
     * @param nodeRef        NodeRef to the web project
     */
-   private void saveWebProjectModel(NodeRef nodeRef)
+   protected void saveWebProjectModel(NodeRef nodeRef)
    {
       Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
       
@@ -282,7 +284,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       for (WorkflowWrapper workflow : this.workflows)
       {
          props.clear();
-         props.put(ContentModel.PROP_NAME, workflow.getName());
+         props.put(WCMAppModel.PROP_WORKFLOW_NAME, workflow.getName());
          NodeRef workflowRef = this.nodeService.createNode(nodeRef,
                WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
                WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
@@ -355,6 +357,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
    // ------------------------------------------------------------------------------
    // Bean getters and setters
    
+   /**
+    * @return Returns the wizard Edit Mode.
+    */
+   public boolean getEditMode()
+   {
+      return this.editMode;
+   }
+
+   /**
+    * @param editMode The wizard Edit Mode to set.
+    */
+   public void setEditMode(boolean editMode)
+   {
+      this.editMode = editMode;
+   }
+
    /**
     * @return Returns the name.
     */
@@ -844,6 +862,18 @@ public class CreateWebsiteWizard extends BaseWizardBean
             }
          }
          return this.templates;
+      }
+      
+      /**
+       * @param template   to add to the list of PresentationTemplate
+       */
+      public void addTemplate(PresentationTemplate template)
+      {
+         if (this.templates == null)
+         {
+            this.templates = new ArrayList<PresentationTemplate>(4);
+         }
+         this.templates.add(template);
       }
 
       /**

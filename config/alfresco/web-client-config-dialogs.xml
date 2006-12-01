@@ -165,6 +165,18 @@
          <dialog name="formTemplateWorkflow" page="/jsp/wcm/create-website-wizard/form-workflow.jsp" managed-bean="FormWorkflowDialog"
                  icon="/images/icons/manage_workflow_task_large.gif" title-id="form_template_workflow" 
                  description-id="form_template_workflow_desc" />
+         
+         <dialog name="editFormTemplateDetails" page="/jsp/wcm/create-website-wizard/form-details.jsp" managed-bean="EditFormDetailsDialog"
+                 icon="/images/icons/webform_large.gif" title-id="form_template_details" 
+                 description-id="form_template_details_desc" />
+         
+         <dialog name="editFormTemplateTemplates" page="/jsp/wcm/create-website-wizard/form-templates.jsp" managed-bean="EditFormTemplatesDialog"
+                 icon="/images/icons/template_large.gif" title-id="form_template_templates" 
+                 description-id="form_template_templates_desc" />
+         
+         <dialog name="editFormTemplateWorkflow" page="/jsp/wcm/create-website-wizard/form-workflow.jsp" managed-bean="EditFormWorkflowDialog"
+                 icon="/images/icons/manage_workflow_task_large.gif" title-id="form_template_workflow" 
+                 description-id="form_template_workflow_desc" />
       </dialogs>
    </config>
    

@@ -58,9 +58,16 @@
          <f:facet name="header">
             <h:outputText value="#{msg.configure}" />
          </f:facet>
-         <h:commandButton value="#{msg.form_template_details}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
-         <h:commandButton value="#{msg.form_template_conf_workflow}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" disabled="#{row.workflow == null}" />
-         <h:commandButton value="#{msg.form_template_select_templates}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
+         <h:panelGroup rendered="#{WizardManager.bean.editMode == false}">
+            <h:commandButton id="cmd1-1" value="#{msg.form_template_details}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
+            <h:commandButton id="cmd1-2" value="#{msg.form_template_conf_workflow}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" disabled="#{row.workflow == null}" />
+            <h:commandButton id="cmd1-3" value="#{msg.form_template_select_templates}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
+         </h:panelGroup>
+         <h:panelGroup rendered="#{WizardManager.bean.editMode == true}">
+            <h:commandButton id="cmd2-1" value="#{msg.form_template_details}" style="margin:2px" styleClass="dialogControls" action="dialog:editFormTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
+            <h:commandButton id="cmd2-2" value="#{msg.form_template_conf_workflow}" style="margin:2px" styleClass="dialogControls" action="dialog:editFormTemplateWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" disabled="#{row.workflow == null}" />
+            <h:commandButton id="cmd2-3" value="#{msg.form_template_select_templates}" style="margin:2px" styleClass="dialogControls" action="dialog:editFormTemplateTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
+         </h:panelGroup>
       </h:column>
       <h:column>
          <a:actionLink actionListener="#{WizardManager.bean.removeForm}" image="/images/icons/delete.gif"

@@ -34,7 +34,6 @@
       document.getElementById("wizard:wizard-body:name").focus();
       document.getElementById("wizard").onsubmit = validate;
       document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
-      document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
       checkButtonState();
    }
 
@@ -44,12 +43,10 @@
           document.getElementById("wizard:wizard-body:dnsname").value.length < 2)
       {
          document.getElementById("wizard:next-button").disabled = true;
-         document.getElementById("wizard:finish-button").disabled = true;
       }
       else
       {
          document.getElementById("wizard:next-button").disabled = false;
-         document.getElementById("wizard:finish-button").disabled = false;
       }
    }
    
@@ -116,7 +113,7 @@
       <td width="85%">
          </f:verbatim>
          <h:inputText id="dnsname" value="#{WizardManager.bean.dnsName}" size="35" maxlength="64"
-                      onkeyup="javascript:checkButtonState();" />
+               onkeyup="javascript:checkButtonState();" disabled="#{WizardManager.bean.editMode}" />
          <f:verbatim>
       </td>
    </tr>
@@ -129,7 +126,8 @@
       </td>
       <td width="85%">
          </f:verbatim>
-         <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="35" maxlength="256" />
+         <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="35" maxlength="256" 
+               disabled="#{WizardManager.bean.editMode}" />
          <f:verbatim>
       </td>
    </tr>

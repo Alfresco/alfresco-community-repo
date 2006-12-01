@@ -54,7 +54,8 @@
          </f:facet>
          <h:outputText value="#{msg.website_filename_pattern}:" style="padding-right:4px" />
          <h:inputText value="#{row.filenamePattern}" />
-         <h:commandButton value="#{msg.form_template_conf_workflow}" style="margin-left:4px" styleClass="dialogControls" action="dialog:formTemplateWorkflow" actionListener="#{WizardManager.bean.setupWorkflowAction}" />
+         <h:commandButton id="cmd-1" rendered="#{WizardManager.bean.editMode == false}" value="#{msg.form_template_conf_workflow}" style="margin-left:4px" styleClass="dialogControls" action="dialog:formTemplateWorkflow" actionListener="#{WizardManager.bean.setupWorkflowAction}" />
+         <h:commandButton id="cmd-2" rendered="#{WizardManager.bean.editMode == true}" value="#{msg.form_template_conf_workflow}" style="margin-left:4px" styleClass="dialogControls" action="dialog:editFormTemplateWorkflow" actionListener="#{WizardManager.bean.setupWorkflowAction}" />
       </h:column>
       <h:column>
          <a:actionLink actionListener="#{WizardManager.bean.removeWorkflow}" image="/images/icons/delete.gif"

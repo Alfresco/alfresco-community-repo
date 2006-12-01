@@ -5,7 +5,7 @@
       
       <wizards>
          
-         <!-- Definition of a create website wizard -->
+         <!-- Definition of a create Web Project wizard -->
          <wizard name="createWebsite" managed-bean="CreateWebsiteWizard"
                  title-id="create_website_title" description-id="create_website_desc"
                  icon="/images/icons/create_website_large.gif">
@@ -44,6 +44,36 @@
                      title-id="summary"
                      description-id="summary_desc"
                      instruction-id="create_website_finish_instruction" />
+            </step>
+         </wizard>
+         
+         <!-- Definition of an edit Web Project wizard -->
+         <wizard name="editWebsite" managed-bean="EditWebsiteWizard"
+                 title-id="edit_website_title" description-id="edit_website_desc"
+                 icon="/images/icons/create_website_large.gif">
+            <step name="details" title-id="website_details" description-id="create_website_step1_desc">
+               <page path="/jsp/wcm/create-website-wizard/details.jsp"
+                     title-id="create_website_step1_title"
+                     description-id="create_website_step1_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="forms" title-id="website_forms" description-id="create_website_step2_desc">
+               <page path="/jsp/wcm/create-website-wizard/forms.jsp"
+                     title-id="create_website_step2_title"
+                     description-id="create_website_step2_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="settings" title-id="website_settings" description-id="create_website_step3_desc">
+               <page path="/jsp/wcm/create-website-wizard/settings.jsp"
+                     title-id="create_website_step3_title"
+                     description-id="create_website_step3_desc"
+                     instruction-id="default_instruction" />
+            </step>
+            <step name="summary" title-id="summary" description-id="summary_step_description">
+               <page path="/jsp/wcm/create-website-wizard/summary.jsp"
+                     title-id="summary"
+                     description-id="summary_desc"
+                     instruction-id="edit_website_finish_instruction" />
             </step>
          </wizard>
          

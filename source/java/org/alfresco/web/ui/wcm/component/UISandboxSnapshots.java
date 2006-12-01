@@ -234,12 +234,13 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                requestMap.put(REQUEST_SNAPVERSION, Integer.toString(item.getVersionID()));
                Utils.encodeRecursive(context, action);
                requestMap.remove(REQUEST_SNAPVERSION);
-               out.write("&nbsp;");
+               //out.write("&nbsp;");
                
-               Utils.encodeRecursive(context, aquireAction(
+               // TODO: restore once preview of a store by version is implemented in vserver
+               /*Utils.encodeRecursive(context, aquireAction(
                         context, sandbox, ACT_SNAPSHOT_PREVIEW, null,
                         null, null));
-               out.write("&nbsp;");
+               out.write("&nbsp;");*/
                
                out.write("</nobr></td></tr>");
             }

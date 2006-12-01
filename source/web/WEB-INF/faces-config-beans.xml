@@ -2164,6 +2164,43 @@
    
    <managed-bean>
       <description>
+         The bean that backs up the Edit Website Wizard
+      </description>
+      <managed-bean-name>EditWebsiteWizard</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.EditWebsiteWizard</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>fileFolderService</property-name>
+         <value>#{FileFolderService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
          The bean that backs up the Import Website Dialog
       </description>
       <managed-bean-name>ImportWebsiteDialog</managed-bean-name>
@@ -2627,6 +2664,61 @@
       <managed-property>
          <property-name>createWebsiteWizard</property-name>
          <value>#{CreateWebsiteWizard}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Edit Form Template Details dialog
+      </description>
+      <managed-bean-name>EditFormDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.FormDetailsDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>createWebsiteWizard</property-name>
+         <value>#{EditWebsiteWizard}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Edit Form Template Templates dialog
+      </description>
+      <managed-bean-name>EditFormTemplatesDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.FormTemplatesDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>createWebsiteWizard</property-name>
+         <value>#{EditWebsiteWizard}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Edit Form Template Workflow dialog
+      </description>
+      <managed-bean-name>EditFormWorkflowDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.FormWorkflowDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>createWebsiteWizard</property-name>
+         <value>#{EditWebsiteWizard}</value>
       </managed-property>
       <managed-property>
          <property-name>workflowService</property-name>

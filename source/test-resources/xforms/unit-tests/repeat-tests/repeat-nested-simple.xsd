@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:complexType name="repeat-simple">
+    <xs:sequence>
+      <xs:element name="one-to-one" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="one-to-inf" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="repeat-nested">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="repeat-simple" type="repeat-simple" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element name="not-repeated" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

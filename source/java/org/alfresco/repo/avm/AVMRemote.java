@@ -391,4 +391,11 @@ public interface AVMRemote
      * @param name The name of the property.
      */
     public void deleteStoreProperty(String store, QName name);
+    
+    /**
+     * Rename a store.
+     * @param sourceName The original name.
+     * @param destName The new name.
+     */
+    public void renameStore(String sourceName, String destName);
 }

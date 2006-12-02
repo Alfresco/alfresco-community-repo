@@ -936,4 +936,13 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
         fAuthService.validate(ticket);
         fAVMService.deleteStoreProperty(store, name);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemoteTransport#renameStore(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void renameStore(String ticket, String sourceName, String destName) 
+    {
+        fAuthService.validate(ticket);
+        fAVMService.renameStore(sourceName, destName);
+    }
 }

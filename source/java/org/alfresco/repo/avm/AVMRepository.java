@@ -2236,4 +2236,30 @@ public class AVMRepository
             fLookupCount.set(null);
         }        
     }
+
+    /**
+     * Rename a store.
+     * @param sourceName The original name.
+     * @param destName The new name.
+     * @throws AVMNotFoundException
+     * @throws AVMExistsException
+     */
+    public void renameStore(String sourceName, String destName)
+    {
+        AVMStore store = getAVMStoreByName(sourceName);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store Not Found: " + sourceName);
+        }
+        if (getAVMStoreByName(destName) != null)
+        {
+            throw new AVMExistsException("Store Already Exists: " + destName);
+        }
+        if (!FileNameValidator.IsValid(destName))
+        {
+            throw new AVMBadArgumentException("Bad store name: " + destName);
+        }
+        store.setName(destName);
+        fLookupCache.onDelete(sourceName);
+    }
 }

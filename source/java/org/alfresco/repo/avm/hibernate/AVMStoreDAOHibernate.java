@@ -77,7 +77,10 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
      */
     public AVMStore getByName(String name)
     {
-        return (AVMStore)getSession().get(AVMStoreImpl.class, name);
+        Query query = getSession().createQuery("from AVMStoreImpl st " +
+                                               "where st.name = :name");
+        query.setParameter("name", name);
+        return (AVMStore)query.uniqueResult();
     }
 
     /**
@@ -100,5 +103,13 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     public void update(AVMStore store)
     {
         // No op in Hibernate.
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMStoreDAO#getByID(long)
+     */
+    public AVMStore getByID(long id)
+    {
+        return (AVMStore)getSession().get(AVMStoreImpl.class, id);
     }
 }

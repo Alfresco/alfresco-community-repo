@@ -794,4 +794,13 @@ public interface AVMService
      * @throws AVMNotFoundException
      */
     public void copy(int srcVersion, String srcPath, String dstPath, String name);
+    
+    /**
+     * Rename a store.
+     * @param sourceName The original name.
+     * @param destName The new name.
+     * @throws AVMNotFoundException
+     * @throws AVMExistsException
+     */
+    public void renameStore(String sourceName, String destName);
 }

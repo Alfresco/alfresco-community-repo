@@ -408,4 +408,12 @@ public interface AVMRemoteTransport
      * @param name The name of the property.
      */
     public void deleteStoreProperty(String ticket, String store, QName name);
+    
+    /**
+     * Rename a store.
+     * @param ticket The authentication ticket.
+     * @param sourceName The original name.
+     * @param destName The new name.
+     */
+    public void renameStore(String ticket, String sourceName, String destName);
 }

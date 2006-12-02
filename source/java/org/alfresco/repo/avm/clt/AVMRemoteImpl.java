@@ -436,4 +436,12 @@ public class AVMRemoteImpl implements AVMRemote
     {
         fTransport.uncover(ClientTicketHolder.GetTicket(), dirPath, name);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemote#renameStore(java.lang.String, java.lang.String)
+     */
+    public void renameStore(String sourceName, String destName) 
+    {
+        fTransport.renameStore(ClientTicketHolder.GetTicket(), sourceName, destName);
+    }
 }

@@ -62,6 +62,11 @@ public class AVMStoreImpl implements AVMStore, Serializable
     static final long serialVersionUID = -1485972568675732904L;
 
     /**
+     * The primary key.
+     */
+    private long fID;
+    
+    /**
      * The name of this AVMStore.
      */
     private String fName;
@@ -128,6 +133,24 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                                       "Initial Empty Version.");
         fNextVersionID++;
         AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
+    }
+    
+    /**
+     * Setter for hibernate.
+     * @param id The primary key.
+     */
+    protected void setId(long id)
+    {
+        fID = id;
+    }
+    
+    /**
+     * Get the primary key.
+     * @return The primary key.
+     */
+    public long getId()
+    {
+        return fID;
     }
     
     /**
@@ -704,10 +727,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
     }
     
     /**
-     * Set the name of this AVMStore.  Hibernate.
+     * Set the name of this AVMStore.
      * @param name
      */
-    protected void setName(String name)
+    public void setName(String name)
     {
         fName = name;
     }

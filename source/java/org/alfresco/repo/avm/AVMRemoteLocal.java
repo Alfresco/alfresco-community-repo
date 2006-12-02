@@ -430,4 +430,12 @@ public class AVMRemoteLocal implements AVMRemote
     {
         fService.uncover(dirPath, name);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemote#renameStore(java.lang.String, java.lang.String)
+     */
+    public void renameStore(String sourceName, String destName) 
+    {
+        fService.renameStore(sourceName, destName);
+    }
 }

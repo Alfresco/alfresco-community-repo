@@ -70,6 +70,23 @@ import org.alfresco.util.Pair;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test renaming a store.
+     */
+    public void testRenameStore()
+    {
+        try
+        {
+            fService.renameStore("main", "foo");
+            assertNotNull(fService.getAVMStore("foo"));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
+    /**
      * Test copy.
      */
     public void testCopy()

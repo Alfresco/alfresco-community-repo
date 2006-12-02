@@ -1386,4 +1386,20 @@ public class AVMServiceImpl implements AVMService
             fAVMRepository.setACL(newPath, acl.getCopy());
         }
     }
+
+    /**
+     * Rename a store.
+     * @param sourceName The original name.
+     * @param destName The new name.
+     * @throws AVMNotFoundException
+     * @throws AVMExistsException
+     */
+    public void renameStore(String sourceName, String destName)
+    {
+        if (sourceName == null || destName == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        fAVMRepository.renameStore(sourceName, destName);
+    }
 }

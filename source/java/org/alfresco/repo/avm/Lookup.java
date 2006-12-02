@@ -92,7 +92,7 @@ class Lookup
     public Lookup(Lookup other, AVMNodeDAO nodeDAO, AVMStoreDAO storeDAO)
     {
         fValid = true;
-        fAVMStore = storeDAO.getByName(other.fAVMStore.getName());
+        fAVMStore = storeDAO.getByID(other.fAVMStore.getId());
         if (fAVMStore == null)
         {
             fValid = false;
@@ -155,7 +155,7 @@ class Lookup
             }
             fComponents.add(newComp);
         }
-        fFinalStore = storeDAO.getByName(other.fFinalStore.getName());
+        fFinalStore = storeDAO.getByID(other.fFinalStore.getId());
         if (fFinalStore == null)
         {
             fValid = false;

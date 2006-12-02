@@ -62,4 +62,11 @@ public interface AVMStoreDAO
      * @param rep The dirty AVMStore.
      */
     public void update(AVMStore rep);
+    
+    /**
+     * Get A store by primary key.
+     * @param id The primary key.
+     * @return The store.
+     */
+    public AVMStore getByID(long id);
 }

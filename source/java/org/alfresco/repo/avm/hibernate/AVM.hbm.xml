@@ -104,8 +104,11 @@
 	<class table="avm_stores" name="AVMStoreImpl"
 		proxy="AVMStore" optimistic-lock="version">
 		<cache usage="read-write"/>
-		<id name="name" column="name" type="string"/>
+		<id name="id" column="id" type="long">
+		    <generator class="native"/>
+		</id>
 		<version name="vers" column="vers" type="long"/>
+		<property name="name" column="name" type="string" unique="true"/>
 		<property type="int" name="nextVersionID"
 			column="next_version_id" not-null="true"/>
 		<!-- Every AVMStore has a root directory that is the current root directory. -->

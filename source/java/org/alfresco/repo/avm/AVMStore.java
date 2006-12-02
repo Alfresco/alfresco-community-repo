@@ -42,6 +42,11 @@ import org.alfresco.service.namespace.QName;
 public interface AVMStore
 {
     /**
+     * Get the primary key.
+     */
+    public long getId();
+    
+    /**
      * This returns the next version in this store that will be snapshotted.
      * @return The next version to be snapshotted.
      */
@@ -263,6 +268,12 @@ public interface AVMStore
      * @return The name.
      */
     public String getName();
+    
+    /**
+     * Set the name of the store.
+     * @param name To Set.
+     */
+    public void setName(String name);
     
     /**
      * Purge all the nodes reachable only by the given version.

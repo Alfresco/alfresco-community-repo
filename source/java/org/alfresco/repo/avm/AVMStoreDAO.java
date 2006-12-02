@@ -69,4 +69,9 @@ public interface AVMStoreDAO
      * @return The store.
      */
     public AVMStore getByID(long id);
+    
+    /**
+     * Invalidate the by name lookup cache.
+     */
+    public void invalidateCache();
 }

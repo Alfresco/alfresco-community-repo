@@ -17,7 +17,9 @@
 
 package org.alfresco.repo.avm.hibernate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.AVMStore;
@@ -34,11 +36,17 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
         AVMStoreDAO
 {
     /**
+     * An in memory cache of name to primary key mappings.
+     */
+    private Map<String, Long> fNameCache;
+    
+    /**
      * Do nothing constructor.
      */
     public AVMStoreDAOHibernate()
     {
         super();
+        fNameCache = new HashMap<String, Long>();
     }
     
     /**
@@ -77,10 +85,27 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
      */
     public AVMStore getByName(String name)
     {
+        Long id = null;
+        synchronized (this)
+        {
+            id = fNameCache.get(name);
+        }
+        if (id != null)
+        {
+            return (AVMStore)getSession().get(AVMStoreImpl.class, id);      
+        }
         Query query = getSession().createQuery("from AVMStoreImpl st " +
                                                "where st.name = :name");
         query.setParameter("name", name);
-        return (AVMStore)query.uniqueResult();
+        AVMStore result = (AVMStore)query.uniqueResult();
+        synchronized (this)
+        {
+            if (result != null)
+            {
+                fNameCache.put(name, result.getId());
+            }
+        }
+        return result;
     }
 
     /**
@@ -111,5 +136,13 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     public AVMStore getByID(long id)
     {
         return (AVMStore)getSession().get(AVMStoreImpl.class, id);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMStoreDAO#invalidateCache()
+     */
+    public synchronized void invalidateCache() 
+    {
+        fNameCache.clear();
     }
 }

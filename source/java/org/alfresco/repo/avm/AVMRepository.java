@@ -754,6 +754,7 @@ public class AVMRepository
         }
         AVMDAOs.Instance().fAVMStorePropertyDAO.delete(store);
         AVMDAOs.Instance().fAVMStoreDAO.delete(store);
+        AVMDAOs.Instance().fAVMStoreDAO.invalidateCache();
     }
     
     /**
@@ -2261,5 +2262,6 @@ public class AVMRepository
         }
         store.setName(destName);
         fLookupCache.onDelete(sourceName);
+        AVMDAOs.Instance().fAVMStoreDAO.invalidateCache();
     }
 }

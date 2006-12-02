@@ -3,24 +3,36 @@
 
 <beans>
     <!-- Remote AVM interface -->
-    <bean id="avmRemote" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
+    <bean id="avmRemote" class="org.alfresco.repo.avm.clt.AVMRemoteImpl">
+        <property name="avmRemoteTransport">
+            <ref bean="avmRemoteTransport"/>
+        </property>
+    </bean>
+    
+    <bean id="avmRemoteTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
         <property name="serviceUrl">
             <value>rmi://localhost:1313/avm</value>
         </property>
         <property name="serviceInterface">
-            <value>org.alfresco.repo.avm.AVMRemote</value>
+            <value>org.alfresco.repo.avm.AVMRemoteTransport</value>
         </property>
         <property name="refreshStubOnConnectFailure">
             <value>true</value>
         </property>
     </bean>
 
-    <bean id="avmSyncService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
+	<bean id="avmSyncService" class="org.alfresco.repo.avm.clt.AVMSyncServiceClient">
+	    <property name="avmSyncServiceTransport">
+	    	<ref bean="avmSyncServiceTransport"/>
+	    </property>
+	</bean>
+
+    <bean id="avmSyncServiceTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
         <property name="serviceUrl">
             <value>rmi://localhost:1313/avmsync</value>
         </property>
         <property name="serviceInterface">
-            <value>org.alfresco.service.cmr.avmsync.AVMSyncService</value>
+            <value>org.alfresco.service.cmr.avmsync.AVMSyncServiceTransport</value>
         </property>
         <property name="refreshStubOnConnectFailure">
             <value>true</value>

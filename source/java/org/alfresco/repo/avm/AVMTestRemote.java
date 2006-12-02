@@ -17,11 +17,15 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
+import org.alfresco.repo.avm.clt.ClientTicketHolder;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -43,6 +47,11 @@ public class AVMTestRemote extends TestCase
     private AVMSyncService fAVMSync;
     
     /**
+     * The Authentication Service.
+     */
+    private AuthenticationService fAuthService;
+    
+    /**
      * The application context.
      */
     private FileSystemXmlApplicationContext fContext;
@@ -52,7 +61,11 @@ public class AVMTestRemote extends TestCase
     {
         fContext = new FileSystemXmlApplicationContext("config/alfresco/remote-avm-test-context.xml");
         fAVMRemote = (AVMRemote)fContext.getBean("avmRemote");
-        fAVMSync = (AVMSyncService)fContext.getBean("avmSync");
+        fAVMSync = (AVMSyncService)fContext.getBean("avmSyncService");
+        fAuthService = (AuthenticationService)fContext.getBean("authenticationService");
+        fAuthService.authenticate("admin", "admin".toCharArray());
+        String ticket = fAuthService.getCurrentTicket();
+        ClientTicketHolder.SetTicket(ticket);
     }
 
     @Override
@@ -98,18 +111,16 @@ public class AVMTestRemote extends TestCase
             // Create a directory.
             fAVMRemote.createDirectory("test2933:/", "a");
             // Write out a file.
-            AVMRemoteOutputStream out = 
-                new AVMRemoteOutputStream(fAVMRemote.createFile("test2933:/a", "foo.txt"),
-                                          fAVMRemote);
+            OutputStream out = 
+                fAVMRemote.createFile("test2933:/a", "foo.txt");
             byte [] buff = "This is a plain old text file.\n".getBytes();
             out.write(buff);
             buff = "It contains text.\n".getBytes();
             out.write(buff);
             out.close();
             // Read back that file.
-            AVMRemoteInputStream in = 
-                new AVMRemoteInputStream(fAVMRemote.getInputHandle(-1, "test2933:/a/foo.txt"),
-                                         fAVMRemote);
+            InputStream in = 
+                fAVMRemote.getFileInputStream(-1, "test2933:/a/foo.txt");
             buff = new byte[1024];
             assertEquals(49, in.read(buff));
             System.out.print(new String(buff));
@@ -136,15 +147,13 @@ public class AVMTestRemote extends TestCase
             {
                 buff[i] = (byte)i;
             }
-            AVMRemoteOutputStream out =
-                new AVMRemoteOutputStream(fAVMRemote.createFile("froo:/", "foo.dat"),
-                                          fAVMRemote);
+            OutputStream out =
+                fAVMRemote.createFile("froo:/", "foo.dat");
             out.write(buff, 32, 32);
             out.close();
             // Read it back in.
-            AVMRemoteInputStream in =
-                new AVMRemoteInputStream(fAVMRemote.getInputHandle(-1, "froo:/foo.dat"),
-                                         fAVMRemote);
+            InputStream in =
+                fAVMRemote.getFileInputStream(-1, "froo:/foo.dat");
             buff = new byte[1024];
             assertEquals(32, in.read(buff));
             in.close();
@@ -184,14 +193,14 @@ public class AVMTestRemote extends TestCase
             // Create a directory.
             fAVMRemote.createDirectory("froo:/", "a");
             // Create a file.
-            fAVMRemote.closeOutputHandle(fAVMRemote.createFile("froo:/a", "foo"));
+            fAVMRemote.createFile("froo:/a", "foo").close();
             // Create another store.
             fAVMRemote.createAVMStore("broo");
             // Create a branch.
             fAVMRemote.createBranch(-1, "froo:/a", "broo:/", "a");
             List<AVMDifference> diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a");
             assertEquals(0, diffs.size());
-            fAVMRemote.closeOutputHandle(fAVMRemote.createFile("froo:/a", "bar"));
+            fAVMRemote.createFile("froo:/a", "bar").close();
             diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a");
             assertEquals(1, diffs.size());
             // Update.

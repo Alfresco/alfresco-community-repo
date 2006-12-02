@@ -1,20 +1,6 @@
-/*
- * Copyright (C) 2006 Alfresco, Inc.
- *
- * Licensed under the Mozilla Public License version 1.1 
- * with a permitted attribution clause. You may obtain a
- * copy of the License at
- *
- *   http://www.alfresco.org/legal/license.txt
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the
- * License.
+/**
+ * 
  */
-
 package org.alfresco.repo.avm;
 
 import java.io.IOException;
@@ -34,14 +20,17 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
 /**
- * This is the server side implementation for the remote AVM interface.
+ * Implementation of AVMRemoteTransport for the server side. It's 
+ * job is to validate the authentication ticket passed with each
+ * method call, and to manage remote InputStreams and OutputStreams.
  * @author britt
  */
-public class AVMRemoteImpl implements AVMRemote, Runnable
+public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
 {
     /**
      * The map of handles to open input streams.
@@ -83,6 +72,11 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * Reference to AVMService.
      */
     private AVMService fAVMService;
+
+    /**
+     * Reference to the AuthenticationService.
+     */
+    private AuthenticationService fAuthService;
     
     /**
      * The thread for this Runnable.
@@ -97,7 +91,7 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
     /**
      * Default constructor.
      */
-    public AVMRemoteImpl()
+    public AVMRemoteTransportService()
     {
         fIdleTimeout = 30000;
         fInputStreams = new HashMap<String, InputStream>();
@@ -126,6 +120,11 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
     public void setAvmService(AVMService service)
     {
         fAVMService = service;
+    }
+    
+    public void setAuthenticationService(AuthenticationService service)
+    {
+        fAuthService = service;
     }
     
     /**
@@ -237,8 +236,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the file.
      * @return A handle.
      */
-    public String getInputHandle(int version, String path)
+    public String getInputHandle(String ticket, int version, String path)
     {
+        fAuthService.validate(ticket);
         InputStream in = fAVMService.getFileInputStream(version, path);
         String handle = GUID.generate();
         synchronized (this)
@@ -256,8 +256,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param count The number of bytes to try to read.
      * @return An array of bytes. 0 length at eof.
      */
-    public byte [] readInput(String handle, int count)
+    public byte [] readInput(String ticket, String handle, int count)
     {
+        fAuthService.validate(ticket);
         InputStream in = null;
         synchronized (this)
         {
@@ -308,8 +309,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * handles when you're done.
      * @param handle The opaque handle to the server side stream.
      */
-    public synchronized void closeInputHandle(String handle)
+    public synchronized void closeInputHandle(String ticket, String handle)
     {
+        fAuthService.validate(ticket);
         InputStream in = fInputStreams.get(handle);
         if (in != null)
         {
@@ -332,8 +334,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the existing file.
      * @return An opaque handle.
      */
-    public String getOutputHandle(String path)
+    public String getOutputHandle(String ticket, String path)
     {
+        fAuthService.validate(ticket);
         OutputStream out = fAVMService.getFileOutputStream(path);
         String handle = GUID.generate();
         synchronized (this)
@@ -353,8 +356,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param offset The offset within the buffer.
      * @param count The number of bytes to write.
      */
-    public void writeOutput(String handle, byte [] buff, int count)
+    public void writeOutput(String ticket, String handle, byte [] buff, int count)
     {
+        fAuthService.validate(ticket);
         OutputStream out = null;
         synchronized (this)
         {
@@ -387,8 +391,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * Close the server side output stream designated by the handle.
      * @param handle The handle to the server side output stream.
      */
-    public synchronized void closeOutputHandle(String handle)
+    public synchronized void closeOutputHandle(String ticket, String handle)
     {
+        fAuthService.validate(ticket);
         OutputStream out = fOutputStreams.get(handle);
         if (out != null)
         {
@@ -413,8 +418,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @return A sorted listing.
      */
     public SortedMap<String, AVMNodeDescriptor>
-        getDirectoryListingDirect(int version, String path)
+        getDirectoryListingDirect(String ticket, int version, String path)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getDirectoryListingDirect(version, path);        
     }
     
@@ -425,8 +431,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @return A sorted listing.
      */
     public SortedMap<String, AVMNodeDescriptor>
-        getDirectoryListing(int version, String path)
+        getDirectoryListing(String ticket, int version, String path)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getDirectoryListing(version, path);
     }
     
@@ -436,8 +443,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @return A sorted listing.
      */
     public SortedMap<String, AVMNodeDescriptor>
-        getDirectoryListing(AVMNodeDescriptor dir)
+        getDirectoryListing(String ticket, AVMNodeDescriptor dir)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getDirectoryListing(dir);
     }
     
@@ -447,8 +455,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the directory.
      * @return A list of deleted names.
      */
-    public List<String> getDeleted(int version, String path)
+    public List<String> getDeleted(String ticket, int version, String path)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getDeleted(version, path);
     }
     
@@ -458,8 +467,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the file to create.
      * @return An opaque handle to a server side output stream.
      */
-    public String createFile(String path, String name)
+    public String createFile(String ticket, String path, String name)
     {
+        fAuthService.validate(ticket);
         OutputStream out = fAVMService.createFile(path, name);
         String handle = GUID.generate();
         synchronized (this)
@@ -476,8 +486,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the containing directory.
      * @param name The name for the new directory.
      */
-    public void createDirectory(String path, String name)
+    public void createDirectory(String ticket, String path, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.createDirectory(path, name);
     }
     
@@ -487,8 +498,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param parent The path to the parent directory.
      * @param name The name for the new file.
      */
-    public void createLayeredFile(String targetPath, String parent, String name)
+    public void createLayeredFile(String ticket, String targetPath, String parent, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.createLayeredFile(targetPath, parent, name);
     }
     
@@ -498,8 +510,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param parent The parent directory.
      * @param name The name of the new directory.
      */
-    public void createLayeredDirectory(String targetPath, String parent, String name)
+    public void createLayeredDirectory(String ticket, String targetPath, String parent, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.createLayeredDirectory(targetPath, parent, name);
     }
     
@@ -508,8 +521,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the layered directory node.
      * @param target The new target.
      */
-    public void retargetLayeredDirectory(String path, String target)
+    public void retargetLayeredDirectory(String ticket, String path, String target)
     {
+        fAuthService.validate(ticket);
         fAVMService.retargetLayeredDirectory(path, target);
     }
     
@@ -517,8 +531,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * Create a new AVMStore.
      * @param name The name to give the new store.
      */
-    public void createAVMStore(String name)
+    public void createAVMStore(String ticket, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.createAVMStore(name);
     }
     
@@ -529,8 +544,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param dstPath The path to the destination directory.
      * @param name The name of the new branch.
      */
-    public void createBranch(int version, String srcPath, String dstPath, String name)
+    public void createBranch(String ticket, int version, String srcPath, String dstPath, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.createBranch(version, srcPath, dstPath, name);
     }
     
@@ -539,8 +555,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param parent The path to the parent directory.
      * @param name The name of the node to remove.
      */
-    public void removeNode(String parent, String name)
+    public void removeNode(String ticket, String parent, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.removeNode(parent, name);
     }
     
@@ -551,8 +568,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param dstParent The destination directory path.
      * @param dstName The destination name for the node.
      */
-    public void rename(String srcParent, String srcName, String dstParent, String dstName)
-    {
+    public void rename(String ticket, String srcParent, String srcName, String dstParent, String dstName)
+    {        
+        fAuthService.validate(ticket);
         fAVMService.rename(srcParent, srcName, dstParent, dstName);
     }
 
@@ -561,8 +579,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param dirPath The path to the directory.
      * @param name The name to uncover.
      */
-    public void uncover(String dirPath, String name)
+    public void uncover(String ticket, String dirPath, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.uncover(dirPath, name);
     }
 
@@ -571,8 +590,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param storeName The name of the AVMStore.
      * @return The latest version id.
      */
-    public int getLatestVersionID(String storeName)
+    public int getLatestVersionID(String ticket, String storeName)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getNextVersionID(storeName);
     }
     
@@ -581,19 +601,19 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param storeName The store name.
      * @return The id.
      */
-    public int getLatestSnapshotID(String storeName)
+    public int getLatestSnapshotID(String ticket, String storeName)
     {
         return fAVMService.getLatestSnapshotID(storeName);
     }
     
-    // TODO update this if it's ever needed.
     /**
      * Snapshot an AVMStore.
      * @param store The name of the AVMStore to snapshot.
      * @return The version id of the new snapshot.
      */
-    public int createSnapshot(String store)
+    public int createSnapshot(String ticket, String store)
     {
+        fAuthService.validate(ticket);
         return fAVMService.createSnapshot(store, null, null);
     }
     
@@ -602,8 +622,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the store.
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name)
+    public List<VersionDescriptor> getAVMStoreVersions(String ticket, String name)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getAVMStoreVersions(name);
     }
     
@@ -614,8 +635,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param to The date to which (inclusive).
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to)
+    public List<VersionDescriptor> getAVMStoreVersions(String ticket, String name, Date from, Date to)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getAVMStoreVersions(name, from, to);
     }
     
@@ -623,8 +645,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * Get a list of all AVM stores.
      * @return A List of AVMStoreDescriptors.
      */
-    public List<AVMStoreDescriptor> getAVMStores()
+    public List<AVMStoreDescriptor> getAVMStores(String ticket)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getAVMStores();
     }
     
@@ -633,8 +656,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the store.
      * @return An AVMStoreDescriptor.
      */
-    public AVMStoreDescriptor getAVMStore(String name)
+    public AVMStoreDescriptor getAVMStore(String ticket, String name)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getAVMStore(name);
     }
     
@@ -644,8 +668,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the store.
      * @return The AVMNodeDescriptor for the root.
      */
-    public AVMNodeDescriptor getAVMStoreRoot(int version, String name)
+    public AVMNodeDescriptor getAVMStoreRoot(String ticket, int version, String name)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getAVMStoreRoot(version, name);
     }
     
@@ -655,8 +680,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the node.
      * @return An AVMNodeDescriptor.
      */
-    public AVMNodeDescriptor lookup(int version, String path)
+    public AVMNodeDescriptor lookup(String ticket, int version, String path)
     {
+        fAuthService.validate(ticket);
         return fAVMService.lookup(version, path);
     }
     
@@ -666,8 +692,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the node to lookup.
      * @return An AVMNodeDescriptor.
      */
-    public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name)
+    public AVMNodeDescriptor lookup(String ticket, AVMNodeDescriptor dir, String name)
     {
+        fAuthService.validate(ticket);
         return fAVMService.lookup(dir, name);
     }
     
@@ -677,8 +704,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the node.
      * @return The indirection path/target.
      */
-    public String getIndirectionPath(int version, String path)
+    public String getIndirectionPath(String ticket, int version, String path)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getIndirectionPath(version, path);
     }
     
@@ -686,8 +714,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * Purge an AVMStore.
      * @param name The name of the store to purge.
      */
-    public void purgeAVMStore(String name)
+    public void purgeAVMStore(String ticket, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.purgeAVMStore(name);
     }
     
@@ -696,8 +725,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param version The version id.
      * @param name The name of the store.
      */
-    public void purgeVersion(int version, String name)
+    public void purgeVersion(String ticket, int version, String name)
     {
+        fAuthService.validate(ticket);
         fAVMService.purgeVersion(version, name);
     }
     
@@ -705,8 +735,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * Turn a directory into a primary indirection node.
      * @param path The path to the directory.
      */
-    public void makePrimary(String path)
+    public void makePrimary(String ticket, String path)
     {
+        fAuthService.validate(ticket);
         fAVMService.makePrimary(path);
     }
     
@@ -716,8 +747,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param count The maximum number of ancestors that will be returned.
      * @return A List of descriptors for ancestors starting most recent first.
      */
-    public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count)
+    public List<AVMNodeDescriptor> getHistory(String ticket, AVMNodeDescriptor desc, int count)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getHistory(desc, count);
     }
     
@@ -726,8 +758,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the directory.
      * @param opacity Whether the directory should be opaque or not.
      */
-    public void setOpacity(String path, boolean opacity)
+    public void setOpacity(String ticket, String path, boolean opacity)
     {
+        fAuthService.validate(ticket);
         fAVMService.setOpacity(path, opacity);
     }
     
@@ -737,8 +770,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param right The other node.
      * @return The common ancestor.
      */
-    public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left, AVMNodeDescriptor right)
+    public AVMNodeDescriptor getCommonAncestor(String ticket, AVMNodeDescriptor left, AVMNodeDescriptor right)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getCommonAncestor(left, right);
     }
     
@@ -748,8 +782,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the node.
      * @return A LayeringDescriptor.
      */
-    public LayeringDescriptor getLayeringInfo(int version, String path)
+    public LayeringDescriptor getLayeringInfo(String ticket, int version, String path)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getLayeringInfo(version, path);
     }
     
@@ -759,8 +794,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the property.
      * @param value The value to give the property.
      */
-    public void setNodeProperty(String path, QName name, PropertyValue value)
+    public void setNodeProperty(String ticket, String path, QName name, PropertyValue value)
     {
+        fAuthService.validate(ticket);
         fAVMService.setNodeProperty(path, name, value);
     }
     
@@ -769,8 +805,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the node.
      * @param properties A Map of QNames to PropertyValues to set.
      */
-    public void setNodeProperties(String path, Map<QName, PropertyValue> properties)
+    public void setNodeProperties(String ticket, String path, Map<QName, PropertyValue> properties)
     {
+        fAuthService.validate(ticket);
         fAVMService.setNodeProperties(path, properties);
     }
     
@@ -781,8 +818,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the property.
      * @return A PropertyValue.
      */
-    public PropertyValue getNodeProperty(int version, String path, QName name)
+    public PropertyValue getNodeProperty(String ticket, int version, String path, QName name)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getNodeProperty(version, path, name);
     }
     
@@ -792,8 +830,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the node.
      * @return A Map of QNames to PropertyValues.
      */
-    public Map<QName, PropertyValue> getNodeProperties(int version, String path)
+    public Map<QName, PropertyValue> getNodeProperties(String ticket, int version, String path)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getNodeProperties(version, path);
     }
     
@@ -802,8 +841,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param path The path to the node.
      * @param name The name of the property.
      */
-    public void deleteNodeProperty(String path, QName name)
+    public void deleteNodeProperty(String ticket, String path, QName name)
     {
+        fAuthService.validate(ticket);
         fAVMService.deleteNodeProperty(path, name);
     }
     
@@ -811,8 +851,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * Delete all properties from a node.
      * @param path The path to the node.
      */
-    public void deleteNodeProperties(String path)
+    public void deleteNodeProperties(String ticket, String path)
     {
+        fAuthService.validate(ticket);
         fAVMService.deleteNodeProperties(path);
     }
     
@@ -822,8 +863,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the property to set.
      * @param value The value of the property to set.
      */
-    public void setStoreProperty(String store, QName name, PropertyValue value)
+    public void setStoreProperty(String ticket, String store, QName name, PropertyValue value)
     {
+        fAuthService.validate(ticket);
         fAVMService.setStoreProperty(store, name, value);
     }
     
@@ -832,8 +874,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param store The name of the store.
      * @param props A Map of QNames to PropertyValues to set.
      */
-    public void setStoreProperties(String store, Map<QName, PropertyValue> props)
+    public void setStoreProperties(String ticket, String store, Map<QName, PropertyValue> props)
     {
+        fAuthService.validate(ticket);
         fAVMService.setStoreProperties(store, props);
     }
     
@@ -843,8 +886,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param name The name of the property.
      * @return A PropertyValue.
      */
-    public PropertyValue getStoreProperty(String store, QName name)
+    public PropertyValue getStoreProperty(String ticket, String store, QName name)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getStoreProperty(store, name);
     }
     
@@ -854,8 +898,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param keyPattern The sql 'like' pattern.
      * @return A Map of keys to values.
      */
-    public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern)
+    public Map<QName, PropertyValue> queryStorePropertyKey(String ticket, String store, QName keyPattern)
     {
+        fAuthService.validate(ticket);
         return fAVMService.queryStorePropertyKey(store, keyPattern);
     }
     
@@ -864,8 +909,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param keyPattern The sql 'like' pattern.
      * @return A Map of store names to Maps of matching keys to values.
      */
-    public Map<String, Map<QName, PropertyValue>> queryStoresPropertyKey(QName keyPattern)
+    public Map<String, Map<QName, PropertyValue>> queryStoresPropertyKey(String ticket, QName keyPattern)
     {
+        fAuthService.validate(ticket);
         return fAVMService.queryStoresPropertyKeys(keyPattern);
     }
 
@@ -874,8 +920,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param store The name of the store.
      * @return A Map of QNames to PropertyValues.
      */
-    public Map<QName, PropertyValue> getStoreProperties(String store)
+    public Map<QName, PropertyValue> getStoreProperties(String ticket, String store)
     {
+        fAuthService.validate(ticket);
         return fAVMService.getStoreProperties(store);
     }
     
@@ -884,8 +931,9 @@ public class AVMRemoteImpl implements AVMRemote, Runnable
      * @param store The name of the store.
      * @param name The name of the property.
      */
-    public void deleteStoreProperty(String store, QName name)
+    public void deleteStoreProperty(String ticket, String store, QName name)
     {
+        fAuthService.validate(ticket);
         fAVMService.deleteStoreProperty(store, name);
     }
 }

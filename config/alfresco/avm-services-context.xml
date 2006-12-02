@@ -177,9 +177,16 @@
 		</property>
 	</bean>
 
+	<!-- A Local implementation of the Remote AVM interface. -->
+	<bean id="avmRemote" class="org.alfresco.repo.avm.AVMRemoteLocal">
+	    <property name="avmService">
+	        <ref bean="AVMService"/>
+	    </property>
+	</bean>
+
 	<!-- The remote interface implementation. -->
 	
-	<bean id="avmRemote" class="org.alfresco.repo.avm.AVMRemoteImpl"
+	<bean id="avmRemoteTransport" class="org.alfresco.repo.avm.AVMRemoteTransportService"
 		init-method="init" destroy-method="shutDown">
 		<property name="idleTimeout">
 			<value>${avm.remote.idlestream.timeout}</value>
@@ -187,16 +194,19 @@
 		<property name="avmService">
 			<ref bean="AVMService"/>
 		</property>
+		<property name="authenticationService">
+		    <ref bean="AuthenticationService"/>
+		</property>
 	</bean>
 	
 	<!-- The RMI wrapper around the AVM remote interface. -->
 	
 	<bean id="avmRemoteService" class="org.springframework.remoting.rmi.RmiServiceExporter">
 		<property name="service">
-			<ref bean="avmRemote"/>
+			<ref bean="avmRemoteTransport"/>
 		</property>
 		<property name="serviceInterface">
-			<value>org.alfresco.repo.avm.AVMRemote</value>
+			<value>org.alfresco.repo.avm.AVMRemoteTransport</value>
 		</property>
 		<property name="serviceName">
 			<value>avm</value>
@@ -206,12 +216,21 @@
 		</property>
 	</bean>
 			
-    <bean id="avmRemoteSyncService" class="org.springframework.remoting.rmi.RmiServiceExporter">
-        <property name="service">
+    <bean id="avmSyncServiceTransport" class="org.alfresco.repo.avm.AVMSyncServiceTransportImpl">
+        <property name="authenticationService">
+            <ref bean="AuthenticationService"/>
+        </property>
+        <property name="avmSyncService">
             <ref bean="AVMSyncService"/>
         </property>
+    </bean>
+			
+    <bean id="avmSyncServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
+        <property name="service">
+            <ref bean="avmSyncServiceTransport"/>
+        </property>
         <property name="serviceInterface">
-            <value>org.alfresco.service.cmr.avmsync.AVMSyncService</value>
+            <value>org.alfresco.service.cmr.avmsync.AVMSyncServiceTransport</value>
         </property>
         <property name="serviceName">
             <value>avmsync</value>

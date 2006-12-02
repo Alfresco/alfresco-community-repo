@@ -52,6 +52,9 @@ public abstract class AVMCltBase
         fAVMRemote = (AVMRemote)fContext.getBean("avmRemote");
         fAVMSyncService = (AVMSyncService)fContext.getBean("avmSyncService");
         fAuthenticationService = (AuthenticationService)fContext.getBean("authenticationService");
+        fAuthenticationService.authenticate("admin", "admin".toCharArray());
+        String ticket = fAuthenticationService.getCurrentTicket();
+        ClientTicketHolder.SetTicket(ticket);
     }
     
     /**

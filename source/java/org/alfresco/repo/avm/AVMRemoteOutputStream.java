@@ -19,9 +19,11 @@ package org.alfresco.repo.avm;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.alfresco.repo.avm.clt.ClientTicketHolder;
+
 public class AVMRemoteOutputStream extends OutputStream 
 {
-    private AVMRemote fAVMRemote;
+    private AVMRemoteTransport fAVMRemote;
     
     private String fHandle;
     
@@ -30,7 +32,7 @@ public class AVMRemoteOutputStream extends OutputStream
      * @param handle The handle returned from an AVMRemote call.
      * @param remote The AVMRemote instance.
      */
-    public AVMRemoteOutputStream(String handle, AVMRemote remote)
+    public AVMRemoteOutputStream(String handle, AVMRemoteTransport remote)
     {
         fAVMRemote = remote;
         fHandle = handle;
@@ -58,7 +60,7 @@ public class AVMRemoteOutputStream extends OutputStream
     {
         try
         {
-            fAVMRemote.closeOutputHandle(fHandle);
+            fAVMRemote.closeOutputHandle(ClientTicketHolder.GetTicket(), fHandle);
         }
         catch (Exception e)
         {
@@ -80,13 +82,13 @@ public class AVMRemoteOutputStream extends OutputStream
         {
             if (off == 0)
             {
-                fAVMRemote.writeOutput(fHandle, b, len);
+                fAVMRemote.writeOutput(ClientTicketHolder.GetTicket(), fHandle, b, len);
             }
             else
             {
                 byte [] buff = new byte[len];
                 System.arraycopy(b, off, buff, 0, len);
-                fAVMRemote.writeOutput(fHandle, buff, len);
+                fAVMRemote.writeOutput(ClientTicketHolder.GetTicket(), fHandle, buff, len);
             }
         }
         catch (Exception e)

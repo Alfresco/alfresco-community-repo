@@ -358,7 +358,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     // You can force it.
                     if (overrideOlder)
                     {
-                        linkIn(dstParts[0], dstParts[1], srcDesc, true);
+                        linkIn(dstParts[0], dstParts[1], srcDesc, !dstDesc.isDeleted());
                         continue;
                     }
                     // You can ignore it.

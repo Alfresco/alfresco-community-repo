@@ -1099,14 +1099,14 @@
     </bean>
 
     <bean id="AVMSyncService" class="org.springframework.aop.framework.ProxyFactoryBean">
-	<property name="proxyInterfaces">
+	    <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.avmsync.AVMSyncService</value>
         </property>
         <property name="target">
-	    <ref bean="avmSyncService"/>
+            <ref bean="avmSyncService"/>
         </property>
         <property name="interceptorNames">
-	    <list>
+            <list>
                 <idref local="AVMSyncService_transaction"/>
                 <idref local="AVMSyncService_descriptor"/>
             </list>

@@ -20,6 +20,8 @@ package org.alfresco.repo.avm;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.alfresco.repo.avm.clt.ClientTicketHolder;
+
 /**
  * Wrapper around AVMRemote stream reading.
  * @author britt
@@ -29,7 +31,7 @@ public class AVMRemoteInputStream extends InputStream
     /**
      * The AVMRemote reference.
      */
-    private AVMRemote fAVMRemote;
+    private AVMRemoteTransport fAVMRemote;
     
     /**
      * The handle to the input stream.
@@ -41,7 +43,7 @@ public class AVMRemoteInputStream extends InputStream
      * @param handle The handle returned by getInputStream();
      * @param remote The AVMRemote instance.
      */
-    public AVMRemoteInputStream(String handle, AVMRemote remote)
+    public AVMRemoteInputStream(String handle, AVMRemoteTransport remote)
     {
         fHandle = handle;
         fAVMRemote = remote;
@@ -56,7 +58,7 @@ public class AVMRemoteInputStream extends InputStream
     {
         try
         {
-            byte [] buff = fAVMRemote.readInput(fHandle, 1);
+            byte [] buff = fAVMRemote.readInput(ClientTicketHolder.GetTicket(), fHandle, 1);
             if (buff.length == 0)
             {
                 return -1;
@@ -81,7 +83,7 @@ public class AVMRemoteInputStream extends InputStream
     {
         try
         {
-            byte [] buff = fAVMRemote.readInput(fHandle, len);
+            byte [] buff = fAVMRemote.readInput(ClientTicketHolder.GetTicket(), fHandle, len);
             if (buff.length == 0)
             {
                 return -1;
@@ -103,7 +105,7 @@ public class AVMRemoteInputStream extends InputStream
     {
         try
         {
-            fAVMRemote.closeInputHandle(fHandle);
+            fAVMRemote.closeInputHandle(ClientTicketHolder.GetTicket(), fHandle);
         }
         catch (Exception e)
         {

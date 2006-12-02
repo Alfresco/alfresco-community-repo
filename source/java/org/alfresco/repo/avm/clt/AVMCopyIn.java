@@ -11,7 +11,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.avm.AVMRemoteOutputStream;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 
 /**
@@ -70,9 +69,8 @@ public class AVMCopyIn extends AVMCltBase
                 }
                 InputStream in =
                     new FileInputStream(file);
-                OutputStream out =
-                    new AVMRemoteOutputStream(fAVMRemote.createFile(pathBase[0], pathBase[1]),
-                                              fAVMRemote);
+                OutputStream out = fAVMRemote.createFile(pathBase[0], pathBase[1]);
+                                   
                 copyStream(in, out);
             }
             catch (IOException e)
@@ -99,8 +97,7 @@ public class AVMCopyIn extends AVMCltBase
                 InputStream in = 
                     new FileInputStream(file);
                 OutputStream out =
-                    new AVMRemoteOutputStream(fAVMRemote.createFile(args.get(1),
-                                                                    file.getName()), fAVMRemote);
+                    fAVMRemote.createFile(args.get(1), file.getName());
                 copyStream(in, out);
             }
             catch (IOException e)
@@ -157,9 +154,7 @@ public class AVMCopyIn extends AVMCltBase
             {
                 InputStream in =
                     new FileInputStream(file);
-                OutputStream out =
-                    new AVMRemoteOutputStream(fAVMRemote.createFile(dest, file.getName()),
-                                              fAVMRemote);
+                OutputStream out = fAVMRemote.createFile(dest, file.getName());
                 copyStream(in, out);
             }
             catch (IOException e)

@@ -115,11 +115,38 @@ class Lookup
         fLowestLayerIndex = other.fLowestLayerIndex;
         fNeedsCopying = other.fNeedsCopying;
         fDirectlyContained = other.fDirectlyContained;
-        for (LookupComponent comp : other.fComponents)
+        if (fLayeredYet)
         {
+            for (LookupComponent comp : other.fComponents)
+            {
+                LookupComponent newComp = new LookupComponent();
+                newComp.setName(comp.getName());
+                newComp.setIndirection(comp.getIndirection());
+                newComp.setNode(nodeDAO.getByID(comp.getNode().getId()));
+                if (newComp.getNode() == null)
+                {
+                    fValid = false;
+                    return;
+                }
+                fComponents.add(newComp);
+            }
+        }
+        else
+        {
+            // If this is not a layered lookup then we do not
+            // need to reload any of the actual nodes except for
+            // the last.
+            int i = 0;
+            for (; i < fPosition; ++i)
+            {
+                LookupComponent comp = other.fComponents.get(i);
+                LookupComponent newComp = new LookupComponent();
+                newComp.setName(comp.getName());
+                fComponents.add(newComp);
+            }
+            LookupComponent comp = other.fComponents.get(i);
             LookupComponent newComp = new LookupComponent();
             newComp.setName(comp.getName());
-            newComp.setIndirection(comp.getIndirection());
             newComp.setNode(nodeDAO.getByID(comp.getNode().getId()));
             if (newComp.getNode() == null)
             {

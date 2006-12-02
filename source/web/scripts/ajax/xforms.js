@@ -187,6 +187,20 @@ dojo.declare("alfresco.xforms.Widget",
                _destroy: function()
                {
                  dojo.debug("destroying " + this.id);
+               },
+               getParentRepeats: function()
+               {
+                 var result = [];
+                 var p = this.parent;
+                 while (p)
+                 {
+                   if (p instanceof alfresco.xforms.Repeat)
+                   {
+                     result.push(p);
+                   }
+                   p = p.parent;
+                 }
+                 return result;
                }
 	     });
 
@@ -622,12 +636,12 @@ dojo.declare("alfresco.xforms.Group",
 	       
 	         child.domContainer = document.createElement("div");
 		 child.domContainer.setAttribute("id", child.id + "-domContainer");
-	         child.domContainer.style.marginTop = "2px";
-	         child.domContainer.style.marginBottom = "2px";
+	         child.domContainer.style.margin = "2px 0px 2px 0px";
+	         child.domContainer.style.padding = "0px";
 		 child.domContainer.style.position = "relative";
 		 child.domContainer.style.left = "0px";
 		 child.domContainer.style.top = "0px";
-	         child.domContainer.style.width = "100%";
+//	         child.domContainer.style.width = "100%";
 	         if (this.parent && this.parent.domNode)
 		   child.domContainer.style.top = this.parent.domNode.style.bottom;
 	       
@@ -699,11 +713,21 @@ dojo.declare("alfresco.xforms.Group",
                    {
                      child.domContainer.style.display = "none";
                      child._destroy();
+
                      dojo.dom.removeChildren(child.domContainer);
                      dojo.dom.removeNode(child.domContainer);
+
                      child.domContainer.group._updateDisplay();
+
+                     if (child.repeatControls)
+                     {
+                       child.repeatControls.style.display = "none";
+                       dojo.dom.removeChildren(child.repeatControls);
+                       dojo.dom.removeNode(child.repeatControls);
+                     }
                    };
 	         anim.play();
+                 return child;
 	       },
                _destroy: function()
                {
@@ -713,24 +737,17 @@ dojo.declare("alfresco.xforms.Group",
                    this.children[i]._destroy();
                  }
                },
-	       isIndented: function()
-               {
-	       	 return false && this.parent != null;
-               },
 	       render: function(attach_point)
                {
 	       	 this.domNode = document.createElement("div");
-	       	 this.domNode.setAttribute("id", this.id + "-content");
+	       	 this.domNode.setAttribute("id", this.id + "-domNode");
 	       	 this.domNode.widget = this;
 	       	 attach_point.appendChild(this.domNode);
 	       
-	       	 this.domNode.setAttribute("style", "border: 0px solid blue;");
 		 this.domNode.style.position = "relative";
 		 this.domNode.style.top = "0px";
 		 this.domNode.style.left = "0px";
 	       	 this.domNode.style.width = "100%";
-	       	 if (this.isIndented())
-	       	   this.domNode.style.marginLeft = "10px";
 	       	 return this.domNode;
                },
 	       _updateDisplay: function()
@@ -768,18 +785,18 @@ dojo.declare("alfresco.xforms.Repeat",
 	       {
 	         var result = this.inherited("insertChildAt", [ child, position ]);
 	         child.repeat = this;
-               
 	         dojo.event.connect(result, "onclick", function(event)
 	          		    {
 	          		      child.repeat.setFocusedChild(child);
                                     });
-	         
-	         var controls = document.createElement("div");
-	         result.appendChild(controls);
-	         controls.style.position = "absolute";
-	         controls.style.right = "5px";
-	         controls.style.bottom = "0px";
-               
+
+                 result.style.border = "1px solid black";
+                 child.repeatControls = document.createElement("div");
+                 if (result.nextSibling)
+                   result.parentNode.insertBefore(child.repeatControls, result.nextSibling);
+                 else
+                   result.parentNode.appendChild(child.repeatControls);
+
 	         var images = [ 
 	           { src: "plus", action: this._insertRepeatItemAfter_handler },
 	           { src: "arrow_up", action: this._moveRepeatItemUp_handler },
@@ -794,11 +811,33 @@ dojo.declare("alfresco.xforms.Repeat",
 	           img.style.width = "16px";
 	           img.style.height = "16px";
 	           img.style.marginRight = "4px";
+                   img.align = "baseline";
 	           img.repeatItem = child;
 	           img.repeat = this;
-	           controls.appendChild(img);
+	           child.repeatControls.appendChild(img);
 	           dojo.event.connect(img, "onclick", this, images[i].action);
 	         }
+                 child.repeatControls.style.position = "relative";
+                 child.repeatControls.style.width = 4 * (16 + 4) + "px";
+
+                 child.repeatControls.style.whiteSpace = "nowrap";
+                 child.repeatControls.style.border = "1px solid black";
+                 child.repeatControls.style.height = "20px";
+                 child.repeatControls.style.lineHeight = "20px";
+                 child.repeatControls.style.backgroundColor = result.style.backgroundColor;
+                 result.style.paddingBottom = (.5 * child.repeatControls.offsetHeight) + "px";
+
+                 child.repeatControls.style.top = -(.5 * (child.repeatControls.offsetHeight ) +
+                                        parseInt(result.style.marginBottom) +
+                                        parseInt(result.style.borderBottomWidth)) + "px";
+                 child.repeatControls.style.marginLeft = (.5 * result.offsetWidth - 
+                                              .5 * child.repeatControls.offsetWidth) + "px"; 
+                 child.repeatControls.style.marginRight = (.5 * result.offsetWidth - 
+                                               .5 * child.repeatControls.offsetWidth) + "px"; 
+
+//                 alert(child.repeatControls.style.marginRight);
+
+//                 child.repeatControls.style.marginRight = "50%";
                
 	         return result;
 	       },
@@ -944,16 +983,17 @@ dojo.declare("alfresco.xforms.Repeat",
 	             this.xform.setRepeatIndex(this.id, index + 1);
 	         }
 	       },
-	       isIndented: function()
-	       {
-	         return false;
-	       },
-	       render: function(attach_point)
+               render: function(attach_point)
 	       {
 	         this.domNode = this.inherited("render", [ attach_point ]);
-	         this.domNode.style.borderColor = "black";
-	         this.domNode.style.borderWidth = "1px";
-	         
+	         this.domNode.style.border = "1px solid black";
+
+                 var marginLeft = this.getParentRepeats().length * 10;
+                 this.domNode.style.marginLeft = marginLeft + "px";
+                 this.domNode.style.width = (this.domNode.offsetParent.offsetWidth - 
+                                             parseInt(this.domNode.style.borderWidth) -
+                                             marginLeft) + "px";
+
 	         var d = document.createElement("div");
 	         d.repeat = this;
 	         this.domNode.appendChild(d);

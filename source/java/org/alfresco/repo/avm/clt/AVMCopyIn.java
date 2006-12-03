@@ -21,7 +21,7 @@ public class AVMCopyIn extends AVMCltBase
 {
     private static Object [] flagDefs = { "-r", 0, "-v", 0 };
     
-    private static String USAGE = "usage: [-r] sourcepath nodepath";
+    private static String USAGE = "usage: [-r] [-v] sourcepath nodepath";
     
     private boolean fVerbose;
     
@@ -109,27 +109,6 @@ public class AVMCopyIn extends AVMCltBase
         }
     }
 
-    private void copyStream(InputStream in, OutputStream out)
-    {
-        try
-        {
-            byte [] buff = new byte[8192];
-            int read = 0;
-            while ((read = in.read(buff)) != -1)
-            {
-                out.write(buff, 0, read);
-            }
-            in.close();
-            out.close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            fContext.close();
-            System.exit(1);
-        }
-    }
-    
     private void recursiveCopy(String sourcePath, String dest)
     {
         File file = new File(sourcePath);

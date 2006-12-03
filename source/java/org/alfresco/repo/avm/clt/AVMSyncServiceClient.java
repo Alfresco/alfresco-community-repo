@@ -8,7 +8,6 @@ import java.util.List;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.avmsync.AVMSyncServiceTransport;
-import org.alfresco.service.cmr.security.AuthenticationService;
 
 /**
  * Client side wrapper around the RMI based AVMSyncServiceTransport.

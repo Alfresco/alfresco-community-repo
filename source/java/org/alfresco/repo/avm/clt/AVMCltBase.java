@@ -3,6 +3,9 @@
  */
 package org.alfresco.repo.avm.clt;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -170,6 +173,27 @@ public abstract class AVMCltBase
         }
         String [] ret = { parent, name };
         return ret;
+    }
+    
+    protected void copyStream(InputStream in, OutputStream out)
+    {
+        try
+        {
+            byte [] buff = new byte[8192];
+            int read = 0;
+            while ((read = in.read(buff)) != -1)
+            {
+                out.write(buff, 0, read);
+            }
+            in.close();
+            out.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            fContext.close();
+            System.exit(1);
+        }
     }
     
     protected abstract void run(Map<String, List<String>> flags, List<String> args);

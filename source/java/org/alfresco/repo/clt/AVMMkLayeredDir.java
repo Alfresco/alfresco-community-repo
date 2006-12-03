@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.clt;
 
 import java.util.List;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.Map;
  * @author britt
  *
  */
-public class AVMMkLayeredDir extends AVMCltBase 
+public class AVMMkLayeredDir extends CltBase 
 {
     private static Object [] flagDefs = { };
     

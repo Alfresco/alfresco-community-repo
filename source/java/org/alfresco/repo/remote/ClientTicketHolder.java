@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.remote;
 
 /**
  * Remote client utility to hold an authentication ticket.

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.clt;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
  * Get a listing of a node.
  * @author britt
  */
-public class AVMLs extends AVMCltBase
+public class AVMLs extends CltBase
 {
     private static Object [] flagDefs = { "-R", 0 };
     

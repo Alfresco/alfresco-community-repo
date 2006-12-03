@@ -1,22 +1,20 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.clt;
 
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.avm.VersionDescriptor;
-
 /**
- * List all versions of a given store.
+ * Remove an AVM Node.
  * @author britt
  */
-public class AVMLsVersions extends AVMCltBase 
+public class AVMRm extends CltBase 
 {
     private static Object [] flagDefs = { };
     
-    private static String USAGE = "usage: AVMLsVersion storename";
+    private static String USAGE = "usage: AVMRm nodepath";
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.clt.AVMCltBase#run(java.util.Map, java.util.List)
@@ -24,16 +22,19 @@ public class AVMLsVersions extends AVMCltBase
     @Override
     protected void run(Map<String, List<String>> flags, List<String> args) 
     {
-        List<VersionDescriptor> versions = fAVMRemote.getAVMStoreVersions(args.get(0));
-        for (VersionDescriptor version : versions)
+        String [] pathBase = splitPath(args.get(0));
+        if (pathBase.length == 1)
         {
-            System.out.println(version);
+            System.err.println("One cannot remove a root node.");
+            fContext.close();
+            System.exit(1);
         }
+        fAVMRemote.removeNode(pathBase[0], pathBase[1]);
     }
 
     public static void main(String[] args) 
     {
-        AVMLsVersions me = new AVMLsVersions();
+        AVMRm me = new AVMRm();
         me.exec(args, flagDefs, 1, USAGE);
     }
 }

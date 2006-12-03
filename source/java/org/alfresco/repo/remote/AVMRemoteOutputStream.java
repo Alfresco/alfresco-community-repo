@@ -14,12 +14,12 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.repo.avm;
+package org.alfresco.repo.remote;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.alfresco.repo.avm.clt.ClientTicketHolder;
+import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 
 public class AVMRemoteOutputStream extends OutputStream 
 {

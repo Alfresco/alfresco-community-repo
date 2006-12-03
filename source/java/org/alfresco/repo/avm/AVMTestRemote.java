@@ -21,10 +21,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.alfresco.repo.avm.clt.ClientTicketHolder;
+import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 

@@ -1,20 +1,20 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.clt;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Create an AVM store.
+ * Snapshot a store.
  * @author britt
  */
-public class AVMMkStore extends AVMCltBase 
+public class AVMSnapshot extends CltBase 
 {
     private static Object [] flagDefs = { };
     
-    private static String USAGE = "usage: AVMMkStore storename";
+    private static String USAGE = "usage: AVMSnapshot storename label comment";
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.clt.AVMCltBase#run(java.util.Map, java.util.List)
@@ -22,7 +22,7 @@ public class AVMMkStore extends AVMCltBase
     @Override
     protected void run(Map<String, List<String>> flags, List<String> args) 
     {
-        fAVMRemote.createAVMStore(args.get(0));
+        fAVMRemote.createSnapshot(args.get(0), args.get(1), args.get(2));
     }
 
     /**
@@ -30,7 +30,7 @@ public class AVMMkStore extends AVMCltBase
      */
     public static void main(String[] args) 
     {
-        AVMMkStore me = new AVMMkStore();
-        me.exec(args, flagDefs, 1, USAGE);
+        AVMSnapshot me = new AVMSnapshot();
+        me.exec(args, flagDefs, 3, USAGE);
     }
 }

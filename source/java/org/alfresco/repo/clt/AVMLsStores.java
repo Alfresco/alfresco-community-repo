@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.clt;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,7 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
  * List all avm stores in the repository.
  * @author britt
  */
-public class AVMLsStores extends AVMCltBase 
+public class AVMLsStores extends CltBase 
 {
     private static Object[] flagDefs = { };
     

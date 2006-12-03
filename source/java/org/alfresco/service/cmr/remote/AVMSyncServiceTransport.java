@@ -1,9 +1,11 @@
 /**
  * 
  */
-package org.alfresco.service.cmr.avmsync;
+package org.alfresco.service.cmr.remote;
 
 import java.util.List;
+
+import org.alfresco.service.cmr.avmsync.AVMDifference;
 
 /**
  * A wrapper around AVMSyncService for remote access.

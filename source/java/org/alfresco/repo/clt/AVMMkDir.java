@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.clt;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
  * Make a directory.
  * @author britt
  */
-public class AVMMkDir extends AVMCltBase 
+public class AVMMkDir extends CltBase 
 {
     private static Object [] flagDefs = { "-p", 0 };
     

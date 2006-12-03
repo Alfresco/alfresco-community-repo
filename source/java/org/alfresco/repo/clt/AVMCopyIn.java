@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.clt;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,7 +17,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
  * Like cp from a local filesystem to AVM.
  * @author britt
  */
-public class AVMCopyIn extends AVMCltBase 
+public class AVMCopyIn extends CltBase 
 {
     private static Object [] flagDefs = { "-r", 0, "-v", 0 };
     

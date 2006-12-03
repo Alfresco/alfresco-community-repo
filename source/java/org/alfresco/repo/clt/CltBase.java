@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.clt;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.avm.AVMRemote;
+import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -21,7 +22,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * This is the base class for AVM clts.
  * @author britt
  */
-public abstract class AVMCltBase 
+public abstract class CltBase 
 {
     /**
      * The instance of the remote interface.
@@ -49,7 +50,7 @@ public abstract class AVMCltBase
      * services. 
      * @param args The program arguments.
      */
-    protected AVMCltBase()
+    protected CltBase()
     {
         fContext = new ClassPathXmlApplicationContext("alfresco/avm-clt-context.xml");
         fAVMRemote = (AVMRemote)fContext.getBean("avmRemote");

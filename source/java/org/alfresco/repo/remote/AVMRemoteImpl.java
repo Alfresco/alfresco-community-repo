@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.remote;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,15 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
-import org.alfresco.repo.avm.AVMRemote;
-import org.alfresco.repo.avm.AVMRemoteInputStream;
-import org.alfresco.repo.avm.AVMRemoteOutputStream;
-import org.alfresco.repo.avm.AVMRemoteTransport;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.remote.AVMRemote;
+import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 import org.alfresco.service.namespace.QName;
 
 /**

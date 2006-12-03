@@ -15,12 +15,12 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.repo.remote;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.alfresco.repo.avm.clt.ClientTicketHolder;
+import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 
 /**
  * Wrapper around AVMRemote stream reading.

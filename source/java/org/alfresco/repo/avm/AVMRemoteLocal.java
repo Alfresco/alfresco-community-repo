@@ -16,6 +16,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.namespace.QName;
 
 /**

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.remote;
 
 import java.util.Date;
 import java.util.List;

@@ -15,7 +15,7 @@
  * License.
  */
 
-package org.alfresco.repo.avm;
+package org.alfresco.service.cmr.remote;
 
 import java.io.InputStream;
 import java.io.OutputStream;

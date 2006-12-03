@@ -209,7 +209,7 @@
 			<ref bean="avmRemoteTransport"/>
 		</property>
 		<property name="serviceInterface">
-			<value>org.alfresco.repo.avm.AVMRemoteTransport</value>
+			<value>org.alfresco.service.cmr.remote.AVMRemoteTransport</value>
 		</property>
 		<property name="serviceName">
 			<value>avm</value>
@@ -233,7 +233,7 @@
             <ref bean="avmSyncServiceTransport"/>
         </property>
         <property name="serviceInterface">
-            <value>org.alfresco.service.cmr.avmsync.AVMSyncServiceTransport</value>
+            <value>org.alfresco.service.cmr.remote.AVMSyncServiceTransport</value>
         </property>
         <property name="serviceName">
             <value>avmsync</value>

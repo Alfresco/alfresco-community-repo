@@ -1,13 +1,13 @@
 /**
  * 
  */
-package org.alfresco.repo.avm.clt;
+package org.alfresco.repo.remote;
 
 import java.util.List;
 
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.avmsync.AVMSyncServiceTransport;
+import org.alfresco.service.cmr.remote.AVMSyncServiceTransport;
 
 /**
  * Client side wrapper around the RMI based AVMSyncServiceTransport.

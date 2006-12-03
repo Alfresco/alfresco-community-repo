@@ -1871,8 +1871,9 @@ public class SchemaFormBuilder
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("is Attribute " + attr.getAttrDeclaration().getName() + " declared in " + type.getName());
 
-//check on parent if not recursive
-      if (!recursive && type.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) {
+      //check on parent if not recursive
+      if (!recursive && type.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) 
+      {
          XSComplexTypeDefinition parent = (XSComplexTypeDefinition) type.getBaseType();
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("testing if it is not on parent " + parent.getName());
@@ -1880,24 +1881,14 @@ public class SchemaFormBuilder
             return false;
       }
 
-//check on this type  (also checks recursively)
-      XSObjectList attrs = type.getAttributeUses();
-      int nb = attrs.getLength();
-      int i = 0;
-      while (i < nb && !found) {
-         XSAttributeUse anAttr = (XSAttributeUse) attrs.item(i);
+      //check on this type  (also checks recursively)
+      final XSObjectList attrs = type.getAttributeUses();
+      for (int i = 0; i < attrs.getLength() && !found; i++) 
+      {
+         XSAttributeUse anAttr = (XSAttributeUse)attrs.item(i);
          if (anAttr == attr)
             found = true;
-         i++;
       }
-
-//recursive call
-/*if(!found && recursive &&
-  type.getDerivationMethod()==XSConstants.DERIVATION_EXTENSION){
-  XSComplexTypeDefinition base=(XSComplexTypeDefinition) type.getBaseType();
-  if(base!=null && base!=type)
-  found = this.isAttributeDeclaredIn(attr, base, true);
-  }*/
 
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("is Attribute " + attr.getName() + " declared in " + type.getName() + ": " + found);
@@ -1919,8 +1910,9 @@ public class SchemaFormBuilder
       if (attrName.startsWith("@"))
          attrName = attrName.substring(1);
 
-//check on parent if not recursive
-      if (!recursive && type.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) {
+      //check on parent if not recursive
+      if (!recursive && type.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) 
+      {
          XSComplexTypeDefinition parent = (XSComplexTypeDefinition) type.getBaseType();
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("testing if it is not on parent " + parent.getName());
@@ -1928,29 +1920,20 @@ public class SchemaFormBuilder
             return false;
       }
 
-//check on this type (also checks recursively)
-      XSObjectList attrs = type.getAttributeUses();
-      int nb = attrs.getLength();
-      int i = 0;
-      while (i < nb && !found) {
-         XSAttributeUse anAttr = (XSAttributeUse) attrs.item(i);
-         if (anAttr != null) {
+      //check on this type (also checks recursively)
+      final XSObjectList attrs = type.getAttributeUses();
+      for (int i = 0; i < attrs.getLength() && !found; i++) 
+      {
+         final XSAttributeUse anAttr = (XSAttributeUse) attrs.item(i);
+         if (anAttr != null) 
+         {
             String name = anAttr.getName();
             if (name == null || name.length() == 0)
                name = anAttr.getAttrDeclaration().getName();
             if (attrName.equals(name))
                found = true;
          }
-         i++;
       }
-
-//recursive call -> no need
-/*if(!found && recursive &&
-  type.getDerivationMethod()==XSConstants.DERIVATION_EXTENSION){
-  XSComplexTypeDefinition base=(XSComplexTypeDefinition) type.getBaseType();
-  if(base!=null && base!=type)
-  found = this.isAttributeDeclaredIn(attrName, base, true);
-  }*/
 
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("is Attribute " + attrName + " declared in " + type.getName() + ": " + found);
@@ -2122,7 +2105,6 @@ public class SchemaFormBuilder
                                     : pathToRoot + "/" + elementName);
  
                final Element newDefaultInstanceElement = xForm.createElement(elementName);
-               defaultInstanceElement.appendChild(newDefaultInstanceElement);
                if (element.getConstraintType() != XSConstants.VC_NONE)
                {
                   Node value = xForm.createTextNode(element.getConstraintValue());
@@ -2139,7 +2121,11 @@ public class SchemaFormBuilder
                                path);
 
                // update the default instance
-               if (this.getOccurance(element).isRepeated())
+               if (this.getOccurance(element).minimum == 0)
+               {
+                  defaultInstanceElement.appendChild(newDefaultInstanceElement.cloneNode(true));
+               }
+               else
                {
                   for (int i = 0; i < this.getOccurance(element).minimum; i++)
                   {
@@ -3175,8 +3161,8 @@ public class SchemaFormBuilder
       // static string (see bug #1172541 on sf.net)
 
       String nodeset = pathToRoot;
-//      if (o.isRepeated())
-//          nodeset = pathToRoot + "[position() != last()]";
+      if (o.isRepeated() && o.minimum == 0)
+          nodeset = pathToRoot + "[position() != last()]";
 
       bindElement.setAttributeNS(XFORMS_NS,
                                  SchemaFormBuilder.XFORMS_NS_PREFIX + "nodeset",
@@ -3391,6 +3377,7 @@ public class SchemaFormBuilder
 
             LOGGER.debug("walking bind " + bind.getAttributeNS(XFORMS_NS, "id"));
             String s = bind.getAttributeNS(XFORMS_NS, "nodeset");
+            s = s.replaceAll("^([^\\[]+).*$", "$1");
             if (bindToRepeat.containsKey(bind) && !r.equals(bindToRepeat.get(bind)))
             {
                s += "[index(\'" + bindToRepeat.get(bind).getAttributeNS(XFORMS_NS, "id") + "\')]";

@@ -11,6 +11,11 @@ var XHTML_NS_PREFIX = "xhtml";
 var CHIBA_NS = "http://chiba.sourceforge.net/xforms";
 var CHIBA_NS_PREFIX = "chiba";
 
+var EXPANDED_IMAGE = new Image();
+EXPANDED_IMAGE.src = WEBAPP_CONTEXT + "/images/icons/expanded.gif";
+var COLLAPSED_IMAGE = new Image();
+COLLAPSED_IMAGE.src = WEBAPP_CONTEXT + "/images/icons/collapsed.gif";
+
 function _xforms_init()
 {
   document.xform = new alfresco.xforms.XForm();
@@ -647,13 +652,13 @@ dojo.declare("alfresco.xforms.Group",
 	       
 	         if (position == this.children.length)
 	         {
-		   this.domNode.appendChild(child.domContainer);
+		   this.childContainerNode.appendChild(child.domContainer);
 		   this.children.push(child);
 	         }
 	         else
 	         {
-		   this.domNode.insertBefore(child.domContainer, 
-					     this.getChildAt(position).domContainer);
+		   this.childContainerNode.insertBefore(child.domContainer, 
+                                                        this.getChildAt(position).domContainer);
 		   this.children.splice(position, 0, child);
 	         }
 	       
@@ -755,6 +760,15 @@ dojo.declare("alfresco.xforms.Group",
                    idNode.appendChild(document.createTextNode(this.id));
                    this.domNode.appendChild(idNode);
                  }
+
+	         this.groupHeaderNode = document.createElement("div");
+                 this.groupHeaderNode.id = this.id + "-groupHeaderNode";
+	         this.domNode.appendChild(this.groupHeaderNode);
+
+                 this.childContainerNode = document.createElement("div");
+                 this.childContainerNode.setAttribute("id", this.id + "-childContainerNode");
+                 this.domNode.appendChild(this.childContainerNode);
+                 this.childContainerNode.style.width = "100%";
 	       	 return this.domNode;
                },
 	       _updateDisplay: function()
@@ -1007,37 +1021,39 @@ dojo.declare("alfresco.xforms.Repeat",
                                              parseInt(this.domNode.style.borderWidth) -
                                              marginLeft) + "px";
 
-	         var d = document.createElement("div");
-	         d.repeat = this;
-	         this.domNode.appendChild(d);
-		 d.style.position = "relative";
-		 d.style.top = "0px";
-		 d.style.left = "0px";
-		 d.style.height = "20px";
-		 d.style.lineHeight = "20px";
-		 d.style.backgroundColor = "#cddbe8";
-		 d.style.fontWeight = "bold";
-	         d.style.width = "100%";
-	         dojo.event.connect(d, "onclick", function(event)
+	         this.groupHeaderNode.repeat = this;
+		 this.groupHeaderNode.style.position = "relative";
+		 this.groupHeaderNode.style.top = "0px";
+		 this.groupHeaderNode.style.left = "0px";
+		 this.groupHeaderNode.style.height = "20px";
+		 this.groupHeaderNode.style.lineHeight = "20px";
+		 this.groupHeaderNode.style.backgroundColor = "#cddbe8";
+		 this.groupHeaderNode.style.fontWeight = "bold";
+	         this.groupHeaderNode.style.width = "100%";
+	         dojo.event.connect(this.groupHeaderNode, "onclick", function(event)
 				    {
 				      if (event.target == event.currentTarget)
                                         event.currentTarget.repeat.setFocusedChild(null);
 				    });
                
 	         //used only for positioning the label accurately
-	         var requiredImage = document.createElement("img");
-	         requiredImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/required_field.gif");
-	         requiredImage.style.marginLeft = "5px";
-                 requiredImage.style.marginRight = "5px";
+	         this.toggleExpandedImage = document.createElement("img");
+	         this.groupHeaderNode.appendChild(this.toggleExpandedImage);
+	         this.toggleExpandedImage.setAttribute("src", EXPANDED_IMAGE.src);
+                 this.toggleExpandedImage.align = "absmiddle";
+	         this.toggleExpandedImage.style.marginLeft = "5px";
+                 this.toggleExpandedImage.style.marginRight = "5px";
                  
-	         d.appendChild(requiredImage);
-	         requiredImage.style.visibility = "hidden";
+                 dojo.event.connect(this.toggleExpandedImage, "onclick", this, this._toggleExpanded_clickHandler);
                
-	         var labelElement = document.createTextNode(this.parent.getLabel());
-	         d.appendChild(labelElement);
+                 var label = this.parent.getLabel()
+                 if (djConfig.isDebug)
+                   label += " [" + this.id + "]";
+                   
+	         this.groupHeaderNode.appendChild(document.createTextNode(label));
 	         
 	         var addElement = document.createElement("img");
-	         d.appendChild(addElement);
+	         this.groupHeaderNode.appendChild(addElement);
 	         addElement.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/plus.gif");
 	         addElement.style.width = "16px";
 	         addElement.style.height = "16px";
@@ -1079,7 +1095,22 @@ dojo.declare("alfresco.xforms.Repeat",
 	       {
 	         dojo.debug(this.id + ".handleItemDeleted(" + position + ")");
 	         this.removeChildAt(position);
-	       }
+	       },
+               isExpanded: function()
+               {
+                 return this.toggleExpandedImage.getAttribute("src") == EXPANDED_IMAGE.src;
+               },
+               setExpanded: function(expanded)
+               {
+                 if (expanded == this.isExpanded())
+                   return;
+                 this.toggleExpandedImage.src = expanded ? EXPANDED_IMAGE.src : COLLAPSED_IMAGE.src;
+                 this.childContainerNode.style.display = expanded ? "block" : "none";
+               },
+               _toggleExpanded_clickHandler: function(event)
+               {
+                 this.setExpanded(!this.isExpanded())
+               }
 	     });
 
 dojo.declare("alfresco.xforms.Trigger",

@@ -50,7 +50,7 @@ public class AVMCopyOut extends AVMCltBase
         AVMNodeDescriptor desc = fAVMRemote.lookup(version, path);
         if (flags.containsKey("-r"))
         {
-            recursiveCopy(version, desc, args.get(1));
+            recursiveCopy(desc, args.get(1));
             return;
         }
         if (desc == null)
@@ -105,7 +105,7 @@ public class AVMCopyOut extends AVMCltBase
         }
     }
 
-    private void recursiveCopy(int version, AVMNodeDescriptor src, String dst)
+    private void recursiveCopy(AVMNodeDescriptor src, String dst)
     {
         String newDst = dst + File.separator + src.getName();
         if (fVerbose)
@@ -119,13 +119,13 @@ public class AVMCopyOut extends AVMCltBase
             Map<String, AVMNodeDescriptor> listing = fAVMRemote.getDirectoryListing(src);
             for (AVMNodeDescriptor child : listing.values())
             {
-                recursiveCopy(version, child, newDst);
+                recursiveCopy(child, newDst);
             }
             return;
         }
         try
         {
-            InputStream in = fAVMRemote.getFileInputStream(version, src.getPath());
+            InputStream in = fAVMRemote.getFileInputStream(src);
             OutputStream out = new FileOutputStream(newDst);
             copyStream(in, out);
         }

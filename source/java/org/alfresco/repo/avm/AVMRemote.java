@@ -42,9 +42,16 @@ public interface AVMRemote
      * to a server side input stream.
      * @param version The version to look under.
      * @param path The path to the file.
-     * @return A handle.
+     * @return An InputStream.
      */
     public InputStream getFileInputStream(int version, String path);
+    
+    /**
+     * Get an InputStream from a descriptor directly.
+     * @param desc The descriptor.
+     * @return An InputStream.
+     */
+    public InputStream getFileInputStream(AVMNodeDescriptor desc);
     
     /**
      * Get an opaque handle to a server side output stream.
@@ -182,7 +189,7 @@ public interface AVMRemote
      * @param store The name of the AVMStore to snapshot.
      * @return The version id of the new snapshot.
      */
-    public int createSnapshot(String store);
+    public int createSnapshot(String store, String label, String comment);
     
     /**
      * Get a List of all versions in a given store.

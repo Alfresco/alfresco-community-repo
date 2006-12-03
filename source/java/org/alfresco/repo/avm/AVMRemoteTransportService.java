@@ -250,6 +250,23 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
         return handle;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemoteTransport#getInputHandle(java.lang.String, org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public String getInputHandle(String ticket, AVMNodeDescriptor desc) 
+    {
+        fAuthService.validate(ticket);
+        InputStream in = fAVMService.getFileInputStream(desc);
+        String handle = GUID.generate();
+        synchronized (this)
+        {
+            fInputStreams.put(handle, in);
+            fInputLastAccessTimes.put(handle, System.currentTimeMillis());
+            fInputBusy.put(handle, false);
+        }
+        return handle;
+    }
+
     /**
      * Read a chunk of data from a handle.
      * @param handle The opaque input stream handle.
@@ -611,10 +628,10 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * @param store The name of the AVMStore to snapshot.
      * @return The version id of the new snapshot.
      */
-    public int createSnapshot(String ticket, String store)
+    public int createSnapshot(String ticket, String store, String label, String comment)
     {
         fAuthService.validate(ticket);
-        return fAVMService.createSnapshot(store, null, null);
+        return fAVMService.createSnapshot(store, label, comment);
     }
     
     /**

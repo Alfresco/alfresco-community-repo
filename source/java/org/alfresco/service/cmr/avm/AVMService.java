@@ -54,6 +54,14 @@ public interface AVMService
     public InputStream getFileInputStream(int version, String path);
     
     /**
+     * Get an InputStream from a descriptor.
+     * @param desc The descriptor.
+     * @return An InputStream.
+     * @throws AVMNotFoundException
+     */
+    public InputStream getFileInputStream(AVMNodeDescriptor desc);
+    
+    /**
      * Get an output stream to a file node.  The file must already exist.
      * @param path The simple absolute path to the file node.
      * @throws AVMNotFoundException    

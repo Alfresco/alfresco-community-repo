@@ -97,9 +97,9 @@ public class AVMRemoteLocal implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#createSnapshot(java.lang.String)
      */
-    public int createSnapshot(String store) 
+    public int createSnapshot(String store, String label, String comment) 
     {
-        return fService.createSnapshot(store, null, null);
+        return fService.createSnapshot(store, label, comment);
     }
 
     /* (non-Javadoc)
@@ -217,6 +217,14 @@ public class AVMRemoteLocal implements AVMRemote
     public InputStream getFileInputStream(int version, String path) 
     {
         return fService.getFileInputStream(version, path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemote#getFileInputStream(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public InputStream getFileInputStream(AVMNodeDescriptor desc) 
+    {
+        return fService.getFileInputStream(desc);
     }
 
     /* (non-Javadoc)

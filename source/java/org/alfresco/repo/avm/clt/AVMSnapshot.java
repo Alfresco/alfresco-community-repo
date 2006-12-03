@@ -14,7 +14,7 @@ public class AVMSnapshot extends AVMCltBase
 {
     private static Object [] flagDefs = { };
     
-    private static String USAGE = "usage: AVMSnapshot storename";
+    private static String USAGE = "usage: AVMSnapshot storename label comment";
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.clt.AVMCltBase#run(java.util.Map, java.util.List)
@@ -22,7 +22,7 @@ public class AVMSnapshot extends AVMCltBase
     @Override
     protected void run(Map<String, List<String>> flags, List<String> args) 
     {
-        fAVMRemote.createSnapshot(args.get(0));
+        fAVMRemote.createSnapshot(args.get(0), args.get(1), args.get(2));
     }
 
     /**
@@ -31,6 +31,6 @@ public class AVMSnapshot extends AVMCltBase
     public static void main(String[] args) 
     {
         AVMSnapshot me = new AVMSnapshot();
-        me.exec(args, flagDefs, 1, USAGE);
+        me.exec(args, flagDefs, 3, USAGE);
     }
 }

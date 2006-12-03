@@ -109,6 +109,21 @@ public class AVMServiceImpl implements AVMService
     }
 
     /**
+     * Get an InputStream from a descriptor.
+     * @param desc The descriptor.
+     * @return An InputStream.
+     * @throws AVMNotFoundException
+     */
+    public InputStream getFileInputStream(AVMNodeDescriptor desc)
+    {
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        return fAVMRepository.getInputStream(desc);
+    }
+
+    /**
      * Get an output stream to a file. Triggers versioning.
      */
     public OutputStream getFileOutputStream(String path)

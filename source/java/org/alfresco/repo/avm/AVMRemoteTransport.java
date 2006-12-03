@@ -32,6 +32,14 @@ public interface AVMRemoteTransport
     public String getInputHandle(String ticket, int version, String path);
     
     /**
+     * Get an input handle from a descriptor.
+     * @param ticket The authentication ticket.
+     * @param desc The descriptor.
+     * @return An input handle.
+     */
+    public String getInputHandle(String ticket, AVMNodeDescriptor desc);
+    
+    /**
      * Read a chunk of data from a handle.
      * @param handle The opaque input stream handle.
      * @param count The number of bytes to try to read.
@@ -199,7 +207,7 @@ public interface AVMRemoteTransport
      * @param store The name of the AVMStore to snapshot.
      * @return The version id of the new snapshot.
      */
-    public int createSnapshot(String ticket, String store);
+    public int createSnapshot(String ticket, String store, String label, String comment);
     
     /**
      * Get a List of all versions in a given store.

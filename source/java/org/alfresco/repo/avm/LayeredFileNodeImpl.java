@@ -247,6 +247,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         throw new AVMException("Should not be called.");
     }
     
+    // TODO The lPath argument is unnecessary.
     /**
      * Get the ContentData for this file.
      * @return The ContentData object for this file.

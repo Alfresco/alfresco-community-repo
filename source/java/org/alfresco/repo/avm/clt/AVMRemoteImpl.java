@@ -101,9 +101,9 @@ public class AVMRemoteImpl implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#createSnapshot(java.lang.String)
      */
-    public int createSnapshot(String store) 
+    public int createSnapshot(String store, String label, String comment) 
     {
-        return fTransport.createSnapshot(ClientTicketHolder.GetTicket(), store);
+        return fTransport.createSnapshot(ClientTicketHolder.GetTicket(), store, label, comment);
     }
 
     /* (non-Javadoc)
@@ -221,6 +221,15 @@ public class AVMRemoteImpl implements AVMRemote
     public InputStream getFileInputStream(int version, String path) 
     {
         return new AVMRemoteInputStream(fTransport.getInputHandle(ClientTicketHolder.GetTicket(), version, path),
+                                        fTransport);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMRemote#getFileInputStream(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public InputStream getFileInputStream(AVMNodeDescriptor desc)
+    {
+        return new AVMRemoteInputStream(fTransport.getInputHandle(ClientTicketHolder.GetTicket(), desc),
                                         fTransport);
     }
 

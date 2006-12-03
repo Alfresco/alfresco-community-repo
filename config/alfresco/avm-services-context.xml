@@ -175,6 +175,9 @@
 		<property name="lookupCache">
 		    <ref bean="lookupCache"/>
 		</property>
+		<property name="contentStore">
+		    <ref bean="fileContentStore"/>
+		</property>
 	</bean>
 
 	<!-- A Local implementation of the Remote AVM interface. -->

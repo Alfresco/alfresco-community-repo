@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -41,6 +42,7 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -76,6 +78,11 @@ public class AVMRepository
     private Issuer fLayerIssuer;
 
     /**
+     * Reference to the ContentStoreImpl
+     */
+    private ContentStore fContentStore;
+    
+    /**
      * The Lookup Cache instance.
      */
     private LookupCache fLookupCache;
@@ -105,6 +112,14 @@ public class AVMRepository
     public void setLayerIssuer(Issuer layerIssuer)
     {
         fLayerIssuer = layerIssuer;
+    }
+    
+    /**
+     * Set the ContentService.
+     */
+    public void setContentStore(ContentStore store)
+    {
+        fContentStore = store;
     }
     
     /**
@@ -798,6 +813,23 @@ public class AVMRepository
         }        
     }
 
+    public InputStream getInputStream(AVMNodeDescriptor desc)
+    {
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(desc.getId());
+        if (!(node instanceof FileNode))
+        {
+            throw new AVMWrongTypeException(desc + " is not a File.");
+        }
+        FileNode file = (FileNode)node;
+        ContentData data = file.getContentData(null);
+        if (data == null)
+        {
+            throw new AVMException(desc + " has no content.");
+        }
+        ContentReader reader = fContentStore.getReader(data.getContentUrl());
+        return reader.getContentInputStream();
+    }
+    
     /**
      * Get a listing of a directory.
      * @param version The version to look under.

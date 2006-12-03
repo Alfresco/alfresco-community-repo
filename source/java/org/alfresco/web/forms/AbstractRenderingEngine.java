@@ -18,7 +18,7 @@ package org.alfresco.web.forms;
 
 import javax.faces.context.FacesContext;
 import org.alfresco.model.WCMModel;
-import org.alfresco.repo.avm.AVMRemote;
+import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;

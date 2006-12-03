@@ -17,11 +17,11 @@
 package org.alfresco.web.forms;
 
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.AVMRemote;
-import org.alfresco.repo.avm.AVMRemoteInputStream;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.remote.AVMRemoteInputStream;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.remote.AVMRemote;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.*;

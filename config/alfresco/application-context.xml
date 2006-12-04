@@ -30,7 +30,18 @@
     <import resource="classpath*:alfresco/patch/*-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 
-    <!-- import of general extensions and bean overrides -->
-    <import resource="classpath*:alfresco/extension/*-context.xml" />
+    <!-- 
+         Import of general extensions and bean overrides.
+
+         To give developers final control over the tuning 
+         of their own local build, the dev-context.xml file 
+         is processed last  (note: dev-context.xml isn't
+         part of the source tree itself).  
+         
+         For details, see:
+         http://wiki.alfresco.com/wiki/Developer_Runtime_Configuration
+    -->
+    <import resource="classpath*:alfresco/extension/*-context.xml"/>
+    <import resource="classpath*:alfresco/extension/dev-context.xml" />
 
 </beans>

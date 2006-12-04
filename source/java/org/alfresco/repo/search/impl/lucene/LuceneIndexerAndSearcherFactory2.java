@@ -138,6 +138,10 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     private int indexerMaxFieldLength;
 
+    private long writeLockTimeout;
+
+    private long commitLockTimeout;
+
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
      */
@@ -831,8 +835,8 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     {
         this.lockDirectory = lockDirectory;
         // Set the lucene lock file via System property
-        // org.apache.lucene.lockdir
-        System.setProperty("org.apache.lucene.lockdir", lockDirectory);
+        // org.apache.lucene.lockDir
+        System.setProperty("org.apache.lucene.lockDir", lockDirectory);
         // Make sure the lock directory exists
         File lockDir = new File(lockDirectory);
         if (!lockDir.exists())
@@ -871,12 +875,22 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     public void setWriteLockTimeout(long timeout)
     {
-        IndexWriter.WRITE_LOCK_TIMEOUT = timeout;
+        this.writeLockTimeout = timeout;
     }
 
     public void setCommitLockTimeout(long timeout)
     {
-        IndexWriter.COMMIT_LOCK_TIMEOUT = timeout;
+        this.commitLockTimeout = timeout;
+    }
+    
+    public long getCommitLockTimeout()
+    {
+        return commitLockTimeout;
+    }
+
+    public long getWriteLockTimeout()
+    {
+        return writeLockTimeout;
     }
 
     public void setLockPollInterval(long time)

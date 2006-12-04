@@ -100,9 +100,9 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             Document doc = new Document();
             for (int k = 0; k < 15; k++)
             {
-                doc.add(new Field("ID" + k, guid, false, true, false));
+                doc.add(new Field("ID" + k, guid, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             }
-            doc.add(new Field("TEXT", WORD_LIST[i], false, true, false));
+            doc.add(new Field("TEXT", WORD_LIST[i], Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             writer.addDocument(doc);
 
             ii.closeDeltaIndexWriter(guid);
@@ -198,12 +198,12 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             Document doc = new Document();
             for (int k = 0; k < 15; k++)
             {
-                doc.add(new Field("ID" + k, guid, false, true, false));
+                doc.add(new Field("ID" + k, guid, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             }
-            doc.add(new Field("TEXT", CREATE_LIST[i], false, true, false));
+            doc.add(new Field("TEXT", CREATE_LIST[i], Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             NodeRef nodeRef = new NodeRef(storeRef, GUID.generate());
             nodeRefs.add(nodeRef);
-            doc.add(new Field("ID", nodeRef.toString(), false, true, false));
+            doc.add(new Field("ID", nodeRef.toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             writer.addDocument(doc);
 
             ii.closeDeltaIndexWriter(guid);
@@ -388,12 +388,12 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             Document doc = new Document();
             for (int k = 0; k < 15; k++)
             {
-                doc.add(new Field("ID" + k, guid, false, true, false));
+                doc.add(new Field("ID" + k, guid, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             }
-            doc.add(new Field("TEXT", CREATE_LIST[i], false, true, false));
+            doc.add(new Field("TEXT", CREATE_LIST[i], Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             NodeRef nodeRef = new NodeRef(storeRef, GUID.generate());
             nodeRefs.add(nodeRef);
-            doc.add(new Field("ID", nodeRef.toString(), false, true, false));
+            doc.add(new Field("ID", nodeRef.toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             writer.addDocument(doc);
 
             ii.closeDeltaIndexWriter(guid);
@@ -474,9 +474,9 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             Document doc = new Document();
             for (int k = 0; k < 15; k++)
             {
-                doc.add(new Field("ID" + k, guid, false, true, false));
+                doc.add(new Field("ID" + k, guid, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             }
-            doc.add(new Field("TEXT", UPDATE_LIST[i], false, true, false));
+            doc.add(new Field("TEXT", UPDATE_LIST[i], Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             writer.addDocument(doc);
 
             ii.closeDeltaIndexWriter(guid);
@@ -654,12 +654,12 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                     Document doc = new Document();
                     for (int k = 0; k < 15; k++)
                     {
-                        doc.add(new Field("ID" + k, guid, false, true, false));
+                        doc.add(new Field("ID" + k, guid, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     }
-                    doc.add(new Field("TEXT", create[i], false, true, false));
+                    doc.add(new Field("TEXT", create[i], Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     NodeRef nodeRef = new NodeRef(storeRef, GUID.generate());
                     nodeRefs.add(nodeRef);
-                    doc.add(new Field("ID", nodeRef.toString(), false, true, false));
+                    doc.add(new Field("ID", nodeRef.toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     writer.addDocument(doc);
 
                     ii.closeDeltaIndexWriter(guid);
@@ -745,9 +745,9 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                     Document doc = new Document();
                     for (int k = 0; k < 15; k++)
                     {
-                        doc.add(new Field("ID" + k, guid, false, true, false));
+                        doc.add(new Field("ID" + k, guid, Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     }
-                    doc.add(new Field("TEXT", update[i], false, true, false));
+                    doc.add(new Field("TEXT", update[i], Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     writer.addDocument(doc);
 
                     ii.closeDeltaIndexWriter(guid);

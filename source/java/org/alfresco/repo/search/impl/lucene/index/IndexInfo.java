@@ -48,11 +48,11 @@ import java.util.zip.CRC32;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs2;
+import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -64,8 +64,8 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.InputStream;
-import org.apache.lucene.store.OutputStream;
+import org.apache.lucene.store.IndexInput;
+import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
 
 /**
@@ -223,6 +223,14 @@ public class IndexInfo
     private boolean mergerUseCompoundFile = true;
 
     private int mergerTargetOverlays = 5;
+    
+    private long writeLockTimeout = IndexWriter.WRITE_LOCK_TIMEOUT;
+    
+    private long commitLockTimeout = IndexWriter.COMMIT_LOCK_TIMEOUT;
+    
+    private int maxFieldLength = IndexWriter.DEFAULT_MAX_FIELD_LENGTH;
+    
+    private int termIndexInterval = IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
 
     // TODO: Something to control the maximum number of overlays
 
@@ -308,9 +316,13 @@ public class IndexInfo
                             {
                                 writer = new IndexWriter(oldIndex, new AlfrescoStandardAnalyser(), false);
                                 writer.setUseCompoundFile(writerUseCompoundFile);
-                                writer.minMergeDocs = writerMinMergeDocs;
-                                writer.mergeFactor = writerMergeFactor;
-                                writer.maxMergeDocs = writerMaxMergeDocs;
+                                writer.setMaxBufferedDocs(writerMinMergeDocs);
+                                writer.setMergeFactor(writerMergeFactor);
+                                writer.setMaxMergeDocs(writerMaxMergeDocs);
+                                writer.setCommitLockTimeout(commitLockTimeout);
+                                writer.setWriteLockTimeout(writeLockTimeout);
+                                writer.setMaxFieldLength(maxFieldLength);
+                                writer.setTermIndexInterval(termIndexInterval);
                                 writer.optimize();
                                 long docs = writer.docCount();
                                 writer.close();
@@ -444,9 +456,13 @@ public class IndexInfo
         {
             writer = new IndexWriter(emptyIndex, new AlfrescoStandardAnalyser(), true);
             writer.setUseCompoundFile(writerUseCompoundFile);
-            writer.minMergeDocs = writerMinMergeDocs;
-            writer.mergeFactor = writerMergeFactor;
-            writer.maxMergeDocs = writerMaxMergeDocs;
+            writer.setMaxBufferedDocs(writerMinMergeDocs);
+            writer.setMergeFactor(writerMergeFactor);
+            writer.setMaxMergeDocs(writerMaxMergeDocs);
+            writer.setCommitLockTimeout(commitLockTimeout);
+            writer.setWriteLockTimeout(writeLockTimeout);
+            writer.setMaxFieldLength(maxFieldLength);
+            writer.setTermIndexInterval(termIndexInterval);
         }
         catch (IOException e)
         {
@@ -555,9 +571,13 @@ public class IndexInfo
         {
             IndexWriter creator = new IndexWriter(location, analyzer, true);
             creator.setUseCompoundFile(writerUseCompoundFile);
-            creator.minMergeDocs = writerMinMergeDocs;
-            creator.mergeFactor = writerMergeFactor;
-            creator.maxMergeDocs = writerMaxMergeDocs;
+            creator.setMaxBufferedDocs(writerMinMergeDocs);
+            creator.setMergeFactor(writerMergeFactor);
+            creator.setMaxMergeDocs(writerMaxMergeDocs);
+            creator.setCommitLockTimeout(commitLockTimeout);
+            creator.setWriteLockTimeout(writeLockTimeout);
+            creator.setMaxFieldLength(maxFieldLength);
+            creator.setTermIndexInterval(termIndexInterval);
             return creator;
         }
         return null;
@@ -582,9 +602,13 @@ public class IndexInfo
             {
                 writer = new IndexWriter(location, analyzer, false);
                 writer.setUseCompoundFile(writerUseCompoundFile);
-                writer.minMergeDocs = writerMinMergeDocs;
-                writer.mergeFactor = writerMergeFactor;
-                writer.maxMergeDocs = writerMaxMergeDocs;
+                writer.setMaxBufferedDocs(writerMinMergeDocs);
+                writer.setMergeFactor(writerMergeFactor);
+                writer.setMaxMergeDocs(writerMaxMergeDocs);
+                writer.setCommitLockTimeout(commitLockTimeout);
+                writer.setWriteLockTimeout(writeLockTimeout);
+                writer.setMaxFieldLength(maxFieldLength);
+                writer.setTermIndexInterval(termIndexInterval);
             }
             indexWriters.put(id, writer);
         }
@@ -2173,7 +2197,7 @@ public class IndexInfo
                                         Document doc = hits.doc(i);
                                         if (doc.getField("ISCONTAINER") == null)
                                         {
-                                            reader.delete(hits.id(i));
+                                            reader.deleteDocument(hits.id(i));
                                             invalidIndexes.add(key);
                                             // There should only be one thing to delete
                                             // break;
@@ -2185,7 +2209,7 @@ public class IndexInfo
                             }
                             else
                             {
-                                if (reader.delete(new Term("ID", nodeRef.toString())) > 0)
+                                if (reader.deleteDocuments(new Term("ID", nodeRef.toString())) > 0)
                                 {
                                     invalidIndexes.add(key);
                                 }
@@ -2440,9 +2464,11 @@ public class IndexInfo
                                
                             }
                             writer.setUseCompoundFile(mergerUseCompoundFile);
-                            writer.minMergeDocs = mergerMinMergeDocs;
-                            writer.mergeFactor = mergerMergeFactor;
-                            writer.maxMergeDocs = mergerMaxMergeDocs;
+                            writer.setMaxBufferedDocs(mergerMinMergeDocs);
+                            writer.setMergeFactor(mergerMergeFactor);
+                            writer.setMaxMergeDocs(mergerMaxMergeDocs);
+                            writer.setCommitLockTimeout(commitLockTimeout);
+                            writer.setWriteLockTimeout(writeLockTimeout);
                         }
                     }
                     writer.addIndexes(readers);
@@ -2455,9 +2481,9 @@ public class IndexInfo
                         for (int i = 0; i < files.length; i++)
                         {
                             // make place on ram disk
-                            OutputStream os = directory.createFile(files[i]);
+                            IndexOutput os = directory.createOutput(files[i]);
                             // read current file
-                            InputStream is = ramDirectory.openFile(files[i]);
+                            IndexInput is = ramDirectory.openInput(files[i]);
                             // and copy to ram disk
                             int len = (int) is.length();
                             byte[] buf = new byte[len];

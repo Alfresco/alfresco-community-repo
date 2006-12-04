@@ -37,6 +37,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.RangeQuery;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.saxpath.SAXPathException;
 
 import com.werken.saxpath.XPathReader;
@@ -198,7 +199,7 @@ public class LuceneQueryParser extends QueryParser
                 for (QName qname : subclasses)
                 {
                     TermQuery termQuery = new TermQuery(new Term(field, qname.toString()));
-                    booleanQuery.add(termQuery, false, false);
+                    booleanQuery.add(termQuery, Occur.SHOULD);
                 }
                 return booleanQuery;
             }
@@ -244,7 +245,7 @@ public class LuceneQueryParser extends QueryParser
                 for (QName qname : subclasses)
                 {
                     TermQuery termQuery = new TermQuery(new Term(field, qname.toString()));
-                    booleanQuery.add(termQuery, false, false);
+                    booleanQuery.add(termQuery, Occur.SHOULD);
                 }
                 return booleanQuery;
             }

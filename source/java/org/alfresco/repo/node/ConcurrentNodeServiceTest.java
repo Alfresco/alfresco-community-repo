@@ -126,7 +126,8 @@ public class ConcurrentNodeServiceTest extends TestCase
     public void testConcurrent() throws Exception
     {
         luceneFTS.pause();
-        IndexWriter.COMMIT_LOCK_TIMEOUT = 100000;
+        // TODO: LUCENE UPDATE ISSUE fix commit lock time out 
+        // IndexWriter.COMMIT_LOCK_TIMEOUT = 100000;
         int count = 10;
         int repeats = 10;
 

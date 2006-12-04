@@ -20,7 +20,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory.LuceneIndexBackupComponent;
+import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2.LuceneIndexBackupComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;

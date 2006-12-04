@@ -77,6 +77,7 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
  * The implementation of the lucene based indexer. Supports basic transactional behaviour if used on its own.
@@ -1043,7 +1044,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     refs.add(ref);
                     if (delete)
                     {
-                        reader.delete(doc);
+                        reader.deleteDocument(doc);
                     }
                 }
             }
@@ -1078,7 +1079,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     refs.add(ref);
                     if (delete)
                     {
-                        reader.delete(doc);
+                        reader.deleteDocument(doc);
                     }
                 }
             }
@@ -1101,7 +1102,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         {
             if (delete)
             {
-                reader.delete(new Term("ID", nodeRef.toString()));
+                reader.deleteDocuments(new Term("ID", nodeRef.toString()));
             }
             refs.add(nodeRef);
             if (cascade)
@@ -1116,7 +1117,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     refs.add(ref);
                     if (delete)
                     {
-                        reader.delete(doc);
+                        reader.deleteDocument(doc);
                     }
                 }
             }
@@ -1238,8 +1239,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         paths.addAll(categoryPaths);
 
         Document xdoc = new Document();
-        xdoc.add(new Field("ID", nodeRef.toString(), true, true, false));
-        xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), true, true, false));
+        xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+        xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
         boolean isAtomic = true;
         for (QName propertyName : properties.keySet())
         {
@@ -1295,11 +1296,10 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                             qNameBuffer.append(";/");
                         }
                         qNameBuffer.append(ISO9075.getXPathName(qNameRef.getQName()));
-                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), true, true, false));
-                        xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()), true,
-                                false, false));
+                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
                         xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair
-                                .getSecond()), true, true, false));
+                                .getSecond()), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     }
                 }
 
@@ -1320,17 +1320,17 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         if (directPaths.contains(pair.getFirst()))
                         {
                             Document directoryEntry = new Document();
-                            directoryEntry.add(new Field("ID", nodeRef.toString(), true, true, false));
-                            directoryEntry.add(new Field("PATH", pathString, true, true, true));
+                            directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                            directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
                             for (NodeRef parent : getParents(pair.getFirst()))
                             {
-                                directoryEntry.add(new Field("ANCESTOR", parent.toString(), false, true, false));
+                                directoryEntry.add(new Field("ANCESTOR", parent.toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                             }
-                            directoryEntry.add(new Field("ISCONTAINER", "T", true, true, false));
+                            directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                             if (isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
                             {
-                                directoryEntry.add(new Field("ISCATEGORY", "T", true, true, false));
+                                directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                             }
 
                             docs.add(directoryEntry);
@@ -1344,50 +1344,48 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         if (isRoot)
         {
             // TODO: Does the root element have a QName?
-            xdoc.add(new Field("ISCONTAINER", "T", true, true, false));
-            xdoc.add(new Field("PATH", "", true, true, true));
-            xdoc.add(new Field("QNAME", "", true, true, true));
-            xdoc.add(new Field("ISROOT", "T", false, true, false));
-            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(ContentModel.ASSOC_CHILDREN), true, false,
-                    false));
-            xdoc.add(new Field("ISNODE", "T", false, true, false));
+            xdoc.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("PATH", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("QNAME", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("ISROOT", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(ContentModel.ASSOC_CHILDREN), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
+            xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             docs.add(xdoc);
 
         }
         else
         // not a root node
         {
-            xdoc.add(new Field("QNAME", qNameBuffer.toString(), true, true, true));
+            xdoc.add(new Field("QNAME", qNameBuffer.toString(),Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
             // xdoc.add(new Field("PARENT", parentBuffer.toString(), true, true,
             // true));
 
             ChildAssociationRef primary = nodeService.getPrimaryParent(nodeRef);
-            xdoc.add(new Field("PRIMARYPARENT", primary.getParentRef().toString(), true, true, false));
-            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(primary.getTypeQName()), true, false,
-                    false));
+            xdoc.add(new Field("PRIMARYPARENT", primary.getParentRef().toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(primary.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
             QName typeQName = nodeService.getType(nodeRef);
 
-            xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), true, true, false));
+            xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             for (QName classRef : nodeService.getAspects(nodeRef))
             {
-                xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), true, true, false));
+                xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             }
 
-            xdoc.add(new Field("ISROOT", "F", false, true, false));
-            xdoc.add(new Field("ISNODE", "T", false, true, false));
+            xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             if (isAtomic || indexAllProperties)
             {
-                xdoc.add(new Field("FTSSTATUS", "Clean", false, true, false));
+                xdoc.add(new Field("FTSSTATUS", "Clean", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             }
             else
             {
                 if (isNew)
                 {
-                    xdoc.add(new Field("FTSSTATUS", "New", false, true, false));
+                    xdoc.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 }
                 else
                 {
-                    xdoc.add(new Field("FTSSTATUS", "Dirty", false, true, false));
+                    xdoc.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 }
             }
 
@@ -1491,7 +1489,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     continue;
                 }
                 // store mimetype in index - even if content does not index it is useful
-                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), false, true, false));
+                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                 ContentReader reader = contentService.getReader(nodeRef, propertyName);
                 if (reader != null && reader.exists())
@@ -1517,8 +1515,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                             // don't index from the reader
                             readerReady = false;
                             // not indexed: no transformation
-                            doc.add(Field.Text("TEXT", NOT_INDEXED_NO_TRANSFORMATION));
-                            doc.add(Field.Text(attributeName, NOT_INDEXED_NO_TRANSFORMATION));
+                            doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                            doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                         }
                         else if (indexAtomicPropertiesOnly
                                 && transformer.getTransformationTime() > maxAtomicTransformationTime)
@@ -1552,8 +1550,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                                 readerReady = false;
                                 // not indexed: transformation
                                 // failed
-                                doc.add(Field.Text("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED));
-                                doc.add(Field.Text(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED));
+                                doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                                doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                             }
                         }
                     }
@@ -1571,7 +1569,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         {
                             isr = new InputStreamReader(ris);
                         }
-                        doc.add(Field.Text("TEXT", isr));
+                        doc.add(new Field("TEXT", isr, Field.TermVector.NO));
 
                         ris = reader.getReader().getContentInputStream();
                         try
@@ -1583,9 +1581,9 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                             isr = new InputStreamReader(ris);
                         }
 
-                        doc.add(Field.Text("@"
+                        doc.add(new Field("@"
                                 + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName
-                                        .getLocalName())), isr));
+                                        .getLocalName())), isr, Field.TermVector.NO));
                     }
                 }
                 else
@@ -1599,13 +1597,31 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                                 + (reader == null ? " --- " : Boolean.toString(reader.exists())));
                     }
                     // not indexed: content missing
-                    doc.add(Field.Text("TEXT", NOT_INDEXED_CONTENT_MISSING));
-                    doc.add(Field.Text(attributeName, NOT_INDEXED_CONTENT_MISSING));
+                    doc.add(new Field("TEXT", NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                    doc.add(new Field(attributeName, NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                 }
             }
             else
             {
-                doc.add(new Field(attributeName, strValue, store, index, tokenise));
+                Field.Store fieldStore = store ? Field.Store.YES : Field.Store.NO;
+                Field.Index fieldIndex; 
+                if(index )
+                {
+                    if(tokenise)
+                    {
+                        fieldIndex = Field.Index.TOKENIZED;
+                    }
+                    else
+                    {
+                        fieldIndex = Field.Index.UN_TOKENIZED;
+                    }
+                }
+                else
+                {
+                    fieldIndex = Field.Index.NO;
+                }
+                
+                doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
             }
         }
 
@@ -1761,8 +1777,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
             toFTSIndex = new ArrayList<Helper>(size);
             BooleanQuery booleanQuery = new BooleanQuery();
-            booleanQuery.add(new TermQuery(new Term("FTSSTATUS", "Dirty")), false, false);
-            booleanQuery.add(new TermQuery(new Term("FTSSTATUS", "New")), false, false);
+            booleanQuery.add(new TermQuery(new Term("FTSSTATUS", "Dirty")), Occur.SHOULD);
+            booleanQuery.add(new TermQuery(new Term("FTSSTATUS", "New")), Occur.SHOULD);
 
             int count = 0;
             Searcher searcher = null;

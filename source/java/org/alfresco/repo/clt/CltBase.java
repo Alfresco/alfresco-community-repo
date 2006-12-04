@@ -14,7 +14,9 @@ import java.util.Map;
 import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
+import org.alfresco.service.cmr.remote.RepoRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.util.Pair;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -33,6 +35,11 @@ public abstract class CltBase
      * The instance of the remote sync service interface.
      */
     protected AVMSyncService fAVMSyncService;
+
+    /**
+     * The instance of the remote repo interface.
+     */
+    protected RepoRemote fRepoRemote;
     
     /**
      * The ApplicationContext.
@@ -45,6 +52,11 @@ public abstract class CltBase
     protected AuthenticationService fAuthenticationService;
     
     /**
+     * The usage string.
+     */
+    private String fUsage;
+    
+    /**
      * Construct a new one. This takes care of instantiating
      * the application context and grabs references to the
      * services. 
@@ -52,9 +64,10 @@ public abstract class CltBase
      */
     protected CltBase()
     {
-        fContext = new ClassPathXmlApplicationContext("alfresco/avm-clt-context.xml");
+        fContext = new ClassPathXmlApplicationContext("alfresco/clt-context.xml");
         fAVMRemote = (AVMRemote)fContext.getBean("avmRemote");
         fAVMSyncService = (AVMSyncService)fContext.getBean("avmSyncService");
+        fRepoRemote = (RepoRemote)fContext.getBean("repoRemote");
         fAuthenticationService = (AuthenticationService)fContext.getBean("authenticationService");
         fAuthenticationService.authenticate("admin", "admin".toCharArray());
         String ticket = fAuthenticationService.getCurrentTicket();
@@ -77,6 +90,7 @@ public abstract class CltBase
                      int minArgs,
                      String usageMessage)
     {
+        fUsage = usageMessage;
         Map<String, Integer> flagArgs = new HashMap<String, Integer>();
         Map<String, List<String>> flagValues = new HashMap<String, List<String>>();
         List<String> actualArgs = new ArrayList<String>();
@@ -91,7 +105,7 @@ public abstract class CltBase
         {
             if (args[pos].equals("-h"))
             {
-                usage(usageMessage);
+                usage();
             }
             // If the argument is one of the accepted flags then it's
             // a flag.
@@ -103,7 +117,7 @@ public abstract class CltBase
                 // Check for too few arguments
                 if (args.length - pos < count)
                 {
-                    usage(usageMessage);
+                    usage();
                 }
                 // Stuff the parsed flag away.
                 List<String> flArgs = new ArrayList<String>();
@@ -122,7 +136,7 @@ public abstract class CltBase
         // Check for too few arguments.
         if (actualArgs.size() < minArgs)
         {
-            usage(usageMessage);
+            usage();
         }
         // Do the work.
         run(flagValues, actualArgs);
@@ -132,11 +146,10 @@ public abstract class CltBase
     
     /**
      * Handle syntax error by exiting.
-     * @param usageMessage The message to print.
      */
-    protected void usage(String usageMessage)
+    protected void usage()
     {
-        System.err.println(usageMessage);
+        System.err.println(fUsage);
         fContext.close();
         System.exit(1);
     }
@@ -195,6 +208,18 @@ public abstract class CltBase
             fContext.close();
             System.exit(1);
         }
+    }
+    
+    protected Pair<String, Integer> splitPathVersion(String pathVersion)
+    {
+        int index = pathVersion.lastIndexOf('@');
+        if (index == -1)
+        {
+            usage();
+        }
+        String path = pathVersion.substring(0, index);
+        int version = Integer.parseInt(pathVersion.substring(index + 1));
+        return new Pair<String, Integer>(path, version);
     }
     
     protected abstract void run(Map<String, List<String>> flags, List<String> args);

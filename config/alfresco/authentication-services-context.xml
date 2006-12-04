@@ -358,4 +358,20 @@
         </property>
     </bean>
     
+    <!-- Here for now. Probably want remote-context.xml file. -->
+    <!-- The AuthenticationService exported as an RMI service. -->
+	<bean id="rmiAuthenticationService" class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="authenticationService"/>
+		</property>
+		<property name="serviceInterface">
+			<value>org.alfresco.service.cmr.security.AuthenticationService</value>
+		</property>
+		<property name="serviceName">
+			<value>authentication</value>
+		</property>
+		<property name="registryPort">
+			<value>${avm.remote.port}</value>
+		</property>
+	</bean>
 </beans>

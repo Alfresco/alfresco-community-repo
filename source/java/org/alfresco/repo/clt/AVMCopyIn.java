@@ -145,9 +145,6 @@ public class AVMCopyIn extends CltBase
         }
     }
     
-    /**
-     * @param args
-     */
     public static void main(String[] args) 
     {
         AVMCopyIn me = new AVMCopyIn();

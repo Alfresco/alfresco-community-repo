@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.util.Pair;
 
 /**
  * Get a listing of a node.
@@ -24,9 +25,9 @@ public class AVMLs extends CltBase
     @Override
     protected void run(Map<String, List<String>> flags, List<String> args) 
     {
-        String[] pathVersion = args.get(0).split("@");
-        AVMNodeDescriptor desc = fAVMRemote.lookup(Integer.parseInt(pathVersion[1]), 
-                                                   pathVersion[0]);
+        Pair<String, Integer> pathVersion = splitPathVersion(args.get(0));
+        AVMNodeDescriptor desc = fAVMRemote.lookup(pathVersion.getSecond(),
+                                                   pathVersion.getFirst());
         if (flags.containsKey("-R"))
         {
             recursiveList(desc, 0);

@@ -50,4 +50,22 @@
             <value>true</value>
         </property>
     </bean>
+    
+    <bean id="repoRemoteTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
+        <property name="serviceUrl">
+            <value>rmi://localhost:1313/repo</value>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.remote.RepoRemoteTransport</value>
+        </property>
+        <property name="refreshStubOnConnectFailure">
+            <value>true</value>
+        </property>
+    </bean>
+    
+    <bean id="repoRemote" class="org.alfresco.repo.remote.RepoRemoteImpl">
+        <property name="repoRemoteTransport">
+            <ref bean="repoRemoteTransport"/>
+        </property>
+    </bean>
 </beans>

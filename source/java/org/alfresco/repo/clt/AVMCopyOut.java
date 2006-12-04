@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.util.Pair;
 
 /**
  * Copy out a file or a directory recursively from the repository
@@ -40,13 +41,9 @@ public class AVMCopyOut extends CltBase
         {
             fVerbose = false;
         }
-        String [] versionPath = args.get(0).split("@");
-        if (versionPath.length != 2)
-        {
-            usage(USAGE);
-        }
-        String path = versionPath[0];
-        int version = Integer.parseInt(versionPath[1]);
+        Pair<String, Integer> versionPath = splitPathVersion(args.get(0));
+        String path = versionPath.getFirst();
+        int version = versionPath.getSecond();
         AVMNodeDescriptor desc = fAVMRemote.lookup(version, path);
         if (flags.containsKey("-r"))
         {
@@ -55,13 +52,13 @@ public class AVMCopyOut extends CltBase
         }
         if (desc == null)
         {
-            System.err.println(versionPath[0] + " does not exist.");
+            System.err.println(path + " does not exist.");
             fContext.close();
             System.exit(1);
         }
         if (!desc.isFile())
         {
-            System.err.println(versionPath[0] + " is not a file.");
+            System.err.println(path + " is not a file.");
             fContext.close();
             System.exit(1);
         }

@@ -1510,11 +1510,11 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 		if ( file.isDirectory())
 			throw new AccessDeniedException();
 
-    	// If the content channel is not open for the file then start a transaction
+    	// If the content channel is not open for the file, or the channel is not writable, then start a transaction
     	
     	AVMNetworkFile avmFile = (AVMNetworkFile) file;
     	
-    	if ( avmFile.hasContentChannel() == false)
+    	if ( avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
     		sess.beginTransaction( m_transactionService, true);
     	
 		// Write the data to the file

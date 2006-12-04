@@ -468,6 +468,16 @@ public class AVMNetworkFile extends NetworkFile {
     }
     
     /**
+     * Return the writable state of the content channel
+     * 
+     * @return boolean
+     */
+    public final boolean isWritable()
+    {
+    	return m_writable;
+    }
+    
+    /**
      * Return the network file details as a string
      * 
      * @return String

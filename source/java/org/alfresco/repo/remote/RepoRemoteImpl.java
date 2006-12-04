@@ -10,6 +10,8 @@ import java.util.Map;
 import org.alfresco.service.cmr.remote.RepoRemote;
 import org.alfresco.service.cmr.remote.RepoRemoteTransport;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Client side implementation of RepoRemote interface.
@@ -57,7 +59,7 @@ public class RepoRemoteImpl implements RepoRemote
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.remote.RepoRemote#getListing(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public Map<String, NodeRef> getListing(NodeRef dir) 
+    public Map<String, Pair<NodeRef, QName>> getListing(NodeRef dir) 
     {
         return fTransport.getListing(ClientTicketHolder.GetTicket(), dir);
     }

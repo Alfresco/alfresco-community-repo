@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * A highly simplified remote interface for the repo.
@@ -26,7 +28,7 @@ public interface RepoRemote
      * @param dir The node ref of the directory.
      * @return A Map of names to node refs.
      */
-    public Map<String, NodeRef> getListing(NodeRef dir);
+    public Map<String, Pair<NodeRef, QName>> getListing(NodeRef dir);
     
     /**
      * Lookup a node by path relative to a node.

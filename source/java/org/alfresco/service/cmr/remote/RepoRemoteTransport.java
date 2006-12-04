@@ -3,11 +3,11 @@
  */
 package org.alfresco.service.cmr.remote;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Over the wire, and authentication safe flavor of
@@ -27,7 +27,7 @@ public interface RepoRemoteTransport
      * @param dir The node ref of the directory.
      * @return A Map of names to node refs.
      */
-    public Map<String, NodeRef> getListing(String ticket, NodeRef dir);
+    public Map<String, Pair<NodeRef, QName>> getListing(String ticket, NodeRef dir);
     
     /**
      * Lookup a node by path relative to a node.

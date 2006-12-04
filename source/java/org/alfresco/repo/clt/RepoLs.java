@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * List the contents of a directory in a repo.
@@ -45,10 +47,10 @@ public class RepoLs extends CltBase
                 System.exit(1);
             }
         }
-        Map<String, NodeRef> listing = fRepoRemote.getListing(dir);
+        Map<String, Pair<NodeRef, QName>> listing = fRepoRemote.getListing(dir);
         for (String name : listing.keySet())
         {
-            System.out.println(name);
+            System.out.println(name + "\t" + listing.get(name));
         }
     }
 

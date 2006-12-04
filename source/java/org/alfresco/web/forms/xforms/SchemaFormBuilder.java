@@ -2603,6 +2603,7 @@ public class SchemaFormBuilder
       namespaces.put(SchemaFormBuilder.XLINK_NS_PREFIX, SchemaFormBuilder.XLINK_NS);
       namespaces.put(SchemaFormBuilder.XMLEVENTS_NS_PREFIX, SchemaFormBuilder.XMLEVENTS_NS);
       namespaces.put(SchemaFormBuilder.XMLSCHEMA_INSTANCE_NS_PREFIX, SchemaFormBuilder.XMLSCHEMA_INSTANCE_NS);
+      namespaces.put(SchemaFormBuilder.ALFRESCO_NS_PREFIX, SchemaFormBuilder.ALFRESCO_NS);
       for (String nsPrefix : namespaces.keySet())
       {
          this.addNamespace(envelopeElement, nsPrefix, namespaces.get(nsPrefix));
@@ -3202,12 +3203,23 @@ public class SchemaFormBuilder
       String maxConstraint = null;
 
       if (o.minimum > 1) 
+      {
          //if 0 or 1 -> no constraint (managed by "required")
          minConstraint = "count(.) >= " + o.minimum;
+         bindElement.setAttributeNS(ALFRESCO_NS,
+                                    ALFRESCO_NS_PREFIX + "minimum",
+                                    String.valueOf(o.minimum));
+      } 
 
       if (o.maximum > 1) 
+      {
          //if 1 or unbounded -> no constraint
          maxConstraint = "count(.) <= " + o.maximum;
+         bindElement.setAttributeNS(ALFRESCO_NS,
+                                    ALFRESCO_NS_PREFIX + "maximum",
+                                    String.valueOf(o.maximum));
+
+      }
 
       final String constraint = (minConstraint != null && maxConstraint != null
                                  ? minConstraint + " and " + maxConstraint

@@ -10,6 +10,8 @@ var XHTML_NS = "http://www.w3.org/1999/xhtml";
 var XHTML_NS_PREFIX = "xhtml";
 var CHIBA_NS = "http://chiba.sourceforge.net/xforms";
 var CHIBA_NS_PREFIX = "chiba";
+var ALFRESCO_NS = "http://www.alfresco.org/alfresco";
+var ALFRESCO_NS_PREFIX = "alfresco";
 
 var EXPANDED_IMAGE = new Image();
 EXPANDED_IMAGE.src = WEBAPP_CONTEXT + "/images/icons/expanded.gif";
@@ -811,11 +813,23 @@ dojo.declare("alfresco.xforms.Repeat",
                  this.repeatControls = [];
                  this._selectedIndex = -1;
 	       },
+               isInsertRepeatItemEnabled: function()
+               {
+                 var maximum = this.xform.getBinding(this.xformsNode).maximum;
+                 maximum = isNaN(maximum) ? Number.MAX_VALUE : maximum;
+                 return this.children.length < maximum;
+               },
+               isRemoveRepeatItemEnabled: function()
+               {
+                 var minimum = this.xform.getBinding(this.xformsNode).minimum;
+                 minimum = isNaN(minimum) ? this.isRequired() ? 1 : 0 : minimum;
+                 return this.children.length > minimum;
+               },
                insertChildAt: function(child, position)
 	       {
                  this.repeatControls.splice(position, 0, document.createElement("div"));
 	         var images = [ 
-	           { name: "addRepeatItemImage", src: "plus", action: this._insertRepeatItemAfter_handler },
+	           { name: "insertRepeatItemImage", src: "plus", action: this._insertRepeatItemAfter_handler },
 	           { name: "moveRepeatItemUpImage", src: "arrow_up", action: this._moveRepeatItemUp_handler },
 	           { name: "moveRepeatItemDownImage", src: "arrow_down", action: this._moveRepeatItemDown_handler }, 
 	           { name: "removeRepeatItemImage", src: "minus", action: this._removeRepeatItem_handler }
@@ -874,12 +888,11 @@ dojo.declare("alfresco.xforms.Repeat",
 	       },
                removeChildAt: function(position)
                {
-	         var result = this.inherited("removeChildAt", [ position ]);
                  this.repeatControls[position].style.display = "none";
                  dojo.dom.removeChildren(this.repeatControls[position]);
                  dojo.dom.removeNode(this.repeatControls[position]);
                  this.repeatControls.splice(position, 1);
-                 return result;
+                 return this.inherited("removeChildAt", [ position ]);
                },
 	       getSelectedIndex: function()
 	       {
@@ -929,6 +942,9 @@ dojo.declare("alfresco.xforms.Repeat",
 	       {
 	         dojo.event.browser.stopEvent(event);
                  var repeat = event.target.repeat;
+                 if (!repeat.isInsertRepeatItemEnabled())
+                   return;
+
                  var index = repeat.repeatControls.indexOf(event.target.parentNode);
                  var repeatItem = repeat.getChildAt(index);
 	         this.setFocusedChild(repeatItem);
@@ -940,6 +956,8 @@ dojo.declare("alfresco.xforms.Repeat",
                  if (this.children.length == 0)
                  {
                    dojo.event.browser.stopEvent(event);
+                   if (!repeat.isInsertRepeatItemEnabled())
+                     return;
                    this.setFocusedChild(null);
                    var trigger = this._getRepeatItemTrigger("insert", { position: "before" });
                    this.xform.fireAction(trigger.id);
@@ -949,6 +967,9 @@ dojo.declare("alfresco.xforms.Repeat",
 	       {
 	         dojo.event.browser.stopEvent(event);
                  var repeat = event.target.repeat;
+                 if (!repeat.isRemoveRepeatItemEnabled())
+                   return;
+
                  var index = repeat.repeatControls.indexOf(event.target.parentNode);
                  var repeatItem = repeat.getChildAt(index);
 	         this.setFocusedChild(repeatItem);
@@ -1128,10 +1149,17 @@ dojo.declare("alfresco.xforms.Repeat",
                },
                _updateRepeatControls: function()
                {
+                 var insertEnabled = this.isInsertRepeatItemEnabled();
+                 var removeEnabled = this.isRemoveRepeatItemEnabled();
                  for (var i = 0; i < this.repeatControls.length; i++)
                  {
                    this.repeatControls[i].moveRepeatItemUpImage.style.opacity = i == 0 ? .3 : 1;
-                   this.repeatControls[i].moveRepeatItemDownImage.style.opacity = i == this.repeatControls.length - 1 ? .3 : 1;
+                   this.repeatControls[i].moveRepeatItemDownImage.style.opacity = 
+                     (i == this.repeatControls.length - 1 ? .3 : 1);
+                   this.repeatControls[i].insertRepeatItemImage.style.opacity = 
+                     (insertEnabled ? 1 : .3);
+                   this.repeatControls[i].removeRepeatItemImage.style.opacity = 
+                     (removeEnabled ? 1 : .3);
                  }
                },
                _childAddedListener: function(event)
@@ -1449,6 +1477,8 @@ dojo.declare("alfresco.xforms.XForm",
                        nodeset: bind.childNodes[i].getAttribute(XFORMS_NS_PREFIX + ":nodeset"),
                        type: bind.childNodes[i].getAttribute(XFORMS_NS_PREFIX + ":type"),
                        constraint: bind.childNodes[i].getAttribute(XFORMS_NS_PREFIX + ":constraint"),
+                       maximum: parseInt(bind.childNodes[i].getAttribute(ALFRESCO_NS_PREFIX + ":maximum")),
+                       minimum: parseInt(bind.childNodes[i].getAttribute(ALFRESCO_NS_PREFIX + ":minimum")),
                        parent: parent,
                        widgets: {}
 	             };

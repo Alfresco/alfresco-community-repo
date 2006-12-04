@@ -16,7 +16,6 @@ import org.alfresco.service.cmr.remote.RepoRemote;
 import org.alfresco.service.cmr.remote.RepoRemoteTransport;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 
@@ -293,7 +292,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#getListing(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
-    public Map<String, Pair<NodeRef, QName>> getListing(String ticket, NodeRef dir) 
+    public Map<String, Pair<NodeRef, Boolean>> getListing(String ticket, NodeRef dir) 
     {
         fAuthService.validate(ticket);
         return fRepoRemote.getListing(dir);
@@ -311,7 +310,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#lookup(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public NodeRef lookup(String ticket, NodeRef base, String path) 
+    public Pair<NodeRef, Boolean> lookup(String ticket, NodeRef base, String path) 
     {
         fAuthService.validate(ticket);
         return fRepoRemote.lookup(base, path);

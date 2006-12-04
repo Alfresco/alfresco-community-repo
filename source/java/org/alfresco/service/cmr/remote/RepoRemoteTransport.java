@@ -6,7 +6,6 @@ package org.alfresco.service.cmr.remote;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
@@ -27,7 +26,7 @@ public interface RepoRemoteTransport
      * @param dir The node ref of the directory.
      * @return A Map of names to node refs.
      */
-    public Map<String, Pair<NodeRef, QName>> getListing(String ticket, NodeRef dir);
+    public Map<String, Pair<NodeRef, Boolean>> getListing(String ticket, NodeRef dir);
     
     /**
      * Lookup a node by path relative to a node.
@@ -35,7 +34,7 @@ public interface RepoRemoteTransport
      * @param path The relative path.
      * @return The node ref or null.
      */
-    public NodeRef lookup(String ticket, NodeRef base, String path);
+    public Pair<NodeRef, Boolean> lookup(String ticket, NodeRef base, String path);
     
     /**
      * Create a file relative to a base node.

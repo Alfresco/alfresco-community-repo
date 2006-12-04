@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
@@ -39,21 +38,44 @@ public class RepoLs extends CltBase
             {
                 path = path.substring(1);
             }
-            dir = fRepoRemote.lookup(root, path);
-            if (dir == null)
+            Pair<NodeRef, Boolean> info = fRepoRemote.lookup(root, path);
+            if (info == null)
             {
                 System.err.println(path + " does not exist");
                 fContext.close();
                 System.exit(1);
             }
+            dir = info.getFirst();
         }
-        Map<String, Pair<NodeRef, QName>> listing = fRepoRemote.getListing(dir);
+        if (flags.containsKey("-R"))
+        {
+            recursiveList(dir, 0);
+            return;
+        }
+        Map<String, Pair<NodeRef, Boolean>> listing = fRepoRemote.getListing(dir);
         for (String name : listing.keySet())
         {
             System.out.println(name + "\t" + listing.get(name));
         }
     }
 
+    private void recursiveList(NodeRef dir, int indent)
+    {
+        Map<String, Pair<NodeRef, Boolean>> listing = fRepoRemote.getListing(dir);
+        for (Map.Entry<String, Pair<NodeRef, Boolean>> entry : listing.entrySet())
+        {
+            for (int i = 0; i < indent; i++)
+            {
+                System.out.print(' ');
+            }
+            System.out.println(entry.getKey() + '\t' + entry.getValue());
+            if (entry.getValue().getSecond())
+            {
+                recursiveList(entry.getValue().getFirst(), indent + 2);
+            }
+        }
+    }
+    
     public static void main(String[] args)
     {
         RepoLs me = new RepoLs();

@@ -12,7 +12,6 @@ import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -23,7 +22,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
@@ -126,22 +124,14 @@ public class RepoRemoteService implements RepoRemote
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.remote.RepoRemote#getListing(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public Map<String, Pair<NodeRef, QName>> getListing(NodeRef dir) 
+    public Map<String, Pair<NodeRef, Boolean>> getListing(NodeRef dir) 
     {
-        List<ChildAssociationRef> listing = fNodeService.getChildAssocs(dir);
-        Map<String, Pair<NodeRef, QName>> result = new TreeMap<String, Pair<NodeRef, QName>>();
-        for (ChildAssociationRef child : listing)
+        Map<String, Pair<NodeRef, Boolean>> result = new TreeMap<String, Pair<NodeRef, Boolean>>();
+        List<FileInfo> listing = fFileFolderService.list(dir);
+        for (FileInfo info : listing)
         {
-            fgLogger.error(child.getQName());
-            NodeRef childRef = child.getChildRef();
-            QName type = fNodeService.getType(childRef);
-            if (type.equals(ContentModel.TYPE_CONTENT) ||
-                type.equals(ContentModel.TYPE_FOLDER))
-            {
-                result.put(child.getQName().getLocalName(), 
-                           new Pair<NodeRef, QName>(child.getChildRef(), 
-                                                    type));
-            }
+            result.put(info.getName(), new Pair<NodeRef, Boolean>(info.getNodeRef(),
+                                                                  info.isFolder()));
         }
         return result;
     }
@@ -167,26 +157,18 @@ public class RepoRemoteService implements RepoRemote
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.remote.RepoRemote#lookup(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public NodeRef lookup(NodeRef base, String path) 
+    public Pair<NodeRef, Boolean> lookup(NodeRef base, String path) 
     {
         List<String> pathList = splitPath(path);
-        NodeRef curr = base;
-        for (String name : pathList)
+        try 
         {
-            fgLogger.error(name);
-            NodeRef next = fNodeService.getChildByName(curr, ContentModel.ASSOC_CONTAINS, name);
-            if (next == null)
-            {
-                fgLogger.error("Wasn't a contains.");
-                next = fNodeService.getChildByName(curr, ContentModel.ASSOC_CHILDREN, name);
-                if (next == null)
-                {
-                    return null;
-                }
-            }
-            curr = next;
+            FileInfo info = fFileFolderService.resolveNamePath(base, pathList);
+            return new Pair<NodeRef, Boolean>(info.getNodeRef(), info.isFolder());
+        } 
+        catch (FileNotFoundException e) 
+        {
+            return null;
         }
-        return curr;
     }
 
     /* (non-Javadoc)
@@ -202,7 +184,7 @@ public class RepoRemoteService implements RepoRemote
      */
     public InputStream readFile(NodeRef base, String path) 
     {
-        NodeRef fileRef = lookup(base, path);
+        NodeRef fileRef = lookup(base, path).getFirst();
         if (fileRef == null)
         {
             throw new AlfrescoRuntimeException("Not Found: " + path);
@@ -223,7 +205,7 @@ public class RepoRemoteService implements RepoRemote
      */
     public void removeNode(NodeRef base, String path) 
     {
-        NodeRef toRemove = lookup(base, path);
+        NodeRef toRemove = lookup(base, path).getFirst();
         if (toRemove == null)
         {
             throw new AlfrescoRuntimeException("Not Found: " + path);
@@ -236,7 +218,7 @@ public class RepoRemoteService implements RepoRemote
      */
     public void rename(NodeRef base, String src, String dst) 
     {
-        NodeRef srcRef = lookup(base, src);
+        NodeRef srcRef = lookup(base, src).getFirst();
         if (srcRef == null)
         {
             throw new AlfrescoRuntimeException("Not Found: " + src);
@@ -257,7 +239,7 @@ public class RepoRemoteService implements RepoRemote
      */
     public OutputStream writeFile(NodeRef base, String path) 
     {
-        NodeRef target = lookup(base, path);
+        NodeRef target = lookup(base, path).getFirst();
         return fContentService.getWriter(target, ContentModel.PROP_CONTENT, true).getContentOutputStream();
     }
     

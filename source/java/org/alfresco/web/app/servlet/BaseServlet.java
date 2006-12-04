@@ -244,7 +244,7 @@ public abstract class BaseServlet extends HttpServlet
    {
       NodeRef nodeRef = null;
 
-      List<String> paths = new ArrayList<String>(args.length-1);
+      List<String> paths = new ArrayList<String>(args.length - 1);
       
       FileInfo file = null;
       try
@@ -259,12 +259,14 @@ public abstract class BaseServlet extends HttpServlet
             logger.debug("Attempting to resolve webdav path: " + paths);
          
          // get the company home node to start the search from
-         NodeRef companyHome = new NodeRef(Repository.getStoreRef(), 
-               Application.getCompanyRootId());
+         nodeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
          
-         FileFolderService ffs = (FileFolderService)wc.getBean("FileFolderService");
-         file = ffs.resolveNamePath(companyHome, paths);
-         nodeRef = file.getNodeRef();
+         if (paths.size() != 0)
+         {
+            FileFolderService ffs = (FileFolderService)wc.getBean("FileFolderService");
+            file = ffs.resolveNamePath(nodeRef, paths);
+            nodeRef = file.getNodeRef();
+         }
          
          if (logger.isDebugEnabled())
             logger.debug("Resolved webdav path to NodeRef: " + nodeRef);

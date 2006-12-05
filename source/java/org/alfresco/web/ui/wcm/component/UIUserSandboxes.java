@@ -337,7 +337,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif",
-                        "#{AVMBrowseBean.submitAll}", null));
+                        "#{AVMBrowseBean.setupSubmitAllAction}", "dialog:submitSandboxItems"));
                   out.write("&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(
@@ -663,7 +663,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write(":&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
                fc, userStorePrefix, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
-               "#{AVMBrowseBean.submitSelected}", null));
+               "#{AVMBrowseBean.setupSandboxAction}", "dialog:submitSandboxItems"));
          out.write("&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
                fc, userStorePrefix, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
@@ -1048,7 +1048,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    {
       List<AVMNodeDescriptor> nodes = null;
       
-      if (username != null)
+      if (username != null && this.checkedItems != null)
       {
          List<AVMNodeDescriptor> paths = this.userNodes.get(username);
          if (paths != null)

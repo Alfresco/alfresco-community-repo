@@ -215,13 +215,13 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
    }
    
    /**
-    * Deserialize the workflow params from a content stream
+    * Deserialize the default workflow params from a content stream
     * 
     * @param workflowRef        The noderef to write the property too
     * 
     * @return Serializable workflow params
     */
-   private Serializable deserializeWorkflowParams(NodeRef workflowRef)
+   public static Serializable deserializeWorkflowParams(NodeRef workflowRef)
    {
       try
       {

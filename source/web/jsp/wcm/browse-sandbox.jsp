@@ -217,7 +217,6 @@
                                  <a:actionLink id="col10-act1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.fileType16}" showLink="false" styleClass="inlineAction" />
                               </f:facet>
                               <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
-                              <r:lockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
                            </a:column>
                            
                            <%-- Description column --%>

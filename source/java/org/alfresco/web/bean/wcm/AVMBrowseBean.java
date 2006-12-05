@@ -116,6 +116,7 @@ public class AVMBrowseBean implements IContextListener
    private String sandboxTitle = null;
    private String currentPath = null;
    private AVMNode currentPathNode = null;
+   private boolean submitAll = false;
    
    /* component references */
    private UIRichList foldersRichList;
@@ -686,6 +687,21 @@ public class AVMBrowseBean implements IContextListener
       }
    }
    
+   /**
+    * Return the list of selected items for the current user sandbox view
+    * 
+    * @return List of AVMNodeDescriptor objects representing selected items
+    */
+   public List<AVMNodeDescriptor> getSelectedSandboxItems()
+   {
+      return this.userSandboxes.getSelectedNodes(this.username);
+   }
+   
+   public boolean getSubmitAll()
+   {
+      return this.submitAll;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Action event handlers
@@ -740,6 +756,14 @@ public class AVMBrowseBean implements IContextListener
       // update UI state ready for return to the previous screen
       this.location = null;
       setCurrentPath(null);
+      
+      this.submitAll = false;
+   }
+   
+   public void setupSubmitAllAction(ActionEvent event)
+   {
+      setupSandboxAction(event);
+      this.submitAll = true;
    }
    
    /**

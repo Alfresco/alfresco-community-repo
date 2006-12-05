@@ -313,7 +313,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     * @param params             Serializable workflow params
     * @param workflowRef        The noderef to write the property too
     */
-   private void serializeWorkflowParams(Serializable params, NodeRef workflowRef)
+   public static void serializeWorkflowParams(Serializable params, NodeRef workflowRef)
    {
       try
       {

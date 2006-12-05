@@ -177,6 +177,10 @@
          <dialog name="editFormTemplateWorkflow" page="/jsp/wcm/create-website-wizard/form-workflow.jsp" managed-bean="EditFormWorkflowDialog"
                  icon="/images/icons/manage_workflow_task_large.gif" title-id="form_template_workflow" 
                  description-id="form_template_workflow_desc" />
+         
+         <dialog name="submitSandboxItems" page="/jsp/wcm/submit-dialog.jsp" managed-bean="SubmitDialog"
+                 icon="/images/icons/submit_large.gif" title-id="submit_items_title" 
+                 description-id="submit_items_desc" />
       </dialogs>
    </config>
    

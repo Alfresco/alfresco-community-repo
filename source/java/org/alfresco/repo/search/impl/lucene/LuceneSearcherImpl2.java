@@ -32,6 +32,7 @@ import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
+import org.alfresco.repo.search.impl.lucene.QueryParser.Operator;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -203,14 +204,14 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
             try
             {
 
-                int defaultOperator;
+                Operator defaultOperator;
                 if (searchParameters.getDefaultOperator() == SearchParameters.AND)
                 {
-                    defaultOperator = LuceneQueryParser.DEFAULT_OPERATOR_AND;
+                    defaultOperator = LuceneQueryParser.AND_OPERATOR;
                 }
                 else
                 {
-                    defaultOperator = LuceneQueryParser.DEFAULT_OPERATOR_OR;
+                    defaultOperator = LuceneQueryParser.OR_OPERATOR;
                 }
 
                 Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, new LuceneAnalyser(

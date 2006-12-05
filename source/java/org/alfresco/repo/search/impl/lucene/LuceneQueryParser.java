@@ -63,7 +63,7 @@ public class LuceneQueryParser extends QueryParser
      *             if the parsing fails
      */
     static public Query parse(String query, String field, Analyzer analyzer,
-            NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, int defaultOperator)
+            NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, Operator defaultOperator)
             throws ParseException
     {
         if (s_logger.isDebugEnabled())
@@ -71,7 +71,7 @@ public class LuceneQueryParser extends QueryParser
             s_logger.debug("Using Alfresco Lucene Query Parser for query: " + query);
         }
         LuceneQueryParser parser = new LuceneQueryParser(field, analyzer);
-        parser.setOperator(defaultOperator);
+        parser.setDefaultOperator(defaultOperator);
         parser.setNamespacePrefixResolver(namespacePrefixResolver);
         parser.setDictionaryService(dictionaryService);
         return parser.parse(query);

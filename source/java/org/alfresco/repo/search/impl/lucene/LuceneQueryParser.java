@@ -19,12 +19,15 @@ package org.alfresco.repo.search.impl.lucene;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.query.PathQuery;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -124,6 +127,18 @@ public class LuceneQueryParser extends QueryParser
                 PathQuery pathQuery = handler.getQuery();
                 pathQuery.setRepeats(true);
                 return pathQuery;
+            }
+            else if(field.equals("TEXT"))
+            {
+                Set<QName> contentAttributes = getContentAttributes();
+                BooleanQuery query = new BooleanQuery();
+                for(QName qname : contentAttributes)
+                {
+                    // The super implementation will create phrase queries etc if required
+                    Query part = super.getFieldQuery("@"+qname.toString(), queryText);
+                    query.add(part, Occur.SHOULD);
+                }
+                return query;
             }
             else if (field.equals("ID"))
             {
@@ -278,8 +293,7 @@ public class LuceneQueryParser extends QueryParser
                     PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
                     if((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
                     {
-                        TermQuery termQuery = new TermQuery(new Term(expandedFieldName, queryText));
-                        return termQuery;
+                        return super.getFieldQuery(expandedFieldName, queryText);
                     }
                             
                 }
@@ -299,6 +313,37 @@ public class LuceneQueryParser extends QueryParser
             throw new ParseException("Failed to parse XPath...\n" + e.getMessage());
         }
 
+    }
+
+    private Set<QName> getContentAttributes()
+    {
+        HashSet<QName> contentAttributes = new HashSet<QName>();
+        
+        for(QName type : dictionaryService.getAllTypes())
+        {
+            Map<QName, PropertyDefinition> props = dictionaryService.getType(type).getProperties();
+            for(QName prop : props.keySet())
+            {
+                if(props.get(prop).getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                {
+                    contentAttributes.add(prop);
+                }
+            }
+        }
+        
+        for(QName aspect : dictionaryService.getAllAspects())
+        {
+            Map<QName, PropertyDefinition> props = dictionaryService.getAspect(aspect).getProperties();
+            for(QName prop : props.keySet())
+            {
+                if(props.get(prop).getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                {
+                    contentAttributes.add(prop);
+                }
+            }
+        }
+        
+        return contentAttributes;
     }
 
     /**
@@ -374,5 +419,7 @@ public class LuceneQueryParser extends QueryParser
     {
         this.dictionaryService = dictionaryService;
     }
+    
+    
 
 }

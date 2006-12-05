@@ -1515,7 +1515,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                             // don't index from the reader
                             readerReady = false;
                             // not indexed: no transformation
-                            doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                            //doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                             doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                         }
                         else if (indexAtomicPropertiesOnly
@@ -1550,7 +1550,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                                 readerReady = false;
                                 // not indexed: transformation
                                 // failed
-                                doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                                //doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                                 doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                             }
                         }
@@ -1560,18 +1560,18 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     if (readerReady)
                     {
                         InputStreamReader isr = null;
-                        InputStream ris = reader.getContentInputStream();
-                        try
-                        {
-                            isr = new InputStreamReader(ris, "UTF-8");
-                        }
-                        catch (UnsupportedEncodingException e)
-                        {
-                            isr = new InputStreamReader(ris);
-                        }
-                        doc.add(new Field("TEXT", isr, Field.TermVector.NO));
+                        //InputStream ris = reader.getContentInputStream();
+                        //try
+                        //{
+                        //    isr = new InputStreamReader(ris, "UTF-8");
+                        // }
+                        //catch (UnsupportedEncodingException e)
+                       // {
+                        //    isr = new InputStreamReader(ris);
+                        //}
+                        //doc.add(new Field("TEXT", isr, Field.TermVector.NO));
 
-                        ris = reader.getReader().getContentInputStream();
+                        InputStream ris = reader.getReader().getContentInputStream();
                         try
                         {
                             isr = new InputStreamReader(ris, "UTF-8");

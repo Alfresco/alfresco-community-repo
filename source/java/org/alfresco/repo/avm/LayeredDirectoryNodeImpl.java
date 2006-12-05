@@ -555,6 +555,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         AVMNode child = null;
+        boolean indirect = false;
         if (entry != null)
         {
             child = entry.getChild();
@@ -567,13 +568,21 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         else
         {
             child = lookupChild(lPath, name, false);
+            indirect = true;            
         }
-        AVMNode ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
-                lPath.getAVMStore());
-        AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
-        AVMDAOs.Instance().fAVMNodeDAO.flush();
-        ghost.setAncestor(child);
-        this.putChild(name, ghost);
+        if (child != null && (indirect || child.getStoreNew() == null || child.getAncestor() != null))
+        {
+            AVMNode ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
+                    lPath.getAVMStore());
+            AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
+            AVMDAOs.Instance().fAVMNodeDAO.flush();
+            ghost.setAncestor(child);
+            this.putChild(name, ghost);
+        }
+        else
+        {
+            AVMDAOs.Instance().fAVMNodeDAO.flush();
+        }
     }
     
     /**

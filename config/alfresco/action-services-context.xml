@@ -404,6 +404,9 @@
     	<property name="avmSyncService">
     	    <ref bean="avmSyncService"/>
     	</property>    
+    	<property name="excluder">
+    		<ref bean="globalPathExcluder"/>
+    	</property>
     	<property name="publicAction">
     	    <value>false</value>
     	</property>

@@ -19,6 +19,8 @@ package org.alfresco.service.cmr.avmsync;
 
 import java.util.List;
 
+import org.alfresco.util.NameMatcher;
+
 /**
  * This service handles comparisons and synchronizations between
  * corresponding avm node trees.
@@ -32,11 +34,13 @@ public interface AVMSyncService
      * @param srcPath The avm path to the source tree.
      * @param dstVersion The version id for the destination tree.
      * @param dstPath The avm path to the destination tree.
+     * @param excluder A NameMatcher used to exclude files from consideration.
      * @return A List of AVMDifference structs which can be used for
      * the update operation.
      */
     public List<AVMDifference> compare(int srcVersion, String srcPath, 
-                                       int dstVersion, String dstPath);
+                                       int dstVersion, String dstPath,
+                                       NameMatcher excluder);
     
     /**
      * Updates the destination nodes in the AVMDifferences
@@ -56,7 +60,7 @@ public interface AVMSyncService
      * @param tag Short comment.
      * @param description Full update blurb.
      */
-    public void update(List<AVMDifference> diffList, boolean ignoreConflicts, boolean ignoreOlder,
+    public void update(List<AVMDifference> diffList, NameMatcher excluder, boolean ignoreConflicts, boolean ignoreOlder,
                        boolean overrideConflicts, boolean overrideOlder, String tag, String description);
     
     /**

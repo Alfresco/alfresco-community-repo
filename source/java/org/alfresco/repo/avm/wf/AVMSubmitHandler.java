@@ -78,10 +78,10 @@ public class AVMSubmitHandler extends JBPMSpringActionHandler
             getStringValue();
         String avmDest = webSiteName + "-staging:" + storePath[1];
         List<AVMDifference> diffs = 
-            fAVMSyncService.compare(-1, avmSource, -1, avmDest);
+            fAVMSyncService.compare(-1, avmSource, -1, avmDest, null);
         // TODO fix update comments if needed.
         // Ignore conflicts and older nodes for now.
-        fAVMSyncService.update(diffs, true, true, false, false, null, null);
+        fAVMSyncService.update(diffs, null, true, true, false, false, null, null);
         // Now flatten out the source.
         fAVMSyncService.flatten(avmSource, avmDest);
     }

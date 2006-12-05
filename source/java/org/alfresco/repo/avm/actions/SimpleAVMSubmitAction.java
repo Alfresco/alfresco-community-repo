@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
@@ -56,6 +57,11 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
     private AVMSyncService fAVMSyncService;
     
     /**
+     * The Excluding NameMatcher.
+     */
+    private NameMatcher fExcluder;
+    
+    /**
      * Default constructor.
      */
     public SimpleAVMSubmitAction()
@@ -79,6 +85,16 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
     public void setAvmSyncService(AVMSyncService avmSyncService)
     {
         fAVMSyncService = avmSyncService;
+    }
+    
+    // TODO This should be a parameter of the action execution really.
+    /**
+     * Set the excluder.
+     * @param excluder
+     */
+    public void setExcluder(NameMatcher excluder)
+    {
+        fExcluder = excluder;
     }
     
     /**
@@ -114,10 +130,10 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         String avmDest = websiteName + "-staging:" + storePath[1];
         // Get the difference between source and destination.
         List<AVMDifference> diffs = 
-            fAVMSyncService.compare(version, path, -1, avmDest);
+            fAVMSyncService.compare(version, path, -1, avmDest, fExcluder);
         // TODO fix update comments at some point.
         // Do the update.
-        fAVMSyncService.update(diffs, false, false, true, true,
+        fAVMSyncService.update(diffs, fExcluder, false, false, true, true,
               "Submit of item: " + AVMNodeConverter.SplitBase(path)[1], null);
         // Cleanup by flattening the source relative to the destination.
         AVMDAOs.Instance().fAVMNodeDAO.flush();

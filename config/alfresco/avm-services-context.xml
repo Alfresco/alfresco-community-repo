@@ -243,6 +243,36 @@
         </property>
     </bean>
 
+	<!-- NameMatcher beans for filtering what shows up as different in compares. -->
+	
+    <bean id="excludeRegexMatcher" class="org.alfresco.util.RegexNameMatcher">
+        <property name="patterns">
+            <list>
+            	<value>.*/#.*</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="excludeExtensionMatcher" class="org.alfresco.repo.avm.util.FileExtensionNameMatcher">
+    	<property name="extensions">
+    	    <list>
+    	        <value>.o</value>
+    	        <value>.bak</value>
+    	        <value>.tmp</value>
+    	        <value>~</value>
+    	    </list>
+    	</property>
+    </bean>   
+    
+    <bean id="globalPathExcluder" class="org.alfresco.util.OrCompositeNameMatcher">
+        <property name="matchers">
+            <list>
+                <ref bean="excludeExtensionMatcher"/>
+                <ref bean="excludeRegexMatcher"/>
+            </list>
+        </property>
+    </bean>
+
 </beans>
 
 	

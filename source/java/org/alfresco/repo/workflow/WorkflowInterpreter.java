@@ -720,8 +720,8 @@ public class WorkflowInterpreter
                 	if (avmSourceIndirection != null)
                 	{
                     	avmService.createLayeredDirectory(avmSourceIndirection, packagesPath, packageName);
-                		List<AVMDifference> diff = avmSyncService.compare(-1, avmSource.getPath(), -1, packagesPath + "/" + packageName);
-                        avmSyncService.update(diff, true, true, false, false, null, null);
+                		List<AVMDifference> diff = avmSyncService.compare(-1, avmSource.getPath(), -1, packagesPath + "/" + packageName, null);
+                        avmSyncService.update(diff, null, true, true, false, false, null, null);
                 	}
                 	else
                 	{

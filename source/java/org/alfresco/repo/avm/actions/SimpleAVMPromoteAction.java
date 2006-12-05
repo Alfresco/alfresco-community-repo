@@ -89,10 +89,10 @@ public class SimpleAVMPromoteAction extends ActionExecuterAbstractBase
         String targetPath = targetStoreName + ":" + storePath[1];
         // Find the differences.
         List<AVMDifference> diffs = 
-            fAVMSyncService.compare(version, path, -1, targetPath);
+            fAVMSyncService.compare(version, path, -1, targetPath, null);
         // TODO fix update comments at some point.
         // Do the promote.
-        fAVMSyncService.update(diffs, true, true, false, false, null, null);
+        fAVMSyncService.update(diffs, null, true, true, false, false, null, null);
         // Flatten the source on top of the destination.
         fAVMSyncService.flatten(storePath[0] + ":/appBase", 
                                 targetStoreName + ":/appBase");

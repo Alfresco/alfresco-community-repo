@@ -229,13 +229,20 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             {
                 return;
             }
-            AVMNode ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
-                     lPath.getAVMStore());
             AVMDAOs.Instance().fChildEntryDAO.delete(entry);
-            AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
-            ghost.setAncestor(child);
-            putChild(name, ghost);
+            if (child.getStoreNew() == null || child.getAncestor() != null)
+            {
+                AVMNode ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
+                                                    lPath.getAVMStore());
+                AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
+                AVMDAOs.Instance().fAVMNodeDAO.flush();
+                ghost.setAncestor(child);
+                putChild(name, ghost);
+            }
+            else
+            {
+                AVMDAOs.Instance().fAVMNodeDAO.flush();
+            }
         }
     }
 

@@ -24,16 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.util.NameMatcher;
 import org.apache.log4j.Logger;
 
 /**
@@ -83,11 +81,13 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param srcPath The avm path to the source tree.
      * @param dstVersion The version id for the destination tree.
      * @param dstPath The avm path to the destination tree.
+     * @param excluder A NameMatcher used to exclude files from consideration.
      * @return A List of AVMDifference structs which can be used for
      * the update operation.
      */
     public List<AVMDifference> compare(int srcVersion, String srcPath, 
-                                       int dstVersion, String dstPath)
+                                       int dstVersion, String dstPath,
+                                       NameMatcher excluder)
     {
         if (srcPath == null || dstPath == null)
         {
@@ -110,7 +110,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         else
         {
             // Invoke the recursive implementation.
-            compare(srcVersion, srcDesc, dstVersion, dstDesc, result);
+            compare(srcVersion, srcDesc, dstVersion, dstDesc, result, excluder);
         }
         return result;
     }
@@ -124,9 +124,14 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private void compare(int srcVersion, AVMNodeDescriptor srcDesc,
                          int dstVersion, AVMNodeDescriptor dstDesc,
-                         List<AVMDifference> result)
+                         List<AVMDifference> result, NameMatcher excluder)
     {
         // Determine how the source and destination nodes differ.
+        if (excluder != null && (excluder.matches(srcDesc.getPath()) ||
+                                 excluder.matches(dstDesc.getPath())))
+        {
+            return;
+        }
         int diffCode = compareOne(srcDesc, dstDesc);
         switch (diffCode)
         {
@@ -168,19 +173,25 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     {
                         AVMNodeDescriptor srcChild = srcList.get(name);
                         AVMNodeDescriptor dstChild = dstList.get(name);
+                        String dstPath = AVMNodeConverter.ExtendAVMPath(dstDesc.getPath(), name);
+                        if (excluder != null && (excluder.matches(srcChild.getPath()) ||
+                                                 excluder.matches(dstPath)))
+                        {
+                            continue;
+                        }
                         if (dstChild == null)
                         {
                             // A missing destination child means the source is NEWER.
                             result.add(new AVMDifference(srcVersion, srcChild.getPath(),
-                                    dstVersion, 
-                                    AVMNodeConverter.ExtendAVMPath(dstDesc.getPath(), name),
-                                    AVMDifference.NEWER));
+                                       dstVersion, 
+                                       dstPath,
+                                       AVMDifference.NEWER));
                             continue;
                         }
                         // Otherwise recursively invoke.
                         compare(srcVersion, srcChild,
                                 dstVersion, dstChild,
-                                result);
+                                result, excluder);
                     }
                     return;
                 }
@@ -203,11 +214,17 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     {
                         AVMNodeDescriptor dstChild = dstList.get(name);
                         AVMNodeDescriptor srcChild = srcList.get(name);
+                        String srcPath = AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name);
+                        if (excluder != null && (excluder.matches(srcPath) ||
+                                                 excluder.matches(dstChild.getPath())))
+                        {
+                            continue;
+                        }
                         if (srcChild == null)
                         {
                             // Missing means the source is older.
                             result.add(new AVMDifference(srcVersion, 
-                                                         AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name),
+                                                         srcPath,
                                                          dstVersion, dstChild.getPath(),
                                                          AVMDifference.OLDER));
                             continue;
@@ -215,7 +232,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                         // Otherwise, recursively invoke.
                         compare(srcVersion, srcChild, 
                                 dstVersion, dstChild,
-                                result);
+                                result, excluder);
                     }
                     return;
                 }
@@ -229,19 +246,25 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 {
                     AVMNodeDescriptor srcChild = srcList.get(name);
                     AVMNodeDescriptor dstChild = dstList.get(name);
+                    String dstPath = AVMNodeConverter.ExtendAVMPath(dstDesc.getPath(), name);
+                    if (excluder != null && (excluder.matches(srcChild.getPath()) ||
+                                             excluder.matches(dstPath)))
+                    {
+                        continue;
+                    }
                     if (dstChild == null)
                     {
                         // Not found in the destination means NEWER.
                         result.add(new AVMDifference(srcVersion, srcChild.getPath(),
                                                      dstVersion,
-                                                     AVMNodeConverter.ExtendAVMPath(dstDesc.getPath(), name),
+                                                     dstPath,
                                                      AVMDifference.NEWER));
                         continue;
                     }
                     // Otherwise recursive invocation.
                     compare(srcVersion, srcChild,
                             dstVersion, dstChild,
-                            result);
+                            result, excluder);
                 }
                 // Iterate over the destination.
                 for (String name : dstList.keySet())
@@ -251,9 +274,15 @@ public class AVMSyncServiceImpl implements AVMSyncService
                         continue;
                     }
                     AVMNodeDescriptor dstChild = dstList.get(name);
+                    String srcPath = AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name);
+                    if (excluder != null && (excluder.matches(srcPath) || 
+                                             excluder.matches(dstChild.getPath())))
+                    {
+                        continue;
+                    }
                     // An entry not found in the source is OLDER.
                     result.add(new AVMDifference(srcVersion,
-                                                 AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name),
+                                                 srcPath,
                                                  dstVersion, dstChild.getPath(),
                                                  AVMDifference.OLDER));
                 }
@@ -272,6 +301,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * which the source of an AVMDifference is older than the destination
      * will cause the transaction to roll back.
      * @param diffList A List of AVMDifference structs.
+     * @param excluder A possibly null name matcher to exclude unwanted updates.
      * @param ignoreConflicts If this is true the update will skip those 
      * AVMDifferences which are in conflict with 
      * the destination.
@@ -284,13 +314,19 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param description Full update blurb.
      * in which the source is older than the destination and overwrite the destination.
      */
-    public void update(List<AVMDifference> diffList, boolean ignoreConflicts, boolean ignoreOlder,
+    public void update(List<AVMDifference> diffList, 
+                       NameMatcher excluder, boolean ignoreConflicts, boolean ignoreOlder,
                        boolean overrideConflicts, boolean overrideOlder, String tag, String description)
     {
         Map<String, Integer> storeVersions = new HashMap<String, Integer>();
         Set<String> destStores = new HashSet<String>();
         for (AVMDifference diff : diffList)
         {
+            if (excluder != null && (excluder.matches(diff.getSourcePath()) ||
+                                     excluder.matches(diff.getDestinationPath())))
+            {
+                continue;
+            }
             if (!diff.isValid())
             {
                 throw new AVMSyncException("Malformed AVMDifference.");
@@ -317,10 +353,6 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
             AVMNodeDescriptor srcDesc = fAVMService.lookup(version,
                                                            diff.getSourcePath(), true);
-//            if (srcDesc == null)
-//            {
-//                throw new AVMSyncException("Source node not found: " + diff.getSourcePath());
-//            }
             String [] dstParts = AVMNodeConverter.SplitBase(diff.getDestinationPath());
             if (dstParts[0] == null || diff.getDestinationVersion() >= 0)
             {
@@ -350,7 +382,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 case AVMDifference.NEWER :
                 {
                     // You can't delete what isn't there.
-                    linkIn(dstParts[0], dstParts[1], srcDesc, dstDesc != null);
+                    linkIn(dstParts[0], dstParts[1], srcDesc, excluder, dstDesc != null);
                     continue;
                 }
                 case AVMDifference.OLDER :
@@ -358,7 +390,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     // You can force it.
                     if (overrideOlder)
                     {
-                        linkIn(dstParts[0], dstParts[1], srcDesc, !dstDesc.isDeleted());
+                        linkIn(dstParts[0], dstParts[1], srcDesc, excluder, !dstDesc.isDeleted());
                         continue;
                     }
                     // You can ignore it.
@@ -374,7 +406,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     // You can force it.
                     if (overrideConflicts)
                     {
-                        linkIn(dstParts[0], dstParts[1], srcDesc, true);
+                        linkIn(dstParts[0], dstParts[1], srcDesc, excluder, true);
                         continue;
                     }
                     // You can ignore it.
@@ -414,7 +446,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param toLink The node descriptor.
      * @param removeFirst Whether to do a removeNode before linking in.
      */
-    private void linkIn(String parentPath, String name, AVMNodeDescriptor toLink, boolean removeFirst)
+    private void linkIn(String parentPath, String name, AVMNodeDescriptor toLink, NameMatcher excluder, boolean removeFirst)
     {
         // This is a delete.
         if (toLink == null)
@@ -429,7 +461,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         if (toLink.isLayeredDirectory() && !toLink.isPrimary())
         {
-            recursiveCopy(parentPath, name, toLink);
+            recursiveCopy(parentPath, name, toLink, excluder);
             return;
         }
         fAVMService.link(parentPath, name, toLink);
@@ -441,7 +473,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param name The name to give it.
      * @param toCopy The it to put.
      */
-    private void recursiveCopy(String parentPath, String name, AVMNodeDescriptor toCopy)
+    private void recursiveCopy(String parentPath, String name, AVMNodeDescriptor toCopy, NameMatcher excluder)
     {
         fAVMService.createDirectory(parentPath, name);
         String newParentPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
@@ -451,7 +483,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             fAVMService.getDirectoryListing(toCopy, true);
         for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
         {
-            recursiveCopy(parentDesc, entry.getKey(), entry.getValue());
+            recursiveCopy(parentDesc, entry.getKey(), entry.getValue(), excluder);
         }
     }
     
@@ -461,8 +493,14 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param name The name to link in.
      * @param toCopy The node to link in.
      */
-    private void recursiveCopy(AVMNodeDescriptor parent, String name, AVMNodeDescriptor toCopy)
+    private void recursiveCopy(AVMNodeDescriptor parent, String name, AVMNodeDescriptor toCopy, NameMatcher excluder)
     {
+        String newPath = AVMNodeConverter.ExtendAVMPath(parent.getPath(), name);
+        if (excluder != null && (excluder.matches(newPath) || 
+                                 excluder.matches(toCopy.getPath())))
+        {
+            return;
+        }
         // If it's a file or deleted simply link it in.
         if (toCopy.isFile() || toCopy.isDeleted() || toCopy.isPlainDirectory())
         {
@@ -477,7 +515,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             fAVMService.getDirectoryListing(toCopy, true);
         for (Map.Entry<String, AVMNodeDescriptor> entry : children.entrySet())
         {
-            recursiveCopy(newParentDesc, entry.getKey(), entry.getValue());
+            recursiveCopy(newParentDesc, entry.getKey(), entry.getValue(), excluder);
         }
     }
     

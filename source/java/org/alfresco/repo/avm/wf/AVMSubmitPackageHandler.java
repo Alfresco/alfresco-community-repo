@@ -59,8 +59,8 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
 
         AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
         String targetPath = pkgDesc.getIndirection();
-		List<AVMDifference> diff = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath);
-        fAVMSyncService.update(diff, true, true, false, false, null, null);
+		List<AVMDifference> diff = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
+        fAVMSyncService.update(diff, null, true, true, false, false, null, null);
 
         String from = (String)executionContext.getContextInstance().getVariable("wf_from");
         fAVMSyncService.flatten(from, targetPath);

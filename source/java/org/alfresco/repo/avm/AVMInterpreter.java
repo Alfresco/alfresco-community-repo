@@ -471,7 +471,8 @@ public class AVMInterpreter
                 List<AVMDifference> diffs = fSyncService.compare(Integer.parseInt(command[2]),
                                                                  command[1],
                                                                  Integer.parseInt(command[4]),
-                                                                 command[3]);
+                                                                 command[3],
+                                                                 null);
                 for (AVMDifference diff : diffs)
                 {
                     out.println(diff);
@@ -487,7 +488,7 @@ public class AVMInterpreter
                                                        -1, command[3], AVMDifference.NEWER);
                 List<AVMDifference> diffs = new ArrayList<AVMDifference>();
                 diffs.add(diff);
-                fSyncService.update(diffs, false, false, false, false, null, null);
+                fSyncService.update(diffs, null, false, false, false, false, null, null);
             }
             else if (command[0].equals("resetLayer"))
             {

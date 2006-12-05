@@ -68,11 +68,11 @@ public class AVMRevertListAction extends ActionExecuterAbstractBase
         {
             List<AVMDifference> diffSet = 
                 fSyncService.compare(revertVersion, item.getSecond(), 
-                                     -1, item.getSecond());
+                                     -1, item.getSecond(), null);
             diffs.addAll(diffSet);
         }
         String message = "Reverted to version " + revertVersion;
-        fSyncService.update(diffs, false, false, true, true, message, message);
+        fSyncService.update(diffs, null, false, false, true, true, message, message);
         if (!(Boolean)action.getParameterValue(PARAM_FLATTEN))
         {
             return;

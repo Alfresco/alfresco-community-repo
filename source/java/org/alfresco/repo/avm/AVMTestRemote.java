@@ -199,14 +199,14 @@ public class AVMTestRemote extends TestCase
             fAVMRemote.createAVMStore("broo");
             // Create a branch.
             fAVMRemote.createBranch(-1, "froo:/a", "broo:/", "a");
-            List<AVMDifference> diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a");
+            List<AVMDifference> diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a", null);
             assertEquals(0, diffs.size());
             fAVMRemote.createFile("froo:/a", "bar").close();
-            diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a");
+            diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a", null);
             assertEquals(1, diffs.size());
             // Update.
-            fAVMSync.update(diffs, false, false, false, false, "flippy", "Stuff");
-            diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a");
+            fAVMSync.update(diffs, null, false, false, false, false, "flippy", "Stuff");
+            diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a", null);
             assertEquals(0, diffs.size());
         }
         catch (Exception e)

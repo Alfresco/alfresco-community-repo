@@ -54,9 +54,9 @@ public class AVMRevertStoreAction extends ActionExecuterAbstractBase
         int revertVersion = (Integer)action.getParameterValue(PARAM_VERSION);
         List<AVMDifference> diffs =
             fSyncService.compare(revertVersion, pathVersion.getSecond(), 
-                                 -1, pathVersion.getSecond());
+                                 -1, pathVersion.getSecond(), null);
         String message = "Reverted to Version " + revertVersion + ".";
-        fSyncService.update(diffs, false, false, true, true, message, message);
+        fSyncService.update(diffs, null, false, false, true, true, message, message);
     }
 
     /* (non-Javadoc)

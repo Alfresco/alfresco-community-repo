@@ -8,6 +8,7 @@ import java.util.List;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMSyncServiceTransport;
+import org.alfresco.util.NameMatcher;
 
 /**
  * Client side wrapper around the RMI based AVMSyncServiceTransport.
@@ -39,9 +40,9 @@ public class AVMSyncServiceClient implements AVMSyncService
      * @see org.alfresco.service.cmr.avmsync.AVMSyncService#compare(int, java.lang.String, int, java.lang.String)
      */
     public List<AVMDifference> compare(int srcVersion, String srcPath,
-            int dstVersion, String dstPath) 
+            int dstVersion, String dstPath, NameMatcher excluder) 
     {
-        return fTransport.compare(ClientTicketHolder.GetTicket(), srcVersion, srcPath, dstVersion, dstPath);
+        return fTransport.compare(ClientTicketHolder.GetTicket(), srcVersion, srcPath, dstVersion, dstPath, excluder);
     }
 
     /* (non-Javadoc)
@@ -63,10 +64,11 @@ public class AVMSyncServiceClient implements AVMSyncService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avmsync.AVMSyncService#update(java.util.List, boolean, boolean, boolean, boolean, java.lang.String, java.lang.String)
      */
-    public void update(List<AVMDifference> diffList, boolean ignoreConflicts,
-            boolean ignoreOlder, boolean overrideConflicts,
-            boolean overrideOlder, String tag, String description) 
+    public void update(List<AVMDifference> diffList, 
+                       NameMatcher excluder, boolean ignoreConflicts,
+                       boolean ignoreOlder, boolean overrideConflicts,
+                       boolean overrideOlder, String tag, String description) 
     {
-        fTransport.update(ClientTicketHolder.GetTicket(), diffList, ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder, tag, description);
+        fTransport.update(ClientTicketHolder.GetTicket(), diffList, excluder, ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder, tag, description);
     }
 }

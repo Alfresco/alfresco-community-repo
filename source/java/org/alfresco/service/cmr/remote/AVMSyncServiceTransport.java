@@ -6,6 +6,7 @@ package org.alfresco.service.cmr.remote;
 import java.util.List;
 
 import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.util.NameMatcher;
 
 /**
  * A wrapper around AVMSyncService for remote access.
@@ -24,7 +25,8 @@ public interface AVMSyncServiceTransport
      */
     public List<AVMDifference> compare(String ticket,
                                        int srcVersion, String srcPath, 
-                                       int dstVersion, String dstPath);
+                                       int dstVersion, String dstPath,
+                                       NameMatcher excluder);
     
     /**
      * Updates the destination nodes in the AVMDifferences
@@ -32,6 +34,7 @@ public interface AVMSyncServiceTransport
      * which the source of an AVMDifference is older than the destination
      * will cause the transaction to roll back.
      * @param diffList A List of AVMDifference structs.
+     * @param excluder A NameMatcher to exclude undesired updates.
      * @param ignoreConflicts If this is true the update will skip those 
      * AVMDifferences which are in conflict with
      * the destination.
@@ -44,7 +47,8 @@ public interface AVMSyncServiceTransport
      * @param tag Short comment.
      * @param description Full update blurb.
      */
-    public void update(String ticket, List<AVMDifference> diffList, boolean ignoreConflicts, boolean ignoreOlder,
+    public void update(String ticket, List<AVMDifference> diffList, 
+                       NameMatcher excluder, boolean ignoreConflicts, boolean ignoreOlder,
                        boolean overrideConflicts, boolean overrideOlder, String tag, String description);
     
     /**

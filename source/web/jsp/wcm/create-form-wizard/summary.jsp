@@ -42,6 +42,7 @@
       <jsp:attribute name="description">
 	<div>${WizardManager.bean.formDescription}</div>
 	<div>${msg.schema_root_element_name}: ${WizardManager.bean.schemaRootElementName}</div>
+	<div>${msg.schema_root_element_name}: ${WizardManager.bean.outputPathPatternForFormInstanceData}</div>
       </jsp:attribute>
     </a:listItem>
   </a:selectList>

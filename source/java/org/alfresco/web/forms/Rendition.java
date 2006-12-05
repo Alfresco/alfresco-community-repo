@@ -44,4 +44,7 @@ public interface Rendition
 
    /** the url to the asset */
    public String getUrl();
+
+   /** the file type image for the rendition */
+   public String getFileTypeImage();
 }

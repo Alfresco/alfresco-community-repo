@@ -56,6 +56,7 @@ import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.forms.RenditionImpl;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -66,7 +67,7 @@ import org.w3c.dom.Document;
  */
 public class CreateWebContentWizard extends BaseContentWizard
 {
-   private static final Log logger = LogFactory.getLog(CreateWebContentWizard.class);
+   private static final Log LOGGER = LogFactory.getLog(CreateWebContentWizard.class);
    
    protected String content = null;
    protected String formName;
@@ -152,6 +153,56 @@ public class CreateWebContentWizard extends BaseContentWizard
             this.formSelectDisabled = true;
          }
       }
+   }
+
+   @Override
+   public String next()
+   {
+      final int step = Application.getWizardManager().getCurrentStep();
+      if (step == 3)
+      {
+         try
+         {
+            this.saveContent();
+         }
+         catch (Exception e)
+         {
+            Application.getWizardManager().getState().setCurrentStep(step - 1);
+            Utils.addErrorMessage(e.getMessage(), e);
+         }
+      }
+      return super.next();
+   }
+
+   @Override
+   public String back()
+   {
+      final int step = Application.getWizardManager().getCurrentStep();
+      if (step == 2)
+      {
+         LOGGER.debug("clearing form instance data");
+         this.formInstanceData = null;
+         this.renditions = null;
+      }
+      return super.back();
+   }
+
+   @Override
+   public String finish()
+   {
+      if (this.formInstanceData == null || this.renditions == null)
+      {
+         try
+         {
+            this.saveContent();
+         }
+         catch (Exception e)
+         {
+            Utils.addErrorMessage(e.getMessage(), e);
+            return super.getErrorOutcome(e);
+         }
+      }
+      return super.finish();
    }
    
    @Override
@@ -278,13 +329,9 @@ public class CreateWebContentWizard extends BaseContentWizard
       
       boolean disabled = false;
       int step = Application.getWizardManager().getCurrentStep();
-      switch(step)
+      if (step == 1)
       {
-         case 1:
-         {
-            disabled = (this.fileName == null || this.fileName.length() == 0);
-            break;
-         }
+         disabled = (this.fileName == null || this.fileName.length() == 0);
       }
       
       return disabled;
@@ -292,25 +339,20 @@ public class CreateWebContentWizard extends BaseContentWizard
    
    /**
     * Save the specified content using the currently set wizard attributes
-    * 
-    * @param fileContent      File content to save
-    * @param strContent       String content to save
     */
-   @Override
-   protected void saveContent(File fileContent, String strContent) throws Exception
+   protected void saveContent() 
+      throws Exception
    {
       final FormsService fs = FormsService.getInstance();
-      if (logger.isDebugEnabled())
-         logger.debug("saving file content to " + this.fileName);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("saving file content to " + this.fileName);
       // get the parent path of the location to save the content
       String path = this.avmBrowseBean.getCurrentPath();
       path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
 
-         final Document formInstanceData = (fileContent != null 
-                                            ? fs.parseXML(fileContent)
-                                            : fs.parseXML(strContent));
+         final Document formInstanceData = fs.parseXML(this.content);
 
          path = this.getForm().getOutputPathForFormInstanceData(path, this.fileName, formInstanceData);
          final String[] sb = AVMNodeConverter.SplitBase(path);
@@ -319,28 +361,23 @@ public class CreateWebContentWizard extends BaseContentWizard
       }
 
 
-      if (logger.isDebugEnabled())
-         logger.debug("reseting layer " + path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("reseting layer " + path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
 
       this.avmSyncService.resetLayer(path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
 
-      if (logger.isDebugEnabled())
-         logger.debug("creating all directories in path " + path);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("creating all directories in path " + path);
 
       fs.makeAllDirectories(path);
 
-      if (logger.isDebugEnabled())
-         logger.debug("creating file " + this.fileName + " in " + path);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("creating file " + this.fileName + " in " + path);
 
       // put the content of the file into the AVM store
-      if (fileContent != null)
-      {
-         avmService.createFile(path, this.fileName, new BufferedInputStream(new FileInputStream(fileContent)));
-      }
-      else 
-      {
-         avmService.createFile(path, this.fileName, new ByteArrayInputStream((strContent == null ? "" : strContent).getBytes()));
-      }
+      avmService.createFile(path, 
+                            this.fileName, 
+                            new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes()));
       
       // remember the created path
       this.createdPath = path + '/' + this.fileName;
@@ -424,10 +461,18 @@ public class CreateWebContentWizard extends BaseContentWizard
          // add the configured create mime types to the list
          ConfigService svc = Application.getConfigService(context);
          Config wizardCfg = svc.getConfig("Content Wizards");
-         if (wizardCfg != null)
+         if (wizardCfg == null)
+         {
+            LOGGER.warn("Could not find 'Content Wizards' configuration section");
+         }
+         else
          {
             ConfigElement typesCfg = wizardCfg.getConfigElement("create-mime-types");
-            if (typesCfg != null)
+            if (typesCfg == null)
+            {
+               LOGGER.warn("Could not find 'create-mime-types' configuration element");
+            }
+            else
             {
                for (ConfigElement child : typesCfg.getChildren())
                {
@@ -443,16 +488,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                QuickSort sorter = new QuickSort(this.objectTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
                sorter.sort();
             }
-            else
-            {
-               logger.warn("Could not find 'create-mime-types' configuration element");
-            }
          }
-         else
-         {
-            logger.warn("Could not find 'Content Wizards' configuration section");
-         }
-         
       }
       
       return this.createMimeTypes;
@@ -509,12 +545,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    }
 
    public FormInstanceData getFormInstanceData()
-      throws Exception
    {
-      if (this.formInstanceData == null)
-      {
-         this.saveContent(null, this.content);
-      }
       return this.formInstanceData;
    }
    
@@ -542,24 +573,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       return this.startWorkflow;
    }
-
-   /**
-    * @return Returns the summary data for the wizard.
-    */
-   public String getSummary()
-   {
-
-      ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      
-      // TODO: show first few lines of content here?
-      return buildSummary(
-            new String[] {bundle.getString("file_name"), 
-                          bundle.getString("content_type"),
-                          bundle.getString("Location")},
-            new String[] {this.fileName, getSummaryObjectType(), 
-                          getSummaryMimeType(this.mimeType)});
-   }
-   
    
    // ------------------------------------------------------------------------------
    // Action event handlers

@@ -53,7 +53,7 @@
     <c:forEach items="${WizardManager.bean.renditions}" var="rendition">
       <a:listItem label="${rendition.name}"
 		  value="${rendition.name}"
-                  image="/images/icons/template_large.gif">
+                  image="${rendition.fileTypeImage}">
 	<jsp:attribute name="description">
 	  <span style="float:right">
 	    <a:actionLink value="${rendition.name}" 

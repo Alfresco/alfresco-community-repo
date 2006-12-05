@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -103,6 +104,11 @@ public class RenditionImpl
    public String getUrl()
    {
       return AVMConstants.buildAVMAssetUrl(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond());
+   }
+
+   public String getFileTypeImage()
+   {
+      return Utils.getFileTypeImage(this.getName(), false);
    }
 
    private ServiceRegistry getServiceRegistry()

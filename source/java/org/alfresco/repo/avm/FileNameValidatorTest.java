@@ -27,8 +27,8 @@ public class FileNameValidatorTest extends TestCase
 {
     public void testValidator()
     {
-        String [] badNames = new String[] { "\"", "\\", "/", "<", ">", "?", "*", "%", "&", "+",
-                                            ":", ";", "|" };
+        String [] badNames = { "\"", "\\", "/", "<", ">", "?", "*", "%", "&",
+                               ":", ";", "|" };
         for (String name : badNames)
         {
             assertFalse(FileNameValidator.IsValid(name));

@@ -17,6 +17,7 @@
 
 package org.alfresco.repo.avm.hibernate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.AVMStoreDAO;
 import org.alfresco.repo.avm.AVMStoreImpl;
 import org.hibernate.Query;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -75,7 +77,13 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     public List<AVMStore> getAll()
     {
         Query query = getSession().createQuery("from AVMStoreImpl r");
-        return (List<AVMStore>)query.list();
+        List<AVMStore> result = (List<AVMStore>)query.list();
+        List<AVMStore> ret = new ArrayList<AVMStore>(result.size());
+        for (AVMStore store : result)
+        {
+            ret.add(forceNonLazy(store));
+        }
+        return ret;
     }
     
     /**
@@ -92,7 +100,7 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
         }
         if (id != null)
         {
-            return (AVMStore)getSession().get(AVMStoreImpl.class, id);      
+            return forceNonLazy((AVMStore)getSession().get(AVMStoreImpl.class, id));      
         }
         Query query = getSession().createQuery("from AVMStoreImpl st " +
                                                "where st.name = :name");
@@ -105,7 +113,7 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
                 fNameCache.put(name, result.getId());
             }
         }
-        return result;
+        return forceNonLazy(result);
     }
 
     /**
@@ -118,7 +126,7 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
         Query query = getSession().createQuery("from AVMStoreImpl st " +
                                                "where st.root = :root");
         query.setEntity("root", root);
-        return (AVMStore)query.uniqueResult();
+        return forceNonLazy((AVMStore)query.uniqueResult());
     }
 
     /**
@@ -135,7 +143,8 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
      */
     public AVMStore getByID(long id)
     {
-        return (AVMStore)getSession().get(AVMStoreImpl.class, id);
+        AVMStore result = (AVMStore)getSession().get(AVMStoreImpl.class, id);
+        return forceNonLazy(result);
     }
 
     /* (non-Javadoc)
@@ -144,5 +153,14 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     public synchronized void invalidateCache() 
     {
         fNameCache.clear();
+    }
+    
+    private AVMStore forceNonLazy(AVMStore store)
+    {
+        if (store instanceof HibernateProxy)
+        {
+            return (AVMStore)((HibernateProxy)store).getHibernateLazyInitializer().getImplementation();
+        }
+        return store;
     }
 }

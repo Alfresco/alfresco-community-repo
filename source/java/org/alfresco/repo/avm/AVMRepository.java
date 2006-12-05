@@ -42,12 +42,10 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
-import org.hibernate.proxy.HibernateProxy;
 
 /**
  * This or AVMStore are
@@ -1108,11 +1106,6 @@ public class AVMRepository
     private AVMStore getAVMStoreByName(String name)
     {
         AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(name);
-        if (store instanceof HibernateProxy)
-        {
-            store = 
-                (AVMStore)((HibernateProxy)store).getHibernateLazyInitializer().getImplementation();
-        }
         return store;
     }
 

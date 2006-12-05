@@ -14,19 +14,41 @@
 
 
     <!-- load common properties -->
-    <bean id="repository-properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <bean id="repository-properties" 
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
         </property>
         <property name="locations">
             <list>
-                <value>classpath:alfresco/alfresco-shared.properties</value>
                 <value>classpath:alfresco/repository.properties</value>
                 <value>classpath:alfresco/version.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
             </list>
         </property>
     </bean>
+
+
+    <!-- Load properties that must be shared between the        -->
+    <!-- Alfresco server and its remote clients.                -->
+    <!--                                                        -->
+    <!-- Note:  This is done in a seperate bean to make it      -->
+    <!--        for users who have alrady overridden their      -->
+    <!--        "repository-properties" in a dev-context.xml    -->
+    <!--        or custom-db-and-data-context.xml file.         -->
+
+    <bean id="shared-properties" 
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="locations">
+            <list>
+                <value>classpath:alfresco/alfresco-shared.properties</value>
+            </list>
+        </property>
+    </bean>
+
 
 
     <!-- Custom MBeanServer -->

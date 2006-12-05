@@ -128,8 +128,14 @@ dojo.declare("alfresco.xforms.Widget",
                  var binding = this.xform.getBinding(this.xformsNode);
                  return binding && binding.readonly == "true()";
                },
+               setInitialValue: function(value)
+               {
+                 this.initialValue = value;
+               },
                getInitialValue: function()
                {
+                 if (typeof this.initialValue != "undefined")
+                   return this.initialValue;
                  var chibaData = _getElementsByTagNameNS(this.xformsNode, 
                                                          CHIBA_NS, 
                                                          CHIBA_NS_PREFIX, 
@@ -311,13 +317,6 @@ dojo.declare("alfresco.xforms.TextField",
                    this.widget.style.width = "100%";
 
                  this.domNode.appendChild(this.widget);
-//           this.widget = dojo.widget.createWidget("ValidationTextBox", 
-//                          {
-//                            widgetId: this.id + "-widget",
-//                            required: this.isRequired(), 
-//                      value: initial_value 
-//                          }, 
-//                          this.domNode);
                  if (this.isReadonly())
                  {
                    this.widget.setAttribute("readonly", this.isReadonly());
@@ -361,8 +360,6 @@ dojo.declare("alfresco.xforms.TextArea",
                  this.domNode.innerHTML = this.getInitialValue() || "";
                  tinyMCE.addMCEControl(this.domNode, this.id);
 
-                 tinyMCE.getInstanceById(this.id).iframeElement.onblur = function() { alert('foo'); };
-                 //dojo.event.connect(tinyMCE.getInstanceById(this.id).iframeElement,
                  var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
                  editorDocument.widget = this;
                  tinyMCE.addEvent(editorDocument, "blur", this._tinyMCE_blurHandler);
@@ -370,7 +367,8 @@ dojo.declare("alfresco.xforms.TextArea",
                },
                setValue: function(value)
                {
-                 tinyMCE.getInstanceById(this.id).setContent(value);
+                 tinyMCE.selectedInstance = tinyMCE.getInstanceById(this.id);
+                 tinyMCE.setContent(value);
                },
                getValue: function()
                {
@@ -1001,6 +999,7 @@ dojo.declare("alfresco.xforms.Repeat",
                  if (this.children.length == 0)
                  {
                    dojo.event.browser.stopEvent(event);
+                   var repeat = event.target.repeat;
                    if (!repeat.isInsertRepeatItemEnabled())
                      return;
                    this.setFocusedChild(null);
@@ -1132,7 +1131,8 @@ dojo.declare("alfresco.xforms.Repeat",
                    
                  this.groupHeaderNode.appendChild(document.createTextNode(label));
            
-                 this.headerInsertRepeatItemImage = document.createElement("img");
+                 this.headerInsertRepeatItemImage = document.createElement("img"); 
+                 this.headerInsertRepeatItemImage.repeat = this;
                  this.groupHeaderNode.appendChild(this.headerInsertRepeatItemImage);
                  this.headerInsertRepeatItemImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/plus.gif");
                  this.headerInsertRepeatItemImage.style.width = "16px";

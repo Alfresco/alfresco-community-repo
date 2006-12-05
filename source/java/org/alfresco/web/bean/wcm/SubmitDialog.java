@@ -335,7 +335,8 @@ public class SubmitDialog extends BaseDialogBean
       {
          String userStore = this.avmBrowseBean.getSandbox() + ":/";
          String stagingStore = this.avmBrowseBean.getStagingStore() + ":/";
-         List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore);
+         // TODO Pass the globalPathExcluder NameMatcher instead of null.
+         List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore, null);
          selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
          for (AVMDifference diff : diffs)
          {
@@ -426,7 +427,7 @@ public class SubmitDialog extends BaseDialogBean
       }
       
       // write changes to layer so files are marked as modified
-      avmSyncService.update(diffs, true, true, false, false, null, null);
+      avmSyncService.update(diffs, null, true, true, false, false, null, null);
       
       // convert package to workflow package
       AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);

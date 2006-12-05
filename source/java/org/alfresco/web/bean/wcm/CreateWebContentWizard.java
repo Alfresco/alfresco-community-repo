@@ -222,7 +222,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                                                               AVMConstants.STORE_MAIN), 
                                         AVMDifference.NEWER));
       }
-      this.avmSyncService.update(diffList, true, true, true, true, null, null);
+      this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
 
       if (this.startWorkflow)
       {

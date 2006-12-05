@@ -490,7 +490,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
       String id = getClientId(fc);
       
       // use the sync service to get the list of diffs between the stores
-      List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore);
+      // TODO Need to pass the global exclude NameMatcher.
+      List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore, null);
       if (diffs.size() != 0)
       {
          // store lookup of username to list of modified nodes

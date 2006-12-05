@@ -984,7 +984,8 @@ public class AVMBrowseBean implements IContextListener
          tx.begin();
          
          // calcluate the list of differences between the user store and the staging area
-         List<AVMDifference> diffs = this.avmSyncService.compare(-1, store + ":/", -1, getStagingStore() + ":/");
+         // TODO Need to pass the global exclude NameMatcher to the compare call.
+         List<AVMDifference> diffs = this.avmSyncService.compare(-1, store + ":/", -1, getStagingStore() + ":/", null);
          List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
          for (AVMDifference diff : diffs)
          {

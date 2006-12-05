@@ -102,7 +102,7 @@
 	</class>
 	<!-- A store is the what we used to call a virtual repository. -->
 	<class table="avm_stores" name="AVMStoreImpl"
-		proxy="AVMStore" optimistic-lock="version">
+		proxy="AVMStore" optimistic-lock="version" lazy="false">
 		<cache usage="read-write"/>
 		<id name="id" column="id" type="long">
 		    <generator class="native"/>

@@ -4,11 +4,7 @@
 <!-- Beans pertinent to node persistence and services --> 
 <beans>
    
-   <bean id="mlPropertyInterceptor" class="org.alfresco.repo.node.MLPropertyInterceptor">
-      <property name="dictionaryService">
-         <ref bean="dictionaryService" />
-      </property>
-   </bean>
+   <bean id="mlPropertyInterceptor" class="org.alfresco.repo.node.MLPropertyInterceptor" />
    
    <bean id="nodeService" class="org.springframework.aop.framework.ProxyFactoryBean" >
       <property name="targetName">

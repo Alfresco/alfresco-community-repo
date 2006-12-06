@@ -52,13 +52,6 @@ public class MLPropertyInterceptor implements MethodInterceptor
 {
     private static Log logger = LogFactory.getLog(MLPropertyInterceptor.class);
     
-    private DictionaryService dictionaryService;
-    
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
     @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation invocation) throws Throwable
     {

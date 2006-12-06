@@ -113,7 +113,7 @@
          <h:commandButton value="#{msg.cancel}" actionListener="#{DialogManager.bean.cancelAddPackageItems}" />
       </h:panelGrid>
    </h:panelGrid>
-   
+
 </a:panel>
 
 <h:outputText id="padding2" styleClass="paddingRow" value="&nbsp;" escape="false" />
@@ -123,4 +123,13 @@
 
    <r:workflowSummary id="workflow-summary" value="#{DialogManager.bean.workflowInstance}" styleClass="workflowSummary" />
 
+</a:panel>
+
+<h:outputText id="padding2" styleClass="paddingRow" value="&nbsp;" escape="false" />
+
+<a:panel rendered="false" id="workflow-outline" label="#{msg.workflow_outline}" progressive="true" expanded="false" 
+         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+
+   <h:graphicImage value="#{DialogManager.bean.workflowDefinitionImageUrl}"/>
+   
 </a:panel>

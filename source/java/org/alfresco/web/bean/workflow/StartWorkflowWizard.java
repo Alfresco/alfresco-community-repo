@@ -390,7 +390,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    {
       return selectedWorkflow;
    }
-
+   
    /**
     * Sets the selected workflow
     * 

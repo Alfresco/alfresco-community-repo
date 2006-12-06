@@ -471,6 +471,16 @@ public class ManageTaskDialog extends BaseDialogBean
    public WorkflowInstance getWorkflowInstance()
    {
       return this.workflowInstance;
+   } 
+
+   /**
+    * Returns the URL to the Workflow Definition Image of the current task
+    * 
+    * @return  the url
+    */
+   public String getWorkflowDefinitionImageUrl()
+   {
+       return "/workflowdefinitionimage/" + this.workflowInstance.definition.id;
    }
    
    /**

@@ -128,9 +128,15 @@
          <h:commandButton value="#{msg.cancel}" actionListener="#{WizardManager.bean.cancelAddPackageItems}" />
       </h:panelGrid>
    </h:panelGrid>
-   
+
 </a:panel>
 
+<h:outputText id="padding" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
+<a:panel rendered="false" id="workflow-outline" label="#{msg.workflow_outline}" progressive="true" expanded="false" 
+         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
 
+   <h:graphicImage value="#{DialogManager.bean.workflowDefinitionImageUrl}"/>
+   
+</a:panel>
          

@@ -32,6 +32,7 @@ import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.repo.workflow.WorkflowPackageComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -60,6 +61,7 @@ public class JBPMEngineTest extends BaseSpringTest
     NodeService nodeService;
     WorkflowComponent workflowComponent;
     TaskComponent taskComponent;
+    WorkflowPackageComponent packageComponent;
     WorkflowDefinition testWorkflowDef;
     NodeRef testNodeRef;
 
@@ -74,6 +76,7 @@ public class JBPMEngineTest extends BaseSpringTest
         BPMEngineRegistry registry = (BPMEngineRegistry)applicationContext.getBean("bpm_engineRegistry");
         workflowComponent = registry.getWorkflowComponent("jbpm");
         taskComponent = registry.getTaskComponent("jbpm");
+        packageComponent = (WorkflowPackageComponent)applicationContext.getBean("workflowPackageImpl"); 
         
         // deploy test process messages
         I18NUtil.registerResourceBundle("org/alfresco/repo/workflow/jbpm/test-messages");
@@ -357,6 +360,7 @@ public class JBPMEngineTest extends BaseSpringTest
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.id);
@@ -402,6 +406,7 @@ public class JBPMEngineTest extends BaseSpringTest
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
@@ -443,6 +448,7 @@ public class JBPMEngineTest extends BaseSpringTest
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
@@ -466,6 +472,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = deployment.definition;
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);

@@ -24,6 +24,26 @@
          </mandatory-aspects>
       </type>
 
+      <type name="wf:submitParallelReviewTask">
+         <parent>bpm:startTask</parent>
+         <properties>
+            <property name="wf:requiredApprovePercent">
+                <type>d:int</type>
+                <mandatory>true</mandatory>
+                <default>50</default>
+                <constraints>
+                    <constraint type="MINMAX">
+                        <parameter name="minValue"><value>1</value></parameter>
+                        <parameter name="maxValue"><value>100</value></parameter>
+                    </constraint>
+                </constraints>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>bpm:assignees</aspect>
+         </mandatory-aspects>
+      </type>
+
       <type name="wf:reviewTask">
          <parent>bpm:workflowTask</parent>
          <overrides>
@@ -31,6 +51,20 @@
                <default>edit_package_item_actions</default>
             </property>
          </overrides>
+      </type>
+
+      <type name="wf:rejectedParallelTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+            <aspect>wf:parallelReviewStats</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="wf:approvedParallelTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+            <aspect>wf:parallelReviewStats</aspect>
+         </mandatory-aspects>
       </type>
 
 
@@ -85,5 +119,26 @@
       </type>
 
    </types>
+   
+   <aspects>
+   
+      <aspect name="wf:parallelReviewStats">
+         <properties>
+            <property name="wf:reviewerCount">
+               <type>d:int</type>
+            </property>
+            <property name="wf:requiredPercent">
+               <type>d:int</type>
+            </property>
+            <property name="wf:approveCount">
+               <type>d:int</type>
+            </property>
+            <property name="wf:actualPercent">
+               <type>d:int</type>
+            </property>
+         </properties> 
+      </aspect>
+   
+   </aspects>
 
 </model>

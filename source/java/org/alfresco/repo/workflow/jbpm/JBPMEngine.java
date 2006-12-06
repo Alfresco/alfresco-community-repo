@@ -68,6 +68,7 @@ import org.hibernate.proxy.HibernateProxy;
 import org.jbpm.JbpmContext;
 import org.jbpm.JbpmException;
 import org.jbpm.context.exe.ContextInstance;
+import org.jbpm.context.exe.TokenVariableMap;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
 import org.jbpm.graph.def.Node;
@@ -909,6 +910,18 @@ public class JBPMEngine extends BPMEngine
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
                     TaskInstance taskInstance = getTaskInstance(taskSession, taskId);
 
+                    // ensure all mandatory properties have been provided
+                    QName[] missingProps = getMissingMandatoryTaskProperties(taskInstance);
+                    if (missingProps != null && missingProps.length > 0)
+                    {
+                        String props = "";
+                        for (int i = 0; i < missingProps.length; i++)
+                        {
+                            props += missingProps[i].toString() + ((i < missingProps.length -1) ? "," : "");
+                        }
+                        throw new WorkflowException("Mandatory task properties have not been provided: " + props);
+                    }
+                    
                     // signal the transition on the task
                     if (transition == null)
                     {
@@ -1190,10 +1203,32 @@ public class JBPMEngine extends BPMEngine
         Map<QName, PropertyDefinition> taskProperties = taskDef.getProperties();
         Map<QName, AssociationDefinition> taskAssocs = taskDef.getAssociations();
     	
+        // build properties from jBPM context (visit all tokens to the root)
+        Map<String, Object> vars = instance.getVariablesLocally();
+        if (!localProperties)
+        {
+            ContextInstance context = instance.getContextInstance();
+            Token token = instance.getToken();
+            while (token != null)
+            {
+                TokenVariableMap varMap = context.getTokenVariableMap(token);
+                if (varMap != null)
+                {
+                    Map<String, Object> tokenVars = varMap.getVariablesLocally();
+                    for (Map.Entry<String, Object> entry : tokenVars.entrySet())
+                    {
+                        if (!vars.containsKey(entry.getKey()))
+                        {
+                            vars.put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                }
+                token = token.getParent();
+            }
+        }
+        
         // map arbitrary task variables
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(10);
-        Map<String, Object> vars = (localProperties ? instance.getVariablesLocally() : instance.getVariables());
-
         for (Entry<String, Object> entry : vars.entrySet())
         {
             String key = entry.getKey();
@@ -1544,6 +1579,69 @@ public class JBPMEngine extends BPMEngine
         }
     }
     
+    /**
+     * Get missing mandatory properties on Task
+     * 
+     * @param instance  task instance
+     * @return array of missing property names (or null, if none)
+     */
+    protected QName[] getMissingMandatoryTaskProperties(TaskInstance instance)
+    {
+        List<QName> missingProps = null;
+
+        // retrieve properties of task
+        Map<QName, Serializable> existingValues = getTaskProperties(instance, false);
+        
+        // retrieve definition of task
+        ClassDefinition classDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
+        Map<QName, PropertyDefinition> propertyDefs = classDef.getProperties(); 
+        Map<QName, AssociationDefinition> assocDefs = classDef.getAssociations();
+
+        // for each property, determine if it is mandatory
+        for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
+        {
+            QName name = entry.getKey();
+            if (!(name.getNamespaceURI().equals(NamespaceService.CONTENT_MODEL_1_0_URI) || (name.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))))
+            {
+                boolean isMandatory = entry.getValue().isMandatory();
+                if (isMandatory)
+                {
+                    Object value = existingValues.get(entry.getKey());
+                    if (value == null || (value instanceof String && ((String)value).length() == 0))
+                    {
+                        if (missingProps == null)
+                        {
+                            missingProps = new ArrayList<QName>();
+                        }
+                        missingProps.add(entry.getKey());
+                    }
+                }
+            }
+        }
+        for (Map.Entry<QName, AssociationDefinition> entry : assocDefs.entrySet())
+        {
+            QName name = entry.getKey();
+            if (!(name.getNamespaceURI().equals(NamespaceService.CONTENT_MODEL_1_0_URI) || (name.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))))
+            {
+                boolean isMandatory = entry.getValue().isTargetMandatory();
+                if (isMandatory)
+                {
+                    Object value = existingValues.get(entry.getKey());
+                    if (value == null || (value instanceof List && ((List)value).size() == 0))
+                    {
+                        if (missingProps == null)
+                        {
+                            missingProps = new ArrayList<QName>();
+                        }
+                        missingProps.add(entry.getKey());
+                    }
+                }
+            }
+        }
+
+        return (missingProps == null) ? null : missingProps.toArray(new QName[missingProps.size()]);
+    }
+        
     /**
      * Convert a Repository association to JBPMNodeList or JBPMNode
      * 

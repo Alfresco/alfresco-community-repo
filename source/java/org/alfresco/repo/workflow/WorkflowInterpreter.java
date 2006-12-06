@@ -380,10 +380,10 @@ public class WorkflowInterpreter
                 out.println("description: " + task.description);
                 out.println("state: " + task.state);
                 out.println("path: " + task.path.id);
-                out.println("transitions: " + task.path.node.transitions.length);
-                for (WorkflowTransition transition : task.path.node.transitions)
+                out.println("transitions: " + task.definition.node.transitions.length);
+                for (WorkflowTransition transition : task.definition.node.transitions)
                 {
-                    out.println(" transition: " + ((transition == null || transition.id.equals("")) ? "[default]" : transition.id) + " , title: " + transition.title + " , desc: " + transition.description);
+                    out.println(" transition: " + ((transition.id == null || transition.id.equals("")) ? "[default]" : transition.id) + " , title: " + transition.title + " , desc: " + transition.description);
                 }
                 out.println("properties: " + task.properties.size());
                 for (Map.Entry<QName, Serializable> prop : task.properties.entrySet())
@@ -430,7 +430,7 @@ public class WorkflowInterpreter
             }
             out.println("deployed definition id: " + def.id + " , name: " + def.name + " , title: " + def.title + " , version: " + def.version);
             currentDeploy = command[1];
-            out.print(interpretCommand("use " + def.id));
+            out.print(interpretCommand("use definition " + def.id));
         }
 
         else if (command[0].equals("redeploy"))
@@ -519,6 +519,10 @@ public class WorkflowInterpreter
                 {
                     return "Syntax Error.\n";
                 }
+            }
+            if (currentWorkflowDef == null)
+            {
+                return "Workflow definition not selected.\n";
             }
             WorkflowPath path = workflowService.startWorkflow(currentWorkflowDef.id, params);
             out.println("started workflow id: " + path.instance.id + ", path: " + path.id + " , node: " + path.node.name + " , def: " + path.instance.definition.title);

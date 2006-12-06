@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="sample.workflowBootstrap" parent="workflowDeployer">
+		<property name="workflowDefinitions">
+			<list>
+				<props>
+					<prop key="engineId">jbpm</prop>
+					<prop key="location">alfresco/workflow/parallelreview_processdefinition.xml</prop>
+					<prop key="mimetype">text/xml</prop>
+					<prop key="redeploy">false</prop>
+				</props>
+			</list>
+		</property>
+		<property name="models">
+			<list>
+			   <!-- NOTE: The above process definition relies on the default workflowModel.xml -->
+			   <!--       which is already registered during Alfresco startup. -->
+			   <!--       See bootstrap-context.xml (workflowBootstrap). -->
+			</list>
+		</property>
+		<property name="labels">
+			<list>
+			   <!-- NOTE: The above process definition relies on the default workflow-messages.properties -->
+			   <!--       which is already registered during Alfresco startup -->
+			   <!--       See bootstrap-context.xml (workflowBootstrap). -->
+			</list>
+		</property>
+	</bean>
+
+</beans>

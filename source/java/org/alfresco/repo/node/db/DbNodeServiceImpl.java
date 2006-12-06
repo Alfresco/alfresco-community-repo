@@ -808,6 +808,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Map<QName, PropertyValue> properties = node.getProperties();
         PropertyValue propertyValue = properties.get(qname);
         
+        // check if we need to provide a spoofed name
+        if (propertyValue == null && qname.equals(ContentModel.PROP_NAME))
+        {
+            return nodeRef.getId();
+        }
+        
         // get the property definition
         PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
         // convert to the correct type

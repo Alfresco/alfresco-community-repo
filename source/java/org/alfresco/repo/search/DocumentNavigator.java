@@ -19,6 +19,7 @@ package org.alfresco.repo.search;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
 import org.jaxen.DefaultNavigator;
 import org.jaxen.JaxenException;
+import org.jaxen.NamedAccessNavigator;
 import org.jaxen.UnsupportedAxisException;
 import org.jaxen.XPath;
 
@@ -53,7 +55,7 @@ import org.jaxen.XPath;
  * @author Andy Hind
  * 
  */
-public class DocumentNavigator extends DefaultNavigator
+public class DocumentNavigator extends DefaultNavigator implements NamedAccessNavigator
 {
     private static QName JCR_ROOT = QName.createQName("http://www.jcp.org/jcr/1.0", "root");
     
@@ -309,6 +311,41 @@ public class DocumentNavigator extends DefaultNavigator
 
     // Basic navigation support
 
+    public Iterator getAttributeAxisIterator(Object contextNode, String localName, String namespacePrefix, String namespaceURI) throws UnsupportedAxisException
+    {
+        // decode the localname
+        localName = ISO9075.decode(localName);
+        
+        NodeRef nodeRef = ((ChildAssociationRef) contextNode).getChildRef();
+        QName qName = QName.createQName(namespaceURI, localName);
+        Serializable value = nodeService.getProperty(nodeRef, qName);
+        List<Property> properties = null;
+        if (value != null)
+        {
+            if (value instanceof Collection)
+            {
+                Collection<Serializable> values = (Collection<Serializable>) value;
+                properties = new ArrayList<Property>(values.size());
+                for(Serializable collectionValue : values)
+                {
+                    Property property = new Property(qName, collectionValue, nodeRef);
+                    properties.add(property);
+                }
+            }
+            else
+            {
+                Property property = new Property(qName, value, nodeRef);
+                properties = Collections.singletonList(property);
+            }
+        }
+        else
+        {
+            properties = Collections.emptyList();
+        }
+        // done
+        return properties.iterator();
+    }
+
     public Iterator getAttributeAxisIterator(Object o) throws UnsupportedAxisException
     {
         ArrayList<Property> properties = new ArrayList<Property>();
@@ -342,6 +379,31 @@ public class DocumentNavigator extends DefaultNavigator
         return properties.iterator();
     }
 
+    public Iterator getChildAxisIterator(Object contextNode, String localName, String namespacePrefix, String namespaceURI) throws UnsupportedAxisException
+    {
+        // decode the localname
+        localName = ISO9075.decode(localName);
+        
+        ChildAssociationRef assocRef = (ChildAssociationRef) contextNode;
+        NodeRef childRef = assocRef.getChildRef();
+        QName qName = QName.createQName(namespaceURI, localName);
+        List<? extends ChildAssociationRef> list = null;
+        // Add compatability for JCR 170 by including the root node.
+        if(isDocument(contextNode) && useJCRRootNode)
+        {
+            list = new ArrayList<ChildAssociationRef>(1);
+            list = Collections.singletonList(
+                    new JCRRootNodeChildAssociationRef(
+                            ContentModel.ASSOC_CHILDREN, childRef, JCR_ROOT, childRef, true, 0));
+        }
+        else
+        {
+            list = nodeService.getChildAssocs(childRef, RegexQNamePattern.MATCH_ALL, qName);
+        }
+        // done
+        return list.iterator();
+    }
+
     public Iterator getChildAxisIterator(Object o) throws UnsupportedAxisException
     {
         // Iterator of ChildAxisRef
@@ -359,6 +421,44 @@ public class DocumentNavigator extends DefaultNavigator
             list = nodeService.getChildAssocs(childRef);
         }
         return list.iterator();
+    }
+
+    /** Used to prevent crazy ordering code in from repeatedly getting child association */
+    private static final UnsupportedAxisException EXCEPTION_NOT_SUPPORTED = new UnsupportedAxisException("");
+    /**
+     * @see #EXCEPTION_NOT_SUPPORTED always thrown
+     */
+    @Override
+    public Iterator getFollowingSiblingAxisIterator(Object arg0) throws UnsupportedAxisException
+    {
+        throw EXCEPTION_NOT_SUPPORTED;
+    }
+
+    /**
+     * @see #EXCEPTION_NOT_SUPPORTED always thrown
+     */
+    @Override
+    public Iterator getFollowingAxisIterator(Object arg0) throws UnsupportedAxisException
+    {
+        throw EXCEPTION_NOT_SUPPORTED;
+    }
+
+    /**
+     * @see #EXCEPTION_NOT_SUPPORTED always thrown
+     */
+    @Override
+    public Iterator getPrecedingAxisIterator(Object arg0) throws UnsupportedAxisException
+    {
+        throw EXCEPTION_NOT_SUPPORTED;
+    }
+
+    /**
+     * @see #EXCEPTION_NOT_SUPPORTED always thrown
+     */
+    @Override
+    public Iterator getPrecedingSiblingAxisIterator(Object arg0) throws UnsupportedAxisException
+    {
+        throw EXCEPTION_NOT_SUPPORTED;
     }
 
     public Iterator getNamespaceAxisIterator(Object o) throws UnsupportedAxisException

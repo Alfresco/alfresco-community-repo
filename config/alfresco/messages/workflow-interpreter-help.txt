@@ -23,6 +23,12 @@ ok> use
 ##  Workflow Definition Commands 
 ## 
 
+ok> show file <definitionClassPath>
+
+    Output the contents of the file located at <definitionClassPath>.
+    
+    <definitionClassPath> class path to workflow definition file. 
+
 ok> deploy <definitionClassPath> 
 
     Deploy workflow definition to Alfresco server. 
@@ -61,8 +67,8 @@ ok> var <varName>[*]=<varValue>
 
     e.g. 
 
-    set bpm:assignee*=admin,fred 
-    set wf:notifyMe=true 
+    var bpm:assignee*=admin,fred 
+    var wf:notifyMe=true 
 
 ok> var <varName>[*] person <varValue> 
 
@@ -74,7 +80,17 @@ ok> var <varName>[*] person <varValue>
 
     e.g. 
     
-    set bpm:assignee* person admin,fred 
+    var bpm:assignee* person admin,fred 
+
+ok> var <varName> package <itemCount>
+
+    Define or update a (bpm:workflowPackage) node ref variable.
+    
+    A new workflow package is created containing <itemCount> content items.
+    
+    e.g.
+    
+    var bpm:package package 4    
 
 ok> var <varName>= 
 
@@ -128,6 +144,10 @@ ok> desc workflow <workflowId>
 ok> end workflow <workflowId> 
 
     End (cancel) the specified <workflowId>. 
+
+ok> delete workflow <workflowId>
+
+    Force deletion of the specified <workflowId>.
 
 ## 
 ##  Task Commands 

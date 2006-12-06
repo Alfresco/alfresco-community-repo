@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="test_processevents">
+
+    <event type="process-start">
+        <script>
+            System.out.println("Process start");
+        </script>
+    </event>
+
+    <start-state name="start">
+       <transition to="end"/>
+    </start-state>
+
+    <end-state name="end"/>
+
+    <event type="process-end">
+        <script>
+            if (cancelled) { System.out.println("cancelled"); }
+            System.out.println("Process end: " + cancelled);
+        </script>
+    </event>
+
+</process-definition>

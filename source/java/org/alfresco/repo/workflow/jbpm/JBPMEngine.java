@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -71,6 +72,7 @@ import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.context.exe.TokenVariableMap;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
+import org.jbpm.file.def.FileDefinition;
 import org.jbpm.graph.def.Node;
 import org.jbpm.graph.def.ProcessDefinition;
 import org.jbpm.graph.def.Transition;
@@ -106,6 +108,10 @@ public class JBPMEngine extends BPMEngine
     protected ServiceRegistry serviceRegistry;
     protected PersonService personService;
     protected JbpmTemplate jbpmTemplate;
+    
+    // Company Home
+    protected StoreRef companyHomeStore;
+    protected String companyHomePath;
 
     // Note: jBPM query which is not provided out-of-the-box
     // TODO: Check jBPM 3.2 and get this implemented in jBPM
@@ -184,6 +190,26 @@ public class JBPMEngine extends BPMEngine
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
+    }
+
+    /**
+     * Sets the Company Home Path
+     * 
+     * @param companyHomePath
+     */
+    public void setCompanyHomePath(String companyHomePath)
+    {
+        this.companyHomePath = companyHomePath;
+    }
+
+    /**
+     * Sets the Company Home Store
+     * 
+     * @param companyHomeStore
+     */
+    public void setCompanyHomeStore(String companyHomeStore)
+    {
+        this.companyHomeStore = new StoreRef(companyHomeStore);
     }
 
     
@@ -357,6 +383,31 @@ public class JBPMEngine extends BPMEngine
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#getDefinitionImage(java.lang.String)
+     */
+    public byte[] getDefinitionImage(final String workflowDefinitionId)
+    {
+        try
+        {
+            return (byte[])jbpmTemplate.execute(new JbpmCallback()
+            {
+                @SuppressWarnings("synthetic-access")
+                public Object doInJbpm(JbpmContext context)
+                {
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessDefinition processDefinition = getProcessDefinition(graphSession, workflowDefinitionId);                    
+                    FileDefinition fileDefinition = processDefinition.getFileDefinition();
+                    return (fileDefinition == null) ? null : fileDefinition.getBytes("processimage.jpg");
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to retrieve workflow definition image for '" + workflowDefinitionId + "'", e);
+        }
+    }
+    
     /**
      * Gets a jBPM process definition
      * 
@@ -404,10 +455,18 @@ public class JBPMEngine extends BPMEngine
                  
                     // assign initial process context
                     ContextInstance processContext = processInstance.getContextInstance();
+                    processContext.setVariable("cancelled", false);
+                    NodeRef companyHome = getCompanyHome();
+                    processContext.setVariable("companyhome", new JBPMNode(companyHome, serviceRegistry));
                     NodeRef initiatorPerson = mapNameToAuthority(currentUserName);
                     if (initiatorPerson != null)
                     {
                         processContext.setVariable("initiator", new JBPMNode(initiatorPerson, serviceRegistry));
+                        NodeRef initiatorHome = (NodeRef)nodeService.getProperty(initiatorPerson, ContentModel.PROP_HOMEFOLDER);
+                        if (initiatorHome != null)
+                        {
+                            processContext.setVariable("initiatorhome", new JBPMNode(initiatorHome, serviceRegistry));
+                        }
                     }
 
                     // create the start task if one exists
@@ -558,8 +617,39 @@ public class JBPMEngine extends BPMEngine
                     // retrieve and cancel process instance
                     GraphSession graphSession = context.getGraphSession();
                     ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
+                    processInstance.getContextInstance().setVariable("cancelled", true);
+                    processInstance.end();
                     // TODO: Determine if this is the most appropriate way to cancel workflow...
                     //       It might be useful to record point at which it was cancelled etc
+                    WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
+                    
+                    // delete the process instance
+                    graphSession.deleteProcessInstance(processInstance, true, true, true);
+                    return workflowInstance; 
+                }
+            });
+        }
+        catch(JbpmException e)
+        {
+            throw new WorkflowException("Failed to cancel workflow instance '" + workflowId + "'", e);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflow(java.lang.String)
+     */
+    public WorkflowInstance deleteWorkflow(final String workflowId)
+    {
+        try
+        {
+            return (WorkflowInstance) jbpmTemplate.execute(new JbpmCallback()
+            {
+                @SuppressWarnings("unchecked")
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // retrieve and cancel process instance
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
                     WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
                     
                     // delete the process instance
@@ -1755,7 +1845,22 @@ public class JBPMEngine extends BPMEngine
         return (label == null) ? defaultLabel : label;
     }
     
-
+    /**
+     * Gets the Company Home
+     *  
+     * @return  company home node ref
+     */
+    private NodeRef getCompanyHome()
+    {
+        // TODO: Determine if caching is required
+        List<NodeRef> refs = serviceRegistry.getSearchService().selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
+        if (refs.size() != 1)
+        {
+            throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
+        }
+        return refs.get(0);
+    }
+    
     //
     // Workflow Data Object Creation...
     //
@@ -1888,7 +1993,7 @@ public class JBPMEngine extends BPMEngine
         final String title = getLabel(name + ".workflow", TITLE_LABEL, name);
         final String description = getLabel(name + ".workflow", DESC_LABEL, title);
         return new WorkflowDefinition(createGlobalId(new Long(definition.getId()).toString()),
-                                      name,
+                                      createGlobalId(name),
                                       new Integer(definition.getVersion()).toString(),
                                       title,
                                       description,

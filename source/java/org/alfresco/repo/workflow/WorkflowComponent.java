@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -95,6 +96,15 @@ public interface WorkflowComponent
      */
     public WorkflowDefinition getDefinitionByName(String workflowName);
     
+    /**
+     * Gets a graphical view of the Workflow Definition
+     * 
+     * @param workflowDefinitionId  the workflow definition id
+     * @return   graphical image of workflow definition
+     */
+    @Auditable(parameters = {"workflowDefinitionId"})
+    public byte[] getDefinitionImage(String workflowDefinitionId);
+    
 
     //
     // Workflow Instance Support
@@ -141,6 +151,14 @@ public interface WorkflowComponent
      * @return  an updated representation of the workflow instance
      */
     public WorkflowInstance cancelWorkflow(String workflowId);
+
+    /**
+     * Delete an "in-fligth" Workflow instance
+     * 
+     * @param workflowId  the workflow instance to cancel
+     * @return  an updated representation of the workflow instance
+     */
+    public WorkflowInstance deleteWorkflow(String workflowId);
 
     /**
      * Signal the transition from one Workflow Node to another within an "in-flight"

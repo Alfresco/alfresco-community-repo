@@ -34,6 +34,8 @@
    <task-node name="review">
       <event type="node-enter">
          <script>
+            System.out.println("company home: " + companyhome.name);
+            System.out.println("initiator home: " + initiatorhome.name);
             System.out.println("the reviewer is " + reviewer);
             System.out.println("node " + testNode.name + " contains " + testNode.children.length + " children");
             System.out.println("scriptResult = " + scriptResult);

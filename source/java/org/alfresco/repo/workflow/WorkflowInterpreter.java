@@ -30,12 +30,16 @@ import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -68,6 +72,8 @@ public class WorkflowInterpreter
     private AVMService avmService;
     private AVMSyncService avmSyncService;
     private PersonService personService;
+    private FileFolderService fileFolderService;
+    
     
     /**
      * The reader for interaction.
@@ -163,6 +169,14 @@ public class WorkflowInterpreter
     }
 
     /**
+     * @param fileFolderService  fileFolderService
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    /**
      * A Read-Eval-Print loop.
      */
     public void rep()
@@ -248,6 +262,31 @@ public class WorkflowInterpreter
             if (command.length < 2)
             {
                 return "Syntax Error.\n";
+            }
+            
+            else if (command[1].equals("file"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.\n";
+                }
+                ClassPathResource file = new ClassPathResource(command[2]);
+                InputStream fileStream = file.getInputStream();
+                byte[] fileBytes = new byte[500];
+                try
+                {
+                    int read = fileStream.read(fileBytes);
+                    while (read != -1)
+                    {
+                        bout.write(fileBytes, 0, read);
+                        read = fileStream.read(fileBytes);
+                    }
+                }
+                finally
+                {
+                    fileStream.close();
+                }
+                out.println();
             }
             
             else if (command[1].equals("definitions"))
@@ -609,7 +648,29 @@ public class WorkflowInterpreter
                 return "Syntax Error.\n";
             }
         }
-        
+
+        else if (command[0].equals("delete"))
+        {
+            if (command.length < 3)
+            {
+                return "Syntax Error.\n";
+            }
+            else if (command[1].equals("workflow"))
+            {
+                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.instance.id;
+                if (workflowId == null)
+                {
+                    return "Syntax Error.  Workflow Id not specified.\n";
+                }
+                workflowService.deleteWorkflow(workflowId);
+                out.println("workflow " + workflowId + " deleted.");
+            }
+            else
+            {
+                return "Syntax Error.\n";
+            }
+        }
+
         else if (command[0].equals("var"))
         {
             if (command.length == 1)
@@ -699,7 +760,6 @@ public class WorkflowInterpreter
                     }
                     out.println("set var " + qname + " = " + vars.get(qname));
                 }
-                
                 else if (command[2].equals("avmpackage"))
                 {
                 	// lookup source folder of changes
@@ -741,7 +801,20 @@ public class WorkflowInterpreter
                 	vars.put(qname, packageNodeRef);
                     out.println("set var " + qname + " = " + vars.get(qname));
                 }
-                
+                else if (command[2].equals("package"))
+                {
+                    QName qname = QName.createQName(command[1], namespaceService);
+                    int number = new Integer(command[3]);
+                    NodeRef packageNodeRef = workflowService.createPackage(null);
+                    for (int i = 0; i < number; i++)
+                    {
+                        FileInfo fileInfo = fileFolderService.create(packageNodeRef, "Content" + i, ContentModel.TYPE_CONTENT);
+                        ContentWriter writer = fileFolderService.getWriter(fileInfo.getNodeRef());
+                        writer.putContent("Content" + i);
+                    }
+                    vars.put(qname, packageNodeRef);
+                    out.println("set var " + qname + " = " + vars.get(qname));
+                }
                 else
                 {
                     return "Syntax Error.\n";
@@ -784,5 +857,5 @@ public class WorkflowInterpreter
     {
         return AuthenticationUtil.getCurrentUserName();
     }
-    
+        
 }

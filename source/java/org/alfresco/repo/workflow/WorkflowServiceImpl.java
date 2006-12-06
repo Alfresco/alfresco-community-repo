@@ -155,6 +155,21 @@ public class WorkflowServiceImpl implements WorkflowService
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.getDefinitionByName(workflowName);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#getDefinitionImage(java.lang.String)
+     */
+    public byte[] getDefinitionImage(String workflowDefinitionId)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        byte[] definitionImage = component.getDefinitionImage(workflowDefinitionId);
+        if (definitionImage == null)
+        {
+            definitionImage = new byte[0];
+        }
+        return definitionImage;
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#startWorkflow(java.lang.String, java.util.Map)
@@ -217,6 +232,20 @@ public class WorkflowServiceImpl implements WorkflowService
         return component.cancelWorkflow(workflowId);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#deleteWorkflow(java.lang.String)
+     */
+    public WorkflowInstance deleteWorkflow(String workflowId)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(workflowId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        WorkflowInstance instance = component.deleteWorkflow(workflowId);
+        // NOTE: Delete workflow package after deleting workflow, so it's still available
+        //       in process-end events of workflow definition
+        workflowPackageComponent.deletePackage(instance.workflowPackage);
+        return instance;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#signal(java.lang.String, java.lang.String)
      */

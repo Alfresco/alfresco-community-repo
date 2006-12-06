@@ -34,6 +34,7 @@
       <property name="nodeService" ref="NodeService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="personService" ref="PersonService"/>
+      <property name="fileFolderService" ref="FileFolderService"/>
    </bean>
 
    <bean id="workflowInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
@@ -87,6 +88,8 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="personService" ref="personService"/>
       <property name="serviceRegistry" ref="ServiceRegistry"/>
+      <property name="companyHomeStore"><value>${spaces.store}</value></property>
+      <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
    </bean>
 
 </beans>

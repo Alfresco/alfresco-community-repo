@@ -114,6 +114,15 @@ public interface WorkflowService
     @Auditable(parameters = {"workflowName"})
     public WorkflowDefinition getDefinitionByName(String workflowName);
 
+    /**
+     * Gets a graphical view of the Workflow Definition
+     * 
+     * @param workflowDefinitionId  the workflow definition id
+     * @return  image view of the workflow definition
+     */
+    @Auditable(parameters = {"workflowDefinitionId"})
+    public byte[] getDefinitionImage(String workflowDefinitionId);
+
     
     //
     // Workflow Instance Management
@@ -175,6 +184,18 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"workflowId"})
     public WorkflowInstance cancelWorkflow(String workflowId);
+
+    /**
+     * Delete an "in-fligth" Workflow instance
+     * 
+     * NOTE: This will force a delete, meaning that the workflow instance may not
+     *       go through all the appropriate cancel events.
+     * 
+     * @param workflowId  the workflow instance to cancel
+     * @return  an updated representation of the workflow instance
+     */
+    @Auditable(parameters = {"workflowId"})
+    public WorkflowInstance deleteWorkflow(String workflowId);
 
     /**
      * Signal the transition from one Workflow Node to another

@@ -87,7 +87,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);
-        assertEquals("test", testWorkflowDef.name);
+        assertEquals("jbpm$test", testWorkflowDef.name);
         assertEquals("1", testWorkflowDef.version);
         assertTrue(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
 
@@ -119,7 +119,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         testWorkflowDef = deployment.definition; 
         assertNotNull(testWorkflowDef);
-        assertEquals("test", testWorkflowDef.name);
+        assertEquals("jbpm$test", testWorkflowDef.name);
         assertEquals("2", testWorkflowDef.version);
     }
     

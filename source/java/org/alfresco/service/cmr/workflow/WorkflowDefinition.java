@@ -84,11 +84,11 @@ public class WorkflowDefinition
       return this.startTaskDefinition;
    }
     
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
-   public String toString()
-   {
-      return "WorkflowDefinition[id=" + id + ",version=" + version + ",title=" + title + ",startTask=" + startTaskDefinition.toString() + "]";
-   }
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    public String toString()
+    {
+        return "WorkflowDefinition[id=" + id + ",name=" + name + ",version=" + version + ",title=" + title + ",startTask=" + ((startTaskDefinition == null) ? "undefined" : startTaskDefinition.toString()) + "]";
+    }
 }

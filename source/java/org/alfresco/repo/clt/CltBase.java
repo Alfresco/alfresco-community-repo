@@ -69,7 +69,7 @@ public abstract class CltBase
         fAVMSyncService = (AVMSyncService)fContext.getBean("avmSyncService");
         fRepoRemote = (RepoRemote)fContext.getBean("repoRemote");
         fAuthenticationService = (AuthenticationService)fContext.getBean("authenticationService");
-        fAuthenticationService.authenticate("admin", "admin".toCharArray());
+        fAuthenticationService.authenticate(System.getenv("ALFUSER"), System.getenv("ALFPASSWORD").toCharArray());
         String ticket = fAuthenticationService.getCurrentTicket();
         ClientTicketHolder.SetTicket(ticket);
     }

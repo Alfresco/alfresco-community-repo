@@ -31,12 +31,18 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.forms.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.AVMBrowseBean;
+import org.alfresco.web.ui.common.Utils;
 import org.chiba.xml.xforms.ChibaBean;
 import org.chiba.xml.xforms.Instance;
 import org.chiba.xml.xforms.XFormsElement;
@@ -46,6 +52,7 @@ import org.chiba.xml.xforms.exception.XFormsException;
 import org.chiba.xml.xforms.events.XFormsEvent;
 import org.chiba.xml.xforms.events.XFormsEventFactory;
 import org.chiba.xml.xforms.ui.BoundElement;
+import org.chiba.xml.xforms.ui.Upload;
 
 import org.w3c.dom.*;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
@@ -99,8 +106,7 @@ public class XFormsBean
       final ExternalContext externalContext = facesContext.getExternalContext();
       final HttpServletRequest request = (HttpServletRequest)
          externalContext.getRequest();
-      final HttpSession session = (HttpSession)
-         externalContext.getSession(true);
+      final HttpSession session = (HttpSession)externalContext.getSession(true);
       final AVMBrowseBean browseBean = (AVMBrowseBean)
          session.getAttribute("AVMBrowseBean");
       LOGGER.debug("avm cwd is " + browseBean.getCurrentPath());
@@ -170,14 +176,12 @@ public class XFormsBean
       throws IOException,
       XFormsException
    {
-      LOGGER.debug(this + " building xform");
+      LOGGER.debug(this + ".getXForm()");
       final FacesContext context = FacesContext.getCurrentInstance();
       final ResponseWriter out = context.getResponseWriter();
-      final Map requestParameters = context.getExternalContext().getRequestParameterMap();
       LOGGER.debug("building xform for " + this.tt.getName());
       final Node form = this.chibaBean.getXMLContainer();
-      final FormsService ts = FormsService.getInstance();
-      ts.writeXML(form, out);
+      FormsService.getInstance().writeXML(form, out);
    }
 
    /**
@@ -195,12 +199,18 @@ public class XFormsBean
       final String id = (String)requestParameters.get("id");
       final String value = (String)requestParameters.get("value");
 
-      LOGGER.debug(this + " setXFormsValue(" + id + ", " + value + ")");
-      this.chibaBean.updateControlValue(id, value);
+      LOGGER.debug(this + ".setXFormsValue(" + id + ", " + value + ")");
+      if (this.chibaBean.lookup(id) instanceof Upload)
+      {
+         this.chibaBean.updateControlValue(id, null, value, value.getBytes());
+      }
+      else
+      {
+         this.chibaBean.updateControlValue(id, value);
+      }
 
-      final FormsService ts = FormsService.getInstance();
       final ResponseWriter out = context.getResponseWriter();
-      ts.writeXML(this.getEventLog(), out);
+      FormsService.getInstance().writeXML(this.getEventLog(), out);
       out.close();
    }
 
@@ -219,12 +229,11 @@ public class XFormsBean
       final String id = (String)requestParameters.get("id");
       final int index = Integer.parseInt((String)requestParameters.get("index"));
 
-      LOGGER.debug(this + " setRepeatIndex(" + id + ", " + index + ")");
+      LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
       this.chibaBean.updateRepeatIndex(id, index);
 
-      final FormsService ts = FormsService.getInstance();
       final ResponseWriter out = context.getResponseWriter();
-      ts.writeXML(this.getEventLog(), out);
+      FormsService.getInstance().writeXML(this.getEventLog(), out);
       out.close();
    }
 
@@ -240,12 +249,11 @@ public class XFormsBean
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
       final String id = (String)requestParameters.get("id");
 
-      LOGGER.debug(this + " fireAction(" + id + ")");
+      LOGGER.debug(this + ".fireAction(" + id + ")");
       this.chibaBean.dispatch(id, XFormsEventFactory.DOM_ACTIVATE);
 
-      final FormsService ts = FormsService.getInstance();
       final ResponseWriter out = context.getResponseWriter();
-      ts.writeXML(this.getEventLog(), out);
+      FormsService.getInstance().writeXML(this.getEventLog(), out);
       out.close();
    }
 
@@ -255,16 +263,16 @@ public class XFormsBean
    public void handleAction() 
       throws Exception
    {
-      LOGGER.debug(this + " handleAction");
+      LOGGER.debug(this + ".handleAction");
       final FacesContext context = FacesContext.getCurrentInstance();
       final HttpServletRequest request = (HttpServletRequest)
          context.getExternalContext().getRequest();
-      final FormsService ts = FormsService.getInstance();
-      final Document result = ts.parseXML(request.getInputStream());
+      final FormsService formsService = FormsService.getInstance();
+      final Document result = formsService.parseXML(request.getInputStream());
       this.instanceData.setContent(result);
 
       final ResponseWriter out = context.getResponseWriter();
-      ts.writeXML(result, out);
+      formsService.writeXML(result, out);
       out.close();
    }
 
@@ -274,21 +282,95 @@ public class XFormsBean
    public void swapRepeatItems() 
       throws Exception
    {
-      LOGGER.debug(this + " handleAction");
       final FacesContext context = FacesContext.getCurrentInstance();
-      final HttpServletRequest request = (HttpServletRequest)
-         context.getExternalContext().getRequest();
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
 
       final String fromItemId = (String)requestParameters.get("fromItemId");
       final String toItemId = (String)requestParameters.get("toItemId");
-      LOGGER.debug("swapping from " + fromItemId + " to " + toItemId);
+      LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
       this.swapRepeatItems(this.chibaBean.lookup(fromItemId), 
                            this.chibaBean.lookup(toItemId));
 
-      final FormsService ts = FormsService.getInstance();
       final ResponseWriter out = context.getResponseWriter();
-      ts.writeXML(this.getEventLog(), out);
+      FormsService.getInstance().writeXML(this.getEventLog(), out);
+      out.close();
+   }
+
+   /**
+    * Provides data for a file picker widget.
+    */
+   public void getFilePickerData()
+      throws Exception
+   {
+      final FacesContext facesContext = FacesContext.getCurrentInstance();
+      final ExternalContext externalContext = facesContext.getExternalContext();
+      final HttpSession session = (HttpSession)
+         externalContext.getSession(true);
+      final AVMBrowseBean browseBean = (AVMBrowseBean)
+         session.getAttribute("AVMBrowseBean");
+
+      final Map requestParameters = externalContext.getRequestParameterMap();
+      String currentPath = (String)requestParameters.get("currentPath");
+      if (currentPath == null)
+      {
+         currentPath = browseBean.getCurrentPath();
+      }
+      else
+      {
+         currentPath = AVMConstants.buildAbsoluteAVMPath(browseBean.getCurrentPath(),
+                                                         currentPath);
+      }
+      LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
+
+      final ServiceRegistry serviceRegistry = 
+         Repository.getServiceRegistry(facesContext);
+      final AVMService avmService = serviceRegistry.getAVMService();
+
+      final FormsService formsService = FormsService.getInstance();
+      final Document result = formsService.newDocument();
+      final Element filePickerDataElement = result.createElement("file-picker-data");
+      result.appendChild(filePickerDataElement);
+
+
+      final AVMNodeDescriptor currentNode = avmService.lookup(-1, currentPath);
+      if (currentNode == null)
+      {
+         final Element errorElement = result.createElement("error");
+         errorElement.appendChild(result.createTextNode("Path " + currentPath + " not found"));
+         filePickerDataElement.appendChild(errorElement);
+         currentPath = browseBean.getCurrentPath();
+      }
+      else if (! currentNode.isDirectory())
+      {
+         currentPath = AVMNodeConverter.SplitBase(currentPath)[0];
+      }
+      
+      Element e = result.createElement("current-node");
+      e.setAttribute("avmPath", currentPath);
+      e.setAttribute("webappRelativePath", 
+                     AVMConstants.getWebappRelativePath(currentPath));
+      e.setAttribute("type", "directory");
+      e.setAttribute("image", "/images/icons/space_small.gif");
+      filePickerDataElement.appendChild(e);
+
+      for (Map.Entry<String, AVMNodeDescriptor> entry : 
+              avmService.getDirectoryListing(-1, currentPath).entrySet())
+      {
+         e = result.createElement("child-node");
+         e.setAttribute("avmPath", entry.getValue().getPath());
+         e.setAttribute("webappRelativePath", 
+                        AVMConstants.getWebappRelativePath(entry.getValue().getPath()));
+         e.setAttribute("type", entry.getValue().isDirectory() ? "directory" : "file");
+         e.setAttribute("image", (entry.getValue().isDirectory()
+                                  ? "/images/icons/space_small.gif"
+                                  : Utils.getFileTypeImage(facesContext, 
+                                                           entry.getValue().getName(),
+                                                           true)));
+         filePickerDataElement.appendChild(e);
+      }
+
+      final ResponseWriter out = facesContext.getResponseWriter();
+      FormsService.getInstance().writeXML(result, out);
       out.close();
    }
 

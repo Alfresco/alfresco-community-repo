@@ -71,7 +71,7 @@ public class XFormsProcessor
 
 	// this div is where the ui will write to
 	final Element div = result.createElement("div");
-	div.setAttribute("id", "alf-ui");
+	div.setAttribute("id", "alfresco-xforms-ui");
 	result.appendChild(div);
 
 	// a script with config information and globals.

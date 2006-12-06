@@ -231,6 +231,18 @@ public final class AVMConstants
 
       return parent + path;
    }
+
+   /**
+    * Returns a path relative to the webapp portion of the avm path.
+    *
+    * @param absoluteAVMPath an absolute path within the avm
+    * @return a relative path within the webapp.
+    */
+   public static String getWebappRelativePath(final String absoluteAVMPath)
+   {
+      final Matcher m = webappRelativePath.matcher(absoluteAVMPath);
+      return m.matches() && m.group(1).length() != 0 ? m.group(1) : "/";
+   }
    
    // names of the stores representing the layers for an AVM website
    public final static String STORE_STAGING = "-staging";
@@ -262,4 +274,7 @@ public final class AVMConstants
    // patter for absolute AVM Path
    private final static Pattern absoluteAVMPath = Pattern.compile(
          "([^:]+:/" + AVMConstants.DIR_APPBASE + "/[^/]+/[^/]+).*");
+   private final static Pattern webappRelativePath = Pattern.compile(
+      "[^:]+:/" + AVMConstants.DIR_APPBASE +
+      "/" + AVMConstants.DIR_WEBAPPS + "/[^/]+(.*)");
 }

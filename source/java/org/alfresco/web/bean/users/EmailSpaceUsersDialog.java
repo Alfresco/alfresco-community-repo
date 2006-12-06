@@ -190,10 +190,25 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       this.userGroupLookup = new HashMap<String, Map>();
    }
    
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#areaChanged()
+    */
+   public void areaChanged()
+   {
+      // nothing to do
+   }
+
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#spaceChanged()
+    */
+   public void spaceChanged()
+   {
+      // nothing to do
+   }
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
-   
+
    /**
     * @param permissionService   The PermissionService to set
     */

@@ -176,6 +176,25 @@ public class RecentSpacesBean implements IContextListener
    }
    
    /**
+    * @see org.alfresco.web.app.context.IContextListener#areaChanged()
+    */
+   public void areaChanged()
+   {
+      // nothing to do
+   }
+
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#spaceChanged()
+    */
+   public void spaceChanged()
+   {
+      // nothing to do
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helper methods
+   
+   /**
     * @return the max number of recent spaces to show, retrieved from client config
     */
    private int getMaxRecentSpaces()

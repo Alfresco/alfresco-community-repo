@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
@@ -52,7 +51,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -485,10 +483,25 @@ public class BrowseBean implements IContextListener
       invalidateComponents();
    }
    
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#areaChanged()
+    */
+   public void areaChanged()
+   {
+      // nothing to do
+   }
+
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#spaceChanged()
+    */
+   public void spaceChanged()
+   {
+      // nothing to do
+   }
    
    // ------------------------------------------------------------------------------
    // NodeEventListener listeners
-   
+
    /**
     * Add a listener to those called by the BrowseBean when nodes are created
     */
@@ -1547,6 +1560,9 @@ public class BrowseBean implements IContextListener
       // set up the dispatch context for the navigation handler
       this.navigator.setupDispatchContext(new Node(ref));
       
+      // inform any listeners that the current space has changed
+      UIContextService.getInstance(FacesContext.getCurrentInstance()).spaceChanged();
+      
       navigateBrowseScreen();
    }
    
@@ -1651,6 +1667,9 @@ public class BrowseBean implements IContextListener
          
          // setup the dispatch context
          navigator.setupDispatchContext(new Node(this.nodeRef));
+         
+         // inform any listeners that the current space has changed
+         UIContextService.getInstance(FacesContext.getCurrentInstance()).spaceChanged();
          
          // return to browse page if required
          return (isViewCurrent() ? null : "browse"); 

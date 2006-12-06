@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.config.LanguagesConfigElement;
@@ -336,8 +337,16 @@ public class LoginBean
             }
             else
             {
-               // special case to handle jump to My Alfresco page initially
+               // setup the current location with the NavigationBean
                String location = this.preferences.getStartLocation();
+               NavigationBean navBean = (NavigationBean)FacesHelper.getManagedBean(
+                     fc, "NavigationBean");
+               if (navBean != null)
+               {
+                  navBean.setToolbarLocation(location);
+               }
+            
+               // special case to handle jump to My Alfresco page initially
                if (NavigationBean.LOCATION_MYALFRESCO.equals(location))
                {
                   return "myalfresco";

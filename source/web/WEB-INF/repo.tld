@@ -1755,4 +1755,113 @@
       </attribute>
    </tag>
    
+   <tag>
+      <name>sidebar</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.SidebarTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         Allows the sidebar component to be used on a JSP page.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>activePlugin</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>navigator</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.NavigatorTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         Allows the navigator component to be used on a JSP page.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>activeArea</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+
+   <tag>
+      <name>yahooTree</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.YahooTreeTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         The tree tag allows the yahoo based tree component to be 
+         added to a JSP page.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>rootNodes</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>retrieveChildrenUrl</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>nodeCollapsedUrl</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>nodeExpandedCallback</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>nodeCollapsedCallback</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>nodeSelectedCallback</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
 </taglib>

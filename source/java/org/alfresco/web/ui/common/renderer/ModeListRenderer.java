@@ -156,7 +156,28 @@ public class ModeListRenderer extends BaseRenderer
             for (Iterator i=list.getChildren().iterator(); i.hasNext(); /**/)
             {
                UIComponent child = (UIComponent)i.next();
-               if (child instanceof UIListItem && child.isRendered() == true)
+               if (child instanceof UIListItems)
+               {
+                  // get the value of the list items component and iterate
+                  // through it's collection
+                  Object listItems = ((UIListItems)child).getValue();
+                  if (listItems instanceof Collection)
+                  {
+                     Iterator iter = ((Collection)listItems).iterator();
+                     while (iter.hasNext())
+                     {
+                        UIListItem item = (UIListItem)iter.next();
+                        
+                        // if selected render as the label
+                        if (item.getValue().equals(list.getValue()) == true)
+                        {
+                           label = item.getLabel();
+                           break;
+                        }
+                     }
+                  }
+               }
+               else if (child instanceof UIListItem && child.isRendered() == true)
                {
                   // found a valid UIListItem child to render
                   UIListItem item = (UIListItem)child;
@@ -179,7 +200,7 @@ public class ModeListRenderer extends BaseRenderer
             outputAttribute(out, attrs.get("labelStyleClass"), "class");
             out.write('>');
             out.write(Utils.encode(label));
-            out.write("</span>");
+            out.write("</span>&nbsp;");
          }
          
          // output image

@@ -11,16 +11,16 @@ p
 
 table.moduletable td
 {
-	font-family: Tahoma, Arial, Helvetica, sans-serif;
-	font-size: 11px;
-	font-weight: normal;
+   font-family: Tahoma, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   font-weight: normal;
 }
 
 td,tr,p,div
 {
    color: #003366;
-	font-family: Tahoma, Arial, Helvetica, sans-serif;
-	font-size: 11px;
+   font-family: Tahoma, Arial, Helvetica, sans-serif;
+   font-size: 11px;
 }
 
 th
@@ -40,68 +40,68 @@ p.status
 
 a:link, a:visited
 {
-	font-size: 11px;
-	color: #003366;
-	text-decoration: none;
-	font-family: Tahoma, Arial, Helvetica, sans-serif;
-	font-weight: normal;
+   font-size: 11px;
+   color: #003366;
+   text-decoration: none;
+   font-family: Tahoma, Arial, Helvetica, sans-serif;
+   font-weight: normal;
 }
 
 a:hover
 {
-	color: #4272B4;
-	text-decoration: underline;
-	font-weight: normal;
+   color: #4272B4;
+   text-decoration: underline;
+   font-weight: normal;
 }
 
 a.path:link, a.path:visited
 {
-	font-size: 14px;
-	color: #003366;
-	text-decoration: none;
-	font-weight: normal;
+   font-size: 14px;
+   color: #003366;
+   text-decoration: none;
+   font-weight: normal;
 }
 
 a.path:hover
 {
    font-size: 14px;
-	color: #4272B4;
-	text-decoration: underline;
-	font-weight: normal;
+   color: #4272B4;
+   text-decoration: underline;
+   font-weight: normal;
 }
 
 a.header:link, a.header:visited
 {
-	font-weight: bold;
+   font-weight: bold;
 }
 
 a.header:hover
 {
-	font-weight: bold;
+   font-weight: bold;
 }
 
 a.title:link, a.title:visited
 {
    font-size: 12px;
-	font-weight: bold;
+   font-weight: bold;
 }
 
 a.title:hover
 {
    font-size: 12px;
-	font-weight: bold;
+   font-weight: bold;
 }
 
 a.moreactions:link, a.moreactions:visited
 {
    vertical-align: 30%;
-	font-size: 10px;
+   font-size: 10px;
 }
 
 a.moreactions:hover
 {
    vertical-align: 30%;
-	font-size: 10px;
+   font-size: 10px;
 }
 
 a.small:link, a.small:visited
@@ -336,7 +336,7 @@ input,textarea,select
 
 .dialogButtonSpacing
 {
-	height: 5px;
+   height: 5px;
 }
 
 .topToolbar
@@ -434,7 +434,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .wizardButtonSpacing
 {
-	height: 5px;
+   height: 5px;
 }
 
 .propertiesLabel
@@ -486,12 +486,12 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .alignTop
 {
-	vertical-align: top;
+   vertical-align: top;
 }
 
 .alignMiddle
 {
-	vertical-align: middle;
+   vertical-align: middle;
 }
 
 .tableThirdWidth
@@ -514,10 +514,10 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .summaryPopupPanel
 {
-	background-color: #e9f0f4;
-	border: 1px solid #999999;
-	padding: 4px;
-	-moz-border-radius: 4px;
+   background-color: #e9f0f4;
+   border: 1px solid #999999;
+   padding: 4px;
+   -moz-border-radius: 4px;
 }
 
 .userGroupPickerList
@@ -531,9 +531,9 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .workflowSelection
 {
-	border: 1px solid #676767; 
-	background-color: #efefef; 
-	padding: 6px 12px 12px 6px;
+   border: 1px solid #676767; 
+   background-color: #efefef; 
+   padding: 6px 12px 12px 6px;
 }
 
 .workflowSummary
@@ -549,15 +549,15 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .nodeWorkflowInfoTitle
 {
-	font-weight: bold;
-	color: #003366;
-	padding-top: 3px;
-	padding-bottom: 3px;
+   font-weight: bold;
+   color: #003366;
+   padding-top: 3px;
+   padding-bottom: 3px;
 }
 
 .nodeWorkflowInfoText
 {
-	padding-bottom: 8px;
+   padding-bottom: 8px;
 }
 
 .selectListTable
@@ -588,4 +588,44 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-width: 1px;
    border-style: solid;
    border-color: #999999;
+}
+
+#navigator
+{
+   border: 1px solid #aaaaaa;
+}
+
+.navigatorPanelTitle
+{
+   background-color: #efefef;
+   color: #003366;
+   padding: 5px;
+   border-top: 1px solid #aaaaaa;
+}
+
+.navigatorPanelTitle a
+{
+   font-weight: bold;
+}
+
+.navigatorPanelTitle a:hover
+{
+   color: #4272b4;
+   font-weight: bold;
+}
+
+.navigatorPanelTitleSelected
+{
+   width: 220px;
+   font-weight: bold;
+   background-color: #7b7b7b;
+   color: white;
+   padding: 5px;
+}
+
+.navigatorPanelBody
+{
+   height: 330px;
+   width: 220px;
+   overflow: auto;
 }

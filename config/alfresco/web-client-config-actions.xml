@@ -562,6 +562,13 @@
             <action-listener>#{RulesBean.ignoreInheritedRules}</action-listener>
          </action>         
          
+         <!-- Reset Tree -->
+         <action id="reset_navigator">
+            <label-id>reset_navigator</label-id>
+            <image>/images/icons/reset.gif</image>
+            <action>#{NavigatorPluginBean.reset}</action>
+         </action>
+         
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
          <!-- the component is responsible for making the context Node object available with name
@@ -711,6 +718,11 @@
          <action-group id="rules_actions_menu">
          	<action idref="reapply-rules" />
          	<action idref="ignore-inherited-rules" />
+         </action-group>
+         
+         <!-- Actions for the navigator plugin -->
+         <action-group id="navigator_actions">
+            <action idref="reset_navigator" />
          </action-group>
          
       </actions>

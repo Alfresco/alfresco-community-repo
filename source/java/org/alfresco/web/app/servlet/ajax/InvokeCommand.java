@@ -52,9 +52,9 @@ import org.alfresco.web.bean.repository.Repository;
 public class InvokeCommand extends BaseAjaxCommand
 {
    public void execute(final FacesContext facesContext, 
-		       final String expression,
-		       final HttpServletRequest request, 
-		       final HttpServletResponse response)
+         final String expression,
+         final HttpServletRequest request, 
+         final HttpServletResponse response)
          throws ServletException, IOException
    {
       // setup the JSF response writer.
@@ -64,6 +64,8 @@ public class InvokeCommand extends BaseAjaxCommand
       // therefore, for now we will always return a content type of text/xml.
       // In the future we may use annotations on the method to be called to specify what content
       // type should be used for the response.
+      // NOTE: JSF only seems to support XML and HTML content types by default so this will
+      //       also need to be addressed if other content types need to be returned i.e. JSON.
       
       OutputStream os = response.getOutputStream();
       UIViewRoot viewRoot = facesContext.getViewRoot();
@@ -76,7 +78,7 @@ public class InvokeCommand extends BaseAjaxCommand
       facesContext.setResponseWriter(writer);
       // must be text/xml otherwise IE doesn't parse the response properly into responseXML
       response.setContentType(MimetypeMap.MIMETYPE_XML);
-      
+
       // create the JSF binding expression
       String bindingExpr = makeBindingExpression(expression);
       
@@ -107,16 +109,19 @@ public class InvokeCommand extends BaseAjaxCommand
       {
          // rollback the transaction
          try { if (tx != null) { tx.rollback(); } } catch (Exception ex) { }
-	     if (err instanceof EvaluationException)
-	     {
+         
+         if (err instanceof EvaluationException)
+         {
             final Throwable cause = ((EvaluationException)err).getCause();
-	        if (cause != null)
-	           err = cause;
-	     }
-	     logger.error(err);
+            if (cause != null)
+            {
+               err = cause;
+            }
+         }
+
+         logger.error(err);
          throw new AlfrescoRuntimeException("Failed to execute method " + expression + 
-					    ": " + err.getMessage(), 
-					    err);
+                ": " + err.getMessage(), err);
       }
 
       // force the output back to the client

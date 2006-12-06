@@ -1184,6 +1184,21 @@ public class AVMBrowseBean implements IContextListener
       this.folders = null;
    }
    
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#areaChanged()
+    */
+   public void areaChanged()
+   {
+      // nothing to do
+   }
+
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#spaceChanged()
+    */
+   public void spaceChanged()
+   {
+      // nothing to do
+   }
    
    // ------------------------------------------------------------------------------
    // Inner classes

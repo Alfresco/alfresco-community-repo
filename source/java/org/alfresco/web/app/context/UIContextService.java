@@ -24,7 +24,10 @@ import javax.faces.context.FacesContext;
 /**
  * Beans supporting the IContextListener interface are registered against this class. Then Beans
  * which wish to indicate that the UI should refresh itself i.e. dump all cached data and settings,
- * call the UIContextService.notifyBeans() to inform all registered instances of the change. 
+ * call the UIContextService.notifyBeans() to inform all registered instances of the change.
+ * <p>
+ * Registered beans will also be informed of changes in location, for example when the current
+ * space changes or when the user has changed area i.e. from company home to my home.
  * 
  * @author Kevin Roast
  */
@@ -42,6 +45,7 @@ public final class UIContextService
     * 
     * @return UIContextService for this Thread
     */
+   @SuppressWarnings("unchecked")
    public static UIContextService getInstance(FacesContext fc)
    {
       Map session = fc.getExternalContext().getSessionMap();
@@ -97,6 +101,29 @@ public final class UIContextService
       }
    }
    
+   /**
+    * Call to notify all register beans that the current space has changed and they should
+    * refresh themselves as appropriate.
+    */
+   public void spaceChanged()
+   {
+      for (IContextListener listener: this.registeredBeans.values())
+      {
+         listener.spaceChanged();
+      }
+   }
+   
+   /**
+    * Call to notify all register beans that the area i.e. my home, has changed and they should
+    * refresh themselves as appropriate.
+    */
+   public void areaChanged()
+   {
+      for (IContextListener listener: this.registeredBeans.values())
+      {
+         listener.areaChanged();
+      }
+   }
    
    /** key for the UI context service in the session */
    private final static String CONTEXT_KEY = "__uiContextService";

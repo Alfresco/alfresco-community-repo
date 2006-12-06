@@ -649,6 +649,21 @@ public class ForumsBean implements IContextListener
       this.posts = null;
    }
    
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#areaChanged()
+    */
+   public void areaChanged()
+   {
+      // nothing to do
+   }
+
+   /**
+    * @see org.alfresco.web.app.context.IContextListener#spaceChanged()
+    */
+   public void spaceChanged()
+   {
+      // nothing to do
+   }
    
    // ------------------------------------------------------------------------------
    // Navigation action event handlers 

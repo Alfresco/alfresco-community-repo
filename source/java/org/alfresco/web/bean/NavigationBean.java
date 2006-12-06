@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
@@ -193,6 +194,24 @@ public class NavigationBean
     */
    public String getToolbarLocation()
    {
+      if (this.toolbarLocation == null)
+      {
+         // if the toolbar location has not been set yet, try and get the
+         // default via the user preferences object
+         UserPreferencesBean prefsBean = (UserPreferencesBean)FacesHelper.getManagedBean(
+               FacesContext.getCurrentInstance(), "UserPreferencesBean");
+         if (prefsBean != null)
+         {
+            this.toolbarLocation = prefsBean.getStartLocation();
+         }
+         
+         // if we still haven't found a location default to my home
+         if (this.toolbarLocation == null)
+         {
+            this.toolbarLocation = LOCATION_HOME;
+         }
+      }
+      
       return this.toolbarLocation;
    }
    
@@ -201,7 +220,7 @@ public class NavigationBean
     */
    public void setToolbarLocation(String location)
    {
-      processToolbarLocation(location, true);
+      this.toolbarLocation = location;
    }
    
    /**
@@ -211,7 +230,8 @@ public class NavigationBean
     * @param location      Toolbar location constant
     * @param navigate      True to perform navigation, false otherwise
     */
-   private void processToolbarLocation(String location, boolean navigate)
+   @SuppressWarnings("serial")
+   public void processToolbarLocation(String location, boolean navigate)
    {
       this.toolbarLocation = location;
       
@@ -223,6 +243,9 @@ public class NavigationBean
          elements.add(new NavigationBreadcrumbHandler(companyHome.getNodeRef(), companyHome.getName()));
          setLocation(elements);
          setCurrentNodeId(companyHome.getId());
+         
+         // inform registered beans that the current area has changed
+         UIContextService.getInstance(FacesContext.getCurrentInstance()).areaChanged();
          
          // we need to force a navigation to refresh the browse screen breadcrumb
          if (navigate)
@@ -240,6 +263,9 @@ public class NavigationBean
          setLocation(elements);
          setCurrentNodeId(homeSpaceRef.getId());
          
+         // inform registered beans that the current area has changed
+         UIContextService.getInstance(FacesContext.getCurrentInstance()).areaChanged();
+         
          // we need to force a navigation to refresh the browse screen breadcrumb
          if (navigate)
          {
@@ -253,6 +279,9 @@ public class NavigationBean
          elements.add(new NavigationBreadcrumbHandler(guestHome.getNodeRef(), guestHome.getName()));
          setLocation(elements);
          setCurrentNodeId(guestHome.getId());
+         
+         // inform registered beans that the current area has changed
+         UIContextService.getInstance(FacesContext.getCurrentInstance()).areaChanged();
          
          // we need to force a navigation to refresh the browse screen breadcrumb
          if (navigate)
@@ -274,6 +303,7 @@ public class NavigationBean
          List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
          elements.add(new IBreadcrumbHandler()
             {
+               @SuppressWarnings("unchecked")
                public String navigationOutcome(UIBreadcrumb breadcrumb)
                {
                   setLocation( (List)breadcrumb.getValue() );
@@ -286,6 +316,9 @@ public class NavigationBean
                };
             });
          setLocation(elements);
+         
+         // inform registered beans that the current area has changed
+         UIContextService.getInstance(FacesContext.getCurrentInstance()).areaChanged();
          
          // we need to force a navigation to refresh the browse screen breadcrumb
          if (navigate)
@@ -673,7 +706,7 @@ public class NavigationBean
       {
          UIModeList locationList = (UIModeList)event.getComponent();
          String location = locationList.getValue().toString();
-         setToolbarLocation(location);
+         processToolbarLocation(location, true);
       }
       catch (InvalidNodeRefException refErr)
       {
@@ -864,7 +897,7 @@ public class NavigationBean
    private Node companyHomeNode = null;
    
    /** Current toolbar location */
-   private String toolbarLocation = LOCATION_HOME;
+   private String toolbarLocation = null;
    
    /** Search context object we are currently using or null for no search */
    private SearchContext searchContext;

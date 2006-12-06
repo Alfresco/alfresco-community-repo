@@ -90,6 +90,7 @@ public final class Utils
    private static final String DEFAULT_FILE_IMAGE32 = IMAGE_PREFIX32 + "_default" + IMAGE_POSTFIX;
    
    private static final String AJAX_SCRIPTS_WRITTEN = "_alfAjaxScriptsWritten";
+   private static final String YAHOO_SCRIPTS_WRITTEN = "_alfYahooScriptsWritten";
    
    private static final Map<String, String> s_fileExtensionMap = new HashMap<String, String>(89, 1.0f);
    
@@ -412,7 +413,7 @@ public final class Utils
     */
    public static String generateFormSubmit(FacesContext context, UIComponent component, String fieldId, String fieldValue)
    {
-      return generateFormSubmit(context, component, fieldId, fieldValue, null);
+      return generateFormSubmit(context, component, fieldId, fieldValue, false, null);
    }
    
    /**
@@ -429,7 +430,31 @@ public final class Utils
     * 
     * @return JavaScript event code
     */
-   public static String generateFormSubmit(FacesContext context, UIComponent component, String fieldId, String fieldValue, Map<String, String> params)
+   public static String generateFormSubmit(FacesContext context, UIComponent component, String fieldId, 
+         String fieldValue, Map<String, String> params)
+   {
+      return generateFormSubmit(context, component, fieldId, fieldValue, false, params);
+   }
+      
+   /**
+    * Generate the JavaScript to submit set the specified hidden Form field to the
+    * supplied value and submit the parent Form.
+    * 
+    * NOTE: the supplied hidden field name is added to the Form Renderer map for output.
+    * 
+    * @param context       FacesContext
+    * @param component     UIComponent to generate JavaScript for
+    * @param fieldId       Hidden field id to set value for
+    * @param fieldValue    Hidden field value to set hidden field too on submit
+    * @param valueIsParam  Determines whether the fieldValue parameter should be treated
+    *                      as a parameter in the generated JavaScript, false will treat
+    *                      the value i.e. surround it with single quotes
+    * @param params        Optional map of param name/values to output
+    * 
+    * @return JavaScript event code
+    */
+   public static String generateFormSubmit(FacesContext context, UIComponent component, String fieldId, 
+         String fieldValue, boolean valueIsParam, Map<String, String> params)
    {
       UIForm form = Utils.getParentForm(context, component);
       if (form == null)
@@ -446,9 +471,17 @@ public final class Utils
       buf.append("'");
       buf.append("]['");
       buf.append(fieldId);
-      buf.append("'].value='");
+      buf.append("'].value=");
+      if (valueIsParam == false)
+      {
+         buf.append("'");
+      }
       buf.append(fieldValue);
-      buf.append("';");
+      if (valueIsParam == false)
+      {
+         buf.append("'");
+      }
+      buf.append(";");
       
       if (params != null)
       {
@@ -474,9 +507,12 @@ public final class Utils
       buf.append("'");
       buf.append(formClientId);
       buf.append("'");
-      buf.append("].submit()");
+      buf.append("].submit();");
       
-      buf.append(";return false;");
+      if (valueIsParam == false)
+      {
+         buf.append("return false;");
+      }
       
       // weak, but this seems to be the way Sun RI do it...
       //FormRenderer.addNeededHiddenField(context, fieldId);
@@ -1244,14 +1280,14 @@ public final class Utils
    }
    
    /**
-    * Writes the script tags for including AJAX support, ensuring they
+    * Writes the script tags for including dojo support, ensuring they
     * only get written once per page render.
     *
     * @param context Faces context
     * @param out The response writer
     */
    @SuppressWarnings("unchecked")
-   public static void writeAjaxScripts(FacesContext context, ResponseWriter out)
+   public static void writeDojoScripts(FacesContext context, ResponseWriter out)
       throws IOException
    {
       Object present = context.getExternalContext().getRequestMap().get(AJAX_SCRIPTS_WRITTEN);
@@ -1259,6 +1295,10 @@ public final class Utils
       if (present == null)
       {
          // write out the scripts
+//         out.write("<script type=\"text/javascript\">");
+//         out.write("var djConfig = {isDebug: true, debugAtAllCosts: true };");
+//         out.write("</script>\n");
+         
          out.write("\n<script type=\"text/javascript\" src=\"");
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/scripts/ajax/dojo/dojo.js\"> </script>\n");
@@ -1273,6 +1313,59 @@ public final class Utils
          
          // add marker to request
          context.getExternalContext().getRequestMap().put(AJAX_SCRIPTS_WRITTEN, Boolean.TRUE);
+      }
+   }
+   
+   /**
+    * Writes the scripts tags for using the Yahoo UI toolkit, ensuring they
+    * only get written once per page render.
+    * <p>
+    * A comma separated list of scripts can also be passed to determine
+    * which components are to be used, again these are only written once per page.
+    * 
+    * @param context Faces context
+    * @param out The response writer
+    * @param scripts Comma separated list of scripts to include, if null the
+    *                base yahoo.js script only is included.
+    */
+   @SuppressWarnings("unchecked")
+   public static void writeYahooScripts(FacesContext context, ResponseWriter out, 
+         String scripts) throws IOException
+   {
+      Object present = context.getExternalContext().getRequestMap().get(YAHOO_SCRIPTS_WRITTEN);
+      
+      if (present == null)
+      {
+         // TODO: use the scripts parameter to determine which scripts to output
+         //       also add an ajax debug flag to the config and output relevant file
+         
+         // base yahoo file
+         out.write("\n<script type=\"text/javascript\" src=\"");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("/scripts/ajax/yahoo/yahoo/yahoo-min.js\"> </script>\n");
+         
+         // io handling (AJAX)
+         out.write("\n<script type=\"text/javascript\" src=\"");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("/scripts/ajax/yahoo/connection/connection-min.js\"> </script>\n");
+         
+         // event handling
+         out.write("\n<script type=\"text/javascript\" src=\"");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("/scripts/ajax/yahoo/event/event-min.js\"> </script>\n");
+         
+         // common alfresco util methods
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("/scripts/ajax/common.js\"> </script>\n");
+         
+         // write out a global variable to hold the webapp context path
+         out.write("<script type=\"text/javascript\">var WEBAPP_CONTEXT = '");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("';</script>\n");
+         
+         // add marker to request
+         context.getExternalContext().getRequestMap().put(YAHOO_SCRIPTS_WRITTEN, Boolean.TRUE);
       }
    }
 }

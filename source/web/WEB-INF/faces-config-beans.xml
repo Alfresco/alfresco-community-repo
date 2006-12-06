@@ -2029,6 +2029,15 @@
       <managed-bean-class>org.alfresco.web.bean.UserPreferencesBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
+
+   <managed-bean>
+      <description>
+         The bean that backs up the Sidebar component
+      </description>
+      <managed-bean-name>SidebarBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.SidebarBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+   </managed-bean>
    
    <!-- ==================== WCM BEANS ==================== -->
    <managed-bean>
@@ -2968,6 +2977,23 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <description>
+         Bean that returns manages the tree data for the navigator component
+      </description>
+      <managed-bean-name>NavigatorPluginBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.ajax.NavigatorPluginBean</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+   </managed-bean>
+
    <managed-bean>
       <description>
          Bean that returns information on a node

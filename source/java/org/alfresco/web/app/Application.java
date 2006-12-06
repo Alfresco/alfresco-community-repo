@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.ErrorBean;
+import org.alfresco.web.bean.SidebarBean;
 import org.alfresco.web.bean.dashboard.DashboardManager;
 import org.alfresco.web.bean.dialog.DialogManager;
 import org.alfresco.web.bean.repository.User;
@@ -201,6 +202,16 @@ public class Application
    public static DashboardManager getDashboardManager()
    {
       return (DashboardManager)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "DashboardManager");
+   }
+   
+   /**
+    * Retrieves the SidebarBean 
+    * 
+    * @return SidebarBean bean
+    */
+   public static SidebarBean getSidebarBean()
+   {
+      return (SidebarBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "SidebarBean");
    }
    
    /**
@@ -481,6 +492,7 @@ public class Application
     * @param context        FacesContext for current user
     * @param code           The ISO locale code to set
     */
+   @SuppressWarnings("unchecked")
    public static void setLanguage(FacesContext context, String code)
    {
       Locale locale = parseLocale(code);
@@ -633,6 +645,7 @@ public class Application
     * 
     * @return ResourceBundle for this user
     */
+   @SuppressWarnings("unchecked")
    public static ResourceBundle getBundle(FacesContext context)
    {
       // get the resource bundle for the current locale

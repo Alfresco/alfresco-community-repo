@@ -4,7 +4,7 @@
 //
 
 /**
- * Default handler for errors
+ * Default handler for errors when using the dojo toolkit
  */
 function handleErrorDojo(type, errObj)
 {
@@ -19,4 +19,22 @@ function handleErrorDojo(type, errObj)
    
    // TODO: Show a nicer error page, an alert will do for now!
    alert(msg);
+}
+
+/**
+ * Default handler for errors when using the yahoo toolkit
+ */
+function handleErrorYahoo(msg)
+{
+	// TODO: Show a nicer error page, an alert will do for now!
+   alert(msg);
+}
+
+/**
+ * Calculates and returns the context path for the current page
+ */
+function getContextPath()
+{
+	var w = window.location;
+	alert(w.pathname);
 }

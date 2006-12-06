@@ -65,7 +65,7 @@ public class UINodeInfo extends SelfRenderingComponent
          
          // output the scripts required by the component (checks are 
          // made to make sure the scripts are only written once)
-         Utils.writeAjaxScripts(context, out);
+         Utils.writeDojoScripts(context, out);
          
          // write out the JavaScript specific to the NodeInfo component,
          // again, make sure it's only done once

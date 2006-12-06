@@ -24,31 +24,31 @@
 <f:verbatim>
 <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellow", "#ffffcc"); %>
 </f:verbatim>
-<h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" style="background-colour:##ffffcc" rowClasses="alignTop">
-   <h:panelGrid columns="1" cellpadding="2" cellspacing="2" border="0">
+<h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" style="background-colour:##ffffcc" rowClasses="alignTop" id="outer-panel">
+   <h:panelGrid columns="1" cellpadding="2" cellspacing="2" border="0" id="links-panel">
       <h:outputText style="font-size: 11px; font-weight:bold; color:#4272B4" value="#{msg.product_name}" />
    
-      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="demo-panel">
          <h:graphicImage value="/images/icons/gettingstarted_demonstration.gif" width="32" height="32" />
-         <h:panelGroup>
+         <h:panelGroup id="demo-link">
             <a:actionLink href="http://www.alfresco.com/products/ecm/demonstrations/" target="new" style="font-weight:bold" value="#{msg.gettingstarted_demonstration}" />
             <f:verbatim><br></f:verbatim>
             <h:outputText value="#{msg.gettingstarted_demonstration_desc}" />
          </h:panelGroup>
       </h:panelGrid>
    
-      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="tour-panel">
          <h:graphicImage value="/images/icons/gettingstarted_featuretour.gif" width="32" height="32" />
-         <h:panelGroup>
+         <h:panelGroup id="tour-link">
             <a:actionLink href="http://www.alfresco.com/products/ecm/tour/" target="new" style="font-weight:bold" value="#{msg.gettingstarted_featuretour}" />
             <f:verbatim><br></f:verbatim>
             <h:outputText value="#{msg.gettingstarted_featuretour_desc}" />
          </h:panelGroup>
       </h:panelGrid>
       
-      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="help-panel">
          <h:graphicImage value="/images/icons/gettingstarted_onlinehelp.gif" width="32" height="32" />
-         <h:panelGroup>
+         <h:panelGroup id="help-link">
             <a:actionLink href="#{NavigationBean.helpUrl}" target="help" style="font-weight:bold" value="#{msg.gettingstarted_onlinehelp}" />
             <f:verbatim><br></f:verbatim>
             <h:outputText value="#{msg.gettingstarted_onlinehelp_desc}" />
@@ -56,21 +56,21 @@
       </h:panelGrid>
    </h:panelGrid>
    
-   <h:panelGrid columns="1" cellpadding="2" cellspacing="2" border="0">
+   <h:panelGrid columns="1" cellpadding="2" cellspacing="2" border="0" id="tasks-panel">
       <h:outputText style="font-size: 11px; font-weight:bold; color:#4272B4" value="#{msg.gettingstarted_commontasks}" />
       
-      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="browse-panel">
          <h:graphicImage value="/images/icons/gettingstarted_browse.gif" width="32" height="32" />
-         <h:panelGroup>
+         <h:panelGroup id="browse-link">
             <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_browse}" action="#{GettingStartedBean.browseHomeSpace}" />
             <f:verbatim><br></f:verbatim>
             <h:outputText value="#{msg.gettingstarted_browse_desc}" />
          </h:panelGroup>
       </h:panelGrid>
       
-      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="space-panel">
          <h:graphicImage value="/images/icons/create_space_large.gif" width="32" height="32" />
-         <h:panelGroup>
+         <h:panelGroup id="space-link">
             <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
                <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_createspace}" action="#{GettingStartedBean.createSpace}" />
             </a:booleanEvaluator>
@@ -82,9 +82,9 @@
          </h:panelGroup>
       </h:panelGrid>
       
-      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="add-content-panel">
          <h:graphicImage value="/images/icons/add_content_large.gif" width="32" height="32" />
-         <h:panelGroup>
+         <h:panelGroup id="add-content-link">
             <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
                <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_addcontent}" action="#{GettingStartedBean.addContent}" actionListener="#{AddContentDialog.start}" />
             </a:booleanEvaluator>
@@ -96,9 +96,9 @@
          </h:panelGroup>
       </h:panelGrid>
       
-      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0">
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="create-content-panel">
          <h:graphicImage value="/images/icons/new_content_large.gif" width="32" height="32" />
-         <h:panelGroup>
+         <h:panelGroup id="create-content-link">
             <a:booleanEvaluator value="#{NavigationBean.isGuest == false}">
                <a:actionLink style="font-weight:bold" value="#{msg.gettingstarted_createcontent}" action="#{GettingStartedBean.createContent}" />
             </a:booleanEvaluator>

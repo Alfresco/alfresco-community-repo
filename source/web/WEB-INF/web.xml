@@ -176,6 +176,11 @@
    </servlet>
    
    <servlet>
+      <servlet-name>uploadContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.UploadContentServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
       <servlet-name>guestDownloadContent</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.GuestDownloadContentServlet</servlet-class>
    </servlet>
@@ -243,6 +248,11 @@
    <servlet-mapping>
       <servlet-name>downloadContent</servlet-name>
       <url-pattern>/download/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>uploadContent</servlet-name>
+      <url-pattern>/upload/*</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>

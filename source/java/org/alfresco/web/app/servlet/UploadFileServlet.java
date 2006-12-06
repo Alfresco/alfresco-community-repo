@@ -106,8 +106,10 @@ public class UploadFileServlet extends BaseServlet
                String filename = item.getName();
                if (filename != null && filename.length() != 0)
                {
-                  if (logger.isDebugEnabled())
+                  if (logger.isDebugEnabled() == true)
+                  {
                      logger.debug("Processing uploaded file: " + filename);
+                  }
                   
                   // workaround a bug in IE where the full path is returned
                   // IE is only available for Windows so only check for the Windows path separator
@@ -130,9 +132,11 @@ public class UploadFileServlet extends BaseServlet
                   bean.setFileName(filename);
                   bean.setFilePath(tempFile.getAbsolutePath());
                   session.setAttribute(FileUploadBean.getKey(uploadId), bean);
-                  if (logger.isDebugEnabled())
+                  if (logger.isDebugEnabled() == true)
+                  {
                      logger.debug("Temp file: " + tempFile.getAbsolutePath() + 
 				  " created from upload filename: " + filename);
+                  }
                }
             }
          }
@@ -143,8 +147,10 @@ public class UploadFileServlet extends BaseServlet
          }
 
          // finally redirect
-         if (logger.isDebugEnabled())
+         if (logger.isDebugEnabled() == true)
+         {
             logger.debug("Upload servicing complete, redirecting to: " + returnPage);
+         }
 
          response.sendRedirect(returnPage);
       }

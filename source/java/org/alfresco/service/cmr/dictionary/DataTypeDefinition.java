@@ -34,6 +34,7 @@ public interface DataTypeDefinition
     //
     public QName ANY = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "any");
     public QName TEXT = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "text");
+    public QName MLTEXT = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "mltext");
     public QName CONTENT = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "content");
     public QName INT = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "int");
     public QName LONG = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "long");

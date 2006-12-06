@@ -20,9 +20,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 import junit.framework.TestCase;
 
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.util.ISO8601DateFormat;
 
 public class DefaultTypeConverterTest extends TestCase
@@ -88,6 +90,9 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(ISO8601DateFormat.format(date), DefaultTypeConverter.INSTANCE.convert(String.class, date));
         assertEquals("P0Y25D", DefaultTypeConverter.INSTANCE.convert(String.class, new Duration("P0Y25D")));
         assertEquals("woof", DefaultTypeConverter.INSTANCE.convert(String.class, "woof"));
+        MLText mlText = new MLText("woof");
+        mlText.addValue(Locale.SIMPLIFIED_CHINESE, "缂");
+        assertEquals("woof", DefaultTypeConverter.INSTANCE.convert(String.class, mlText));
     }
 
     public void testFromString()
@@ -106,6 +111,9 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals("2004-03-12T00:00:00.000Z", ISO8601DateFormat.format(DefaultTypeConverter.INSTANCE.convert(Date.class, "2004-03-12T00:00:00.000Z")));
         assertEquals(new Duration("P25D"), DefaultTypeConverter.INSTANCE.convert(Duration.class, "P25D"));
         assertEquals("woof", DefaultTypeConverter.INSTANCE.convert(String.class, "woof"));
+        
+        MLText converted = DefaultTypeConverter.INSTANCE.convert(MLText.class, "woof");
+        assertEquals("woof", converted.getValue(Locale.getDefault()));
     }
 
     public void testPrimativeAccessors()

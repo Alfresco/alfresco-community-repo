@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.EntityRef;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
@@ -218,31 +219,31 @@ public class DefaultTypeConverter
         });
 
         INSTANCE.addConverter(String.class, NodeRef.class, new TypeConverter.Converter<String, NodeRef>()
-                {
-                    public NodeRef convert(String source)
-                    {
-                        return new NodeRef(source);
-                    }
-            
-                });
+        {
+            public NodeRef convert(String source)
+            {
+                return new NodeRef(source);
+            }
+    
+        });
 
         INSTANCE.addConverter(String.class, ChildAssociationRef.class, new TypeConverter.Converter<String, ChildAssociationRef>()
-                {
-                    public ChildAssociationRef convert(String source)
-                    {
-                        return new ChildAssociationRef(source);
-                    }
-            
-                });
+        {
+            public ChildAssociationRef convert(String source)
+            {
+                return new ChildAssociationRef(source);
+            }
+    
+        });
 
         INSTANCE.addConverter(String.class, AssociationRef.class, new TypeConverter.Converter<String, AssociationRef>()
-                {
-                    public AssociationRef convert(String source)
-                    {
-                        return new AssociationRef(source);
-                    }
-            
-                });
+        {
+            public AssociationRef convert(String source)
+            {
+                return new AssociationRef(source);
+            }
+    
+        });
 
         INSTANCE.addConverter(String.class, InputStream.class, new TypeConverter.Converter<String, InputStream>()
         {
@@ -256,6 +257,27 @@ public class DefaultTypeConverter
                 {
                     throw new TypeConversionException("Encoding not supported", e);
                 }
+            }
+        });
+
+        INSTANCE.addConverter(String.class, MLText.class, new TypeConverter.Converter<String, MLText>()
+        {
+            public MLText convert(String source)
+            {
+                return new MLText(source);
+            }
+        });
+
+        
+        //
+        // From MLText
+        //
+
+        INSTANCE.addConverter(MLText.class, String.class, new TypeConverter.Converter<MLText, String>()
+        {
+            public String convert(MLText source)
+            {
+                return source.getDefaultValue();
             }
         });
 

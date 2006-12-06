@@ -227,6 +227,10 @@
                <type>d:text</type>
                <mandatory>true</mandatory>
             </property>
+            <property name="test:mlTextValue">
+               <type>d:mltext</type>
+               <mandatory>true</mandatory>
+            </property>
             <property name="test:dateValue">
                <type>d:date</type>
                <mandatory>true</mandatory>

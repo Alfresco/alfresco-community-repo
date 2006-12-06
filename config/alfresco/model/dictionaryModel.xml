@@ -28,6 +28,11 @@
          <java-class>java.lang.String</java-class>
       </data-type>
 
+      <data-type name="d:mltext">
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.MLText</java-class>
+      </data-type>
+
       <data-type name="d:content">
          <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
          <java-class>org.alfresco.service.cmr.repository.ContentData</java-class>

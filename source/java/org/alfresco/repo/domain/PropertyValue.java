@@ -366,6 +366,8 @@ public class PropertyValue implements Cloneable, Serializable
         valueTypesByPropertyType.put(DataTypeDefinition.CATEGORY, ValueType.NODEREF);
         valueTypesByPropertyType.put(DataTypeDefinition.CONTENT, ValueType.CONTENT);
         valueTypesByPropertyType.put(DataTypeDefinition.TEXT, ValueType.STRING);
+        // TODO: Re-examine storage of MLTEXT data type
+        valueTypesByPropertyType.put(DataTypeDefinition.MLTEXT, ValueType.SERIALIZABLE);
         valueTypesByPropertyType.put(DataTypeDefinition.NODE_REF, ValueType.NODEREF);
         valueTypesByPropertyType.put(DataTypeDefinition.CHILD_ASSOC_REF, ValueType.CHILD_ASSOC_REF);
         valueTypesByPropertyType.put(DataTypeDefinition.ASSOC_REF, ValueType.ASSOC_REF);

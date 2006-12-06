@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.transaction.UserTransaction;
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -51,6 +53,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     private TransactionService txnService;
     private NodeDaoService nodeDaoService;
     private DictionaryService dictionaryService;
+    private NodeService mlAwareNodeService;
     
     protected NodeService getNodeService()
     {
@@ -64,6 +67,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         txnService = (TransactionService) applicationContext.getBean("transactionComponent");
         nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
         dictionaryService = (DictionaryService) applicationContext.getBean("dictionaryService");
+        mlAwareNodeService = (NodeService) applicationContext.getBean("mlAwareNodeService");
     }
 
     /**
@@ -292,5 +296,53 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 allContentDatas.contains(contentDataSingle));
         assertTrue("Multi-valued buried content data not present in results",
                 allContentDatas.contains(contentDataMultiple));
+    }
+    
+    public void testMLTextValues() throws Exception
+    {
+        // Set the server default locale
+        Locale.setDefault(Locale.ENGLISH);
+        
+        MLText mlTextProperty = new MLText();
+        mlTextProperty.addValue(Locale.ENGLISH, "Very good!");
+        mlTextProperty.addValue(Locale.FRENCH, "Très bon!");
+        mlTextProperty.addValue(Locale.GERMAN, "Sehr gut!");
+
+        nodeService.setProperty(
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
+                mlTextProperty);
+        
+        // Check filterered property retrieval
+        Serializable textValueFiltered = nodeService.getProperty(
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+        assertEquals(
+                "Default locale value not taken for ML text",
+                mlTextProperty.getValue(Locale.ENGLISH),
+                textValueFiltered);
+        
+        // Check filtered mass property retrieval
+        Map<QName, Serializable> propertiesFiltered = nodeService.getProperties(rootNodeRef);
+        assertEquals(
+                "Default locale value not taken for ML text in Map",
+                mlTextProperty.getValue(Locale.ENGLISH),
+                propertiesFiltered.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+        
+        // Check direct property retrieval
+        Serializable textValueDirect = mlAwareNodeService.getProperty(
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+        assertEquals(
+                "MLText type not returned direct",
+                mlTextProperty,
+                textValueDirect);
+        
+        // Check filtered mass property retrieval
+        Map<QName, Serializable> propertiesDirect = mlAwareNodeService.getProperties(rootNodeRef);
+        assertEquals(
+                "MLText type not returned direct in Map",
+                mlTextProperty,
+                propertiesDirect.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
     }
 }

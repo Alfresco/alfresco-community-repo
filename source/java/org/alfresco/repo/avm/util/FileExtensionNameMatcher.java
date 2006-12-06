@@ -3,6 +3,7 @@
  */
 package org.alfresco.repo.avm.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +13,10 @@ import org.alfresco.util.NameMatcher;
  * NameMatcher that matches a list of extensions (case insensitively).
  * @author britt
  */
-public class FileExtensionNameMatcher implements NameMatcher 
+public class FileExtensionNameMatcher implements NameMatcher, Serializable 
 {
+    private static final long serialVersionUID = -1498029477935181998L;
+
     /**
      * The extensions to match.
      */

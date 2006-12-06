@@ -45,8 +45,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.NameMatcher;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.ui.common.Utils;
@@ -72,6 +72,7 @@ public class SubmitDialog extends BaseDialogBean
    protected AVMBrowseBean avmBrowseBean;
    protected WorkflowService workflowService;
    protected AVMSyncService avmSyncService;
+   protected NameMatcher nameMatcher;
    
    /**
     * @param avmService       The AVM Service to set.
@@ -106,6 +107,14 @@ public class SubmitDialog extends BaseDialogBean
    }
    
    /**
+    * @param nameMatcher The nameMatcher to set.
+    */
+   public void setNameMatcher(NameMatcher nameMatcher)
+   {
+      this.nameMatcher = nameMatcher;
+   }
+
+   /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#init(java.util.Map)
     */
    @Override
@@ -135,7 +144,7 @@ public class SubmitDialog extends BaseDialogBean
          {
             NodeRef wfDefaultsRef = wfRefs.get(0).getChildRef();
             String wfName = (String)this.nodeService.getProperty(wfDefaultsRef, WCMAppModel.PROP_WORKFLOW_NAME);
-            Map<QName, Serializable> params = (Map<QName, Serializable>)EditWebsiteWizard.deserializeWorkflowParams(
+            Map<QName, Serializable> params = (Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(
                   wfDefaultsRef);
             this.formWorkflowMap.put(form, new FormWorkflowWrapper(wfName, params));
          }
@@ -239,7 +248,6 @@ public class SubmitDialog extends BaseDialogBean
     */
    public String[] getWorkflowSelectedValue()
    {
-      // TODO: select default!
       return this.workflowSelectedValue;
    }
 
@@ -259,7 +267,7 @@ public class SubmitDialog extends BaseDialogBean
       if (this.workflowItems == null)
       {
          // ensure all workflows have been collected from any form generated assets
-         calculateSubmitItems();
+         calcluateListItemsAndWorkflows();
          
          // add the list of workflows for the website itself to the set
          NodeRef websiteRef = this.avmBrowseBean.getWebsite().getNodeRef();
@@ -269,7 +277,7 @@ public class SubmitDialog extends BaseDialogBean
          {
             NodeRef wfDefaultsRef = ref.getChildRef();
             String wfName = (String)this.nodeService.getProperty(wfDefaultsRef, WCMAppModel.PROP_WORKFLOW_NAME);
-            Map<QName, Serializable> params = (Map<QName, Serializable>)EditWebsiteWizard.deserializeWorkflowParams(
+            Map<QName, Serializable> params = (Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(
                   wfDefaultsRef);
             this.workflows.add(new FormWorkflowWrapper(wfName, params));
          }
@@ -285,7 +293,7 @@ public class SubmitDialog extends BaseDialogBean
             item.setDescription(workflowDef.getDescription());
             item.setImage(WebResources.IMAGE_WORKFLOW_32);
             items.add(item);
-            // add first as default TODO: what is correct here?
+            // add first workflow as default selection
             if (workflowSelectedValue == null)
             {
                workflowSelectedValue = new String[]{workflowDef.getName()};
@@ -297,37 +305,52 @@ public class SubmitDialog extends BaseDialogBean
       return this.workflowItems;
    }
    
+   /**
+    * @return the List of bean items to show in the Submit list
+    */
    public List<ItemWrapper> getSubmitItems()
    {
       if (this.submitItems == null)
       {
          // this method builds all submit and warning item data structures
-         calculateSubmitItems();
+         calcluateListItemsAndWorkflows();
       }
       return this.submitItems;
    }
    
+   /**
+    * @return size of the submit list
+    */
    public int getSubmitItemsSize()
    {
       return getSubmitItems().size();
    }
    
+   /**
+    * @return the List of bean items to show in the Warning list
+    */
    public List<ItemWrapper> getWarningItems()
    {
       if (this.warningItems == null)
       {
          // this method builds all submit and warning item data structures
-         calculateSubmitItems();
+         calcluateListItemsAndWorkflows();
       }
       return this.warningItems;
    }
    
+   /**
+    * @return size of the warning list
+    */
    public int getWarningItemsSize()
    {
       return this.getWarningItems().size();
    }
    
-   private void calculateSubmitItems()
+   /**
+    * Calculate the lists of Submittable Items, Warning items and the list of available workflows.
+    */
+   private void calcluateListItemsAndWorkflows()
    {
       // TODO: start txn here?
       List<AVMNodeDescriptor> selected;
@@ -335,8 +358,7 @@ public class SubmitDialog extends BaseDialogBean
       {
          String userStore = this.avmBrowseBean.getSandbox() + ":/";
          String stagingStore = this.avmBrowseBean.getStagingStore() + ":/";
-         // TODO Pass the globalPathExcluder NameMatcher instead of null.
-         List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore, null);
+         List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
          selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
          for (AVMDifference diff : diffs)
          {
@@ -356,8 +378,8 @@ public class SubmitDialog extends BaseDialogBean
          {
             if (hasAssociatedWorkflow(AVMNodeConverter.ToNodeRef(-1, node.getPath())) == false)
             {
-               // TODO: lookup if this item was created via a FORM - then need to lookup the workflow defaults
-               //       for that form (and associated artifacts!) and then save that in list of workflows
+               // lookup if this item was created via a frm - then lookup the workflow defaults
+               // for that form and store into the list of available workflows
                NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
                if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
                {
@@ -399,24 +421,13 @@ public class SubmitDialog extends BaseDialogBean
     */
    private NodeRef createWorkflowPackage()
    {
-      // TODO: add to common util class for all AVM workflows
-      String packagesRoot = "workflow-system:/packages";
-      AVMNodeDescriptor packagesDesc = avmService.lookup(-1, packagesRoot);
-      if (packagesDesc == null)
-      {
-         avmService.createAVMStore("workflow-system");
-         avmService.createDirectory("workflow-system:/", "packages");
-      }
-      
       List<ItemWrapper> items = getSubmitItems();
       
       // create package paths (layered to user sandbox area as target)
-      String sandboxPath = AVMConstants.buildAVMStoreRootPath(avmBrowseBean.getSandbox());
-      String packageName = GUID.generate();
-      String packagesPath = packagesRoot + "/" + packageName;
-      avmService.createLayeredDirectory(sandboxPath, packagesRoot, packageName);
+      String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
+      String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, sandboxPath);
       
-      // construct diffs for selected items
+      // construct diffs for selected items for submission
       List<AVMDifference> diffs = new ArrayList<AVMDifference>(this.submitItems.size());
       for (ItemWrapper wrapper : this.submitItems)
       {
@@ -427,12 +438,13 @@ public class SubmitDialog extends BaseDialogBean
       }
       
       // write changes to layer so files are marked as modified
-      avmSyncService.update(diffs, null, true, true, false, false, null, null);
+      this.avmSyncService.update(diffs, null, true, true, false, false, null, null);
       
       // convert package to workflow package
-      AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);
-      NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
-      nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
+      AVMNodeDescriptor packageDesc = this.avmService.lookup(-1, packagesPath);
+      NodeRef packageNodeRef = this.workflowService.createPackage(
+            AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
+      this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
       
       return packageNodeRef;
    }

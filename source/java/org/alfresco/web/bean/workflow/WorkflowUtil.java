@@ -178,8 +178,7 @@ public class WorkflowUtil
       // marshal the properties and associations captured by the property sheet
       // back into a Map to pass to the workflow service
 
-      // go through all the properties in the transient node and add them to
-      // params map
+      // go through all the properties in the transient node and add them to params map
       Map<String, Object> props = node.getProperties();
       for (String propName : props.keySet())
       {

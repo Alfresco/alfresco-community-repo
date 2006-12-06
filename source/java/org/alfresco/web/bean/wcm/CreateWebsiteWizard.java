@@ -16,10 +16,6 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -37,11 +33,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -162,6 +155,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (logger.isDebugEnabled())
          logger.debug("Created website folder node with name: " + this.name);
       
+      // TODO: check that this dns is unique by querying existing store properties for a match
       String avmStore = DNSNameMangler.MakeDNSName(this.dnsName);
       
       // apply the uifacets aspect - icon, title and description props
@@ -255,7 +249,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             // persist workflow default params
             if (workflow.getParams() != null)
             {
-               serializeWorkflowParams((Serializable)workflow.getParams(), workflowRef);
+               AVMWorkflowUtil.serializeWorkflowParams((Serializable)workflow.getParams(), workflowRef);
             }
          }
          
@@ -294,7 +288,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          // persist workflow default params
          if (workflow.getParams() != null)
          {
-            serializeWorkflowParams((Serializable)workflow.getParams(), workflowRef);
+            AVMWorkflowUtil.serializeWorkflowParams((Serializable)workflow.getParams(), workflowRef);
          }
          
          // add filename pattern aspect if a filename pattern has been applied
@@ -304,32 +298,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
             props.put(WCMAppModel.PROP_FILENAMEPATTERN, workflow.getFilenamePattern());
             this.nodeService.addAspect(workflowRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
          }
-      }
-   }
-
-   /**
-    * Serialize the workflow params to a content stream
-    * 
-    * @param params             Serializable workflow params
-    * @param workflowRef        The noderef to write the property too
-    */
-   public static void serializeWorkflowParams(Serializable params, NodeRef workflowRef)
-   {
-      try
-      {
-         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-         ObjectOutputStream oos = new ObjectOutputStream(baos);
-         oos.writeObject(params);
-         oos.close();
-         // write the serialized Map as a binary content stream - like database blob!
-         ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
-         ContentWriter writer = cs.getWriter(workflowRef, WCMAppModel.PROP_WORKFLOWDEFAULTS, true);
-         writer.setMimetype(MimetypeMap.MIMETYPE_BINARY);
-         writer.putContent(new ByteArrayInputStream(baos.toByteArray()));
-      }
-      catch (IOException ioerr)
-      {
-         throw new AlfrescoRuntimeException("Unable to serialize workflow default parameters: " + ioerr.getMessage());
       }
    }
    

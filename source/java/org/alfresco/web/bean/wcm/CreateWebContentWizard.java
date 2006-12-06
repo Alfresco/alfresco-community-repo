@@ -16,12 +16,12 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
@@ -30,17 +30,23 @@ import javax.faces.model.SelectItem;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.cmr.workflow.*;
-import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
+import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
@@ -55,7 +61,6 @@ import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
-import org.alfresco.web.forms.RenditionImpl;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
@@ -122,6 +127,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       this.avmBrowseBean = avmBrowseBean;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -228,94 +234,112 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          WorkflowDefinition wd = null;
          Map<QName, Serializable> parameters = null;
-
+         
          // get the workflow definition and parameters
-         {
-            final Node website = this.avmBrowseBean.getWebsite();
-            final List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
+         final Node website = this.avmBrowseBean.getWebsite();
+         final List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
                website.getNodeRef(), WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef ref : webFormRefs)
+         for (ChildAssociationRef ref : webFormRefs)
+         {
+            final String formName = (String)
+            this.nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
+            if (formName.equals(this.getForm().getName()))
             {
-               final String formName = (String)
-                  this.nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
-               if (formName.equals(this.getForm().getName()))
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("loading workflowRefs for " + formName);
+               
+               final List<ChildAssociationRef> workflowRefs = 
+                  this.nodeService.getChildAssocs(ref.getChildRef(),
+                        WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
+                        RegexQNamePattern.MATCH_ALL);
+               if (workflowRefs.size() == 0)
                {
-                  System.err.println("loading workflowRefs for " + formName);
-                  final List<ChildAssociationRef> workflowRefs = 
-                     this.nodeService.getChildAssocs(ref.getChildRef(),
-                                                     WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
-                                                     RegexQNamePattern.MATCH_ALL);
-                  if (workflowRefs.size() == 0)
-                  {
-                     throw new RuntimeException("no workflow parameters found for form " + formName);
-                  }
-                  if (workflowRefs.size() > 1)
-                  {
-                     throw new RuntimeException("found more than one workflow parameters node for " + formName);
-                  }
-
-                  final NodeRef workflowRef = workflowRefs.get(0).getChildRef();
-                  final String workflowName = (String)this.nodeService.getProperty(workflowRef, WCMAppModel.PROP_WORKFLOW_NAME);
-                  if (workflowName == null)
-                  {
-                     throw new RuntimeException("no workflow found for form " + formName);
-                  }
-                  System.err.println("using workflow " + workflowName + " for form " + formName);
-                  wd = this.workflowService.getDefinitionByName("jbpm$" + workflowName);
-                  
-                  final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                  final ContentReader cr = this.contentService.getReader(workflowRef, WCMAppModel.PROP_WORKFLOWDEFAULTS);
-                  if (cr == null)
-                  {
-                     parameters = new HashMap<QName, Serializable>();
-                  }
-                  else
-                  {
-                     cr.getContent(baos);
-                     
-                     final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                     final ObjectInputStream ois = new ObjectInputStream(bais);
-                     parameters = (Map<QName, Serializable>)ois.readObject();
-                  }
-                  break;
+                  throw new AlfrescoRuntimeException("no workflow parameters found for form " + formName);
+               }
+               if (workflowRefs.size() > 1)
+               {
+                  throw new AlfrescoRuntimeException("found more than one workflow parameters node for " + formName);
+               }
+               
+               final NodeRef workflowRef = workflowRefs.get(0).getChildRef();
+               final String workflowName = (String)this.nodeService.getProperty(workflowRef, WCMAppModel.PROP_WORKFLOW_NAME);
+               
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("using workflow " + workflowName + " for form " + formName);
+               wd = this.workflowService.getDefinitionByName("jbpm$" + workflowName);
+               
+               // deserialize the workflow parameters
+               parameters = (Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(workflowRef);
+               
+               break;
+            }
+         }
+         
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("creating workflow package");
+         
+         // create package paths (layered to user sandbox area as target)
+         String webapp = (String)website.getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
+         String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
+         String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, sandboxPath);
+         
+         // construct diffs for selected items for submission
+         List<AVMDifference> diffs = new ArrayList<AVMDifference>(8);
+         for (Rendition rendition : this.getRenditions())
+         {
+            String renditionPath = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
+            int webappIndex = renditionPath.indexOf('/' + webapp);
+            renditionPath = renditionPath.substring(webappIndex);
+            String srcPath = sandboxPath + renditionPath;
+            String destPath = packagesPath + renditionPath;
+            AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+            diffs.add(diff);
+         }
+         String instancePath = AVMNodeConverter.ToAVMVersionPath(this.formInstanceData.getNodeRef()).getSecond();
+         int webappIndex = instancePath.indexOf('/' + webapp);
+         instancePath = instancePath.substring(webappIndex);
+         String srcPath = sandboxPath + instancePath;
+         String destPath = packagesPath + instancePath;
+         AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+         diffs.add(diff);
+         
+         // write changes to layer so files are marked as modified
+         this.avmSyncService.update(diffs, null, true, true, false, false, null, null);
+         
+         // convert package to workflow package
+         AVMNodeDescriptor packageDesc = this.avmService.lookup(-1, packagesPath);
+         NodeRef packageNodeRef = this.workflowService.createPackage(
+               AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
+         this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
+         parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
+         
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("starting workflow " + wd + " with parameters " + parameters);
+         
+         // start the workflow to get access to the start task
+         WorkflowPath path = this.workflowService.startWorkflow(wd.id, parameters);
+         if (path != null)
+         {
+            // extract the start task
+            List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
+            if (tasks.size() == 1)
+            {
+               WorkflowTask startTask = tasks.get(0);
+               
+               if (startTask.state == WorkflowTaskState.IN_PROGRESS)
+               {
+                  // end the start task to trigger the first 'proper' task in the workflow
+                  this.workflowService.endTask(startTask.id, null);
                }
             }
          }
-
-         System.err.println("creating workflow package");
-         final NodeRef workflowPackageNodeRef = this.workflowService.createPackage(null);
-// doesn't work yet.  need to use ASPECT_REFERENCES_NODE to get it to deal with avm nodes
-// and we need some fixes from dave before we can enable.
-//         QName qn = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-//                                      QName.createValidLocalName(this.formInstanceData.getName()));
-//         String s = AVMNodeConverter.ToAVMVersionPath(this.formInstanceData.getNodeRef()).getSecond();
-//         s = s.replaceFirst(AVMConstants.STORE_PREVIEW, AVMConstants.STORE_MAIN);
-//         System.err.println("adding  " + s + " to workflow package with qname" + qn);
-//         this.nodeService.addChild(workflowPackageNodeRef,
-//                                   AVMNodeConverter.ToNodeRef(-1, s),
-//                                   ContentModel.ASSOC_CONTAINS,
-//                                   qn);
-//         for (Rendition rendition : this.getRenditions())
-//         {
-//            qn = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-//                                   QName.createValidLocalName(rendition.getName()));
-//            s = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
-//            s = s.replaceFirst(AVMConstants.STORE_PREVIEW, AVMConstants.STORE_MAIN);
-//            System.err.println("adding  " + s + " to workflow package with qname " + qn);
-//
-//            this.nodeService.addChild(workflowPackageNodeRef,
-//                                      AVMNodeConverter.ToNodeRef(-1, s),
-//                                      ContentModel.ASSOC_CONTAINS,
-//                                      qn);
-//         }
-         parameters.put(WorkflowModel.ASSOC_PACKAGE, workflowPackageNodeRef);
-         System.err.println("starting workflow " + wd + " with parameters " + parameters);
-         final WorkflowPath wp = this.workflowService.startWorkflow(wd.getId(), parameters);
       }
       else
       {
-         System.err.println("************* not starting workflow");
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("************* not starting workflow");
       }
+      
       // return the default outcome
       return outcome;
    }
@@ -351,7 +375,6 @@ public class CreateWebContentWizard extends BaseContentWizard
       path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-
          final Document formInstanceData = fs.parseXML(this.content);
 
          path = this.getForm().getOutputPathForFormInstanceData(path, this.fileName, formInstanceData);
@@ -359,7 +382,6 @@ public class CreateWebContentWizard extends BaseContentWizard
          path = sb[0];
          this.fileName = sb[1];
       }
-
 
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("reseting layer " + path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
@@ -573,6 +595,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       return this.startWorkflow;
    }
+   
    
    // ------------------------------------------------------------------------------
    // Action event handlers

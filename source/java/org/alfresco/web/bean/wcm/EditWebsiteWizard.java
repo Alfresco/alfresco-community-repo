@@ -16,26 +16,20 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
@@ -109,7 +103,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
                if (wfDef != null)
                {
                   WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle());
-                  wfWrapper.setParams((Map<QName, Serializable>)deserializeWorkflowParams(wfRef));
+                  wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
                   if (wfDef.startTaskDefinition != null)
                   {
                      wfWrapper.setType(wfDef.startTaskDefinition.metadata.getName());
@@ -154,7 +148,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
          if (wfDef != null)
          {
             WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle());
-            wfWrapper.setParams((Map<QName, Serializable>)deserializeWorkflowParams(wfRef));
+            wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
             wfWrapper.setFilenamePattern((String)this.nodeService.getProperty(
                   wfRef, WCMAppModel.PROP_FILENAMEPATTERN));
             if (wfDef.startTaskDefinition != null)
@@ -211,39 +205,6 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       for (ChildAssociationRef ref : wfRefs)
       {
          this.nodeService.removeChild(nodeRef, ref.getChildRef());
-      }
-   }
-   
-   /**
-    * Deserialize the default workflow params from a content stream
-    * 
-    * @param workflowRef        The noderef to write the property too
-    * 
-    * @return Serializable workflow params
-    */
-   public static Serializable deserializeWorkflowParams(NodeRef workflowRef)
-   {
-      try
-      {
-         // restore the serialized Map from a binary content stream - like database blob!
-         Serializable params = null;
-         ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
-         ContentReader reader = cs.getReader(workflowRef, WCMAppModel.PROP_WORKFLOWDEFAULTS);
-         if (reader != null)
-         {
-            ObjectInputStream ois = new ObjectInputStream(reader.getContentInputStream());
-            params = (Serializable)ois.readObject();
-            ois.close();
-         }
-         return params;
-      }
-      catch (IOException ioErr)
-      {
-         throw new AlfrescoRuntimeException("Unable to deserialize workflow default parameters: " + ioErr.getMessage());
-      }
-      catch (ClassNotFoundException classErr)
-      {
-         throw new AlfrescoRuntimeException("Unable to deserialize workflow default parameters: " + classErr.getMessage());
       }
    }
 }

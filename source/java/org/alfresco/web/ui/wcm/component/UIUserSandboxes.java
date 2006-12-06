@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.NameMatcher;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
@@ -490,8 +491,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
       String id = getClientId(fc);
       
       // use the sync service to get the list of diffs between the stores
-      // TODO Need to pass the global exclude NameMatcher.
-      List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore, null);
+      NameMatcher matcher = (NameMatcher)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean(
+            "globalPathExcluder");
+      List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore, matcher);
       if (diffs.size() != 0)
       {
          // store lookup of username to list of modified nodes

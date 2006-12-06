@@ -2753,6 +2753,10 @@
          <property-name>nodeService</property-name>
          <value>#{NodeService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>nameMatcher</property-name>
+         <value>#{globalPathExcluder}</value>
+      </managed-property>
    </managed-bean>
    
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->

@@ -23,6 +23,17 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
+<f:verbatim>
+<script type="text/javascript">
+   window.onload = pageLoaded;
+   
+   function pageLoaded()
+   {
+      document.getElementById("dialog:dialog-body:comment").focus();
+   }
+</script>
+</f:verbatim>
+
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:4px;padding-bottom:4px;"
       width="100%" rowClasses="wizardSectionHeading">
    <h:outputText value="&nbsp;#{msg.submit_submission_info}" escape="false" />

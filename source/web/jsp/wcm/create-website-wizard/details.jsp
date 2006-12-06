@@ -127,7 +127,7 @@
       <td width="85%">
          </f:verbatim>
          <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="35" maxlength="256" 
-               disabled="#{WizardManager.bean.editMode}" />
+               disabled="true" /> <%-- disabled="#{WizardManager.bean.editMode}" --%>
          <f:verbatim>
       </td>
    </tr>

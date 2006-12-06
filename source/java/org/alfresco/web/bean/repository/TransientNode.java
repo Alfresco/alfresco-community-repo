@@ -2,6 +2,7 @@ package org.alfresco.web.bean.repository;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -60,6 +62,69 @@ public class TransientNode extends Node
       initNode(data);
    }
 
+   /**
+    * Construct a transient node for an item yet to be created in the Repository.
+    * 
+    * This will apply any one-time initialisation required upon creation of the node
+    * e.g. assignment of default values. 
+    * 
+    * @param dictionaryService dictionary service
+    * @param typeDef The type definition this node will represent
+    * @param name The name of the node
+    * @param data The properties and associations this node will have
+    * @return  transient node
+    */
+   public static TransientNode createNew(DictionaryService dictionaryService, TypeDefinition typeDef, String name, Map<QName, Serializable> data)
+   {
+       // build a complete anonymous type for the start task
+       List<AspectDefinition> aspects = typeDef.getDefaultAspects();
+       List<QName> aspectNames = new ArrayList<QName>(aspects.size());
+       getMandatoryAspects(typeDef, aspectNames);
+       ClassDefinition startTaskDef = dictionaryService.getAnonymousType(typeDef.getName(), aspectNames);
+
+       // initialise start task values
+       Map<QName, Serializable> startValues = new HashMap<QName, Serializable>();
+       if (data != null)
+       {
+           startValues.putAll(data);
+       }
+       
+       // apply default values
+       Map<QName, PropertyDefinition> propertyDefs = startTaskDef.getProperties(); 
+       for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
+       {
+           String defaultValue = entry.getValue().getDefaultValue();
+           if (defaultValue != null)
+           {
+               if (startValues.get(entry.getKey()) == null)
+               {
+                   startValues.put(entry.getKey(), defaultValue);
+               }
+           }
+       }
+
+       return new TransientNode(typeDef.getName(), name, startValues);
+   }
+   
+   /**
+    * Gets a flattened list of all mandatory aspects for a given class
+    * 
+    * @param classDef  the class
+    * @param aspects  a list to hold the mandatory aspects
+    */
+   private static void getMandatoryAspects(ClassDefinition classDef, List<QName> aspects)
+   {
+       for (AspectDefinition aspect : classDef.getDefaultAspects())
+       {
+           QName aspectName = aspect.getName();
+           if (!aspects.contains(aspectName))
+           {
+               aspects.add(aspect.getName());
+               getMandatoryAspects(aspect, aspects);
+           }
+       }
+   }
+   
    /**
     * Initialises the node.
     *

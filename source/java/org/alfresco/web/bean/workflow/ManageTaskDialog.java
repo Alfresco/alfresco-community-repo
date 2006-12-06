@@ -253,40 +253,37 @@ public class ManageTaskDialog extends BaseDialogBean
          }
       }
       
-      if (selectedTransition != null)
+      UserTransaction tx = null;
+  
+      try
       {
-         UserTransaction tx = null;
-      
-         try
-         {
-            tx = Repository.getUserTransaction(context);
-            tx.begin();
-            
-            // prepare the edited parameters for saving
-            Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
-      
-            if (logger.isDebugEnabled())
-               logger.debug("Transitioning task with parameters: " + params);
-            
-            // update the task with the updated parameters
-            this.workflowService.updateTask(this.task.id, params, null, null);
-         
-            // signal the selected transition to the workflow task
-            this.workflowService.endTask(this.task.id, selectedTransition);
-            
-            // commit the changes
-            tx.commit();
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Ended task with transition: " + selectedTransition);
-         }
-         catch (Throwable e)
-         {
-            // rollback the transaction
-            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-            Utils.addErrorMessage(formatErrorMessage(e), e);
-            outcome = this.getErrorOutcome(e);
-         }
+         tx = Repository.getUserTransaction(context);
+         tx.begin();
+        
+         // prepare the edited parameters for saving
+         Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
+  
+         if (logger.isDebugEnabled())
+            logger.debug("Transitioning task with parameters: " + params);
+        
+         // update the task with the updated parameters
+         this.workflowService.updateTask(this.task.id, params, null, null);
+     
+         // signal the selected transition to the workflow task
+         this.workflowService.endTask(this.task.id, selectedTransition);
+        
+         // commit the changes
+         tx.commit();
+        
+         if (logger.isDebugEnabled())
+            logger.debug("Ended task with transition: " + selectedTransition);
+      }
+      catch (Throwable e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(formatErrorMessage(e), e);
+         outcome = this.getErrorOutcome(e);
       }
       
       return outcome;

@@ -202,7 +202,7 @@ public class StartWorkflowWizard extends BaseWizardBean
                logger.debug("Start task definition: " + taskDef);
             
             // create an instance of a task from the data dictionary
-            this.startTaskNode = new TransientNode(taskDef.metadata.getName(),
+            this.startTaskNode = TransientNode.createNew(dictionaryService, taskDef.metadata,
                   "task_" + System.currentTimeMillis(), null);
          }
          

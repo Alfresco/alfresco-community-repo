@@ -11,7 +11,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
@@ -31,10 +30,6 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
      */
     private AVMSyncService fAVMSyncService;
 
-    /**
-     * The NodeService reference.
-     */
-    private NodeService fNodeService;
     
     /**
      * Initialize service references.
@@ -45,7 +40,6 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
     {
         fAVMService = (AVMService)factory.getBean("AVMService");
         fAVMSyncService = (AVMSyncService)factory.getBean("AVMSyncService");
-        fNodeService = (NodeService)factory.getBean("NodeService");
     }
 
     /**
@@ -54,48 +48,25 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
      */
     public void execute(ExecutionContext executionContext) throws Exception 
     {
+        // TODO: Allow submit parameters to passed into this action handler
+        //       rather than pulling directly from execution context
+        
         NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
         Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
 
+        // submit the package changes
+        String description = (String)executionContext.getContextInstance().getVariable("bpm_workflowDescription");
+        String tag = (String)executionContext.getContextInstance().getVariable("wcmwf_label");
         AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
         String targetPath = pkgDesc.getIndirection();
 		List<AVMDifference> diff = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
-        fAVMSyncService.update(diff, null, true, true, false, false, null, null);
+        fAVMSyncService.update(diff, null, true, true, false, false, tag, description);
 
-        String from = (String)executionContext.getContextInstance().getVariable("wf_from");
-        fAVMSyncService.flatten(from, targetPath);
-        
-//        List<ChildAssociationRef> children = fNodeService.getChildAssocs(pkg);
-//        List<AVMDifference> diffs = new ArrayList<AVMDifference>();
-//        Map<String, String> storesHit = new HashMap<String, String>();
-//        for (ChildAssociationRef child : children)
-//        {
-//            NodeRef childRef = child.getChildRef();
-//            if (!fNodeService.hasAspect(childRef, ContentModel.ASPECT_REFERENCES_NODE))
-//            {
-//                throw new AVMSyncException("Package node does not have cm:referencesnode.");
-//            }
-//            NodeRef toSubmit = (NodeRef)fNodeService.getProperty(childRef, ContentModel.PROP_NODE_REF);
-//            Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(toSubmit);
-//            String avmPath = versionPath.getSecond();
-//            String [] storePath = avmPath.split(":");
-//            String websiteName = fAVMService.getStoreProperty(storePath[0], 
-//                                                              QName.createQName(null, ".website.name")).
-//                                                              getStringValue();
-//            String stagingName = websiteName + "-staging";
-//            AVMDifference diff = 
-//                new AVMDifference(-1, avmPath,
-//                                  -1, stagingName + ":" + storePath[1],
-//                                  AVMDifference.NEWER);
-//            diffs.add(diff);
-//            storesHit.put(storePath[0], stagingName);
-//        }
-//        // TODO fix update comments if needed.
-//        fAVMSyncService.update(diffs, true, true, false, false, null, null);
-//        for (Map.Entry<String, String> entry : storesHit.entrySet())
-//        {
-//            fAVMSyncService.flatten(entry.getKey() + ":/appBase", 
-//                                    entry.getValue() + ":/appBase");
-//        }
+        // flatten source folder where changes were submitted from
+        String from = (String)executionContext.getContextInstance().getVariable("wcmwf_fromPath");
+        if (from != null && from.length() > 0)
+        {
+            fAVMSyncService.flatten(from, targetPath);
+        }
     }
 }

@@ -169,6 +169,7 @@
 					<prop key="redeploy">false</prop>
 				</props>
 			    <props>
+                    <!-- WCM workflow definition -->
 			    	<prop key="engineId">jbpm</prop>
 			    	<prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
 			    	<prop key="mimetype">text/xml</prop>
@@ -178,12 +179,14 @@
 		</property>
 		<property name="models">
 			<list>
-				<value>alfresco/workflow/workflowModel.xml</value>
+               <value>alfresco/workflow/workflowModel.xml</value>
+               <value>alfresco/workflow/wcmWorkflowModel.xml</value>
 			</list>
 		</property>
 		<property name="labels">
 			<list>
-				<value>alfresco/workflow/workflow-messages</value>
+			   <value>alfresco/workflow/workflow-messages</value>
+               <value>alfresco/workflow/wcm-workflow-messages</value>
 			</list>
 		</property>
 	</bean>

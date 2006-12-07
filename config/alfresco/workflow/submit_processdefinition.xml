@@ -3,25 +3,141 @@
 <!-- This describes a process for submitting changed content in a user -->
 <!-- sandbox, via an approver, to the staging sandbox. -->
 
-<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:submit">
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wcmwf:submit">
 
     <swimlane name="initiator"/>
 
+    <!--              -->
+    <!-- Start Review -->
+    <!--              -->
+
     <start-state name="start">
-        <task name="wf:submitWebContentTask" swimlane="initiator"/>
-        <transition name="" to="review"/>
+        <task name="wcmwf:submitReviewTask" swimlane="initiator"/>
+        <transition name="" to="serialorparallel"/>
+        
+        <event type="node-leave">
+            <script>
+               <variable name="wcmwf_reviewerCnt" access="write"/>
+               <variable name="wcmwf_approveCnt" access="write"/>
+               <expression>
+                  wcmwf_reviewerCnt = bpm_assignees.size();
+                  wcmwf_approveCnt = 0;
+               </expression>
+            </script>
+        </event>
     </start-state>
 
-    <swimlane name="assignee">
-        <assignment actor-id="#{bpm_assignee.properties['cm:userName']}"/>
-    </swimlane>
 
-    <task-node name="review">
-        <task name="wf:reviewTask" swimlane="assignee"/>
-        <transition name="Approve" to="end">
-            <action class="org.alfresco.repo.avm.wf.AVMSubmitPackageHandler"/>
+    <!--                                      -->
+    <!-- Split into Serial or Parallel Review -->
+    <!--                                      -->
+
+    <decision name="serialorparallel">
+       <transition name="serial" to="submitserialreview" />
+       <transition name="parallel" to="submitparallelreview">
+          <condition>#{wcmwf_reviewType == "Parallel"}</condition>
+       </transition>
+    </decision>   
+
+
+    <!--               -->
+    <!-- Serial Review -->
+    <!--               -->
+
+    <decision name="submitserialreview">
+       <transition name="endreview" to="endreview" />
+       <transition name="review" to="serialreview">
+         <condition>#{wcmwf_approveCnt &lt; wcmwf_reviewerCnt}</condition>
+       </transition>
+    </decision>   
+
+    <task-node name="serialreview">
+        <task name="wcmwf:reviewTask">
+           <event type="task-create">
+               <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                 <script>
+                    taskInstance.actorId = bpm_assignees.get(wcmwf_approveCnt).properties.userName;
+                 </script>
+              </action>
+           </event>
+        </task>
+
+        <transition name="reject" to="endreview" />
+        <transition name="approve" to="submitserialreview">
+           <script>
+              <variable name="wcmwf_approveCnt" access="read, write"/>
+              <expression>
+                 wcmwf_approveCnt = wcmwf_approveCnt + 1;
+              </expression>
+           </script>
         </transition>
     </task-node>
+
+
+    <!--                 -->
+    <!-- Parallel Review -->
+    <!--                 -->
+
+    <node name="submitparallelreview">
+        <action class="org.alfresco.repo.workflow.jbpm.ForEachFork">
+            <foreach>#{bpm_assignees}</foreach>
+            <var>reviewer</var>
+        </action>
+        <transition name="review" to="parallelreview" />
+    </node>
+
+    <task-node name="parallelreview">
+        <task name="wcmwf:reviewTask">
+            <event type="task-create">
+               <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                   <script>
+                      taskInstance.actorId = reviewer.properties["cm:userName"];
+                   </script>
+                </action>
+            </event>
+        </task>
+        <transition name="reject" to="joinparallelreview" />
+        <transition name="approve" to="joinparallelreview">
+            <script>
+                <variable name="wcmwf_approveCnt" access="read,write" />
+                <expression>
+                    wcmwf_approveCnt = wcmwf_approveCnt +1;
+                 </expression>
+            </script>
+        </transition>
+    </task-node>
+
+    <join name="joinparallelreview">
+        <transition to="endreview" />
+    </join>
+
+
+    <!--                -->
+    <!-- End the Review -->
+    <!--                -->
+
+    <decision name="endreview">
+       <transition name="rejected" to="rejected" />
+       <transition name="approved" to="approved">
+         <condition>#{wcmwf_approveCnt == wcmwf_reviewerCnt}</condition>
+         <action class="org.alfresco.repo.avm.wf.AVMSubmitPackageHandler"/>
+       </transition>
+    </decision>   
+
+    <task-node name="rejected">
+        <task name="wcmwf:rejectedTask" swimlane="initiator" />
+        <transition name="" to="end" />
+    </task-node>
+
+    <task-node name="approved">
+        <task name="wcmwf:approvedTask" swimlane="initiator" />
+        <transition name="" to="end" />
+    </task-node>
+
+
+    <!--                 -->
+    <!-- End the Process -->
+    <!--                 -->
 
     <end-state name="end"/>
 

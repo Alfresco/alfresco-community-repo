@@ -187,7 +187,7 @@ public class WorkflowInterpreter
             try
             {
                 String line = fIn.readLine();
-                if (line.equals("exit"))
+                if (line.equals("exit") || line.equals("quit"))
                 {
                     return;
                 }
@@ -347,13 +347,17 @@ public class WorkflowInterpreter
                     return "Syntax Error.  Workflow Id not specified.\n";
                 }
                 List<WorkflowPath> paths = workflowService.getWorkflowPaths(workflowId);
+                if (paths.size() == 0)
+                {
+                    out.println("no further transitions");
+                }
                 for (WorkflowPath path : paths)
                 {
                     out.println("path: " + path.id + " , node: " + path.node.name + " , active: " + path.active);
                     List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.id);
                     for (WorkflowTask task : tasks)
                     {
-                        out.println(" task id: " + task.id + " , name: " + task.name + " , properties: " + task.properties.size());
+                        out.println(" task id: " + task.id + " , name: " + task.name + ", title: " + task.title + " , desc: " + task.description + " , properties: " + task.properties.size());
                     }
                     for (WorkflowTransition transition : path.node.transitions)
                     {
@@ -564,8 +568,9 @@ public class WorkflowInterpreter
                 return "Workflow definition not selected.\n";
             }
             WorkflowPath path = workflowService.startWorkflow(currentWorkflowDef.id, params);
-            out.println("started workflow id: " + path.instance.id + ", path: " + path.id + " , node: " + path.node.name + " , def: " + path.instance.definition.title);
+            out.println("started workflow id: " + path.instance.id + " , def: " + path.instance.definition.title);
             currentPath = path;
+            out.print(interpretCommand("show transitions"));
         }
         
         else if (command[0].equals("update"))
@@ -619,7 +624,8 @@ public class WorkflowInterpreter
                 return "Syntax Error.\n";
             }
             WorkflowPath path = workflowService.signal(command[1], (command.length == 3) ? command[2] : null);
-            out.println("signal sent - path id: " + path.id + " , node: " + path.node.name);
+            out.println("signal sent - path id: " + path.id);
+            out.print(interpretCommand("show transitions"));
         }
         
         else if (command[0].equals("end"))
@@ -631,7 +637,8 @@ public class WorkflowInterpreter
             if (command[1].equals("task"))
             {
                 WorkflowTask task = workflowService.endTask(command[2], (command.length == 4) ? command[3] : null);
-                out.println("signal sent - path id: " + task.path.id + " , node: " + task.path.node.name);
+                out.println("signal sent - path id: " + task.path.id);
+                out.print(interpretCommand("show transitions"));
             }
             else if (command[1].equals("workflow"))
             {
@@ -642,6 +649,7 @@ public class WorkflowInterpreter
                 }
                 workflowService.cancelWorkflow(workflowId);
                 out.println("cancelled workflow" + workflowId);
+                out.print(interpretCommand("show transitions"));
             }
             else
             {

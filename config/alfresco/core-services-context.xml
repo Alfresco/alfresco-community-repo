@@ -59,7 +59,7 @@
     </bean>
 
     <!-- MBeanServer Connector (registers itself with custom alfrescoMBeanServer) -->
-    <bean id="serverConnector" 
+<!--     <bean id="serverConnector" 
           class="org.springframework.jmx.support.ConnectorServerFactoryBean"
           depends-on="registry">
 
@@ -69,7 +69,6 @@
 
         <property name="environment">
             <map>
-                <!-- The following keys are only valid when sun jmx is used -->
                 <entry key="jmx.remote.x.password.file" value="${alfresco.jmx.dir}/alfresco-jmxrmi.password"/>
                 <entry key="jmx.remote.x.access.file"   value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
             </map>
@@ -80,11 +79,11 @@
        <property name="server" ref="alfrescoMBeanServer"/>
        <property name="beans">
          <map>
-           <!-- MBeans to register with alfrescoMBeanServer -->
            <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
          </map>
        </property>
      </bean>
+-->
 
     <!-- MBeans registered with alfrescoMBeanServer -->
     <bean id="VirtServerRegistry" 

@@ -19,9 +19,11 @@ package org.alfresco.web.bean.wcm;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
@@ -215,7 +217,8 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String finishImpl(final FacesContext context, final String outcome)
       throws Exception
    {
-      final List<AVMDifference> diffList = new ArrayList<AVMDifference>(1 + this.renditions.size());
+      final List<AVMDifference> diffList = 
+         new ArrayList<AVMDifference>(1 + this.renditions.size());
       diffList.add(new AVMDifference(-1, this.createdPath, 
                                      -1, this.createdPath.replaceFirst(AVMConstants.STORE_PREVIEW, 
                                                                        AVMConstants.STORE_MAIN), 
@@ -334,11 +337,6 @@ public class CreateWebContentWizard extends BaseContentWizard
             }
          }
       }
-      else
-      {
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("************* not starting workflow");
-      }
       
       // return the default outcome
       return outcome;
@@ -370,6 +368,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       final FormsService fs = FormsService.getInstance();
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("saving file content to " + this.fileName);
+
       // get the parent path of the location to save the content
       String path = this.avmBrowseBean.getCurrentPath();
       path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
@@ -384,7 +383,8 @@ public class CreateWebContentWizard extends BaseContentWizard
       }
 
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("reseting layer " + path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
+         LOGGER.debug("reseting layer " + path.split(":")[0] + 
+                      ":/" + AVMConstants.DIR_APPBASE);
 
       this.avmSyncService.resetLayer(path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
 
@@ -409,12 +409,16 @@ public class CreateWebContentWizard extends BaseContentWizard
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
       titledProps.put(ContentModel.PROP_TITLE, this.fileName);
       this.nodeService.addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, titledProps);
-      this.formInstanceData = new FormInstanceDataImpl(formInstanceDataNodeRef);
 
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
+         this.formInstanceData = new FormInstanceDataImpl(formInstanceDataNodeRef);
          this.getForm().registerFormInstanceData(formInstanceDataNodeRef);
          this.renditions = FormsService.getInstance().generateRenditions(formInstanceDataNodeRef);
+      }
+      else
+      {
+         this.renditions = Collections.EMPTY_LIST;
       }
    }
    
@@ -596,6 +600,25 @@ public class CreateWebContentWizard extends BaseContentWizard
       return this.startWorkflow;
    }
    
+   public String getSummary()
+   {
+      final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+      
+      // TODO: show first few lines of content here?
+      return this.buildSummary(
+            new String[] 
+            {
+               bundle.getString("file_name"), 
+               bundle.getString("type"), 
+               bundle.getString("content_type")
+            },
+            new String[] 
+            {
+               this.fileName, 
+               this.getSummaryObjectType(), 
+               this.getSummaryMimeType(this.mimeType)
+            });
+   }
    
    // ------------------------------------------------------------------------------
    // Action event handlers

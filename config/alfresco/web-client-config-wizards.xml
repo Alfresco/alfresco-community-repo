@@ -332,9 +332,15 @@
                      instruction-id="default_instruction" />
             </step>
             <step name="summary" title-id="summary" description-id="summary_step_description">
-               <page path="/jsp/wcm/create-web-content-wizard/summary.jsp"
+               <condition if="#{CreateWebContentWizard.mimeType == 'text/xml'}">
+		 <page path="/jsp/wcm/create-web-content-wizard/summary.jsp"
+                       title-id="summary"
+                       description-id="create_web_content_summary_desc"
+                       instruction-id="content_finish_instruction" />
+	       </condition>
+               <page path="/jsp/wizard/summary.jsp"
                      title-id="summary"
-                     description-id="create_web_content_summary_desc"
+                     description-id="summary_desc"
                      instruction-id="content_finish_instruction" />
             </step>
          </wizard>

@@ -75,6 +75,46 @@ public class AVMServiceTestBase extends TestCase
             fService = (AVMService)fContext.getBean("AVMService");
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
+            CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");
+            cstl.addCallback(
+                new CreateStoreCallback()
+                {
+                    public void storeCreated(String name)
+                    {
+                        System.err.println("Store created: " + name);
+                    }
+                }
+            );
+            PurgeStoreTxnListener pstl = (PurgeStoreTxnListener)fContext.getBean("purgeStoreTxnListener");
+            pstl.addCallback(
+                new PurgeStoreCallback()
+                {
+                    public void storePurged(String name)
+                    {
+                        System.err.println("Store purged: " + name);
+                    }
+                }
+            );
+            CreateVersionTxnListener cvtl = (CreateVersionTxnListener)fContext.getBean("createVersionTxnListener");
+            cvtl.addCallback(
+                new CreateVersionCallback()
+                {
+                    public void versionCreated(String name, int versionID)
+                    {
+                        System.err.println("Version created: " + name + " " + versionID);
+                    }
+                }
+            );
+            PurgeVersionTxnListener pvtl = (PurgeVersionTxnListener)fContext.getBean("purgeVersionTxnListener");
+            pvtl.addCallback(
+                new PurgeVersionCallback()
+                {
+                    public void versionPurged(String name, int versionID)
+                    {
+                        System.err.println("Version purged: " + name + " " + versionID);
+                    }
+                }
+            );
         }
         fService.createAVMStore("main");
         fStartTime = System.currentTimeMillis();

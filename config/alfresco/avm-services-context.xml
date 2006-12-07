@@ -165,6 +165,14 @@
 		</property>
 	</bean>
 
+	<bean id="createStoreTxnListener" class="org.alfresco.repo.avm.CreateStoreTxnListener"/>
+	
+	<bean id="purgeStoreTxnListener" class="org.alfresco.repo.avm.PurgeStoreTxnListener"/>
+
+	<bean id="createVersionTxnListener" class="org.alfresco.repo.avm.CreateVersionTxnListener"/>
+	
+	<bean id="purgeVersionTxnListener" class="org.alfresco.repo.avm.PurgeVersionTxnListener"/>
+
 	<bean id="avmRepository" class="org.alfresco.repo.avm.AVMRepository">
 		<property name="nodeIssuer">
 			<ref bean="nodeIssuer"/>
@@ -177,6 +185,18 @@
 		</property>
 		<property name="contentStore">
 		    <ref bean="fileContentStore"/>
+		</property>
+	    <property name="createStoreTxnListener">
+		    <ref bean="createStoreTxnListener"/>
+		</property>
+	    <property name="purgeStoreTxnListener">
+		    <ref bean="purgeStoreTxnListener"/>
+		</property>
+	    <property name="createVersionTxnListener">
+		    <ref bean="createVersionTxnListener"/>
+		</property>
+	    <property name="purgeVersionTxnListener">
+		    <ref bean="purgeVersionTxnListener"/>
 		</property>
 	</bean>
 

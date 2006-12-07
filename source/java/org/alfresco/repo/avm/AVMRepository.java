@@ -30,6 +30,7 @@ import java.util.SortedMap;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -86,6 +87,28 @@ public class AVMRepository
      */
     private LookupCache fLookupCache;
     
+    // A bunch of TransactionListeners that do work for this.
+    
+    /**
+     * One for create store.
+     */
+    private CreateStoreTxnListener fCreateStoreTxnListener;
+    
+    /**
+     * One for purge store.
+     */
+    private PurgeStoreTxnListener fPurgeStoreTxnListener;
+    
+    /**
+     * One for create version.
+     */
+    private CreateVersionTxnListener fCreateVersionTxnListener;
+    
+    /**
+     * One for purge version.
+     */
+    private PurgeVersionTxnListener fPurgeVersionTxnListener;
+    
     /**
      * Create a new one.
      */
@@ -128,6 +151,26 @@ public class AVMRepository
     public void setLookupCache(LookupCache cache)
     {
         fLookupCache = cache;
+    }
+
+    public void setCreateStoreTxnListener(CreateStoreTxnListener listener)
+    {
+        fCreateStoreTxnListener = listener;
+    }
+    
+    public void setPurgeStoreTxnListener(PurgeStoreTxnListener listener)
+    {
+        fPurgeStoreTxnListener = listener;
+    }
+
+    public void setCreateVersionTxnListener(CreateVersionTxnListener listener)
+    {
+        fCreateVersionTxnListener = listener;
+    }
+
+    public void setPurgeVersionTxnListener(PurgeVersionTxnListener listener)
+    {
+        fPurgeVersionTxnListener = listener;
     }
 
     /**
@@ -311,6 +354,7 @@ public class AVMRepository
      */
     public void createAVMStore(String name)
     {
+        AlfrescoTransactionSupport.bindListener(fCreateStoreTxnListener);
         if (getAVMStoreByName(name) != null)
         {
             throw new AVMExistsException("AVMStore exists: " + name);
@@ -320,6 +364,7 @@ public class AVMRepository
         AVMStore rep = new AVMStoreImpl(this, name);
         // Special handling for AVMStore creation.
         rep.getRoot().setStoreNew(null);
+        fCreateStoreTxnListener.storeCreated(name);
     }
 
     /**
@@ -673,27 +718,6 @@ public class AVMRepository
     }
 
     /**
-     * Snapshot the given repositories.
-     * @param repositories The list of AVMStore name to snapshot.
-     * @return A List of version ids for each newly snapshotted AVMStore.
-     */
-    public List<Integer> createSnapshot(List<String> repositories)
-    {
-        List<Integer> result = new ArrayList<Integer>();
-        for (String repName : repositories)
-        {
-            AVMStore store = getAVMStoreByName(repName);
-            if (store == null)
-            {
-                throw new AVMNotFoundException("Store not found.");
-            }
-            fLookupCache.onSnapshot(repName);
-            result.add(store.createSnapshot(null, null));
-        }
-        return result;
-    }
-
-    /**
      * Create a snapshot of a single AVMStore.
      * @param store The name of the repository.
      * @param tag The short description.
@@ -702,6 +726,7 @@ public class AVMRepository
      */
     public int createSnapshot(String storeName, String tag, String description)
     {
+        AlfrescoTransactionSupport.bindListener(fCreateVersionTxnListener);
         AVMStore store = getAVMStoreByName(storeName);
         if (store == null)
         {
@@ -709,6 +734,7 @@ public class AVMRepository
         }
         fLookupCache.onSnapshot(storeName);
         int result = store.createSnapshot(tag, description);
+        fCreateVersionTxnListener.versionCreated(storeName, result);
         return result;
     }
 
@@ -745,6 +771,7 @@ public class AVMRepository
     @SuppressWarnings("unchecked")
     public void purgeAVMStore(String name)
     {
+        AlfrescoTransactionSupport.bindListener(fPurgeStoreTxnListener);
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
@@ -769,6 +796,7 @@ public class AVMRepository
         AVMDAOs.Instance().fAVMStorePropertyDAO.delete(store);
         AVMDAOs.Instance().fAVMStoreDAO.delete(store);
         AVMDAOs.Instance().fAVMStoreDAO.invalidateCache();
+        fPurgeStoreTxnListener.storePurged(name);
     }
     
     /**
@@ -778,6 +806,7 @@ public class AVMRepository
      */
     public void purgeVersion(String name, int version)
     {
+        AlfrescoTransactionSupport.bindListener(fPurgeVersionTxnListener);
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
@@ -785,6 +814,7 @@ public class AVMRepository
         }
         fLookupCache.onDelete(name);
         store.purgeVersion(version);
+        fPurgeVersionTxnListener.versionPurged(name, version);
     }
 
     /**
@@ -2279,6 +2309,8 @@ public class AVMRepository
      */
     public void renameStore(String sourceName, String destName)
     {
+        AlfrescoTransactionSupport.bindListener(fPurgeStoreTxnListener);
+        AlfrescoTransactionSupport.bindListener(fCreateStoreTxnListener);
         AVMStore store = getAVMStoreByName(sourceName);
         if (store == null)
         {
@@ -2295,5 +2327,7 @@ public class AVMRepository
         store.setName(destName);
         fLookupCache.onDelete(sourceName);
         AVMDAOs.Instance().fAVMStoreDAO.invalidateCache();
+        fPurgeStoreTxnListener.storePurged(sourceName);
+        fCreateStoreTxnListener.storeCreated(destName);
     }
 }

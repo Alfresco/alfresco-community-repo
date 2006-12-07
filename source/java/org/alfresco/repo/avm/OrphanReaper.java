@@ -20,7 +20,6 @@ package org.alfresco.repo.avm;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.transaction.TransactionService;

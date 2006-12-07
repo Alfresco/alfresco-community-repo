@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alfresco="http://www.alfresco.org/alfresco"
+	   elementFormDefault="qualified">
+  <xs:simpleType name="five_string_values">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="one">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alfresco:label>1 - eno</alfresco:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="two">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alfresco:label>2 - owt</alfresco:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="three">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alfresco:label>3 - eerht</alfresco:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="four">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alfresco:label>4 - ruof</alfresco:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="five">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alfresco:label>5 - evif</alfresco:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ten_string_values">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="one"/>
+      <xs:enumeration value="two"/>
+      <xs:enumeration value="three"/>
+      <xs:enumeration value="four"/>
+      <xs:enumeration value="five"/>
+      <xs:enumeration value="six"/>
+      <xs:enumeration value="seven"/>
+      <xs:enumeration value="eight"/>
+      <xs:enumeration value="nine"/>
+      <xs:enumeration value="ten"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="five_number_list">
+    <xs:list itemType="five_string_values"/>
+  </xs:simpleType>
+  <xs:simpleType name="ten_number_list">
+    <xs:list itemType="ten_string_values"/>
+  </xs:simpleType>
+  <xs:simpleType name="ten_number_list_select_three">
+    <xs:restriction base="ten_number_list">
+      <xs:length value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="text_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="required_textfield" type="xs:string" minOccurs="1" maxOccurs="1">
+	  <xs:annotation>
+	    <xs:appinfo>
+	      <alfresco:label>A Required String</alfresco:label>
+	      <alfresco:alert>Please enter a non zero length string</alfresco:alert>
+	    </xs:appinfo>
+	  </xs:annotation>
+	</xs:element>
+	<xs:element name="optional_textfield" type="xs:string" minOccurs="0" maxOccurs="1"/>
+	<xs:element name="prefilled_textfield" type="xs:string" minOccurs="0" maxOccurs="1" default="i am the default value"/>
+	<xs:element name="textarea" type="xs:anyType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="numerical_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="integer" type="xs:integer"/>
+	<xs:element name="positive_integer" type="xs:positiveInteger"/>
+	<xs:element name="double" type="xs:double"/>
+	<xs:element name="date" type="xs:date"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="list_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="radio" type="five_string_values"/>
+	<xs:element name="combobox" type="ten_string_values"/>
+	<xs:element name="list_of_five" type="five_number_list"/>
+	<xs:element name="list_of_ten" type="ten_number_list"/>
+	<xs:element name="list_of_ten_select_three" type="ten_number_list_select_three">
+	  <xs:annotation>
+	    <xs:appinfo>
+	      <alfresco:label>10 select 3</alfresco:label>
+	      <alfresco:alert>Please select at least 3 items from the list.</alfresco:alert>
+	    </xs:appinfo>
+	  </xs:annotation>
+	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="other_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="file" type="xs:anyURI"/>
+	<xs:element name="repeat" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+	<xs:element name="checkbox_default_true" type="xs:boolean" default="true"/>
+	<xs:element name="checkbox_default_false" type="xs:boolean" default="false"/>
+	<xs:element name="checkbox_no_default" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="components_test">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="text_components"/>
+	<xs:element ref="numerical_components"/>
+	<xs:element ref="list_components"/>
+	<xs:element ref="other_components"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

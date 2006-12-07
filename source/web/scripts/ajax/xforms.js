@@ -48,8 +48,6 @@ dojo.declare("alfresco.xforms.Widget",
                {
                  this.xform = xform;
                  this.xformsNode = xformsNode;
-                 //XXXarielb this has to come back
-                 //     this.node.widget = this;
                  this.id = this.xformsNode.getAttribute("id");
                  this.modified = false;
                  this.valid = true;
@@ -697,6 +695,20 @@ dojo.declare("alfresco.xforms.Group",
                  this.children = [];
                  this.domNode = document.createElement("div");
                  this.domNode.setAttribute("id", this.id + "-domNode");
+                 this.showHeader = false;
+                 this.domNode.addEventListener("childAdded", this._childAddedListener, false);
+                 this.domNode.addEventListener("childRemoved", this._childRemovedListener, false);
+               },
+               setShowHeader: function(showHeader)
+               {
+                 if (showHeader == this.showHeader)
+                   return;
+
+                 this.showHeader = showHeader;
+                 if (this.showHeader && this.groupHeaderNode.style.display == "none")
+                   this.groupHeaderNode.style.display = "block";
+                 if (!this.showHeader && this.groupHeaderNode.style.display == "block")
+                   this.groupHeaderNode.style.display = "none";
                },
                getWidgetsInvalidForSubmit: function()
                {
@@ -855,23 +867,59 @@ dojo.declare("alfresco.xforms.Group",
                  this.domNode.style.top = "0px";
                  this.domNode.style.left = "0px";
                  this.domNode.style.width = "100%";
+                 this.domNode.style.marginBottom = "10px";
                  if (djConfig.isDebug)
                  {
                    var idNode = document.createElement("div");
                    idNode.style.backgroundColor = "red";
-                   idNode.appendChild(document.createTextNode(this.id));
+                   idNode.appendChild(document.createTextNode(this.getLabel()));
                    this.domNode.appendChild(idNode);
                  }
 
                  this.groupHeaderNode = document.createElement("div");
                  this.groupHeaderNode.id = this.id + "-groupHeaderNode";
                  this.domNode.appendChild(this.groupHeaderNode);
+                 this.groupHeaderNode.style.position = "relative";
+                 this.groupHeaderNode.style.top = "0px";
+                 this.groupHeaderNode.style.left = "0px";
+                 this.groupHeaderNode.style.height = "20px";
+                 this.groupHeaderNode.style.lineHeight = "20px";
+                 this.groupHeaderNode.style.backgroundColor = "#cddbe8";
+                 this.groupHeaderNode.style.fontWeight = "bold";
+                 this.groupHeaderNode.style.width = "100%";
+                 this.groupHeaderNode.style.display = "none";
+
+                 this.toggleExpandedImage = document.createElement("img");
+                 this.groupHeaderNode.appendChild(this.toggleExpandedImage);
+                 this.toggleExpandedImage.setAttribute("src", EXPANDED_IMAGE.src);
+                 this.toggleExpandedImage.align = "absmiddle";
+                 this.toggleExpandedImage.style.marginLeft = "5px";
+                 this.toggleExpandedImage.style.marginRight = "5px";
+                 
+                 dojo.event.connect(this.toggleExpandedImage, "onclick", this, this._toggleExpanded_clickHandler);
+
+                 this.groupHeaderNode.appendChild(document.createTextNode(this.getLabel()));
 
                  this.domNode.childContainerNode = document.createElement("div");
                  this.domNode.childContainerNode.setAttribute("id", this.id + "-childContainerNode");
                  this.domNode.appendChild(this.domNode.childContainerNode);
                  this.domNode.childContainerNode.style.width = "100%";
                  return this.domNode;
+               },
+               isExpanded: function()
+               {
+                 return this.toggleExpandedImage.getAttribute("src") == EXPANDED_IMAGE.src;
+               },
+               setExpanded: function(expanded)
+               {
+                 if (expanded == this.isExpanded())
+                   return;
+                 this.toggleExpandedImage.src = expanded ? EXPANDED_IMAGE.src : COLLAPSED_IMAGE.src;
+                 this.domNode.childContainerNode.style.display = expanded ? "block" : "none";
+               },
+               _toggleExpanded_clickHandler: function(event)
+               {
+                 this.setExpanded(!this.isExpanded());
                },
                _updateDisplay: function()
                {
@@ -893,6 +941,24 @@ dojo.declare("alfresco.xforms.Group",
                  {
                    this.children[i].hideAlert();
                  }
+               },
+               _childAddedListener: function(event)
+               {
+                 var hasNonGroupChildren = false;
+                 for (var i in this.widget.children)
+                 {
+                   if (!(this.widget.children[i] instanceof alfresco.xforms.Group))
+                   {
+                     hasNonGroupChildren = true;
+                     break;
+                   }
+                 }
+                 this.widget.setShowHeader(hasNonGroupChildren &&
+                                           this.widget.children.length != 1 &&
+                                           this.widget.parent != null);
+               },
+               _childRemovedListener: function(event)
+               {
                }
              });
 
@@ -901,10 +967,16 @@ dojo.declare("alfresco.xforms.Repeat",
              {
                initializer: function(xform, xformsNode) 
                {
-                 this.domNode.addEventListener("childAdded", this._childAddedListener, false);
-                 this.domNode.addEventListener("childRemoved", this._childRemovedListener, false);
+                 this.showHeader = true;
                  this.repeatControls = [];
                  this._selectedIndex = -1;
+               },
+               getLabel: function()
+               {
+                 var label = this.parent.getLabel();
+                 if (djConfig.isDebug)
+                   label += " [" + this.id + "]";
+                 return label;
                },
                isInsertRepeatItemEnabled: function()
                {
@@ -1150,37 +1222,14 @@ dojo.declare("alfresco.xforms.Repeat",
                                              parseInt(this.domNode.style.marginLeft) -
                                              parseInt(this.domNode.style.marginRight)) + "px";
 
+                 this.groupHeaderNode.style.display = "block";
                  this.groupHeaderNode.repeat = this;
-                 this.groupHeaderNode.style.position = "relative";
-                 this.groupHeaderNode.style.top = "0px";
-                 this.groupHeaderNode.style.left = "0px";
-                 this.groupHeaderNode.style.height = "20px";
-                 this.groupHeaderNode.style.lineHeight = "20px";
-                 this.groupHeaderNode.style.backgroundColor = "#cddbe8";
-                 this.groupHeaderNode.style.fontWeight = "bold";
-                 this.groupHeaderNode.style.width = "100%";
                  dojo.event.connect(this.groupHeaderNode, "onclick", function(event)
                                     {
                                       if (event.target == event.currentTarget)
                                         event.currentTarget.repeat.setFocusedChild(null);
                                     });
                
-                 //used only for positioning the label accurately
-                 this.toggleExpandedImage = document.createElement("img");
-                 this.groupHeaderNode.appendChild(this.toggleExpandedImage);
-                 this.toggleExpandedImage.setAttribute("src", EXPANDED_IMAGE.src);
-                 this.toggleExpandedImage.align = "absmiddle";
-                 this.toggleExpandedImage.style.marginLeft = "5px";
-                 this.toggleExpandedImage.style.marginRight = "5px";
-                 
-                 dojo.event.connect(this.toggleExpandedImage, "onclick", this, this._toggleExpanded_clickHandler);
-               
-                 var label = this.parent.getLabel()
-                   if (djConfig.isDebug)
-                     label += " [" + this.id + "]";
-                   
-                 this.groupHeaderNode.appendChild(document.createTextNode(label));
-           
                  this.headerInsertRepeatItemImage = document.createElement("img"); 
                  this.headerInsertRepeatItemImage.repeat = this;
                  this.groupHeaderNode.appendChild(this.headerInsertRepeatItemImage);
@@ -1189,7 +1238,6 @@ dojo.declare("alfresco.xforms.Repeat",
                  this.headerInsertRepeatItemImage.style.height = "16px";
                  this.headerInsertRepeatItemImage.align = "absmiddle";
                  this.headerInsertRepeatItemImage.style.marginLeft = "5px";
-//                 addElement.style.opacity = .2;
            
                  dojo.event.connect(this.headerInsertRepeatItemImage, 
                                     "onclick", 
@@ -1228,21 +1276,6 @@ dojo.declare("alfresco.xforms.Repeat",
                {
                  dojo.debug(this.id + ".handleItemDeleted(" + position + ")");
                  this.removeChildAt(position);
-               },
-               isExpanded: function()
-               {
-                 return this.toggleExpandedImage.getAttribute("src") == EXPANDED_IMAGE.src;
-               },
-               setExpanded: function(expanded)
-               {
-                 if (expanded == this.isExpanded())
-                   return;
-                 this.toggleExpandedImage.src = expanded ? EXPANDED_IMAGE.src : COLLAPSED_IMAGE.src;
-                 this.domNode.childContainerNode.style.display = expanded ? "block" : "none";
-               },
-               _toggleExpanded_clickHandler: function(event)
-               {
-                 this.setExpanded(!this.isExpanded());
                },
                _updateRepeatControls: function()
                {

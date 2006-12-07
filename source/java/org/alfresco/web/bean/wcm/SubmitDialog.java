@@ -383,7 +383,7 @@ public class SubmitDialog extends BaseDialogBean
          {
             if (hasAssociatedWorkflow(AVMNodeConverter.ToNodeRef(-1, node.getPath())) == false)
             {
-               // lookup if this item was created via a frm - then lookup the workflow defaults
+               // lookup if this item was created via a form - then lookup the workflow defaults
                // for that form and store into the list of available workflows
                NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
                if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
@@ -391,7 +391,7 @@ public class SubmitDialog extends BaseDialogBean
                   // found an XML form instance data file
                   String formName = (String)this.nodeService.getProperty(ref, WCMAppModel.PROP_PARENT_FORM_NAME);
                   FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
-                  if (wrapper.Params != null)
+                  if (wrapper != null && wrapper.Params != null)
                   {
                      // found a workflow with params attached to the form
                      this.workflows.add(wrapper);
@@ -419,7 +419,7 @@ public class SubmitDialog extends BaseDialogBean
    }
    
    /**
-    * Construct a workflow package as a layered directory over the users sandbox. The items for
+    * Construct a workflow package as a layered directory over the staging sandbox. The items for
     * submission are pushed into the layer and the package constructed around it.
     * 
     * @return Reference to the package

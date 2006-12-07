@@ -48,39 +48,49 @@
 
       <type name="wcmwf:submitReviewTask">
          <parent>wcmwf:startTask</parent>
+         <properties>
+            <property name="wcmwf:submitReviewType">
+               <title>Serial or Parallel Review</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <default>Serial</default>
+               <constraints>
+                  <constraint ref="wcmwf:reviewType" />
+               </constraints>
+            </property>
+         </properties>
          <mandatory-aspects>
-            <aspect>wcmwf:reviewType</aspect>
-            <aspect>wcmwf:submission</aspect>
             <aspect>bpm:assignees</aspect>
+            <aspect>wcmwf:submission</aspect>
          </mandatory-aspects>
       </type>
 
       <type name="wcmwf:reviewTask">
          <parent>wcmwf:workflowTask</parent>
          <mandatory-aspects>
-            <aspect>wcmwf:submission</aspect>
             <!-- One or more reviewers - this is here to allow view of all reviewers -->
             <!-- in the review task -->
-            <aspect>wcmwf:reviewType</aspect>
             <aspect>bpm:assignees</aspect>
+            <aspect>wcmwf:submission</aspect>
+            <aspect>wcmwf:reviewType</aspect>
          </mandatory-aspects>
       </type>
 
       <type name="wcmwf:rejectedTask">
          <parent>wcmwf:workflowTask</parent>
          <mandatory-aspects>
-            <aspect>wcmwf:reviewType</aspect>
             <aspect>bpm:assignees</aspect>
-            <aspect>wcmwf:reviewStats</aspect>
+            <aspect>wcmwf:reviewType</aspect>
+            <aspect>wcmwf:reviewInfo</aspect>
          </mandatory-aspects>
       </type>
 
       <type name="wcmwf:approvedTask">
          <parent>wcmwf:workflowTask</parent>
          <mandatory-aspects>
-            <aspect>wcmwf:reviewType</aspect>
             <aspect>bpm:assignees</aspect>
-            <aspect>wcmwf:reviewStats</aspect>
+            <aspect>wcmwf:reviewType</aspect>
+            <aspect>wcmwf:reviewInfo</aspect>
          </mandatory-aspects>
       </type>
 
@@ -107,10 +117,9 @@
       <aspect name="wcmwf:reviewType">
          <properties>
             <property name="wcmwf:reviewType">
-               <title>Serial or Parallel Review</title>
+               <title>Review Type</title>
                <type>d:text</type>
                <mandatory>true</mandatory>
-               <default>Serial</default>
                <constraints>
                   <constraint ref="wcmwf:reviewType" />
                </constraints>
@@ -118,7 +127,7 @@
          </properties>
       </aspect>
 
-      <aspect name="wcmwf:reviewStats">
+      <aspect name="wcmwf:reviewInfo">
          <properties>
             <property name="wcmwf:reviewerCnt">
                <title>Reviewer Count</title>

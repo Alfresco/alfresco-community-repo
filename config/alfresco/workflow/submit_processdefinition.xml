@@ -19,9 +19,11 @@
             <script>
                <variable name="wcmwf_reviewerCnt" access="write"/>
                <variable name="wcmwf_approveCnt" access="write"/>
+               <variable name="wcmwf_reviewType" access="write"/>
                <expression>
                   wcmwf_reviewerCnt = bpm_assignees.size();
                   wcmwf_approveCnt = 0;
+                  wcmwf_reviewType = wcmwf_submitReviewType;
                </expression>
             </script>
         </event>

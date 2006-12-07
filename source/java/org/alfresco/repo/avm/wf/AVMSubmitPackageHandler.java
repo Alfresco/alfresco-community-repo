@@ -3,6 +3,7 @@ package org.alfresco.repo.avm.wf;
 import java.io.Serializable;
 import java.util.List;
 
+import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
@@ -60,12 +61,13 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
         String targetPath = pkgDesc.getIndirection();
 		List<AVMDifference> diff = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
-        fAVMSyncService.update(diff, null, true, true, false, false, tag, description);
+        fAVMSyncService.update(diff, null, false, false, true, true, tag, description);
 
         // flatten source folder where changes were submitted from
         String from = (String)executionContext.getContextInstance().getVariable("wcmwf_fromPath");
         if (from != null && from.length() > 0)
         {
+            AVMDAOs.Instance().fAVMNodeDAO.flush();
             fAVMSyncService.flatten(from, targetPath);
         }
     }

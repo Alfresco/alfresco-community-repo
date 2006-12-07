@@ -658,7 +658,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (index != -1)
       {
          WorkflowDefinition workflow = (WorkflowDefinition)this.workflowsList.get(index).getValue();
-         this.workflows.add(new WorkflowWrapper(workflow.getName(), workflow.getTitle()));
+         this.workflows.add(new WorkflowWrapper(workflow.getName(), workflow.getTitle(), workflow.getDescription()));
       }
    }
    
@@ -782,7 +782,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          WorkflowDefinition wf = this.form.getDefaultWorkflow();
          if (this.workflow == null && wf != null)
          {
-            this.workflow = new WorkflowWrapper(wf.name, wf.getTitle());
+            this.workflow = new WorkflowWrapper(wf.name, wf.getTitle(), wf.getDescription());
          }
          return this.workflow;
       }
@@ -937,14 +937,16 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       private String name;
       private String title;
+      private String description;
       private String filenamePattern;
       private QName type;
       private Map<QName, Serializable> params;
       
-      public WorkflowWrapper(String name, String title)
+      public WorkflowWrapper(String name, String title, String description)
       {
          this.name = name;
          this.title = title;
+         this.description = description;
          this.filenamePattern = filenamePattern;
       }
       
@@ -962,6 +964,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       public String getTitle()
       {
          return this.title;
+      }
+
+      /**
+       * @return the display label of the workflow.
+       */
+      public String getDescription()
+      {
+         return this.description;
       }
 
       /**

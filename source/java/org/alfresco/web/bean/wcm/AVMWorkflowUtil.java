@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
@@ -45,6 +46,11 @@ import org.alfresco.web.bean.workflow.WorkflowUtil;
  */
 public class AVMWorkflowUtil extends WorkflowUtil
 {
+   // Common workflow definitions
+   private static final String WCM_WORKFLOW_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmworkflow/1.0";
+   public static final QName PROP_FROM_PATH = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "fromPath");
+   public static final QName PROP_LABEL = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "label");
+    
    private static final String STORE_WORKFLOW_SYSTEM = "workflow-system";
    private static final String FOLDER_PACKAGES = "packages";
    

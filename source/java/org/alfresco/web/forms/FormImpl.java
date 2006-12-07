@@ -104,7 +104,7 @@ class FormImpl
                                                                        WCMAppModel.PROP_DEFAULT_WORKFLOW_NAME);
       final WorkflowService workflowService = this.getServiceRegistry().getWorkflowService();
       return (defaultWorkflowName != null
-              ? workflowService.getDefinitionByName("jbpm$" + defaultWorkflowName)
+              ? workflowService.getDefinitionByName(defaultWorkflowName)
               : null);
    }
 

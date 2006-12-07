@@ -99,10 +99,10 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
             {
                NodeRef wfRef = workflowRefs.get(0).getChildRef();
                String wfName = (String)this.nodeService.getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
-               WorkflowDefinition wfDef = this.workflowService.getDefinitionByName("jbpm$" + wfName);
+               WorkflowDefinition wfDef = this.workflowService.getDefinitionByName(wfName);
                if (wfDef != null)
                {
-                  WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle());
+                  WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle(), wfDef.getDescription());
                   wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
                   if (wfDef.startTaskDefinition != null)
                   {
@@ -144,10 +144,10 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       {
          NodeRef wfRef = wChildRef.getChildRef();
          String wfName = (String)this.nodeService.getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
-         WorkflowDefinition wfDef = this.workflowService.getDefinitionByName("jbpm$" + wfName);
+         WorkflowDefinition wfDef = this.workflowService.getDefinitionByName(wfName);
          if (wfDef != null)
          {
-            WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle());
+            WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle(), wfDef.getDescription());
             wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
             wfWrapper.setFilenamePattern((String)this.nodeService.getProperty(
                   wfRef, WCMAppModel.PROP_FILENAMEPATTERN));

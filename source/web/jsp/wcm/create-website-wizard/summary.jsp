@@ -76,9 +76,9 @@
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" style="margin-left:16px" styleClass="summary">
    <c:forEach items="${WizardManager.bean.workflows}" var="r">
       <h:outputText value="#{msg.name}:" styleClass="mainSubTitle" />
-      <f:verbatim>${r.name}</f:verbatim>
-      <h:outputText value="#{msg.title}:" styleClass="mainSubTitle" />
       <f:verbatim>${r.title}</f:verbatim>
+      <h:outputText value="#{msg.description}:" styleClass="mainSubTitle" />
+      <f:verbatim>${r.description}</f:verbatim>
       <h:outputText value="#{msg.website_filename_pattern}:" styleClass="mainSubTitle" />
       <f:verbatim>${r.filenamePattern}</f:verbatim>
       <f:verbatim />

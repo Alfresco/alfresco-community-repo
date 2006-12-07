@@ -788,7 +788,7 @@ public class CreateFormWizard
    {
       return (this.defaultWorkflowName == null
               ? null
-              : this.workflowService.getDefinitionByName("jbpm$" + this.defaultWorkflowName));
+              : this.workflowService.getDefinitionByName(this.defaultWorkflowName));
    }
 
    public String[] getDefaultWorkflowName()

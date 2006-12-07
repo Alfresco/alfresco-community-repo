@@ -266,7 +266,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                
                if (LOGGER.isDebugEnabled())
                   LOGGER.debug("using workflow " + workflowName + " for form " + formName);
-               wd = this.workflowService.getDefinitionByName("jbpm$" + workflowName);
+               wd = this.workflowService.getDefinitionByName(workflowName);
                
                // deserialize the workflow parameters
                parameters = (Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(workflowRef);

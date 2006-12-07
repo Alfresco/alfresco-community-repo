@@ -347,6 +347,55 @@
       </property-sheet>
    </config>
    
+   <!-- WCM workflow tasks -->
+   
+   <config evaluator="node-type" condition="wcmwf:submitReviewTask" replace="true">
+      <property-sheet>
+         <separator name="sep2" display-label-id="wf_review_options" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wcmwf:reviewType"/>
+         <separator name="sep3" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="bpm:assignees" display-label-id="wf_reviewers" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wcmwf:reviewTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="bpm:status" />
+         <separator name="sep2" display-label-id="wf_reviewers" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wcmwf:reviewType" read-only="true" />
+         <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wcmwf:rejectedTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="wcmwf:label" />
+         <separator name="sep2" display-label-id="wf_review_status" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wcmwf:reviewType" read-only="true"/>
+         <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
+         <show-property name="wcmwf:approveCnt" read-only="true"/>
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="wcmwf:approvedTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="wcmwf:label" />
+         <separator name="sep2" display-label-id="wf_review_status" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="wcmwf:reviewType" read-only="true"/>
+         <show-association name="bpm:assignees" display-label-id="wf_reviewers" read-only="true"/>
+         <show-property name="wcmwf:approveCnt" read-only="true"/>
+      </property-sheet>
+   </config>
+
    <!-- Configuration for wcm types -->
    <config evaluator="node-type" condition="wca:webfolder">
       <property-sheet>

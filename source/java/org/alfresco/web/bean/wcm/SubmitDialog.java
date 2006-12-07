@@ -174,8 +174,13 @@ public class SubmitDialog extends BaseDialogBean
          NodeRef workflowPackage = createWorkflowPackage();
          params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
          
+         // add submission parameters
+         params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
+         params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
+         params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox()));
+         
          // start the workflow to get access to the start task
-         WorkflowDefinition wfDef = workflowService.getDefinitionByName("jbpm$" + workflowName);
+         WorkflowDefinition wfDef = workflowService.getDefinitionByName(workflowName);
          WorkflowPath path = this.workflowService.startWorkflow(wfDef.id, params);
          if (path != null)
          {
@@ -286,7 +291,7 @@ public class SubmitDialog extends BaseDialogBean
          List<UIListItem> items = new ArrayList<UIListItem>(this.workflows.size());
          for (FormWorkflowWrapper wrapper : this.workflows)
          {
-            WorkflowDefinition workflowDef = this.workflowService.getDefinitionByName("jbpm$" + wrapper.Name);
+            WorkflowDefinition workflowDef = this.workflowService.getDefinitionByName(wrapper.Name);
             UIListItem item = new UIListItem();
             item.setValue(workflowDef.getName());
             item.setLabel(workflowDef.getTitle());
@@ -423,11 +428,12 @@ public class SubmitDialog extends BaseDialogBean
    {
       List<ItemWrapper> items = getSubmitItems();
       
-      // create package paths (layered to user sandbox area as target)
-      String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
-      String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, sandboxPath);
+      // create package paths (layered to staging area as target)
+      String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
+      String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, stagingPath);
       
       // construct diffs for selected items for submission
+      String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
       List<AVMDifference> diffs = new ArrayList<AVMDifference>(this.submitItems.size());
       for (ItemWrapper wrapper : this.submitItems)
       {

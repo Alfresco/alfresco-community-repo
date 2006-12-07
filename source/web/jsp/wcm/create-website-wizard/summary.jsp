@@ -58,7 +58,7 @@
       <f:verbatim>${r.filenamePattern}</f:verbatim>
       <h:outputText value="#{msg.workflow}:" styleClass="mainSubTitle" />
       <c:if test="${r.workflow != null}">
-         <f:verbatim>${r.workflow.name}</f:verbatim>
+         <f:verbatim>${r.workflow.title}</f:verbatim>
       </c:if>
       <c:if test="${r.workflow == null}">
          <f:verbatim>${msg.none}</f:verbatim>

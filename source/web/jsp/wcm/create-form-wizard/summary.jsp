@@ -32,17 +32,17 @@
 
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
   <a:selectList id="form-list" 
-		multiSelect="false"
-		activeSelect="true" 
-		style="width:100%" 
-		itemStyleClass="selectListItem">
+                multiSelect="false"
+                activeSelect="true" 
+                style="width:100%" 
+                itemStyleClass="selectListItem">
     <a:listItem label="${WizardManager.bean.formTitle}"
-		value="${WizardManager.bean.formName}"
+                value="${WizardManager.bean.formName}"
                 image="/images/icons/webform_large.gif">
       <jsp:attribute name="description">
-	<div>${WizardManager.bean.formDescription}</div>
-	<div>${msg.schema_root_element_name}: ${WizardManager.bean.schemaRootElementName}</div>
-	<div>${msg.schema_root_element_name}: ${WizardManager.bean.outputPathPatternForFormInstanceData}</div>
+        <div>${WizardManager.bean.formDescription}</div>
+        <div>${msg.schema_root_element_name}: ${WizardManager.bean.schemaRootElementName}</div>
+        <div>${msg.schema_root_element_name}: ${WizardManager.bean.outputPathPatternForFormInstanceData}</div>
       </jsp:attribute>
     </a:listItem>
   </a:selectList>
@@ -55,20 +55,20 @@
 
 <h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0">
   <a:selectList id="rendering-engine-template-list" 
-		multiSelect="false"
-		activeSelect="true" 
-		style="width:100%" 
-		itemStyleClass="selectListItem">
+                multiSelect="false"
+                activeSelect="true" 
+                style="width:100%" 
+                itemStyleClass="selectListItem">
     <c:forEach items="${WizardManager.bean.renderingEngineTemplates}" var="ret">
       <a:listItem label="${ret.title}"
-		  value="${ret.fileName}"
+                  value="${ret.fileName}"
                   image="/images/icons/template_large.gif">
-	<jsp:attribute name="description">
-	  <div>${msg.description}: ${ret.description}</div>
-	  <div>${msg.rendering_engine_type}: ${ret.renderingEngine.name}</div>
-	  <div>${msg.output_path_pattern}: ${ret.outputPathPatternForRendition}</div>
-	  <div>${msg.mimetype_for_renditions}: ${ret.mimetypeForRendition}</div>
-	</jsp:attribute>
+        <jsp:attribute name="description">
+          <div>${msg.description}: ${ret.description}</div>
+          <div>${msg.rendering_engine_type}: ${ret.renderingEngine.name}</div>
+          <div>${msg.output_path_pattern}: ${ret.outputPathPatternForRendition}</div>
+          <div>${msg.mimetype_for_renditions}: ${ret.mimetypeForRendition}</div>
+        </jsp:attribute>
       </a:listItem>
     </c:forEach>
   </a:selectList>
@@ -91,7 +91,7 @@
   </c:choose>
   <c:if test="${WizardManager.bean.defaultWorkflowDefinition != null}">
     <h:outputText value="#{msg.name}:"/>
-    <h:outputText value="#{WizardManager.bean.defaultWorkflowDefinition.name}"/>
+    <h:outputText value="#{WizardManager.bean.defaultWorkflowDefinition.title}"/>
     <h:outputText value="#{msg.description}:"/>
     <h:outputText value="#{WizardManager.bean.defaultWorkflowDefinition.description}"/>
   </c:if>

@@ -500,7 +500,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          UIListItem item = new UIListItem();
          item.setValue(form);
-         item.setLabel(form.getName());
+         item.setLabel(form.getTitle());
          item.setDescription(form.getDescription());
          item.setImage(WebResources.IMAGE_WEBFORM_32);
          items.add(item);
@@ -519,7 +519,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (index != -1)
       {
          Form form = (Form)this.formsList.get(index).getValue();
-         this.forms.add(this.new FormWrapper(form));
+         FormWrapper wrapper = new FormWrapper(form);
+         wrapper.setTitle(form.getTitle());
+         wrapper.setDescription(form.getDescription());
+         this.forms.add(wrapper);
       }
    }
    

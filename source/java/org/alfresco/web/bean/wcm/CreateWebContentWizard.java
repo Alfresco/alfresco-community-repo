@@ -282,11 +282,12 @@ public class CreateWebContentWizard extends BaseContentWizard
             LOGGER.debug("creating workflow package");
          
          // create package paths (layered to user sandbox area as target)
-         String webapp = (String)website.getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
-         String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
-         String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, sandboxPath);
+         String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
+         String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, stagingPath);
          
          // construct diffs for selected items for submission
+         String webapp = (String)website.getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
+         String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
          List<AVMDifference> diffs = new ArrayList<AVMDifference>(8);
          for (Rendition rendition : this.getRenditions())
          {
@@ -315,6 +316,10 @@ public class CreateWebContentWizard extends BaseContentWizard
                AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
          this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
          parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
+         // TODO: capture label and comment?
+         parameters.put(AVMWorkflowUtil.PROP_LABEL, this.fileName);
+         parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(
+               this.avmBrowseBean.getSandbox()));
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("starting workflow " + wd + " with parameters " + parameters);

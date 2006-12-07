@@ -45,7 +45,7 @@ public class MLTextTest extends TestCase
         assertNull("Expected nothing for German", mlText.getValue(Locale.GERMAN));
         assertEquals(Locale.US.toString(), mlText.get(Locale.US));
         assertEquals(Locale.UK.toString(), mlText.get(Locale.UK));
-        assertNull("Expected nothing for French general", mlText.getValue(Locale.FRENCH));
-//        assertEquals("Expected Canada French to be found", Locale.CANADA_FRENCH.toString(), 
+        assertNull("Expected no value for Japanese", mlText.getValue(Locale.JAPANESE));
+        assertNotNull("Expected an arbirary value for Japanese", mlText.getClosestValue(Locale.JAPANESE));
     }
 }

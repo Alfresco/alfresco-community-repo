@@ -19,7 +19,6 @@ package org.alfresco.service.cmr.repository;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.i18n.I18NUtil;
@@ -141,7 +140,8 @@ public class MLText extends HashMap<Locale, String>
      * @param locale the locale to use as the starting point of the value search
      * @return Returns a default <tt>String</tt> value or null if one isn't available.
      *      <tt>null</tt> will only be returned if there are no values associated with
-     *      this instance.  With or without a match, the return value may be <tt>null</tt>.
+     *      this instance.  With or without a match, the return value may be <tt>null</tt>,
+     *      depending on the values associated with the locales.
      */
     public String getClosestValue(Locale locale)
     {
@@ -149,34 +149,31 @@ public class MLText extends HashMap<Locale, String>
         {
             return null;
         }
-        // Is there an exact match?
-        if (containsKey(locale))
+        // Use the available keys as options
+        Set<Locale> options = keySet();
+        // Get a match
+        Locale match = I18NUtil.getNearestLocale(locale, options);
+        if (match == null)
         {
-            return get(locale);
-        }
-        // Hunt for a similar language
-        Map.Entry<Locale, String> lastEntry = null;
-        for (Map.Entry<Locale, String> entry : this.entrySet())
-        {
-            lastEntry = entry;                  // Keep in case we need an arbitrary value later
-            Locale mapLocale = entry.getKey();
-            if (mapLocale == null)
+            // No close matches for the locale - go for the default locale
+            locale = defaultLocale;
+            match = I18NUtil.getNearestLocale(locale, options);
+            if (match == null)
             {
-                continue;
-            }
-            if (mapLocale.getLanguage().equals(locale.getLanguage()))
-            {
-                // we found a language match
-                return entry.getValue();
+                // just get any locale
+                match = I18NUtil.getNearestLocale(null, options);
             }
         }
-        // Nothing found.  What about locale as per constructor?
-        if (containsKey(defaultLocale))
+        // Did we get a match
+        if (match == null)
         {
-            return get(defaultLocale);
+            // We could find no locale matches
+            return null;
         }
-        // Still nothing.  Just get a value.
-        return lastEntry.getValue();
+        else
+        {
+            return get(match);
+        }
     }
     
     /**

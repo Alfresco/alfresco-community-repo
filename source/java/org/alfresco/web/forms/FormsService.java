@@ -386,8 +386,8 @@ public final class FormsService
       return result;
    }
 
-   private static String getOutputAvmPathForRendition(final RenderingEngineTemplate ret,
-                                                      final NodeRef formInstanceDataNodeRef)
+   public static String getOutputAvmPathForRendition(final RenderingEngineTemplate ret,
+                                                     final NodeRef formInstanceDataNodeRef)
    {
       final String formInstanceDataAvmPath = 
          AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();

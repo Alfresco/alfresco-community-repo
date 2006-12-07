@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.context.FacesContext;
 
@@ -49,6 +50,9 @@ import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -377,6 +381,7 @@ public class SubmitDialog extends BaseDialogBean
       }
       if (selected != null)
       {
+         Set<String> submittedPaths = new HashSet<String>(selected.size());
          this.submitItems = new ArrayList<ItemWrapper>(selected.size());
          this.warningItems = new ArrayList<ItemWrapper>(selected.size() >> 1);
          for (AVMNodeDescriptor node : selected)
@@ -386,18 +391,61 @@ public class SubmitDialog extends BaseDialogBean
                // lookup if this item was created via a form - then lookup the workflow defaults
                // for that form and store into the list of available workflows
                NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
-               if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+               if (submittedPaths.contains(node.getPath()) == false)
                {
-                  // found an XML form instance data file
-                  String formName = (String)this.nodeService.getProperty(ref, WCMAppModel.PROP_PARENT_FORM_NAME);
-                  FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
-                  if (wrapper != null && wrapper.Params != null)
+                  if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
                   {
-                     // found a workflow with params attached to the form
-                     this.workflows.add(wrapper);
+                     NodeRef formInstanceDataRef = ref;
+                     
+                     // check if this is a rendition - as they also have the forminstancedata aspect
+                     if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_RENDITION))
+                     {
+                        // found a generated rendition asset - locate the parent form instance data file
+                        // and use this to find all generated assets that are appropriate
+                        // NOTE: this ref will be in the 'preview' store convert back to user store first
+                        String formInstanceDataPath = AVMNodeConverter.ToAVMVersionPath(
+                              (NodeRef)this.nodeService.getProperty(
+                                    ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA)).getSecond();
+                        formInstanceDataPath = formInstanceDataPath.replaceFirst(AVMConstants.STORE_PREVIEW, 
+                                                                                 AVMConstants.STORE_MAIN);
+                        formInstanceDataRef = AVMNodeConverter.ToNodeRef(-1, formInstanceDataPath);
+                     }
+                     
+                     // add the form instance data file to the list for submission
+                     AVMNodeDescriptor formInstanceNode = this.avmService.lookup(
+                           -1, AVMNodeConverter.ToAVMVersionPath(formInstanceDataRef).getSecond());
+                     this.submitItems.add(new ItemWrapper(formInstanceNode));
+                     submittedPaths.add(formInstanceNode.getPath());
+                     
+                     // locate renditions for this form instance data file and add to list for submission
+                     NodeRef formNodeRef = (NodeRef)this.nodeService.getProperty(
+                           formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM);
+                     Form form = FormsService.getInstance().getForm(formNodeRef);
+                     for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
+                     {
+                        String renditionAvmPath = FormsService.getOutputAvmPathForRendition(
+                              ret, formInstanceDataRef);
+                        AVMNodeDescriptor renditionNode = this.avmService.lookup(-1, renditionAvmPath);
+                        this.submitItems.add(new ItemWrapper(renditionNode));
+                        submittedPaths.add(renditionNode.getPath());
+                     }
+                     
+                     // lookup the associated Form workflow from the parent form property
+                     String formName = (String)this.nodeService.getProperty(
+                           formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM_NAME);
+                     FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
+                     if (wrapper != null && wrapper.Params != null)
+                     {
+                        // found a workflow with params attached to the form
+                        this.workflows.add(wrapper);
+                     }
+                  }
+                  else
+                  {
+                     this.submitItems.add(new ItemWrapper(node));
+                     submittedPaths.add(node.getPath());
                   }
                }
-               this.submitItems.add(new ItemWrapper(node));
             }
             else
             {
@@ -533,6 +581,25 @@ public class SubmitDialog extends BaseDialogBean
       public String getIcon()
       {
          return Utils.getFileTypeImage(descriptor.getName(), true);
+      }
+
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (obj instanceof ItemWrapper)
+         {
+            return ((ItemWrapper)obj).descriptor.getPath().equals(descriptor.getPath());
+         }
+         else
+         {
+            return false;
+         }
+      }
+
+      @Override
+      public int hashCode()
+      {
+         return descriptor.getPath().hashCode();
       }
    }
 }

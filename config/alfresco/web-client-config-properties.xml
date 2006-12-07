@@ -352,7 +352,7 @@
    <config evaluator="node-type" condition="wcmwf:submitReviewTask" replace="true">
       <property-sheet>
          <separator name="sep2" display-label-id="wf_review_options" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="wcmwf:reviewType"/>
+         <show-property name="wcmwf:submitReviewType"/>
          <separator name="sep3" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
          <show-association name="bpm:assignees" display-label-id="wf_reviewers" />
       </property-sheet>

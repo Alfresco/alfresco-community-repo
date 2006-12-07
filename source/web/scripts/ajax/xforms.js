@@ -2116,9 +2116,11 @@ _showPicker: function(data)
 
   this.headerMenuTriggerLink = d.createElement("a");
   this.headerMenuTriggerLink.filePickerWidget = this;
+  this.headerMenuTriggerLink.setAttribute("href", "javascript:void(0)");
   this.headerMenuTriggerLink.setAttribute("webappRelativePath", currentPath);
   headerDiv.appendChild(this.headerMenuTriggerLink);
   this.headerMenuTriggerLink.style.padding = "2px";
+  this.headerMenuTriggerLink.style.fontWeight = "bold";
   this.headerMenuTriggerLink.style.textDecoration = "none";
   this.headerMenuTriggerLink.style.border = "solid 1px lightgrey";
   dojo.event.connect(this.headerMenuTriggerLink,
@@ -2133,7 +2135,9 @@ _showPicker: function(data)
                      {
                        var w = event.currentTarget.filePickerWidget;
                        if (!w.parentPathMenu)
+                       {
                          event.currentTarget.style.borderStyle = "solid";
+                       }
                      });
   dojo.event.connect(this.headerMenuTriggerLink,
                      "onclick",
@@ -2155,6 +2159,7 @@ _showPicker: function(data)
 
   headerMenuTriggerImage = d.createElement("img");
   this.headerMenuTriggerLink.appendChild(headerMenuTriggerImage);
+  this.headerMenuTriggerLink.image = headerMenuTriggerImage;
   headerMenuTriggerImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/menu.gif");
   headerMenuTriggerImage.style.borderWidth = "0px";
   headerMenuTriggerImage.style.marginLeft = "4px";
@@ -2198,22 +2203,25 @@ _showPicker: function(data)
   this.node.appendChild(contentDiv);
 
   var footerDiv = d.createElement("div");
+  this.node.appendChild(footerDiv);
   footerDiv.style.backgroundColor = "lightgrey";
+  footerDiv.style.textAlign = "center";
+  footerDiv.style.height = headerDiv.style.height;
+  footerDiv.style.lineHeight = footerDiv.style.height;
+
   var cancelButton = d.createElement("input");
+  footerDiv.appendChild(cancelButton);
   cancelButton.filePickerWidget = this;
   cancelButton.type = "button";
   cancelButton.value = "Cancel";
-  cancelButton.style.margin = "2px 0px 2px 0px";
+  cancelButton.style.margin = ((.5 * footerDiv.offsetHeight) - 
+                               (.5 * cancelButton.offsetHeight)) + "px 0px";
   dojo.event.connect(cancelButton, "onclick", function(event)
                      {
                        var w = event.target.filePickerWidget;
                        w._showSelectedValue();
                      });
 
-  footerDiv.style.textAlign = "center";
-  footerDiv.style.height = headerDiv.style.height;
-  footerDiv.appendChild(cancelButton);
-  this.node.appendChild(footerDiv);
 
   contentDiv.style.height = (this.node.offsetHeight - 
                              footerDiv.offsetHeight -
@@ -2226,35 +2234,45 @@ _showPicker: function(data)
     {
       continue;
     }
+    var path = childNodes[i].getAttribute("webappRelativePath");
+    var name = path.replace(/.*\/([^/]+)/, "$1");
+
     var row = d.createElement("div");
+    row.setAttribute("id", name + "-row");
     contentDiv.appendChild(row);
     row.rowIndex = i;
     row.style.position = "relative";
+    row.style.height = "20px";
+    row.style.lineHeight = "20px";
     row.style.backgroundColor = row.rowIndex % 2 ? "#f0f0ee" : "#ffffff";
-    dojo.event.connect(row, "onmouseover", function(event)
-                       {
-                         event.currentTarget.style.backgroundColor = "orange";
-                         var prevHover = event.currentTarget.parentNode.hoverNode;
-                         if (prevHover)
+    row.addEventListener("mouseover", 
+                         function(event)
                          {
-                           prevHover.style.backgroundColor = 
-                             prevHover.rowIndex %2 ? "#f0f0ee" :"#ffffff";
-                         }
-                         event.currentTarget.parentNode.hoverNode = event.currentTarget;
-                       });
-    dojo.event.connect(row, "onmouseout", function(event)
-                       {
-                         event.currentTarget.style.backgroundColor = 
-                           event.currentTarget.rowIndex %2 ? "#f0f0ee" :"#ffffff";
-                       });
+                           var prevHover = event.currentTarget.parentNode.hoverNode;
+                           if (prevHover)
+                           {
+                             prevHover.style.backgroundColor = 
+                               prevHover.rowIndex %2 ? "#f0f0ee" :"#ffffff";
+                           }
+                           event.currentTarget.parentNode.hoverNode = event.currentTarget;
+                           event.currentTarget.style.backgroundColor = "ffffcc";
+                         },
+                         true);
+    row.addEventListener("mouseout", function(event)
+                         {
+                           if (event.relatedTarget.parentNode == event.currentTarget)
+                           {
+                             return true;
+                           }
+                           event.currentTarget.style.backgroundColor = 
+                             event.currentTarget.rowIndex %2 ? "#f0f0ee" :"#ffffff";
+                         },
+                         true);
     var e = d.createElement("img");
     e.align = "absmiddle";
     e.style.margin = "0px 4px 0px 4px";
     e.setAttribute("src", WEBAPP_CONTEXT + childNodes[i].getAttribute("image"));
     row.appendChild(e);
-
-    var path = childNodes[i].getAttribute("webappRelativePath");
-    var name = path.replace(/.*\/([^/]+)/, "$1");
 
     if (childNodes[i].getAttribute("type") == "directory")
     {
@@ -2292,7 +2310,6 @@ _showPicker: function(data)
                          w.setValue(event.target.name);
                          w._showSelectedValue();
                        });
-                       
   }
 },
 _closeParentPathMenu: function()
@@ -2303,6 +2320,7 @@ _closeParentPathMenu: function()
     dojo.dom.removeNode(this.parentPathMenu);
     this.parentPathMenu = null;
   }
+  this.headerMenuTriggerLink.style.borderStyle = "solid";
 },
 _openParentPathMenu: function(target, path)
 {
@@ -2378,6 +2396,10 @@ _openParentPathMenu: function(target, path)
     parentNodeDiv.style.paddingLeft = i * 16 + "px";
     parentNodeDiv.style.border = "1px solid lightgrey";
     parentNodeDiv.style.whiteSpace = "nowrap";
+    if (i == parentNodes.length - 1)
+    {
+      parentNodeDiv.style.fontWeight = "bold";
+    }
 
     var parentNodeImage = d.createElement("img");
     parentNodeImage.align = "absmiddle";

@@ -298,7 +298,7 @@
             </property>
             <property name="wca:primaryforminstancedata">
                <title>Primary XML Asset used to generate this asset</title>
-               <type>d:noderef</type>
+               <type>d:text</type>
                <mandatory>true</mandatory>
             </property>
          </properties>

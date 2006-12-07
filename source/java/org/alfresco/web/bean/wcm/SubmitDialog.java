@@ -48,7 +48,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.NameMatcher;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormsService;
@@ -62,6 +64,9 @@ import org.alfresco.web.ui.wcm.WebResources;
  */
 public class SubmitDialog extends BaseDialogBean
 {
+   private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
+   private static final String MSG_DELETED_ITEM = "avm_node_deleted";
+   
    private String comment;
    private String label;
    private String[] workflowSelectedValue;
@@ -371,7 +376,7 @@ public class SubmitDialog extends BaseDialogBean
          selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
          for (AVMDifference diff : diffs)
          {
-            AVMNodeDescriptor node = this.avmService.lookup(-1, diff.getSourcePath());
+            AVMNodeDescriptor node = this.avmService.lookup(-1, diff.getSourcePath(), true);
             selected.add(node);
          }
       }
@@ -388,63 +393,72 @@ public class SubmitDialog extends BaseDialogBean
          {
             if (hasAssociatedWorkflow(AVMNodeConverter.ToNodeRef(-1, node.getPath())) == false)
             {
-               // lookup if this item was created via a form - then lookup the workflow defaults
-               // for that form and store into the list of available workflows
                NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
                if (submittedPaths.contains(node.getPath()) == false)
                {
-                  if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+                  if (node.isDeleted() == false)
                   {
-                     NodeRef formInstanceDataRef = ref;
-                     
-                     // check if this is a rendition - as they also have the forminstancedata aspect
-                     if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_RENDITION))
+                     // lookup if this item was created via a form - then lookup the workflow defaults
+                     // for that form and store into the list of available workflows
+                     if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
                      {
-                        // found a generated rendition asset - locate the parent form instance data file
-                        // and use this to find all generated assets that are appropriate
-                        // NOTE: this ref will be in the 'preview' store convert back to user store first
-                        String formInstanceDataPath = AVMNodeConverter.ToAVMVersionPath(
-                              (NodeRef)this.nodeService.getProperty(
-                                    ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA)).getSecond();
-                        formInstanceDataPath = formInstanceDataPath.replaceFirst(AVMConstants.STORE_PREVIEW, 
-                                                                                 AVMConstants.STORE_MAIN);
-                        formInstanceDataRef = AVMNodeConverter.ToNodeRef(-1, formInstanceDataPath);
-                     }
-                     
-                     // add the form instance data file to the list for submission
-                     AVMNodeDescriptor formInstanceNode = this.avmService.lookup(
-                           -1, AVMNodeConverter.ToAVMVersionPath(formInstanceDataRef).getSecond());
-                     this.submitItems.add(new ItemWrapper(formInstanceNode));
-                     submittedPaths.add(formInstanceNode.getPath());
-                     
-                     // locate renditions for this form instance data file and add to list for submission
-                     NodeRef formNodeRef = (NodeRef)this.nodeService.getProperty(
-                           formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM);
-                     Form form = FormsService.getInstance().getForm(formNodeRef);
-                     for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
-                     {
-                        String renditionAvmPath = FormsService.getOutputAvmPathForRendition(
-                              ret, formInstanceDataRef);
-                        AVMNodeDescriptor renditionNode = this.avmService.lookup(-1, renditionAvmPath);
-                        this.submitItems.add(new ItemWrapper(renditionNode));
-                        submittedPaths.add(renditionNode.getPath());
-                     }
-                     
-                     // lookup the associated Form workflow from the parent form property
-                     String formName = (String)this.nodeService.getProperty(
-                           formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM_NAME);
-                     FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
-                     if (wrapper != null && wrapper.Params != null)
-                     {
-                        // found a workflow with params attached to the form
-                        this.workflows.add(wrapper);
+                        NodeRef formInstanceDataRef = ref;
+                        
+                        // check if this is a rendition - as they also have the forminstancedata aspect
+                        if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_RENDITION))
+                        {
+                           // found a generated rendition asset - locate the parent form instance data file
+                           // and use this to find all generated assets that are appropriate
+                           // NOTE: this ref will be in the 'preview' store convert back to user store first
+                           String formInstanceDataPath = AVMNodeConverter.ToAVMVersionPath(
+                                 (NodeRef)this.nodeService.getProperty(
+                                       ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA)).getSecond();
+                           formInstanceDataPath = formInstanceDataPath.replaceFirst(AVMConstants.STORE_PREVIEW, 
+                                                                                    AVMConstants.STORE_MAIN);
+                           formInstanceDataRef = AVMNodeConverter.ToNodeRef(-1, formInstanceDataPath);
+                        }
+                        
+                        // add the form instance data file to the list for submission
+                        AVMNodeDescriptor formInstanceNode = this.avmService.lookup(
+                              -1, AVMNodeConverter.ToAVMVersionPath(formInstanceDataRef).getSecond());
+                        this.submitItems.add(new ItemWrapper(formInstanceNode));
+                        submittedPaths.add(formInstanceNode.getPath());
+                        
+                        // locate renditions for this form instance data file and add to list for submission
+                        NodeRef formNodeRef = (NodeRef)this.nodeService.getProperty(
+                              formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM);
+                        Form form = FormsService.getInstance().getForm(formNodeRef);
+                        for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
+                        {
+                           String renditionAvmPath = FormsService.getOutputAvmPathForRendition(
+                                 ret, formInstanceDataRef);
+                           AVMNodeDescriptor renditionNode = this.avmService.lookup(-1, renditionAvmPath);
+                           this.submitItems.add(new ItemWrapper(renditionNode));
+                           submittedPaths.add(renditionNode.getPath());
+                        }
+                        
+                        // lookup the associated Form workflow from the parent form property
+                        String formName = (String)this.nodeService.getProperty(
+                              formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM_NAME);
+                        FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
+                        if (wrapper != null && wrapper.Params != null)
+                        {
+                           // found a workflow with params attached to the form
+                           this.workflows.add(wrapper);
+                        }
                      }
                   }
                   else
                   {
+                     // found a deleted node for submit
                      this.submitItems.add(new ItemWrapper(node));
                      submittedPaths.add(node.getPath());
                   }
+               }
+               else
+               {
+                  this.submitItems.add(new ItemWrapper(node));
+                  submittedPaths.add(node.getPath());
                }
             }
             else
@@ -551,9 +565,22 @@ public class SubmitDialog extends BaseDialogBean
          this.descriptor = descriptor;
       }
       
+      public boolean getDeleted()
+      {
+         return descriptor.isDeleted();
+      }
+      
       public String getName()
       {
-         return descriptor.getName();
+         if (descriptor.isDeleted() == false)
+         {
+            return descriptor.getName();
+         }
+         else
+         {
+            return descriptor.getName() + " [" +
+               Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETED_ITEM) + "]";
+         }
       }
       
       public String getModifiedDate()
@@ -563,8 +590,15 @@ public class SubmitDialog extends BaseDialogBean
       
       public String getDescription()
       {
-         return (String)nodeService.getProperty(
-               AVMNodeConverter.ToNodeRef(-1, descriptor.getPath()), ContentModel.PROP_DESCRIPTION);
+         if (descriptor.isDeleted() == false)
+         {
+            return (String)nodeService.getProperty(
+                  AVMNodeConverter.ToNodeRef(-1, descriptor.getPath()), ContentModel.PROP_DESCRIPTION);
+         }
+         else
+         {
+            return "";
+         }
       }
       
       public String getPath()
@@ -580,7 +614,15 @@ public class SubmitDialog extends BaseDialogBean
       
       public String getIcon()
       {
-         return Utils.getFileTypeImage(descriptor.getName(), true);
+         // TODO: handle deleted file types here once implemented in the AVMNodeType enum
+         if (descriptor.isFile())
+         {
+            return Utils.getFileTypeImage(descriptor.getName(), true);
+         }
+         else
+         {
+            return SPACE_ICON;
+         }
       }
 
       @Override

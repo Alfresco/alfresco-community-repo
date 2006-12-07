@@ -623,6 +623,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                // must have been deleted from this sandbox - show as ghosted
                String name = node.getName();
                out.write("<td width=16>");
+               // TODO: need new solution - isFile() and isFolder() both return false for a deleted node!
                if (node.isFile())
                {
                   out.write(Utils.buildImageTag(fc, Utils.getFileTypeImage(fc, name, true), ""));

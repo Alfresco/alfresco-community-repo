@@ -123,7 +123,7 @@ public class AVMBrowseBean implements IContextListener
    private UIRichList filesRichList;
    private UIUserSandboxes userSandboxes;
    
-   /* transient lists of files/folders for a directory */
+   /** transient lists of files/folders for a directory */
    private List<Map> files = null;
    private List<Map> folders = null;
    

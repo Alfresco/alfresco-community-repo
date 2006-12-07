@@ -83,9 +83,10 @@
                <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
             </f:facet>
             <f:facet name="small-icon">
-               <a:actionLink id="col1-icon" value="#{r.name}" href="#{r.url}" target="new" image="#{r.icon}" showLink="false" styleClass="inlineAction" />
+               <a:actionLink id="col1-icon1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.icon}" showLink="false" styleClass="inlineAction" rendered="#{!r.deleted}" />
             </f:facet>
-            <a:actionLink id="col1-name" value="#{r.name}" href="#{r.url}" target="new" />
+            <a:actionLink id="col1-name1" value="#{r.name}" href="#{r.url}" target="new" rendered="#{!r.deleted}" />
+            <h:outputText id="col1-name2" value="#{r.name}" rendered="#{r.deleted}" />
          </a:column>
          
          <%-- Description columns --%>
@@ -136,9 +137,10 @@
                <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
             </f:facet>
             <f:facet name="small-icon">
-               <a:actionLink id="col10-icon" value="#{r.name}" href="#{r.url}" target="new" image="#{r.icon}" showLink="false" styleClass="inlineAction" />
+               <a:actionLink id="col10-icon1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.icon}" showLink="false" styleClass="inlineAction" rendered="#{!r.deleted}" />
             </f:facet>
-            <a:actionLink id="col10-name" value="#{r.name}" href="#{r.url}" target="new" />
+            <a:actionLink id="col10-name1" value="#{r.name}" href="#{r.url}" target="new" rendered="#{!r.deleted}" />
+            <h:outputText id="col10-name2" value="#{r.name}" rendered="#{r.deleted}" />
          </a:column>
          
          <%-- Description columns --%>

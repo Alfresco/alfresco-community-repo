@@ -780,12 +780,14 @@ dojo.declare("alfresco.xforms.Group",
                  contentDiv.setAttribute("id", child.id + "-content");
                  child.domContainer.appendChild(contentDiv);
                  contentDiv.style.position = "relative";
+                 contentDiv.style.marginRight = "2px";
                  contentDiv.style.left = (child instanceof alfresco.xforms.Group 
                                           ? "0px" 
                                           : "30%");
                  if (!(child instanceof alfresco.xforms.Group))
                  {
-                   contentDiv.style.width = (child.domContainer.offsetWidth * .55) + "px";
+                   contentDiv.style.width = (child.domContainer.offsetWidth -
+                                             contentDiv.offsetLeft) + "px";
                    //     contentDiv.style.width = ((child.domContainer.offsetWidth - contentDiv.offsetLeft) - 10) + "px";
                  }
                  child.render(contentDiv);
@@ -2106,9 +2108,57 @@ _showPicker: function(data)
   headerDiv.style.position = "relative";
   this.node.appendChild(headerDiv);
   headerDiv.style.width = "100%";
+  headerDiv.style.height = "30px";
+  headerDiv.style.lineHeight = "30px";
   headerDiv.style.backgroundColor = "lightgrey";
   headerDiv.style.paddingLeft = "2px";
-  headerDiv.appendChild(d.createTextNode("In: " + currentPathName));
+  headerDiv.appendChild(d.createTextNode("In: "));
+
+  this.headerMenuTriggerLink = d.createElement("a");
+  this.headerMenuTriggerLink.filePickerWidget = this;
+  this.headerMenuTriggerLink.setAttribute("webappRelativePath", currentPath);
+  headerDiv.appendChild(this.headerMenuTriggerLink);
+  this.headerMenuTriggerLink.style.padding = "2px";
+  this.headerMenuTriggerLink.style.textDecoration = "none";
+  this.headerMenuTriggerLink.style.border = "solid 1px lightgrey";
+  dojo.event.connect(this.headerMenuTriggerLink,
+                     "onmouseover",
+                     function(event)
+                     {
+                       event.currentTarget.style.borderStyle = "inset";
+                     });
+  dojo.event.connect(this.headerMenuTriggerLink,
+                     "onmouseout",
+                     function(event)
+                     {
+                       var w = event.currentTarget.filePickerWidget;
+                       if (!w.parentPathMenu)
+                         event.currentTarget.style.borderStyle = "solid";
+                     });
+  dojo.event.connect(this.headerMenuTriggerLink,
+                     "onclick",
+                     function(event)
+                     {
+                       var t = event.currentTarget;
+                       var w = t.filePickerWidget;
+                       if (w.parentPathMenu)
+                       {
+                         w._closeParentPathMenu();
+                       }
+                       else
+                       {
+                         w._openParentPathMenu(t, t.getAttribute("webappRelativePath"));
+                       }
+                     });
+
+  this.headerMenuTriggerLink.appendChild(d.createTextNode(currentPathName));
+
+  headerMenuTriggerImage = d.createElement("img");
+  this.headerMenuTriggerLink.appendChild(headerMenuTriggerImage);
+  headerMenuTriggerImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/menu.gif");
+  headerMenuTriggerImage.style.borderWidth = "0px";
+  headerMenuTriggerImage.style.marginLeft = "4px";
+  headerMenuTriggerImage.align = "absmiddle";
 
   var headerRightLink = d.createElement("a");
   headerRightLink.setAttribute("webappRelativePath", currentPath);
@@ -2154,11 +2204,11 @@ _showPicker: function(data)
   cancelButton.type = "button";
   cancelButton.value = "Cancel";
   cancelButton.style.margin = "2px 0px 2px 0px";
-  dojo.event.connect(e, "onclick", function(event)
-                       {
-                         var w = event.target.filePickerWidget;
-                         w._showSelectedValue();
-                       });
+  dojo.event.connect(cancelButton, "onclick", function(event)
+                     {
+                       var w = event.target.filePickerWidget;
+                       w._showSelectedValue();
+                     });
 
   footerDiv.style.textAlign = "center";
   footerDiv.style.height = headerDiv.style.height;
@@ -2178,8 +2228,25 @@ _showPicker: function(data)
     }
     var row = d.createElement("div");
     contentDiv.appendChild(row);
+    row.rowIndex = i;
     row.style.position = "relative";
-    row.style.backgroundColor = i % 2 ? "#f0f0ee" : "#ffffff"
+    row.style.backgroundColor = row.rowIndex % 2 ? "#f0f0ee" : "#ffffff";
+    dojo.event.connect(row, "onmouseover", function(event)
+                       {
+                         event.currentTarget.style.backgroundColor = "orange";
+                         var prevHover = event.currentTarget.parentNode.hoverNode;
+                         if (prevHover)
+                         {
+                           prevHover.style.backgroundColor = 
+                             prevHover.rowIndex %2 ? "#f0f0ee" :"#ffffff";
+                         }
+                         event.currentTarget.parentNode.hoverNode = event.currentTarget;
+                       });
+    dojo.event.connect(row, "onmouseout", function(event)
+                       {
+                         event.currentTarget.style.backgroundColor = 
+                           event.currentTarget.rowIndex %2 ? "#f0f0ee" :"#ffffff";
+                       });
     var e = d.createElement("img");
     e.align = "absmiddle";
     e.style.margin = "0px 4px 0px 4px";
@@ -2227,5 +2294,121 @@ _showPicker: function(data)
                        });
                        
   }
+},
+_closeParentPathMenu: function()
+{
+  if (this.parentPathMenu)
+  {
+    dojo.dom.removeChildren(this.parentPathMenu);
+    dojo.dom.removeNode(this.parentPathMenu);
+    this.parentPathMenu = null;
+  }
+},
+_openParentPathMenu: function(target, path)
+{
+  var d = target.ownerDocument;
+  this.parentPathMenu = d.createElement("div");
+  this.parentPathMenu.filePickerWidget = this;
+  d.currentParentPathMenu = this.parentPathMenu;
+
+  // handler for closing the menu if the mouse is clicked
+  // outside of the menu
+  var parentPathMenu_documentClickHandler = function(event)
+  {
+    var t = event.target;
+    var d = event.target.ownerDocument;
+
+    // always remove - this handler only ever needs to handle a single click
+    d.removeEventListener("click", parentPathMenu_documentClickHandler, true);
+    while (t && t != d)
+    {
+      if (t == d.currentParentPathMenu ||
+          t == d.currentParentPathMenu.filePickerWidget.headerMenuTriggerLink)
+      {
+        // the click is coming from within the component - ignore it
+        return true;
+      }
+      t = t.parentNode;
+    }
+    d.currentParentPathMenu.filePickerWidget._closeParentPathMenu();
+  };
+  d.addEventListener("click", parentPathMenu_documentClickHandler, true);
+
+  this.parentPathMenu.style.position = "absolute";
+  this.parentPathMenu.style.backgroundColor = "lightgrey";
+  this.parentPathMenu.style.borderStyle = "outset";
+  this.parentPathMenu.style.borderWidth = "1px";
+  this.parentPathMenu.style.lineHeight = "20px";
+  this.parentPathMenu.style.minWidth = "100px";
+
+  var left = 0;
+  var top = 0;
+  var n = target;
+  do
+  {
+    left += n.offsetLeft;// + parseInt(n.style.marginLeft) + parseInt(n.style.borderLeft);
+    top += n.offsetTop;// + parseInt(n.style.marginTop) + parseInt(n.style.borderTop);
+    n = n.parentNode;
+  }
+  while (n != this.node);
+  this.parentPathMenu.style.top = top + target.offsetHeight + "px";
+  this.parentPathMenu.style.left = left + "px";
+  var parentNodes = null;
+  if (path == "/")
+  {
+    parentNodes = [ "/" ];
+  }
+  else
+  {
+    parentNodes = path.split("/");
+    parentNodes[0] = "/";
+  }
+  var currentPathNodes = [];
+  for (var i = 0; i < parentNodes.length; i++)
+  {
+    if (i != 0)
+    {
+      currentPathNodes.push(parentNodes[i]);
+    }
+    var path = i == 0 ? "/" : "/" + currentPathNodes.join("/");
+    var parentNodeDiv = d.createElement("div");
+    parentNodeDiv.setAttribute("webappRelativePath", path);
+    this.parentPathMenu.appendChild(parentNodeDiv);
+    parentNodeDiv.style.display = "block";
+    parentNodeDiv.style.paddingLeft = i * 16 + "px";
+    parentNodeDiv.style.border = "1px solid lightgrey";
+    parentNodeDiv.style.whiteSpace = "nowrap";
+
+    var parentNodeImage = d.createElement("img");
+    parentNodeImage.align = "absmiddle";
+    parentNodeImage.style.marginRight = "4px";
+    parentNodeDiv.appendChild(parentNodeImage);
+    parentNodeImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/space_small.gif");
+    parentNodeDiv.appendChild(parentNodeImage);
+    parentNodeDiv.appendChild(d.createTextNode(path));
+    dojo.event.connect(parentNodeDiv,
+                       "onmouseover",
+                       function(event)
+                       {
+                         event.currentTarget.style.borderStyle = "inset";
+                       });
+    dojo.event.connect(parentNodeDiv,
+                       "onmouseout",
+                       function(event)
+                       {
+                         event.currentTarget.style.borderStyle = "solid";
+                       });
+    dojo.event.connect(parentNodeDiv,
+                       "onclick",
+                       function(event)
+                       {
+                         var w = event.currentTarget;
+                         var path = w.getAttribute("webappRelativePath");
+                         w = w.parentNode;
+                         w.filePickerWidget._closeParentPathMenu();
+                         w.filePickerWidget._navigateToNode(path);
+                       });
+  }
+  this.node.appendChild(this.parentPathMenu);
 }
 };

@@ -47,6 +47,8 @@ public class RenditionImpl
    implements Rendition
 {
 
+   private static final Log LOGGER = LogFactory.getLog(RenditionImpl.class);
+
    private final NodeRef nodeRef;
 
    public RenditionImpl(final NodeRef nodeRef)
@@ -76,9 +78,14 @@ public class RenditionImpl
    public FormInstanceData getPrimaryFormInstanceData()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final NodeRef fidNodeRef = (NodeRef)
+      final String fidAVMStoreRelativePath = (String)
          nodeService.getProperty(this.nodeRef, 
                                  WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+      String avmStore = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
+      avmStore = avmStore.substring(0, avmStore.indexOf(':'));
+      
+      final NodeRef fidNodeRef = 
+         AVMNodeConverter.ToNodeRef(-1, avmStore + ':' + fidAVMStoreRelativePath);
       return new FormInstanceDataImpl(fidNodeRef);
    }
 

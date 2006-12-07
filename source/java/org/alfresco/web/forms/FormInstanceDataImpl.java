@@ -16,11 +16,14 @@
  */
 package org.alfresco.web.forms;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
@@ -45,6 +48,8 @@ import org.apache.commons.logging.LogFactory;
 public class FormInstanceDataImpl
    implements FormInstanceData
 {
+
+   private static final Log LOGGER = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
 
@@ -90,6 +95,29 @@ public class FormInstanceDataImpl
    public String getUrl()
    {
       return AVMConstants.buildAVMAssetUrl(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond());
+   }
+
+   public List<Rendition> getRenditions()
+   {
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      final List<Rendition> result = new LinkedList<Rendition>();
+      for (RenderingEngineTemplate ret : this.getForm().getRenderingEngineTemplates())
+      {
+         final String renditionAvmPath = 
+            FormsService.getOutputAvmPathForRendition(ret, this.getNodeRef());
+         if (avmService.lookup(-1, renditionAvmPath) == null)
+         {
+            LOGGER.warn("unable to locate rendition " + renditionAvmPath +
+                        " for form instance data " + this.getName());
+         }
+         else
+         {
+            final NodeRef renditionNodeRef = 
+               AVMNodeConverter.ToNodeRef(-1, renditionAvmPath);
+            result.add(new RenditionImpl(renditionNodeRef));
+         }
+      }
+      return result;
    }
 
    private ServiceRegistry getServiceRegistry()

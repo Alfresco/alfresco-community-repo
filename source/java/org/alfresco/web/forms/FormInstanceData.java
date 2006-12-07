@@ -17,6 +17,7 @@
 package org.alfresco.web.forms;
 
 import java.io.Serializable;
+import java.util.List;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -42,4 +43,7 @@ public interface FormInstanceData
 
    /** the noderef containing the form instance data */
    public NodeRef getNodeRef();
+
+   /** returns all renditions of this form instance data */
+   public List<Rendition> getRenditions();
 }

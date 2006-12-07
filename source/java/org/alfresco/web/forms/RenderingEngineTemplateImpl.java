@@ -192,7 +192,12 @@ public class RenderingEngineTemplateImpl
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE, this.nodeRef);
-      props.put(WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA, primaryFormInstanceDataNodeRef);
+      
+      // extract a store relative path for the primary form instance data
+      String path = AVMNodeConverter.ToAVMVersionPath(primaryFormInstanceDataNodeRef).getSecond();
+      path = path.substring(path.indexOf(':') + 1);
+      props.put(WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA, path);
+
       nodeService.addAspect(renditionNodeRef, WCMAppModel.ASPECT_RENDITION, props);
    }
 

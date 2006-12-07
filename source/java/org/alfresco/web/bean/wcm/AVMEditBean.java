@@ -43,6 +43,8 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.Rendition;
+import org.alfresco.web.forms.RenditionImpl;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -269,7 +271,7 @@ public class AVMEditBean
       {
          if (LOGGER.isDebugEnabled())
             LOGGER.debug(avmRef + " is a rendition, editing primary rendition instead");
-         avmRef = (NodeRef)this.nodeService.getProperty(avmRef, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+         avmRef = new RenditionImpl(avmRef).getPrimaryFormInstanceData().getNodeRef();
 
          final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(avmRef);
          if (LOGGER.isDebugEnabled())

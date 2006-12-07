@@ -31,12 +31,20 @@
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
-  <h:outputText value="#{msg.name}:"/>
-  <h:outputText value="#{WizardManager.bean.formInstanceData.name}"/>
-  <h:outputText value="#{msg.location}:"/>
-  <h:outputText value="#{WizardManager.bean.formInstanceData.webappRelativePath}"/>
-  <h:outputText value="#{msg.form}:"/>
-  <h:outputText value="#{WizardManager.bean.formInstanceData.form.name}"/>
+  <a:selectList id="form-instance-data-list" 
+                multiSelect="false"
+                activeSelect="true" 
+                style="width:100%" 
+                itemStyleClass="selectListItem">
+    <a:listItem label="${WizardManager.bean.formInstanceData.name}"
+                value="${WizardManager.bean.formInstanceData.name}"
+                image="/images/filetypes32/xml.gif">
+      <jsp:attribute name="description">
+        <div>${msg.form}: ${WizardManager.bean.formInstanceData.form.name}</div>
+        <div>${msg.location}: ${WizardManager.bean.formInstanceData.webappRelativePath}</div>
+      </jsp:attribute>
+    </a:listItem>
+  </a:selectList>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
@@ -50,13 +58,15 @@
 		activeSelect="true" 
 		style="width:100%" 
 		itemStyleClass="selectListItem">
-    <c:forEach items="${WizardManager.bean.renditions}" var="rendition">
-      <a:listItem label="${rendition.name}"
+    <c:forEach items="${WizardManager.bean.renditions}" var="rendition" varStatus="status">
+      <a:listItem id="listItem${status.index}"
+		  label="${rendition.name}"
 		  value="${rendition.name}"
                   image="${rendition.fileTypeImage}">
 	<jsp:attribute name="description">
 	  <span style="float:right">
-	    <a:actionLink value="${rendition.name}" 
+	    <a:actionLink id="preview${status.index}"
+			  value="${rendition.name}" 
 			  image="/images/icons/preview_website.gif"
 			  showLink="false" 
 			  href="${rendition.url}" 

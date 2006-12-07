@@ -55,7 +55,6 @@ public interface RenderingEngineTemplate
     * Provides the noderef for this template.
     *
     * @return the noderef for this template.
-    * @deprecated i'd rather not expose this
     */
    public NodeRef getNodeRef();
 

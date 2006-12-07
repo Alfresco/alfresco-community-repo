@@ -232,6 +232,12 @@ public class CreateWebContentWizard extends BaseContentWizard
                                         AVMDifference.NEWER));
       }
       this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
+      
+      // reset all paths and structures to the main store
+      this.createdPath = this.createdPath.replaceFirst(AVMConstants.STORE_PREVIEW,
+                                                       AVMConstants.STORE_MAIN);
+      this.formInstanceData = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, this.createdPath));
+      this.renditions = this.formInstanceData.getRenditions();
 
       if (this.startWorkflow)
       {
@@ -317,6 +323,7 @@ public class CreateWebContentWizard extends BaseContentWizard
          this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
          parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
          // TODO: capture label and comment?
+         // ariel to kev: this.fileName may be inaccurate.  use formInstanceData.getName() instead
          parameters.put(AVMWorkflowUtil.PROP_LABEL, this.fileName);
          parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(
                this.avmBrowseBean.getSandbox()));
@@ -371,20 +378,21 @@ public class CreateWebContentWizard extends BaseContentWizard
       throws Exception
    {
       final FormsService fs = FormsService.getInstance();
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("saving file content to " + this.fileName);
-
       // get the parent path of the location to save the content
+      String fileName = this.fileName;
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("saving file content to " + fileName);
+
       String path = this.avmBrowseBean.getCurrentPath();
       path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
          final Document formInstanceData = fs.parseXML(this.content);
 
-         path = this.getForm().getOutputPathForFormInstanceData(path, this.fileName, formInstanceData);
+         path = this.getForm().getOutputPathForFormInstanceData(path, fileName, formInstanceData);
          final String[] sb = AVMNodeConverter.SplitBase(path);
          path = sb[0];
-         this.fileName = sb[1];
+         fileName = sb[1];
       }
 
       if (LOGGER.isDebugEnabled())
@@ -399,20 +407,20 @@ public class CreateWebContentWizard extends BaseContentWizard
       fs.makeAllDirectories(path);
 
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("creating file " + this.fileName + " in " + path);
+         LOGGER.debug("creating file " + fileName + " in " + path);
 
       // put the content of the file into the AVM store
       avmService.createFile(path, 
-                            this.fileName, 
+                            fileName, 
                             new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes()));
       
       // remember the created path
-      this.createdPath = path + '/' + this.fileName;
+      this.createdPath = path + '/' + fileName;
       
       // add titled aspect for the read/edit properties screens
       final NodeRef formInstanceDataNodeRef = AVMNodeConverter.ToNodeRef(-1, this.createdPath);
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-      titledProps.put(ContentModel.PROP_TITLE, this.fileName);
+      titledProps.put(ContentModel.PROP_TITLE, fileName);
       this.nodeService.addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, titledProps);
 
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)

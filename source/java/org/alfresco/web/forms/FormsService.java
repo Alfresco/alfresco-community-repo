@@ -389,15 +389,15 @@ public final class FormsService
    public static String getOutputAvmPathForRendition(final RenderingEngineTemplate ret,
                                                      final NodeRef formInstanceDataNodeRef)
    {
-      final String formInstanceDataAvmPath = 
-         AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
-      String formInstanceDataFileName = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[1];
-      formInstanceDataFileName = FormsService.stripExtension(formInstanceDataFileName);
+//      final String formInstanceDataAvmPath = 
+//         AVMNodeConverter.ToAVMVersionPath(formInstanceDataNodeRef).getSecond();
+//      String formInstanceDataFileName = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[1];
+//      formInstanceDataFileName = FormsService.stripExtension(formInstanceDataFileName);
       String result = ret.getOutputPathForRendition(formInstanceDataNodeRef);
-      if (result != null && result.charAt(0) == '/')
-      {
-         
-      }
+//      if (result != null && result.charAt(0) == '/')
+//      {
+//         
+//      }
       return result;
    }
 

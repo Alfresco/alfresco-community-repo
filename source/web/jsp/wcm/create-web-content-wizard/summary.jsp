@@ -58,19 +58,28 @@
 		activeSelect="true" 
 		style="width:100%" 
 		itemStyleClass="selectListItem">
-    <c:forEach items="${WizardManager.bean.renditions}" var="rendition" varStatus="status">
+    <c:forEach items="${WizardManager.bean.renditions}" 
+	       var="rendition" 
+	       varStatus="status">
       <a:listItem id="listItem${status.index}"
 		  label="${rendition.name}"
 		  value="${rendition.name}"
                   image="${rendition.fileTypeImage}">
 	<jsp:attribute name="description">
-	  <span style="float:right">
-	    <a:actionLink id="preview${status.index}"
-			  value="${rendition.name}" 
-			  image="/images/icons/preview_website.gif"
-			  showLink="false" 
-			  href="${rendition.url}" 
-			  target="new"/>
+	  <span style="float:right;">
+	    <a id="preview${status.index}"
+	       href="${rendition.url}"
+	       style="text-decoration: none;"
+	       target="window_${status.index}_${rendition.name}">
+	      <jsp:element name="img">
+		<jsp:attribute name="src" trim="true">
+		  <c:out value="${pageContext.request.contextPath}"/>/images/icons/preview_website.gif
+		</jsp:attribute>
+		<jsp:attribute name="align">absmiddle</jsp:attribute>
+		<jsp:attribute name="style">border: 0px</jsp:attribute>
+		<jsp:attribute name="alt">${rendition.name}</jsp:attribute>
+	      </jsp:element>
+	    </a>
 	  </span>
 	  Rendered by ${rendition.renderingEngineTemplate.name} into ${rendition.webappRelativePath}
 	</jsp:attribute>

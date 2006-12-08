@@ -155,6 +155,9 @@ public class CreateFormWizard
 
    public static final String FILE_SCHEMA = "schema";
 
+   private final static String DEFAULT_EXTENSION_PATTERN = "${extension}";
+   private final static String DEFAULT_NAME_PATTERN = "${name}";
+
    private final static Log LOGGER = LogFactory.getLog(CreateFormWizard.class);
    
    private String schemaRootElementName = null;
@@ -360,7 +363,7 @@ public class CreateFormWizard
    public String getOutputPathPatternForRendition()
    {
       return (this.outputPathPatternForRendition == null
-              ? "${name}.${extension}"
+              ? DEFAULT_NAME_PATTERN + '.' + DEFAULT_EXTENSION_PATTERN
               : this.outputPathPatternForRendition);
    }
 
@@ -377,12 +380,24 @@ public class CreateFormWizard
     */
    public String getMimetypeForRendition()
    {
-      if (this.mimetypeForRendition == null && this.outputPathPatternForRendition != null)
+      String result = null;
+      if (this.mimetypeForRendition != null)
       {
-         this.mimetypeForRendition = 
-            this.mimetypeService.guessMimetype(this.outputPathPatternForRendition);
+         result = this.mimetypeForRendition;
       }
-      return this.mimetypeForRendition;
+      else
+      {
+         if (this.outputPathPatternForRendition != null && 
+             !this.outputPathPatternForRendition.endsWith(DEFAULT_EXTENSION_PATTERN))
+         {
+            result = this.mimetypeService.guessMimetype(this.outputPathPatternForRendition);
+         }
+         if (result == null)
+         {
+            result = MimetypeMap.MIMETYPE_HTML;
+         }
+      }
+      return result;
    }
 
    /**
@@ -398,13 +413,26 @@ public class CreateFormWizard
     */
    public void addSelectedRenderingEngineTemplate(final ActionEvent event)
    {
+      final String opp = this.getOutputPathPatternForRendition();
+      final String mimetype = this.getMimetypeForRendition();
+      for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
+      {
+         if (opp.equals(retd.getOutputPathPatternForRendition()) &&
+             opp.indexOf(DEFAULT_EXTENSION_PATTERN) >= 0 &&
+             mimetype.equals(retd.getMimetypeForRendition()))
+         {
+            Utils.addErrorMessage("A rendering engine template with the output path pattern " + opp +
+                                  " and mimetype " + mimetype + " already exists");
+            return;
+         }
+      }
       final RenderingEngineTemplateData data = 
          this.new RenderingEngineTemplateData(this.getRenderingEngineTemplateFileName(),
                                               this.getRenderingEngineTemplateFile(),
                                               this.getRenderingEngineTemplateTitle(),
                                               this.getRenderingEngineTemplateDescription(),
-                                              this.getOutputPathPatternForRendition(),
-                                              this.getMimetypeForRendition(),
+                                              opp,
+                                              mimetype,
                                               this.renderingEngine);
       this.renderingEngineTemplates.add(data);
       this.removeUploadedRenderingEngineTemplateFile();
@@ -695,7 +723,7 @@ public class CreateFormWizard
    {
       if (this.outputPathPatternForFormInstanceData == null)
       {
-         this.outputPathPatternForFormInstanceData = "${name}.xml";
+         this.outputPathPatternForFormInstanceData = DEFAULT_NAME_PATTERN + ".xml";
       }
       return this.outputPathPatternForFormInstanceData;
    }

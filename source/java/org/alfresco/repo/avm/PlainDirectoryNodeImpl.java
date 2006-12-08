@@ -257,15 +257,11 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         ChildEntry existing = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (existing != null)
         {
-            existing.setChild(node);
-            AVMDAOs.Instance().fChildEntryDAO.update(existing);
+            AVMDAOs.Instance().fChildEntryDAO.delete(existing);
         }
-        else
-        {
-            ChildEntry entry = new ChildEntryImpl(key, node);
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
-            AVMDAOs.Instance().fChildEntryDAO.save(entry);
-        }
+        ChildEntry entry = new ChildEntryImpl(key, node);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fChildEntryDAO.save(entry);
     }
 
     /**

@@ -648,7 +648,44 @@ public class SchemaFormBuilder
 
    public void removePrototypeNodes(final Element instanceDocumentElement)
    {
-      
+      final Map<String, LinkedList<Element>> prototypes = 
+         new HashMap<String, LinkedList<Element>>();
+      final NodeList children = instanceDocumentElement.getChildNodes();
+      for (int i = 0; i < children.getLength(); i++)
+      {
+         if (! (children.item(i) instanceof Element))
+         {
+            continue;
+         }
+         final String nodeName = children.item(i).getNodeName();
+         if (! prototypes.containsKey(nodeName))
+         {
+            prototypes.put(nodeName, new LinkedList<Element>());
+         }
+         prototypes.get(nodeName).add((Element)children.item(i));
+      }
+
+      for (LinkedList<Element> l : prototypes.values())
+      {
+         for (Element e : l)
+         {
+            if (e.hasAttributeNS(SchemaFormBuilder.ALFRESCO_NS, "prototype"))
+            {
+               assert "true".equals(e.getAttributeNS(SchemaFormBuilder.ALFRESCO_NS, 
+                                                     "prototype"));
+               e.removeAttributeNS(SchemaFormBuilder.ALFRESCO_NS, "prototype");
+
+               if (l.getLast().equals(e))
+               {
+                  e.getParentNode().removeChild(e);
+               }
+            }
+            if (e.getParentNode() != null)
+            {
+               this.removePrototypeNodes(e);
+            }
+         }
+      }
    }
 
 

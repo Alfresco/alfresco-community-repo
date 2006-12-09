@@ -50,7 +50,7 @@ import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.*;
-import org.alfresco.web.forms.xforms.SchemaFormBuilder;
+import org.alfresco.web.forms.xforms.SchemaUtil;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -680,7 +680,7 @@ public class CreateFormWizard
          try
          {
             final Document d = ts.parseXML(this.getSchemaFile());
-            final XSModel xsm = SchemaFormBuilder.loadSchema(d);
+            final XSModel xsm = SchemaUtil.loadSchema(d);
             final XSNamedMap elementsMap = xsm.getComponents(XSConstants.ELEMENT_DECLARATION);
             for (int i = 0; i < elementsMap.getLength(); i++)
             {

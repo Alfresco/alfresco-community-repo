@@ -360,7 +360,9 @@ dojo.declare("alfresco.xforms.TextField",
                  this.widget.setAttribute("id", this.id + "-widget");
                  this.widget.setAttribute("value", initial_value);
                  if (this.xform.getType(this.xformsNode) == "string")
+                 {
                    this.widget.style.width = "100%";
+                 }
 
                  this.domNode.appendChild(this.widget);
                  if (this.isReadonly())
@@ -375,7 +377,10 @@ dojo.declare("alfresco.xforms.TextField",
                },
                setValue: function(value)
                {
-                 this.widget.setAttribute("value", value);
+                 if (!this.widget)
+                   this.setInitialValue(value);
+                 else
+                   this.widget.value = value;
                },
                getValue: function()
                {
@@ -1544,6 +1549,12 @@ dojo.declare("alfresco.xforms.XForm",
                    {
                      dojo.debug("loading " + xformsNode.childNodes[i].nodeName + 
                                 " into " + parentWidget.id);
+                     if (xformsNode.childNodes[i].getAttribute(ALFRESCO_NS_PREFIX + ":prototype") == "true")
+                     {
+                       dojo.debug(xformsNode.childNodes[i].getAttribute("id") + 
+                                  " is a prototype, ignoring");
+                       continue;
+                     }
                      var w = this.createWidget(xformsNode.childNodes[i]);
                      if (w != null)
                      {
@@ -1657,7 +1668,7 @@ dojo.declare("alfresco.xforms.XForm",
                },
                _handleEventLog: function(events)
                {
-                 var prototypeClones = [];
+                 var prototypeClone = null;
                  for (var i = 0; i < events.childNodes.length; i++)
                  {
                    if (events.childNodes[i].nodeType != dojo.dom.ELEMENT_NODE)
@@ -1684,6 +1695,7 @@ dojo.declare("alfresco.xforms.XForm",
                    }
                    case "chiba-state-changed":
                    {
+                     dojo.debug("handleStateChanged(" + xfe.targetId + ")");
                      xfe.getTarget().setModified(true);
                      xfe.getTarget().setValid(xfe.properties["valid"] == "true");
                      xfe.getTarget().setRequired(xfe.properties["required"] == "true");
@@ -1691,6 +1703,7 @@ dojo.declare("alfresco.xforms.XForm",
                      xfe.getTarget().setEnabled(xfe.properties["enabled"] == "true");
                      if ("value" in xfe.properties)
                      {
+                       dojo.debug("setting " + xfe.getTarget().id + " = " + xfe.properties["value"]);
                        xfe.getTarget().setValue(xfe.properties["value"]);
                      }
                      break;
@@ -1702,27 +1715,26 @@ dojo.declare("alfresco.xforms.XForm",
                      dojo.debug("handlePrototypeCloned(" + xfe.targetId + 
                                 ", " + originalId + 
                                 ", " + prototypeId + ")");
-
-                     var prototypeNode = _findElementById(this.xformsNode, originalId);
-                     var binding = this.getBinding(prototypeNode);
-                     var prototypeToClone = null;
-                     for (var w in binding.widgets)
+                     var clone = null;
+                     var prototypeNode = _findElementById(this.xformsNode, prototypeId);
+                     if (prototypeNode)
                      {
-                       if (binding.widgets[w] instanceof alfresco.xforms.Repeat)
-                       {
-                         var chibaData = _getElementsByTagNameNS(binding.widgets[w].xformsNode, 
-                                                                 CHIBA_NS, 
-                                                                 CHIBA_NS_PREFIX, "data");
-                         if (chibaData.length == 0)
-                           continue;
-                         prototypeToClone = dojo.dom.firstElement(chibaData[chibaData.length - 1]);
-                       }
+                       dojo.debug("cloning prototype " + prototypeNode.getAttribute("id"));
+                       clone = prototypeNode.cloneNode(true);
                      }
-                     if (!prototypeToClone)
-                       throw new Error("unable to find prototype for " + originalId);
-                     dojo.debug("cloning prototype " + prototypeToClone.getAttribute("id"));
-                     var clone = prototypeToClone.cloneNode(true);
-                     clone.setAttribute("id", prototypeId);
+                     else
+                     {
+                       dojo.debug("cloning prototype " + originalId);
+                       var prototypeNode = _findElementById(this.xformsNode, originalId);
+                       clone = prototypeNode.cloneNode(true);
+                       var clone = prototypeNode.ownerDocument.createElement("xforms:group");
+                       clone.setAttribute("xforms:appearance", "repeated");
+                       for (var j = 0; j < prototypeNode.childNodes.length; j++)
+                       {
+                         clone.appendChild(prototypeNode.childNodes[j].cloneNode(true));
+                       }
+                       clone.setAttribute("id", prototypeId);
+                     }
 //                       if (true || originalId  == xfe.targetId)
 //                         var clone = xfe.getTarget().handlePrototypeCloned(prototypeId);
 //                       else
@@ -1731,7 +1743,8 @@ dojo.declare("alfresco.xforms.XForm",
                            
 //                         var clone = originalWidget.widget.handlePrototypeCloned(prototypeId);
 //                       }
-                     prototypeClones.push(clone);
+                     clone.parentClone = prototypeClone;
+                     prototypeClone = clone;
                      break;
                    }
                    case "chiba-id-generated":
@@ -1739,31 +1752,37 @@ dojo.declare("alfresco.xforms.XForm",
                      var originalId = xfe.properties["originalId"];
                
                      dojo.debug("handleIdGenerated(" + xfe.targetId + ", " + originalId + ")");
-                     var clone = prototypeClones[prototypeClones.length - 1];
-                     var node = _findElementById(clone, originalId);
-                     if (node)
-                     {
-                       dojo.debug("applying id " + xfe.targetId + 
-                                  " to " + node.nodeName + "(" + originalId + ")");
-                       node.setAttribute("id", xfe.targetId);
-                     }
-                     else
+                     var node = _findElementById(prototypeClone, originalId);
+                     if (!node)
                        throw new Error("unable to find " + originalId + 
                                        " in clone " + dojo.dom.innerXML(clone));
+                     dojo.debug("applying id " + xfe.targetId + 
+                                " to " + node.nodeName + "(" + originalId + ")");
+                     node.setAttribute("id", xfe.targetId);
+                     if (prototypeClone.parentClone)
+                     {
+                       var e = _findElementById(prototypeClone.parentClone, originalId);
+                       if (e)
+                       {
+                         e.setAttribute(ALFRESCO_NS_PREFIX + ":prototype", "true");
+                       }
+                     }
                      break;
                    }
                    case "chiba-item-inserted":
                    {
                      var position = Number(xfe.properties["position"]) - 1;
                      var originalId = xfe.properties["originalId"];
-                     var clone = prototypeClones.pop();
-                     if (prototypeClones.length == 0)
-                       xfe.getTarget().handleItemInserted(clone, position);
+                     var clone = prototypeClone;
+                     prototypeClone = clone.parentClone;
+                     if (prototypeClone)
+                     {
+                       var parentRepeat = _findElementById(prototypeClone, xfe.targetId);
+                       parentRepeat.appendChild(clone);
+                     }
                      else
                      {
-                       var parentClone = prototypeClones[prototypeClones.length - 1];
-                       var parentRepeat = _findElementById(parentClone, xfe.targetId);
-                       parentRepeat.appendChild(clone);
+                       xfe.getTarget().handleItemInserted(clone, position);
                      }
                      break;
                    }
@@ -1830,9 +1849,9 @@ dojo.declare("alfresco.xforms.XForm",
 
 function _findElementById(node, id)
 {
-  dojo.debug("looking for " + id + 
-             " in " + node.nodeName + 
-             "(" + node.getAttribute("id") + ")");
+//  dojo.debug("looking for " + id + 
+//             " in " + (node ? node.nodeName : null) + 
+//             "(" + (node ? node.getAttribute("id") : null) + ")");
   if (node.getAttribute("id") == id)
     return node;
   for (var i = 0; i < node.childNodes.length; i++)
@@ -2074,6 +2093,10 @@ setValue: function(v)
 setReadonly: function(r)
 {
   this.readonly = r;
+  if (this.selectButton)
+    this.selectButton.disabled = this.readonly;
+  else if (this.readonly)
+    this._showSelectedValue();
 },
 render: function()
 {
@@ -2094,17 +2117,17 @@ _showSelectedValue: function()
   this.node.appendChild(d.createTextNode(this.value == null 
                                          ? "<none selected>" 
                                          : this.value));
-  var selectButton = d.createElement("input");
-  this.node.appendChild(selectButton);
-  selectButton.filePickerWidget = this;
-  selectButton.type = "button";
-  selectButton.value = this.value == null ? "Select" : "Change";
-  selectButton.enabled = this.readonly;
-  selectButton.style.marginLeft = "10px";
-  selectButton.style.position = "absolute";
-  selectButton.style.right = "10px";
-  selectButton.style.top = (.5 * this.node.offsetHeight) - (.5 * selectButton.offsetHeight) + "px";
-  dojo.event.connect(selectButton, 
+  this.selectButton = d.createElement("input");
+  this.node.appendChild(this.selectButton);
+  this.selectButton.filePickerWidget = this;
+  this.selectButton.type = "button";
+  this.selectButton.value = this.value == null ? "Select" : "Change";
+  this.selectButton.disabled = this.readonly;
+  this.selectButton.style.marginLeft = "10px";
+  this.selectButton.style.position = "absolute";
+  this.selectButton.style.right = "10px";
+  this.selectButton.style.top = (.5 * this.node.offsetHeight) - (.5 * this.selectButton.offsetHeight) + "px";
+  dojo.event.connect(this.selectButton, 
                      "onclick", 
                      function(event)
                      {

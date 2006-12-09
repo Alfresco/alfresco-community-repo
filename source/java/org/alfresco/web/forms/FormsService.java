@@ -469,11 +469,8 @@ public final class FormsService
       			  ? ((Document)n).getDocumentElement()
       			  : n).getNodeName() + 
    			     " to " + (output instanceof StringWriter
-   				  ? "string"
-   				  : output));
-                 final StringWriter sw = new StringWriter();
-                 t.transform(new DOMSource(n), new StreamResult(sw));
-            LOGGER.debug(sw.toString());
+                                       ? "string"
+                                       : output));
          }
          t.transform(new DOMSource(n), new StreamResult(output));
       }
@@ -486,7 +483,7 @@ public final class FormsService
    
    /** utility function for serializing a node */
    public void writeXML(final Node n, final File output)
-   throws IOException
+      throws IOException
    {
       this.writeXML(n, new FileWriter(output));
    }

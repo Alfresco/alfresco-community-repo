@@ -70,21 +70,22 @@ public class XFormsBean
 {
    private static final Log LOGGER = LogFactory.getLog(XFormsBean.class);
 
-   private Form tt;
+   private Form form;
    private FormProcessor.InstanceData instanceData = null;
    private ChibaBean chibaBean;
+   private SchemaFormBuilder schemaFormBuilder = null;
    private final LinkedList<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
 
    /** @return the form */
    public Form getForm()
    {
-      return this.tt;
+      return this.form;
    }
 
    /** @param tt the template type */
-   public void setForm(final Form tt)
+   public void setForm(final Form form)
    {
-      this.tt = tt;
+      this.form = form;
    }
 
    /** @param instanceData the instance data being modified. */
@@ -100,26 +101,55 @@ public class XFormsBean
    public void init()
       throws XFormsException
    {
-      LOGGER.debug("initializing " + this + " with tt " + tt.getName());
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("initializing " + this + " with form " + this.form.getName());
+      }
       this.chibaBean = new ChibaBean();
       final FacesContext facesContext = FacesContext.getCurrentInstance();
       final ExternalContext externalContext = facesContext.getExternalContext();
       final HttpServletRequest request = (HttpServletRequest)
          externalContext.getRequest();
+      XFormsBean.storeCookies(request.getCookies(), this.chibaBean);
+
       final HttpSession session = (HttpSession)externalContext.getSession(true);
       final AVMBrowseBean browseBean = (AVMBrowseBean)
          session.getAttribute("AVMBrowseBean");
-      LOGGER.debug("avm cwd is " + browseBean.getCurrentPath());
-	
-      XFormsBean.storeCookies(request.getCookies(), this.chibaBean);
+      final String cwdAVMPath = browseBean.getCurrentPath();
 
+      final String baseUrl = (request.getScheme() + "://" + 
+                              request.getServerName() + ':' + 
+                              request.getServerPort() + 
+                              request.getContextPath());
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("building xform for schema " + form.getName() +
+                      " with baseUrl " + baseUrl +
+                      " root element " + form.getSchemaRootElementName() +
+                      " avm cwd " + cwdAVMPath);
+      }
+      this.schemaFormBuilder = 
+         new SchemaFormBuilder("/ajax/invoke/XFormsBean.handleAction",
+                               SchemaFormBuilder.SUBMIT_METHOD_POST,
+                               new XHTMLWrapperElementsBuilder(),
+                               baseUrl);
+                               
       try
       {
-         final Document form = this.buildXForm(instanceData.getContent(), 
-                                               tt,
-                                               browseBean.getCurrentPath(),
-                                               request);
-         this.chibaBean.setXMLContainer(form);
+         final Document schemaDocument = this.form.getSchema();
+         this.rewriteInlineURIs(schemaDocument, cwdAVMPath);
+         final Document xformsDocument = 
+            this.schemaFormBuilder.buildXForm(instanceData.getContent(), 
+                                              schemaDocument,
+                                              this.form.getSchemaRootElementName());
+
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("generated xform: " + 
+                         FormsService.getInstance().writeXMLToString(xformsDocument));
+         }
+
+         this.chibaBean.setXMLContainer(xformsDocument);
 
          final EventTarget et = (EventTarget)
             this.chibaBean.getXMLContainer().getDocumentElement();
@@ -179,9 +209,8 @@ public class XFormsBean
       LOGGER.debug(this + ".getXForm()");
       final FacesContext context = FacesContext.getCurrentInstance();
       final ResponseWriter out = context.getResponseWriter();
-      LOGGER.debug("building xform for " + this.tt.getName());
-      final Node form = this.chibaBean.getXMLContainer();
-      FormsService.getInstance().writeXML(form, out);
+      final Node xformsDocument = this.chibaBean.getXMLContainer();
+      FormsService.getInstance().writeXML(xformsDocument, out);
    }
 
    /**
@@ -269,6 +298,7 @@ public class XFormsBean
          context.getExternalContext().getRequest();
       final FormsService formsService = FormsService.getInstance();
       final Document result = formsService.parseXML(request.getInputStream());
+      this.schemaFormBuilder.removePrototypeNodes(result.getDocumentElement());
       this.instanceData.setContent(result);
 
       final ResponseWriter out = context.getResponseWriter();
@@ -432,48 +462,19 @@ public class XFormsBean
       }
    }
 
-   /**
-    * Generates the xforms based on the schema.
-    */
-   private Document buildXForm(Document xmlContent, 
-                               final Form tt,
-                               final String cwdAvmPath,
-                               final HttpServletRequest request) 
-      throws FormBuilderException,
-      IOException,
-      SAXException
-   {
-      final Document schemaDocument = tt.getSchema();
-      this.rewriteInlineURIs(schemaDocument, cwdAvmPath);
-      final String baseUrl = (request.getScheme() + "://" + 
-                              request.getServerName() + ':' + 
-                              request.getServerPort() + 
-                              request.getContextPath());
-      LOGGER.debug("using baseUrl " + baseUrl + " for schemaformbuilder");
-      final SchemaFormBuilder builder = 
-         new SchemaFormBuilder("/ajax/invoke/XFormsBean.handleAction",
-                               SchemaFormBuilder.SUBMIT_METHOD_POST,
-                               new XHTMLWrapperElementsBuilder(),
-                               baseUrl);
-      LOGGER.debug("building xform for schema " + tt.getName());
-      final Document result = builder.buildForm(xmlContent, 
-                                                schemaDocument, 
-                                                tt.getSchemaRootElementName());
-      LOGGER.debug("generated xform: " + result);
-      //	LOGGER.debug(ts.writeXMLToString(result));
-      return result;
-   }
-
    private Node getEventLog()
    {
-      final FormsService ts = FormsService.getInstance();
-      final Document result = ts.newDocument();
+      final FormsService formsService = FormsService.getInstance();
+      final Document result = formsService.newDocument();
       final Element eventsElement = result.createElement("events");
       result.appendChild(eventsElement);
       for (XFormsEvent xfe : this.eventLog)
       {
          final String type = xfe.getType();
-         LOGGER.debug("adding event " + type + " to the event log");
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("adding event " + type + " to the event log");
+         }
          final Element target = (Element)xfe.getTarget();
 
          final Element eventElement = result.createElement(type);
@@ -487,8 +488,12 @@ public class XFormsBean
             for (Object name : properties)
             {
                final Object value = xfe.getContextInfo((String)name);
-               LOGGER.debug("adding property {" + name + 
-                            ":" + value + "} to event " + type);
+               if (LOGGER.isDebugEnabled())
+               {
+                  LOGGER.debug("adding property {" + name + 
+                               ":" + value + "} to event " + type);
+               }
+
                final Element propertyElement = result.createElement("property");
                eventElement.appendChild(propertyElement);
                propertyElement.setAttribute("name", name.toString());
@@ -498,6 +503,12 @@ public class XFormsBean
          }
       }
       this.eventLog.clear();
+
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("generated event log:\n" + 
+                      formsService.writeXMLToString(result));
+      }
       return result;
    }
 

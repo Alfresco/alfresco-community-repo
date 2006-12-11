@@ -63,13 +63,16 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateWebsiteWizard extends BaseWizardBean
 {
-   private static final String COMPONENT_FORMLIST = "form-list";
-   private static final String COMPONENT_WORKFLOWLIST = "workflow-list";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_NAME = "name";
    private static final String MSG_USERROLES = "create_website_summary_users";
    private static final String MSG_FORM_SUMMARY = "website_form_summary";
    private static final String MSG_NONE = "value_not_set";
+   
+   private static final String COMPONENT_FORMLIST = "form-list";
+   private static final String COMPONENT_WORKFLOWLIST = "workflow-list";
+   
+   private static final String MATCH_DEFAULT = ".*";
 
    private static final String WEBAPP_DEFAULT = "ROOT";
 
@@ -661,7 +664,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (index != -1)
       {
          WorkflowDefinition workflow = (WorkflowDefinition)this.workflowsList.get(index).getValue();
-         this.workflows.add(new WorkflowWrapper(workflow.getName(), workflow.getTitle(), workflow.getDescription()));
+         this.workflows.add(new WorkflowWrapper(
+               workflow.getName(), workflow.getTitle(), workflow.getDescription(), MATCH_DEFAULT));
       }
    }
    
@@ -946,6 +950,13 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private Map<QName, Serializable> params;
       
       public WorkflowWrapper(String name, String title, String description)
+      {
+         this.name = name;
+         this.title = title;
+         this.description = description;
+      }
+      
+     public WorkflowWrapper(String name, String title, String description, String filenamePattern)
       {
          this.name = name;
          this.title = title;

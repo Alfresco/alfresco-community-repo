@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
 
@@ -287,13 +288,38 @@ public class SubmitDialog extends BaseDialogBean
          NodeRef websiteRef = this.avmBrowseBean.getWebsite().getNodeRef();
          List<ChildAssociationRef> webWorkflowRefs = this.nodeService.getChildAssocs(
                websiteRef, WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
+         List<FormWorkflowWrapper> workflowMatchers = new ArrayList<FormWorkflowWrapper>(webWorkflowRefs.size());
          for (ChildAssociationRef ref : webWorkflowRefs)
          {
             NodeRef wfDefaultsRef = ref.getChildRef();
             String wfName = (String)this.nodeService.getProperty(wfDefaultsRef, WCMAppModel.PROP_WORKFLOW_NAME);
             Map<QName, Serializable> params = (Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(
                   wfDefaultsRef);
-            this.workflows.add(new FormWorkflowWrapper(wfName, params));
+            String matchPattern = (String)this.nodeService.getProperty(
+                  wfDefaultsRef, WCMAppModel.PROP_FILENAMEPATTERN);
+            if (matchPattern != null)
+            {
+               // add to temp list with the file name pattern
+               workflowMatchers.add(new FormWorkflowWrapper(wfName, params, matchPattern));
+            }
+         }
+         
+         // perform match on each submitted file against available workflows
+         for (ItemWrapper wrapper : this.submitItems)
+         {
+            String path = wrapper.getPath();
+            for (int i=0; i<workflowMatchers.size(); i++)
+            {
+               // see if the file path matches this workflow path pattern
+               if (workflowMatchers.get(i).matchesPath(path) == true)
+               {
+                  // found a match - remove the workflow from the list of ones to check
+                  this.workflows.add(workflowMatchers.get(i));
+                  workflowMatchers.remove(i);
+               }
+            }
+            // if all workflows are matched, there is no need to continue looping
+            if (workflowMatchers.size() == 0) break;
          }
          
          // build a UI item for each available workflow
@@ -531,13 +557,36 @@ public class SubmitDialog extends BaseDialogBean
    {
       public String Name;
       public Map<QName, Serializable> Params;
+      private Pattern filenamePattern;
       
       FormWorkflowWrapper(String name, Map<QName, Serializable> params)
       {
          this.Name = name;
          this.Params = params;
       }
+      
+      FormWorkflowWrapper(String name, Map<QName, Serializable> params, String filenamePattern)
+      {
+         this.Name = name;
+         this.Params = params;
+         if (filenamePattern != null)
+         {
+            this.filenamePattern = Pattern.compile(filenamePattern);
+         }
+      }
 
+      boolean matchesPath(String path)
+      {
+         if (filenamePattern != null)
+         {
+            return filenamePattern.matcher(path).matches();
+         }
+         else
+         {
+            return false;
+         }
+      }
+      
       @Override
       public int hashCode()
       {

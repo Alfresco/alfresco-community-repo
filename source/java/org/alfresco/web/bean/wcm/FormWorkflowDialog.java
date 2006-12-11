@@ -16,13 +16,18 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.text.MessageFormat;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.TransientNode;
@@ -39,7 +44,11 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FormWorkflowDialog extends BaseDialogBean
 {
+   private static final String MSG_ERROR_FILENAME_PATTERN = "error_filename_pattern";
+
    private static final Log logger = LogFactory.getLog(FormWorkflowDialog.class);
+   
+   private String filenamePattern;
    
    protected WorkflowService workflowService;
    protected CreateWebsiteWizard websiteWizard;
@@ -63,6 +72,29 @@ public class FormWorkflowDialog extends BaseDialogBean
    }
    
    /**
+    * @return Returns the filename pattern.
+    */
+   public String getFilenamePattern()
+   {
+      if (this.filenamePattern == null)
+      {
+         this.filenamePattern = getActionWorkflow().getFilenamePattern();
+      }
+      return this.filenamePattern;
+   }
+   
+   /**
+    * @param filenamePattern The filename pattern to set.
+    */
+   public void setFilenamePattern(String filenamePattern)
+   {
+      if (this.filenamePattern != null && this.filenamePattern.length() != 0)
+      {
+         this.filenamePattern = filenamePattern;
+      }
+   }
+   
+   /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#init(java.util.Map)
     */
    @Override
@@ -70,6 +102,7 @@ public class FormWorkflowDialog extends BaseDialogBean
    {
       super.init(parameters);
       
+      this.filenamePattern = null;
       this.workflowNode = null;
       WorkflowWrapper workflow = getActionWorkflow();
       if (workflow != null && workflow.getParams() != null)
@@ -86,11 +119,29 @@ public class FormWorkflowDialog extends BaseDialogBean
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      // push serialized params back into workflow object
       if (this.workflowNode != null)
       {
-         getActionWorkflow().setParams( WorkflowUtil.prepareTaskParams(this.workflowNode) );
-         getActionWorkflow().setType(this.workflowNode.getType());
+         // push serialized params back into workflow object
+         WorkflowWrapper wf = getActionWorkflow();
+         wf.setParams(WorkflowUtil.prepareTaskParams(this.workflowNode));
+         wf.setType(this.workflowNode.getType());
+         
+         if (this.filenamePattern != null && this.filenamePattern.length() != 0)
+         {
+            // check the filename pattern compiles and display an error if a problem occurs
+            try
+            {
+               Pattern.compile(this.filenamePattern);
+            }
+            catch (PatternSyntaxException pax)
+            {
+               throw new AlfrescoRuntimeException(
+                  MessageFormat.format(
+                        Application.getMessage(FacesContext.getCurrentInstance(), MSG_ERROR_FILENAME_PATTERN),
+                        pax.getMessage()), pax);
+            }
+            wf.setFilenamePattern(this.filenamePattern);
+         }
       }
       return outcome;
    }

@@ -1,113 +1,9 @@
-/* first or middle sibling, no children */
-.ygtvtn 
-{
-   width:16px; height:18px;
-   cursor:pointer ;
-   background: url(../images/icons/arrow_closed.gif) 0 0 no-repeat; 
-}
-
-/* first or middle sibling, collapsable */
-.ygtvtm 
-{
-   width:16px; height:18px; 
-   cursor:pointer ;
-   background: url(../images/icons/arrow_open.gif) 0 0 no-repeat; 
-}
-
-/* first or middle sibling, collapsable, hover */
-.ygtvtmh 
-{
-   width:16px; height:18px; 
-   cursor:pointer ;
-   background: url(../images/icons/arrow_open.gif) 0 0 no-repeat; 
-}
-
-/* first or middle sibling, expandable */
-.ygtvtp 
-{
-   width:16px; height:18px; 
-   cursor:pointer ;
-   background: url(../images/icons/arrow_closed.gif) 0 0 no-repeat; 
-}
-
-/* first or middle sibling, expandable, hover */
-.ygtvtph 
-{
-   width:16px; height:18px; 
-   cursor:pointer ;
-   background: url(../images/icons/arrow_closed.gif) 0 0 no-repeat; 
-}
-
-/* last sibling, no children */
-.ygtvln 
-{
-   width:16px; height:18px; 
-   cursor:pointer ;
-   background: url(../images/icons/arrow_closed.gif) 0 0 no-repeat; 
-}
-
-/* Last sibling, collapsable */
-.ygtvlm 
-{
-   width:16px; height:18px;
-   cursor:pointer ;
-   background: url(../images/icons/arrow_open.gif) 0 0 no-repeat; 
-}
-
-/* Last sibling, collapsable, hover */
-.ygtvlmh 
-{
-   width:16px; height:18px; 
-   cursor:pointer ;
-   background: url(../images/icons/arrow_open.gif) 0 0 no-repeat; 
-}
-
-/* Last sibling, expandable */
-.ygtvlp 
-{ 
-   width:16px; height:18px; 
-   cursor:pointer ;
-   background: url(../images/icons/arrow_closed.gif) 0 0 no-repeat; 
-}
-
-/* Last sibling, expandable, hover */
-.ygtvlph 
-{ 
-   width:16px; height:18px; cursor:pointer ;
-   background: url(../images/icons/arrow_closed.gif) 0 0 no-repeat; 
-}
-
-/* Loading icon */
-.ygtvloading 
-{ 
-   width:16px; height:18px; 
-   background: url(../scripts/ajax/yahoo/treeview/assets/loading.gif) 0 0 no-repeat; 
-}
-
-/* the style for the empty cells that are used for rendering the depth 
-* of the node */
-.ygtvdepthcell 
-{ 
-   width:16px; height:18px; 
-   background: url() 0 0 no-repeat; 
-}
-
-.ygtvblankdepthcell { width:16px; height:22px; }
-
 /* the style of the div around each node */
 .ygtvitem { }  
 
 /* the style of the div around each node's collection of children */
 .ygtvchildren {  }  
 * html .ygtvchildren { height:2%; }  
-
-/* the style of the text label in ygTextNode */
-.ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover 
-{ 
-   margin-left:2px;
-   text-decoration: none;
-   background-color: white;
-}
 
 .ygtvspacer 
 { 
@@ -116,17 +12,17 @@
    margin: 2px; 
 }
 
-.ygtvhtml
+.treeNode
 {
    cursor: pointer;
 }
 
-.alflabel
+.treeNodeLabel
 {
    white-space: nowrap;
 }
 
-.alflabelselected
+.treeNodeSelected
 {
    background-color: #d3e6fe;
 }

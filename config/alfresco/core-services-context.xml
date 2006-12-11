@@ -148,6 +148,15 @@
             <value>${server.transaction.allow-writes}</value>
         </property>
     </bean>
+    
+    <bean id="retryingTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
+    	<property name="transactionService">
+    	    <ref bean="transactionComponent"/>
+    	</property>
+    	<property name="maxRetries">
+    	    <value>10</value>
+    	</property>
+    </bean>
 
     <!--                        -->
     <!-- I18N                   -->

@@ -19,6 +19,7 @@ package org.alfresco.repo.avm;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -40,6 +41,7 @@ import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
@@ -3262,56 +3264,67 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            class TxnCallback implements RetryingTransactionHelper.Callback
             {
-                public Object doWork() throws Exception
+                public Object execute()
                 {
-                    AVMService service = (AVMService)fContext.getBean("avmService");
-                    service.createLayeredDirectory("main:/a", "main:/", "layer");
-                    // Modify something in an ordinary directory 3 times.
-                    service.getFileOutputStream("main:/a/b/c/foo").close();
-                    service.getFileOutputStream("main:/a/b/c/foo").close();
-                    service.getFileOutputStream("main:/a/b/c/foo").close();
-                    service.createFile("main:/a/b/c", "pint").close();
-                    service.createFile("main:/a/b/c", "quart").close();
-                    // Modify another file in the same directory.
-                    service.getFileOutputStream("main:/a/b/c/bar").close();
-                    service.getFileOutputStream("main:/a/b/c/bar").close();
-                    service.lookup(-1, "main:/a/b/c");
-                    service.createFile("main:/a/b/c", "figment").close();
-                    // Repeat in a layer.
-                    service.getFileOutputStream("main:/layer/b/c/foo").close();
-                    service.getFileOutputStream("main:/layer/b/c/foo").close();
-                    service.getFileOutputStream("main:/layer/b/c/foo").close();
-                    service.createFile("main:/layer/b/c", "gallon").close();
-                    service.createFile("main:/layer/b/c", "dram").close();
-                    service.getFileOutputStream("main:/layer/b/c/bar").close();
-                    service.getFileOutputStream("main:/layer/b/c/bar").close();
                     try
                     {
-                        service.lookup(-1, "main:/a/b/c/froo");
+                        AVMService service = (AVMService)fContext.getBean("avmService");
+                        service.createLayeredDirectory("main:/a", "main:/", "layer");
+                        // Modify something in an ordinary directory 3 times.
+                        service.getFileOutputStream("main:/a/b/c/foo").close();
+                        service.getFileOutputStream("main:/a/b/c/foo").close();
+                        service.getFileOutputStream("main:/a/b/c/foo").close();
+                        service.createFile("main:/a/b/c", "pint").close();
+                        service.createFile("main:/a/b/c", "quart").close();
+                        // Modify another file in the same directory.
+                        service.getFileOutputStream("main:/a/b/c/bar").close();
+                        service.getFileOutputStream("main:/a/b/c/bar").close();
+                        service.lookup(-1, "main:/a/b/c");
+                        service.createFile("main:/a/b/c", "figment").close();
+                        // Repeat in a layer.
+                        service.getFileOutputStream("main:/layer/b/c/foo").close();
+                        service.getFileOutputStream("main:/layer/b/c/foo").close();
+                        service.getFileOutputStream("main:/layer/b/c/foo").close();
+                        service.createFile("main:/layer/b/c", "gallon").close();
+                        service.createFile("main:/layer/b/c", "dram").close();
+                        service.getFileOutputStream("main:/layer/b/c/bar").close();
+                        service.getFileOutputStream("main:/layer/b/c/bar").close();
+                        try
+                        {
+                            service.lookup(-1, "main:/a/b/c/froo");
+                        }
+                        catch (AVMException ae)
+                        {
+                            // Do nothing.
+                        }
+                        service.createDirectory("main:/a/b/c", "froo");
+                        service.createFile("main:/a/b/c/froo", "franistan").close();
+                        try
+                        {
+                            service.lookup(-1, "main:/layer/b/c/groo");
+                        }
+                        catch (AVMException ae)
+                        {
+                            // Do nothing.
+                        }
+                        service.createDirectory("main:/layer/b/c", "groo");
+                        service.createFile("main:/layer/b/c/groo", "granistan").close();  
+                        return null;
                     }
-                    catch (AVMException ae)
+                    catch (IOException e)
                     {
-                        // Do nothing.
+                        e.printStackTrace();
+                        fail();
+                        return null;
                     }
-                    service.createDirectory("main:/a/b/c", "froo");
-                    service.createFile("main:/a/b/c/froo", "franistan").close();
-                    try
-                    {
-                        service.lookup(-1, "main:/layer/b/c/groo");
-                    }
-                    catch (AVMException ae)
-                    {
-                        // Do nothing.
-                    }
-                    service.createDirectory("main:/layer/b/c", "groo");
-                    service.createFile("main:/layer/b/c/groo", "granistan").close();  
-                    return null;
                 }
             }
-            TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
-                                                     new TxnWork());
+            RetryingTransactionHelper helper =
+                (RetryingTransactionHelper)fContext.getBean("retryingTransactionHelper");
+            helper.doInTransaction(new TxnCallback(), false);
+            assertNotNull(fService.lookup(-1, "main:/layer/b/c/groo"));
         }
         catch (Exception e)
         {

@@ -736,6 +736,17 @@ public class AVMBrowseBean implements IContextListener
       String store = params.get("store");
       String username = params.get("username");
       
+      setupSandboxActionImpl(store, username);
+   }
+
+   /**
+    * Setup the context for a sandbox browse action
+    * 
+    * @param store      The store name for the action
+    * @param username   The authority pertinent to the action (null for staging store actions)
+    */
+   private void setupSandboxActionImpl(String store, String username)
+   {
       // can be null if it's the staging store - i.e. not a user specific store
       setUsername(username);
       
@@ -756,14 +767,9 @@ public class AVMBrowseBean implements IContextListener
       // update UI state ready for return to the previous screen
       this.location = null;
       setCurrentPath(null);
+      setAvmActionNode(null);
       
       this.submitAll = false;
-   }
-   
-   public void setupSubmitAllAction(ActionEvent event)
-   {
-      setupSandboxAction(event);
-      this.submitAll = true;
    }
    
    /**
@@ -803,125 +809,26 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * Submit a node from a user sandbox into the staging area sandbox
+    * Submit a node from a user sandbox into the staging area sandbox via worklfow
     */
-   public void submitNode(ActionEvent event)
+   public void setupSubmitNodeAction(ActionEvent event)
    {
+      // extract store and username from the path to this node
       String path = getPathFromEventArgs(event);
-      
-      UserTransaction tx = null;
-      try
-      {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context, false);
-         tx.begin();
-         
-         AVMNodeDescriptor node = this.avmService.lookup(-1, path, true);
-         if (node != null)
-         {
-            Action action = this.actionService.createAction(SimpleAVMSubmitAction.NAME);
-            this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, path));
-         }
-         
-         // commit the transaction
-         tx.commit();
-         
-         // if we get here, all was well - output friendly status message to the user
-         String msg = MessageFormat.format(Application.getMessage(
-               context, MSG_SUBMIT_SUCCESS), node.getName());
-         displayStatusMessage(context, msg);
-      }
-      catch (Throwable err)
-      {
-         err.printStackTrace(System.err);
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
+      String[] parts = path.split("[-:]");
+      String storename = parts[0];
+      String username = parts[1];
+      setupSandboxActionImpl(username, AVMConstants.buildAVMUserMainStoreName(storename, username));
+      setupContentAction(path, true);
    }
    
    /**
-    * Submit an entire user sandbox
+    * Submit all nodes from user sandbox into the staging area sandbox via workflow
     */
-   public void submitAll(ActionEvent event)
+   public void setupSubmitAllAction(ActionEvent event)
    {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String store = params.get("store");
-      String username = params.get("username");
-      
-      String rootPath = AVMConstants.buildAVMStoreRootPath(store);
-      NodeRef rootRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
-      
-      UserTransaction tx = null;
-      try
-      {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context, true);
-         tx.begin();
-         
-         Action action = this.actionService.createAction(SimpleAVMSubmitAction.NAME);
-         this.actionService.executeAction(action, rootRef);
-         
-         // commit the transaction
-         tx.commit();
-         
-         // if we get here, all was well - output friendly status message to the user
-         String msg = MessageFormat.format(Application.getMessage(
-               context, MSG_SUBMITALL_SUCCESS), username);
-         displayStatusMessage(context, msg);
-      }
-      catch (Throwable err)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
-   }
-   
-   /**
-    * Submit items selected using multi-select
-    */
-   public void submitSelected(ActionEvent event)
-   {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String username = params.get("username");
-      
-      List<AVMNodeDescriptor> selected = this.userSandboxes.getSelectedNodes(username);
-      if (selected != null)
-      {
-         UserTransaction tx = null;
-         try
-         {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context, false);
-            tx.begin();
-            
-            // TODO: better to duplicate code in action rather than call multiple times?
-            for (AVMNodeDescriptor node : selected)
-            {
-               Action action = this.actionService.createAction(SimpleAVMSubmitAction.NAME);
-               this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, node.getPath()));
-            }
-            
-            // commit the transaction
-            tx.commit();
-            
-            // if we get here, all was well - output friendly status message to the user
-            // TODO: different message once the submit screen is available
-            String msg = MessageFormat.format(Application.getMessage(
-                  context, MSG_SUBMITSELECTED_SUCCESS), username);
-            displayStatusMessage(context, msg);
-         }
-         catch (Throwable err)
-         {
-            err.printStackTrace(System.err);
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         }
-      }
+      setupSandboxAction(event);
+      this.submitAll = true;
    }
    
    /**

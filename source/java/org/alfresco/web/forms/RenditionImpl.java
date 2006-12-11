@@ -107,6 +107,11 @@ public class RenditionImpl
    {
       return this.nodeRef;
    }
+   
+   public String getPath()
+   {
+      return AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
+   }
 
    public String getUrl()
    {

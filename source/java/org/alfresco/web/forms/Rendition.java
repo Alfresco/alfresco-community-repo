@@ -41,6 +41,9 @@ public interface Rendition
 
    /** the node ref containing the contents of this rendition */
    public NodeRef getNodeRef();
+   
+   /** the path to the contents of this rendition */
+   public String getPath();
 
    /** the url to the asset */
    public String getUrl();

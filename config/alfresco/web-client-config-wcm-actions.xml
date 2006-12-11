@@ -79,7 +79,8 @@
             </permissions>
             <label-id>submit</label-id>
             <image>/images/icons/submit.gif</image>
-            <action-listener>#{AVMBrowseBean.submitNode}</action-listener>
+            <action-listener>#{AVMBrowseBean.setupSubmitNodeAction}</action-listener>
+            <action>dialog:submitSandboxItems</action>
             <params>
                <param name="id">#{actionContext.path}</param>
             </params>

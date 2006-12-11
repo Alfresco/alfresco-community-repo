@@ -52,9 +52,9 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.FormsService;
-import org.alfresco.web.forms.RenderingEngineTemplate;
+import org.alfresco.web.forms.FormInstanceData;
+import org.alfresco.web.forms.FormInstanceDataImpl;
+import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -380,9 +380,18 @@ public class SubmitDialog extends BaseDialogBean
             selected.add(node);
          }
       }
+      else if (this.avmBrowseBean.getAvmActionNode() == null)
+      {
+         // multiple items selected
+         selected = this.avmBrowseBean.getSelectedSandboxItems();
+      }
       else
       {
-         selected = this.avmBrowseBean.getSelectedSandboxItems();
+         // single item selected
+         AVMNodeDescriptor node =
+            this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true);
+         selected = new ArrayList<AVMNodeDescriptor>(1);
+         selected.add(node);
       }
       if (selected != null)
       {
@@ -410,31 +419,33 @@ public class SubmitDialog extends BaseDialogBean
                            // found a generated rendition asset - locate the parent form instance data file
                            // and use this to find all generated assets that are appropriate
                            // NOTE: this ref will be in the 'preview' store convert back to user store first
-                           String formInstanceDataPath = AVMNodeConverter.ToAVMVersionPath(
-                                 (NodeRef)this.nodeService.getProperty(
-                                       ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA)).getSecond();
-                           formInstanceDataPath = formInstanceDataPath.replaceFirst(AVMConstants.STORE_PREVIEW, 
-                                                                                    AVMConstants.STORE_MAIN);
-                           formInstanceDataRef = AVMNodeConverter.ToNodeRef(-1, formInstanceDataPath);
+                           String strFormInstance = (String)this.nodeService.getProperty(
+                                       ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+                           strFormInstance = strFormInstance.replaceFirst(AVMConstants.STORE_PREVIEW, 
+                                                                          AVMConstants.STORE_MAIN);
+                           formInstanceDataRef = new NodeRef(strFormInstance);
                         }
                         
                         // add the form instance data file to the list for submission
                         AVMNodeDescriptor formInstanceNode = this.avmService.lookup(
                               -1, AVMNodeConverter.ToAVMVersionPath(formInstanceDataRef).getSecond());
-                        this.submitItems.add(new ItemWrapper(formInstanceNode));
-                        submittedPaths.add(formInstanceNode.getPath());
+                        if (submittedPaths.contains(formInstanceNode.getPath()) == false)
+                        {
+                           this.submitItems.add(new ItemWrapper(formInstanceNode));
+                           submittedPaths.add(formInstanceNode.getPath());
+                        }
                         
                         // locate renditions for this form instance data file and add to list for submission
-                        NodeRef formNodeRef = (NodeRef)this.nodeService.getProperty(
-                              formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM);
-                        Form form = FormsService.getInstance().getForm(formNodeRef);
-                        for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
+                        FormInstanceData formImpl = new FormInstanceDataImpl(formInstanceDataRef);
+                        for (Rendition rendition : formImpl.getRenditions())
                         {
-                           String renditionAvmPath = FormsService.getOutputAvmPathForRendition(
-                                 ret, formInstanceDataRef);
-                           AVMNodeDescriptor renditionNode = this.avmService.lookup(-1, renditionAvmPath);
-                           this.submitItems.add(new ItemWrapper(renditionNode));
-                           submittedPaths.add(renditionNode.getPath());
+                           String renditionPath = rendition.getPath();
+                           if (submittedPaths.contains(renditionPath) == false)
+                           {
+                              AVMNodeDescriptor renditionNode = this.avmService.lookup(-1, renditionPath);
+                              this.submitItems.add(new ItemWrapper(renditionNode));
+                              submittedPaths.add(renditionPath);
+                           }
                         }
                         
                         // lookup the associated Form workflow from the parent form property
@@ -454,11 +465,6 @@ public class SubmitDialog extends BaseDialogBean
                      this.submitItems.add(new ItemWrapper(node));
                      submittedPaths.add(node.getPath());
                   }
-               }
-               else
-               {
-                  this.submitItems.add(new ItemWrapper(node));
-                  submittedPaths.add(node.getPath());
                }
             }
             else

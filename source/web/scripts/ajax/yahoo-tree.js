@@ -1,13 +1,20 @@
-var loadDataUrl = null;
-var collapseUrl = null;
-var nodeSelectedHandler = null;
+//
+// Alfresco Yahoo Tree support library
+// Gavin Cornwell 01-12-2006
+//
+// NOTE: This script relies on common.js so therefore needs to be loaded
+//       prior to this one on the containing HTML page.
+
+var _loadDataUrl = null;
+var _collapseUrl = null;
+var _nodeSelectedHandler = null;
 
 /**
  * Sets the URL to use to retrive child nodes
  */
 function setLoadDataUrl(url)
 {
-	loadDataUrl = url;
+	_loadDataUrl = url;
 }
 
 /**
@@ -15,7 +22,7 @@ function setLoadDataUrl(url)
  */
 function setCollapseUrl(url)
 {
-	collapseUrl = url;
+	_collapseUrl = url;
 }
 
 /**
@@ -23,7 +30,7 @@ function setCollapseUrl(url)
  */
 function setNodeSelectedHandler(handler)
 {
-	nodeSelectedHandler = handler;
+	_nodeSelectedHandler = handler;
 }
 
 /**
@@ -31,7 +38,7 @@ function setNodeSelectedHandler(handler)
  */
 function loadDataForNode(node, onCompleteCallback) 
 {
-   if (loadDataUrl == null)
+   if (_loadDataUrl == null)
    {
       alert("AJAX URL has not been set for retrieving child nodes, call setLoadDataUrl()!");
       return;
@@ -40,7 +47,7 @@ function loadDataForNode(node, onCompleteCallback)
    var nodeRef = node.data.nodeRef;
    
    // TODO: add method to add param to url
-   var transaction = YAHOO.util.Connect.asyncRequest('GET', WEBAPP_CONTEXT + loadDataUrl + "&nodeRef=" + nodeRef, 
+   var transaction = YAHOO.util.Connect.asyncRequest('GET', getContextPath() + _loadDataUrl + "&nodeRef=" + nodeRef, 
    {
       success: function(o)
       {
@@ -96,7 +103,7 @@ function parseChildData(parentNode, data)
  */
 function createYahooTreeNode(parentNode, nodeRef, name, icon, expanded, selected)
 {
-	var nodeData = { label: name, nodeRef: nodeRef, icon: icon, selectedHandler: nodeSelectedHandler};
+	var nodeData = { label: name, nodeRef: nodeRef, icon: icon, selectedHandler: _nodeSelectedHandler};
    return new YAHOO.widget.AlfrescoNode(nodeData, parentNode, expanded, selected);
 }
 
@@ -105,7 +112,7 @@ function createYahooTreeNode(parentNode, nodeRef, name, icon, expanded, selected
  */
 function informOfCollapse(node)
 {
-   if (collapseUrl == null)
+   if (_collapseUrl == null)
    {
       alert("AJAX URL has not been set for collapsing nodes, call setCollapseUrl()!");
       return;
@@ -122,7 +129,7 @@ function informOfCollapse(node)
    }
    
    // TODO: add method to add param to url
-   var transaction = YAHOO.util.Connect.asyncRequest('GET', WEBAPP_CONTEXT + collapseUrl + "&nodeRef=" + nodeRef, 
+   var transaction = YAHOO.util.Connect.asyncRequest('GET', getContextPath() + _collapseUrl + "&nodeRef=" + nodeRef, 
    {
       success: function(o)
       {
@@ -272,7 +279,7 @@ YAHOO.extend(YAHOO.widget.AlfrescoNode, YAHOO.widget.Node,
       sb[sb.length] = ' id="' + this.getToggleElId() + '"';
       sb[sb.length] = ' class="' + this.getStyle() + '"';
       sb[sb.length] = ' onclick="javascript:' + this.getToggleLink() + '"';
-      sb[sb.length] = ' src="' + WEBAPP_CONTEXT + "/images/icons/arrow_";
+      sb[sb.length] = ' src="' + getContextPath() + "/images/icons/arrow_";
       if (this.expanded)
       {
          sb[sb.length] = 'open';
@@ -289,7 +296,7 @@ YAHOO.extend(YAHOO.widget.AlfrescoNode, YAHOO.widget.Node,
       {
          sb[sb.length] = ' onclick=' + this.selectedHandler + '("' + this.nodeRef + '");';
       }
-      sb[sb.length] = '><img src="' + WEBAPP_CONTEXT + '/images/icons/' + this.icon + '-16.gif"';
+      sb[sb.length] = '><img src="' + getContextPath() + '/images/icons/' + this.icon + '-16.gif"';
       sb[sb.length] = ' class="treeNodeIcon"></td>';
       
       // render the label (with node selected handler) (apply selected css class if approp.) (add contentElId)
@@ -318,15 +325,15 @@ YAHOO.extend(YAHOO.widget.AlfrescoNode, YAHOO.widget.Node,
       {
          if (this.isLoading)
          {
-            el.src = WEBAPP_CONTEXT + '/scripts/ajax/yahoo/treeview/assets/loading.gif';
+            el.src = getContextPath() + '/scripts/ajax/yahoo/treeview/assets/loading.gif';
          }
          else if (this.expanded)
          {
-            el.src = WEBAPP_CONTEXT + '/images/icons/arrow_open.gif';
+            el.src = getContextPath() + '/images/icons/arrow_open.gif';
          }
          else
          {
-            el.src = WEBAPP_CONTEXT + '/images/icons/arrow_closed.gif';
+            el.src = getContextPath() + '/images/icons/arrow_closed.gif';
          }
       }
    },

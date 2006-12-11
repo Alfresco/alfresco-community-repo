@@ -2,6 +2,8 @@
 // Supporting JavaScript for the NodeInfo component
 // Gavin Cornwell 17-07-2006
 //
+// NOTE: This script relies on common.js so therefore needs to be loaded
+//       prior to this one on the containing HTML page.
 
 var _launchElement = null;
 var _popupElement = null;
@@ -18,7 +20,7 @@ function showNodeInfo(nodeRef, launchElement)
    
    dojo.io.bind({
       method: 'post',
-      url: WEBAPP_CONTEXT + '/ajax/invoke/NodeInfoBean.sendNodeInfo',
+      url: getContextPath() + '/ajax/invoke/NodeInfoBean.sendNodeInfo',
       content: { noderef: nodeRef },
       load: showNodeInfoHandler,
       error: handleErrorDojo,

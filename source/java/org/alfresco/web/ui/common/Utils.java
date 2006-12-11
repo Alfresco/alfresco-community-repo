@@ -89,7 +89,7 @@ public final class Utils
    private static final String DEFAULT_FILE_IMAGE16 = IMAGE_PREFIX16 + "_default" + IMAGE_POSTFIX;
    private static final String DEFAULT_FILE_IMAGE32 = IMAGE_PREFIX32 + "_default" + IMAGE_POSTFIX;
    
-   private static final String AJAX_SCRIPTS_WRITTEN = "_alfAjaxScriptsWritten";
+   private static final String DOJO_SCRIPTS_WRITTEN = "_alfDojoScriptsWritten";
    private static final String YAHOO_SCRIPTS_WRITTEN = "_alfYahooScriptsWritten";
    
    private static final Map<String, String> s_fileExtensionMap = new HashMap<String, String>(89, 1.0f);
@@ -1290,7 +1290,7 @@ public final class Utils
    public static void writeDojoScripts(FacesContext context, ResponseWriter out)
       throws IOException
    {
-      Object present = context.getExternalContext().getRequestMap().get(AJAX_SCRIPTS_WRITTEN);
+      Object present = context.getExternalContext().getRequestMap().get(DOJO_SCRIPTS_WRITTEN);
       
       if (present == null)
       {
@@ -1306,13 +1306,8 @@ public final class Utils
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/scripts/ajax/common.js\"> </script>\n");
          
-         // write out a global variable to hold the webapp context path
-         out.write("<script type=\"text/javascript\">var WEBAPP_CONTEXT = '");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("';</script>\n");
-         
          // add marker to request
-         context.getExternalContext().getRequestMap().put(AJAX_SCRIPTS_WRITTEN, Boolean.TRUE);
+         context.getExternalContext().getRequestMap().put(DOJO_SCRIPTS_WRITTEN, Boolean.TRUE);
       }
    }
    
@@ -1358,11 +1353,6 @@ public final class Utils
          out.write("<script type=\"text/javascript\" src=\"");
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/scripts/ajax/common.js\"> </script>\n");
-         
-         // write out a global variable to hold the webapp context path
-         out.write("<script type=\"text/javascript\">var WEBAPP_CONTEXT = '");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("';</script>\n");
          
          // add marker to request
          context.getExternalContext().getRequestMap().put(YAHOO_SCRIPTS_WRITTEN, Boolean.TRUE);

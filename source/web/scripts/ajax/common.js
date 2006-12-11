@@ -3,6 +3,8 @@
 // Gavin Cornwell 14-07-2006
 //
 
+var _alfContextPath = null;
+
 /**
  * Default handler for errors when using the dojo toolkit
  */
@@ -35,6 +37,19 @@ function handleErrorYahoo(msg)
  */
 function getContextPath()
 {
-	var w = window.location;
-	alert(w.pathname);
+	if (_alfContextPath == null)
+   {
+      var path = window.location.pathname;
+      var idx = path.indexOf("/", 1);
+      if (idx != -1)
+      {
+         _alfContextPath = path.substring(0, idx);
+      }
+      else
+      {
+         _alfContextPath = "";
+      }
+   }
+
+   return _alfContextPath;
 }

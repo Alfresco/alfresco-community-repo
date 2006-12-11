@@ -232,11 +232,12 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             AVMDAOs.Instance().fChildEntryDAO.delete(entry);
             if (child.getStoreNew() == null || child.getAncestor() != null)
             {
-                AVMNode ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
+                DeletedNodeImpl ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
                                                     lPath.getAVMStore());
                 AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
                 AVMDAOs.Instance().fAVMNodeDAO.flush();
                 ghost.setAncestor(child);
+                ghost.setDeletedType(child.getType());
                 putChild(name, ghost);
             }
             else
@@ -363,6 +364,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      false,
                                      -1,
                                      false,
+                                     -1,
                                      -1);
     }
 
@@ -390,6 +392,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      false,
                                      -1,
                                      false,
+                                     -1, 
                                      -1);
     }
 
@@ -419,6 +422,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                      false,
                                      -1,
                                      false,
+                                     -1,
                                      -1);
     }
     

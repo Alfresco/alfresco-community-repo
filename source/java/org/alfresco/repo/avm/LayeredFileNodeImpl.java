@@ -161,7 +161,8 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      false,
                                      -1,
                                      false,
-                                     0);
+                                     0,
+                                     -1);
     }
 
     /**
@@ -188,7 +189,8 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      false,
                                      -1,
                                      false,
-                                     0);
+                                     0, 
+                                     -1);
     }
 
     /**
@@ -217,7 +219,8 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                                      false,
                                      -1,
                                      false,
-                                     0);
+                                     0,
+                                     -1);
     }
 
     /**

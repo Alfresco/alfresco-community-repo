@@ -3351,6 +3351,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.removeNode("main:/a/b/c", "foo");
             AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/b/c/foo", true);
             assertTrue(desc.isDeleted());
+            assertTrue(desc.isDeletedFile());
             Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/a/b/c", true);
             assertEquals(2, listing.size());
             assertTrue(listing.get("foo").isDeleted());
@@ -3373,6 +3374,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.removeNode("main:/layer/b/c", "bar");
             desc = fService.lookup(-1, "main:/layer/b/c/bar", true);
             assertTrue(desc.isDeleted());
+            assertTrue(desc.isDeletedFile());
             listing = fService.getDirectoryListing(-1, "main:/layer/b/c", true);
             assertEquals(2, listing.size());
             assertTrue(listing.get("foo").isDeleted());

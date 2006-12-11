@@ -50,6 +50,7 @@
 			  proxy="DeletedNode"
 			  lazy="true"
 			  discriminator-value="deletednode">
+            <property name="deletedType" type="int"/>
 		</subclass>
 		<!-- Directories, two flavors. -->
 		<subclass name="DirectoryNodeImpl" 

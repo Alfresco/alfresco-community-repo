@@ -23,4 +23,9 @@ package org.alfresco.repo.avm;
  */
 public interface DeletedNode extends AVMNode
 {
+    /**
+     * Get the type of node that this is a deleted placeholder for
+     * @return The type of node that was deleted.
+     */
+    public int getDeletedType();
 }

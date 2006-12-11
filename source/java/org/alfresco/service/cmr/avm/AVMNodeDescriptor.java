@@ -113,6 +113,12 @@ public class AVMNodeDescriptor implements Serializable
     private boolean fOpacity;
 
     /**
+     * The type of node that this is a deleted node for.
+     * Only for DeletedNode.
+     */
+    private int fDeletedType;
+    
+    /**
      * Make one up.
      * @param path The looked up path.
      * @param type The type of the node.
@@ -128,6 +134,7 @@ public class AVMNodeDescriptor implements Serializable
      * @param isPrimary Whether this is a primary indirection.
      * @param layerID The layer id.
      * @param length The file length.
+     * @param deletedType The type of node that was deleted.
      */
     public AVMNodeDescriptor(String path,
                              String name,
@@ -144,7 +151,8 @@ public class AVMNodeDescriptor implements Serializable
                              boolean isPrimary,
                              long layerID,
                              boolean opacity,
-                             long length)
+                             long length, 
+                             int deletedType)
     {
         fPath = path;
         fName = name;
@@ -162,6 +170,7 @@ public class AVMNodeDescriptor implements Serializable
         fLayerID = layerID;
         fLength = length;
         fOpacity = opacity;
+        fDeletedType = deletedType;
     }
     
     /**
@@ -441,5 +450,33 @@ public class AVMNodeDescriptor implements Serializable
     public int hashCode()
     {
         return (int)fID;
+    }
+    
+    /**
+     * Get the type of node that a deleted node is standing in for.
+     */
+    public int getDeletedType()
+    {
+        return fDeletedType;
+    }
+    
+    /**
+     * Is this a deleted directory?
+     */
+    public boolean isDeletedDirectory()
+    {
+        return fType == AVMNodeType.DELETED_NODE &&
+               (fDeletedType == AVMNodeType.LAYERED_DIRECTORY ||
+                fDeletedType == AVMNodeType.PLAIN_DIRECTORY);
+    }
+    
+    /**
+     * Is this a deleted file?
+     */
+    public boolean isDeletedFile()
+    {
+        return fType == AVMNodeType.DELETED_NODE &&
+               (fDeletedType == AVMNodeType.LAYERED_FILE ||
+                fDeletedType == AVMNodeType.PLAIN_FILE);
     }
 }

@@ -26,6 +26,11 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
 {
     private static final long serialVersionUID = 7283526790174482993L;
+    
+    /**
+     * The type of node that this is a deleted node for.
+     */
+    private int fDeletedType;
 
     /**
      * For Hibernate's use.
@@ -44,7 +49,23 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
     {
         super(id, store);
     }
+    
+    /**
+     * Setter.   
+     */
+    public void setDeletedType(int type)
+    {
+        fDeletedType = type;
+    }
 
+    /**
+     * Getter.
+     */
+    public int getDeletedType()
+    {
+        return fDeletedType;
+    }
+    
     /**
      * This should never be called.
      */
@@ -87,7 +108,8 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      false,
                                      -1,
                                      false,
-                                     -1);
+                                     -1,
+                                     fDeletedType);
     }
 
     /**
@@ -114,7 +136,8 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      false,
                                      -1,
                                      false,
-                                     -1);
+                                     -1,
+                                     fDeletedType);
     }
 
     /**
@@ -143,7 +166,8 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
                                      false,
                                      -1,
                                      false,
-                                     -1);
+                                     -1, 
+                                     fDeletedType);
     }
 
     /**

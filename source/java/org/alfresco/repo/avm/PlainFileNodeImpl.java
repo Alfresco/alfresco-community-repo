@@ -194,7 +194,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getLength());
+                                     getLength(),
+                                     -1);
     }
 
     /**
@@ -221,7 +222,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getFileLength());
+                                     getFileLength(),
+                                     -1);
     }
 
     /**
@@ -250,7 +252,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getFileLength());
+                                     getFileLength(),
+                                     -1);
     }
 
     /**

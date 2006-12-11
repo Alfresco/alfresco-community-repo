@@ -444,12 +444,11 @@ public class SubmitDialog extends BaseDialogBean
                         {
                            // found a generated rendition asset - locate the parent form instance data file
                            // and use this to find all generated assets that are appropriate
-                           // NOTE: this ref will be in the 'preview' store convert back to user store first
+                           // NOTE: this path value is store relative
                            String strFormInstance = (String)this.nodeService.getProperty(
-                                       ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
-                           strFormInstance = strFormInstance.replaceFirst(AVMConstants.STORE_PREVIEW, 
-                                                                          AVMConstants.STORE_MAIN);
-                           formInstanceDataRef = new NodeRef(strFormInstance);
+                                 ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+                           strFormInstance = this.avmBrowseBean.getSandbox() + ':' + strFormInstance;
+                           formInstanceDataRef = AVMNodeConverter.ToNodeRef(-1, strFormInstance);
                         }
                         
                         // add the form instance data file to the list for submission
@@ -674,7 +673,7 @@ public class SubmitDialog extends BaseDialogBean
       
       public String getIcon()
       {
-         if (descriptor.isDeletedFile())
+         if (descriptor.isFile() || descriptor.isDeletedFile())
          {
             return Utils.getFileTypeImage(descriptor.getName(), true);
          }

@@ -236,9 +236,12 @@ public class CreateWebContentWizard extends BaseContentWizard
       // reset all paths and structures to the main store
       this.createdPath = this.createdPath.replaceFirst(AVMConstants.STORE_PREVIEW,
                                                        AVMConstants.STORE_MAIN);
-      this.formInstanceData = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, this.createdPath));
-      this.renditions = this.formInstanceData.getRenditions();
-
+      boolean form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null);
+      if (form)
+      {
+         this.formInstanceData = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, this.createdPath));
+         this.renditions = this.formInstanceData.getRenditions();
+      }
       if (this.startWorkflow)
       {
          WorkflowDefinition wd = null;
@@ -291,27 +294,41 @@ public class CreateWebContentWizard extends BaseContentWizard
          String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
          String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, stagingPath);
          
+         List<AVMDifference> diffs = new ArrayList<AVMDifference>(8);
          // construct diffs for selected items for submission
          String webapp = (String)website.getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
          String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
-         List<AVMDifference> diffs = new ArrayList<AVMDifference>(8);
-         for (Rendition rendition : this.getRenditions())
+         if (form)
          {
-            String renditionPath = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
-            int webappIndex = renditionPath.indexOf('/' + webapp);
-            renditionPath = renditionPath.substring(webappIndex);
-            String srcPath = sandboxPath + renditionPath;
-            String destPath = packagesPath + renditionPath;
+            // collect diffs for form data instance and all renditions
+            for (Rendition rendition : this.getRenditions())
+            {
+               String renditionPath = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
+               int webappIndex = renditionPath.indexOf('/' + webapp);
+               renditionPath = renditionPath.substring(webappIndex);
+               String srcPath = sandboxPath + renditionPath;
+               String destPath = packagesPath + renditionPath;
+               AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+               diffs.add(diff);
+            }
+            String instancePath = AVMNodeConverter.ToAVMVersionPath(this.formInstanceData.getNodeRef()).getSecond();
+            int webappIndex = instancePath.indexOf('/' + webapp);
+            instancePath = instancePath.substring(webappIndex);
+            String srcPath = sandboxPath + instancePath;
+            String destPath = packagesPath + instancePath;
             AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
             diffs.add(diff);
          }
-         String instancePath = AVMNodeConverter.ToAVMVersionPath(this.formInstanceData.getNodeRef()).getSecond();
-         int webappIndex = instancePath.indexOf('/' + webapp);
-         instancePath = instancePath.substring(webappIndex);
-         String srcPath = sandboxPath + instancePath;
-         String destPath = packagesPath + instancePath;
-         AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
-         diffs.add(diff);
+         else
+         {
+            // diff for txt or html content
+            int webappIndex = this.createdPath.indexOf('/' + webapp);
+            String itemPath = this.createdPath.substring(webappIndex);
+            String srcPath = sandboxPath + itemPath;
+            String destPath = packagesPath + itemPath;
+            AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+            diffs.add(diff);
+         }
          
          // write changes to layer so files are marked as modified
          this.avmSyncService.update(diffs, null, true, true, false, false, null, null);
@@ -323,8 +340,7 @@ public class CreateWebContentWizard extends BaseContentWizard
          this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
          parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
          // TODO: capture label and comment?
-         // ariel to kev: this.fileName may be inaccurate.  use formInstanceData.getName() instead
-         parameters.put(AVMWorkflowUtil.PROP_LABEL, this.fileName);
+         parameters.put(AVMWorkflowUtil.PROP_LABEL, form ? this.formInstanceData.getName() : this.fileName);
          parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(
                this.avmBrowseBean.getSandbox()));
          
@@ -396,8 +412,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       }
 
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("reseting layer " + path.split(":")[0] + 
-                      ":/" + AVMConstants.DIR_APPBASE);
+         LOGGER.debug("reseting layer " + path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
 
       this.avmSyncService.resetLayer(path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
 

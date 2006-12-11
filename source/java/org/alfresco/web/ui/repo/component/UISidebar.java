@@ -73,9 +73,9 @@ public class UISidebar extends SelfRenderingComponent
       out.write("<div id=\"sidebar\">");
       
       // render the start of the header panel
-         PanelGenerator.generatePanelStart(out, 
-               context.getExternalContext().getRequestContextPath(),
-               "blue", "#D3E6FE");
+      PanelGenerator.generatePanelStart(out, 
+            context.getExternalContext().getRequestContextPath(),
+            "blue", "#D3E6FE");
          
       // generate the required child components if not present
       if (this.getChildCount() == 1)
@@ -110,26 +110,19 @@ public class UISidebar extends SelfRenderingComponent
                createComponent("org.alfresco.faces.Actions");
          actions.setId("sidebarActions");
          actions.setShowLink(false);
-         // TODO: we need to setup the context for the actions component
-         //       but when the app first starts there is no context yet,
-         //       also the tree will not update the context as it is
-         //       navigated so what do we use? we may have to only support
-         //       global non-context actions
-         String actionsGroupId = null;
-         SidebarConfigElement config = SidebarBean.getSidebarConfig(context);
-         if (config != null)
-         {
-            SidebarPluginConfig plugin = config.getPlugin(getActivePlugin());
-            if (plugin != null)
-            {
-               actionsGroupId = plugin.getActionsConfigId();
-            }
-         }
-         actions.setValue(actionsGroupId);
+         setupActionGroupId(context, actions);
          
          // add components to the sidebar
          this.getChildren().add(0, modeList);
          this.getChildren().add(1, actions);
+      }
+      else
+      {
+         // update the child UIActions component with the correct 
+         // action group id and clear it's current children
+         UIActions actions = (UIActions)this.getChildren().get(1);
+         actions.getChildren().clear();
+         setupActionGroupId(context, actions);
       }
    }
 
@@ -217,7 +210,28 @@ public class UISidebar extends SelfRenderingComponent
    {
       this.activePlugin = activePlugin;
    }
+   
+   /**
+    * Sets up the corrent actions config group id on the given actions
+    * component.
+    * 
+    * @param context Faces context
+    * @param actionsComponent The actions component to set the group id for
+    */
+   protected void setupActionGroupId(FacesContext context, UIActions actionsComponent)
+   {
+      String actionsGroupId = null;
+      SidebarConfigElement config = SidebarBean.getSidebarConfig(context);
+      if (config != null)
+      {
+         SidebarPluginConfig plugin = config.getPlugin(getActivePlugin());
+         if (plugin != null)
+         {
+            actionsGroupId = plugin.getActionsConfigId();
+         }
+      }
+      actionsComponent.setValue(actionsGroupId);
+   }
 }
-
 
 

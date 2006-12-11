@@ -697,6 +697,9 @@ public class AVMBrowseBean implements IContextListener
       return this.userSandboxes.getSelectedNodes(this.username);
    }
    
+   /**
+    * @return true if the special Submit All action has been initialised
+    */
    public boolean getSubmitAll()
    {
       return this.submitAll;

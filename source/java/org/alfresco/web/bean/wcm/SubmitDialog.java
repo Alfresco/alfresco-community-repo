@@ -484,6 +484,11 @@ public class SubmitDialog extends BaseDialogBean
                            this.workflows.add(wrapper);
                         }
                      }
+                     else
+                     {
+                        this.submitItems.add(new ItemWrapper(node));
+                        submittedPaths.add(node.getPath());
+                     }
                   }
                   else
                   {
@@ -669,8 +674,7 @@ public class SubmitDialog extends BaseDialogBean
       
       public String getIcon()
       {
-         // TODO: handle deleted file types here once implemented in the AVMNodeType enum
-         if (descriptor.isFile())
+         if (descriptor.isDeletedFile())
          {
             return Utils.getFileTypeImage(descriptor.getName(), true);
          }

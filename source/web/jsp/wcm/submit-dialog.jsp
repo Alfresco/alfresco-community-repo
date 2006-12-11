@@ -137,7 +137,10 @@
                <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
             </f:facet>
             <f:facet name="small-icon">
-               <a:actionLink id="col10-icon1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.icon}" showLink="false" styleClass="inlineAction" rendered="#{!r.deleted}" />
+               <h:panelGroup>
+                  <a:actionLink id="col10-icon1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.icon}" showLink="false" styleClass="inlineAction" rendered="#{!r.deleted}" />
+                  <h:graphicImage id="col10-icon2" title="#{r.name}" url="#{r.icon}" styleClass="inlineAction" rendered="#{r.deleted}" />
+               </h:panelGroup>
             </f:facet>
             <a:actionLink id="col10-name1" value="#{r.name}" href="#{r.url}" target="new" rendered="#{!r.deleted}" />
             <h:outputText id="col10-name2" value="#{r.name}" rendered="#{r.deleted}" />

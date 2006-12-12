@@ -260,6 +260,11 @@ public class UITree extends UIComponentBase
          this.nodeRef = nodeRef;
          this.name = name;
          this.icon = icon;
+         
+         if (this.icon == null || this.icon.length() == 0)
+         {
+            this.icon = "space-icon-default";
+         }
       }
       
       public String getIcon()

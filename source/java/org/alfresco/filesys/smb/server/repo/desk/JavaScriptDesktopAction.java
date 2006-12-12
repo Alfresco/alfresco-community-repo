@@ -274,7 +274,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
 		// Start a transaction
 		
 		TransactionService transService = getServiceRegistry().getTransactionService();
-		params.getSession().beginTransaction( transService, false);
+		params.getSession().beginWriteTransaction( transService);
 
 		// Access the script service
 		
@@ -293,7 +293,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
             
             // Start a transaction
             
-    		params.getSession().beginTransaction( transService, false);
+    		params.getSession().beginWriteTransaction( transService);
 
     		// Run the script
     		

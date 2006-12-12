@@ -523,10 +523,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     		// Create a path for the virtualization view
     		
     		avmPath = new AVMPath( path);
-    		
-    		// Validate that the store and version, if specified
-    		
-    		
     	}
     	else
     	{
@@ -605,14 +601,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	
     	// Check if the filesystem is the virtualization view
     	
-    	if ( ctx.isVirtualizationView() && storePath.isPseudoPath())
+    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
     	{
     		throw new AccessDeniedException( "Cannot create folder in store/version layer, " + params.getPath());
     	}
     	
     	// Create a new file
     	
-    	sess.beginTransaction( m_transactionService, false);
+    	sess.beginWriteTransaction( m_transactionService);
     	
     	try
     	{
@@ -649,8 +645,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	// Check if the filesystem is writable
     	
     	AVMContext ctx = (AVMContext) tree.getContext();
-    	if ( ctx.isVersion() != AVMContext.VERSION_HEAD)
-    		throw new AccessDeniedException("Cannot create " + params.getPath() + ", filesys not writable");
     	
     	// Split the path to get the file name and relative path
     	
@@ -667,14 +661,18 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	
     	// Check if the filesystem is the virtualization view
     	
-    	if ( ctx.isVirtualizationView() && storePath.isPseudoPath())
+    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
     	{
     		throw new AccessDeniedException( "Cannot create file in store/version layer, " + params.getPath());
+    	}
+    	else if ( storePath.getVersion() != AVMContext.VERSION_HEAD)
+    	{
+    		throw new AccessDeniedException("Cannot create " + params.getPath() + ", filesys not writable");
     	}
     	
     	// Create a new file
     	
-    	sess.beginTransaction( m_transactionService, false);
+    	sess.beginWriteTransaction( m_transactionService);
     	
     	AVMNetworkFile netFile = null;
     	
@@ -687,13 +685,13 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     		// Get the new file details
     		
     		AVMPath fileStorePath = buildStorePath( ctx, params.getPath());
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( ctx.isVersion(), fileStorePath.getAVMPath());
+    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( fileStorePath.getVersion(), fileStorePath.getAVMPath());
 
     		if ( nodeDesc != null)
 	    	{
 	    	    //	Create the network file object for the new file
 	    	    
-	    	    netFile = new AVMNetworkFile( nodeDesc, fileStorePath.getAVMPath(), ctx.isVersion(), m_avmService);
+	    	    netFile = new AVMNetworkFile( nodeDesc, fileStorePath.getAVMPath(), fileStorePath.getVersion(), m_avmService);
     	    	netFile.setGrantedAccess(NetworkFile.READWRITE);
 	    	    netFile.setFullName(params.getPath());
 	    	    
@@ -750,11 +748,11 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	
     	// Make sure the path is to a folder before deleting it
     	
-    	sess.beginTransaction( m_transactionService, false);
+    	sess.beginWriteTransaction( m_transactionService);
     	
     	try
     	{
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( ctx.isVersion(), storePath.getAVMPath());
+    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
 	    	if ( nodeDesc != null)
 	    	{
 	    		// Check that we are deleting a folder
@@ -815,11 +813,11 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	
     	// Make sure the path is to a file before deleting it
     	
-    	sess.beginTransaction( m_transactionService, false);
+    	sess.beginWriteTransaction( m_transactionService);
     	
     	try
     	{
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( ctx.isVersion(), storePath.getAVMPath());
+    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
 	    	if ( nodeDesc != null)
 	    	{
 	    		// Check that we are deleting a file
@@ -865,42 +863,52 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	if ( logger.isDebugEnabled())
     		logger.debug("File exists check, path=" + name + ", storePath=" + storePath);
     	
-    	// Check if the filesystem is the virtualization view
+    	// Check if the path is valid
     	
     	int status = FileStatus.NotExist;
     	
-    	if ( ctx.isVirtualizationView() && storePath.isPseudoPath())
+    	if ( storePath.isValid() == false)
+    		return status;
+    	
+    	// Check if the filesystem is the virtualization view
+    	
+    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
     	{
-    		// Check if the search path is for the root or a store folder
+    		// Find the file state for the pseudo folder
     		
-    		if ( storePath.isRootPath())
+    		FileState fstate = findPseudoState( storePath, ctx);
+    		
+    		if ( fstate != null)
     		{
-    			return FileStatus.DirectoryExists;
-    		}
-    		else
-    		{
-    			// Get the pseudo file for the store/version folder
+				// DEBUG
+				
+				if ( logger.isDebugEnabled())
+					logger.debug( "  Found pseudo file " + fstate);
+				
+    			// Check if the pseudo file is a file or folder
     			
-    			PseudoFile psFile = findPseudoFolder( storePath, ctx);
-    			if ( psFile != null)
-    			{
-    				// DEBUG
-    				
-    				if ( logger.isDebugEnabled())
-    					logger.debug( "  Found pseudo file " + psFile);
-    			
-    				return FileStatus.DirectoryExists;
-    			}
+    			if ( fstate.isDirectory())
+    				status = FileStatus.DirectoryExists;
     			else
-    				return FileStatus.NotExist;
+    				status = FileStatus.FileExists;
     		}
+   			else
+   			{
+   				// Invalid pseudo file path
+   				
+   				status = FileStatus.NotExist;
+    		}
+    		
+    		// Return the file status
+    		
+    		return status;
     	}
     	
     	// Search for the file/folder
     	
-    	sess.beginTransaction( m_transactionService, true);
+    	sess.beginReadTransaction( m_transactionService);
     	
-    	AVMNodeDescriptor nodeDesc = m_avmService.lookup( ctx.isVersion(), storePath.getAVMPath());
+    	AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
     	
     	if ( nodeDesc != null)
     	{
@@ -955,9 +963,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	if ( logger.isDebugEnabled())
     		logger.debug("Get file information, path=" + name + ", storePath=" + storePath);
 
+    	// Check if hte path is valid
+    	
+    	if ( storePath.isValid() == false)
+    		throw new FileNotFoundException( name);
+    	
     	// Check if the filesystem is the virtualization view
     	
-    	if ( ctx.isVirtualizationView() && storePath.isPseudoPath())
+    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
     	{
     		// Check if the search path is for the root, a store or version folder
     		
@@ -965,7 +978,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     		{
     			// Return dummy file informatiom for the root folder
     			
-    			return new FileInfo( name,0L, FileAttribute.Directory);
+    			return new FileInfo( name, 0L, FileAttribute.Directory);
     		}
     		else
     		{
@@ -981,13 +994,13 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     				return psFile.getFileInfo();
     			}
     			else
-    				return null;
+    				throw new FileNotFoundException( name);
     		}
     	}
     	
     	// Search for the file/folder
     	
-    	sess.beginTransaction( m_transactionService, true);
+    	sess.beginReadTransaction( m_transactionService);
     	
     	FileInfo info = null;
     	
@@ -1095,7 +1108,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	
     	// Check if the filesystem is the virtualization view
     	
-    	if ( ctx.isVirtualizationView() && storePath.isPseudoPath())
+    	if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
     	{
     		// Check if the path is for the root, a store or version folder
     		
@@ -1125,7 +1138,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	
     	// Search for the file/folder
     	
-    	sess.beginTransaction( m_transactionService, true);
+    	sess.beginReadTransaction( m_transactionService);
     	
     	AVMNetworkFile netFile = null;
     	
@@ -1133,20 +1146,20 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	{
     		// Get the details of the file/folder
 
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( ctx.isVersion(), storePath.getAVMPath());
+    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
     	
 	    	if ( nodeDesc != null)
 	    	{
 	    	    //	Check if the filesystem is read-only and write access has been requested
 	    	    
-	    	    if ( ctx.isVersion() != AVMContext.VERSION_HEAD && ( params.isReadWriteAccess() || params.isWriteOnlyAccess()))
+	    	    if ( storePath.getVersion() != AVMContext.VERSION_HEAD && ( params.isReadWriteAccess() || params.isWriteOnlyAccess()))
 	    	      throw new AccessDeniedException("File " + params.getPath() + " is read-only");
 	    	    
 	    	    //	Create the network file object for the opened file/folder
 	    	    
-	    	    netFile = new AVMNetworkFile( nodeDesc, storePath.getAVMPath(), ctx.isVersion(), m_avmService);
+	    	    netFile = new AVMNetworkFile( nodeDesc, storePath.getAVMPath(), storePath.getVersion(), m_avmService);
 	    	    
-	    	    if ( params.isReadOnlyAccess() || ctx.isVersion() != AVMContext.VERSION_HEAD)
+	    	    if ( params.isReadOnlyAccess() || storePath.getVersion() != AVMContext.VERSION_HEAD)
 	    	    	netFile.setGrantedAccess(NetworkFile.READONLY);
 	    		else
 	    	    	netFile.setGrantedAccess(NetworkFile.READWRITE);
@@ -1202,7 +1215,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	AVMNetworkFile avmFile = (AVMNetworkFile) file;
     	
     	if ( avmFile.hasContentChannel() == false)
-    		sess.beginTransaction( m_transactionService, true);
+    		sess.beginReadTransaction( m_transactionService);
     	
 		// Read the file
 
@@ -1252,14 +1265,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 
     	// Check if the filesystem is the virtualization view
     	
-    	if ( ctx.isVirtualizationView() && oldAVMPath.isPseudoPath())
+    	if ( ctx.isVirtualizationView() && oldAVMPath.isReadOnlyPseudoPath())
     	{
     		throw new AccessDeniedException( "Cannot rename folder in store/version layer, " + oldName);
     	}
     	
     	// Start a transaction for the rename
     	
-    	sess.beginTransaction( m_transactionService, false);
+    	sess.beginWriteTransaction( m_transactionService);
     	
     	try
     	{
@@ -1304,7 +1317,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	AVMNetworkFile avmFile = (AVMNetworkFile) file;
     	
     	if ( avmFile.hasContentChannel() == false)
-    		sess.beginTransaction( m_transactionService, true);
+    		sess.beginReadTransaction( m_transactionService);
     	
 		// Set the file position
 
@@ -1368,60 +1381,73 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	
     	// Check if the filesystem is the virtualization view
     	
-    	if ( avmCtx.isVirtualizationView() && storePath.isPseudoPath())
+    	if ( avmCtx.isVirtualizationView())
     	{
-    		// Check if the search path is for the root or a store folder
+    		// Check for a search of a pseudo folder
 
-    		FileState fstate = findPseudoState( storePath, avmCtx);
-
-    		if ( fstate != null)
-    		{
-    			// Get the pseudo file list for the parent directory
-    			
-    			PseudoFileList searchList = fstate.getPseudoFileList();
-    			
-	   			// Check if this is a single file or wildcard search
+    		if (storePath.isReadOnlyPseudoPath())
+	    	{
+	    		// Get the file state for the folder being searched
+	
+	    		FileState fstate = findPseudoState( storePath, avmCtx);
+	
+	    		if ( fstate != null)
+	    		{
+	    			// Get the pseudo file list for the parent directory
 	    			
-	   			if ( WildCard.containsWildcards( searchPath))
-	   			{
-	   	    		// Create the search context, wildcard filter will take care of secondary filtering of the
-	   	    		// folder listing
-	    	    		
-	   	    		WildCard wildCardFilter = new WildCard( paths[1], false);
-	   	    		return new PseudoFileListSearchContext( searchList, attrib, wildCardFilter);
-	   			}
-	   			else
-	   			{
-	   				// Search the pseudo file list for the required file
-	    				
-	   				PseudoFile pseudoFile = searchList.findFile( paths[1], false);
-	   				if ( pseudoFile != null)
-	   				{
-	   					// Create a search context using the single file details
-	    					
-	   					PseudoFileList singleList = new PseudoFileList();
-	   					singleList.addFile( pseudoFile);
-	    					
-	       	    		return new PseudoFileListSearchContext( singleList, attrib, null);
-	   				}
-	   			}
-    		}
-    		
-   			// File not found
-    			
-   			throw new FileNotFoundException( searchPath);
+	    			PseudoFileList searchList = fstate.getPseudoFileList();
+	    			
+		   			// Check if this is a single file or wildcard search
+		    			
+		   			if ( WildCard.containsWildcards( searchPath))
+		   			{
+		   	    		// Create the search context, wildcard filter will take care of secondary filtering of the
+		   	    		// folder listing
+		    	    		
+		   	    		WildCard wildCardFilter = new WildCard( paths[1], false);
+		   	    		return new PseudoFileListSearchContext( searchList, attrib, wildCardFilter);
+		   			}
+		   			else
+		   			{
+		   				// Search the pseudo file list for the required file
+		    				
+		   				PseudoFile pseudoFile = searchList.findFile( paths[1], false);
+		   				if ( pseudoFile != null)
+		   				{
+		   					// Create a search context using the single file details
+		    					
+		   					PseudoFileList singleList = new PseudoFileList();
+		   					singleList.addFile( pseudoFile);
+		    					
+		       	    		return new PseudoFileListSearchContext( singleList, attrib, null);
+		   				}
+		   			}
+	    		}
+	    		
+	   			// File not found
+	    			
+	   			throw new FileNotFoundException( searchPath);
+	    	}
+	    	else if ( storePath.isLevel() == AVMPath.LevelId.HeadMetaData || storePath.isLevel() == AVMPath.LevelId.VersionMetaData)
+	    	{
+	    		// Return an empty file list for now
+	    		
+	    		PseudoFileList metaFiles = new PseudoFileList();
+	    		
+	    		return new PseudoFileListSearchContext( metaFiles, attrib, null);
+	    	}
     	}
-    	
+
     	// Check if the path is a wildcard search
     	
-		sess.beginTransaction( m_transactionService, true);
+		sess.beginReadTransaction( m_transactionService);
     	SearchContext context = null;
     	
     	if ( WildCard.containsWildcards( searchPath))
     	{
 	    	// Get the file listing for the folder
 	    	
-	    	AVMNodeDescriptor[] fileList = m_avmService.getDirectoryListingArray( avmCtx.isVersion(), storePath.getAVMPath(), false);
+	    	AVMNodeDescriptor[] fileList = m_avmService.getDirectoryListingArray( storePath.getVersion(), storePath.getAVMPath(), false);
 	    	
 	    	// Create the search context
 	    	
@@ -1447,7 +1473,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     		
     		// Get the single file/folder details
     		
-    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( avmCtx.isVersion(), storePath.getAVMPath());
+    		AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
     		
     		if ( nodeDesc != null)
     		{
@@ -1475,12 +1501,17 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     public void truncateFile(SrvSession sess, TreeConnection tree, NetworkFile file, long siz)
     	throws java.io.IOException
     {
+        // Check if the file is a directory, or only has read access
+
+		if ( file.getGrantedAccess() == NetworkFile.READONLY)
+			throw new AccessDeniedException();
+		
     	// If the content channel is not open for the file then start a transaction
     	
     	AVMNetworkFile avmFile = (AVMNetworkFile) file;
     	
-    	if ( avmFile.hasContentChannel() == false)
-    		sess.beginTransaction( m_transactionService, true);
+    	if ( avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
+    		sess.beginWriteTransaction( m_transactionService);
     	
   	  	// Truncate or extend the file
   	  
@@ -1505,9 +1536,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
             				long fileoff)
     	throws java.io.IOException
     {
-        // Check if the file is a directory
+        // Check if the file is a directory, or only has read access
 
-		if ( file.isDirectory())
+		if ( file.isDirectory() || file.getGrantedAccess() == NetworkFile.READONLY)
 			throw new AccessDeniedException();
 
     	// If the content channel is not open for the file, or the channel is not writable, then start a transaction
@@ -1515,7 +1546,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	AVMNetworkFile avmFile = (AVMNetworkFile) file;
     	
     	if ( avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
-    		sess.beginTransaction( m_transactionService, true);
+    		sess.beginWriteTransaction( m_transactionService);
     	
 		// Write the data to the file
 		      
@@ -1558,69 +1589,165 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     private final PseudoFile findPseudoFolder( AVMPath avmPath, AVMContext avmCtx)
     {
     	// Check if the path is to a store pseudo folder
+
+    	if ( avmPath.isRootPath())
+    		return null;
     	
+    	// Get the file state for the parent of the required folder
+    	
+    	FileState fstate = null;
+    	StringBuilder str = null;
     	PseudoFile psFile = null;
     	
-		if ( avmPath.hasVersion() == false)
-		{
-			// Check for the path within the store layer
-			
-			FileState fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
-			PseudoFileList pseudoList = fstate.getPseudoFileList();
-			
-			psFile = pseudoList.findFile( avmPath.getStoreName(), false);
-		}
-		else if ( avmPath.hasRelativePath() == false)
-		{
-			// Build the path to the parent store folder
-			
-			StringBuilder storeStr = new StringBuilder();
-			
-			storeStr.append( FileName.DOS_SEPERATOR);
-			storeStr.append( avmPath.getStoreName());
-			
-			// Search for the file state for the store pseudo folder
-			
-			FileState storeState = avmCtx.getStateTable().findFileState( storeStr.toString());
-			if ( storeState != null)
-			{
-				// Search the store pseudo folder file list for the required version
-				
-				 psFile = storeState.getPseudoFileList().findFile( avmPath.getVersionString(), false);
-			}
-			else
-			{
-	            // Get the list of AVM store versions
+    	switch ( avmPath.isLevel())
+    	{
+    		// Store root folder
+    	
+	    	case StoreRoot:
+	    		
+	    		// Get the root folder file state
+	    		
+	    		fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
+	    		if ( fstate != null)
+	    			psFile = fstate.getPseudoFileList().findFile( avmPath.getStoreName(), false);
+	    		break;
+	    		
+	    	// Versions root or Head folder
+	    		
+	    	case VersionRoot:
+	    	case Head:
+	    		
+	    		// Create a path to the parent store
+	    		
+	    		str = new StringBuilder();
+	    		
+	    		str.append( FileName.DOS_SEPERATOR);
+	    		str.append( avmPath.getStoreName());
+	    		
+	    		// Find/create the file state for the store
+	    		
+	    		AVMPath storePath = new AVMPath( str.toString());
+	    		fstate = findPseudoState( storePath, avmCtx);
+	    		
+	    		// Find the version root or head pseudo folder
+	    		
+	    		if ( fstate != null)
+	    		{
+	    			if ( avmPath.isLevel() == AVMPath.LevelId.Head)
+	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.VersionNameHead, true);
+	    			else
+	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.VersionsFolder, true);
+	    		}
+	    		break;
+	    		
+	    	// Version folder
+	    		
+	    	case Version:
 
-				try
-				{
-					// Get the list of versions for the store
-					
-					List<VersionDescriptor> verList = m_avmService.getAVMStoreVersions( avmPath.getStoreName());
-					
-					// Create a file state for the store path
-					
-					storeState = avmCtx.getStateTable().findFileState( storeStr.toString(), true, true);
-					
-					// Add pseudo files for the versions to the store state
-					
-					for ( VersionDescriptor verDesc : verList)
-					{
-						// Add the version pseudo folder
-						
-						storeState.addPseudoFile( new VersionPseudoFile ( avmPath.getVersionString(), verDesc));
-					}
-					
-					// Search for the required version pseudo folder
-					
-					psFile = storeState.getPseudoFileList().findFile( avmPath.getVersionString(), false);
-				}
-				catch ( AVMNotFoundException ex)
-				{
-					// Invalid store name
-				}
-			}
-		}
+	    		// Create a path to the versions folder
+	    		
+	    		str = new StringBuilder();
+	    		
+	    		str.append( FileName.DOS_SEPERATOR);
+	    		str.append( avmPath.getStoreName());
+	    		str.append( FileName.DOS_SEPERATOR);
+	    		str.append( AVMPath.VersionsFolder);
+	    		
+	    		// Find/create the file state for the store
+	    		
+	    		AVMPath verrootPath = new AVMPath( str.toString());
+	    		fstate = findPseudoState( verrootPath, avmCtx);
+
+	    		// Find the version pseudo file
+	    		
+	    		if ( fstate != null)
+	    		{
+	    			// Build the version folder name string
+		    		
+		    		str.setLength( 0);
+		    		
+		    		str.append( AVMPath.VersionFolderPrefix);
+		    		str.append( avmPath.getVersion());
+		    		
+	    			// find the version folder pseduo file
+	    			
+	    			psFile = fstate.getPseudoFileList().findFile( str.toString(), true);
+	    		}
+	    		break;
+	    		
+	    	// Head data or metadata folder
+	    		
+	    	case HeadData:
+	    	case HeadMetaData:
+
+	    		// Create a path to the head folder
+	    		
+	    		str = new StringBuilder();
+	    		
+	    		str.append( FileName.DOS_SEPERATOR);
+	    		str.append( avmPath.getStoreName());
+	    		str.append( FileName.DOS_SEPERATOR);
+	    		str.append( AVMPath.VersionNameHead);
+	    		
+	    		// Find/create the file state for the store
+	    		
+	    		AVMPath headPath = new AVMPath( str.toString());
+	    		fstate = findPseudoState( headPath, avmCtx);
+
+	    		// Find the data or metadata pseudo folder
+	    		
+	    		if ( fstate != null)
+	    		{
+	    			// Find the pseudo folder
+	    			
+	    			if ( avmPath.isLevel() == AVMPath.LevelId.HeadData)
+	    			{
+	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.DataFolder, true);
+	    			}
+	    			else
+	    			{
+	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.MetaDataFolder, true);
+	    			}
+	    		}
+	    		break;
+
+	    	// Version data or metadata folder
+	    		
+	    	case VersionData:
+	    	case VersionMetaData:
+
+	    		// Create a path to the version folder
+	    		
+	    		str = new StringBuilder();
+	    		
+	    		str.append( FileName.DOS_SEPERATOR);
+	    		str.append( avmPath.getStoreName());
+	    		str.append( FileName.DOS_SEPERATOR);
+	    		str.append( AVMPath.VersionFolderPrefix);
+	    		str.append( avmPath.getVersion());
+	    		
+	    		// Find/create the file state for the store
+	    		
+	    		AVMPath verPath = new AVMPath( str.toString());
+	    		fstate = findPseudoState( verPath, avmCtx);
+
+	    		// Find the data or metadata pseudo folder
+	    		
+	    		if ( fstate != null)
+	    		{
+	    			// Find the pseudo folder
+	    			
+	    			if ( avmPath.isLevel() == AVMPath.LevelId.VersionData)
+	    			{
+	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.DataFolder, true);
+	    			}
+	    			else
+	    			{
+	    				psFile = fstate.getPseudoFileList().findFile( AVMPath.MetaDataFolder, true);
+	    			}
+	    		}
+	    		break;
+    	}
     	
 		// Return the pseudo file, or null if not found
 		
@@ -1636,72 +1763,148 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
      */
     private final FileState findPseudoState( AVMPath avmPath, AVMContext avmCtx)
     {
+    	// Make sure the is to a pseudo file/folder
+    	
+    	if ( avmPath.isPseudoPath() == false)
+    		return null;
+    	
     	// Check if the path is to a store pseudo folder
     	
     	FileState fstate = null;
-    	
-		if ( avmPath.isRootPath())
-		{
-			// Get the root path file state
-			
-			fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
-		}
-		else if ( avmPath.hasVersion() == false)
-		{
-			// Build the path to the parent store folder
-			
-			StringBuilder storeStr = new StringBuilder();
-			
-			storeStr.append( FileName.DOS_SEPERATOR);
-			storeStr.append( avmPath.getStoreName());
-			
-			// Search for the file state for the store pseudo folder
-			
-			fstate = avmCtx.getStateTable().findFileState( storeStr.toString());
-			
-			if ( fstate == null)
-			{
-	            // Get the list of AVM store versions
+    	StringBuilder str = null;
 
-				try
+    	switch ( avmPath.isLevel())
+    	{
+	    	// Root of the hieararchy
+	    	
+	    	case Root:
+
+	    		// Get the root path file state
+				
+				fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
+	    		break;
+	    		
+	    	// Store folder
+	    		
+	    	case StoreRoot:
+	    		
+				// Build the path to the parent store folder
+				
+				str = new StringBuilder();
+				
+				str.append( FileName.DOS_SEPERATOR);
+				str.append( avmPath.getStoreName());
+				
+				// Search for the file state for the store pseudo folder
+				
+				fstate = avmCtx.getStateTable().findFileState( str.toString());
+				
+				if ( fstate == null)
 				{
-					// Get the list of versions for the store
-					
-					List<VersionDescriptor> verList = m_avmService.getAVMStoreVersions( avmPath.getStoreName());
-					
 					// Create a file state for the store path
 					
-					fstate = avmCtx.getStateTable().findFileState( storeStr.toString(), true, true);
+					fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
 					
 					// Add a pseudo file for the head version
 					
 					fstate.addPseudoFile( new VersionPseudoFile( AVMPath.VersionNameHead));
 					
-					// Add pseudo files for the versions to the store state
+					// Add a pseudo file for the version root folder
+					
+					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.VersionsFolder));
+				}
+				break;
 
-					if ( verList.size() > 0)
+			// Head folder
+				
+	    	case Head:
+
+	    		// Build the path to the store head version folder
+				
+				str = new StringBuilder();
+				
+				str.append( FileName.DOS_SEPERATOR);
+				str.append( avmPath.getStoreName());
+				str.append( FileName.DOS_SEPERATOR);
+				str.append( AVMPath.VersionNameHead);
+				
+				// Search for the file state for the store head version pseudo folder
+				
+				fstate = avmCtx.getStateTable().findFileState( str.toString());
+				
+				if ( fstate == null)
+				{
+					// Create a file state for the store head folder path
+					
+					fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
+					
+					// Add a pseudo file for the data pseudo folder
+					
+					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.DataFolder));
+					
+					// Add a pseudo file for the metadata pseudo folder
+					
+					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.MetaDataFolder));
+				}
+	    		break;
+	    		
+			// Version root folder
+				
+	    	case VersionRoot:
+
+	    		// Get the list of AVM store versions
+
+				try
+				{
+					// Build the path to the parent store folder
+					
+					str = new StringBuilder();
+					
+					str.append( FileName.DOS_SEPERATOR);
+					str.append( avmPath.getStoreName());
+					str.append( FileName.DOS_SEPERATOR);
+					str.append( AVMPath.VersionsFolder);
+					
+					// Create a file state for the store path
+					
+					fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
+					
+					// Add pseudo folders if the list is empty
+					
+					if ( fstate.hasPseudoFiles() == false)
 					{
-						StringBuilder verStr = new StringBuilder();
+						// Build the version folder name for the head version
 						
-						for ( VersionDescriptor verDesc : verList)
+						StringBuilder verStr = new StringBuilder( AVMPath.VersionFolderPrefix);
+						verStr.append( "-1");
+						
+						// Add a pseudo file for the head version
+						
+						fstate.addPseudoFile( new VersionPseudoFile( verStr.toString()));
+						
+						// Get the list of versions for the store
+						
+						List<VersionDescriptor> verList = m_avmService.getAVMStoreVersions( avmPath.getStoreName());
+						
+						// Add pseudo files for the versions to the store state
+	
+						if ( verList.size() > 0)
 						{
-							// Generate the version string
-							
-							String verName = null;
-							
-							if ( verDesc.getVersionID() == -1)
-								verName = AVMPath.VersionNameHead;
-							else
+							for ( VersionDescriptor verDesc : verList)
 							{
-								verStr.setLength( 0);
+								// Generate the version string
+								
+								String verName = null;
+								
+								verStr.setLength( AVMPath.VersionFolderPrefix.length());
 								verStr.append( verDesc.getVersionID());
 								
 								verName = verStr.toString();
+								
+								// Add the version pseudo folder
+								
+								fstate.addPseudoFile( new VersionPseudoFile ( verName, verDesc));
 							}
-							
-							// Add the version pseudo folder
-							
-							fstate.addPseudoFile( new VersionPseudoFile ( verName, verDesc));
 						}
 					}
 				}
@@ -1709,11 +1912,44 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 				{
 					// Invalid store name
 				}
+				break;
+
+			// Version folder
 				
-			}
+	    	case Version:
+
+	    		// Build the path to the store version folder
+				
+				str = new StringBuilder();
+				
+				str.append( FileName.DOS_SEPERATOR);
+				str.append( avmPath.getStoreName());
+				str.append( FileName.DOS_SEPERATOR);
+				str.append( AVMPath.VersionFolderPrefix);
+				str.append( avmPath.getVersion());
+				
+				// Search for the file state for the version pseudo folder
+				
+				fstate = avmCtx.getStateTable().findFileState( str.toString());
+				
+				if ( fstate == null)
+				{
+					// Create a file state for the version folder path
+					
+					fstate = avmCtx.getStateTable().findFileState( str.toString(), true, true);
+					
+					// Add a pseudo file for the data pseudo folder
+					
+					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.DataFolder));
+					
+					// Add a pseudo file for the metadata pseudo folder
+					
+					fstate.addPseudoFile( new DummyFolderPseudoFile( AVMPath.MetaDataFolder));
+				}
+	    		break;
 		}
-	    
-	    // Return the file state
+
+    	// Return the file state
 	    
 	    return fstate;
     }

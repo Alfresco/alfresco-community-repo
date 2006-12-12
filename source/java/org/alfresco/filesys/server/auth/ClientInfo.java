@@ -79,6 +79,19 @@ public class ClientInfo
     
     private NodeRef m_homeNode;
 
+	//	Group and user id
+	
+	private int m_gid = -1;
+	private int m_uid = -1;
+	
+	//	List of groups for this user
+	
+	private int[] m_groups;
+	
+	//	NFS authentication type
+	
+	private int m_nfsAuthType = -1;
+    
     /**
      * Default constructor
      */
@@ -331,6 +344,56 @@ public class ClientInfo
         return m_homeNode;
     }
     
+	/**
+	 * Get the group id
+	 * 
+	 * @return int
+	 */
+	public final int getGid()
+	{
+		return m_gid;
+	}
+	
+	/**
+	 * Return the user id
+	 * 
+	 * @return int
+	 */
+	public final int getUid()
+	{
+		return m_uid;
+	}
+
+	/**
+	 * Determine if the client has additional groups
+	 * 
+	 * @return boolean
+	 */
+	public final boolean hasGroupsList()
+	{
+		return m_groups != null ? true : false;
+	}
+	
+	/**
+	 * Return the additional groups list
+	 * 
+	 * @return int[]
+	 */
+	public final int[] getGroupsList()
+	{
+		return m_groups;
+	}
+	
+	/**
+	 * Return the NFS authentication type
+	 * 
+	 * @return int
+	 */	
+	public final int getNFSAuthenticationType()
+	{
+		return m_nfsAuthType;
+	}
+	
     /**
      * Set the remote users domain
      * 
@@ -454,6 +517,46 @@ public class ClientInfo
         m_homeNode = homeNode;
     }
     
+	/**
+	 * Set the group id
+	 * 
+	 * @param gid int
+	 */
+	public final void setGid(int gid)
+	{
+		m_gid = gid;
+	}
+	
+	/**
+	 * Set the user id
+	 * 
+	 * @param uid int
+	 */
+	public final void setUid(int uid)
+	{
+		m_uid = uid;
+	}
+
+	/**
+	 * Set the groups list
+	 * 
+	 * @param groups int[]
+	 */
+	public final void setGroupsList(int[] groups)
+	{
+		m_groups = groups;
+	}
+	
+	/**
+	 * Set the NFS authentication type
+	 * 
+	 * @param type int
+	 */	
+	public final void setNFSAuthenticationType(int type)
+	{
+		m_nfsAuthType = type;
+	}
+	
     /**
      * Display the client information as a string
      * 

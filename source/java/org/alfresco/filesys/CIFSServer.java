@@ -199,6 +199,14 @@ public class CIFSServer extends AbstractLifecycleBean
             if ( srv != null)
                 srv.shutdownServer(true);
             
+            // Stop the NFS server, if running
+            
+            server.getConfiguration().setNFSServerEnabled(false);
+            
+            srv = server.getConfiguration().findServer("NFS");
+            if ( srv != null)
+                srv.shutdownServer(true);
+            
             // Only wait for shutdown if the SMB/CIFS server is enabled
             
             if ( server.getConfiguration().isSMBServerEnabled())

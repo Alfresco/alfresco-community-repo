@@ -38,17 +38,17 @@ public class FileInfo implements Serializable
     //
     // Set file information flags
 
-    public static final int SetFileSize = 0x0001;
-    public static final int SetAllocationSize = 0x0002;
-    public static final int SetAttributes = 0x0004;
-    public static final int SetModifyDate = 0x0008;
-    public static final int SetCreationDate = 0x0010;
-    public static final int SetAccessDate = 0x0020;
-    public static final int SetChangeDate = 0x0040;
-    public static final int SetGid = 0x0080;
-    public static final int SetUid = 0x0100;
-    public static final int SetMode = 0x0200;
-    public static final int SetDeleteOnClose = 0x0400;
+    public static final int SetFileSize 		= 0x0001;
+    public static final int SetAllocationSize 	= 0x0002;
+    public static final int SetAttributes 		= 0x0004;
+    public static final int SetModifyDate 		= 0x0008;
+    public static final int SetCreationDate 	= 0x0010;
+    public static final int SetAccessDate 		= 0x0020;
+    public static final int SetChangeDate 		= 0x0040;
+    public static final int SetGid 				= 0x0080;
+    public static final int SetUid 				= 0x0100;
+    public static final int SetMode 			= 0x0200;
+    public static final int SetDeleteOnClose 	= 0x0400;
 
     // File name string
 
@@ -108,10 +108,13 @@ public class FileInfo implements Serializable
 
     private boolean m_deleteOnClose;
 
+    //  File type
+    
+    private int m_fileType;
+    
     // Set file information flags
     //
-    // Used to indicate which values in the file information object are valid and should be used to
-    // set
+    // Used to indicate which values in the file information object are valid and should be used to set
     // the file information.
 
     private int m_setFlags;
@@ -528,6 +531,16 @@ public class FileInfo implements Serializable
     }
 
     /**
+     * Return the file type
+     * 
+     * @return int
+     */
+    public final int isFileType()
+    {
+    	return m_fileType;
+    }
+    
+    /**
      * Determine if the group id field has been set
      * 
      * @return boolean
@@ -833,6 +846,16 @@ public class FileInfo implements Serializable
         m_mode = mode;
     }
 
+    /**
+     * Set the file type
+     * 
+     * @param typ int
+     */
+    public final void setFileType(int typ)
+    {
+    	m_fileType = typ;
+    }
+    
     /**
      * Set the set file information flags to indicated which values are to be set
      * 

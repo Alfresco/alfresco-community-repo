@@ -285,7 +285,7 @@ public class ContentIOControlHandler implements IOControlHandler
     {
         // Start a transaction
         
-        sess.beginTransaction( getTransactionService(), true);
+        sess.beginReadTransaction( getTransactionService());
         
         // Get the file name from the request
         
@@ -531,7 +531,7 @@ public class ContentIOControlHandler implements IOControlHandler
 
         // Start a transaction
         
-        sess.beginTransaction( getTransactionService(), true);
+        sess.beginReadTransaction( getTransactionService());
 
         // Get an authentication ticket for the client, or validate the existing ticket. The ticket can be used when
         // generating URLs for the client-side application so that the user does not have to re-authenticate

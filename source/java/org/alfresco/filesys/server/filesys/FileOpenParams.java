@@ -101,6 +101,11 @@ public class FileOpenParams
 
     private int m_mode = -1;
 
+    //  File type and symbolic name
+    
+    private int m_fileType;
+    private String m_symName;
+    
     /**
      * Class constructor for Core SMB dialect Open SMB requests
      * 
@@ -455,6 +460,36 @@ public class FileOpenParams
     }
 
     /**
+     * Return the file type
+     * 
+     * @return int
+     */
+    public final int isFileType()
+    {
+    	return m_fileType;
+    }
+    
+    /**
+     * determine if the target of the create/open is a symbolic link
+     * 
+     * @return boolean
+     */
+    public final boolean isSymbolicLink()
+    {
+    	return isFileType() == FileType.SymbolicLink;
+    }
+    
+    /**
+     * Return the symbolic link name
+     * 
+     * @return String
+     */
+    public final String getSymbolicLinkName()
+    {
+    	return m_symName;
+    }
+    
+    /**
      * Return the shared access mode, zero equals allow any shared access
      * 
      * @return int
@@ -584,6 +619,27 @@ public class FileOpenParams
         m_createOptions = m_createOptions | flag;
     }
 
+    /**
+     * Set the file type
+     * 
+     * @param typ int
+     */
+    public final void setFileType(int typ)
+    {
+    	m_fileType = typ;
+    }
+    
+    /**
+     * Set the symbolic link name
+     * 
+     * @param name String
+     */
+    public final void setSymbolicLink(String name)
+    {
+    	m_symName  = name;
+    	m_fileType = FileType.SymbolicLink;
+    }
+    
     /**
      * Convert a Core/LanMan access mode to an NT access mode
      * 

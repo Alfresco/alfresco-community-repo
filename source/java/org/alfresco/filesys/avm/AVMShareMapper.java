@@ -237,7 +237,7 @@ public class AVMShareMapper implements ShareMapper {
 	                AVMDiskDriver avmDrv = (AVMDiskDriver) m_config.getAvmDiskInterface();
 	                AVMService avmService = avmDrv.getAvmService();
 
-	                sess.beginTransaction( avmDrv.getTransactionService(), true);
+	                sess.beginReadTransaction( avmDrv.getTransactionService());
 	                
 	                try
 	                {

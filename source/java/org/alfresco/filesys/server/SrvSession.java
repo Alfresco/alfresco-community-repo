@@ -469,6 +469,32 @@ public abstract class SrvSession
     }
     
     /**
+     * Create a read transaction, if not already active
+     * 
+     * @param transService TransactionService
+     * @return boolean
+     * @exception AlfrescoRuntimeException
+     */
+    public final boolean beginReadTransaction( TransactionService transService)
+    	throws AlfrescoRuntimeException
+    {
+    	return beginTransaction(transService, true);
+    }
+    
+    /**
+     * Create a write transaction, if not already active
+     * 
+     * @param transService TransactionService
+     * @return boolean
+     * @exception AlfrescoRuntimeException
+     */
+    public final boolean beginWriteTransaction( TransactionService transService)
+    	throws AlfrescoRuntimeException
+    {
+    	return beginTransaction(transService, false);
+    }
+    
+    /**
      * Create and start a transaction, if not already active
      * 
      * @param transService TransactionService
@@ -476,7 +502,7 @@ public abstract class SrvSession
      * @return boolean
      * @exception AlfrescoRuntimeException
      */
-    public final boolean beginTransaction(TransactionService transService, boolean readOnly)
+    private final boolean beginTransaction(TransactionService transService, boolean readOnly)
         throws AlfrescoRuntimeException
     {
         boolean created = false;

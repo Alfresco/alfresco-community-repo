@@ -84,7 +84,7 @@ public class CheckInOutDesktopAction extends DesktopAction {
 		
 		// Start a transaction
 		
-		params.getSession().beginTransaction( transService, false);
+		params.getSession().beginWriteTransaction( transService);
 		
 		// Process the list of target nodes
 

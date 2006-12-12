@@ -36,13 +36,34 @@ public class AVMPath {
 	
 	// Version id string for the head version
 	
-	public static final String VersionNameHead	= "Head";
+	public static final String VersionNameHead	= "HEAD";
+	
+	// Folder name for the versions folder
+	
+	public static final String VersionsFolder	= "VERSION";
+	
+	// Head and version sub-folders
+	
+	public static final String DataFolder		= "DATA";
+	public static final String MetaDataFolder	= "METADATA";
+	
+	// Version folder prefix
+	
+	public static final String VersionFolderPrefix	= "v";
 	
     // AVM path seperator
     
     public static final char AVM_SEPERATOR			= '/';
     public static final String AVM_SEPERATOR_STR	= "/";
 
+    // Level identifiers
+    
+    public enum LevelId { Invalid, Root, StoreRoot, Head, HeadData, HeadMetaData, VersionRoot, Version, VersionData, VersionMetaData, StorePath };
+    
+    // Level identifier for this path
+    
+    private LevelId m_levelId = LevelId.Invalid;
+    
     // Store name
 	
 	private String m_storeName;
@@ -94,6 +115,16 @@ public class AVMPath {
 		// Parse the path
 		
 		parsePath( storeName, version, path);
+	}
+
+	/**
+	 * Return the level id for the path
+	 * 
+	 * @return LevelId
+	 */
+	public LevelId isLevel()
+	{
+		return m_levelId;
 	}
 	
 	/**
@@ -175,7 +206,7 @@ public class AVMPath {
 	 */
 	public final boolean isValid()
 	{
-		return m_storeName == null && m_path == null ? false : true;
+		return m_levelId == LevelId.Invalid ? false : true;
 	}
 	
 	/**
@@ -185,7 +216,20 @@ public class AVMPath {
 	 */
 	public final boolean isPseudoPath()
 	{
-		return m_version == InvalidVersionId || m_path == null ? true : false;
+		return m_levelId == LevelId.Invalid || m_levelId == LevelId.StorePath ? false : true;
+	}
+
+	/**
+	 * Check if hte path is a read-only part of the pseudo folder tree
+	 * 
+	 * @return boolean
+	 */
+	public final boolean isReadOnlyPseudoPath()
+	{
+		 if ( isLevel() == LevelId.Root || isLevel() == LevelId.StoreRoot || isLevel() == LevelId.VersionRoot ||
+				 isLevel() == LevelId.Head || isLevel() == LevelId.Version)
+			 return true;
+		 return false;
 	}
 	
 	/**
@@ -195,9 +239,7 @@ public class AVMPath {
 	 */
 	public final boolean isRootPath()
 	{
-		if ( m_path != null && m_path.equals( FileName.DOS_SEPERATOR_STR))
-			return true;
-		return false;
+		return m_levelId == LevelId.Root ? true : false;
 	}
 	
 	/**
@@ -221,85 +263,179 @@ public class AVMPath {
 		if ( paths == null || paths.length == 0)
 		{
 			m_path = FileName.DOS_SEPERATOR_STR;
+			m_levelId = LevelId.Root;
 			return;
 		}
 		
 		// Set the store name
 		
 		m_storeName = paths[0];
+		m_levelId = LevelId.StoreRoot;
 		
 		if ( paths.length > 1)
 		{
-			// Validate the version id
+			// Validate the next element, should be either the HEAD or VERSIONS folder
 			
-			String verStr = paths[1];
-			if ( verStr.equalsIgnoreCase( VersionNameHead))
+			String levelStr = paths[1];
+			
+			if ( levelStr.equalsIgnoreCase( VersionNameHead))
+			{
 				m_version = -1;
+				m_levelId = LevelId.Head;
+			}
+			else if ( levelStr.equalsIgnoreCase( VersionsFolder))
+			{
+				m_levelId = LevelId.VersionRoot;
+			}
 			else
 			{
-				try
-				{
-					// Parse the version id
-					
-					m_version = Integer.parseInt( verStr);
-					
-					// Validate the version id
-					
-					if ( m_version < 0)
-					{
-						// Invalid version id
-						
-						m_storeName = null;
-						return;
-					}
-				}
-				catch ( NumberFormatException ex)
-				{
-					m_storeName = null;
-					return;
-				}
+				// Invalid folder at the current level
+				
+				m_levelId = LevelId.Invalid;
+				return;
 			}
 			
-			// If there additional path elements build the share and AVM relative paths
+			// Check the next level, if available
 			
 			if ( paths.length > 2)
 			{
-				// Build the share relative path
+				// If the previous level is the versions root then the next level should be a
+				// version id folder
+
+				String folderName = paths[2];
+				int pathIdx = 3;
 				
-				StringBuilder pathStr = new StringBuilder();
-				
-				for ( int i = 2; i < paths.length; i++)
+				if ( isLevel() == LevelId.VersionRoot)
 				{
-					pathStr.append( FileName.DOS_SEPERATOR);
-					pathStr.append( paths[i]);
+					// Check that the folder name starts with the version folder prefix
+					
+					if ( folderName != null && folderName.startsWith( VersionFolderPrefix) &&
+							folderName.length() > VersionFolderPrefix.length())
+					{						
+						try
+						{
+							// Parse the version id
+							
+							m_version = Integer.parseInt( folderName.substring( VersionFolderPrefix.length()));
+							m_levelId = LevelId.Version;
+						
+							// Validate the version id
+							
+							if ( m_version < -1)
+							{
+								// Invalid version id
+								
+								m_levelId = LevelId.Invalid;
+								return;
+							}
+						}
+						catch ( NumberFormatException ex)
+						{
+							m_levelId = LevelId.Invalid;
+							return;
+						}
+						
+						// Check for the next level
+						
+						if ( paths.length > 3)
+						{
+							// Get the next level name
+							
+							folderName = paths[3];
+							pathIdx++;
+							
+							// Check for the data folder
+							
+							if ( folderName.equalsIgnoreCase( DataFolder))
+							{
+								m_levelId = LevelId.VersionData;
+
+								// Set the path to the root of the store
+								
+								m_path = FileName.DOS_SEPERATOR_STR;
+							}
+							else if ( folderName.equalsIgnoreCase( MetaDataFolder))
+							{
+								m_levelId = LevelId.VersionMetaData;
+
+								// Set the path to the root of the metadata
+								
+								m_path = FileName.DOS_SEPERATOR_STR;
+							}
+							else
+							{
+								m_levelId = LevelId.Invalid;
+								return;
+							}
+						}
+					}
+					else
+					{
+						m_levelId = LevelId.Invalid;
+						return;
+					}
 				}
 				
-				m_path = pathStr.toString();
+				// If the previous level is head the next level should be the data or metadata folder
 				
+				else if ( isLevel() == LevelId.Head)
+				{
+					// Check for the data folder
+					
+					if ( folderName.equalsIgnoreCase( DataFolder))
+					{
+						m_levelId = LevelId.HeadData;
+
+						// Set the path to the root of the store
+						
+						m_path = FileName.DOS_SEPERATOR_STR;
+					}
+					else if ( folderName.equalsIgnoreCase( MetaDataFolder))
+					{
+						m_levelId = LevelId.HeadMetaData;
+
+						// Set the path to the root of the metadata
+						
+						m_path = FileName.DOS_SEPERATOR_STR;
+					}
+					else
+					{
+						m_levelId = LevelId.Invalid;
+						return;
+					}
+				}
+				
+				// If there are remaining paths then build a relative path
+
+				if ( paths.length > pathIdx)
+				{
+					StringBuilder pathStr = new StringBuilder();
+					
+					for ( int i = pathIdx; i < paths.length; i++)
+					{
+						pathStr.append( FileName.DOS_SEPERATOR);
+						pathStr.append( paths[i]);
+					}
+					
+					m_path = pathStr.toString();
+
+					// Set the level to indicate a store relative path
+					
+					m_levelId = LevelId.StorePath;
+				}
+
 				// Build the AVM path, in <store>:/<path> format
 				
-				pathStr.setLength( 0);
+				if ( m_path != null)
+				{
+					StringBuilder pathStr = new StringBuilder();
 				
-				pathStr.append( m_storeName);
-				pathStr.append( ":");
-				pathStr.append( m_path.replace( FileName.DOS_SEPERATOR, AVM_SEPERATOR));
-				
-				m_avmPath = pathStr.toString();
-			}
-			else
-			{
-				// Share relative path is the root of the share
-				
-				m_path = FileName.DOS_SEPERATOR_STR;
-				
-				// Build the AVM path
-				
-				StringBuilder pathStr = new StringBuilder();
-				
-				pathStr.append( m_storeName);
-				pathStr.append( ":/");
-				
-				m_avmPath = pathStr.toString();
+					pathStr.append( m_storeName);
+					pathStr.append( ":");
+					pathStr.append( m_path.replace( FileName.DOS_SEPERATOR, AVM_SEPERATOR));
+					
+					m_avmPath = pathStr.toString();
+				}
 			}
 		}
 	}
@@ -314,6 +450,8 @@ public class AVMPath {
 	public final void parsePath( String storeName, int version, String path)
 	{
 		// Clear current settings
+
+		m_levelId   = LevelId.Invalid;
 		
 		m_storeName = null;
 		m_version   = InvalidVersionId;
@@ -354,6 +492,10 @@ public class AVMPath {
     	}
     	
     	m_avmPath = avmPath.toString();
+    	
+    	// Indicate that the path is to a store relative path
+    	
+    	m_levelId = LevelId.StorePath;
 	}
 	
 	/**
@@ -364,20 +506,77 @@ public class AVMPath {
 	public String toString()
 	{
 		StringBuilder str = new StringBuilder();
-		
-		str.append("[");
-		str.append(getStoreName());
-		str.append(",");
-		
-		if ( hasVersion())
-			str.append(getVersion());
-		else
-			str.append("NoVersion");
-		
-		str.append(",");
-		str.append(getRelativePath());
-		str.append(":");
-		str.append(getAVMPath());
+
+		switch ( m_levelId)
+		{
+			case Invalid:
+				str.append("[Invalid");
+				break;
+			case Root:
+				str.append("[Root");
+				break;
+			case StoreRoot:
+				str.append("[StoresRoot");
+				break;
+			case Head:
+				str.append("[");
+				str.append(getStoreName());
+				str.append(":HEAD");
+				break;
+			case HeadData:
+				str.append("[");
+				str.append(getStoreName());
+				str.append(":HEAD\\");
+				str.append( DataFolder);
+				break;
+			case HeadMetaData:
+				str.append("[");
+				str.append(getStoreName());
+				str.append(":HEAD\\");
+				str.append( MetaDataFolder);
+				break;
+			case VersionRoot:
+				str.append("[");
+				str.append(getStoreName());
+				str.append(":Versions");
+				break;
+			case Version:
+				str.append("[");
+				str.append(getStoreName());
+				str.append(":");
+				str.append(VersionFolderPrefix);
+				str.append(getVersion());
+				break;
+			case VersionData:
+				str.append("[");
+				str.append(getStoreName());
+				str.append(":");
+				str.append(VersionFolderPrefix);
+				str.append(getVersion());
+				str.append("\\");
+				str.append( DataFolder);
+				break;
+			case VersionMetaData:
+				str.append("[");
+				str.append(getStoreName());
+				str.append(":");
+				str.append(VersionFolderPrefix);
+				str.append(getVersion());
+				str.append("\\");
+				str.append( MetaDataFolder);
+				break;
+			case StorePath:
+				str.append("[");
+				str.append(getStoreName());
+				str.append(":");
+				str.append(VersionFolderPrefix);
+				str.append(getVersion());
+				str.append(",");
+				str.append(getRelativePath());
+				str.append(":");
+				str.append(getAVMPath());
+				break;
+		}
 		str.append("]");
 		
 		return str.toString();

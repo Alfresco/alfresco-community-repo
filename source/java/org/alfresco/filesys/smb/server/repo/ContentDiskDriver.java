@@ -571,7 +571,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
                 // Get the file information for the node
                 
-                session.beginTransaction(transactionService, true);
+                session.beginReadTransaction(transactionService);
                 finfo = cifsHelper.getFileInformation(nodeRef);
 
                 // DEBUG
@@ -587,7 +587,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
             	//	Start a transaction
             	
-                session.beginTransaction(transactionService, true);
+                session.beginReadTransaction(transactionService);
                 
                 String[] paths = FileName.splitPath( path);
                 
@@ -684,7 +684,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Create the transaction
             
-            sess.beginTransaction(transactionService, true);
+            sess.beginReadTransaction(transactionService);
             
             // If the state table is available see if we can speed up the search using either cached
             // file information or find the folder node to be searched without having to walk the path
@@ -887,7 +887,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	                		
    	        	                // Get the node for the folder path
     	        	                
-   	                			sess.beginTransaction(transactionService, true);
+   	                			sess.beginReadTransaction(transactionService);
    	        	                fstate.setNodeRef( getNodeForPath( tree, paths[0]));
     	                		
     	                		// Add pseudo files to the folder
@@ -908,7 +908,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                		{
 	        	            	// Create the transaction
 	        	                
-	        	                sess.beginTransaction(transactionService, true);
+	        	                sess.beginReadTransaction(transactionService);
 	        	            
 	        	                // Get the node for the folder path
 	        	                
@@ -950,7 +950,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 {
 	            	// Create the transaction
 	                
-	                sess.beginTransaction(transactionService, true);
+	                sess.beginReadTransaction(transactionService);
 	                
 	                // Get the file information to check if the file/folder exists
 	                
@@ -1006,7 +1006,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Create the transaction
         
-        sess.beginTransaction(transactionService, false);
+        sess.beginWriteTransaction(transactionService);
         
         try
         {
@@ -1213,7 +1213,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Create the transaction
         
-        sess.beginTransaction(transactionService, false);
+        sess.beginWriteTransaction(transactionService);
         
         try
         {
@@ -1327,7 +1327,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Create the transaction
         
-        sess.beginTransaction(transactionService, false);
+        sess.beginWriteTransaction(transactionService);
         
         try
         {
@@ -1434,7 +1434,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Create the transaction
         
-        sess.beginTransaction(transactionService, false);
+        sess.beginWriteTransaction(transactionService);
         
         // get the device root
         
@@ -1522,7 +1522,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Create the transaction
         
-        sess.beginTransaction(transactionService, false);
+        sess.beginWriteTransaction(transactionService);
         
         // Get the associated file state
         
@@ -1614,7 +1614,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Create the transaction
         
-        sess.beginTransaction(transactionService, false);
+        sess.beginWriteTransaction(transactionService);
         
         // Get the device context
         
@@ -1690,7 +1690,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     public void renameFile(SrvSession sess, TreeConnection tree, String oldName, String newName) throws IOException
     {
         // Create the transaction
-        sess.beginTransaction(transactionService, false);
+
+    	sess.beginWriteTransaction(transactionService);
         
         try
         {

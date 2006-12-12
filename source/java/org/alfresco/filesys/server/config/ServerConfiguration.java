@@ -72,6 +72,8 @@ import org.alfresco.filesys.server.core.SharedDeviceList;
 import org.alfresco.filesys.server.filesys.DefaultShareMapper;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
+//import org.alfresco.filesys.server.oncrpc.DefaultRpcAuthenticator;
+//import org.alfresco.filesys.server.oncrpc.RpcAuthenticator;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.TcpipSMB;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
@@ -107,6 +109,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
     private static final String ConfigArea        = "file-servers";
     private static final String ConfigCIFS        = "CIFS Server";
     private static final String ConfigFTP         = "FTP Server";
+    private static final String ConfigNFS         = "NFS Server";
     private static final String ConfigFilesystems = "Filesystems";
     private static final String ConfigSecurity    = "Filesystem Security";
 
@@ -135,6 +138,11 @@ public class ServerConfiguration extends AbstractLifecycleBean
     
     private static final String DefaultFTPAnonymousAccount = "anonymous";
     
+	//	NFS server debug type strings
+	
+	private static final String m_nfsDebugStr[] = { "RXDATA", "TXDATA", "DUMPDATA", "SEARCH", "INFO", "FILE",
+		"FILEIO", "ERROR", "TIMING", "DIRECTORY", "SESSION" };
+	
     // Platform types
 
     public enum PlatformType
@@ -170,6 +178,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
 
     private boolean m_smbEnable = true;
     private boolean m_ftpEnable = true;
+    private boolean m_nfsEnable = true;
 
     // Server name
 
@@ -242,8 +251,8 @@ public class ServerConfiguration extends AbstractLifecycleBean
     // Flags to indicate if NetBIOS, native TCP/IP SMB and/or Win32 NetBIOS
     // should be enabled
 
-    private boolean m_netBIOSEnable = true;
-    private boolean m_tcpSMBEnable = false;
+    private boolean m_netBIOSEnable = false;
+    private boolean m_tcpSMBEnable  = false;
     private boolean m_win32NBEnable = false;
 
     // Address to bind the SMB server to, if null all local addresses are used
@@ -306,6 +315,43 @@ public class ServerConfiguration extends AbstractLifecycleBean
 
     private int m_ftpDebug;
 
+	//--------------------------------------------------------------------------------
+	//	NFS specific configuration parameters
+	//
+	//	Enable the port mapper server
+	
+	private boolean m_nfsPortMapper;
+
+	//	Port mapper port
+	
+	private int m_portMapperPort;
+	
+	//	Mount server port
+	
+	private int m_mountServerPort;
+	
+	//	NFS server port
+	
+	private int m_nfsServerPort;
+	
+	//	NFS debug flags
+	
+	private int m_nfsDebug;
+
+	//	Port mapper and mount server debug enable
+	
+	private boolean m_portMapDebug;
+	private boolean m_mountServerDebug;
+	
+	//	Thread pool size and packet pool size
+
+	private int m_nfsThreadPoolSize;
+	private int m_nfsPacketPoolSize;
+
+	//  RPC authenticator implementation
+
+//	private RpcAuthenticator m_rpcAuthenticator;
+    
     // --------------------------------------------------------------------------------
     // Global server configuration
     //
@@ -617,6 +663,26 @@ public class ServerConfiguration extends AbstractLifecycleBean
 	            // Log the successful startup
 	            
 	            logger.info("FTP server started");
+	        }
+        	catch (Exception ex)
+        	{
+	            // Configuration error
+        		
+	            logger.error("FTP server configuration error, " + ex.getMessage(), ex);
+        	}        		
+
+        	// Initialize the NFS server
+
+        	try
+	        {
+	            // Process the NFS server configuration
+	
+	            config = configService.getConfig(ConfigNFS, configCtx);
+	            processNFSServerConfig(config);
+	            
+	            // Log the successful startup
+	            
+	            logger.info("NFS server started");
 	        }
         	catch (Exception ex)
         	{
@@ -1596,6 +1662,174 @@ public class ServerConfiguration extends AbstractLifecycleBean
         }
     }
 
+    /**
+     * Process the NFS server configuration
+     * 
+     * @param config Config
+     */
+    private final void processNFSServerConfig(Config config)
+    {
+/**    	
+        // If the configuration section is not valid then NFS is disabled
+        
+        if ( config == null)
+        {
+            setNFSServerEnabled(false);
+            return;
+        }
+
+		//	Check if the port mapper is enabled
+		
+		if ( config.getConfigElement("enablePortMapper") != null)
+			m_nfsPortMapper = true;
+
+		//	Check for the thread pool size
+		
+		ConfigElement elem = config.getConfigElement("ThreadPool");
+		
+		if ( elem != null) {
+
+			try {
+				
+				//	Convert the pool size value
+				
+				int poolSize = Integer.parseInt(elem.getValue());
+				
+				//	Range check the pool size value
+				
+				if ( poolSize < 4)
+					throw new AlfrescoRuntimeException("NFS thread pool size is below minimum of 4");
+					
+				//	Set the thread pool size
+				
+				m_nfsThreadPoolSize = poolSize;
+			}
+			catch (NumberFormatException ex) {
+				throw new AlfrescoRuntimeException("Invalid NFS thread pool size setting, " + elem.getValue());
+			}
+		}
+
+		//	NFS packet pool size
+		
+		elem = config.getConfigElement("PacketPool");
+		
+		if ( elem != null) {
+
+			try {
+				
+				//	Convert the packet pool size value
+				
+				int pktPoolSize = Integer.parseInt(elem.getValue());
+				
+				//	Range check the pool size value
+				
+				if ( pktPoolSize < 10)
+					throw new AlfrescoRuntimeException("NFS packet pool size is below minimum of 10");
+
+				if ( pktPoolSize < getNFSThreadPoolSize() + 1)
+				  throw new AlfrescoRuntimeException("NFS packet pool must be at least thread pool size plus one");
+				
+				//	Set the packet pool size
+				
+				m_nfsPacketPoolSize = pktPoolSize;
+			}
+			catch (NumberFormatException ex) {
+				throw new AlfrescoRuntimeException("Invalid NFS packet pool size setting, " + elem.getValue());
+			}
+		}
+
+		//	Check for a port mapper server port
+		
+		elem = config.getConfigElement("PortMapperPort");
+		if ( elem != null) {
+			try {
+				m_portMapperPort = Integer.parseInt(elem.getValue());
+				if ( getPortMapperPort() <= 0 || getPortMapperPort() >= 65535)
+					throw new AlfrescoRuntimeException("Port mapper server port out of valid range");
+			}
+			catch (NumberFormatException ex) {
+				throw new AlfrescoRuntimeException("Invalid port mapper server port");
+			}
+		}
+
+		//	Check for a mount server port
+		
+		elem = config.getConfigElement("MountServerPort");
+		if ( elem != null) {
+			try {
+				m_mountServerPort = Integer.parseInt(elem.getValue());
+				if ( getMountServerPort() <= 0 || getMountServerPort() >= 65535)
+					throw new AlfrescoRuntimeException("Mount server port out of valid range");
+			}
+			catch (NumberFormatException ex) {
+				throw new AlfrescoRuntimeException("Invalid mount server port");
+			}
+		}
+		
+		//	Check for an NFS server port
+		
+		elem = config.getConfigElement("NFSServerPort");
+		if ( elem != null) {
+			try {
+				m_nfsServerPort = Integer.parseInt(elem.getValue());
+				if ( getNFSServerPort() <= 0 || getNFSServerPort() >= 65535)
+					throw new AlfrescoRuntimeException("NFS server port out of valid range");
+			}
+			catch (NumberFormatException ex) {
+				throw new AlfrescoRuntimeException("Invalid NFS server port");
+			}
+		}
+
+		//	Check if NFS debug is enabled
+
+		elem = config.getConfigElement("debug");
+		if (elem != null) {
+	
+			//	Check for NFS debug flags
+	
+			String flags = elem.getAttribute("flags");
+			int nfsDbg = 0;
+	
+			if ( flags != null) {
+		
+				//	Parse the flags
+		
+				flags = flags.toUpperCase();
+				StringTokenizer token = new StringTokenizer(flags,",");
+		
+				while ( token.hasMoreTokens()) {
+			
+					//	Get the current debug flag token
+			
+					String dbg = token.nextToken().trim();
+			
+					//	Find the debug flag name
+			
+					int idx = 0;
+			
+					while ( idx < m_nfsDebugStr.length && m_nfsDebugStr[idx].equalsIgnoreCase(dbg) == false)
+						idx++;
+				
+					if ( idx >= m_nfsDebugStr.length)
+						throw new AlfrescoRuntimeException("Invalid NFS debug flag, " + dbg);
+				
+					//	Set the debug flag
+			
+					nfsDbg += 1 << idx;
+				}
+			}
+
+			//	Set the NFS debug flags
+	
+			m_nfsDebug = nfsDbg;
+		}
+		
+		// Create the RPC authenticator
+		
+		m_rpcAuthenticator = new DefaultRpcAuthenticator();
+**/
+    }
+    
     /**
      * Process the filesystems configuration
      * 
@@ -2932,6 +3166,16 @@ public class ServerConfiguration extends AbstractLifecycleBean
     }
     
     /**
+     * Set the NFS server enabled state
+     * 
+     * @param ena boolean
+     */
+    public final void setNFSServerEnabled(boolean ena)
+    {
+        m_nfsEnable = ena;
+    }
+    
+    /**
      * Set the authenticator to be used to authenticate users and share connections for CIFS.
      * 
      * @param auth CifsAuthenticator
@@ -3445,6 +3689,118 @@ public class ServerConfiguration extends AbstractLifecycleBean
         m_ftpDebug = dbg;
     }
     
+    /**
+     * Check if the NFS server is enabled
+     * 
+     * @return boolean
+     */
+    public final boolean isNFSServerEnabled()
+    {
+        return m_nfsEnable;
+    }
+    
+	/**
+	 * Determine if port mapper debug is enabled
+	 * 
+	 * @return boolean
+	 */
+    public final boolean hasPortMapperDebug()
+	{
+	  return m_portMapDebug;
+	}
+	
+	/**
+	 * Determine if mount server debug is enabled
+	 * 
+	 * @return boolean
+	 */
+	public final boolean hasMountServerDebug()
+	{
+	  return m_mountServerDebug;
+	}
+	
+	/**
+	 * Check if the NFS port mapper is enabled
+	 *
+	 * @return boolean
+	 */
+	public final boolean hasNFSPortMapper()
+	{
+		return m_nfsPortMapper;
+	}
+	
+	/**
+	 * Return the port for port mapper to use, or zero for the default port
+	 * 
+	 * @return int
+	 */
+	public final int getPortMapperPort()
+	{
+	  return m_portMapperPort;
+	}
+	
+	/**
+	 * Return the port the mount server should use, or zero for the default port
+	 * 
+	 * @return int
+	 */
+    public final int getMountServerPort()
+	{
+	  return m_mountServerPort;
+	}
+	
+	/**
+	 * Return the port the NFS server should use, or zero for the default port
+	 * 
+	 * @return int
+	 */
+    public final int getNFSServerPort()
+	{
+	  return m_nfsServerPort;
+	}
+	
+	/**
+	 * Return the NFS debug flags
+	 * 
+	 * @return int
+	 */
+	public final int getNFSDebug()
+	{
+		return m_nfsDebug;
+	}
+
+	/**
+	 * Return the NFS thread pool size
+	 * 
+	 * @return int
+	 */
+	public final int getNFSThreadPoolSize()
+	{
+		return m_nfsThreadPoolSize;
+	}
+
+	/**
+	 * Return the NFS server packet pool size, or -1 for the default size
+	 * 
+	 * @return int
+	 */
+	public final int getNFSPacketPoolSize()
+	{
+		return m_nfsPacketPoolSize;
+	}
+
+	/**
+	 * Get the authenticator object that is used to provide RPC authentication (for the portmapper, mount server and
+	 * NFS server)
+	 *
+	 * @return RpcAuthenticator
+	 */
+/**
+    public final RpcAuthenticator getRpcAuthenticator()
+	{
+		return m_rpcAuthenticator;
+	}
+**/
     /**
      * Close the server configuration, used to close various components that are shared between protocol
      * handlers.

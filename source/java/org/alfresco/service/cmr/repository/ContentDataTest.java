@@ -16,6 +16,8 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import org.alfresco.i18n.I18NUtil;
+
 import junit.framework.TestCase;
 
 /**
@@ -38,18 +40,19 @@ public class ContentDataTest extends TestCase
         // check null string
         String propertyStr = property.toString();
         assertEquals("Null values not converted correctly",
-                "contentUrl=|mimetype=|size=0|encoding=", propertyStr);
+                "contentUrl=|mimetype=|size=0|encoding=|locale=", propertyStr);
         
         // convert back
         ContentData checkProperty = ContentData.createContentProperty(propertyStr);
         assertEquals("Conversion from string failed", property, checkProperty);
         
-        property = new ContentData("uuu", "mmm", 123L, "eee");
+        String localeStr = I18NUtil.getLocale().toString();
+        property = new ContentData("uuu", "mmm", 123L, "eee", I18NUtil.getLocale());
 
         // convert to a string
         propertyStr = property.toString();
         assertEquals("Incorrect property string representation",
-                "contentUrl=uuu|mimetype=mmm|size=123|encoding=eee", propertyStr);
+                "contentUrl=uuu|mimetype=mmm|size=123|encoding=eee|locale=" + localeStr, propertyStr);
         
         // convert back
         checkProperty = ContentData.createContentProperty(propertyStr);

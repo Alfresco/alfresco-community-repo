@@ -17,8 +17,10 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
+import java.util.Locale;
+import java.util.StringTokenizer;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -36,6 +38,7 @@ public class ContentData implements Serializable
     private final String mimetype;
     private final long size;
     private final String encoding;
+    private final Locale locale;
     
     /**
      * Construct a content property from a string
@@ -45,52 +48,59 @@ public class ContentData implements Serializable
      */
     public static ContentData createContentProperty(String contentPropertyStr)
     {
-        // get the content url
-        int contentUrlIndex = contentPropertyStr.indexOf("contentUrl=");
-        if (contentUrlIndex == -1)
+        String contentUrl = null;
+        String mimetype = null;
+        long size = 0L;
+        String encoding = null;
+        Locale locale = null;
+        // now parse the string
+        StringTokenizer tokenizer = new StringTokenizer(contentPropertyStr, "|");
+        while (tokenizer.hasMoreTokens())
         {
-            throw new AlfrescoRuntimeException(
-                    "ContentData string does not have a content URL: " +
-                    contentPropertyStr);
-        }
-        int mimetypeIndex = contentPropertyStr.indexOf("|mimetype=", contentUrlIndex + 11);
-        if (mimetypeIndex == -1)
-        {
-            throw new AlfrescoRuntimeException(
-                    "ContentData string does not have a mimetype: " +
-                    contentPropertyStr);
-        }
-        int sizeIndex = contentPropertyStr.indexOf("|size=", mimetypeIndex + 10);
-        if (sizeIndex == -1)
-        {
-            throw new AlfrescoRuntimeException(
-                    "ContentData string does not have a size: " +
-                    contentPropertyStr);
-        }
-        int encodingIndex = contentPropertyStr.indexOf("|encoding=", sizeIndex + 6);
-        if (encodingIndex == -1)
-        {
-            throw new AlfrescoRuntimeException(
-                    "ContentData string does not have an encoding: " +
-                    contentPropertyStr);
+            String token = tokenizer.nextToken();
+            if (token.startsWith("contentUrl="))
+            {
+                contentUrl = token.substring(11);
+                if (contentUrl.length() == 0)
+                {
+                    contentUrl = null;
+                }
+            }
+            else if (token.startsWith("mimetype="))
+            {
+                mimetype = token.substring(9);
+                if (mimetype.length() == 0)
+                {
+                    mimetype = null;
+                }
+            }
+            else if (token.startsWith("size="))
+            {
+                String sizeStr = token.substring(5);
+                if (sizeStr.length() > 0)
+                {
+                    size = Long.parseLong(sizeStr);
+                }
+            }
+            else if (token.startsWith("encoding="))
+            {
+                encoding = token.substring(9);
+                if (encoding.length() == 0)
+                {
+                    encoding = null;
+                }
+            }
+            else if (token.startsWith("locale="))
+            {
+                String localeStr = token.substring(7);
+                if (localeStr.length() > 0)
+                {
+                    locale = I18NUtil.parseLocale(localeStr);
+                }
+            }
         }
         
-        String contentUrl = contentPropertyStr.substring(contentUrlIndex + 11, mimetypeIndex);
-        if (contentUrl.length() == 0)
-            contentUrl = null;
-        String mimetype = contentPropertyStr.substring(mimetypeIndex + 10, sizeIndex);
-        if (mimetype.length() == 0)
-            mimetype = null;
-        String sizeStr = contentPropertyStr.substring(sizeIndex + 6, encodingIndex);
-        if (sizeStr.length() == 0)
-            sizeStr = "0";
-        String encoding = contentPropertyStr.substring(encodingIndex + 10);
-        if (encoding.length() == 0)
-            encoding = null;
-        
-        long size = Long.valueOf(sizeStr);
-        
-        ContentData property = new ContentData(contentUrl, mimetype, size, encoding);
+        ContentData property = new ContentData(contentUrl, mimetype, size, encoding, locale);
         // done
         return property;
     }
@@ -109,9 +119,20 @@ public class ContentData implements Serializable
                 existing == null ? null : existing.contentUrl,
                 mimetype,
                 existing == null ? 0L : existing.size,
-                existing == null ? "UTF-8" : existing.encoding);
+                existing == null ? "UTF-8" : existing.encoding,
+                existing == null ? null : existing.locale);
         // done
         return ret;
+    }
+    
+    /**
+     * Create a content data without a locale.
+     * 
+     * @see #ContentData(String, String, long, String, Locale)
+     */
+    public ContentData(String contentUrl, String mimetype, long size, String encoding)
+    {
+        this(contentUrl, mimetype, size, encoding, null);
     }
     
     /**
@@ -124,16 +145,17 @@ public class ContentData implements Serializable
      *      <b>mimetype</b> must be supplied.
      * @param mimetype the content mimetype.  This is mandatory if the <b>contentUrl</b> is specified.
      * @param size the content size.
-     * @param encoding the content encoding.
+     * @param encoding the content encoding (may be <tt>null</tt>).
+     * @param locale the locale of the content (may be <tt>null</tt>).
      */
-    public ContentData(String contentUrl, String mimetype, long size, String encoding)
+    public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale)
     {
         checkContentUrl(contentUrl, mimetype);
-        
         this.contentUrl = contentUrl;
         this.mimetype = mimetype;
         this.size = size;
         this.encoding = encoding;
+        this.locale = locale;
     }
     
     public boolean equals(Object obj)
@@ -148,7 +170,8 @@ public class ContentData implements Serializable
         return (EqualsHelper.nullSafeEquals(this.contentUrl, that.contentUrl) &&
                 EqualsHelper.nullSafeEquals(this.mimetype, that.mimetype) &&
                 this.size == that.size &&
-                EqualsHelper.nullSafeEquals(this.encoding, that.encoding));
+                EqualsHelper.nullSafeEquals(this.encoding, that.encoding) &&
+                EqualsHelper.nullSafeEquals(this.locale, that.locale));
     }
     
     /**
@@ -160,7 +183,8 @@ public class ContentData implements Serializable
         sb.append("contentUrl=").append(contentUrl == null ? "" : contentUrl)
           .append("|mimetype=").append(mimetype == null ? "" : mimetype)
           .append("|size=").append(size)
-          .append("|encoding=").append(encoding == null ? "" : encoding);
+          .append("|encoding=").append(encoding == null ? "" : encoding)
+          .append("|locale=").append(locale == null ? "" : locale);
         return sb.toString();
     }
     
@@ -242,5 +266,15 @@ public class ContentData implements Serializable
     public String getEncoding()
     {
         return encoding;
+    }
+    
+    /**
+     * Get the content's locale.
+     * 
+     * @return Returns a locale, or null if the locale is unknown
+     */
+    public Locale getLocale()
+    {
+        return locale;
     }
 }

@@ -237,8 +237,10 @@ dojo.declare("alfresco.xforms.FilePicker",
                render: function(attach_point)
                {
                  this.domNode = document.createElement("div");
+                 attach_point.appendChild(this.domNode);
                  this.domNode.setAttribute("id", this.id + "-widget");
                  this.domNode.style.width = "100%";
+
                  this.domNode.widget = this;
                  this.domNode.addEventListener("heightChanged", 
                                                function(event) 
@@ -247,7 +249,6 @@ dojo.declare("alfresco.xforms.FilePicker",
                                                    event.target.offsetHeight + "px";
                                                }, 
                                                false);
-                 attach_point.appendChild(this.domNode);
                  //XXXarielb support readonly and disabled
                  this.widget = new FilePickerWidget(this.domNode, this.getInitialValue(), false);
                  this.widget.render();
@@ -1853,14 +1854,18 @@ function _findElementById(node, id)
 //             " in " + (node ? node.nodeName : null) + 
 //             "(" + (node ? node.getAttribute("id") : null) + ")");
   if (node.getAttribute("id") == id)
+  {
     return node;
+  }
   for (var i = 0; i < node.childNodes.length; i++)
   {
     if (node.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
     {
       var n = _findElementById(node.childNodes[i], id);
       if (n)
+      {
         return n;
+      }
     }
   }
   return null;
@@ -1875,8 +1880,7 @@ function create_ajax_request(target, serverMethod, methodArgs, load, error)
   result.load = load;
   dojo.event.connect(result, "load", function(type, data, evt)
                      {
-//           _hide_errors();
-                       ajax_request_load_handler(this);
+                       ajax_request_load_handler(result);
                      });
   result.error = error || function(type, e)
     {
@@ -1906,9 +1910,7 @@ function _show_error(msg)
     errorDiv.setAttribute("id", "alfresco-xforms-error");
     dojo.html.setClass(errorDiv, "infoText statusErrorText");
     errorDiv.style.padding = "2px";
-    errorDiv.style.borderColor = "#003366";
-    errorDiv.style.borderWidth = "1px";
-    errorDiv.style.borderStyle = "solid";
+    errorDiv.style.border = "1px solid #003366";
     var alfUI = document.getElementById("alfresco-xforms-ui");
     dojo.dom.prependChild(errorDiv, alfUI);
   }
@@ -1971,20 +1973,19 @@ function ajax_loader_update_display()
 
 function ajax_request_load_handler(req)
 {
-  var ajaxLoader = _get_ajax_loader_element();
-  var index = -1;
-  for (var i = 0; i < _ajax_requests.length; i++)
-  {
-    if (_ajax_requests[i] == req)
-    {
-      index = i;
-      break;
-    }
-  }
-  if (index == -1)
+  var index = _ajax_requests.indexOf(req);
+  if (index != -1)
     _ajax_requests.splice(index, 1);
   else
-    throw new Error("unable to find " + req.url);
+  {
+    var urls = [];
+    for (var i = 0; i < _ajax_requests.length; i++)
+    {
+      urls.push(_ajax_requests[i].url);
+    }
+    throw new Error("unable to find " + req.url + 
+                    " in [" + urls.join(", ") + "]");
+  }
   ajax_loader_update_display();
 }
 
@@ -2078,6 +2079,61 @@ function FilePickerWidget(node, value, readonly)
   this.readonly =  readonly || false;
 }
 
+FilePickerWidget._uploads = [];
+FilePickerWidget._handleUpload = function(id, fileInput, webappRelativePath, widget)
+{
+  id = id.substring(0, id.indexOf("-widget"));
+  var d = fileInput.ownerDocument;
+  var iframe = d.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.name = id + "_upload_frame";
+  iframe.id = iframe.name;
+  document.body.appendChild(iframe);
+  // makes it possible to target the frame properly in ie.
+  window.frames[id + "_upload_frame"].name = iframe.name;
+
+  FilePickerWidget._uploads[id] = 
+  {
+    widget:widget, 
+    path: fileInput.value, 
+    webappRelativePath: webappRelativePath,
+    fileName: fileInput.value.substring(fileInput.value.lastIndexOf("/") + 1)
+  };
+
+  var form = document.createElement("form");
+  form.style.display = "none";
+  d.body.appendChild(form);
+  form.id = id + "_upload_form";
+  form.name = form.id;
+  form.method = "post";
+  form.encoding = "multipart/form-data";
+  form.enctype = "multipart/form-data";
+  form.target = iframe.name;
+  form.action = WEBAPP_CONTEXT + "/ajax/invoke/XFormsBean.uploadFile";
+  form.appendChild(fileInput.cloneNode(true));
+
+  var rp = d.createElement("input");
+  form.appendChild(rp);
+  rp.type = "hidden";
+  rp.name = "id";
+  rp.value = id;
+
+  var rp = d.createElement("input");
+  form.appendChild(rp);
+  rp.type = "hidden";
+  rp.name = "currentPath";
+  rp.value = webappRelativePath;
+
+  form.submit();
+}
+
+FilePickerWidget._upload_completeHandler = function(id)
+{
+  var upload = FilePickerWidget._uploads[id];
+  upload.widget._upload_completeHandler(upload.fileName, 
+                                        upload.webappRelativePath);
+}
+
 FilePickerWidget.prototype = {
 getValue: function()
 {
@@ -2102,6 +2158,46 @@ render: function()
 {
   this._showSelectedValue();
 },
+_showStatus: function(text)
+{
+  var d = this.node.ownerDocument;
+  if (!this.statusDiv || !this.statusDiv.parentNode)
+  {
+    this.statusDiv = d.createElement("div");
+    this.node.insertBefore(this.statusDiv, this.node.firstChild);
+    dojo.html.setClass(this.statusDiv, "infoText");
+    this.statusDiv.style.padding = "2px";
+    this.statusDiv.style.border = "1px solid #003366";
+    this.statusDiv.style.fontWeight = "bold";
+    this.statusDiv.style.margin = "2px 5%";
+    this.statusDiv.style.textAlign = "center";
+    this.statusDiv.appendChild(d.createTextNode(text));
+    this.node.style.height = (parseInt(this.node.style.height) +
+                              parseInt(this.statusDiv.style.marginTop) +
+                              parseInt(this.statusDiv.style.marginBottom) +
+                              this.statusDiv.offsetHeight) + "px";
+    var event = d.createEvent("UIEvents");
+    event.initUIEvent("heightChanged", true, true, window, 0);
+    this.node.dispatchEvent(event);
+  }
+  else
+  {
+    this.statusDiv.firstChild.nodeValue = text;
+  }
+},
+_hideStatus: function()
+{
+  if (this.statusDiv)
+  {
+    this.node.style.height = (parseInt(this.node.style.height) -
+                              this.statusDiv.offsetHeight) + "px";
+    dojo.dom.removeChildren(this.statusDiv);
+    dojo.dom.removeNode(this.statusDiv);
+    var event = d.createEvent("UIEvents");
+    event.initUIEvent("heightChanged", true, true, window, 0);
+    this.node.dispatchEvent(event);
+  }
+},
 _showSelectedValue: function()
 {
   var d = this.node.ownerDocument;
@@ -2110,23 +2206,31 @@ _showSelectedValue: function()
 
   this.node.style.height = "20px";
   this.node.style.lineHeight = this.node.style.height;
+  this.node.style.position = "relative";
+  this.node.style.whiteSpace = "nowrap";
+
   var event = d.createEvent("UIEvents");
   event.initUIEvent("heightChanged", true, true, window, 0);
   this.node.dispatchEvent(event);
 
-  this.node.appendChild(d.createTextNode(this.value == null 
-                                         ? "<none selected>" 
-                                         : this.value));
+  this.selectedPathInput = d.createElement("input");
+  this.node.appendChild(this.selectedPathInput);
+  this.selectedPathInput.type = "text";
+  this.selectedPathInput.value = this.value == null ? "" : this.value;
+  dojo.event.connect(this.selectedPathInput, "onblur", this, this._selectPathInput_changeHandler);
+
   this.selectButton = d.createElement("input");
   this.node.appendChild(this.selectButton);
   this.selectButton.filePickerWidget = this;
   this.selectButton.type = "button";
   this.selectButton.value = this.value == null ? "Select" : "Change";
   this.selectButton.disabled = this.readonly;
-  this.selectButton.style.marginLeft = "10px";
-  this.selectButton.style.position = "absolute";
-  this.selectButton.style.right = "10px";
-  this.selectButton.style.top = (.5 * this.node.offsetHeight) - (.5 * this.selectButton.offsetHeight) + "px";
+  this.selectButton.style.margin = "0px 10px 0px 10px";
+  this.selectedPathInput.style.width = (this.node.offsetWidth - 
+                                        this.selectButton.offsetWidth - 
+                                        parseInt(this.selectButton.style.marginRight) -
+                                        parseInt(this.selectButton.style.marginLeft))
+                                        + "px";
   dojo.event.connect(this.selectButton, 
                      "onclick", 
                      function(event)
@@ -2134,6 +2238,11 @@ _showSelectedValue: function()
                        var w = event.target.filePickerWidget;
                        w._navigateToNode(w.getValue() || "");
                      });
+
+},
+_selectPathInput_changeHandler: function(event)
+{
+  this.setValue(event.target.value);
 },
 _navigateToNode: function(path)
 {
@@ -2149,9 +2258,19 @@ _navigateToNode: function(path)
 },
 _showPicker: function(data)
 {
-  dojo.dom.removeChildren(this.node);
+  while (this.node.hasChildNodes() &&
+         this.node.lastChild != this.statusDiv)
+  {
+    this.node.removeChild(this.node.lastChild);
+  }
+
   var d = this.node.ownerDocument;
-  this.node.style.height = "200px";
+  this.node.style.height = (200 +
+                            (this.statusDiv 
+                             ? (parseInt(this.statusDiv.style.height) +
+                                parseInt(this.statusDiv.style.marginTop) +
+                                parseInt(this.statusDiv.style.marginBottom))
+                             : 0) + "px");
   var event = d.createEvent("UIEvents");
   event.initUIEvent("heightChanged", true, true, window, 0);
   this.node.dispatchEvent(event);
@@ -2221,13 +2340,37 @@ _showPicker: function(data)
   headerMenuTriggerImage.style.marginLeft = "4px";
   headerMenuTriggerImage.align = "absmiddle";
 
-  var headerRightLink = d.createElement("a");
-  headerRightLink.setAttribute("webappRelativePath", currentPath);
-  headerRightLink.filePickerWidget = this;
-  headerRightLink.setAttribute("href", "javascript:void(0)");
+  var headerRightDiv = d.createElement("div");
+
+  var addContentLink = d.createElement("a");
+  headerRightDiv.appendChild(addContentLink);
+  addContentLink.setAttribute("webappRelativePath", currentPath);
+  addContentLink.filePickerWidget = this;
+  addContentLink.setAttribute("href", "javascript:void(0)");
+  dojo.event.connect(addContentLink, 
+                     "onclick", 
+                     function(event)
+                     {
+                       var t = event.target;
+                       t.filePickerWidget._showAddContentPanel(t, t.getAttribute("webappRelativePath"));
+                     });
+
+  var addContentImage = d.createElement("img");
+  addContentImage.style.borderWidth = "0px";
+  addContentImage.style.margin = "0px 2px 0px 2px";
+  addContentImage.align = "absmiddle";
+  addContentImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/add.gif");
+  addContentLink.appendChild(addContentImage);
+  addContentLink.appendChild(d.createTextNode("Add Content"));
+
+  var navigateToParentLink = d.createElement("a");
+  headerRightDiv.appendChild(navigateToParentLink);
+  navigateToParentLink.setAttribute("webappRelativePath", currentPath);
+  navigateToParentLink.filePickerWidget = this;
+  navigateToParentLink.setAttribute("href", "javascript:void(0)");
   if (currentPathName != "/")
   {
-    dojo.event.connect(headerRightLink, 
+    dojo.event.connect(navigateToParentLink, 
                        "onclick", 
                        function(event)
                        {
@@ -2239,24 +2382,26 @@ _showPicker: function(data)
                          w._navigateToNode(parentPath);
                        });
   }
+
   var navigateToParentNodeImage = d.createElement("img");
   navigateToParentNodeImage.style.borderWidth = "0px";
   navigateToParentNodeImage.style.opacity =  (currentPathName == "/" ? .3 : 1);
-  navigateToParentNodeImage.style.marginRight = "2px";
+  navigateToParentNodeImage.style.margin = "0px 2px 0px 2px";
+  navigateToParentNodeImage.align = "absmiddle";
   navigateToParentNodeImage.setAttribute("src", WEBAPP_CONTEXT + "/images/icons/up.gif");
-  headerRightLink.appendChild(navigateToParentNodeImage);
-  headerRightLink.appendChild(d.createTextNode("Go up"));
+  navigateToParentLink.appendChild(navigateToParentNodeImage);
+  navigateToParentLink.appendChild(d.createTextNode("Go up"));
 
-  headerRightLink.style.position = "absolute";
-  headerRightLink.style.height = headerDiv.style.height;
-  headerRightLink.style.lineHeight = headerRightLink.style.height;
-  headerRightLink.style.top = "0px";
-  headerRightLink.style.right = "0px";
-  headerRightLink.style.paddingRight = "2px";
-  headerDiv.appendChild(headerRightLink);
+  headerRightDiv.style.position = "absolute";
+  headerRightDiv.style.height = headerDiv.style.height;
+  headerRightDiv.style.lineHeight = headerRightDiv.style.height;
+  headerRightDiv.style.top = "0px";
+  headerRightDiv.style.right = "0px";
+  headerRightDiv.style.paddingRight = "2px";
+  headerDiv.appendChild(headerRightDiv);
 
-  var contentDiv = d.createElement("div");
-  this.node.appendChild(contentDiv);
+  this.contentDiv = d.createElement("div");
+  this.node.appendChild(this.contentDiv);
 
   var footerDiv = d.createElement("div");
   this.node.appendChild(footerDiv);
@@ -2278,11 +2423,11 @@ _showPicker: function(data)
                        w._showSelectedValue();
                      });
 
-
-  contentDiv.style.height = (this.node.offsetHeight - 
-                             footerDiv.offsetHeight -
-                             headerDiv.offsetHeight - 10) + "px";
-  contentDiv.style.overflowY = "auto";
+  this.contentDiv.style.height = (this.node.offsetHeight -
+                                  (this.statusDiv ? this.statusDiv.offsetHeight : 0) -
+                                  footerDiv.offsetHeight -
+                                  headerDiv.offsetHeight - 10) + "px";
+  this.contentDiv.style.overflowY = "auto";
   var childNodes = data.getElementsByTagName("child-node");
   for (var i = 0; i < childNodes.length; i++)
   {
@@ -2295,7 +2440,7 @@ _showPicker: function(data)
 
     var row = d.createElement("div");
     row.setAttribute("id", name + "-row");
-    contentDiv.appendChild(row);
+    this.contentDiv.appendChild(row);
     row.rowIndex = i;
     row.style.position = "relative";
     row.style.height = "20px";
@@ -2367,6 +2512,57 @@ _showPicker: function(data)
                          w._showSelectedValue();
                        });
   }
+},
+_showAddContentPanel: function(addContentLink, currentPath)
+{
+  var d = this.node.ownerDocument;
+  this.addContentDiv = d.createElement("div");
+  this.contentDiv.style.opacity = .3;
+  this.node.insertBefore(this.addContentDiv, this.contentDiv);
+  this.addContentDiv.style.backgroundColor = "lightgrey";
+  this.addContentDiv.style.position = "absolute";
+  this.addContentDiv.style.left = "10%";
+  this.addContentDiv.style.right = "10%";
+  this.addContentDiv.style.width = "80%";
+  this.addContentDiv.style.marginLeft = "4px";
+  this.addContentDiv.style.lineHeight = "20px";
+  var e = d.createElement("div");
+  e.style.marginLeft = "4px";
+  this.addContentDiv.appendChild(e);
+  e.appendChild(d.createTextNode("Upload a file to " + currentPath + " :"));
+
+  var fileInputDiv = d.createElement("div");
+  this.addContentDiv.appendChild(fileInputDiv);
+  fileInput = d.createElement("input");
+  fileInputDiv.appendChild(fileInput);
+  fileInput.widget = this;
+  fileInput.style.margin = "4px 4px";
+  fileInput.name = this.node.getAttribute("id") + "_file_input";
+  fileInput.type = "file";
+  fileInput.size = "35";
+  fileInput.setAttribute("webappRelativePath", currentPath);
+  dojo.event.connect(fileInput, 
+                     "onchange", 
+                     function(event)
+                     {
+                       var w = event.target.widget;
+                       FilePickerWidget._handleUpload(w.node.getAttribute("id"), 
+                                                      event.target,
+                                                      event.target.getAttribute("webappRelativePath"),
+                                                      w);
+                       if (w.addContentDiv)
+                       {
+                         dojo.dom.removeChildren(w.addContentDiv);
+                         dojo.dom.removeNode(w.addContentDiv);
+                         w.addContentDiv = null;
+                       }
+                     });
+},
+_upload_completeHandler: function(fileName, webappRelativePath)
+{
+  this._showStatus("Successfully uploaded " + fileName +
+                   " into " + webappRelativePath);
+  this._navigateToNode(webappRelativePath);
 },
 _closeParentPathMenu: function()
 {

@@ -233,7 +233,7 @@ public class AVMEditBean
       {
          private final FormsService ts = FormsService.getInstance();
 
-         public Document getContent()
+         public Document load()
          { 
             try
             {
@@ -247,7 +247,8 @@ public class AVMEditBean
             }
          }
          
-         public void setContent(final Document d)
+         public void save(final Document d,
+                          final String[] uploadedFilePaths)
          {
             AVMEditBean.this.setEditorOutput(this.ts.writeXMLToString(d));
          }

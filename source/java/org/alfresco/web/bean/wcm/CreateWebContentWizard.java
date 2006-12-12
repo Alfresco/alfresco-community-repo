@@ -84,6 +84,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected FormInstanceData formInstanceData = null;
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
+   protected String[] uploadedFilePaths = null;
 
    /** AVM service bean reference */
    protected AVMService avmService;
@@ -144,6 +145,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.formName = null;
       this.mimeType = MimetypeMap.MIMETYPE_XML;
       this.formInstanceData = null;
+      this.uploadedFilePaths = null;
       this.renditions = null;
       this.startWorkflow = false;
       
@@ -161,6 +163,14 @@ public class CreateWebContentWizard extends BaseContentWizard
             this.formSelectDisabled = true;
          }
       }
+      
+      // reset the preview layer
+      String path = this.avmBrowseBean.getCurrentPath();
+      path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
+      path = path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE;
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("reseting layer " + path);
+      this.avmSyncService.resetLayer(path);
    }
 
    @Override
@@ -190,6 +200,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          LOGGER.debug("clearing form instance data");
          this.formInstanceData = null;
+         this.uploadedFilePaths = null;
          this.renditions = null;
       }
       return super.back();
@@ -230,6 +241,23 @@ public class CreateWebContentWizard extends BaseContentWizard
                                         -1, path.replaceFirst(AVMConstants.STORE_PREVIEW, 
                                                               AVMConstants.STORE_MAIN), 
                                         AVMDifference.NEWER));
+      }
+
+      for (String path : this.uploadedFilePaths)
+      {
+         diffList.add(new AVMDifference(-1, path,
+                                        -1, path.replaceFirst(AVMConstants.STORE_PREVIEW,
+                                                              AVMConstants.STORE_MAIN),
+                                        AVMDifference.NEWER));
+      }
+
+      if (LOGGER.isDebugEnabled())
+      {
+         for (AVMDifference diff : diffList)
+         {
+            LOGGER.debug("updating " + AVMConstants.STORE_MAIN + 
+                         " with " + diff.getSourcePath());
+         }
       }
       this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
       
@@ -412,11 +440,6 @@ public class CreateWebContentWizard extends BaseContentWizard
       }
 
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("reseting layer " + path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
-
-      this.avmSyncService.resetLayer(path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE);
-
-      if (LOGGER.isDebugEnabled())
          LOGGER.debug("creating all directories in path " + path);
 
       fs.makeAllDirectories(path);
@@ -577,7 +600,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          private final FormsService ts = FormsService.getInstance();
 
-         public Document getContent()
+         public Document load()
          { 
             try
             {
@@ -591,9 +614,11 @@ public class CreateWebContentWizard extends BaseContentWizard
             }
          }
     
-         public void setContent(final Document d)
+         public void save(final Document d, 
+                          final String[] uploadedFilePaths)
          {
             CreateWebContentWizard.this.setContent(ts.writeXMLToString(d));
+            CreateWebContentWizard.this.uploadedFilePaths = uploadedFilePaths;
          }
       };
    }

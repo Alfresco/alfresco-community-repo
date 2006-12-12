@@ -22,9 +22,6 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.*;
@@ -33,9 +30,7 @@ import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FopFactory;
-import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
-import org.apache.fop.apps.PageSequenceResults;
 
 /**
  * A rendering engine which uses xsl-fo templates to generate renditions of
@@ -48,6 +43,33 @@ public class XSLFORenderingEngine
 {
 
    private static final Log LOGGER = LogFactory.getLog(XSLFORenderingEngine.class);
+
+   private static final Map<String, String> MIME_TYPES = 
+      new HashMap<String, String>();
+   static
+   {
+      MIME_TYPES.put(MimeConstants.MIME_PDF, MimeConstants.MIME_PDF);
+
+      MIME_TYPES.put(MimeConstants.MIME_POSTSCRIPT, MimeConstants.MIME_POSTSCRIPT);
+      MIME_TYPES.put(MimeConstants.MIME_EPS, MimeConstants.MIME_POSTSCRIPT);
+
+      MIME_TYPES.put(MimeConstants.MIME_PLAIN_TEXT, MimeConstants.MIME_PLAIN_TEXT);
+
+      MIME_TYPES.put(MimeConstants.MIME_RTF, MimeConstants.MIME_RTF);
+      MIME_TYPES.put(MimeConstants.MIME_RTF_ALT1, MimeConstants.MIME_RTF);
+      MIME_TYPES.put(MimeConstants.MIME_RTF_ALT2, MimeConstants.MIME_RTF);
+
+      MIME_TYPES.put(MimeConstants.MIME_MIF, MimeConstants.MIME_MIF);
+      MIME_TYPES.put("application/x-mif", MimeConstants.MIME_MIF);
+
+      MIME_TYPES.put(MimeConstants.MIME_SVG, MimeConstants.MIME_SVG);
+      MIME_TYPES.put("image/svg", MimeConstants.MIME_SVG);
+
+      MIME_TYPES.put(MimeConstants.MIME_GIF, MimeConstants.MIME_GIF);
+      MIME_TYPES.put(MimeConstants.MIME_PNG, MimeConstants.MIME_PNG);
+      MIME_TYPES.put(MimeConstants.MIME_JPEG, MimeConstants.MIME_JPEG);
+      MIME_TYPES.put(MimeConstants.MIME_TIFF, MimeConstants.MIME_TIFF);
+   };
 
    public XSLFORenderingEngine()
    {
@@ -72,16 +94,21 @@ public class XSLFORenderingEngine
       RenderingEngine.RenderingException
    {
       Result result = null;
+      String mimetype = MIME_TYPES.get(ret.getMimetypeForRendition());
+      if (mimetype == null)
+      {
+         throw new RenderingEngine.RenderingException("mimetype " + ret.getMimetypeForRendition() +
+                                                      " is not supported by " + this.getName());
+      }
       try
       {
          final FopFactory fopFactory = FopFactory.newInstance();
          final FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
-         final Fop fop = fopFactory.newFop(ret.getMimetypeForRendition(), 
+         final Fop fop = fopFactory.newFop(mimetype, 
                                            foUserAgent, 
                                            out);
          // Resulting SAX events (the generated FO) must be piped through to FOP
          result = new SAXResult(fop.getDefaultHandler());
-         
       }
       catch (FOPException fope)
       {

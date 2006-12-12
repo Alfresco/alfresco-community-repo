@@ -16,6 +16,9 @@
  */
 package org.alfresco.web.app.servlet.ajax;
 
+import java.lang.annotation.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -25,7 +28,7 @@ import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.EvaluationException;
-import javax.faces.el.MethodBinding;
+import javax.faces.el.VariableResolver;
 import javax.faces.render.RenderKit;
 import javax.faces.render.RenderKitFactory;
 import javax.servlet.ServletException;
@@ -51,59 +54,68 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class InvokeCommand extends BaseAjaxCommand
 {
-   public void execute(final FacesContext facesContext, 
-         final String expression,
-         final HttpServletRequest request, 
-         final HttpServletResponse response)
-         throws ServletException, IOException
-   {
-      // setup the JSF response writer.
-      
-      // NOTE: it doesn't seem to matter what the content type of the response is (at least with Dojo), 
-      // it determines it's behaviour from the mimetype specified in the AJAX call on the client,
-      // therefore, for now we will always return a content type of text/xml.
-      // In the future we may use annotations on the method to be called to specify what content
-      // type should be used for the response.
-      // NOTE: JSF only seems to support XML and HTML content types by default so this will
-      //       also need to be addressed if other content types need to be returned i.e. JSON.
-      
-      OutputStream os = response.getOutputStream();
-      UIViewRoot viewRoot = facesContext.getViewRoot();
-      RenderKitFactory renderFactory = (RenderKitFactory)FactoryFinder.
-            getFactory(FactoryFinder.RENDER_KIT_FACTORY);
-      RenderKit renderKit = renderFactory.getRenderKit(facesContext, 
-            viewRoot.getRenderKitId());
-      ResponseWriter writer = renderKit.createResponseWriter(
-            new OutputStreamWriter(os), MimetypeMap.MIMETYPE_XML, "UTF-8");
-      facesContext.setResponseWriter(writer);
-      // must be text/xml otherwise IE doesn't parse the response properly into responseXML
-      response.setContentType(MimetypeMap.MIMETYPE_XML);
 
-      // create the JSF binding expression
-      String bindingExpr = makeBindingExpression(expression);
-      
-      if (logger.isDebugEnabled())
-         logger.debug("Invoking method represented by " + bindingExpr);
-      
+   /////////////////////////////////////////////////////////////////////////////
+
+   /**
+    * Annotation for a bean method that handles an ajax request.
+    */
+   @Retention(RetentionPolicy.RUNTIME)
+   @Target(ElementType.METHOD)
+   public @interface ResponseMimetype
+   {
+      public String value() default MimetypeMap.MIMETYPE_XML;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
+   public void execute(final FacesContext facesContext, 
+                       final String expression,
+                       final HttpServletRequest request, 
+                       final HttpServletResponse response)
+      throws ServletException, IOException
+   {
+
+   
       UserTransaction tx = null;
+      ResponseWriter writer = null;
       try
       {
-         // create the method binding from the expression
-         MethodBinding binding = facesContext.getApplication().createMethodBinding(
-               bindingExpr, new Class[] {});
+         final VariableResolver vr = facesContext.getApplication().getVariableResolver();
+
+         final int indexOfDot = expression.indexOf('.');
+         final String variableName = expression.substring(0, indexOfDot);
+         final String methodName = expression.substring(indexOfDot + 1);
+
+         if (logger.isDebugEnabled())
+            logger.debug("Invoking method represented by " + expression +
+                         " on variable " + variableName + 
+                         " with method " + methodName);
+
+         final Object bean  = vr.resolveVariable(facesContext, variableName);
+         final Method method = bean.getClass().getMethod(methodName);
+
+         final String responseMimetype = 
+            (method.isAnnotationPresent(ResponseMimetype.class)
+             ? method.getAnnotation(ResponseMimetype.class).value()
+             : MimetypeMap.MIMETYPE_XML);
+
+         if (logger.isDebugEnabled())
+            logger.debug("invoking method " + method + 
+                         " with repsonse mimetype  " + responseMimetype);
+         writer = this.setupResponseWriter(responseMimetype,
+                                           response,
+                                           facesContext);
+
+         // setup the transaction
+         tx = Repository.getUserTransaction(facesContext);
+         tx.begin();
          
-         if (binding != null)
-         {
-            // setup the transaction
-            tx = Repository.getUserTransaction(facesContext);
-            tx.begin();
-            
-            // invoke the method
-            binding.invoke(facesContext, new Object[] {});
-            
-            // commit
-            tx.commit();
-         }
+         // invoke the method
+         method.invoke(bean);
+
+         // commit
+         tx.commit();
       }
       catch (Throwable err)
       {
@@ -118,6 +130,14 @@ public class InvokeCommand extends BaseAjaxCommand
                err = cause;
             }
          }
+         else if (err instanceof InvocationTargetException)
+         {
+            final Throwable cause = ((InvocationTargetException)err).getCause();
+            if (cause != null)
+            {
+               err = cause;
+            }
+         }
 
          logger.error(err);
          throw new AlfrescoRuntimeException("Failed to execute method " + expression + 
@@ -126,5 +146,27 @@ public class InvokeCommand extends BaseAjaxCommand
 
       // force the output back to the client
       writer.close();
+   }
+
+   /** setup the JSF response writer. */
+   private ResponseWriter setupResponseWriter(final String mimetype,
+                                              final HttpServletResponse response, 
+                                              final FacesContext facesContext)
+      throws IOException
+   {
+      final OutputStream os = response.getOutputStream();
+      final UIViewRoot viewRoot = facesContext.getViewRoot();
+      final RenderKitFactory renderFactory = (RenderKitFactory)
+         FactoryFinder.getFactory(FactoryFinder.RENDER_KIT_FACTORY);
+      final RenderKit renderKit = 
+         renderFactory.getRenderKit(facesContext, viewRoot.getRenderKitId());
+      final ResponseWriter writer = 
+         renderKit.createResponseWriter(new OutputStreamWriter(os), 
+                                        mimetype, 
+                                        "UTF-8");
+      facesContext.setResponseWriter(writer);
+      // must be text/xml otherwise IE doesn't parse the response properly into responseXML
+      response.setContentType(mimetype);
+      return writer;
    }
 }

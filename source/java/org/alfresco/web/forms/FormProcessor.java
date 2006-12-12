@@ -35,9 +35,11 @@ public interface FormProcessor
     */
    public interface InstanceData
    {
-       public Document getContent();
-   
-       public void setContent(final Document d);
+      
+      public Document load();
+      
+      public void save(final Document d, 
+                       final String[] uploadedFilePaths);
    }
 
    /////////////////////////////////////////////////////////////////////////////

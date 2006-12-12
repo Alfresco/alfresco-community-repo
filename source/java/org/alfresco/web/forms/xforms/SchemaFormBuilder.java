@@ -390,7 +390,6 @@ public class SchemaFormBuilder
                       formContentWrapper,
                       schema,
                       rootElementDecl,
-                      rootElementDecl.getTypeDefinition(),
                       "/" + getElementName(rootElementDecl, xForm));
       if (importedInstanceDocumentElement != null)
       {
@@ -1058,9 +1057,9 @@ public class SchemaFormBuilder
                            final Element formSection,
                            final XSModel schema,
                            final XSElementDeclaration elementDecl,
-                           XSTypeDefinition controlType,
-                           final String pathToRoot) {
-
+                           final String pathToRoot) 
+   {
+      XSTypeDefinition controlType = elementDecl.getTypeDefinition();
       if (controlType == null) 
       {
          // TODO!!! Figure out why this happens... for now just warn...
@@ -1664,7 +1663,6 @@ public class SchemaFormBuilder
                                repeatContentWrapper,
                                schema,
                                element,
-                               element.getTypeDefinition(),
                                path);
 
                final SchemaUtil.Occurance elementOccurs = SchemaUtil.getOccurance(element);

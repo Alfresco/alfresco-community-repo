@@ -37,6 +37,11 @@ public interface RenderingEngine
       extends Exception
    {
 
+      public RenderingException(final String msg)
+      {
+         super(msg);
+      }
+
       public RenderingException(final Exception cause)
       {
          super(cause);

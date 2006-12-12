@@ -89,9 +89,6 @@ public final class FormsService
    private static FormsService INSTANCE;
    private static DocumentBuilder documentBuilder;
    
-   /** internal storage of forms, keyed by the form name */
-   private HashMap<String, Form> forms = new HashMap<String, Form>();
-
    private static final RenderingEngine[] RENDERING_ENGINES = new RenderingEngine[] 
    {
       new FreeMarkerRenderingEngine(),
@@ -101,8 +98,6 @@ public final class FormsService
    
    private final ContentService contentService;
    private final NodeService nodeService;
-   private final FileFolderService fileFolderService;
-   private final DictionaryService dictionaryService;
    private final NamespaceService namespaceService;
    private final SearchService searchService;
    private final AVMService avmService;
@@ -112,16 +107,12 @@ public final class FormsService
    /** instantiated using spring */
    public FormsService(final ContentService contentService,
                        final NodeService nodeService,
-                       final FileFolderService fileFolderService,
-                       final DictionaryService dictionaryService,
                        final NamespaceService namespaceService,
                        final SearchService searchService,
                        final AVMService avmService)
    {
       this.contentService = contentService;
       this.nodeService = nodeService;
-      this.fileFolderService = fileFolderService;
-      this.dictionaryService = dictionaryService;
       this.namespaceService = namespaceService;
       this.searchService = searchService;
       this.avmService = avmService;

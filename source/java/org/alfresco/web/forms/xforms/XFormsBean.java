@@ -16,50 +16,51 @@
  */
 package org.alfresco.web.forms.xforms;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.LinkedList;
-
+import java.io.*;
+import java.util.*;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
-import javax.faces.context.ExternalContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.web.bean.wcm.AVMConstants;
-import org.alfresco.web.forms.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.alfresco.util.TempFileProvider;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.app.servlet.ajax.InvokeCommand;
+import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
+import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.Utils;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.chiba.xml.xforms.ChibaBean;
 import org.chiba.xml.xforms.Instance;
 import org.chiba.xml.xforms.XFormsElement;
 import org.chiba.xml.xforms.connector.http.AbstractHTTPConnector;
 import org.chiba.xml.xforms.core.ModelItem;
-import org.chiba.xml.xforms.exception.XFormsException;
 import org.chiba.xml.xforms.events.XFormsEvent;
 import org.chiba.xml.xforms.events.XFormsEventFactory;
+import org.chiba.xml.xforms.exception.XFormsException;
 import org.chiba.xml.xforms.ui.BoundElement;
 import org.chiba.xml.xforms.ui.Upload;
-
+import org.springframework.util.FileCopyUtils;
 import org.w3c.dom.*;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.*;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
+import org.w3c.dom.ls.*;
 import org.xml.sax.SAXException;
 
 /**
@@ -72,9 +73,10 @@ public class XFormsBean
 
    private Form form;
    private FormProcessor.InstanceData instanceData = null;
-   private ChibaBean chibaBean;
+   private final ChibaBean chibaBean = new ChibaBean();
    private SchemaFormBuilder schemaFormBuilder = null;
-   private final LinkedList<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
+   private final HashMap<String, String> uploads = new HashMap<String, String>();
+   private final List<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
 
    /** @return the form */
    public Form getForm()
@@ -105,7 +107,6 @@ public class XFormsBean
       {
          LOGGER.debug("initializing " + this + " with form " + this.form.getName());
       }
-      this.chibaBean = new ChibaBean();
       final FacesContext facesContext = FacesContext.getCurrentInstance();
       final ExternalContext externalContext = facesContext.getExternalContext();
       final HttpServletRequest request = (HttpServletRequest)
@@ -139,7 +140,7 @@ public class XFormsBean
          final Document schemaDocument = this.form.getSchema();
          this.rewriteInlineURIs(schemaDocument, cwdAVMPath);
          final Document xformsDocument = 
-            this.schemaFormBuilder.buildXForm(instanceData.getContent(), 
+            this.schemaFormBuilder.buildXForm(instanceData.load(), 
                                               schemaDocument,
                                               this.form.getSchemaRootElementName());
 
@@ -290,20 +291,29 @@ public class XFormsBean
     * handles submits and sets the instance data.
     */
    public void handleAction() 
-      throws Exception
    {
       LOGGER.debug(this + ".handleAction");
-      final FacesContext context = FacesContext.getCurrentInstance();
-      final HttpServletRequest request = (HttpServletRequest)
-         context.getExternalContext().getRequest();
-      final FormsService formsService = FormsService.getInstance();
-      final Document result = formsService.parseXML(request.getInputStream());
-      this.schemaFormBuilder.removePrototypeNodes(result.getDocumentElement());
-      this.instanceData.setContent(result);
+      try
+      {
+         final FacesContext context = FacesContext.getCurrentInstance();
+         final HttpServletRequest request = (HttpServletRequest)
+            context.getExternalContext().getRequest();
+         final FormsService formsService = FormsService.getInstance();
+         final Document result = formsService.parseXML(request.getInputStream());
+         this.schemaFormBuilder.removePrototypeNodes(result.getDocumentElement());
 
-      final ResponseWriter out = context.getResponseWriter();
-      formsService.writeXML(result, out);
-      out.close();
+         final String[] uploadedFilePaths = (String[])
+            this.uploads.values().toArray(new String[0]);
+         this.instanceData.save(result, uploadedFilePaths);
+
+         final ResponseWriter out = context.getResponseWriter();
+         formsService.writeXML(result, out);
+         out.close();
+      }
+      catch (Throwable t)
+      {
+         LOGGER.error(t);
+      }
    }
 
    /**
@@ -329,6 +339,7 @@ public class XFormsBean
    /**
     * Provides data for a file picker widget.
     */
+   @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_XML)
    public void getFilePickerData()
       throws Exception
    {
@@ -347,7 +358,10 @@ public class XFormsBean
       }
       else
       {
-         currentPath = AVMConstants.buildAbsoluteAVMPath(browseBean.getCurrentPath(),
+         final String previewStorePath = 
+            browseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
+                                                     AVMConstants.STORE_PREVIEW);
+         currentPath = AVMConstants.buildAbsoluteAVMPath(previewStorePath,
                                                          currentPath);
       }
       LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
@@ -401,6 +415,94 @@ public class XFormsBean
 
       final ResponseWriter out = facesContext.getResponseWriter();
       FormsService.getInstance().writeXML(result, out);
+      out.close();
+   }
+   
+   @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
+   public void uploadFile()
+      throws Exception
+   {
+      LOGGER.debug(this + ".uploadFile()");
+      final FacesContext facesContext = FacesContext.getCurrentInstance();
+      final ExternalContext externalContext = facesContext.getExternalContext();
+      final HttpServletRequest request = (HttpServletRequest)
+         externalContext.getRequest();
+      final HttpSession session = (HttpSession)
+         externalContext.getSession(true);
+      final AVMBrowseBean browseBean = (AVMBrowseBean)
+         session.getAttribute("AVMBrowseBean");
+
+      final ServletFileUpload upload = 
+         new ServletFileUpload(new DiskFileItemFactory());
+      upload.setHeaderEncoding("UTF-8");
+      final List<FileItem> fileItems = upload.parseRequest(request);
+      final FileUploadBean bean = new FileUploadBean();
+      String uploadId = null;
+      String currentPath = null;
+      String filename = null;
+      InputStream fileInputStream = null;
+      for (FileItem item : fileItems)
+      {
+         LOGGER.debug("item = " + item);
+         if (item.isFormField() && item.getFieldName().equals("id"))
+         {
+            uploadId = item.getString();
+            LOGGER.debug("uploadId is " + uploadId);
+         }
+         else if (item.isFormField() && item.getFieldName().equals("currentPath"))
+         {
+            final String previewStorePath = 
+               browseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
+                                                        AVMConstants.STORE_PREVIEW);
+            currentPath = AVMConstants.buildAbsoluteAVMPath(previewStorePath,
+                                                            item.getString());
+            LOGGER.debug("currentPath is " + currentPath);
+         }
+         else
+         {
+            filename = item.getName();
+            int idx = filename.lastIndexOf('\\');
+            if (idx == -1)
+            {
+               idx = filename.lastIndexOf('/');
+            }
+            if (idx != -1)
+            {
+               filename = filename.substring(idx + File.separator.length());
+            }
+            fileInputStream = item.getInputStream();
+            LOGGER.debug("parsed file " + filename);
+         }
+      }
+
+      final ServiceRegistry serviceRegistry = 
+         Repository.getServiceRegistry(facesContext);
+      final AVMService avmService = serviceRegistry.getAVMService();
+      LOGGER.debug("saving file " + filename + " to " + currentPath);
+      
+      FileCopyUtils.copy(fileInputStream, 
+                         avmService.createFile(currentPath, filename));
+
+      this.uploads.put(uploadId, currentPath + "/" + filename);
+
+      LOGGER.debug("upload complete.  sending response");
+      final FormsService formsService = FormsService.getInstance();
+      final Document result = formsService.newDocument();
+      final Element htmlEl = result.createElement("html");
+      result.appendChild(htmlEl);
+      final Element bodyEl = result.createElement("body");
+      htmlEl.appendChild(bodyEl);
+
+      final Element scriptEl = result.createElement("script");
+      bodyEl.appendChild(scriptEl);
+      scriptEl.setAttribute("type", "text/javascript");
+      final Node scriptText = 
+         result.createTextNode("window.parent.FilePickerWidget." +
+                               "_upload_completeHandler('" + uploadId + "');");
+      scriptEl.appendChild(scriptText);
+
+      final ResponseWriter out = facesContext.getResponseWriter();
+      formsService.writeXML(result, out);
       out.close();
    }
 

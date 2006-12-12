@@ -1023,6 +1023,106 @@
 	    </property>
 	</bean>
 	
+    <bean id="avmServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getFileInputStream</value>
+                <value>getContentReader</value>
+                <value>getDirectoryListing</value>
+                <value>getDirectoryListingDirect</value>
+                <value>getDirectoryListingArray</value>
+                <value>getDeleted</value>
+                <value>getNextVersionID</value>
+                <value>getLatestSnapshotID</value>
+                <value>getAVMStoreVersions</value>
+                <value>getAVMStores</value>
+                <value>getAVMStoreRoot</value>
+                <value>lookup</value>
+                <value>getPaths</value>
+                <value>getHeadPaths</value>
+                <value>getPathsInStoreHead</value>
+                <value>getIndirectionPath</value>
+                <value>getHistory</value>
+                <value>getCommonAncestor</value>
+                <value>getLayereingInfo</value>
+                <value>getNodeProperty</value>
+                <value>getNodeProperties</value>
+                <value>getStoreProperty</value>
+                <value>getStoreProperties</value>
+                <value>queryStorePropertyKey</value>
+                <value>queryStoresPropertyKeys</value>
+                <value>getContentDataForRead</value>
+                <value>getAspects</value>
+                <value>hasAspect</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="avmServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getFileOutputStream</value>
+                <value>createContentWriter</value>
+                <value>createFile</value>
+                <value>createDirectory</value>
+                <value>createLayeredFile</value>
+                <value>createLayeredDirectory</value>
+                <value>retargetLayeredDirectory</value>
+                <value>createAVMStore</value>
+                <value>createBranch</value>
+                <value>removeNode</value>
+                <value>rename</value>
+                <value>uncover</value>
+                <value>flatten</value>
+                <value>createSnapshot</value>
+                <value>purgeAVMStore</value>
+                <value>purgeVersion</value>
+                <value>makePrimary</value>
+                <value>setOpacity</value>
+                <value>setNodeProperty</value>
+                <value>setNodeProperties</value>
+                <value>deleteNodeProperty</value>
+                <value>deleteNodeProperties</value>
+                <value>setStoreProperty</value>
+                <value>setStoreProperties</value>
+                <value>deleteStoreProperty</value>
+                <value>getContentDataForWrite</value>
+                <value>setContentData</value>
+                <value>setMetaDataFrom</value>
+                <value>addAspect</value>
+                <value>removeAspect</value>
+                <value>link</value>
+                <value>forceCopy</value>
+                <value>copy</value>
+                <value>renameStore</value>
+            </list>
+        </property>
+    </bean>
+	
+    <bean id="AVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.avm.AVMService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>avmService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>avmServiceWriteTxnAdvisor</value>
+                <value>avmServiceReadTxnAdvisor</value>
+            </list>
+        </property>
+    </bean>
+	
+	<!--
     <bean id="AVMService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.avm.AVMService</value>
@@ -1037,6 +1137,7 @@
         </list>
         </property>
     </bean>
+	-->
 	
     <bean id="AVMService_descriptor" parent="AlfrescoServiceDescriptor">
         <property name="interface">

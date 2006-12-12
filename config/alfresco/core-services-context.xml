@@ -158,6 +158,48 @@
     	</property>
     </bean>
 
+    <bean id="readWriteTransactionDefinition" class="org.springframework.transaction.support.DefaultTransactionDefinition">
+        <property name="propagationBehaviorName">
+            <value>PROPAGATION_REQUIRED</value>
+        </property>
+        <property name="readOnly">
+            <value>false</value>
+        </property>
+    </bean>
+	
+    <bean id="readOnlyTransactionDefinition" class="org.springframework.transaction.support.DefaultTransactionDefinition">
+        <property name="propagationBehaviorName">
+            <value>PROPAGATION_REQUIRED</value>
+        </property>
+        <property name="readOnly">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <bean id="retryingWriteTxnAdvice" class="org.alfresco.repo.transaction.RetryingTransactionAdvice">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionDefinition">
+            <ref bean="readWriteTransactionDefinition"/>
+        </property>
+        <property name="maxRetries">
+            <value>10</value>
+        </property>
+    </bean>
+
+    <bean id="retryingReadTxnAdvice" class="org.alfresco.repo.transaction.RetryingTransactionAdvice">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionDefinition">
+            <ref bean="readOnlyTransactionDefinition"/>
+        </property>
+        <property name="maxRetries">
+            <value>10</value>
+        </property>
+    </bean>
+
     <!--                        -->
     <!-- I18N                   -->
     <!--                        -->

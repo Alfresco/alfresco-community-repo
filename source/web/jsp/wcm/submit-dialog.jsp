@@ -56,9 +56,11 @@
 
 <h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px">
    <h:outputText value="#{msg.submit_comment}"/>
-   <h:inputText id="comment" value="#{DialogManager.bean.comment}" maxlength="1024" size="35" />
+   <h:inputText id="comment" value="#{DialogManager.bean.comment}" maxlength="1024" size="35"
+        onkeyup="javascript:checkButtonState();" />
    <h:outputText value="#{msg.submit_snapshotlabel}"/>
-   <h:inputText id="label" value="#{DialogManager.bean.label}" maxlength="1024" size="35" />
+   <h:inputText id="label" value="#{DialogManager.bean.label}" maxlength="1024" size="35"
+        onkeyup="javascript:checkButtonState();" />
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"

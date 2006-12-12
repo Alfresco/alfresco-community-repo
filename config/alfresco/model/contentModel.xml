@@ -216,6 +216,31 @@
             </child-association>
          </associations>
       </type>
+      
+      <!-- Multilingual -->
+      <type name="cm:mlContainer">
+         <title>Multilingual Container</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="cm:mlEditionLabel">
+               <title>Edition Label</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="cm:mlChild">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:mlTranslation</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
             
    </types>
    
@@ -227,11 +252,11 @@
          <properties>
             <property name="cm:title">
                <title>Title</title>
-               <type>d:text</type>
+               <type>d:mltext</type>
             </property>
             <property name="cm:description">
                <title>Description</title>
-               <type>d:text</type>
+               <type>d:mltext</type>
             </property>
          </properties>
       </aspect>
@@ -271,43 +296,6 @@
          </properties>
       </aspect>
 
-      <aspect name="cm:localizable">
-         <title>Localizable</title>
-         <properties>
-            <property name="cm:locale">
-               <title>Locale</title>
-               <!-- need to have means to identify root instance of appropriate category -->
-               <type>d:category</type>
-            </property>
-         </properties>
-      </aspect>
-
-      <aspect name="cm:translatable">
-         <title>Translatable</title>
-         <parent>cm:localizable</parent>
-         <!-- TODO: Support mandatory-aspects on an aspect in the meta-model
-         <mandatory-aspects>
-            <aspect>cm:localizable</aspect>
-         </mandatory-aspects>
-         -->
-         <associations>
-            <association name="cm:translations">
-               <title>Translations</title>
-               <source>
-                  <role>cm:translationOf</role>
-                  <mandatory>false</mandatory>
-                  <many>false</many>
-               </source>
-               <target>
-                  <class>cm:content</class>
-                  <role>cm:hasTranslation</role>
-                  <mandatory>false</mandatory>
-                  <many>true</many>
-               </target>
-            </association>
-         </associations>
-      </aspect>
-   
       <aspect name="cm:transformable">
          <title>Transformable</title>
          <associations>
@@ -706,6 +694,18 @@
          </properties>
       </aspect>
             
+      <!-- Multilingual -->
+      <aspect name="cm:mlTranslation">
+         <title>Translation</title>
+         <properties>
+            <property name="cm:language">
+               <title>Language</title>    
+               <type>d:mltext</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
    </aspects>
 
 </model>

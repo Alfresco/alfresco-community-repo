@@ -1,0 +1,49 @@
+<model name="cm:deprecated_contentmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Deprecated Content Domain Model Types and Aspects</description>
+   <author>Alfresco</author>
+   <published>2006-12-12</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <aspects>
+   
+      <aspect name="cm:localizable">
+         <title>Localizable</title>
+         <properties>
+            <property name="cm:locale">
+               <title>Locale</title>
+               <type>d:category</type>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="cm:translatable">
+         <title>Translatable</title>
+         <parent>cm:localizable</parent>
+         <associations>
+            <association name="cm:translations">
+               <title>Translations</title>
+               <source>
+                  <role>cm:translationOf</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:hasTranslation</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+            
+   </aspects>
+
+</model>

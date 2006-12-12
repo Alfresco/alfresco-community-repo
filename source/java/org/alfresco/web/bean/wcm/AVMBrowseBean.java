@@ -35,7 +35,6 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
-import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -1109,6 +1108,7 @@ public class AVMBrowseBean implements IContextListener
    {
       // nothing to do
    }
+   
    
    // ------------------------------------------------------------------------------
    // Inner classes

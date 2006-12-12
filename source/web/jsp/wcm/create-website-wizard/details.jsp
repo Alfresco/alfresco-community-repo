@@ -61,7 +61,7 @@
          if (valid == true)
          {
             valid = validateRegex(document.getElementById("wizard:wizard-body:dnsname"),
-                  "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$", true, null,
+                  "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$", true, null,
                   '</f:verbatim><a:outputText value="#{msg.validation_invalid_dns_name}" /><f:verbatim>', true);
          }
          return valid;

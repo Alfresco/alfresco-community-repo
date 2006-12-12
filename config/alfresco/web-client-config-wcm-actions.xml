@@ -301,6 +301,7 @@
             <action idref="take_ownership_space" />
             <action idref="edit_website" />
             <action idref="invite_website_users" />
+            <action idref="create_shortcut" />
             <action idref="run_action" />
          </action-group>
          

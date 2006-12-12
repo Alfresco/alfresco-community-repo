@@ -32,6 +32,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -167,63 +168,84 @@ public class SubmitDialog extends BaseDialogBean
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      // get the defaults from the workflow configuration attached to the selected workflow
-      Map<QName, Serializable> params = null;
-      String workflowName = this.workflowSelectedValue[0];
-      for (FormWorkflowWrapper wrapper : this.workflows)
+      if (getSubmitItemsSize() == 0)
       {
-         if (wrapper.Name.equals(workflowName))
-         {
-            params = wrapper.Params;
-         }
+         return null;
       }
       
-      if (params != null)
+      // get the defaults from the workflow configuration attached to the selected workflow
+      if (this.workflowSelectedValue != null)
       {
-         // create container for our avm workflow package
-         NodeRef workflowPackage = createWorkflowPackage();
-         params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
-         
-         // add submission parameters
-         params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
-         params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
-         params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox()));
-         
-         // start the workflow to get access to the start task
-         WorkflowDefinition wfDef = workflowService.getDefinitionByName(workflowName);
-         WorkflowPath path = this.workflowService.startWorkflow(wfDef.id, params);
-         if (path != null)
+         Map<QName, Serializable> params = null;
+         String workflowName = this.workflowSelectedValue[0];
+         for (FormWorkflowWrapper wrapper : this.workflows)
          {
-            // extract the start task
-            List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
-            if (tasks.size() == 1)
+            if (wrapper.Name.equals(workflowName))
             {
-               WorkflowTask startTask = tasks.get(0);
-               
-               if (startTask.state == WorkflowTaskState.IN_PROGRESS)
+               params = wrapper.Params;
+            }
+         }
+         
+         if (params != null)
+         {
+            // create container for our avm workflow package
+            NodeRef workflowPackage = createWorkflowPackage();
+            params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+            
+            // add submission parameters
+            params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
+            params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
+            params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox()));
+            
+            // start the workflow to get access to the start task
+            WorkflowDefinition wfDef = workflowService.getDefinitionByName(workflowName);
+            WorkflowPath path = this.workflowService.startWorkflow(wfDef.id, params);
+            if (path != null)
+            {
+               // extract the start task
+               List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
+               if (tasks.size() == 1)
                {
-                  // end the start task to trigger the first 'proper' task in the workflow
-                  this.workflowService.endTask(startTask.id, null);
+                  WorkflowTask startTask = tasks.get(0);
+                  
+                  if (startTask.state == WorkflowTaskState.IN_PROGRESS)
+                  {
+                     // end the start task to trigger the first 'proper' task in the workflow
+                     this.workflowService.endTask(startTask.id, null);
+                  }
                }
             }
+         }
+         else
+         {
+            // TODO: jump to dialog and allow user to finish wf properties config!
+            throw new AlfrescoRuntimeException("Workflow parameters have not been configured, cannot submit items.");
          }
       }
       else
       {
-         // TODO: jump to dialog and allow user to finish wf properties config!
-         throw new AlfrescoRuntimeException("Workflow has not been configured correctly, cannot submit items.");
+         // direct submit to the staging area without workflow
+         List<ItemWrapper> items = getSubmitItems();
+         
+         // construct diffs for selected items for submission
+         String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
+         String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
+         List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
+         for (ItemWrapper wrapper : items)
+         {
+            String srcPath = sandboxPath + wrapper.getPath();
+            String destPath = stagingPath + wrapper.getPath();
+            AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+            diffs.add(diff);
+         }
+         
+         // write changes to layer so files are marked as modified
+         this.avmSyncService.update(diffs, null, true, true, false, false, this.label, this.comment);
+         AVMDAOs.Instance().fAVMNodeDAO.flush();
+         avmSyncService.flatten(sandboxPath, stagingPath);
       }
       
       return outcome;
-   }
-   
-   /**
-    * @see org.alfresco.web.bean.dialog.BaseDialogBean#getFinishButtonDisabled()
-    */
-   @Override
-   public boolean getFinishButtonDisabled()
-   {
-      return (getWorkflowSelectedValue() == null || getSubmitItemsSize() == 0);
    }
    
    /**

@@ -30,7 +30,22 @@
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:comment").focus();
+      checkButtonState();
    }
+   
+   function checkButtonState()
+   {
+      if (document.getElementById("dialog:dialog-body:comment").value.length == 0 ||
+          document.getElementById("dialog:dialog-body:label").value.length == 0)
+      {
+         document.getElementById("dialog:finish-button").disabled = true;
+      }
+      else
+      {
+         document.getElementById("dialog:finish-button").disabled = false;
+      }
+   }
+   
 </script>
 </f:verbatim>
 

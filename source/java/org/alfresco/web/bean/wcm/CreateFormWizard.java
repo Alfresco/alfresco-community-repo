@@ -465,7 +465,7 @@ public class CreateFormWizard
       // refresh the current page
       return null;
    }
-   
+    
    /**
     * Action handler called when the user wishes to remove an uploaded file
     */
@@ -488,6 +488,25 @@ public class CreateFormWizard
       return null;
    }
    
+   public String validateSchema()
+   {
+      if (this.getSchemaFile() != null)
+      {
+         final FormsService ts = FormsService.getInstance();
+         try
+         {
+            final Document d = ts.parseXML(this.getSchemaFile());
+            final XSModel xsm = SchemaUtil.loadSchema(d);
+         }
+         catch (Exception e)
+         {
+            final String msg = "unable to parse " + this.getSchemaFileName();
+            this.removeUploadedSchemaFile();
+            Utils.addErrorMessage(msg, e);
+         }
+      }
+      return null;
+   }
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
@@ -693,7 +712,6 @@ public class CreateFormWizard
             final String msg = "unable to parse " + this.getSchemaFileName();
             this.removeUploadedSchemaFile();
             Utils.addErrorMessage(msg, e);
-            throw new AlfrescoRuntimeException(msg, e);
          }
       }
       return result;

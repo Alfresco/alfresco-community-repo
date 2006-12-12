@@ -19,8 +19,13 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 <%@ page import="org.alfresco.web.bean.FileUploadBean" %>
+<%@ page import="org.alfresco.web.bean.wcm.CreateFormWizard" %>
 <f:verbatim>
-<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js">
+<script type="text/javascript" 
+	src="<%=request.getContextPath()%>/scripts/validation.js">
+</script>
+<script type="text/javascript" 
+	src="<%=request.getContextPath()%>/scripts/upload_helper.js">
 </script>
 
 <script type="text/javascript">
@@ -29,7 +34,7 @@
    
    function pageLoaded()
    {
-//      document.getElementById("wizard:wizard-body:file-name").focus();
+      document.getElementById("wizard:wizard-body:file-input").focus();
       document.getElementById("wizard").onsubmit = validate;
       document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
       document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
@@ -37,17 +42,22 @@
    
    function validate()
    {
-	return true;
+     return true;
+   }
+   
+   function handle_upload(target)
+   {
+     handle_upload_helper(target, 
+                          "<%= CreateFormWizard.FILE_SCHEMA %>", 
+                          upload_complete,
+                          "<%= request.getContextPath() %>")
    }
 
-   function upload_file(el)
+   function upload_complete(id, path)
    {
-     el.form.method = "post";
-     el.form.encType = "multipart/form-data";
-     // for IE
-     el.form.encoding = "multipart/form-data";
-     el.form.action = "<%= request.getContextPath() %>/uploadFileServlet";
-     el.form.submit();
+     var validate_button = 
+       document.getElementById("wizard:wizard-body:command_button_validate_schema");
+     validate_button.click();
    }
 </script>
 </f:verbatim>
@@ -75,15 +85,23 @@
     <h:column id="column_schema">
 <%
 FileUploadBean upload = (FileUploadBean)
-   session.getAttribute(FileUploadBean.getKey("schema"));
+   session.getAttribute(FileUploadBean.getKey(CreateFormWizard.FILE_SCHEMA));
 if (upload == null || upload.getFile() == null)
 {
 %>
       <f:verbatim>
-        <input type="hidden" name="upload-id" value="schema"/>
-        <input type="hidden" name="return-page" value="<%= request.getContextPath() %>/faces<%= request.getServletPath() %>"/>
-        <input id="wizard:wizard-body:file-input" type="file" size="35" name="alfFileInput" onchange="javascript:upload_file(this)"/>
+        <input id="wizard:wizard-body:file-input" 
+	       type="file" 
+	       size="35" 
+	       name="alfFileInput" 
+	       onchange="javascript:handle_upload(this)"/>
       </f:verbatim>
+      <h:commandButton id="command_button_validate_schema" 
+		       value="" 
+		       immediate="true"
+		       style="display: none"
+		       action="#{WizardManager.bean.validateSchema}"/>
+
 <%
 } else {
 %>

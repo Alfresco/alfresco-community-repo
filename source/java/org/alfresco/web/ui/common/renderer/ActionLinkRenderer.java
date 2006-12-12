@@ -75,29 +75,29 @@ public class ActionLinkRenderer extends BaseRenderer
    public void encodeEnd(FacesContext context, UIComponent component) throws IOException
    {
       // always check for this flag - as per the spec
-      if (component.isRendered() == true)
+      if (!component.isRendered())
       {
-         Writer out = context.getResponseWriter();
+         return;
+      }
+      Writer out = context.getResponseWriter();
+      UIActionLink link = (UIActionLink)component;
          
-         UIActionLink link = (UIActionLink)component;
-         
-         UIComponent verticalContiner = getVerticalContainer(link);
-         if (verticalContiner != null)
-         {
-            int padding = link.getPadding();
+      UIComponent verticalContiner = getVerticalContainer(link);
+      if (verticalContiner != null)
+      {
+         int padding = link.getPadding();
             
-            if (verticalContiner instanceof UIActions)
-            {
-               padding = ((UIActions)verticalContiner).getVerticalSpacing();
-            }
-            // render as menu item style action link
-            out.write( renderMenuAction(context, link, padding) );
-         }
-         else
+         if (verticalContiner instanceof UIActions)
          {
-            // render as action link
-            out.write( renderActionLink(context, link) );
+            padding = ((UIActions)verticalContiner).getVerticalSpacing();
          }
+         // render as menu item style action link
+         out.write( renderMenuAction(context, link, padding) );
+      }
+      else
+      {
+         // render as action link
+         out.write( renderActionLink(context, link) );
       }
    }
    
@@ -190,6 +190,12 @@ public class ActionLinkRenderer extends BaseRenderer
             }
          }
          
+         if (attrs.get("id") != null)
+         {
+            linkBuf.append(" id=\"")
+                   .append(attrs.get("id"))
+                   .append("\"");
+         }    
          if (attrs.get("style") != null)
          {
             linkBuf.append(" style=\"")

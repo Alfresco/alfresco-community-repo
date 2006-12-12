@@ -18,6 +18,7 @@ package org.alfresco.web.app.servlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
 public class UploadFileServlet extends BaseServlet
 {
    private static final long serialVersionUID = -5482538466491052873L;
-   private static Log logger = LogFactory.getLog(UploadFileServlet.class); 
+   private static final Log logger = LogFactory.getLog(UploadFileServlet.class); 
    
    /**
     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -68,7 +69,7 @@ public class UploadFileServlet extends BaseServlet
             return;
          }
          
-         if (isMultipart == false)
+         if (!isMultipart)
          {
             throw new AlfrescoRuntimeException("This servlet can only be used to handle file upload requests, make" +
                                         "sure you have set the enctype attribute on your form to multipart/form-data");
@@ -85,11 +86,9 @@ public class UploadFileServlet extends BaseServlet
          
          List<FileItem> fileItems = upload.parseRequest(request);
          
-         Iterator<FileItem> iter = fileItems.iterator();
          FileUploadBean bean = new FileUploadBean();
-         while(iter.hasNext())
+         for (FileItem item : fileItems)
          {
-            FileItem item = iter.next();
             if(item.isFormField())
             {
                if (item.getFieldName().equalsIgnoreCase("return-page"))
@@ -106,15 +105,13 @@ public class UploadFileServlet extends BaseServlet
                String filename = item.getName();
                if (filename != null && filename.length() != 0)
                {
-                  if (logger.isDebugEnabled() == true)
+                  if (logger.isDebugEnabled())
                   {
                      logger.debug("Processing uploaded file: " + filename);
                   }
-                  
                   // workaround a bug in IE where the full path is returned
                   // IE is only available for Windows so only check for the Windows path separator
                   int idx = filename.lastIndexOf('\\');
-                  
                   if (idx == -1)
                   {
                      // if there is no windows path separator check for *nix
@@ -131,8 +128,7 @@ public class UploadFileServlet extends BaseServlet
                   bean.setFile(tempFile);
                   bean.setFileName(filename);
                   bean.setFilePath(tempFile.getAbsolutePath());
-                  session.setAttribute(FileUploadBean.getKey(uploadId), bean);
-                  if (logger.isDebugEnabled() == true)
+                  if (logger.isDebugEnabled())
                   {
                      logger.debug("Temp file: " + tempFile.getAbsolutePath() + 
 				  " created from upload filename: " + filename);
@@ -140,19 +136,39 @@ public class UploadFileServlet extends BaseServlet
                }
             }
          }
-         
+
+         session.setAttribute(FileUploadBean.getKey(uploadId), bean);         
+
          if (returnPage == null || returnPage.length() == 0)
          {
             throw new AlfrescoRuntimeException("return-page parameter has not been supplied");
          }
-
-         // finally redirect
-         if (logger.isDebugEnabled() == true)
+         
+         if (returnPage.startsWith("javascript:"))
          {
-            logger.debug("Upload servicing complete, redirecting to: " + returnPage);
-         }
+            returnPage = returnPage.substring("javascript:".length());
+            // finally redirect
+            if (logger.isDebugEnabled())
+            {
+               logger.debug("Sending back javascript response " + returnPage);
+            }
 
-         response.sendRedirect(returnPage);
+            final PrintWriter out = response.getWriter();
+            out.println("<html><body><script type=\"text/javascript\">");
+            out.println(returnPage);
+            out.println("</script></body></html>");
+            out.close();
+         }
+         else
+         {
+            // finally redirect
+            if (logger.isDebugEnabled())
+            {
+               logger.debug("Upload servicing complete, redirecting to: " + returnPage);
+            }
+            
+            response.sendRedirect(returnPage);
+         }
       }
       catch (Throwable error)
       {

@@ -72,6 +72,39 @@ import org.alfresco.util.Pair;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test relinking of nodes to history.
+     */
+    public void testHistoryRelink()
+    {
+        try
+        {
+            setupBasicTree();       
+            fService.createAVMStore("branch");
+            fService.createBranch(-1, "main:/a", "branch:/", "a");
+            fService.removeNode("branch:/a/b/c/foo");
+            List<AVMDifference> diffs = fSyncService.compare(-1, "branch:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals(AVMDifference.NEWER, diffs.get(0).getDifferenceCode());
+            fService.createFile("branch:/a/b/c", "foo").close();
+            diffs = fSyncService.compare(-1, "branch:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals(AVMDifference.NEWER, diffs.get(0).getDifferenceCode());
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            fService.removeNode("branch:/a/b/c/bar");
+            fService.createFile("branch:/a/b/c", "pismo").close();
+            fService.rename("branch:/a/b/c", "pismo", "branch:/a/b/c", "bar");
+            diffs = fSyncService.compare(-1, "branch:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals(AVMDifference.NEWER, diffs.get(0).getDifferenceCode());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
+    /**
      * Test renaming a store.
      */
     public void testRenameStore()
@@ -775,13 +808,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             {
                 // Do nothing.
             }
-            // Get synced again by doing an override conflict.
+            // Get synced again by doing an override older.
             System.out.println(recursiveList("main", -1, true));
             diffs.clear();
             diffs.add(new AVMDifference(-1, "main:/a/monkey",
                       -1, "main:/abranch/monkey",
                       AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, true, false, null, null);
+            fSyncService.update(diffs, null, false, false, false, true, null, null);
             assertEquals(0, fSyncService.compare(-1, "main:/abranch", -1, "main:/a", excluder).size());
             fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));
@@ -859,13 +892,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             {
                 // Do nothing.
             }
-            // Get synced again by doing an override conflict.
+            // Get synced again by doing an override older.
             System.out.println(recursiveList("main", -1, true));
             diffs.clear();
             diffs.add(new AVMDifference(-1, "main:/a/monkey",
                                         -1, "main:/layer/monkey",
                                         AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, true, false, null, null);
+            fSyncService.update(diffs, null, false, false, false, true, null, null);
             assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a", excluder).size());
             fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));

@@ -214,7 +214,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, false) != null)
+        AVMNode child = dir.lookupChild(lPath, name, true);
+        if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -232,6 +233,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
             newDir = new PlainDirectoryNodeImpl(this);
         }
         newDir.setVersionID(getNextVersionID());
+        if (child != null)
+        {
+            newDir.setAncestor(child);
+        }
         dir.putChild(name, newDir);
         dir.updateModTime();
     }
@@ -251,7 +256,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, false) != null)
+        AVMNode child = dir.lookupChild(lPath, name, true);
+        if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " +  name);
         }
@@ -269,6 +275,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             // Otherwise we issue a brand new layer id.
             newDir.setLayerID(fAVMRepository.issueLayerID());
+        }
+        if (child != null)
+        {
+            newDir.setAncestor(child);
         }
         dir.putChild(name, newDir);
         dir.updateModTime();
@@ -289,7 +299,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, false) != null)
+        AVMNode child = dir.lookupChild(lPath, name, true);
+        if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -297,6 +308,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
         file.setVersionID(getNextVersionID());
         dir.putChild(name, file);
         dir.updateModTime();
+        if (child != null)
+        {
+            file.setAncestor(child);
+        }
         file.setContentData(new ContentData(null, 
                 RawServices.Instance().getMimetypeService().guessMimetype(name),
                 -1,
@@ -319,7 +334,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, false) != null)
+        AVMNode child = dir.lookupChild(lPath, name, true);
+        if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
@@ -327,6 +343,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
         file.setVersionID(getNextVersionID());
         dir.putChild(name, file);
         dir.updateModTime();
+        if (child != null)
+        {
+            file.setAncestor(child);
+        }
         file.setContentData(new ContentData(null, 
                 RawServices.Instance().getMimetypeService().guessMimetype(name),
                 -1,
@@ -349,13 +369,18 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (dir.lookupChild(lPath, name, false) != null)
+        AVMNode child = dir.lookupChild(lPath, name, true);
+        if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
         {
             throw new AVMExistsException("Child exists: " + name);
         }
         // TODO Reexamine decision to not check validity of srcPath.
         LayeredFileNodeImpl newFile =
             new LayeredFileNodeImpl(srcPath, this);
+        if (child != null)
+        {
+            newFile.setAncestor(child);
+        }
         dir.putChild(name, newFile);
         dir.updateModTime();
         newFile.setVersionID(getNextVersionID());

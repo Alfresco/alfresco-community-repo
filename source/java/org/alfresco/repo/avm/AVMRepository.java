@@ -596,11 +596,12 @@ public class AVMRepository
                 throw new AVMNotFoundException("Path not found.");
             }
             DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
-            AVMNode dstNode = dstDir.lookupChild(dPath, dstName, false);
-            if (dstNode != null)
+            AVMNode child = dstDir.lookupChild(dPath, dstName, true);
+            if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
             {
                 throw new AVMExistsException("Node exists: " + dstName);
             }
+            AVMNode dstNode = null;
             // We've passed the check, so we can go ahead and do the rename.
             if (srcNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
@@ -682,9 +683,16 @@ public class AVMRepository
             srcDir.removeChild(sPath, srcName);
             srcDir.updateModTime();
             dstNode.setVersionID(dstRepo.getNextVersionID());
+            if (child != null)
+            {
+                dstNode.setAncestor(child);
+            }
             dstDir.putChild(dstName, dstNode);
             dstDir.updateModTime();
-            dstNode.setAncestor(srcNode);
+            if (child == null)
+            {
+                dstNode.setAncestor(srcNode);
+            }
         }
         finally
         {

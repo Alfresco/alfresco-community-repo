@@ -139,6 +139,7 @@ public class SubmitDialog extends BaseDialogBean
       this.warningItems = null;
       this.workflowItems = null;
       this.workflows = new HashSet<FormWorkflowWrapper>(4);
+      this.workflowSelectedValue = null;
       
       // walk all the web forms attached the website, and lookup the workflow defaults for each
       NodeRef websiteRef = this.avmBrowseBean.getWebsite().getNodeRef();

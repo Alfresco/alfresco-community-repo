@@ -67,7 +67,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private static final String MSG_NAME = "name";
    private static final String MSG_USERROLES = "create_website_summary_users";
    private static final String MSG_FORM_SUMMARY = "website_form_summary";
-   private static final String MSG_NONE = "value_not_set";
+   private static final String MSG_NONE = "workflow_not_set";
    
    private static final String COMPONENT_FORMLIST = "form-list";
    private static final String COMPONENT_WORKFLOWLIST = "workflow-list";

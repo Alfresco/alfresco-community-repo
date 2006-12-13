@@ -318,6 +318,31 @@ public class LuceneQueryParser extends QueryParser
                     }
 
                 }
+                else if (expandedFieldName.endsWith(".size"))
+                {
+                    QName propertyQName = QName.createQName(expandedFieldName.substring(1,
+                            expandedFieldName.length() - 5));
+                    PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                    if ((propertyDef != null)
+                            && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+                    {
+                        return super.getFieldQuery(expandedFieldName, queryText);
+                    }
+
+                }
+                else if (expandedFieldName.endsWith(".locale"))
+                {
+                    QName propertyQName = QName.createQName(expandedFieldName.substring(1,
+                            expandedFieldName.length() - 7));
+                    PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                    if ((propertyDef != null)
+                            && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+                    {
+                        return super.getFieldQuery(expandedFieldName, queryText);
+                    }
+
+                }
+
 
                 // Already in expanded form
 

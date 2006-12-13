@@ -357,7 +357,7 @@ public class SchemaFormBuilder
                         SchemaFormBuilder.XMLSCHEMA_INSTANCE_NS);
 	
       Element importedInstanceDocumentElement = null;
-      if (instanceDocument == null)
+      if (instanceDocument == null || instanceDocument.getDocumentElement() == null)
          instanceElement.appendChild(defaultInstanceDocumentElement);
       else
       {

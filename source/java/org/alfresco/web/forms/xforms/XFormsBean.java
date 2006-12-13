@@ -23,11 +23,15 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -69,80 +73,104 @@ import org.xml.sax.SAXException;
  */
 public class XFormsBean
 {
+
+   /////////////////////////////////////////////////////////////////////////////
+   
+   /**
+    */
+   static class XFormsSession implements FormProcessor.Session
+   {
+
+      private final Document formInstanceData;
+      private final Form form;
+
+      private ChibaBean chibaBean;
+      private final SchemaFormBuilder schemaFormBuilder;
+      private final HashMap<String, NodeRef> uploads = new HashMap<String, NodeRef>();
+      private final List<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
+
+      public XFormsSession(final Document formInstanceData,
+                           final Form form,
+                           final String baseUrl)
+      {
+         this.formInstanceData = formInstanceData;
+         this.form = form;
+         this.schemaFormBuilder = 
+            new SchemaFormBuilder("/ajax/invoke/XFormsBean.handleAction",
+                                  SchemaFormBuilder.SUBMIT_METHOD_POST,
+                                  new XHTMLWrapperElementsBuilder(),
+                                  baseUrl);
+      }
+
+      public NodeRef[] getUploadedFiles()
+      {
+         return (NodeRef[])this.uploads.values().toArray(new NodeRef[0]);
+      }
+
+      public void destroy()
+      {
+         this.uploads.clear();
+         try
+         {
+            this.chibaBean.shutdown();
+         }
+         catch (XFormsException xfe)
+         {
+            LOGGER.debug(xfe);
+         }
+      }
+
+      public Form getForm()
+      {
+         return this.form;
+      }
+
+      public Document getFormInstanceData()
+      {
+         return this.formInstanceData;
+      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
    private static final Log LOGGER = LogFactory.getLog(XFormsBean.class);
 
-   private Form form;
-   private FormProcessor.InstanceData instanceData = null;
-   private final ChibaBean chibaBean = new ChibaBean();
-   private SchemaFormBuilder schemaFormBuilder = null;
-   private final HashMap<String, String> uploads = new HashMap<String, String>();
-   private final List<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
+   private XFormsSession xformsSession;
 
-   /** @return the form */
-   public Form getForm()
-   {
-      return this.form;
-   }
-
-   /** @param tt the template type */
-   public void setForm(final Form form)
-   {
-      this.form = form;
-   }
-
-   /** @param instanceData the instance data being modified. */
-   public void setInstanceData(final FormProcessor.InstanceData instanceData)
-   {
-      this.instanceData = instanceData;
-   }
-
-   /**
-    * Initializes the chiba process with the xform and registers any necessary
-    * event listeners.
-    */
-   public void init()
+   /** @param xformsSession the current session */
+   public void setXFormsSession(final XFormsSession xformsSession)
       throws XFormsException
    {
-      if (LOGGER.isDebugEnabled())
-      {
-         LOGGER.debug("initializing " + this + " with form " + this.form.getName());
-      }
+      this.xformsSession = xformsSession;
+
       final FacesContext facesContext = FacesContext.getCurrentInstance();
       final ExternalContext externalContext = facesContext.getExternalContext();
       final HttpServletRequest request = (HttpServletRequest)
          externalContext.getRequest();
-      XFormsBean.storeCookies(request.getCookies(), this.chibaBean);
+
+      final ChibaBean chibaBean = new ChibaBean();
+      XFormsBean.storeCookies(request.getCookies(), chibaBean);
 
       final HttpSession session = (HttpSession)externalContext.getSession(true);
       final AVMBrowseBean browseBean = (AVMBrowseBean)
          session.getAttribute("AVMBrowseBean");
       final String cwdAVMPath = browseBean.getCurrentPath();
 
-      final String baseUrl = (request.getScheme() + "://" + 
-                              request.getServerName() + ':' + 
-                              request.getServerPort() + 
-                              request.getContextPath());
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("building xform for schema " + form.getName() +
-                      " with baseUrl " + baseUrl +
-                      " root element " + form.getSchemaRootElementName() +
+         LOGGER.debug("building xform for schema " + this.xformsSession.form.getName() +
+                      " root element " + this.xformsSession.form.getSchemaRootElementName() +
                       " avm cwd " + cwdAVMPath);
       }
-      this.schemaFormBuilder = 
-         new SchemaFormBuilder("/ajax/invoke/XFormsBean.handleAction",
-                               SchemaFormBuilder.SUBMIT_METHOD_POST,
-                               new XHTMLWrapperElementsBuilder(),
-                               baseUrl);
                                
       try
       {
-         final Document schemaDocument = this.form.getSchema();
-         this.rewriteInlineURIs(schemaDocument, cwdAVMPath);
+         final Document schemaDocument = this.xformsSession.form.getSchema();
+         XFormsBean.rewriteInlineURIs(schemaDocument, cwdAVMPath);
          final Document xformsDocument = 
-            this.schemaFormBuilder.buildXForm(instanceData.load(), 
-                                              schemaDocument,
-                                              this.form.getSchemaRootElementName());
+            this.xformsSession.schemaFormBuilder.buildXForm(this.xformsSession.formInstanceData, 
+                                                            schemaDocument,
+                                                            this.xformsSession.form.getSchemaRootElementName());
 
          if (LOGGER.isDebugEnabled())
          {
@@ -150,16 +178,16 @@ public class XFormsBean
                          FormsService.getInstance().writeXMLToString(xformsDocument));
          }
 
-         this.chibaBean.setXMLContainer(xformsDocument);
+         chibaBean.setXMLContainer(xformsDocument);
 
          final EventTarget et = (EventTarget)
-            this.chibaBean.getXMLContainer().getDocumentElement();
+            chibaBean.getXMLContainer().getDocumentElement();
          final EventListener el = new EventListener()
          {
-            public void handleEvent(Event e)
+            public void handleEvent(final Event e)
             {
                XFormsBean.LOGGER.debug("received event " + e);
-               XFormsBean.this.eventLog.add((XFormsEvent)e);
+               XFormsBean.this.xformsSession.eventLog.add((XFormsEvent)e);
             }
          };
          // interaction events my occur during init so we have to register before
@@ -167,7 +195,7 @@ public class XFormsBean
          et.addEventListener(XFormsEventFactory.CHIBA_RENDER_MESSAGE, el, true);
          et.addEventListener(XFormsEventFactory.CHIBA_REPLACE_ALL, el, true);
 
-         this.chibaBean.init();
+         chibaBean.init();
 
          // register for notification events
          et.addEventListener(XFormsEventFactory.SUBMIT_DONE, el, true);
@@ -197,6 +225,33 @@ public class XFormsBean
       {
          LOGGER.error(saxe);
       }
+      this.xformsSession.chibaBean = chibaBean;
+   }
+
+   /**
+    * Initializes the chiba process with the xform and registers any necessary
+    * event listeners.
+    */
+   public static XFormsSession createSession(final Document formInstanceData,
+                                             final Form form)
+      throws XFormsException
+   {
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("initializing xforms session with form " + form.getName() +
+                      " and instance data " + formInstanceData);
+      }
+
+      final FacesContext facesContext = FacesContext.getCurrentInstance();
+      final ExternalContext externalContext = facesContext.getExternalContext();
+      final HttpServletRequest request = (HttpServletRequest)
+         externalContext.getRequest();
+
+      final String baseUrl = (request.getScheme() + "://" + 
+                              request.getServerName() + ':' + 
+                              request.getServerPort() + 
+                              request.getContextPath());
+      return new XFormsSession(formInstanceData, form, baseUrl);
    }
 
    /**
@@ -210,7 +265,8 @@ public class XFormsBean
       LOGGER.debug(this + ".getXForm()");
       final FacesContext context = FacesContext.getCurrentInstance();
       final ResponseWriter out = context.getResponseWriter();
-      final Node xformsDocument = this.chibaBean.getXMLContainer();
+      final ChibaBean chibaBean = this.xformsSession.chibaBean;
+      final Node xformsDocument = chibaBean.getXMLContainer();
       FormsService.getInstance().writeXML(xformsDocument, out);
    }
 
@@ -230,13 +286,14 @@ public class XFormsBean
       final String value = (String)requestParameters.get("value");
 
       LOGGER.debug(this + ".setXFormsValue(" + id + ", " + value + ")");
-      if (this.chibaBean.lookup(id) instanceof Upload)
+      final ChibaBean chibaBean = this.xformsSession.chibaBean;
+      if (chibaBean.lookup(id) instanceof Upload)
       {
-         this.chibaBean.updateControlValue(id, null, value, value.getBytes());
+         chibaBean.updateControlValue(id, null, value, value.getBytes());
       }
       else
       {
-         this.chibaBean.updateControlValue(id, value);
+         chibaBean.updateControlValue(id, value);
       }
 
       final ResponseWriter out = context.getResponseWriter();
@@ -260,7 +317,8 @@ public class XFormsBean
       final int index = Integer.parseInt((String)requestParameters.get("index"));
 
       LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
-      this.chibaBean.updateRepeatIndex(id, index);
+      final ChibaBean chibaBean = this.xformsSession.chibaBean;
+      chibaBean.updateRepeatIndex(id, index);
 
       final ResponseWriter out = context.getResponseWriter();
       FormsService.getInstance().writeXML(this.getEventLog(), out);
@@ -280,7 +338,8 @@ public class XFormsBean
       final String id = (String)requestParameters.get("id");
 
       LOGGER.debug(this + ".fireAction(" + id + ")");
-      this.chibaBean.dispatch(id, XFormsEventFactory.DOM_ACTIVATE);
+      final ChibaBean chibaBean = this.xformsSession.chibaBean;
+      chibaBean.dispatch(id, XFormsEventFactory.DOM_ACTIVATE);
 
       final ResponseWriter out = context.getResponseWriter();
       FormsService.getInstance().writeXML(this.getEventLog(), out);
@@ -300,19 +359,25 @@ public class XFormsBean
             context.getExternalContext().getRequest();
          final FormsService formsService = FormsService.getInstance();
          final Document result = formsService.parseXML(request.getInputStream());
-         this.schemaFormBuilder.removePrototypeNodes(result.getDocumentElement());
+         final Document instanceData = this.xformsSession.getFormInstanceData();
+         Element documentElement = instanceData.getDocumentElement();
+         if (documentElement != null)
+         {
+            instanceData.removeChild(documentElement);
+         }
 
-         final String[] uploadedFilePaths = (String[])
-            this.uploads.values().toArray(new String[0]);
-         this.instanceData.save(result, uploadedFilePaths);
+         documentElement = result.getDocumentElement();
+         this.xformsSession.schemaFormBuilder.removePrototypeNodes(documentElement);
+         documentElement = (Element)instanceData.importNode(documentElement, true);
+         instanceData.appendChild(documentElement);
 
          final ResponseWriter out = context.getResponseWriter();
-         formsService.writeXML(result, out);
+         formsService.writeXML(instanceData, out);
          out.close();
       }
       catch (Throwable t)
       {
-         LOGGER.error(t);
+         LOGGER.error(t.getMessage(), t);
       }
    }
 
@@ -328,8 +393,9 @@ public class XFormsBean
       final String fromItemId = (String)requestParameters.get("fromItemId");
       final String toItemId = (String)requestParameters.get("toItemId");
       LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
-      this.swapRepeatItems(this.chibaBean.lookup(fromItemId), 
-                           this.chibaBean.lookup(toItemId));
+      final ChibaBean chibaBean = this.xformsSession.chibaBean;
+      this.swapRepeatItems(chibaBean.lookup(fromItemId), 
+                           chibaBean.lookup(toItemId));
 
       final ResponseWriter out = context.getResponseWriter();
       FormsService.getInstance().writeXML(this.getEventLog(), out);
@@ -483,7 +549,16 @@ public class XFormsBean
       FileCopyUtils.copy(fileInputStream, 
                          avmService.createFile(currentPath, filename));
 
-      this.uploads.put(uploadId, currentPath + "/" + filename);
+      final NodeRef uploadNodeRef = 
+         AVMNodeConverter.ToNodeRef(-1, currentPath + "/" + filename);
+      final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+      props.put(ContentModel.PROP_TITLE, filename);
+      props.put(ContentModel.PROP_DESCRIPTION, 
+                "Uploaded for form " + this.xformsSession.getForm().getName());
+      final NodeService nodeService = serviceRegistry.getNodeService();
+      nodeService.addAspect(uploadNodeRef, ContentModel.ASPECT_TITLED, props);
+
+      this.xformsSession.uploads.put(uploadId, uploadNodeRef);
 
       LOGGER.debug("upload complete.  sending response");
       final FormsService formsService = FormsService.getInstance();
@@ -542,8 +617,8 @@ public class XFormsBean
       }
    }
 
-   private void rewriteInlineURIs(final Document schemaDocument,
-                                  final String cwdAvmPath)
+   private static void rewriteInlineURIs(final Document schemaDocument,
+                                         final String cwdAvmPath)
    {
       final NodeList includes = 
          schemaDocument.getElementsByTagNameNS(SchemaFormBuilder.XMLSCHEMA_NS, "include");
@@ -570,7 +645,7 @@ public class XFormsBean
       final Document result = formsService.newDocument();
       final Element eventsElement = result.createElement("events");
       result.appendChild(eventsElement);
-      for (XFormsEvent xfe : this.eventLog)
+      for (XFormsEvent xfe : this.xformsSession.eventLog)
       {
          final String type = xfe.getType();
          if (LOGGER.isDebugEnabled())
@@ -604,7 +679,7 @@ public class XFormsBean
             }
          }
       }
-      this.eventLog.clear();
+      this.xformsSession.eventLog.clear();
 
       if (LOGGER.isDebugEnabled())
       {

@@ -112,6 +112,13 @@
          <rtexprvalue>true</rtexprvalue>
          <description>The form to use to render this form.</description>
       </attribute>
+
+      <attribute>
+         <name>formProcessorSession</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The form processor session value binding.</description>
+      </attribute>
       
       <attribute>
          <name>binding</name>

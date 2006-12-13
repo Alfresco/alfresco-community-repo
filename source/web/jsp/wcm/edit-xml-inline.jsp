@@ -104,7 +104,8 @@ function _xforms_getSubmitButtons()
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                                  
                               <wcm:formProcessor id="form-data-renderer"
-						 formInstanceData="#{AVMEditBean.instanceData}"
+						 formProcessorSession="#{AVMEditBean.formProcessorSession}" 
+						 formInstanceData="#{AVMEditBean.instanceDataDocument}"
 						 form="#{AVMEditBean.form}"/>
                                  
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>

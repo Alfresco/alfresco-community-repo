@@ -517,7 +517,7 @@ public class Application
    {
       Locale locale = parseLocale(code);
       
-      session.putValue(LOCALE, locale);
+      session.setAttribute(LOCALE, locale);
       session.removeAttribute(MESSAGE_BUNDLE);
    }
    

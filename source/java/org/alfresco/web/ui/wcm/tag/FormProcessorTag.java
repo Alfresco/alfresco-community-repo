@@ -27,6 +27,11 @@ import org.alfresco.web.ui.common.tag.BaseComponentTag;
  */
 public class FormProcessorTag extends BaseComponentTag
 {
+   
+   private String formInstanceData;
+   private String templateType;
+   private String formProcessorSession;
+
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
     */
@@ -50,10 +55,10 @@ public class FormProcessorTag extends BaseComponentTag
    {
       super.setProperties(component);
       final Application app = this.getFacesContext().getApplication();
-      if (this.instanceData != null)
+      if (this.formInstanceData != null)
       {
-         assert isValueReference(this.instanceData);
-         final ValueBinding vb = app.createValueBinding(this.instanceData);
+         assert isValueReference(this.formInstanceData);
+         final ValueBinding vb = app.createValueBinding(this.formInstanceData);
          component.setValueBinding("formInstanceData", vb);
       }
       if (this.templateType != null)
@@ -61,6 +66,12 @@ public class FormProcessorTag extends BaseComponentTag
          assert this.isValueReference(this.templateType);
          final ValueBinding vb = app.createValueBinding(this.templateType);
          component.setValueBinding("form", vb);
+      }
+      if (this.formProcessorSession != null)
+      {
+         assert this.isValueReference(this.formProcessorSession);
+         final ValueBinding vb = app.createValueBinding(this.formProcessorSession);
+         component.setValueBinding("formProcessorSession", vb);
       }
    }
    
@@ -70,18 +81,19 @@ public class FormProcessorTag extends BaseComponentTag
    public void release()
    {
       super.release();
-      this.instanceData = null;
+      this.formInstanceData = null;
       this.templateType = null;
+      this.formProcessorSession = null;
    }
    
    /**
     * Set the instance data
     *
-    * @param instanceData the instance data for the processor
+    * @param formInstanceData the instance data for the processor
     */
-   public void setFormInstanceData(final String instanceData)
+   public void setFormInstanceData(final String formInstanceData)
    {
-      this.instanceData = instanceData;
+      this.formInstanceData = formInstanceData;
    }
 
    /**
@@ -93,7 +105,14 @@ public class FormProcessorTag extends BaseComponentTag
    {
       this.templateType = templateType;
    }
-   
-   private String instanceData;
-   private String templateType;
+
+   /**
+    * Sets the form processor session
+    *
+    * @param formProcessorSession the binding for the form processor session
+    */
+   public void setFormProcessorSession(final String formProcessorSession)
+   {
+      this.formProcessorSession = formProcessorSession;
+   }
 }

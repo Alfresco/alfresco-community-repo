@@ -89,6 +89,21 @@
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+  <h:outputText value="&nbsp;#{msg.create_web_content_summary_uploaded_files_details}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%">
+  <a:selectList id="uploaded-file-list" 
+		multiSelect="false"
+		activeSelect="true" 
+		style="width:100%" 
+		itemStyleClass="selectListItem">
+    <a:listItems value="#{WizardManager.bean.uploadedFiles}"/>
+  </a:selectList>
+</h:panelGrid>
+
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%">
   <h:column>
     <h:selectBooleanCheckbox id="startWorkflow"

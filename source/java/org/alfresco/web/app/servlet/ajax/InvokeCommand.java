@@ -139,7 +139,8 @@ public class InvokeCommand extends BaseAjaxCommand
             }
          }
 
-         logger.error(err);
+         logger.error("Failed to execute method " + expression + ": " + err.getMessage(),
+                      err);
          throw new AlfrescoRuntimeException("Failed to execute method " + expression + 
                 ": " + err.getMessage(), err);
       }

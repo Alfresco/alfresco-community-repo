@@ -64,6 +64,7 @@ import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -82,9 +83,10 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String createdPath = null;
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;
+   protected FormProcessor.Session formProcessorSession = null;
+   private Document instanceDataDocument = null;
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
-   protected String[] uploadedFilePaths = null;
 
    /** AVM service bean reference */
    protected AVMService avmService;
@@ -145,9 +147,15 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.formName = null;
       this.mimeType = MimetypeMap.MIMETYPE_XML;
       this.formInstanceData = null;
-      this.uploadedFilePaths = null;
+      if (this.formProcessorSession != null)
+      {
+         this.formProcessorSession.destroy();
+      }
+      this.formProcessorSession = null;
+      this.instanceDataDocument = null;
       this.renditions = null;
       this.startWorkflow = false;
+      this.formSelectDisabled = false;
       
       // check for a form ID being passed in as a parameter
       if (this.parameters.get(UIUserSandboxes.PARAM_FORM_ID) != null)
@@ -199,8 +207,22 @@ public class CreateWebContentWizard extends BaseContentWizard
       if (step == 2)
       {
          LOGGER.debug("clearing form instance data");
+         if (this.formInstanceData != null)
+         {
+            final NodeRef nr = this.formInstanceData.getNodeRef();
+            final String path = AVMNodeConverter.ToAVMVersionPath(nr).getSecond();
+            this.avmService.removeNode(path);
+         }
+         if (this.renditions != null)
+         {
+            for (Rendition r : this.renditions)
+            {
+               final NodeRef nr = r.getNodeRef();
+               final String path = AVMNodeConverter.ToAVMVersionPath(nr).getSecond();
+               this.avmService.removeNode(path);
+            }
+         }
          this.formInstanceData = null;
-         this.uploadedFilePaths = null;
          this.renditions = null;
       }
       return super.back();
@@ -228,8 +250,11 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String finishImpl(final FacesContext context, final String outcome)
       throws Exception
    {
+      final NodeRef[] uploadedFiles = (this.formProcessorSession != null
+                                       ? this.formProcessorSession.getUploadedFiles()
+                                       : new NodeRef[0]);
       final List<AVMDifference> diffList = 
-         new ArrayList<AVMDifference>(1 + this.renditions.size());
+         new ArrayList<AVMDifference>(1 + this.renditions.size() + uploadedFiles.length);
       diffList.add(new AVMDifference(-1, this.createdPath, 
                                      -1, this.createdPath.replaceFirst(AVMConstants.STORE_PREVIEW, 
                                                                        AVMConstants.STORE_MAIN), 
@@ -243,8 +268,9 @@ public class CreateWebContentWizard extends BaseContentWizard
                                         AVMDifference.NEWER));
       }
 
-      for (String path : this.uploadedFilePaths)
+      for (NodeRef uploadedFile : uploadedFiles)
       {
+         final String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
          diffList.add(new AVMDifference(-1, path,
                                         -1, path.replaceFirst(AVMConstants.STORE_PREVIEW,
                                                               AVMConstants.STORE_MAIN),
@@ -255,8 +281,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          for (AVMDifference diff : diffList)
          {
-            LOGGER.debug("updating " + AVMConstants.STORE_MAIN + 
-                         " with " + diff.getSourcePath());
+            LOGGER.debug("updating " + AVMConstants.STORE_MAIN + " with " + diff.getSourcePath());
          }
       }
       this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
@@ -393,6 +418,11 @@ public class CreateWebContentWizard extends BaseContentWizard
             }
          }
       }
+
+      if (this.formProcessorSession != null)
+      {
+         this.formProcessorSession.destroy();
+      }
       
       // return the default outcome
       return outcome;
@@ -431,9 +461,8 @@ public class CreateWebContentWizard extends BaseContentWizard
       path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         final Document formInstanceData = fs.parseXML(this.content);
-
-         path = this.getForm().getOutputPathForFormInstanceData(path, fileName, formInstanceData);
+         path = this.getForm().getOutputPathForFormInstanceData(path, fileName, this.instanceDataDocument);
+         this.content = FormsService.getInstance().writeXMLToString(this.instanceDataDocument);
          final String[] sb = AVMNodeConverter.SplitBase(path);
          path = sb[0];
          fileName = sb[1];
@@ -594,45 +623,87 @@ public class CreateWebContentWizard extends BaseContentWizard
     * @return Returns the wrapper instance data for feeding the xml
     * content to the form processor.
     */
-   public FormProcessor.InstanceData getInstanceData()
+   public Document getInstanceDataDocument()
    {
-      return new FormProcessor.InstanceData()
+      if (this.instanceDataDocument == null)
       {
-         private final FormsService ts = FormsService.getInstance();
-
-         public Document load()
-         { 
-            try
-            {
-               final String content = CreateWebContentWizard.this.getContent();
-               return content != null ? this.ts.parseXML(content) : null;
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-               return null;
-            }
-         }
-    
-         public void save(final Document d, 
-                          final String[] uploadedFilePaths)
+         final FormsService fs = FormsService.getInstance();
+         final String content = this.getContent();
+         try
          {
-            CreateWebContentWizard.this.setContent(ts.writeXMLToString(d));
-            CreateWebContentWizard.this.uploadedFilePaths = uploadedFilePaths;
+            this.instanceDataDocument = (content != null 
+                                         ? fs.parseXML(content) 
+                                         : fs.newDocument());
          }
-      };
+         catch (Exception e)
+         {
+            Utils.addErrorMessage("error parsing document", e);
+            this.instanceDataDocument = fs.newDocument();
+         }
+      }
+      return this.instanceDataDocument;
    }
 
+   /**
+    * Returns the form processor session.
+    */
+   public FormProcessor.Session getFormProcessorSession()
+   {
+      return this.formProcessorSession;
+   }
+
+   /**
+    * Sets the form processor session.
+    */
+   public void setFormProcessorSession(final FormProcessor.Session formProcessorSession)
+   {
+      this.formProcessorSession = formProcessorSession;
+   }
+      
+   /**
+    * Returns the generated form instance data.
+    */
    public FormInstanceData getFormInstanceData()
    {
       return this.formInstanceData;
    }
    
+   /**
+    * Returns the generated renditions
+    */
    public List<Rendition> getRenditions()
    {
       return this.renditions;
    }
    
+   /**
+    * Returns the files uploaded using the form
+    */
+   public List<UIListItem> getUploadedFiles()
+   {
+      if (this.formProcessorSession == null)
+      {
+         return Collections.emptyList();
+      }
+
+      NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
+      final List<UIListItem> result = 
+         new ArrayList<UIListItem>(uploadedFiles.length);
+
+      for (NodeRef nodeRef : uploadedFiles)
+      {
+         final UIListItem item = new UIListItem();
+         final String name = (String)
+            this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+         item.setValue(name);
+         item.setLabel((String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+         item.setDescription((String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+         item.setImage(Utils.getFileTypeImage(name, false));
+         result.add(item);
+      }
+      return result;
+   }
+
    public boolean getFormSelectDisabled()
    {
       return this.formSelectDisabled;

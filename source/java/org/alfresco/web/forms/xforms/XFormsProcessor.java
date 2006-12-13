@@ -33,75 +33,92 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.chiba.xml.xforms.exception.XFormsException;
 
 public class XFormsProcessor
-    implements FormProcessor
+   implements FormProcessor
 {
-    private static final Log LOGGER = LogFactory.getLog(XFormsProcessor.class); 
 
-    public XFormsProcessor()
-    {
-    }
+   private static final Log LOGGER = LogFactory.getLog(XFormsProcessor.class); 
 
-    /**
-     * Generates html text which bootstraps the JavaScript code that will
-     * call back into the XFormsBean and get the xform and build the ui.
-     */
-    public void process(final InstanceData instanceData, 
-                        final Form tt,
-                        final Writer out)
-    {
-	final FormsService ts = FormsService.getInstance();
-	final FacesContext fc = FacesContext.getCurrentInstance();
-	//make the XFormsBean available for this session
-	final XFormsBean xforms = (XFormsBean)
-	    FacesHelper.getManagedBean(fc, "XFormsBean");
-	xforms.setInstanceData(instanceData);
-	xforms.setForm(tt);
-	try
-        {
-	    xforms.init();
-	}
-	catch (XFormsException xfe)
-        {
-	    LOGGER.error(xfe);
-	}
+   public XFormsProcessor()
+   {
+   }
+
+   public Session process(final Document instanceDataDocument,
+                          final Form form,
+                          final Writer out)
+      throws FormProcessor.ProcessingException
+   {
+      try
+      {
+         final Session result = 
+            XFormsBean.createSession(instanceDataDocument, form);
+         this.process(result, out);
+         return result;
+      }
+      catch (XFormsException xfe)
+      {
+         LOGGER.error(xfe);
+         throw new FormProcessor.ProcessingException(xfe);
+      }
+   }
+
+   /**
+    * Generates html text which bootstraps the JavaScript code that will
+    * call back into the XFormsBean and get the xform and build the ui.
+    */
+   public void process(final Session session, final Writer out)
+      throws FormProcessor.ProcessingException
+   {
+      final FormsService ts = FormsService.getInstance();
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      //make the XFormsBean available for this session
+      final XFormsBean xforms = (XFormsBean)
+         FacesHelper.getManagedBean(fc, "XFormsBean");
+      try
+      {
+         xforms.setXFormsSession((XFormsBean.XFormsSession)session);
+      }
+      catch (XFormsException xfe)
+      {
+         LOGGER.error(xfe);
+         throw new ProcessingException(xfe);
+      }
  
-	final String cp = fc.getExternalContext().getRequestContextPath();
+      final String cp = fc.getExternalContext().getRequestContextPath();
+      final Document result = ts.newDocument();
 
-	final Document result = ts.newDocument();
+      // this div is where the ui will write to
+      final Element div = result.createElement("div");
+      div.setAttribute("id", "alfresco-xforms-ui");
+      result.appendChild(div);
 
-	// this div is where the ui will write to
-	final Element div = result.createElement("div");
-	div.setAttribute("id", "alfresco-xforms-ui");
-	result.appendChild(div);
-
-	// a script with config information and globals.
-	Element e = result.createElement("script");
-        e.setAttribute("type", "text/javascript");
-	e.appendChild(result.createTextNode("\ndjConfig = { isDebug: " + LOGGER.isDebugEnabled() +
-					    " };\n" +
-					    "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
-	div.appendChild(e);
-	final String[] scripts = 
-	{
-           "/scripts/tiny_mce/" + (LOGGER.isDebugEnabled() 
-                                   ? "tiny_mce_src.js" 
-                                   : "tiny_mce.js"),
+      // a script with config information and globals.
+      Element e = result.createElement("script");
+      e.setAttribute("type", "text/javascript");
+      e.appendChild(result.createTextNode("\ndjConfig = { isDebug: " + LOGGER.isDebugEnabled() +
+                                          " };\n" +
+                                          "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
+      div.appendChild(e);
+      final String[] scripts = 
+         {
+            "/scripts/tiny_mce/" + (LOGGER.isDebugEnabled() 
+                                    ? "tiny_mce_src.js" 
+                                    : "tiny_mce.js"),
 	    "/scripts/ajax/dojo/" + (LOGGER.isDebugEnabled() 
                                      ? "dojo.js.uncompressed.js" 
                                      : "dojo.js"),
 	    "/scripts/ajax/xforms.js"
-	};
+         };
 	    
-	// include all our scripts, order is significant
-	for (int i = 0; i < scripts.length; i++)
-	{
-	    e = result.createElement("script");
-	    e.setAttribute("type", "text/javascript");
-	    e.setAttribute("src", cp + scripts[i]);
-	    e.appendChild(result.createTextNode("\n"));
-	    div.appendChild(e);
-	}
+      // include all our scripts, order is significant
+      for (int i = 0; i < scripts.length; i++)
+      {
+         e = result.createElement("script");
+         e.setAttribute("type", "text/javascript");
+         e.setAttribute("src", cp + scripts[i]);
+         e.appendChild(result.createTextNode("\n"));
+         div.appendChild(e);
+      }
  
-	ts.writeXML(result, out);
-    }
+      ts.writeXML(result, out);
+   }
 }

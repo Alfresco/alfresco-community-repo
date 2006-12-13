@@ -16,12 +16,14 @@
  */
 package org.alfresco.web.forms;
 
-import org.w3c.dom.Document;
 import java.io.Serializable;
 import java.io.Writer;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.w3c.dom.Document;
 
 /**
  * Generates a user interface for inputing data into a template.
+ * @author Ariel Backenroth
  */
 public interface FormProcessor
     extends Serializable
@@ -33,13 +35,38 @@ public interface FormProcessor
     * An abstraction layer around the xml content which allows
     * for reseting the xml content being collected by the input method.
     */
-   public interface InstanceData
+   public interface Session
    {
-      
-      public Document load();
-      
-      public void save(final Document d, 
-                       final String[] uploadedFilePaths);
+
+      public NodeRef[] getUploadedFiles();
+
+      public void destroy();
+
+      public Form getForm();
+
+      public Document getFormInstanceData();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
+   public static class ProcessingException
+      extends Exception
+   {
+
+      public ProcessingException(final String msg)
+      {
+         super(msg);
+      }
+
+      public ProcessingException(final Exception cause)
+      {
+         super(cause);
+      }
+
+      public ProcessingException(final String msg, final Exception cause)
+      {
+         super(msg, cause);
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -47,11 +74,16 @@ public interface FormProcessor
    /**
     * Processes a user interface for inputing data into a form.
     *
-    * @param instanceData provides the xml instance data if available.
+    * @param formInstanceData provides the xml instance data if available.
     * @param form the form to generate for
     * @param out the writer to write the output to.
     */
-   public void process(final FormProcessor.InstanceData instanceData,
-                       final Form form,
-                       final Writer out);
+   public Session process(final Document formInstanceData,
+                          final Form form,
+                          final Writer out)
+      throws ProcessingException;
+
+   public void process(final Session session,
+                       final Writer out)
+      throws ProcessingException;
 }

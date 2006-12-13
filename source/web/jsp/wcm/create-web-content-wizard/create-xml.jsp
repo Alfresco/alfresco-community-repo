@@ -28,5 +28,6 @@ function _xforms_getSubmitButtons()
 }
 </script>
 <wcm:formProcessor id="form-data-renderer"
-		   formInstanceData="#{WizardManager.bean.instanceData}" 
+		   formProcessorSession="#{WizardManager.bean.formProcessorSession}" 
+		   formInstanceData="#{WizardManager.bean.instanceDataDocument}" 
 		   form="#{WizardManager.bean.form}"/>

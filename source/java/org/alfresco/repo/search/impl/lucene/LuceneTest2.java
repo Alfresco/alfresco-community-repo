@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -43,11 +44,9 @@ import org.alfresco.repo.dictionary.NamespaceDAOImpl;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.QueryRegisterComponent;
-import org.alfresco.repo.search.impl.lucene.analysis.NumericEncoder;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.search.results.DetachedResultSet;
-import org.alfresco.repo.search.transaction.LuceneIndexLock;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -57,6 +56,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -83,7 +83,6 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * @author andyh
- * 
  */
 @SuppressWarnings("unused")
 public class LuceneTest2 extends TestCase
@@ -100,11 +99,11 @@ public class LuceneTest2 extends TestCase
     QName createdDate = QName.createQName(TEST_NAMESPACE, "createdDate");
 
     QName orderDouble = QName.createQName(TEST_NAMESPACE, "orderDouble");
-    
+
     QName orderFloat = QName.createQName(TEST_NAMESPACE, "orderFloat");
-    
+
     QName orderLong = QName.createQName(TEST_NAMESPACE, "orderLong");
-    
+
     QName orderInt = QName.createQName(TEST_NAMESPACE, "orderInt");
 
     TransactionService transactionService;
@@ -112,8 +111,6 @@ public class LuceneTest2 extends TestCase
     NodeService nodeService;
 
     DictionaryService dictionaryService;
-
-    LuceneIndexLock luceneIndexLock;
 
     private NodeRef rootNodeRef;
 
@@ -183,7 +180,6 @@ public class LuceneTest2 extends TestCase
     public void setUp() throws Exception
     {
         nodeService = (NodeService) ctx.getBean("dbNodeService");
-        luceneIndexLock = (LuceneIndexLock) ctx.getBean("luceneIndexLock");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         luceneFTS = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
@@ -193,31 +189,28 @@ public class LuceneTest2 extends TestCase
         indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("luceneIndexerAndSearcherFactory");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        
-        namespaceDao = (NamespaceDAOImpl)  ctx.getBean("namespaceDAO");
-        
+
+        namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
 
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        
 
         queryRegisterComponent.loadQueryCollection("testQueryRegister.xml");
 
-        assertEquals(true, ctx.isSingleton("luceneIndexLock"));
         assertEquals(true, ctx.isSingleton("LuceneFullTextSearchIndexer"));
 
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         // load in the test model
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/lucene/LuceneTest_model.xml");
         assertNotNull(modelStream);
         M2Model model = M2Model.createModel(modelStream);
         dictionaryDAO.putModel(model);
-        
+
         namespaceDao.addPrefix("test", TEST_NAMESPACE);
-        
+
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
@@ -276,6 +269,20 @@ public class LuceneTest2 extends TestCase
         testProperties.put(QName.createQName(TEST_NAMESPACE, "path-ista"), nodeService.getPath(n3));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "null"), null);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "list"), new ArrayList());
+        MLText mlText = new MLText();
+        mlText.addValue(Locale.ENGLISH, "banana");
+        mlText.addValue(Locale.FRENCH, "banane");
+        mlText.addValue(Locale.CHINESE, "香蕉");
+        mlText.addValue(new Locale("nl"), "banaan");
+        mlText.addValue(Locale.GERMAN, "banane");
+        mlText.addValue(new Locale("el"), "μπανάνα");
+        mlText.addValue(Locale.ITALIAN, "banana");
+        mlText.addValue(new Locale("ja"), "バナナ");
+        mlText.addValue(new Locale("ko"), "바나나");
+        mlText.addValue(new Locale("pt"), "banana");
+        mlText.addValue(new Locale("ru"), "банан");
+        mlText.addValue(new Locale("es"), "plátano");
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "ml"), mlText);
         ArrayList<Object> testList = new ArrayList<Object>();
         testList.add(null);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "nullList"), testList);
@@ -341,11 +348,11 @@ public class LuceneTest2 extends TestCase
     private double orderDoubleCount = -0.11d;
 
     private Date orderDate = new Date();
-    
+
     private float orderFloatCount = -3.5556f;
-    
+
     private long orderLongCount = -1999999999999999l;
-    
+
     private int orderIntCount = -45764576;
 
     public Map<QName, Serializable> getOrderProperties()
@@ -385,7 +392,7 @@ public class LuceneTest2 extends TestCase
     {
         testSort();
     }
-    
+
     public void test0() throws Exception
     {
         luceneFTS.pause();
@@ -860,7 +867,7 @@ public class LuceneTest2 extends TestCase
         {
             Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row
                     .getNodeRef(), createdDate));
-            //System.out.println(currentBun);
+            // System.out.println(currentBun);
             if (date != null)
             {
                 assertTrue(date.compareTo(currentBun) <= 0);
@@ -881,7 +888,7 @@ public class LuceneTest2 extends TestCase
         {
             Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row
                     .getNodeRef(), createdDate));
-            //System.out.println(currentBun);
+            // System.out.println(currentBun);
             if ((date != null) && (currentBun != null))
             {
                 assertTrue(date.compareTo(currentBun) >= 0);
@@ -904,7 +911,7 @@ public class LuceneTest2 extends TestCase
         {
             Double currentBun = DefaultTypeConverter.INSTANCE.convert(Double.class, nodeService.getProperty(row
                     .getNodeRef(), orderDouble));
-            //System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "    "+currentBun);
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
             if (d != null)
             {
                 assertTrue(d.compareTo(currentBun) <= 0);
@@ -925,7 +932,7 @@ public class LuceneTest2 extends TestCase
         {
             Double currentBun = DefaultTypeConverter.INSTANCE.convert(Double.class, nodeService.getProperty(row
                     .getNodeRef(), orderDouble));
-            //System.out.println(currentBun);
+            // System.out.println(currentBun);
             if ((d != null) && (currentBun != null))
             {
                 assertTrue(d.compareTo(currentBun) >= 0);
@@ -933,7 +940,7 @@ public class LuceneTest2 extends TestCase
             d = currentBun;
         }
         results.close();
-        
+
         // sort by float
 
         SearchParameters sp11 = new SearchParameters();
@@ -948,7 +955,7 @@ public class LuceneTest2 extends TestCase
         {
             Float currentBun = DefaultTypeConverter.INSTANCE.convert(Float.class, nodeService.getProperty(row
                     .getNodeRef(), orderFloat));
-            //System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "    "+currentBun);
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
             if (f != null)
             {
                 assertTrue(f.compareTo(currentBun) <= 0);
@@ -969,7 +976,7 @@ public class LuceneTest2 extends TestCase
         {
             Float currentBun = DefaultTypeConverter.INSTANCE.convert(Float.class, nodeService.getProperty(row
                     .getNodeRef(), orderFloat));
-            //System.out.println(currentBun);
+            // System.out.println(currentBun);
             if ((f != null) && (currentBun != null))
             {
                 assertTrue(f.compareTo(currentBun) >= 0);
@@ -977,7 +984,7 @@ public class LuceneTest2 extends TestCase
             f = currentBun;
         }
         results.close();
-        
+
         // sort by long
 
         SearchParameters sp13 = new SearchParameters();
@@ -992,7 +999,7 @@ public class LuceneTest2 extends TestCase
         {
             Long currentBun = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(row
                     .getNodeRef(), orderLong));
-            //System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "    "+currentBun);
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
             if (l != null)
             {
                 assertTrue(l.compareTo(currentBun) <= 0);
@@ -1013,7 +1020,7 @@ public class LuceneTest2 extends TestCase
         {
             Long currentBun = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(row
                     .getNodeRef(), orderLong));
-            //System.out.println(currentBun);
+            // System.out.println(currentBun);
             if ((l != null) && (currentBun != null))
             {
                 assertTrue(l.compareTo(currentBun) >= 0);
@@ -1036,7 +1043,7 @@ public class LuceneTest2 extends TestCase
         {
             Integer currentBun = DefaultTypeConverter.INSTANCE.convert(Integer.class, nodeService.getProperty(row
                     .getNodeRef(), orderInt));
-            //System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "    "+currentBun);
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
             if (i != null)
             {
                 assertTrue(i.compareTo(currentBun) <= 0);
@@ -1057,7 +1064,7 @@ public class LuceneTest2 extends TestCase
         {
             Integer currentBun = DefaultTypeConverter.INSTANCE.convert(Integer.class, nodeService.getProperty(row
                     .getNodeRef(), orderInt));
-            //System.out.println(currentBun);
+            // System.out.println(currentBun);
             if ((i != null) && (currentBun != null))
             {
                 assertTrue(i.compareTo(currentBun) >= 0);
@@ -1065,10 +1072,9 @@ public class LuceneTest2 extends TestCase
             i = currentBun;
         }
         results.close();
-        
+
         luceneFTS.resume();
-        
-        
+
         SearchParameters sp17 = new SearchParameters();
         sp17.addStore(rootNodeRef.getStoreRef());
         sp17.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -1076,7 +1082,7 @@ public class LuceneTest2 extends TestCase
         sp17.addSort("cabbage", false);
         results = searcher.query(sp17);
         results.close();
-        
+
         luceneFTS.resume();
     }
 
@@ -1141,7 +1147,7 @@ public class LuceneTest2 extends TestCase
                 + System.currentTimeMillis() + "_1", indexerAndSearcher);
 
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -1155,7 +1161,6 @@ public class LuceneTest2 extends TestCase
      * Test basic index and search
      * 
      * @throws InterruptedException
-     * 
      */
 
     public void testStandAloneIndexerCommit() throws Exception
@@ -1165,7 +1170,7 @@ public class LuceneTest2 extends TestCase
                 + System.currentTimeMillis() + "_1", indexerAndSearcher);
 
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -1356,7 +1361,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -1885,9 +1890,9 @@ public class LuceneTest2 extends TestCase
                 null);
         assertEquals(1, results.length());
         results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toPrefixString(namespacePrefixResolver) + "\"", null,
-                null);
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\""
+                + testType.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -1895,27 +1900,27 @@ public class LuceneTest2 extends TestCase
                 null, null);
         assertEquals(13, results.length());
         results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toPrefixString(namespacePrefixResolver) + "\"",
-                null, null);
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\""
+                + testSuperType.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(13, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\""
-                + testAspect.toString() + "\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toString() + "\"", null,
+                null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\""
                 + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\""
-                + testAspect.toString() + "\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toString() + "\"", null,
+                null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\""
                 + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null, null);
         assertEquals(1, results.length());
@@ -1942,6 +1947,193 @@ public class LuceneTest2 extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), queryQName, null);
         assertEquals(1, results.length());
         results.close();
+
+        // Direct ML tests
+
+        QName mlQName = QName.createQName(TEST_NAMESPACE, "ml");
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+
+        sp.addLocale(Locale.UK);  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.addLocale(Locale.ENGLISH);  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banane");
+        sp.addLocale(Locale.FRENCH);  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":香蕉");
+        sp.addLocale(Locale.CHINESE);  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banaan");
+        sp.addLocale(new Locale("nl"));  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+     
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banane");
+        sp.addLocale(Locale.GERMAN);  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":μπανάνα");
+        sp.addLocale(new Locale("el"));  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.addLocale(Locale.ITALIAN);  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":バナナ");
+        sp.addLocale(new Locale("ja"));  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":바나나");
+        sp.addLocale(new Locale("ko"));  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.addLocale(new Locale("pt"));  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":банан");
+        sp.addLocale(new Locale("ru"));  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":plátano");
+        sp.addLocale(new Locale("es"));  
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        // Test non field queries
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fox", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fo*", null, null);
+        assertEquals(1, results.length());
+        results.close();
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:f*x", null, null);
+        assertEquals(1, results.length());
+        results.close();
+
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*ox", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) +":fox", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) +":fo*", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) +":f*x", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) +":*ox", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) +":fox", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) +":fo*", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) +":f*x", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) +":*ox", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+       
+       
+
 
         // Parameters
 
@@ -2088,7 +2280,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2124,7 +2316,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2361,7 +2553,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2381,7 +2573,7 @@ public class LuceneTest2 extends TestCase
         assertEquals(1, results.length());
         results.close();
     }
-    
+
     public void testNumericInPath() throws Exception
     {
         String COMPLEX_LOCAL_NAME = "Woof12";
@@ -2393,7 +2585,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2423,7 +2615,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2661,7 +2853,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2904,7 +3096,7 @@ public class LuceneTest2 extends TestCase
         indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(),
                 indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -2948,7 +3140,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis(), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -3017,7 +3209,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -3096,7 +3288,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
@@ -3429,7 +3621,7 @@ public class LuceneTest2 extends TestCase
         LuceneIndexerImpl2 indexer = LuceneIndexerImpl2.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta"
                 + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
         indexer.setNodeService(nodeService);
-        //indexer.setLuceneIndexLock(luceneIndexLock);
+        // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
         indexer.setLuceneFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);

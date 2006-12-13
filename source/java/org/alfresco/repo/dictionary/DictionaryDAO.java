@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
@@ -61,6 +62,14 @@ public interface DictionaryDAO extends ModelQuery
      * @return the aspects of the model
      */
     public Collection<AspectDefinition> getAspects(QName model);
+    
+    
+    /**
+     * 
+     * @param model the model for which to get properties
+     * @return
+     */
+    public Collection<PropertyDefinition> getProperties(QName model);
 
     /**
      * Construct an anonymous type that combines a primary type definition and
@@ -86,5 +95,15 @@ public interface DictionaryDAO extends ModelQuery
      * @param model     the qname of the model to remove
      */
     public void removeModel(QName model);
+    
+    /**
+     * Get all properties for the model and that are of the given data type.
+     * If dataType is null then the all properties will be returned. 
+     * 
+     * @param modelName
+     * @param dataType
+     * @return
+     */
+    public Collection<PropertyDefinition> getProperties(QName modelName, QName dataType);
     
 }

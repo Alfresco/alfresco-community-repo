@@ -20,6 +20,8 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.search.MLAnalysisMode;
+import org.alfresco.repo.search.impl.lucene.analysis.MLAnalayser;
 import org.alfresco.repo.search.impl.lucene.analysis.PathAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -32,44 +34,43 @@ import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 
 /**
- * Analyse properties according to the property definition.
- * 
- * The default is to use the standard tokeniser. The tokeniser should not have
- * been called when indexing properties that require no tokenisation. (tokenise
- * should be set to false when adding the field to the document)
+ * Analyse properties according to the property definition. The default is to use the standard tokeniser. The tokeniser should not have been called when indexing properties that
+ * require no tokenisation. (tokenise should be set to false when adding the field to the document)
  * 
  * @author andyh
- * 
  */
 
 public class LuceneAnalyser extends Analyzer
 {
-
+    // Dictinary service to look up analyser classes by data type and locale.
     private DictionaryService dictionaryService;
 
+    // If all else fails a fall back analyser
     private Analyzer defaultAnalyser;
 
+    // Cached analysers for non ML data types.
     private Map<String, Analyzer> analysers = new HashMap<String, Analyzer>();
+
+    private MLAnalysisMode mlAlaysisMode;
 
     /**
      * Constructs with a default standard analyser
      * 
      * @param defaultAnalyzer
-     *            Any fields not specifically defined to use a different
-     *            analyzer will use the one provided here.
+     *            Any fields not specifically defined to use a different analyzer will use the one provided here.
      */
-    public LuceneAnalyser(DictionaryService dictionaryService)
+    public LuceneAnalyser(DictionaryService dictionaryService, MLAnalysisMode mlAlaysisMode)
     {
         this(new AlfrescoStandardAnalyser());
         this.dictionaryService = dictionaryService;
+        this.mlAlaysisMode = mlAlaysisMode;
     }
 
     /**
      * Constructs with default analyzer.
      * 
      * @param defaultAnalyzer
-     *            Any fields not specifically defined to use a different
-     *            analyzer will use the one provided here.
+     *            Any fields not specifically defined to use a different analyzer will use the one provided here.
      */
     public LuceneAnalyser(Analyzer defaultAnalyser)
     {
@@ -78,6 +79,23 @@ public class LuceneAnalyser extends Analyzer
 
     public TokenStream tokenStream(String fieldName, Reader reader)
     {
+        // Treat multilingual as a special case.
+        // If multilingual then we need to find the correct tokeniser.
+        // This is done dynamically by reading a language code at the start of the reader.
+        if (fieldName.startsWith("@") && !fieldName.endsWith(".mimetype"))
+        {
+            QName propertyQName = QName.createQName(fieldName.substring(1));
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            if (propertyDef != null)
+            {
+                if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                {
+                    MLAnalayser analyser = new MLAnalayser(dictionaryService);
+                    return analyser.tokenStream(fieldName, reader);
+                }
+            }
+        }
+
         Analyzer analyser = (Analyzer) analysers.get(fieldName);
         if (analyser == null)
         {
@@ -86,6 +104,12 @@ public class LuceneAnalyser extends Analyzer
         return analyser.tokenStream(fieldName, reader);
     }
 
+    /**
+     * Pick the analyser from the field name
+     * 
+     * @param fieldName
+     * @return
+     */
     private Analyzer findAnalyser(String fieldName)
     {
         Analyzer analyser;
@@ -116,24 +140,31 @@ public class LuceneAnalyser extends Analyzer
         }
         else if (fieldName.startsWith("@"))
         {
-            QName propertyQName = QName.createQName(fieldName.substring(1));
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            if (propertyDef != null)
+            if (fieldName.endsWith(".mimetype"))
             {
-                if (propertyDef.isTokenisedInIndex())
-                {
-                    DataTypeDefinition dataType =  propertyDef.getDataType();
-                    analyser = loadAnalyzer(dataType);
-                }
-                else
-                {
-                    analyser = new VerbatimAnalyser();
-                }
+                analyser = new VerbatimAnalyser();
             }
             else
             {
-                DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
-                analyser = loadAnalyzer(dataType);
+                QName propertyQName = QName.createQName(fieldName.substring(1));
+                PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                if (propertyDef != null)
+                {
+                    if (propertyDef.isTokenisedInIndex())
+                    {
+                        DataTypeDefinition dataType = propertyDef.getDataType();
+                        analyser = loadAnalyzer(dataType);
+                    }
+                    else
+                    {
+                        analyser = new VerbatimAnalyser();
+                    }
+                }
+                else
+                {
+                    DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
+                    analyser = loadAnalyzer(dataType);
+                }
             }
         }
         else
@@ -144,6 +175,12 @@ public class LuceneAnalyser extends Analyzer
         return analyser;
     }
 
+    /**
+     * Find an instantiate an analyser. The shuld all be thread sade as Analyser.tokenStream should be re-entrant.
+     * 
+     * @param dataType
+     * @return
+     */
     private Analyzer loadAnalyzer(DataTypeDefinition dataType)
     {
         String analyserClassName = dataType.getAnalyserClassName();
@@ -155,19 +192,40 @@ public class LuceneAnalyser extends Analyzer
         }
         catch (ClassNotFoundException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using "
-                    + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type "
+                    + dataType.getName() + " using " + analyserClassName);
         }
         catch (InstantiationException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using "
-                    + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type "
+                    + dataType.getName() + " using " + analyserClassName);
         }
         catch (IllegalAccessException e)
         {
-            throw new RuntimeException("Unable to load analyser for property of type " + dataType.getName() + " using "
-                    + analyserClassName);
+            throw new RuntimeException("Unable to load analyser for property of type "
+                    + dataType.getName() + " using " + analyserClassName);
         }
+    }
+
+    /**
+     * For multilingual fields we separate the tokens for each instance to break phrase queries spanning different languages etc.
+     */
+    @Override
+    public int getPositionIncrementGap(String fieldName)
+    {
+        if (fieldName.startsWith("@") && !fieldName.endsWith(".mimetype"))
+        {
+            QName propertyQName = QName.createQName(fieldName.substring(1));
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            if (propertyDef != null)
+            {
+                if (propertyDef.getDataType().equals(DataTypeDefinition.MLTEXT))
+                {
+                    return 1000;
+                }
+            }
+        }
+        return super.getPositionIncrementGap(fieldName);
     }
 
 }

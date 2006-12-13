@@ -102,7 +102,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
         searcher.setLuceneConfig(config);
         try
         {
-            searcher.initialise(storeRef, indexer == null ? null : indexer.getDeltaId(), false, false);
+            searcher.initialise(storeRef, indexer == null ? null : indexer.getDeltaId());
             searcher.indexer = indexer;
         }
         catch (LuceneIndexException e)
@@ -215,7 +215,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
                 }
 
                 Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, new LuceneAnalyser(
-                        dictionaryService), namespacePrefixResolver, dictionaryService, defaultOperator);
+                        dictionaryService, searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()), namespacePrefixResolver, dictionaryService, defaultOperator, searchParameters.getLocales());
                 ClosingIndexSearcher searcher = getSearcher(indexer);
                 if (searcher == null)
                 {

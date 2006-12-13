@@ -30,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,6 +56,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -475,7 +477,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         }
         LuceneIndexerImpl2 indexer = new LuceneIndexerImpl2();
         indexer.setLuceneConfig(config);
-        indexer.initialise(storeRef, deltaId, false, true);
+        indexer.initialise(storeRef, deltaId);
         return indexer;
     }
 
@@ -1443,6 +1445,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         boolean tokenise = true;
         boolean atomic = true;
         boolean isContent = false;
+        boolean isMultiLingual = false;
 
         PropertyDefinition propertyDef = getDictionaryService().getProperty(propertyName);
         if (propertyDef != null)
@@ -1452,6 +1455,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
             tokenise = propertyDef.isTokenisedInIndex();
             atomic = propertyDef.isIndexedAtomically();
             isContent = propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
+            isMultiLingual = propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT);
         }
         if (value == null)
         {
@@ -1621,7 +1625,20 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     fieldIndex = Field.Index.NO;
                 }
                 
-                doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                if(isMultiLingual)
+                {
+                    MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
+                    for(Locale locale : mlText.getLocales())
+                    {
+                        String localeString = mlText.getValue(locale);
+                        doc.add(new Field(attributeName, "\u0000" + locale.toString() +"\u0000" + localeString, fieldStore, fieldIndex, Field.TermVector.NO));
+                    }
+                }
+                else
+                {
+                    doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                }
+                    
             }
         }
 

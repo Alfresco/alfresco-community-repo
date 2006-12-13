@@ -32,10 +32,9 @@ import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
-import org.alfresco.repo.search.transaction.LuceneIndexLock;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -59,7 +58,6 @@ public class LuceneCategoryTest2 extends TestCase
     static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     NodeService nodeService;
     DictionaryService dictionaryService;
-    LuceneIndexLock luceneIndexLock;
     private NodeRef rootNodeRef;
     private NodeRef n1;
     private NodeRef n2;
@@ -111,7 +109,6 @@ public class LuceneCategoryTest2 extends TestCase
     public void setUp() throws Exception
     {
         nodeService = (NodeService)ctx.getBean("dbNodeService");
-        luceneIndexLock = (LuceneIndexLock)ctx.getBean("luceneIndexLock");
         dictionaryService = (DictionaryService)ctx.getBean("dictionaryService");
         luceneFTS = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");

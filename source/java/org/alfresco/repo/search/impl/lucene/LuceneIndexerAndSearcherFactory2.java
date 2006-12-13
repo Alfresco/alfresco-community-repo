@@ -30,11 +30,11 @@ import javax.transaction.xa.Xid;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
-import org.alfresco.repo.search.transaction.LuceneIndexLock;
 import org.alfresco.repo.search.transaction.SimpleTransaction;
 import org.alfresco.repo.search.transaction.SimpleTransactionManager;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -50,7 +50,6 @@ import org.alfresco.util.GUID;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.store.Lock;
 import org.quartz.Job;
@@ -59,14 +58,11 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
- * This class is resource manager LuceneIndexers and LuceneSearchers.
- * 
- * It supports two phase commit inside XA transactions and outside transactions it provides thread local transaction support.
- * 
- * TODO: Provide pluggable support for a transaction manager TODO: Integrate with Spring transactions
+ * This class is resource manager LuceneIndexers and LuceneSearchers. It supports two phase commit inside XA
+ * transactions and outside transactions it provides thread local transaction support. TODO: Provide pluggable support
+ * for a transaction manager TODO: Integrate with Spring transactions
  * 
  * @author andyh
- * 
  */
 
 public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearcher, XAResource
@@ -81,16 +77,9 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     private int indexerBatchSize;
 
-    private int indexerMinMergeDocs;
-
-    private int indexerMergeFactor;
-
-    private int indexerMaxMergeDocs;
-
-    private String lockDirectory;
-
     /**
-     * A map of active global transactions . It contains all the indexers a transaction has used, with at most one indexer for each store within a transaction
+     * A map of active global transactions . It contains all the indexers a transaction has used, with at most one
+     * indexer for each store within a transaction
      */
 
     private static Map<Xid, Map<StoreRef, LuceneIndexer2>> activeIndexersInGlobalTx = new HashMap<Xid, Map<StoreRef, LuceneIndexer2>>();
@@ -123,8 +112,6 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     private NodeService nodeService;
 
-    private LuceneIndexLock luceneIndexLock;
-
     private FullTextSearchIndexer luceneFullTextSearchIndexer;
 
     private String indexRootLocation;
@@ -141,6 +128,12 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     private long writeLockTimeout;
 
     private long commitLockTimeout;
+
+    private String lockDirectory;
+
+    private MLAnalysisMode defaultMLIndexAnalysisMode = MLAnalysisMode.LOCALE_ONLY;
+
+    private MLAnalysisMode defaultMLSearchAnalysisMode = MLAnalysisMode.LOCALE_AND_ALL;
 
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
@@ -172,11 +165,6 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         this.nameSpaceService = nameSpaceService;
     }
 
-    public void setLuceneIndexLock(LuceneIndexLock luceneIndexLock)
-    {
-        this.luceneIndexLock = luceneIndexLock;
-    }
-
     public void setLuceneFullTextSearchIndexer(FullTextSearchIndexer luceneFullTextSearchIndexer)
     {
         this.luceneFullTextSearchIndexer = luceneFullTextSearchIndexer;
@@ -193,7 +181,8 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     }
 
     /**
-     * Set the maximum average transformation time allowed to a transformer in order to have the transformation performed in the current transaction. The default is 20ms.
+     * Set the maximum average transformation time allowed to a transformer in order to have the transformation
+     * performed in the current transaction. The default is 20ms.
      * 
      * @param maxAtomicTransformationTime
      *            the maximum average time that a text transformation may take in order to be performed atomically.
@@ -796,36 +785,6 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         this.indexerBatchSize = indexerBatchSize;
     }
 
-    public int getIndexerMaxMergeDocs()
-    {
-        return indexerMaxMergeDocs;
-    }
-
-    public void setIndexerMaxMergeDocs(int indexerMaxMergeDocs)
-    {
-        this.indexerMaxMergeDocs = indexerMaxMergeDocs;
-    }
-
-    public int getIndexerMergeFactor()
-    {
-        return indexerMergeFactor;
-    }
-
-    public void setIndexerMergeFactor(int indexerMergeFactor)
-    {
-        this.indexerMergeFactor = indexerMergeFactor;
-    }
-
-    public int getIndexerMinMergeDocs()
-    {
-        return indexerMinMergeDocs;
-    }
-
-    public void setIndexerMinMergeDocs(int indexerMinMergeDocs)
-    {
-        this.indexerMinMergeDocs = indexerMinMergeDocs;
-    }
-
     public String getLockDirectory()
     {
         return lockDirectory;
@@ -882,7 +841,7 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     {
         this.commitLockTimeout = timeout;
     }
-    
+
     public long getCommitLockTimeout()
     {
         return commitLockTimeout;
@@ -912,7 +871,8 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
     /**
      * This component is able to <i>safely</i> perform backups of the Lucene indexes while the server is running.
      * <p>
-     * It can be run directly by calling the {@link #backup() } method, but the convenience {@link LuceneIndexBackupJob} can be used to call it as well.
+     * It can be run directly by calling the {@link #backup() } method, but the convenience {@link LuceneIndexBackupJob}
+     * can be used to call it as well.
      * 
      * @author Derek Hulley
      */
@@ -1204,4 +1164,27 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
             });
         }
     }
+
+    public MLAnalysisMode getDefaultMLIndexAnalysisMode()
+    {
+        return defaultMLIndexAnalysisMode;
+    }
+
+    public void  setDefaultMLIndexAnalysisMode(String mode)
+    {
+        defaultMLIndexAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
+    }
+    
+    public MLAnalysisMode getDefaultMLSearchAnalysisMode()
+    {
+       return defaultMLSearchAnalysisMode;
+    }
+    
+    public void  setDefaultMLSearchAnalysisMode(String mode)
+    {
+        defaultMLSearchAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
+    }
+    
+    
+    
 }

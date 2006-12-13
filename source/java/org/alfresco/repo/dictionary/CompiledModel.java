@@ -316,6 +316,15 @@ import org.apache.commons.logging.LogFactory;
     {
         return aspects.values();
     }
+    
+    /**
+     * 
+     * @return the compiled properties
+     */
+    public Collection<PropertyDefinition> getProperties()
+    {
+        return properties.values();
+    }
 
     
     /* (non-Javadoc)

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo.LockWork;
@@ -86,7 +87,7 @@ public abstract class LuceneBase2
      * @param deltaId
      * @throws IOException
      */
-    protected void initialise(StoreRef store, String deltaId, boolean createMain, boolean createDelta)
+    protected void initialise(StoreRef store, String deltaId)
             throws LuceneIndexException
     {
         this.store = store;
@@ -208,7 +209,7 @@ public abstract class LuceneBase2
      */
     protected IndexWriter getDeltaWriter() throws LuceneIndexException, IOException
     {
-        return indexInfo.getDeltaIndexWriter(deltaId, new LuceneAnalyser(dictionaryService));
+        return indexInfo.getDeltaIndexWriter(deltaId, new LuceneAnalyser(dictionaryService, config.getDefaultMLIndexAnalysisMode()));
     }
 
     /**

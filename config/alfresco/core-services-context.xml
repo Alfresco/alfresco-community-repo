@@ -344,9 +344,6 @@
         <property name="nameSpaceService">
             <ref bean="namespaceService" />
         </property>
-        <property name="luceneIndexLock">
-            <ref bean="luceneIndexLock" />
-        </property>
         <property name="luceneFullTextSearchIndexer">
             <ref bean="LuceneFullTextSearchIndexer" />
         </property>
@@ -367,15 +364,6 @@
         </property>
         <property name="indexerBatchSize">
             <value>${lucene.indexer.batchSize}</value>
-        </property>
-        <property name="indexerMinMergeDocs">
-            <value>${lucene.indexer.minMergeDocs}</value>
-        </property>
-        <property name="indexerMergeFactor">
-            <value>${lucene.indexer.mergeFactor}</value>
-        </property>
-        <property name="indexerMaxMergeDocs">
-            <value>${lucene.indexer.maxMergeDocs}</value>
         </property>
         <property name="lockDirectory">
             <value>${dir.indexes.lock}</value>
@@ -410,11 +398,6 @@
             <ref bean="luceneIndexerAndSearcherFactory" />
         </property>
     </bean>
-
-    <!-- Support for locking lucene indexes for deletion and update -->
-
-    <bean id="luceneIndexLock" class="org.alfresco.repo.search.transaction.LuceneIndexLock"></bean>
-
 
     <!--                               -->
     <!--  Lock Service           -->

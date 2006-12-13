@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -441,5 +442,33 @@ public class DictionaryDAOImpl implements DictionaryDAO
         return new M2AnonymousTypeDefinition(typeDef, aspectDefs);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryDAO#getProperties(org.alfresco.service.namespace.QName)
+     */
+    public Collection<PropertyDefinition> getProperties(QName modelName)
+    {
+        CompiledModel model = getCompiledModel(modelName);
+        return model.getProperties();
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryDAO#getProperties(org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
+     */
+    public Collection<PropertyDefinition> getProperties(QName modelName, QName dataType)
+    {
+        HashSet<PropertyDefinition> properties = new HashSet<PropertyDefinition>();
+
+        Collection<PropertyDefinition> props = getProperties(modelName);
+        for(PropertyDefinition prop : props)
+        {
+            if((dataType == null) ||   prop.getDataType().getName().equals(dataType))
+            {
+                properties.add(prop);
+            }
+        }
+        return properties;
+    }
 
 }

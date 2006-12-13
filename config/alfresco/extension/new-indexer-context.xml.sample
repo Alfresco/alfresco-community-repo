@@ -16,9 +16,6 @@
         <property name="nameSpaceService">
             <ref bean="namespaceService" />
         </property>
-        <property name="luceneIndexLock">
-            <ref bean="luceneIndexLock" />
-        </property>
         <property name="luceneFullTextSearchIndexer">
             <ref bean="LuceneFullTextSearchIndexer" />
         </property>

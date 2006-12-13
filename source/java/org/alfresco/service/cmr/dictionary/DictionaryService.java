@@ -171,6 +171,40 @@ public interface DictionaryService
     PropertyDefinition getProperty(QName propertyName);
 
     /**
+     * Get all properties defined across all models with the given data type.
+     * 
+     * Note that DataTypeDefinition.ANY will only match this type and can not be used as get all properties.
+     * 
+     * If dataType is null then this method will return *ALL* properties regardless of data type.
+     * 
+     * @param dataType
+     * @return
+     */
+    @NotAuditable
+    Collection<QName> getAllProperties(QName dataType);
+    
+    /**
+     * Get all properties defined for the given model with the given data type.
+     * 
+     * Note that DataTypeDefinition.ANY will only match this type and can not be used as get all properties.
+     * 
+     * If dataType is null then this method will return *ALL* properties regardless of data type.
+     * 
+     * @param dataType
+     * @return
+     */
+    @NotAuditable
+    Collection<QName> getProperties(QName model, QName dataType);
+    
+    /**
+     * Get all poroperties for the specified model
+     * 
+     * @param model
+     * @return
+     */
+    Collection<QName> getProperties(QName model);
+    
+    /**
      * Gets the definition of the association as defined by its owning Class.
      * 
      * @param associationName the property name

@@ -18,6 +18,8 @@ package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -285,5 +287,50 @@ public class DictionaryComponent implements DictionaryService
     {
         return dictionaryDAO.getAssociation(associationName);
     }
+
+
+   /*
+    * (non-Javadoc)
+    * @see org.alfresco.service.cmr.dictionary.DictionaryService#getAllProperties(org.alfresco.service.namespace.QName)
+    */
+    public Collection<QName> getAllProperties(QName dataType)
+    {
+        Collection<QName> aspects = new HashSet<QName>(64);
+        for (QName model : getAllModels())
+        {
+            aspects.addAll(getProperties(model, dataType));
+        }
+        return aspects;
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getAllProperties(org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
+     */
+    public Collection<QName> getProperties(QName model, QName dataType)
+    {
+        Collection<PropertyDefinition> propDefs = dictionaryDAO.getProperties(model, dataType);
+        HashSet<QName> props = new HashSet<QName>(propDefs.size());
+        for(PropertyDefinition def : propDefs)
+        {
+            props.add(def.getName());
+        }
+        return props;
+        
+    }
+
+
+    public Collection<QName> getProperties(QName model)
+    {
+        Collection<PropertyDefinition> propDefs = dictionaryDAO.getProperties(model);
+        HashSet<QName> props = new HashSet<QName>(propDefs.size());
+        for(PropertyDefinition def : propDefs)
+        {
+            props.add(def.getName());
+        }
+        return props;
+    }
+    
     
 }

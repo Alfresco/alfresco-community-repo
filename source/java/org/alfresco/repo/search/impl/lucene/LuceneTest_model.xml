@@ -229,6 +229,16 @@
                         <tokenised>false</tokenised>
                     </index>
                 </property>
+				<property name="test:ml">
+                    <type>d:mltext</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
             </properties>
             <mandatory-aspects>
                 <aspect>test:testAspect</aspect>

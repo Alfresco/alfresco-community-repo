@@ -180,5 +180,59 @@
         eternal="true"
         overflowToDisk="false"
         />
-    
+    <!-- AVM caches -->
+     <cache
+        name="org.alfresco.repo.avm.AVMNodeImpl" 
+        maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+     <cache
+        name="org.alfresco.repo.avm.AVMStoreImpl" 
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+     <cache
+        name="org.alfresco.repo.avm.VersionRootImpl" 
+        maxElementsInMemory="200"
+        eternal="true"
+        overflowToDisk="false"
+        />
+     <cache
+        name="org.alfresco.repo.avm.ChildEntryImpl" 
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+     <cache
+        name="org.alfresco.repo.avm.HistoryLinkImpl" 
+        maxElementsInMemory="200"
+        eternal="true"
+        overflowToDisk="false"
+        />
+     <cache
+        name="org.alfresco.repo.avm.MergeLinkImpl" 
+        maxElementsInMemory="200"
+        eternal="true"
+        overflowToDisk="false"
+        />
+     <cache
+        name="org.alfresco.repo.avm.AVMNodePropertyImpl" 
+        maxElementsInMemory="2000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+     <cache
+        name="org.alfresco.repo.avm.AVMStorePropertyImpl" 
+        maxElementsInMemory="500"
+        eternal="true"
+        overflowToDisk="false"
+        />
+     <cache
+        name="org.alfresco.repo.avm.AVMAspectNameImpl" 
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        /> 
 </ehcache>

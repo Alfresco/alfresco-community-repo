@@ -369,6 +369,14 @@ public class SubmitDialog extends BaseDialogBean
    }
    
    /**
+    * @return size of the workflow selection list
+    */
+   public int getWorkflowListSize()
+   {
+      return getWorkflowList().size();
+   }
+   
+   /**
     * @return the List of bean items to show in the Submit list
     */
    public List<ItemWrapper> getSubmitItems()

@@ -69,11 +69,19 @@
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px">
-   <h:outputText value="#{msg.submit_workflow_selection}"/>
+   <h:outputText value="#{msg.submit_workflow_selection}" rendered="#{DialogManager.bean.workflowListSize != 0}" />
    <a:selectList id="workflow-list" multiSelect="false" styleClass="selectListTable" itemStyleClass="selectListItem"
-         value="#{DialogManager.bean.workflowSelectedValue}">
+         value="#{DialogManager.bean.workflowSelectedValue}" rendered="#{DialogManager.bean.workflowListSize != 0}">
       <a:listItems value="#{DialogManager.bean.workflowList}" />
    </a:selectList>
+   <h:panelGroup rendered="#{DialogManager.bean.workflowListSize == 0}">
+      <f:verbatim><% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %></f:verbatim>
+      <h:panelGrid columns="2" cellpadding="0" cellpadding="0">
+         <h:graphicImage url="/images/icons/warning.gif" style="padding-top:2px;padding-right:4px" width="16" height="16"/>
+         <h:outputText styleClass="mainSubText" value="#{msg.submit_no_workflow_warning}" />
+      </h:panelGrid>
+      <f:verbatim><% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %></f:verbatim>
+   </h:panelGroup>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"

@@ -47,6 +47,8 @@
             <h:outputText value="#{msg.name}" />
          </f:facet>
          <h:outputText value="#{row.title}" />
+         <h:graphicImage url="/images/icons/warning.gif" style="padding:2px" width="16" height="16"
+               rendered="#{row.params == null}" title="#{msg.workflow_not_configured}" />
       </h:column>
       <h:column>
          <f:facet name="header">

@@ -187,14 +187,18 @@ public class CreateWebContentWizard extends BaseContentWizard
       final int step = Application.getWizardManager().getCurrentStep();
       if (step == 3)
       {
-         try
+         // if rendering a form, then save the content now to generate the renditions
+         if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType))
          {
-            this.saveContent();
-         }
-         catch (Exception e)
-         {
-            Application.getWizardManager().getState().setCurrentStep(step - 1);
-            Utils.addErrorMessage(e.getMessage(), e);
+            try
+            {
+               this.saveContent();
+            }
+            catch (Exception e)
+            {
+               Application.getWizardManager().getState().setCurrentStep(step - 1);
+               Utils.addErrorMessage(e.getMessage(), e);
+            }
          }
       }
       return super.next();
@@ -231,6 +235,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    @Override
    public String finish()
    {
+      // if a form is not being entered, then save just html/text content
       if (this.formInstanceData == null || this.renditions == null)
       {
          try

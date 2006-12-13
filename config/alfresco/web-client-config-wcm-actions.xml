@@ -308,8 +308,9 @@
          <!-- Actions Menu for More Actions in Web Project screen -->
          <action-group id="browse_website_menu">
             <action idref="details_space" />
-            <action idref="delete_space" />
+            <action idref="edit_website" />
             <action idref="invite_website_users" />
+            <action idref="delete_space" />
          </action-group>
          
       </actions>

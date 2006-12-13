@@ -33,6 +33,7 @@
       </a:selectList>
       <f:verbatim></div></f:verbatim>
    </h:panelGroup>
+   <h:commandButton value="#{msg.create_form}" style="margin:2px" styleClass="dialogControls" action="wizard:createForm" />
    
    <%-- Selected Form table, with configuration buttons and info text --%>
    <f:verbatim><div style='padding:4px'></div></f:verbatim>
@@ -47,6 +48,8 @@
             <h:outputText value="#{msg.name}" />
          </f:facet>
          <h:outputText value="#{row.title}" />
+         <h:graphicImage url="/images/icons/warning.gif" style="padding:2px" width="16" height="16"
+               rendered="#{row.workflow != null && row.workflow.params == null}" title="#{msg.workflow_not_configured}" />
       </h:column>
       <h:column>
          <f:facet name="header">

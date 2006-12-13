@@ -542,7 +542,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    /**
-    * Action method to setup a form for dialog context for the current row
+    * Action handler to setup a form for dialog context for the current row
     */
    public void setupFormAction(ActionEvent event)
    {

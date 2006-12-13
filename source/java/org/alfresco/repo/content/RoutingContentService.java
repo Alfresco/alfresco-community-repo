@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
@@ -34,6 +33,7 @@ import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -73,6 +73,7 @@ public class RoutingContentService implements ContentService
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private AVMService avmService;
+    private RetryingTransactionHelper transactionHelper;
     
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
@@ -104,6 +105,11 @@ public class RoutingContentService implements ContentService
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+    
+    public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
+    {
+        this.transactionHelper = helper;
     }
     
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -356,9 +362,9 @@ public class RoutingContentService implements ContentService
         if (update)
         {
             // need a listener to update the node when the stream closes
-            WriteStreamListener listener = new WriteStreamListener(nodeService, nodeRef, propertyQName, writer);
+            WriteStreamListener listener = new WriteStreamListener(nodeService, avmService, nodeRef, propertyQName, writer);
             writer.addListener(listener);
-            writer.setTransactionService(transactionService);
+            writer.setRetryingTransactionHelper(transactionHelper);
         }
         
         // give back to the client
@@ -458,17 +464,20 @@ public class RoutingContentService implements ContentService
     private static class WriteStreamListener implements ContentStreamListener
     {
         private NodeService nodeService;
+        private AVMService avmService;
         private NodeRef nodeRef;
         private QName propertyQName;
         private ContentWriter writer;
         
         public WriteStreamListener(
                 NodeService nodeService,
+                AVMService avmService,
                 NodeRef nodeRef,
                 QName propertyQName,
                 ContentWriter writer)
         {
             this.nodeService = nodeService;
+            this.avmService = avmService;
             this.nodeRef = nodeRef;
             this.propertyQName = propertyQName;
             this.writer = writer;
@@ -480,10 +489,19 @@ public class RoutingContentService implements ContentService
             {
                 // set the full content property
                 ContentData contentData = writer.getContentData();
-                nodeService.setProperty(
+                // Bypass NodeService for avm stores.
+                if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                {
+                    Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+                    avmService.setContentData(versionPath.getSecond(), contentData);
+                }
+                else
+                {
+                    nodeService.setProperty(
                         nodeRef,
                         propertyQName,
                         contentData);
+                }
                 // done
                 if (logger.isDebugEnabled())
                 {

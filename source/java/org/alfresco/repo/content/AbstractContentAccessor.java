@@ -27,6 +27,7 @@ import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
 import org.alfresco.error.StackTraceUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -57,7 +58,8 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     private StackTraceElement[] traceLoggerChannelAssignTrace;
     
     /** when set, ensures that listeners are executed within a transaction */
-    private TransactionService transactionService;
+//    private TransactionService transactionService;
+    private RetryingTransactionHelper transactionHelper;
     
     private String contentUrl;
     private String mimetype;
@@ -120,21 +122,26 @@ public abstract class AbstractContentAccessor implements ContentAccessor
      * 
      * @return Returns a source of user transactions
      */
-    protected TransactionService getTransactionService()
-    {
-        return transactionService;
-    }
+//    protected TransactionService getTransactionService()
+//    {
+//        return transactionService;
+//    }
 
     /**
      * Set the transaction provider to be used by {@link ContentStreamListener listeners}.
      * 
      * @param transactionService the transaction service to wrap callback code in
      */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+//    public void setTransactionService(TransactionService transactionService)
+//    {
+//        this.transactionService = transactionService;
+//    }
 
+    public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
+    {
+        this.transactionHelper = helper;
+    }
+    
     /**
      * Derived classes can call this method to ensure that necessary trace logging is performed
      * when the IO Channel is opened.
@@ -237,28 +244,40 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 // nothing to do
                 return;
             }
-            TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
-                    {
-                        public Object doWork()
-                        {
-                            // call the listeners
-                            for (ContentStreamListener listener : listeners)
-                            {
-                                listener.contentStreamClosed();
-                            }
-                            return null;
-                        }
-                    };
-            if (transactionService != null)
+            RetryingTransactionHelper.Callback cb = 
+            new RetryingTransactionHelper.Callback()
             {
-                // just create a transaction
-                TransactionUtil.executeInUserTransaction(transactionService, work);
+                public Object execute()
+                {
+                    for (ContentStreamListener listener : listeners)
+                    {
+                        listener.contentStreamClosed();
+                    }
+                    return null;
+                }
+            };
+//            TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
+//                    {
+//                        public Object doWork()
+//                        {
+//                            // call the listeners
+//                            for (ContentStreamListener listener : listeners)
+//                            {
+//                                listener.contentStreamClosed();
+//                            }
+//                            return null;
+//                        }
+//                    };
+            if (transactionHelper != null)
+            {
+                // Execute in transaction.
+                transactionHelper.doInTransaction(cb, false);
             }
             else
             {
                 try
                 {
-                    work.doWork();
+                    cb.execute();       
                 }
                 catch (Exception e)
                 {
@@ -331,28 +350,44 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 // nothing to do
                 return;
             }
-            TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
+            // We're now doing this in a retrying transaction, which means
+            // that the body of execute() must be idempotent.
+            RetryingTransactionHelper.Callback cb =
+            new RetryingTransactionHelper.Callback()
+            {
+                public Object execute()
+                {
+                    for (ContentStreamListener listener : listeners)
                     {
-                        public Object doWork()
-                        {
-                            // call the listeners
-                            for (ContentStreamListener listener : listeners)
-                            {
-                                listener.contentStreamClosed();
-                            }
-                            return null;
-                        }
-                    };
-            if (transactionService != null)
+                        listener.contentStreamClosed();
+                    }
+                    return null;
+                }
+            };
+//            TransactionUtil.TransactionWork<Object> work = new TransactionUtil.TransactionWork<Object>()
+//                    {
+//                        public Object doWork()
+//                        {
+//                            // call the listeners
+//                            for (ContentStreamListener listener : listeners)
+//                            {
+//                                listener.contentStreamClosed();
+//                            }
+//                            return null;
+//                        }
+//                    };
+            // We're now doing this inside a Retrying transaction.
+            // NB 
+            if (transactionHelper != null)
             {
                 // just create a transaction
-                TransactionUtil.executeInUserTransaction(transactionService, work);
+                transactionHelper.doInTransaction(cb, false);
             }
             else
             {
                 try
                 {
-                    work.doWork();
+                    cb.execute();
                 }
                 catch (Exception e)
                 {

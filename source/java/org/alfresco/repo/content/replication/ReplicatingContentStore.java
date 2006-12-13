@@ -28,6 +28,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -98,6 +99,7 @@ public class ReplicatingContentStore extends AbstractContentStore
     private static Log logger = LogFactory.getLog(ReplicatingContentStore.class);
     
     private TransactionService transactionService;
+    private RetryingTransactionHelper transactionHelper;
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
     private boolean inbound;
@@ -130,6 +132,14 @@ public class ReplicatingContentStore extends AbstractContentStore
         this.transactionService = transactionService;
     }
 
+    /**
+     * Set the retrying transaction helper.
+     */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
+    {
+        this.transactionHelper = helper;
+    }
+    
     /**
      * Set the primary store that content will be replicated to or from
      * 
@@ -291,7 +301,7 @@ public class ReplicatingContentStore extends AbstractContentStore
             // attach the listener
             ContentStreamListener listener = new ReplicatingWriteListener(secondaryStores, writer, outboundThreadPoolExecutor);
             writer.addListener(listener);
-            writer.setTransactionService(transactionService);   // mandatory when listeners are added
+            writer.setRetryingTransactionHelper(transactionHelper);   // mandatory when listeners are added
         }
         
         // done

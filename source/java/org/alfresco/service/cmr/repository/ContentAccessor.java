@@ -16,6 +16,7 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
@@ -51,15 +52,10 @@ public interface ContentAccessor
     public void addListener(ContentStreamListener listener);
     
     /**
-     * Set the transaction provider that will be used when stream listeners are called.
-     * No transactions are started unless there are listeners present to be executed.
-     * For consistency, the execution of listeners <b>will not</b> be allowed to proceed
-     * unless this property has been set OR the channel close operations are executed
-     * within the context of a live transaction.
-     * 
-     * @param transactionService a transaction provider
+     * Set the transaction helper for callbacks.
+     * @param helper
      */
-    public void setTransactionService(TransactionService transactionService);
+    public void setRetryingTransactionHelper(RetryingTransactionHelper helper);
     
     /**
      * Gets the size of the content that this reader references.

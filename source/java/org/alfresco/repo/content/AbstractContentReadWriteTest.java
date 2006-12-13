@@ -307,7 +307,7 @@ public abstract class AbstractContentReadWriteTest extends TestCase
                 streamClosed[0] = true;
             }
         };
-        writer.setTransactionService(new DummyTransactionService());
+        writer.setRetryingTransactionHelper(null);
         writer.addListener(listener);
         
         // write some content

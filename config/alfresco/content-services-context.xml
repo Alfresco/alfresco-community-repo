@@ -54,6 +54,9 @@
       <property name="transactionService">
           <ref bean="transactionComponent" />
       </property>
+      <property name="retryingTransactionHelper">
+          <ref bean="retryingTransactionHelper"/>
+      </property>
       <property name="dictionaryService">
           <ref bean="dictionaryService" />
       </property>

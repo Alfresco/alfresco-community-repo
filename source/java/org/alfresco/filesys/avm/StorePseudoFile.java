@@ -51,6 +51,23 @@ public class StorePseudoFile extends PseudoFile {
 		setFileInfo( fInfo);
 	}
 	
+	/**
+	 * Class constructor
+	 * 
+	 * @param storeName String
+	 */
+	public StorePseudoFile( String storeName)
+	{
+		super( storeName, FileAttribute.Directory + FileAttribute.ReadOnly);
+		
+		// Create static file information from the store details
+		
+		FileInfo fInfo = new FileInfo( storeName, 0L, FileAttribute.Directory + FileAttribute.ReadOnly);
+		fInfo.setCreationDateTime( System.currentTimeMillis());
+		
+		setFileInfo( fInfo);
+	}
+	
     /**
      * Return a network file for reading/writing the pseudo file
      * 

@@ -20,7 +20,17 @@ package org.alfresco.filesys.avm;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.filesys.server.filesys.DiskInterface;
+import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.FileSystem;
+import org.alfresco.filesys.server.filesys.NotifyChange;
+import org.alfresco.filesys.server.state.FileState;
+import org.alfresco.filesys.server.state.FileStateTable;
+import org.alfresco.repo.avm.CreateStoreCallback;
+import org.alfresco.repo.avm.CreateVersionCallback;
+import org.alfresco.repo.avm.PurgeStoreCallback;
+import org.alfresco.repo.avm.PurgeVersionCallback;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * AVM Filesystem Context Class
@@ -29,8 +39,13 @@ import org.alfresco.filesys.server.filesys.FileSystem;
  *
  * @author GKSpencer
  */
-public class AVMContext extends AlfrescoContext {
+public class AVMContext extends AlfrescoContext
+	implements CreateStoreCallback, PurgeStoreCallback, CreateVersionCallback, PurgeVersionCallback {
 
+    // Logging
+    
+    private static final Log logger = LogFactory.getLog(AVMContext.class);
+    
 	// Constants
 	//
 	// Version id that indicates the head version
@@ -149,4 +164,226 @@ public class AVMContext extends AlfrescoContext {
     {
     	return null;
     }
+
+	/**
+	 * Create store call back handler
+	 * 
+	 * @param storeName String
+	 * @param versionID int
+	 */
+	public void storeCreated(String storeName)
+	{
+		// Make sure the file state cache is enabled
+		
+		FileStateTable fsTable = getStateTable();
+		if ( fsTable == null)
+			return;
+		
+		// Find the file state for the root folder
+		
+		FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR);
+
+		if ( rootState != null && rootState.hasPseudoFiles())
+		{
+			// Add a pseudo folder for the new store
+			
+			rootState.addPseudoFile( new StorePseudoFile( storeName));
+			
+			// DEBUG
+			
+			if ( logger.isDebugEnabled())
+				logger.debug( "Added pseudo folder for new store " + storeName);
+			
+			// Send a change notification for the new folder
+			
+			if ( hasChangeHandler())
+			{
+				// Build the filesystem relative path to the new store folder
+				
+				StringBuilder str = new StringBuilder();
+				
+				str.append( FileName.DOS_SEPERATOR);
+				str.append( storeName);
+				
+				// Send the change notification
+				
+                getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionAdded, str.toString());
+			}
+		}
+	}
+	
+	/**
+	 * Purge store call back handler
+	 * 
+	 * @param storeName String
+	 */
+	public void storePurged(String storeName)
+	{
+		// Make sure the file state cache is enabled
+		
+		FileStateTable fsTable = getStateTable();
+		if ( fsTable == null)
+			return;
+		
+		// Find the file state for the root folder
+		
+		FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR);
+		if ( rootState != null && rootState.hasPseudoFiles())
+		{
+			// Remove the pseudo folder for the store
+
+			rootState.getPseudoFileList().removeFile( storeName, false);
+			
+			// Build the filesystem relative path to the deleted store folder
+			
+			StringBuilder pathStr = new StringBuilder();
+			
+			pathStr.append( FileName.DOS_SEPERATOR);
+			pathStr.append( storeName);
+
+			// Remove the file state for the deleted store
+			
+			String storePath = pathStr.toString();
+			fsTable.removeFileState( storePath);
+			
+			// DEBUG
+			
+			if ( logger.isDebugEnabled())
+				logger.debug( "Removed pseudo folder for purged store " + storeName);
+			
+			// Send a change notification for the deleted folder
+			
+			if ( hasChangeHandler())
+			{
+				// Send the change notification
+				
+	            getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionRemoved, storePath);
+			}
+		}
+	}
+
+	/**
+	 * Create version call back handler
+	 * 
+	 * @param storeName String
+	 * @param versionID int
+	 */
+	public void versionCreated(String storeName, int versionID)
+	{
+		// Make sure the file state cache is enabled
+		
+		FileStateTable fsTable = getStateTable();
+		if ( fsTable == null)
+			return;
+
+		// Build the path to the store version folder
+		
+		StringBuilder pathStr = new StringBuilder();
+
+		pathStr.append( FileName.DOS_SEPERATOR);
+		pathStr.append( storeName);
+		pathStr.append( FileName.DOS_SEPERATOR);
+		pathStr.append( AVMPath.VersionsFolder);
+		
+		// Find the file state for the store versions folder
+		
+		FileState verState = fsTable.findFileState( pathStr.toString());
+
+		if ( verState != null && verState.hasPseudoFiles())
+		{
+			// Create the version folder name
+			
+			StringBuilder verStr = new StringBuilder();
+			
+			verStr.append( AVMPath.VersionFolderPrefix);
+			verStr.append( versionID);
+			
+			String verName = verStr.toString();
+			
+			// Add a pseudo folder for the new version
+			
+			verState.addPseudoFile( new VersionPseudoFile( verName));
+			
+			// DEBUG
+			
+			if ( logger.isDebugEnabled())
+				logger.debug( "Added pseudo folder for new version " + storeName + ":/" + verName);
+			
+			// Send a change notification for the new folder
+			
+			if ( hasChangeHandler())
+			{
+				// Build the filesystem relative path to the new version folder
+				
+				pathStr.append( FileName.DOS_SEPERATOR);
+				pathStr.append( verName);
+				
+				// Send the change notification
+				
+                getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionAdded, pathStr.toString());
+			}
+		}
+	}
+
+	/**
+	 * Purge version call back handler
+	 * 
+	 * @param storeName String
+	 */
+	public void versionPurged(String storeName, int versionID)
+	{
+		// Make sure the file state cache is enabled
+		
+		FileStateTable fsTable = getStateTable();
+		if ( fsTable == null)
+			return;
+
+		// Build the path to the store version folder
+		
+		StringBuilder pathStr = new StringBuilder();
+
+		pathStr.append( FileName.DOS_SEPERATOR);
+		pathStr.append( storeName);
+		pathStr.append( FileName.DOS_SEPERATOR);
+		pathStr.append( AVMPath.VersionsFolder);
+		
+		// Find the file state for the store versions folder
+		
+		FileState verState = fsTable.findFileState( pathStr.toString());
+
+		if ( verState != null && verState.hasPseudoFiles())
+		{
+			// Create the version folder name
+			
+			StringBuilder verStr = new StringBuilder();
+			
+			verStr.append( AVMPath.VersionFolderPrefix);
+			verStr.append( versionID);
+			
+			String verName = verStr.toString();
+			
+			// Remove the pseudo folder for the purged version
+			
+			verState.getPseudoFileList().removeFile( verName, true);
+			
+			// DEBUG
+			
+			if ( logger.isDebugEnabled())
+				logger.debug( "Removed pseudo folder for purged version " + storeName + ":/" + verName);
+			
+			// Send a change notification for the deleted folder
+			
+			if ( hasChangeHandler())
+			{
+				// Build the filesystem relative path to the deleted version folder
+				
+				pathStr.append( FileName.DOS_SEPERATOR);
+				pathStr.append( verName);
+				
+				// Send the change notification
+				
+                getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionRemoved, pathStr.toString());
+			}
+		}
+	}
 }

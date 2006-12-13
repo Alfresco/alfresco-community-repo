@@ -50,6 +50,10 @@ import org.alfresco.filesys.server.pseudo.PseudoFolderNetworkFile;
 import org.alfresco.filesys.server.state.FileState;
 import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.WildCard;
+import org.alfresco.repo.avm.CreateStoreTxnListener;
+import org.alfresco.repo.avm.CreateVersionTxnListener;
+import org.alfresco.repo.avm.PurgeStoreTxnListener;
+import org.alfresco.repo.avm.PurgeVersionTxnListener;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -96,6 +100,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     
     private AuthenticationComponent m_authComponent;
     private AuthenticationService m_authService;
+    
+    // AVM listeners
+    
+    private CreateStoreTxnListener m_createStoreListener;
+    private PurgeStoreTxnListener m_purgeStoreListener;
+    
+    private CreateVersionTxnListener m_createVerListener;
+    private PurgeVersionTxnListener m_purgeVerListener;
     
     /**
      * Default constructor
@@ -185,6 +197,46 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     }
     
     /**
+     * Set the create store listener
+     * 
+     * @param createStoreListener CreateStoreTxnListener
+     */
+    public void setCreateStoreListener(CreateStoreTxnListener createStoreListener)
+    {
+    	m_createStoreListener = createStoreListener;
+    }
+    
+    /**
+     * Set the purge store listener
+     * 
+     * @param purgeStoreListener PurgeStoreTxnListener
+     */
+    public void setPurgeStoreListener(PurgeStoreTxnListener purgeStoreListener)
+    {
+    	m_purgeStoreListener = purgeStoreListener;
+    }
+    
+    /**
+     * Set the create version listener
+     * 
+     * @param createVersionListener CreateVersionTxnListener
+     */
+    public void setCreateVersionListener(CreateVersionTxnListener createVersionListener)
+    {
+    	m_createVerListener = createVersionListener;
+    }
+    
+    /**
+     * Set the purge version listener
+     * 
+     * @param purgeVersionListener PurgeVersionTxnListener
+     */
+    public void setPurgeVersionListener(PurgeVersionTxnListener purgeVersionListener)
+    {
+    	m_purgeVerListener = purgeVersionListener;
+    }
+    
+    /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device.
      * 
@@ -248,6 +300,15 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	            		rootState.addPseudoFile( new StorePseudoFile( storeDesc));
 	            	}
 	            }
+	            
+	            // Plug the virtualization view context into the various store/version call back listeners
+	            // so that store/version pseudo folders can be kept in sync with AVM
+	            
+	            m_createStoreListener.addCallback( context);
+	            m_purgeStoreListener.addCallback( context);
+	            
+	            m_createVerListener.addCallback( context);
+	            m_purgeVerListener.addCallback( context);
             }
             else
             {

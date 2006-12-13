@@ -336,19 +336,19 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * @return Preview URL for the current Staging store
+    * @return Preview URL for the current Staging store and current webapp
     */
    public String getStagingPreviewUrl()
    {
-      return AVMConstants.buildAVMStoreUrl(getStagingStore());
+      return AVMConstants.buildAVMWebappUrl(getStagingStore(), getWebapp());
    }
    
    /**
-    * @return Preview URL for the current User Sandbox store
+    * @return Preview URL for the current User Sandbox store and current webapp
     */
    public String getSandboxPreviewUrl()
    {
-      return AVMConstants.buildAVMStoreUrl(getSandbox());
+      return AVMConstants.buildAVMWebappUrl(getSandbox(), getWebapp());
    }
    
    /**

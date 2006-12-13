@@ -333,10 +333,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(")</td><td><nobr>");
                   
                   // direct actions for a sandbox
-                  String sandboxUrl = AVMConstants.buildAVMStoreUrl(mainStore);
+                  String websiteUrl = AVMConstants.buildAVMWebappUrl(mainStore, getWebapp());
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_PREVIEW, "/images/icons/preview_website.gif",
-                        null, null, sandboxUrl, null));
+                        null, null, websiteUrl, null));
                   out.write("&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(

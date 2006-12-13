@@ -123,6 +123,22 @@ public final class AVMConstants
       return MessageFormat.format(PREVIEW_SANDBOX_URL, lookupStoreDNS(store), config.getWCMDomain(), config.getWCMPort());
    }
    
+   public static String buildAVMWebappUrl(String store, String webapp)
+   {
+      if (webapp == null || webapp.length() == 0)
+      {
+         throw new IllegalArgumentException("Webapp name is mandatory.");
+      }
+      if (!webapp.equals(DIR_ROOT))
+      {
+         return buildAVMStoreUrl(store) + '/' + webapp;
+      }
+      else
+      {
+         return buildAVMStoreUrl(store);
+      }
+   }
+   
    public static String buildAVMAssetUrl(final String avmPath)
    {
       if (avmPath == null || avmPath.length() == 0)

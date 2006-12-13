@@ -29,6 +29,7 @@ import java.util.ResourceBundle;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
@@ -110,11 +111,22 @@ public class AVMBrowseBean implements IContextListener
    /** Snapshot date filter selection */
    private String snapshotDateFilter = UISandboxSnapshots.FILTER_DATE_TODAY;
    
+   /** Current sandbox store context for actions and sandbox view */
    private String sandbox;
+   
+   /** Current username context for actions and sandbox view */
    private String username;
+   
+   /** Current webapp context for actions and sandbox view */
+   private String webapp;
+   
+   /** Sandbox title message */
    private String sandboxTitle = null;
+   
+   /** Current AVM path and node representing the current path */
    private String currentPath = null;
    private AVMNode currentPathNode = null;
+   
    private boolean submitAll = false;
    
    /* component references */
@@ -420,6 +432,41 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @return current webapp context
+    */
+   public String getWebapp()
+   {
+      if (this.webapp == null)
+      {
+         this.webapp = (String)getWebsite().getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
+      }
+      return this.webapp;
+   }
+
+   /**
+    * @param webapp  Webapp folder context
+    */
+   public void setWebapp(String webapp)
+   {
+      this.webapp = webapp;
+   }
+   
+   /**
+    * @return list of available root webapp folders for this Web project
+    */
+   public List<SelectItem> getWebapps()
+   {
+      String path = AVMConstants.buildAVMStoreRootPath(getStagingStore());
+      Map<String, AVMNodeDescriptor> folders = this.avmService.getDirectoryListing(-1, path);
+      List<SelectItem> webapps = new ArrayList<SelectItem>(folders.size());
+      for (AVMNodeDescriptor node : folders.values())
+      {
+         webapps.add(new SelectItem(node.getName(), node.getName()));
+      }
+      return webapps;
+   }
+
+   /**
     * @return Returns the sandboxTitle.
     */
    public String getSandboxTitle()
@@ -511,8 +558,7 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.currentPath == null)
       {
-         String webapp = (String)getWebsite().getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
-         this.currentPath = AVMConstants.buildAVMStoreWebappPath(getSandbox(), webapp);
+         this.currentPath = AVMConstants.buildAVMStoreWebappPath(getSandbox(), getWebapp());
       }
       return this.currentPath;
    }

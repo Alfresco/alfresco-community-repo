@@ -130,6 +130,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
    /** website to show sandboxes for */
    private NodeRef value;
    
+   /** webapp to filter list by */
+   private String webapp;
+   
    /** cached converter instance */
    private ByteSizeConverter sizeConverter = null;
    
@@ -472,28 +475,29 @@ public class UIUserSandboxes extends SelfRenderingComponent
       DateFormat df = Utils.getDateTimeFormat(fc);
       ResourceBundle bundle = Application.getBundle(fc);
       
-      // build the paths to the stores to compare
-      String userStorePrefix = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
-      String userStore = userStorePrefix + ":/";
-      String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot) + ":/";
+      // build the paths to the stores to compare - filter by current webapp
+      String userStore = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
+      String userStorePath = AVMConstants.buildAVMStoreWebappPath(userStore, getWebapp());
+      String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot);
+      String stagingStorePath = AVMConstants.buildAVMStoreWebappPath(stagingStore, getWebapp());
       
       // info we need to calculate preview paths for assets
-      String dns = AVMConstants.lookupStoreDNS(userStorePrefix);
-      int rootPathIndex = AVMConstants.buildAVMStoreRootPath(userStorePrefix).length();
+      String dns = AVMConstants.lookupStoreDNS(userStore);
+      int rootPathIndex = AVMConstants.buildAVMStoreRootPath(userStore).length();
       ClientConfigElement config = Application.getClientConfig(fc);
       
       // get the UIActions component responsible for rendering context related user actions
       // TODO: we may need a component per user instance? (or use evaluators for roles...)
-      UIActions uiFileActions = aquireUIActions(ACTIONS_FILE, userStorePrefix);
-      UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER, userStorePrefix);
-      UIActions uiDeletedActions = aquireUIActions(ACTIONS_DELETED, userStorePrefix);
+      UIActions uiFileActions = aquireUIActions(ACTIONS_FILE, userStore);
+      UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER, userStore);
+      UIActions uiDeletedActions = aquireUIActions(ACTIONS_DELETED, userStore);
       
       String id = getClientId(fc);
       
       // use the sync service to get the list of diffs between the stores
       NameMatcher matcher = (NameMatcher)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean(
             "globalPathExcluder");
-      List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore, matcher);
+      List<AVMDifference> diffs = avmSyncService.compare(-1, userStorePath, -1, stagingStorePath, matcher);
       if (diffs.size() != 0)
       {
          // store lookup of username to list of modified nodes
@@ -665,11 +669,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write(bundle.getString(MSG_SELECTED));
          out.write(":&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
-               fc, userStorePrefix, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
+               fc, userStore, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
                "#{AVMBrowseBean.setupSandboxAction}", "dialog:submitSandboxItems"));
          out.write("&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
-               fc, userStorePrefix, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
+               fc, userStore, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
                "#{AVMBrowseBean.revertSelected}", null));
          out.write("</td></tr>");
          
@@ -1023,6 +1027,28 @@ public class UIUserSandboxes extends SelfRenderingComponent
       this.value = value;
    }
    
+   /**
+    * @return Returns the webapp to filter file list by
+    */
+   public String getWebapp()
+   {
+      ValueBinding vb = getValueBinding("webapp");
+      if (vb != null)
+      {
+         this.webapp = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.webapp;
+   }
+
+   /**
+    * @param webapp  The webapp to filter file list by
+    */
+   public void setWebapp(String webapp)
+   {
+      this.webapp = webapp;
+   }
+
    /**
     * Get the selected nodes for a specified sandbox user
     * 

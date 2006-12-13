@@ -42,8 +42,8 @@ public class CreateFolderDialog extends BaseDialogBean
    protected AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
    
-   private String name;
-   private String description;
+   protected String name;
+   protected String description;
    
    
    /**

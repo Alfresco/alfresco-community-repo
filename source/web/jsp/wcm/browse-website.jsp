@@ -31,7 +31,7 @@
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="browse-website">
+   <h:form acceptCharset="UTF-8" id="website">
    
    <%-- Main outer table --%>
    <table cellspacing=0 cellpadding=2>
@@ -83,7 +83,7 @@
                               </nobr>
                            </td>
                            <a:panel id="import-panel" rendered="#{AVMBrowseBean.isManagerRole}">
-                           <td align=right width=170>
+                           <td align=right width=160>
                               <nobr>
                               <%-- Import website content action --%>
                               <a:actionLink value="#{msg.import_website_content}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
@@ -108,57 +108,65 @@
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
+                     <%-- Current Webapp selection --%>
+                     <h:outputText value="#{msg.webapp_current}" styleClass="mainSubTitle" />:&nbsp;
+                     <h:selectOneMenu value="#{AVMBrowseBean.webapp}" onchange="document.forms['website'].submit(); return true;">
+                        <f:selectItems value="#{AVMBrowseBean.webapps}" />
+                     </h:selectOneMenu>
+                     
+                     <div style="padding:4px"></div>
+                     
                      <a:panel id="staging-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
                         
                         <%-- Staging Sandbox Info --%>
                         <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
-                           <table cellspacing=2 cellpadding=2 border=0 width=100%>
-                              <tr>
-                                 <td align=left width=32><a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" /></td>
-                                 <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
-                                 <td align=right>
-                                    <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" showLink="false" href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
-                                    <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:snapshotSandbox" />
-                                    <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
-                                 </td>
-                              </tr>
-                              <tr>
-                                 <td></td>
-                                 <td colspan=2>
-                                    <div style='line-height:6px'>
-                                       <h:outputText value="#{AVMBrowseBean.stagingSummary}" escape="false" />
-                                    </div>
-                                 </td>
-                              </tr>
-                              <tr>
-                                 <td></td>
-                                 <td colspan=2>
-                                    <a:panel id="snapshots-panel" rendered="#{AVMBrowseBean.isManagerRole}" label="#{msg.recent_snapshots}"
-                                          progressive="true" expanded="false" styleClass="mainSubTitle">
-                                    <div style='padding-left:16px;padding-top:8px;padding-bottom:4px'>
-                                       <%-- Sandbox snapshots list --%>
-                                       <table cellspacing=2 cellpadding=0 width=100% class="snapshotItemsList">
-                                          <tr>
-                                             <td><img src="<%=request.getContextPath()%>/images/icons/filter.gif" width=16 height=16></td>
-                                             <td style="padding-left:8px;width:120px"><nobr><h:outputText id="msg-date" value="#{msg.date_filter_when}" />:</nobr></td>
-                                             <td width=100%>
-                                                <a:modeList id="snap-filter" itemSpacing="2" iconColumnWidth="0" horizontal="true" selectedLinkStyle="font-weight:bold"
-                                                      value="#{AVMBrowseBean.snapshotDateFilter}" actionListener="#{AVMBrowseBean.snapshotDateFilterChanged}">
-                                                   <a:listItem id="f1" value="all" label="#{msg.date_filter_all}" />
-                                                   <a:listItem id="f2" value="today" label="#{msg.date_filter_today}" />
-                                                   <a:listItem id="f3" value="week" label="#{msg.date_filter_week}" />
-                                                   <a:listItem id="f4" value="month" label="#{msg.date_filter_month}" />
-                                                </a:modeList>
-                                             </td>
-                                          </tr>
-                                       </table>
-                                       <div style='padding:2px'></div>
-                                       <w:sandboxSnapshots id="snapshots" value="#{AVMBrowseBean.stagingStore}" dateFilter="#{AVMBrowseBean.snapshotDateFilter}" />
-                                    </div>
-                                    </a:panel>
-                                 </td>
-                              </tr>
-                           </table>
+                        <table cellspacing=2 cellpadding=2 border=0 width=100%>
+                           <tr>
+                              <td align=left width=32><a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" /></td>
+                              <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
+                              <td align=right>
+                                 <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" showLink="false" href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
+                                 <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:snapshotSandbox" />
+                                 <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
+                              </td>
+                           </tr>
+                           <tr>
+                              <td></td>
+                              <td colspan=2>
+                                 <div style='line-height:6px'>
+                                    <h:outputText value="#{AVMBrowseBean.stagingSummary}" escape="false" />
+                                 </div>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td></td>
+                              <td colspan=2>
+                                 <a:panel id="snapshots-panel" rendered="#{AVMBrowseBean.isManagerRole}" label="#{msg.recent_snapshots}"
+                                       progressive="true" expanded="false" styleClass="mainSubTitle">
+                                 <div style='padding-left:16px;padding-top:8px;padding-bottom:4px'>
+                                    <%-- Sandbox snapshots list --%>
+                                    <table cellspacing=2 cellpadding=0 width=100% class="snapshotItemsList">
+                                       <tr>
+                                          <td><img src="<%=request.getContextPath()%>/images/icons/filter.gif" width=16 height=16></td>
+                                          <td style="padding-left:8px;width:120px"><nobr><h:outputText id="msg-date" value="#{msg.date_filter_when}" />:</nobr></td>
+                                          <td width=100%>
+                                             <a:modeList id="snap-filter" itemSpacing="2" iconColumnWidth="0" horizontal="true" selectedLinkStyle="font-weight:bold"
+                                                   value="#{AVMBrowseBean.snapshotDateFilter}" actionListener="#{AVMBrowseBean.snapshotDateFilterChanged}">
+                                                <a:listItem id="f1" value="all" label="#{msg.date_filter_all}" />
+                                                <a:listItem id="f2" value="today" label="#{msg.date_filter_today}" />
+                                                <a:listItem id="f3" value="week" label="#{msg.date_filter_week}" />
+                                                <a:listItem id="f4" value="month" label="#{msg.date_filter_month}" />
+                                             </a:modeList>
+                                          </td>
+                                       </tr>
+                                    </table>
+                                    <div style='padding:2px'></div>
+                                    <w:sandboxSnapshots id="snapshots" value="#{AVMBrowseBean.stagingStore}" dateFilter="#{AVMBrowseBean.snapshotDateFilter}" />
+                                 </div>
+                                 </a:panel>
+                              </td>
+                           </tr>
+                        </table>
                         <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
                         
                      </a:panel>
@@ -175,7 +183,7 @@
                      <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
                         
                         <%-- User Sandboxes List --%>
-                        <w:userSandboxes id="sandboxes" binding="#{AVMBrowseBean.userSandboxes}" value="#{NavigationBean.currentNode.nodeRef}" />
+                        <w:userSandboxes id="sandboxes" binding="#{AVMBrowseBean.userSandboxes}" value="#{NavigationBean.currentNode.nodeRef}" webapp="#{AVMBrowseBean.webapp}" />
                         
                      </a:panel>
                      

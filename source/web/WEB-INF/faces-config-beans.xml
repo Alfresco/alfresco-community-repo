@@ -2235,6 +2235,10 @@
          <property-name>avmService</property-name>
          <value>#{AVMService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -2456,6 +2460,27 @@
       </description>
       <managed-bean-name>CreateFolderDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.wcm.CreateFolderDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Create AVM Webapp Folder Dialog
+      </description>
+      <managed-bean-name>CreateWebappDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.CreateWebappDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>

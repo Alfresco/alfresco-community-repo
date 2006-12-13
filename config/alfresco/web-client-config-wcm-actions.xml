@@ -135,6 +135,16 @@
             <action>dialog:createAvmFolder</action>
          </action>
          
+         <!-- Create AVM webapp folder -->
+         <action id="create_webapp">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>create_webapp</label-id>
+            <image>/images/icons/create_webapp.gif</image>
+            <action>dialog:createWebappFolder</action>
+         </action>
+         
          <!-- Upload Content -->
          <action id="add_content">
             <permissions>
@@ -206,7 +216,7 @@
          <!-- Edit Web Project wizard -->
          <action id="edit_website">
             <permissions>
-               <permission allow="true">Write</permission>
+               <permission allow="true">Write,CreateChildren</permission>
             </permissions>
             <label-id>edit_website</label-id>
             <image>/images/icons/edit_website.gif</image>
@@ -308,6 +318,7 @@
          <!-- Actions Menu for More Actions in Web Project screen -->
          <action-group id="browse_website_menu">
             <action idref="details_space" />
+            <action idref="create_webapp" />
             <action idref="edit_website" />
             <action idref="invite_website_users" />
             <action idref="delete_space" />

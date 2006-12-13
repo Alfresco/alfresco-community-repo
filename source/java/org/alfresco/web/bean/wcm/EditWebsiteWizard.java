@@ -177,7 +177,19 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       // can be used to apply the modified and previous settings from scratch
       clearWebProjectModel(nodeRef);
       
-      // TODO: add the ability to change/rename the root webapp and DNS name for the website
+      // change/create the root webapp name for the website
+      if (this.webapp != null && this.webapp.length() != 0)
+      {
+         String stagingStore = AVMConstants.buildAVMStagingStoreName(this.dnsName);
+         String webappPath = AVMConstants.buildAVMStoreWebappPath(stagingStore, this.webapp);
+         if (this.avmService.lookup(-1, webappPath) == null)
+         {
+            this.avmService.createDirectory(AVMConstants.buildAVMStoreRootPath(stagingStore), this.webapp);
+         }
+         this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, this.webapp);
+      }
+      
+      // TODO: allow change of dns name - via store rename functionality
       
       // persist the forms, templates, workflows and workflow defaults to the model for this web project
       saveWebProjectModel(nodeRef);

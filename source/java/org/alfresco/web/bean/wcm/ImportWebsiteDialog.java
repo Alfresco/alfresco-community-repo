@@ -79,6 +79,7 @@ public class ImportWebsiteDialog
    protected FileFolderService fileFolderService;
    protected ContentService contentService;
    protected NavigationBean navigationBean;
+   protected AVMBrowseBean avmBrowseBean;
    protected AVMService avmService;
    protected NodeService nodeService;
    
@@ -107,6 +108,14 @@ public class ImportWebsiteDialog
       this.navigationBean = navigationBean;
    }
    
+   /**
+    * @param avmBrowseBean       The AVMBrowseBean to set.
+    */
+   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   {
+      this.avmBrowseBean = avmBrowseBean;
+   }
+
    /**
     * @param avmService          The AVMService to set.
     */
@@ -203,7 +212,7 @@ public class ImportWebsiteDialog
             // import the content into the appropriate store for the website
             Node website = this.navigationBean.getCurrentNode();
             String storeRoot = (String)website.getProperties().get(WCMAppModel.PROP_AVMSTORE);
-            String webapp = (String)website.getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
+            String webapp = this.avmBrowseBean.getWebapp();
             if (storeRoot != null && webapp != null)
             {
                String store = AVMConstants.buildAVMStagingStoreName(storeRoot);

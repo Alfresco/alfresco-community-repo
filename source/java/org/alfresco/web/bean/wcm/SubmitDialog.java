@@ -427,9 +427,10 @@ public class SubmitDialog extends BaseDialogBean
       List<AVMNodeDescriptor> selected;
       if (this.avmBrowseBean.getSubmitAll())
       {
-         String userStore = this.avmBrowseBean.getSandbox() + ":/";
-         String stagingStore = this.avmBrowseBean.getStagingStore() + ":/";
-         List<AVMDifference> diffs = avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
+         String webapp = this.avmBrowseBean.getWebapp();
+         String userStore = AVMConstants.buildAVMStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
+         String stagingStore = AVMConstants.buildAVMStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
+         List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
          selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
          for (AVMDifference diff : diffs)
          {

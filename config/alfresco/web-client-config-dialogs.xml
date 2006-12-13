@@ -181,6 +181,10 @@
          <dialog name="submitSandboxItems" page="/jsp/wcm/submit-dialog.jsp" managed-bean="SubmitDialog"
                  icon="/images/icons/submit_large.gif" title-id="submit_items_title" 
                  description-id="submit_items_desc" />
+         
+         <dialog name="createWebappFolder" page="/jsp/wcm/create-webapp.jsp" managed-bean="CreateWebappDialog"
+                 icon="/images/icons/create_webapp_large.gif" title-id="create_webapp_title" 
+                 description-id="create_webapp_desc" />
       </dialogs>
    </config>
    

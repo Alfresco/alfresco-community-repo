@@ -354,7 +354,7 @@ public class CreateWebContentWizard extends BaseContentWizard
          
          List<AVMDifference> diffs = new ArrayList<AVMDifference>(8);
          // construct diffs for selected items for submission
-         String webapp = (String)website.getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
+         String webapp = this.avmBrowseBean.getWebapp();
          String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
          if (form)
          {

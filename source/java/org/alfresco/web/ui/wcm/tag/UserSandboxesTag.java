@@ -49,6 +49,7 @@ public class UserSandboxesTag extends BaseComponentTag
       super.setProperties(component);
       
       setStringProperty(component, "value", this.value);
+      setStringProperty(component, "webapp", this.webapp);
    }
    
    /**
@@ -58,6 +59,7 @@ public class UserSandboxesTag extends BaseComponentTag
    {
       super.release();
       this.value = null;
+      this.webapp = null;
    }
    
    /**
@@ -69,6 +71,20 @@ public class UserSandboxesTag extends BaseComponentTag
    {
       this.value = value;
    }
+   
+   /**
+    * Set the webapp
+    *
+    * @param webapp     the webapp
+    */
+   public void setWebapp(String webapp)
+   {
+      this.webapp = webapp;
+   }
+
+
+   /** the webapp */
+   private String webapp;
    
    /** the value (root store name to display sandboxes for) */
    private String value;

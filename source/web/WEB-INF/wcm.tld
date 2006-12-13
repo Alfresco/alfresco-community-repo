@@ -42,6 +42,12 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
+      
+      <attribute>
+         <name>webapp</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
    </tag>
    
    <tag>

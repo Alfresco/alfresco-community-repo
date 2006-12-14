@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -41,6 +42,17 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
    /** assume we are launching the wizard standalone */
    private boolean standalone = true;
    
+   /** AVM Browse Bean reference */
+   protected AVMBrowseBean avmBrowseBean;
+   
+   
+   /**
+    * @param avmBrowseBean    The AVMBrowseBean to set.
+    */
+   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   {
+      this.avmBrowseBean = avmBrowseBean;
+   }
    
    /**
     * @see org.alfresco.web.bean.wizard.InviteUsersWizard#init(java.util.Map)
@@ -129,6 +141,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          {
             SandboxFactory.createUserSandbox(
                   getAvmStore(), this.managers, userRole.getAuthority(), userRole.getRole());
+
          }
       }
       
@@ -149,6 +162,15 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
                   props);
          }
       }
+      
+      // reload virtualisation server for the web project
+      if (isStandalone())
+      {
+         String stagingStore = AVMConstants.buildAVMStagingStoreName(getAvmStore());
+         String path = AVMConstants.buildAVMStoreWebappPath(stagingStore, this.avmBrowseBean.getWebapp());
+         AVMConstants.updateVServerWebapp(path, true);
+      }
+      
       return outcome;
    }
    

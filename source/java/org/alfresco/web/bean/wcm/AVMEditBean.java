@@ -387,30 +387,28 @@ public class AVMEditBean
       {
          return null;
       }
-
+      
       final FormsService formsService = FormsService.getInstance();
       final NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, avmNode.getPath());
       try
       {
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
          tx.begin();
-            
+         
          // get an updating writer that we can use to modify the content on the current node
          ContentWriter writer = this.contentService.getWriter(avmRef, ContentModel.PROP_CONTENT, true);
-         
          if (nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
             this.editorOutput = formsService.writeXMLToString(this.instanceDataDocument);
          }
          writer.putContent(this.editorOutput);
-            
+         
          // commit the transaction
          tx.commit();
          
          // regenerate form content
          if (nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            
             formsService.regenerateRenditions(avmRef);
             NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
             final List<AVMDifference> diffList = new ArrayList<AVMDifference>(uploadedFiles.length);
@@ -424,7 +422,9 @@ public class AVMEditBean
             }
             this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
          }
-            
+         
+         AVMConstants.updateVServerWebapp(avmNode.getPath(), false);
+         
          resetState();
          
          return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;

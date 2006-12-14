@@ -111,6 +111,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
    
    private static final String REQUEST_FORM_REF = "formref";
+   private static final String REQUEST_PREVIEW_REF = "prevhref";
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    
@@ -334,9 +335,12 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   
                   // direct actions for a sandbox
                   String websiteUrl = AVMConstants.buildAVMWebappUrl(mainStore, getWebapp());
+                  Map requestMap = context.getExternalContext().getRequestMap();
+                  requestMap.put(REQUEST_PREVIEW_REF, websiteUrl);
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_PREVIEW, "/images/icons/preview_website.gif",
-                        null, null, websiteUrl, null));
+                        null, null, "#{" + REQUEST_PREVIEW_REF + "}", null));
+                  requestMap.remove(REQUEST_PREVIEW_REF);
                   out.write("&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(
@@ -968,7 +972,15 @@ public class UIUserSandboxes extends SelfRenderingComponent
       }
       if (url != null)
       {
-         control.setHref(url);
+         if (url.startsWith("#{") == true)
+         {
+            ValueBinding vb = facesApp.createValueBinding(url);
+            control.setValueBinding("href", vb);
+         }
+         else
+         {
+            control.setHref(url);
+         }
          control.setTarget("new");
       }
       

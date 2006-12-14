@@ -2284,6 +2284,10 @@
          <property-name>authorityService</property-name>
          <value>#{AuthorityService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

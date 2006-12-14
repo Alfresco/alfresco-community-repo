@@ -78,7 +78,7 @@
                               <nobr>
                               <%-- More actions menu --%>
                               <a:menu id="actions-menu" itemSpacing="4" label="#{msg.actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                 <r:actions id="acts-website" value="browse_website_menu" context="#{NavigationBean.currentNode}" />
+                                 <r:actions id="acts-website" value="browse_website_menu" context="#{AVMBrowseBean.website}" />
                               </a:menu>
                               </nobr>
                            </td>
@@ -183,7 +183,7 @@
                      <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
                         
                         <%-- User Sandboxes List --%>
-                        <w:userSandboxes id="sandboxes" binding="#{AVMBrowseBean.userSandboxes}" value="#{NavigationBean.currentNode.nodeRef}" webapp="#{AVMBrowseBean.webapp}" />
+                        <w:userSandboxes id="sandboxes" binding="#{AVMBrowseBean.userSandboxes}" value="#{AVMBrowseBean.website.nodeRef}" webapp="#{AVMBrowseBean.webapp}" />
                         
                      </a:panel>
                      

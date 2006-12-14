@@ -88,6 +88,10 @@ public class DeleteSandboxDialog extends BaseDialogBean
                // remove the association to this web project user meta-data
                this.nodeService.removeChild(website.getNodeRef(), ref.getChildRef());
                
+               // update virtualisation server for the sandbox removal
+               String path = AVMConstants.buildAVMStoreWebappPath(sandbox, this.avmBrowseBean.getWebapp());
+               AVMConstants.removeVServerWebapp(path, true);
+               
                break;
             }
          }

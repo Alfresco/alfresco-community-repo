@@ -277,7 +277,7 @@ public final class SandboxFactory
     */
    private static void tagStoreDNSPath(AVMService avmService, String store, String... components)
    {
-      String path = store + ":/" + AVMConstants.DIR_APPBASE + '/' + AVMConstants.DIR_WEBAPPS;
+      String path = AVMConstants.buildAVMStoreRootPath(store);
       // DNS name mangle the property name - can only contain value DNS characters!
       String dnsProp = AVMConstants.PROP_DNS + DNSNameMangler.MakeDNSName(components);
       avmService.setStoreProperty(store, QName.createQName(null, dnsProp),

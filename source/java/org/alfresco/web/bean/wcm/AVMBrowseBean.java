@@ -142,6 +142,9 @@ public class AVMBrowseBean implements IContextListener
    /** Current AVM Node action context */
    private AVMNode avmNode = null;
    
+   /** The last displayed website node id */
+   private String lastWebsiteId = null;
+   
    /** breadcrumb location */
    private List<IBreadcrumbHandler> location = null;
    
@@ -306,8 +309,7 @@ public class AVMBrowseBean implements IContextListener
       
       FacesContext fc = FacesContext.getCurrentInstance();
       ResourceBundle msg = Application.getBundle(fc);
-      Node websiteNode = this.navigator.getCurrentNode();
-      String storeRoot = (String)websiteNode.getProperties().get(WCMAppModel.PROP_AVMSTORE);
+      String storeRoot = (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE);
       String stagingStore = getStagingStore();
       AVMStoreDescriptor store = this.avmService.getAVMStore(stagingStore);
       if (store != null)
@@ -335,8 +337,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getStagingStore()
    {
-      Node websiteNode = this.navigator.getCurrentNode();
-      String storeRoot = (String)websiteNode.getProperties().get(WCMAppModel.PROP_AVMSTORE);
+      String storeRoot = (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE);
       return AVMConstants.buildAVMStagingStoreName(storeRoot);
    }
    
@@ -485,7 +486,7 @@ public class AVMBrowseBean implements IContextListener
          }
          this.sandboxTitle = MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_SANDBOXTITLE),
-               this.navigator.getCurrentNode().getName(),
+               getWebsite().getName(),
                forUser);
       }
       return this.sandboxTitle;
@@ -528,6 +529,13 @@ public class AVMBrowseBean implements IContextListener
     */
    public Node getWebsite()
    {
+      // check to see if the website we are browsing has changed since the last time
+      if (this.navigator.getCurrentNodeId().equals(this.lastWebsiteId) == false)
+      {
+         // clear context when we are browsing a new website
+         this.lastWebsiteId = this.navigator.getCurrentNodeId();
+         this.webapp = null;
+      }
       return this.navigator.getCurrentNode();
    }
    
@@ -631,9 +639,8 @@ public class AVMBrowseBean implements IContextListener
       if (user.isAdmin() == false)
       {
          String currentUser = user.getUserName();
-         Node websiteNode = this.navigator.getCurrentNode();
          List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
-               websiteNode.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+               getWebsite().getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();

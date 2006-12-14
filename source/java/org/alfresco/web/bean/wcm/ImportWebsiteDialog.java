@@ -227,6 +227,9 @@ public class ImportWebsiteDialog
                   
                   // After an import it's a good idea to snapshot the staging store
                   this.avmService.createSnapshot(store, "Import of file: " + this.fileName, null);
+                  
+                  // Reload virtualisation server as required
+                  AVMConstants.updateVServerWebapp(rootPath, true);
                }
             }
             else

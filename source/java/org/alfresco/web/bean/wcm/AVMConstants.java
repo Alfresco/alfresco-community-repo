@@ -267,7 +267,7 @@ public final class AVMConstants
     * 
     * @return true if the path should require a virtualisation server reload, false otherwise
     */
-   public static boolean requiresServerReload(String path)
+   public static boolean requiresVServerUpdate(String path)
    {
       if (path == null || path.length() == 0)
       {
@@ -277,14 +277,45 @@ public final class AVMConstants
       return webinfPathPattern.matcher(path).matches();
    }
    
-   public static void reloadServerOnPath(String path, boolean force)
+   /**
+    * Update notification on the virtualisation server webapp as required for the specified path
+    * 
+    * @param path    Path to match against
+    * @param force   True to force update of server even if path does not match
+    */
+   public static void updateVServerWebapp(String path, boolean force)
    {
-      if (force || requiresServerReload(path))
+      if (force || requiresVServerUpdate(path))
       {
          VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
                FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
-         int webappindex = path.indexOf('/', path.indexOf(DIR_WEBAPPS) + DIR_WEBAPPS.length() + 1);
-         vServerRegistry.webappUpdated(-1, path.substring(0, webappindex));
+         int webappIndex = path.indexOf('/', path.indexOf(DIR_WEBAPPS) + DIR_WEBAPPS.length() + 1);
+         if (webappIndex != -1)
+         {
+            path = path.substring(0, webappIndex);
+         }
+         vServerRegistry.webappUpdated(-1, path);
+      }
+   }
+   
+   /**
+    * Removal notification on the virtualisation server webapp as required for the specified path
+    * 
+    * @param path    Path to match against
+    * @param force   True to force update of server even if path does not match
+    */
+   public static void removeVServerWebapp(String path, boolean force)
+   {
+      if (force || requiresVServerUpdate(path))
+      {
+         VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
+               FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
+         int webappIndex = path.indexOf('/', path.indexOf(DIR_WEBAPPS) + DIR_WEBAPPS.length() + 1);
+         if (webappIndex != -1)
+         {
+            path = path.substring(0, webappIndex);
+         }
+         vServerRegistry.webappRemoved(-1, path);
       }
    }
    
@@ -328,10 +359,7 @@ public final class AVMConstants
    
    // patterns for WEB-INF files that require virtualisation server reload
    private final static Pattern webinfPathPattern = Pattern.compile(
-         ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS + "/.*/WEB-INF/(classes/.*)|(lib/.*)|(web.xml)",
+         ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS +
+         "/.*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
          Pattern.CASE_INSENSITIVE);
-   //private final static Pattern webinfLibPattern = Pattern.compile(
-   //      ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS + "/.*/WEB-INF/lib/.*");
-   //private final static Pattern webinfWebXmlPattern = Pattern.compile(
-   //      ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS + "/.*/WEB-INF/web.xml");
 }

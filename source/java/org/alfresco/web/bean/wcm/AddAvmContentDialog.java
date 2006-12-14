@@ -100,6 +100,11 @@ public class AddAvmContentDialog extends AddContentDialog
          writer.putContent(strContent == null ? "" : strContent);
       }
       
+      // reload the virtualisation server as required
+      if (logger.isDebugEnabled())
+         logger.debug("Reloading virtualisation server on path: " + path);
+      AVMConstants.updateVServerWebapp(path, false);
+      
       // remember the created node now
       this.createdNode = fileNodeRef;
    }

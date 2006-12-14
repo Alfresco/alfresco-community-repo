@@ -22,6 +22,12 @@ public class LookupCache
     private static Logger fgLogger = Logger.getLogger(LookupCache.class);
 
     /**
+     * Per transaction lookup results to be added to the cache on successful
+     * commit.
+     */
+    private ThreadLocal<Map<LookupKey, Lookup>> fToBeAdded;
+    
+    /**
      * The Map of of keys to lookups.
      */
     private Map<LookupKey, Lookup> fCache;
@@ -64,6 +70,7 @@ public class LookupCache
         fCache = new HashMap<LookupKey, Lookup>(); 
         fTimeStamps = new TreeMap<Long, LookupKey>();
         fInverseTimeStamps = new HashMap<LookupKey, Long>();
+        fToBeAdded = new ThreadLocal<Map<LookupKey, Lookup>>();
         fTimeStamp = 0L;
         fMaxSize = 100;
     }
@@ -179,7 +186,12 @@ public class LookupCache
      */
     private synchronized Lookup findInCache(LookupKey key)
     {
-        Lookup found = fCache.get(key);
+        Map<LookupKey, Lookup> map = fToBeAdded.get();
+        Lookup found = (map != null) ? map.get(key) : null;
+        if (found == null)
+        {
+            found = fCache.get(key);
+        }
         if (found != null)
         {
             Lookup result = new Lookup(found, fAVMNodeDAO, fAVMStoreDAO);
@@ -197,7 +209,11 @@ public class LookupCache
         {
             LookupKey newKey = new LookupKey(key);
             newKey.setWrite(true);
-            found = fCache.get(newKey);
+            found = (map != null) ? map.get(newKey) : null;
+            if (found == null)
+            {
+                found = fCache.get(newKey);
+            }
             if (found != null)
             {
                 Lookup result = new Lookup(found, fAVMNodeDAO, fAVMStoreDAO);
@@ -219,27 +235,52 @@ public class LookupCache
      * @param key
      * @param lookup
      */
-    private synchronized void updateCache(LookupKey key, Lookup lookup)
+    private void updateCache(LookupKey key, Lookup lookup)
     {
-        if (fCache.containsKey(key))
+        Map<LookupKey, Lookup> map = fToBeAdded.get();
+        if (map == null)
         {
-            fCache.remove(key);
-            Long oldTime = fInverseTimeStamps.get(key);
-            fInverseTimeStamps.remove(key);
-            fTimeStamps.remove(oldTime);
+            map = new HashMap<LookupKey, Lookup>();
         }
-        long timeStamp = fTimeStamp++;
-        fTimeStamps.put(timeStamp, key);
-        fInverseTimeStamps.put(key, timeStamp);
-        fCache.put(key, lookup);
-        if (fCache.size() > fMaxSize)
+        map.put(key, lookup);
+    }     
+   
+    /**
+     * Called when a transaction has successfully committed,
+     * to make lookups from the transaction available to other transactions.
+     */
+    public synchronized void commitLookups()
+    {
+        Map<LookupKey, Lookup> map = fToBeAdded.get();
+        if (map == null)
         {
-            // Get rid of the oldest entry.
-            Long oldTime = fTimeStamps.firstKey();
-            LookupKey old = fTimeStamps.remove(oldTime);
-            fInverseTimeStamps.remove(old);
-            fCache.remove(old);
+            return;
         }
+        for (Map.Entry<LookupKey, Lookup> entry : map.entrySet())
+        {
+            LookupKey key = entry.getKey();
+            Lookup lookup = entry.getValue();
+            if (fCache.containsKey(key))
+            {
+                fCache.remove(key);
+                Long oldTime = fInverseTimeStamps.get(key);
+                fInverseTimeStamps.remove(key);
+                fTimeStamps.remove(oldTime);
+            }
+            long timeStamp = fTimeStamp++;
+            fTimeStamps.put(timeStamp, key);
+            fInverseTimeStamps.put(key, timeStamp);
+            fCache.put(key, lookup);
+            if (fCache.size() > fMaxSize)
+            {
+                // Get rid of the oldest entry.
+                Long oldTime = fTimeStamps.firstKey();
+                LookupKey old = fTimeStamps.remove(oldTime);
+                fInverseTimeStamps.remove(old);
+                fCache.remove(old);
+            }
+        }
+        fToBeAdded.set(null);
     }
     
     /**
@@ -323,5 +364,6 @@ public class LookupCache
         fCache.clear();
         fTimeStamps.clear();
         fInverseTimeStamps.clear();
+        fToBeAdded.set(null);
     }
 }

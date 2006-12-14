@@ -41,4 +41,13 @@ public class AVMLookupCacheListener extends TransactionListenerAdapter
     {
         fLookupCache.onRollback();
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.transaction.TransactionListenerAdapter#afterCommit()
+     */
+    @Override
+    public void afterCommit() 
+    {
+        fLookupCache.commitLookups();
+    }
 }

@@ -1649,4 +1649,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef checkHijRef = nodeService.getChildByName(checkAbcRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "hij");
         assertNull("Third level, named node 'HIJ' should not have been found", checkHijRef);
     }
+    
+    public void testLocalizedAspect() throws Exception
+    {
+        nodeService.addAspect(
+                rootNodeRef,
+                ContentModel.ASPECT_LOCALIZED,
+                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_LOCALE, Locale.CANADA_FRENCH));
+        // commit to check
+        setComplete();
+        endTransaction();
+    }
 }

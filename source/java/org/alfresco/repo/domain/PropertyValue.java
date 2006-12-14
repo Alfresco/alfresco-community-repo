@@ -134,7 +134,12 @@ public class PropertyValue implements Cloneable, Serializable
             @Override
             Serializable convert(Serializable value)
             {
-                return DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                String str = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                if (value instanceof Locale && str.length() < 6)
+                {
+                    str += "_";
+                }
+                return str;
             }
         },
         DATE

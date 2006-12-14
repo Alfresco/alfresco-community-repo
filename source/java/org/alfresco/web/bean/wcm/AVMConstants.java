@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.namespace.QName;
@@ -30,6 +31,7 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * @author Kevin Roast
@@ -260,6 +262,33 @@ public final class AVMConstants
       return m.matches() && m.group(1).length() != 0 ? m.group(1) : "/";
    }
    
+   /**
+    * @param path    Path to match against
+    * 
+    * @return true if the path should require a virtualisation server reload, false otherwise
+    */
+   public static boolean requiresServerReload(String path)
+   {
+      if (path == null || path.length() == 0)
+      {
+         throw new IllegalArgumentException("Path value is mandatory.");
+      }
+      
+      return webinfPathPattern.matcher(path).matches();
+   }
+   
+   public static void reloadServerOnPath(String path, boolean force)
+   {
+      if (force || requiresServerReload(path))
+      {
+         VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
+               FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
+         int webappindex = path.indexOf('/', path.indexOf(DIR_WEBAPPS) + DIR_WEBAPPS.length() + 1);
+         vServerRegistry.webappUpdated(-1, path.substring(0, webappindex));
+      }
+   }
+   
+   
    // names of the stores representing the layers for an AVM website
    public final static String STORE_STAGING = "-staging";
    public final static String STORE_MAIN = "-main";
@@ -283,14 +312,26 @@ public final class AVMConstants
    public final static String PROP_SANDBOX_STORE_PREFIX = ".sandbox.store.";
    public final static String SPACE_ICON_WEBSITE = "space-icon-website";
    
+   // virtualisation server MBean registry
+   private static final String BEAN_VIRT_SERVER_REGISTRY = "VirtServerRegistry";
+   
    // URLs for preview of sandboxes and assets
    private final static String PREVIEW_SANDBOX_URL = "http://www-{0}.{1}:{2}";
    private final static String PREVIEW_ASSET_URL = "http://www-{0}.{1}:{2}{3}";
    
-   // patter for absolute AVM Path
+   // pattern for absolute AVM Path
    private final static Pattern absoluteAVMPath = Pattern.compile(
          "([^:]+:/" + AVMConstants.DIR_APPBASE + "/[^/]+/[^/]+).*");
    private final static Pattern webappRelativePath = Pattern.compile(
-      "[^:]+:/" + AVMConstants.DIR_APPBASE +
-      "/" + AVMConstants.DIR_WEBAPPS + "/[^/]+(.*)");
+         "[^:]+:/" + AVMConstants.DIR_APPBASE +
+         "/" + AVMConstants.DIR_WEBAPPS + "/[^/]+(.*)");
+   
+   // patterns for WEB-INF files that require virtualisation server reload
+   private final static Pattern webinfPathPattern = Pattern.compile(
+         ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS + "/.*/WEB-INF/(classes/.*)|(lib/.*)|(web.xml)",
+         Pattern.CASE_INSENSITIVE);
+   //private final static Pattern webinfLibPattern = Pattern.compile(
+   //      ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS + "/.*/WEB-INF/lib/.*");
+   //private final static Pattern webinfWebXmlPattern = Pattern.compile(
+   //      ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS + "/.*/WEB-INF/web.xml");
 }

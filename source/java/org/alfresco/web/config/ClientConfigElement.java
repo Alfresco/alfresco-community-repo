@@ -456,9 +456,10 @@ public class ClientConfigElement extends ConfigElementAdapter
          if (iValue == null)
          {
             iValue = DEFAULT_VSERVER_PORT;
-            logger.warn("Virtualisation Server not started - reverting to default port: " + value);
+            logger.warn("Virtualisation Server not started - reverting to default port: " + iValue);
          }
-         this.wcmPort.put(iValue.toString());
+         value = iValue.toString();
+         this.wcmPort.put(value);
       }
       return value;
    }

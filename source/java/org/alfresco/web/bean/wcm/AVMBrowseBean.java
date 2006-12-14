@@ -405,7 +405,7 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * @return Returns the sandbox.
+    * @return Returns the current sandbox context.
     */
    public String getSandbox()
    {
@@ -413,7 +413,7 @@ public class AVMBrowseBean implements IContextListener
    }
 
    /**
-    * @param sandbox The sandbox to set.
+    * @param sandbox    The sandbox to set.
     */
    public void setSandbox(String sandbox)
    {
@@ -421,7 +421,7 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * @return Returns the username.
+    * @return Returns the current username context.
     */
    public String getUsername()
    {
@@ -429,7 +429,7 @@ public class AVMBrowseBean implements IContextListener
    }
 
    /**
-    * @param username The username to set.
+    * @param username   The username to set.
     */
    public void setUsername(String username)
    {
@@ -792,7 +792,7 @@ public class AVMBrowseBean implements IContextListener
       String store = params.get("store");
       String username = params.get("username");
       
-      setupSandboxActionImpl(store, username);
+      setupSandboxActionImpl(store, username, true);
    }
 
    /**
@@ -800,8 +800,9 @@ public class AVMBrowseBean implements IContextListener
     * 
     * @param store      The store name for the action
     * @param username   The authority pertinent to the action (null for staging store actions)
+    * @param reset      True to reset the current path and AVM action node context
     */
-   private void setupSandboxActionImpl(String store, String username)
+   private void setupSandboxActionImpl(String store, String username, boolean reset)
    {
       // can be null if it's the staging store - i.e. not a user specific store
       setUsername(username);
@@ -818,14 +819,15 @@ public class AVMBrowseBean implements IContextListener
                (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE)));
       }
       
-      this.sandboxTitle = null;
-      
       // update UI state ready for return to the previous screen
-      this.location = null;
-      setCurrentPath(null);
-      setAvmActionNode(null);
-      
-      this.submitAll = false;
+      if (reset == true)
+      {
+         this.sandboxTitle = null;
+         this.location = null;
+         setCurrentPath(null);
+         setAvmActionNode(null);
+         this.submitAll = false;
+      }
    }
    
    /**
@@ -849,6 +851,14 @@ public class AVMBrowseBean implements IContextListener
       {
          if (logger.isDebugEnabled())
             logger.debug("Setup content action for path: " + path);
+         
+         // calculate username and store name from specified path
+         String[] parts = path.split("[-:]");
+         String storename = parts[0];
+         String username = parts[1];
+         setupSandboxActionImpl(AVMConstants.buildAVMUserMainStoreName(storename, username), username, false);
+         
+         // setup the action node
          AVMNodeDescriptor node = avmService.lookup(-1, path, true);
          setAVMActionNodeDescriptor(node);
       }
@@ -862,20 +872,6 @@ public class AVMBrowseBean implements IContextListener
       {
          UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
       }
-   }
-   
-   /**
-    * Submit a node from a user sandbox into the staging area sandbox via worklfow
-    */
-   public void setupSubmitNodeAction(ActionEvent event)
-   {
-      // extract store and username from the path to this node
-      String path = getPathFromEventArgs(event);
-      String[] parts = path.split("[-:]");
-      String storename = parts[0];
-      String username = parts[1];
-      setupSandboxActionImpl(AVMConstants.buildAVMUserMainStoreName(storename, username), username);
-      setupContentAction(path, true);
    }
    
    /**

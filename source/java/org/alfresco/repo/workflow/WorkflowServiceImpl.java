@@ -225,11 +225,13 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public WorkflowInstance cancelWorkflow(String workflowId)
     {
-        WorkflowInstance instance = getWorkflowById(workflowId);
-        workflowPackageComponent.deletePackage(instance.workflowPackage);
         String engineId = BPMEngineRegistry.getEngineId(workflowId);
         WorkflowComponent component = getWorkflowComponent(engineId);
-        return component.cancelWorkflow(workflowId);
+        WorkflowInstance instance = component.cancelWorkflow(workflowId);
+        // NOTE: Delete workflow package after cancelling workflow, so it's still available
+        //       in process-end events of workflow definition
+        workflowPackageComponent.deletePackage(instance.workflowPackage);
+        return instance;
     }
 
     /* (non-Javadoc)

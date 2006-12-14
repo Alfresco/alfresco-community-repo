@@ -310,17 +310,17 @@ public class TextSearchService implements APIService
         "  <opensearch:startIndex>${search.startIndex}</opensearch:startIndex>\n" +
         "  <opensearch:itemsPerPage>${search.itemsPerPage}</opensearch:itemsPerPage>\n" +
         "  <opensearch:Query role=\"request\" searchTerms=\"${search.searchTerms}\" startPage=\"${search.startPage}\"/>\n" +
-        "  <link rel=\"alternate\" href=\"${request.apiPath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;format=html\" type=\"text/html\"/>\n" +
-        "  <link rel=\"self\" href=\"${request.apiPath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
-        "  <link rel=\"first\" href=\"${request.apiPath}/search/text?q=${search.searchTerms}&amp;p=1&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;format=html\" type=\"text/html\"/>\n" +
+        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=1&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "<#if search.startPage &gt; 1>" +
-        "  <link rel=\"previous\" href=\"${request.apiPath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage - 1}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage - 1}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "</#if>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "  <link rel=\"next\" href=\"${request.apiPath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage + 1}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
+        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage + 1}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
         "</#if>" +
-        "  <link rel=\"last\" href=\"${request.apiPath}/search/text?q=${search.searchTerms}&amp;p=${search.totalPages}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
-        "  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.apiPath}/search/text/textsearchdescription.xml\"/>\n" +
+        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.totalPages}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.servicePath}/search/text/textsearchdescription.xml\"/>\n" +
         "<#list search.results as row>" +            
         "  <entry>\n" +
         "    <title>${row.name}</title>\n" +
@@ -339,7 +339,7 @@ public class TextSearchService implements APIService
         "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
         "  <head profile=\"http://a9.com/-/spec/opensearch/1.1/\">\n" + 
         "    <title>Alfresco Text Search: ${search.searchTerms}</title>\n" + 
-        "    <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.apiPath}/search/text/textsearchdescription.xml\" title=\"Alfresco Text Search\"/>\n" +
+        "    <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.servicePath}/search/text/textsearchdescription.xml\" title=\"Alfresco Text Search\"/>\n" +
         "    <meta name=\"totalResults\" content=\"${search.totalResults}\"/>\n" +
         "    <meta name=\"startIndex\" content=\"${search.startIndex}\"/>\n" +
         "    <meta name=\"itemsPerPage\" content=\"${search.itemsPerPage}\"/>\n" +
@@ -359,15 +359,15 @@ public class TextSearchService implements APIService
         "      </li>\n" +
         "</#list>" +
         "    </ul>\n" +
-        "    <a href=\"${request.apiPath}/search/text?q=${search.searchTerms}&p=1\">first</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=1\">first</a>" +
         "<#if search.startPage &gt; 1>" +
-        "    <a href=\"${request.apiPath}/search/text?q=${search.searchTerms}&p=${search.startPage - 1}\">previous</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage - 1}\">previous</a>" +
         "</#if>" +
-        "    <a href=\"${request.apiPath}/search/text?q=${search.searchTerms}&p=${search.startPage}\">${search.startPage}</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage}\">${search.startPage}</a>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "    <a href=\"${request.apiPath}/search/text?q=${search.searchTerms}&p=${search.startPage + 1}\">next</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage + 1}\">next</a>" +
         "</#if>" +
-        "    <a href=\"${request.apiPath}/search/text?q=${search.searchTerms}&p=${search.totalPages}\">last</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.totalPages}\">last</a>" +
         "  </body>\n" +
         "</html>\n";
 
@@ -425,7 +425,7 @@ public class TextSearchService implements APIService
 
         Map<String, Object> searchModel = new HashMap<String, Object>(7, 1.0f);
         Map<String, Object> request = new HashMap<String, Object>();
-        request.put("apiPath", "http://localhost:8080/alfresco/service");
+        request.put("servicePath", "http://localhost:8080/alfresco/service");
         request.put("path", "http://localhost:8080/alfresco");
         searchModel.put("request", request);
         searchModel.put("search", result);

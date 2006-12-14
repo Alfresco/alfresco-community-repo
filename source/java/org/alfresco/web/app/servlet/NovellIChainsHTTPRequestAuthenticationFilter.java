@@ -214,15 +214,16 @@ public class NovellIChainsHTTPRequestAuthenticationFilter extends AbstractAuthen
         // Set the authentication
         authComponent.setCurrentUser(userName);
 
-        User user = new User(userName, authService.getCurrentTicket(), personService.getPerson(userName));
+       
 
         // Set up the user information
         UserTransaction tx = transactionService.getUserTransaction();
         NodeRef homeSpaceRef = null;
-
+        User user;
         try
         {
             tx.begin();
+            user = new User(userName, authService.getCurrentTicket(), personService.getPerson(userName));
             homeSpaceRef = (NodeRef) nodeService.getProperty(personService.getPerson(userName),
                     ContentModel.PROP_HOMEFOLDER);
             user.setHomeSpaceId(homeSpaceRef.getId());

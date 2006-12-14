@@ -19,10 +19,10 @@ package org.alfresco.repo.search.impl.lucene.analysis;
 import java.io.IOException;
 import java.io.StringReader;
 
+import junit.framework.TestCase;
+
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
-
-import junit.framework.TestCase;
 
 public class PathTokenFilterTest extends TestCase
 {

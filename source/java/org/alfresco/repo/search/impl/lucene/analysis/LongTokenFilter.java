@@ -19,11 +19,9 @@ package org.alfresco.repo.search.impl.lucene.analysis;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.WhitespaceTokenizer;
-import org.apache.lucene.analysis.standard.StandardTokenizer;
 
 /**
  * Simple tokeniser for longs.

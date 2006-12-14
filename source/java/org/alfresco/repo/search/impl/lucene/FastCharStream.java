@@ -17,7 +17,8 @@ package org.alfresco.repo.search.impl.lucene;
  * limitations under the License.
  */
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
 
 /** An efficient implementation of JavaCC's CharStream interface.  <p>Note that
  * this does not do line-number counting, but instead keeps track of the

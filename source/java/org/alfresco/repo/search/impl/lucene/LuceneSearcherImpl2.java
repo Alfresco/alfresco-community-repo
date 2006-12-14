@@ -215,7 +215,7 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
                 }
 
                 Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, new LuceneAnalyser(
-                        dictionaryService, searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()), namespacePrefixResolver, dictionaryService, defaultOperator, searchParameters.getLocales());
+                        dictionaryService, searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()), namespacePrefixResolver, dictionaryService, defaultOperator, searchParameters);
                 ClosingIndexSearcher searcher = getSearcher(indexer);
                 if (searcher == null)
                 {

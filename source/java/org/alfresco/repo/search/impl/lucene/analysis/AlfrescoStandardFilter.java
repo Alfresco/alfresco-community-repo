@@ -18,7 +18,6 @@ package org.alfresco.repo.search.impl.lucene.analysis;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 import org.apache.lucene.analysis.TokenFilter;

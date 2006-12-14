@@ -3,39 +3,36 @@ package org.alfresco.repo.search.impl.lucene.analysis;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 
+import org.alfresco.repo.search.MLAnalysisMode;
+import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 
 /**
- * Create duplicate tokens for multilingual varients
- * 
- * The forms are 
- * 
- * Tokens:
- * Token - all languages
- * {fr}Token - if a language is specified 
- * {fr_CA}Token - if a language and country is specified
- * {fr_CA_Varient}Token - for all three
+ * Create duplicate tokens for multilingual varients The forms are Tokens: Token - all languages {fr}Token - if a
+ * language is specified {fr_CA}Token - if a language and country is specified {fr_CA_Varient}Token - for all three
  * {fr__Varient}Token - for a language varient with no country
  * 
  * @author andyh
- *
  */
 public class MLTokenDuplicator extends Tokenizer
 {
+    private static Logger s_logger = Logger.getLogger(MLTokenDuplicator.class);
+    
     TokenStream source;
 
     Locale locale;
 
     Iterator<Token> it;
 
-    ArrayList<String> prefixes;
+    HashSet<String> prefixes;
 
-    public MLTokenDuplicator(TokenStream source, Locale locale, Reader reader)
+    public MLTokenDuplicator(TokenStream source, Locale locale, Reader reader, MLAnalysisMode mlAnalaysisMode)
     {
         super(reader);
         this.source = source;
@@ -45,27 +42,92 @@ public class MLTokenDuplicator extends Tokenizer
         boolean c = locale.getCountry().length() != 0;
         boolean v = locale.getVariant().length() != 0;
 
-        prefixes = new ArrayList<String>(4);
-        prefixes.add("");
+        prefixes = new HashSet<String>(4);
+        if (mlAnalaysisMode.includesAll())
+        {
+            prefixes.add("");
+        }
 
-        if (l)
+        if (mlAnalaysisMode.includesExact())
         {
             StringBuffer result = new StringBuffer();
-            result.append("{").append(locale.getLanguage()).append("}");
+            result.append("{").append(locale.toString()).append("}");
             prefixes.add(result.toString());
-            result.deleteCharAt(result.length()-1);
-            
-            if (c || (l && v))
+        }
+
+        if (mlAnalaysisMode.includesContaining())
+        {
+            if (v)
             {
-                result.append('_').append(locale.getCountry()).append("}"); 
+                Locale noVarient = new Locale(locale.getLanguage(), locale.getCountry(), "");
+                StringBuffer result = new StringBuffer();
+                result.append("{").append(noVarient.toString()).append("}");
                 prefixes.add(result.toString());
-                result.deleteCharAt(result.length()-1);
+
+                Locale noCountry = new Locale(locale.getLanguage(), "", "");
+                result = new StringBuffer();
+                result.append("{").append(noCountry.toString()).append("}");
+                prefixes.add(result.toString());
             }
-            if (v && (l || c))
+            if (c)
             {
-                result.append('_').append(locale.getVariant()).append("}");
+                Locale noCountry = new Locale(locale.getLanguage(), "", "");
+                StringBuffer result = new StringBuffer();
+                result.append("{").append(noCountry.toString()).append("}");
                 prefixes.add(result.toString());
             }
+        }
+
+        if (mlAnalaysisMode.includesContained())
+        {
+            // varients have not contained
+            if (!v)
+            {
+                if (!c)
+                {
+                    if (!l)
+                    {
+                        // All
+                        for (Locale toAdd : Locale.getAvailableLocales())
+                        {
+                            StringBuffer result = new StringBuffer();
+                            result.append("{").append(toAdd.toString()).append("}");
+                            prefixes.add(result.toString());
+                        }
+                    }
+                    else
+                    {
+                        // All that match language
+                        for (Locale toAdd : Locale.getAvailableLocales())
+                        {
+                            if (locale.getLanguage().equals(toAdd.getLanguage()))
+                            {
+                                StringBuffer result = new StringBuffer();
+                                result.append("{").append(toAdd.toString()).append("}");
+                                prefixes.add(result.toString());
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // All that match language and country
+                    for (Locale toAdd : Locale.getAvailableLocales())
+                    {
+                        if ((locale.getLanguage().equals(toAdd.getLanguage()))
+                                && (locale.getCountry().equals(toAdd.getCountry())))
+                        {
+                            StringBuffer result = new StringBuffer();
+                            result.append("{").append(toAdd.toString()).append("}");
+                            prefixes.add(result.toString());
+                        }
+                    }
+                }
+            }
+        }
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Locale "+ locale +" using "+mlAnalaysisMode+" is "+prefixes);
         }
 
     }
@@ -81,7 +143,7 @@ public class MLTokenDuplicator extends Tokenizer
         {
             return null;
         }
-        if(it.hasNext())
+        if (it.hasNext())
         {
             return it.next();
         }
@@ -99,12 +161,12 @@ public class MLTokenDuplicator extends Tokenizer
         {
             return null;
         }
-        
+
         ArrayList<Token> tokens = new ArrayList<Token>(prefixes.size());
-        for(String prefix : prefixes)
+        for (String prefix : prefixes)
         {
-            Token newToken = new Token(prefix+token.termText(), token.startOffset(), token.endOffset(), token.type());
-            if(tokens.size() == 0)
+            Token newToken = new Token(prefix + token.termText(), token.startOffset(), token.endOffset(), token.type());
+            if (tokens.size() == 0)
             {
                 newToken.setPositionIncrement(token.getPositionIncrement());
             }
@@ -118,5 +180,4 @@ public class MLTokenDuplicator extends Tokenizer
 
     }
 
-    
 }

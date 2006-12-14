@@ -22,7 +22,6 @@ import java.io.Reader;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.WhitespaceTokenizer;
-import org.apache.lucene.analysis.standard.StandardTokenizer;
 
 /**
  * Simple tokeniser for floats.

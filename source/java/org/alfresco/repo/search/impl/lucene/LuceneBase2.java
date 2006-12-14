@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.alfresco.repo.search.IndexerException;
-import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo.LockWork;
@@ -32,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Searcher;
 
 /**
  * Common support for abstracting the lucene indexer from its configuration and management requirements.

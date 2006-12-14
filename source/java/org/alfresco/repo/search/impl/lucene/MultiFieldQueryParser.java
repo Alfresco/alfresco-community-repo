@@ -16,14 +16,14 @@ package org.alfresco.repo.search.impl.lucene;
  * limitations under the License.
  */
 
+import java.util.Vector;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
-
-import java.util.Vector;
 
 /**
  * A QueryParser which constructs queries to search multiple fields.

@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
-import org.bouncycastle.crypto.paddings.ISO7816d4Padding;
 
 public class LuceneCategoryServiceImpl implements CategoryService
 {

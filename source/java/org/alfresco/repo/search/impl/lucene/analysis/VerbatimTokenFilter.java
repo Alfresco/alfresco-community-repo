@@ -10,9 +10,12 @@ public class VerbatimTokenFilter extends Tokenizer
 {
     boolean readInput = true;
 
-    VerbatimTokenFilter(Reader in)
+    boolean lowerCase;
+    
+    VerbatimTokenFilter(Reader in, boolean lowerCase)
     {
         super(in);
+        this.lowerCase = lowerCase;
     }
 
     @Override
@@ -31,6 +34,10 @@ public class VerbatimTokenFilter extends Tokenizer
             }
 
             String token = buffer.toString();
+            if(lowerCase)
+            {
+                token = token.toLowerCase();
+            }
             return new Token(token, 0, token.length() - 1, "VERBATIM");
         }
         else

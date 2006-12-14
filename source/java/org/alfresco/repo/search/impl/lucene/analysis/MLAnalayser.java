@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Locale;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.apache.log4j.Logger;
@@ -21,10 +21,13 @@ public class MLAnalayser extends Analyzer
     private DictionaryService dictionaryService;
 
     private HashMap<Locale, Analyzer> analysers = new HashMap<Locale, Analyzer>();
+    
+    private MLAnalysisMode mlAnalaysisMode;
 
-    public MLAnalayser(DictionaryService dictionaryService)
+    public MLAnalayser(DictionaryService dictionaryService, MLAnalysisMode mlAnalaysisMode)
     {
         this.dictionaryService = dictionaryService;
+        this.mlAnalaysisMode = mlAnalaysisMode;
     }
 
     @Override
@@ -107,7 +110,7 @@ public class MLAnalayser extends Analyzer
                     }
                     Locale locale = new Locale(language, country, varient);
                     // leave the reader where it is ....
-                    return new MLTokenDuplicator(getAnalyser(locale).tokenStream(fieldName, breader), locale, breader);
+                    return new MLTokenDuplicator(getAnalyser(locale).tokenStream(fieldName, breader), locale, breader, mlAnalaysisMode);
                 }
                 else
                 {

@@ -131,9 +131,9 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     private String lockDirectory;
 
-    private MLAnalysisMode defaultMLIndexAnalysisMode = MLAnalysisMode.LOCALE_ONLY;
+    private MLAnalysisMode defaultMLIndexAnalysisMode = MLAnalysisMode.LOCALE_AND_ALL;
 
-    private MLAnalysisMode defaultMLSearchAnalysisMode = MLAnalysisMode.LOCALE_AND_ALL;
+    private MLAnalysisMode defaultMLSearchAnalysisMode = MLAnalysisMode.LOCALE_AND_ALL_CONTAINING_LOCALES_AND_ALL;
 
     /**
      * Private constructor for the singleton TODO: FIt in with IOC

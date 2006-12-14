@@ -19,7 +19,9 @@ package org.alfresco.repo.search.impl.lucene;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,7 +87,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
  * The implementation of the lucene based indexer. Supports basic transactional behaviour if used on its own.
  * 
  * @author andyh
- * 
  */
 public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 {
@@ -119,9 +120,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
     private long maxAtomicTransformationTime = 20;
 
     /**
-     * A list of all deletions we have made - at merge these deletions need to be made against the main index.
-     * 
-     * TODO: Consider if this information needs to be persisted for recovery
+     * A list of all deletions we have made - at merge these deletions need to be made against the main index. TODO:
+     * Consider if this information needs to be persisted for recovery
      */
     private Set<NodeRef> deletions = new LinkedHashSet<NodeRef>();
 
@@ -140,8 +140,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
     private boolean isModified = false;
 
     /**
-     * Flag to indicte if we are doing an in transactional delta or a batch update to the index. If true, we are just fixing up non atomically indexed things from one or more other
-     * updates.
+     * Flag to indicte if we are doing an in transactional delta or a batch update to the index. If true, we are just
+     * fixing up non atomically indexed things from one or more other updates.
      */
 
     private Boolean isFTSUpdate = null;
@@ -168,7 +168,6 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
     /**
      * Default construction
-     * 
      */
     LuceneIndexerImpl2()
     {
@@ -216,7 +215,6 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
     /**
      * Utility method to check we are in the correct state to do work Also keeps track of the dirty flag.
-     * 
      */
 
     private void checkAbleToDoWork(boolean isFTS, boolean isModified)
@@ -508,7 +506,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         case Status.STATUS_ACTIVE:
             // special case - commit from active
             prepare();
-        // drop through to do the commit;
+            // drop through to do the commit;
         default:
             if (status != Status.STATUS_PREPARED)
             {
@@ -585,37 +583,36 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
                 for (Helper helper : toFTSIndex)
                 {
-                    //BooleanQuery query = new BooleanQuery();
-                    //query.add(new TermQuery(new Term("ID", helper.nodeRef.toString())), true, false);
-                    //query.add(new TermQuery(new Term("TX", helper.tx)), true, false);
-                    //query.add(new TermQuery(new Term("ISNODE", "T")), false, false);
+                    // BooleanQuery query = new BooleanQuery();
+                    // query.add(new TermQuery(new Term("ID", helper.nodeRef.toString())), true, false);
+                    // query.add(new TermQuery(new Term("TX", helper.tx)), true, false);
+                    // query.add(new TermQuery(new Term("ISNODE", "T")), false, false);
 
                     deletions.add(helper.nodeRef);
-                    
-                    
-//                    try
-//                    {
-//                        Hits hits = mainSearcher.search(query);
-//                        if (hits.length() > 0)
-//                        {
-//                            for (int i = 0; i < hits.length(); i++)
-//                            {
-//                                mainReader.delete(hits.id(i));
-//                            }
-//                        }
-//                        else
-//                        {
-//                            hits = deltaSearcher.search(query);
-//                            for (int i = 0; i < hits.length(); i++)
-//                            {
-//                                deltaReader.delete(hits.id(i));
-//                            }
-//                        }
-//                    }
-//                    catch (IOException e)
-//                    {
-//                        throw new LuceneIndexException("Failed to delete an FTS update from the original index", e);
-//                    }
+
+                    // try
+                    // {
+                    // Hits hits = mainSearcher.search(query);
+                    // if (hits.length() > 0)
+                    // {
+                    // for (int i = 0; i < hits.length(); i++)
+                    // {
+                    // mainReader.delete(hits.id(i));
+                    // }
+                    // }
+                    // else
+                    // {
+                    // hits = deltaSearcher.search(query);
+                    // for (int i = 0; i < hits.length(); i++)
+                    // {
+                    // deltaReader.delete(hits.id(i));
+                    // }
+                    // }
+                    // }
+                    // catch (IOException e)
+                    // {
+                    // throw new LuceneIndexException("Failed to delete an FTS update from the original index", e);
+                    // }
                 }
 
             }
@@ -688,11 +685,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
     }
 
     /**
-     * Prepare to commit
-     * 
-     * At the moment this makes sure we have all the locks
-     * 
-     * TODO: This is not doing proper serialisation against the index as would a data base transaction.
+     * Prepare to commit At the moment this makes sure we have all the locks TODO: This is not doing proper
+     * serialisation against the index as would a data base transaction.
      * 
      * @return
      */
@@ -766,7 +760,6 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
     /**
      * Roll back the index changes (this just means they are never added)
-     * 
      */
 
     public void rollback() throws LuceneIndexException
@@ -781,7 +774,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         case Status.STATUS_ROLLEDBACK:
             throw new IndexerException("Unable to roll back: Transaction is already rolled back");
         case Status.STATUS_COMMITTING:
-        // Can roll back during commit
+            // Can roll back during commit
         default:
             status = Status.STATUS_ROLLING_BACK;
             // if (isModified())
@@ -807,8 +800,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
     }
 
     /**
-     * Mark this index for roll back only. This action can not be reversed. It will reject all other work and only allow roll back.
-     * 
+     * Mark this index for roll back only. This action can not be reversed. It will reject all other work and only allow
+     * roll back.
      */
 
     public void setRollbackOnly()
@@ -1242,7 +1235,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
         Document xdoc = new Document();
         xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-        xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+        xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.UN_TOKENIZED,
+                Field.TermVector.NO));
         boolean isAtomic = true;
         for (QName propertyName : properties.keySet())
         {
@@ -1298,8 +1292,10 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                             qNameBuffer.append(";/");
                         }
                         qNameBuffer.append(ISO9075.getXPathName(qNameRef.getQName()));
-                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                        xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
+                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES,
+                                Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()),
+                                Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
                         xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair
                                 .getSecond()), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                     }
@@ -1322,17 +1318,22 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         if (directPaths.contains(pair.getFirst()))
                         {
                             Document directoryEntry = new Document();
-                            directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-                            directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+                            directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES,
+                                    Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                            directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED,
+                                    Field.TermVector.NO));
                             for (NodeRef parent : getParents(pair.getFirst()))
                             {
-                                directoryEntry.add(new Field("ANCESTOR", parent.toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ANCESTOR", parent.toString(), Field.Store.NO,
+                                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                             }
-                            directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                            directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED,
+                                    Field.TermVector.NO));
 
                             if (isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
                             {
-                                directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES,
+                                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                             }
 
                             docs.add(directoryEntry);
@@ -1350,7 +1351,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
             xdoc.add(new Field("PATH", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("QNAME", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("ISROOT", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(ContentModel.ASSOC_CHILDREN), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(ContentModel.ASSOC_CHILDREN),
+                    Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
             xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             docs.add(xdoc);
 
@@ -1358,36 +1360,45 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         else
         // not a root node
         {
-            xdoc.add(new Field("QNAME", qNameBuffer.toString(),Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED,
+                    Field.TermVector.NO));
             // xdoc.add(new Field("PARENT", parentBuffer.toString(), true, true,
             // true));
 
             ChildAssociationRef primary = nodeService.getPrimaryParent(nodeRef);
-            xdoc.add(new Field("PRIMARYPARENT", primary.getParentRef().toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(primary.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYPARENT", primary.getParentRef().toString(), Field.Store.YES,
+                    Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(primary.getTypeQName()), Field.Store.YES,
+                    Field.Index.NO, Field.TermVector.NO));
             QName typeQName = nodeService.getType(nodeRef);
 
-            xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED,
+                    Field.TermVector.NO));
             for (QName classRef : nodeService.getAspects(nodeRef))
             {
-                xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED,
+                        Field.TermVector.NO));
             }
 
             xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
             if (isAtomic || indexAllProperties)
             {
-                xdoc.add(new Field("FTSSTATUS", "Clean", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc
+                        .add(new Field("FTSSTATUS", "Clean", Field.Store.NO, Field.Index.UN_TOKENIZED,
+                                Field.TermVector.NO));
             }
             else
             {
                 if (isNew)
                 {
-                    xdoc.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                    xdoc.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.UN_TOKENIZED,
+                            Field.TermVector.NO));
                 }
                 else
                 {
-                    xdoc.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                    xdoc.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.UN_TOKENIZED,
+                            Field.TermVector.NO));
                 }
             }
 
@@ -1446,6 +1457,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         boolean atomic = true;
         boolean isContent = false;
         boolean isMultiLingual = false;
+        boolean isText = false;
 
         PropertyDefinition propertyDef = getDictionaryService().getProperty(propertyName);
         if (propertyDef != null)
@@ -1456,6 +1468,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
             atomic = propertyDef.isIndexedAtomically();
             isContent = propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
             isMultiLingual = propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT);
+            isText = propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT);
         }
         if (value == null)
         {
@@ -1493,7 +1506,19 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     continue;
                 }
                 // store mimetype in index - even if content does not index it is useful
-                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                // Added szie and locale - size needs to be tokenised correctly
+                doc.add(new Field(attributeName + ".mimetype", contentData.getMimetype(), Field.Store.NO,
+                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                doc.add(new Field(attributeName + ".size", Long.toString(contentData.getSize()), Field.Store.NO,
+                        Field.Index.TOKENIZED, Field.TermVector.NO));
+                // TODO: Use the node locale in preferanced to the system locale
+                Locale locale = contentData.getLocale();
+                if (locale == null)
+                {
+                    locale = Locale.getDefault();
+                }
+                doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO,
+                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
                 ContentReader reader = contentService.getReader(nodeRef, propertyName);
                 if (reader != null && reader.exists())
@@ -1519,8 +1544,10 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                             // don't index from the reader
                             readerReady = false;
                             // not indexed: no transformation
-                            //doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
-                            doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                            // doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO,
+                            // Field.Index.TOKENIZED, Field.TermVector.NO));
+                            doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO,
+                                    Field.Index.TOKENIZED, Field.TermVector.NO));
                         }
                         else if (indexAtomicPropertiesOnly
                                 && transformer.getTransformationTime() > maxAtomicTransformationTime)
@@ -1554,8 +1581,10 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                                 readerReady = false;
                                 // not indexed: transformation
                                 // failed
-                                //doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
-                                doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                                // doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
+                                // Field.Index.TOKENIZED, Field.TermVector.NO));
+                                doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
+                                        Field.Index.TOKENIZED, Field.TermVector.NO));
                             }
                         }
                     }
@@ -1564,16 +1593,16 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     if (readerReady)
                     {
                         InputStreamReader isr = null;
-                        //InputStream ris = reader.getContentInputStream();
-                        //try
-                        //{
-                        //    isr = new InputStreamReader(ris, "UTF-8");
+                        // InputStream ris = reader.getContentInputStream();
+                        // try
+                        // {
+                        // isr = new InputStreamReader(ris, "UTF-8");
                         // }
-                        //catch (UnsupportedEncodingException e)
-                       // {
-                        //    isr = new InputStreamReader(ris);
-                        //}
-                        //doc.add(new Field("TEXT", isr, Field.TermVector.NO));
+                        // catch (UnsupportedEncodingException e)
+                        // {
+                        // isr = new InputStreamReader(ris);
+                        // }
+                        // doc.add(new Field("TEXT", isr, Field.TermVector.NO));
 
                         InputStream ris = reader.getReader().getContentInputStream();
                         try
@@ -1584,10 +1613,11 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         {
                             isr = new InputStreamReader(ris);
                         }
-
-                        doc.add(new Field("@"
-                                + QName.createQName(propertyName.getNamespaceURI(), ISO9075.encode(propertyName
-                                        .getLocalName())), isr, Field.TermVector.NO));
+                        StringBuilder builder = new StringBuilder();
+                        builder.append("\u0000").append(locale.toString()).append("\u0000");
+                        StringReader prefix = new StringReader(builder.toString());
+                        Reader multiReader = new MultiReader(prefix, isr);
+                        doc.add(new Field(attributeName, multiReader, Field.TermVector.NO));
                     }
                 }
                 else
@@ -1601,17 +1631,19 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                                 + (reader == null ? " --- " : Boolean.toString(reader.exists())));
                     }
                     // not indexed: content missing
-                    doc.add(new Field("TEXT", NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
-                    doc.add(new Field(attributeName, NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                    doc.add(new Field("TEXT", NOT_INDEXED_CONTENT_MISSING, Field.Store.NO, Field.Index.TOKENIZED,
+                            Field.TermVector.NO));
+                    doc.add(new Field(attributeName, NOT_INDEXED_CONTENT_MISSING, Field.Store.NO,
+                            Field.Index.TOKENIZED, Field.TermVector.NO));
                 }
             }
             else
             {
                 Field.Store fieldStore = store ? Field.Store.YES : Field.Store.NO;
-                Field.Index fieldIndex; 
-                if(index )
+                Field.Index fieldIndex;
+                if (index)
                 {
-                    if(tokenise)
+                    if (tokenise)
                     {
                         fieldIndex = Field.Index.TOKENIZED;
                     }
@@ -1624,21 +1656,33 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                 {
                     fieldIndex = Field.Index.NO;
                 }
-                
-                if(isMultiLingual)
+
+                if (isMultiLingual)
                 {
                     MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
-                    for(Locale locale : mlText.getLocales())
+                    for (Locale locale : mlText.getLocales())
                     {
                         String localeString = mlText.getValue(locale);
-                        doc.add(new Field(attributeName, "\u0000" + locale.toString() +"\u0000" + localeString, fieldStore, fieldIndex, Field.TermVector.NO));
+                        StringBuilder builder = new StringBuilder();
+                        builder.append("\u0000").append(locale.toString()).append("\u0000").append(localeString);
+                        doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
+                                Field.TermVector.NO));
                     }
+                }
+                else if(isText)
+                {
+                    // TODO: Use the node locale in preferanced to the system locale
+                    Locale locale = Locale.getDefault();
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
+                    doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
+                            Field.TermVector.NO));
                 }
                 else
                 {
                     doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
                 }
-                    
+
             }
         }
 
@@ -2000,19 +2044,14 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
     public boolean getDeleteOnlyNodes()
     {
-       if(isFTSUpdate != null)
-       {
-           return isFTSUpdate.booleanValue();
-       }
-       else
-       {
-           return false;
-       }
+        if (isFTSUpdate != null)
+        {
+            return isFTSUpdate.booleanValue();
+        }
+        else
+        {
+            return false;
+        }
     }
 
-   
-
-
-
-  
 }

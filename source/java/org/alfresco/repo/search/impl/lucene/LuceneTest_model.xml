@@ -239,6 +239,26 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
+				<property name="test:null">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<property name="test:path-ista">
+                    <type>d:path</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
             </properties>
             <mandatory-aspects>
                 <aspect>test:testAspect</aspect>

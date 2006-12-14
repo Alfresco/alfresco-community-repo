@@ -18,8 +18,10 @@ package org.alfresco.service.cmr.search;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.service.cmr.repository.Path;
@@ -94,6 +96,10 @@ public class SearchParameters extends SearchStatement
     private PermissionEvaluationMode permissionEvaluation = PermissionEvaluationMode.EAGER;
 
     private int limit = DEFAULT_LIMIT;
+    
+    private HashSet<String> allAttributes = new HashSet<String>();
+    
+    private HashSet<String> textAttributes = new HashSet<String>();
 
     /**
      * Default constructor
@@ -351,6 +357,52 @@ public class SearchParameters extends SearchStatement
     {
         return Collections.unmodifiableList(locales);
     }
+    
+    
+    
+
+    /**
+     * Add a locale to include for multi-lingual text searches.
+     * If non are set, the default is to use the user's locale.
+     *  
+     * @param locale
+     */
+    public void addTextAttribute(String attribute)
+    {
+        textAttributes.add(attribute);
+    }
+
+    /**
+     * Get the locales used for multi-lingual text searches.
+     * 
+     * @return
+     */
+    public Set<String> getTextAttributes()
+    {
+        return Collections.unmodifiableSet(textAttributes);
+    }
+    
+    /**
+     * Add a locale to include for multi-lingual text searches.
+     * If non are set, the default is to use the user's locale.
+     *  
+     * @param locale
+     */
+    public void addAllAttribute(String attribute)
+    {
+        allAttributes.add(attribute);
+    }
+
+    /**
+     * Get the locales used for multi-lingual text searches.
+     * 
+     * @return
+     */
+    public Set<String> getAllAttributes()
+    {
+        return Collections.unmodifiableSet(allAttributes);
+    }
+    
 
     /**
      * A helper class for sort definition. Encapsulated using the lucene sortType, field name and a flag for

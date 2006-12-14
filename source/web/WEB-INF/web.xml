@@ -231,6 +231,11 @@
    </servlet>
       
    <servlet>
+      <servlet-name>apiServlet</servlet-name>
+      <servlet-class>org.alfresco.web.api.APIServlet</servlet-class>
+   </servlet>
+            
+   <servlet>
       <servlet-name>workflowDefinitionImageServlet</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.WorkflowDefinitionImageServlet</servlet-class>
    </servlet>
@@ -239,7 +244,7 @@
       <servlet-name>JBPMDeployProcessServlet</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
    </servlet>
-            
+
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
       <url-pattern>/faces/*</url-pattern>
@@ -298,6 +303,11 @@
    <servlet-mapping>
 		<servlet-name>WebDAV</servlet-name>
 		<url-pattern>/webdav/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>apiServlet</servlet-name>
+      <url-pattern>/service/*</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>

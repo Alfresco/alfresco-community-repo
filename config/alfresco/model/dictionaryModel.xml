@@ -103,6 +103,11 @@
          <java-class>org.alfresco.service.cmr.repository.NodeRef</java-class>
       </data-type>
 
+      <data-type name="d:locale">
+         <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser</analyser-class>
+         <java-class>java.util.Locale</java-class>
+      </data-type>
+
    </data-types>
 
 

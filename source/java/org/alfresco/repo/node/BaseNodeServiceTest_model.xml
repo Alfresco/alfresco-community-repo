@@ -259,6 +259,10 @@
                <type>d:category</type>
                <mandatory>true</mandatory>
             </property>
+            <property name="test:localeValue">
+               <type>d:locale</type>
+               <mandatory>true</mandatory>
+            </property>
             <property name="test:nullValue">
                <type>d:text</type>
                <mandatory>true</mandatory>

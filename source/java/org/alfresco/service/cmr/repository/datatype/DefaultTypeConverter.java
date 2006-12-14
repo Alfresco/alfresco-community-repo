@@ -28,8 +28,10 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -268,7 +270,28 @@ public class DefaultTypeConverter
             }
         });
 
+        INSTANCE.addConverter(String.class, Locale.class, new TypeConverter.Converter<String, Locale>()
+        {
+            public Locale convert(String source)
+            {
+                return I18NUtil.parseLocale(source);
+            }
+        });
+
         
+        //
+        // From Locale
+        //
+
+        INSTANCE.addConverter(Locale.class, String.class, new TypeConverter.Converter<Locale, String>()
+        {
+            public String convert(Locale source)
+            {
+                return source.toString();
+            }
+        });
+
+
         //
         // From MLText
         //

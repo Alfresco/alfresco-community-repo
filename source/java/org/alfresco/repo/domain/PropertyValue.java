@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -241,6 +242,20 @@ public class PropertyValue implements Cloneable, Serializable
             {
                 return DefaultTypeConverter.INSTANCE.convert(Path.class, value);
             }
+        },
+        LOCALE
+        {
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                return ValueType.STRING;
+            }
+
+            @Override
+            Serializable convert(Serializable value)
+            {
+                return DefaultTypeConverter.INSTANCE.convert(Locale.class, value);
+            }
         };
         
         /**
@@ -343,6 +358,10 @@ public class PropertyValue implements Cloneable, Serializable
         {
             return ValueType.PATH;
         }
+        else if (value instanceof Locale)
+        {
+            return ValueType.LOCALE;
+        }
         else
         {
             // type is not recognised as belonging to any particular slot
@@ -373,6 +392,7 @@ public class PropertyValue implements Cloneable, Serializable
         valueTypesByPropertyType.put(DataTypeDefinition.ASSOC_REF, ValueType.ASSOC_REF);
         valueTypesByPropertyType.put(DataTypeDefinition.PATH, ValueType.PATH);
         valueTypesByPropertyType.put(DataTypeDefinition.QNAME, ValueType.QNAME);
+        valueTypesByPropertyType.put(DataTypeDefinition.LOCALE, ValueType.LOCALE);
     }
 
     /** the type of the property, prior to serialization persistence */

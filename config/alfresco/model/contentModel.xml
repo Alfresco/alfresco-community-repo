@@ -230,11 +230,11 @@
          <associations>
             <child-association name="cm:mlChild">
                <source>
-                  <mandatory>true</mandatory>
+                  <mandatory>false</mandatory>
                   <many>false</many>
                </source>
                <target>
-                  <class>cm:mlTranslation</class>
+                  <class>sys:localized</class>
                   <mandatory>true</mandatory>
                   <many>true</many>
                </target>
@@ -694,18 +694,6 @@
          </properties>
       </aspect>
             
-      <!-- Multilingual -->
-      <aspect name="cm:mlTranslation">
-         <title>Translation</title>
-         <properties>
-            <property name="cm:language">
-               <title>Language</title>    
-               <type>d:mltext</type>
-               <mandatory>true</mandatory>
-            </property>
-         </properties>
-      </aspect>
-
    </aspects>
 
 </model>

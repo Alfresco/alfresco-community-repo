@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -106,6 +107,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_CONTENT_VALUE = QName.createQName(NAMESPACE, "contentValue");
     public static final QName PROP_QNAME_PATH_VALUE = QName.createQName(NAMESPACE, "pathValue");
     public static final QName PROP_QNAME_CATEGORY_VALUE = QName.createQName(NAMESPACE, "categoryValue");
+    public static final QName PROP_QNAME_LOCALE_VALUE = QName.createQName(NAMESPACE, "localeValue");
     public static final QName PROP_QNAME_NULL_VALUE = QName.createQName(NAMESPACE, "nullValue");
     public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");    
     public static final QName PROP_QNAME_PROP1 = QName.createQName(NAMESPACE, "prop1");
@@ -1014,6 +1016,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         properties.put(PROP_QNAME_PATH_VALUE, pathProperty);
         properties.put(PROP_QNAME_CONTENT_VALUE, new ContentData("url", "text/plain", 88L, "UTF-8"));
         properties.put(PROP_QNAME_CATEGORY_VALUE, rootNodeRef);
+        properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
         properties.put(PROP_QNAME_NULL_VALUE, null);
         properties.put(PROP_QNAME_MULTI_VALUE, listProperty);
         

@@ -186,6 +186,22 @@
          </properties>
       </aspect>
 
+      <!--
+         Localization:
+         If you add this aspect to a node, then the server will assume that all non-multilingual
+         properties apply to this locale.
+      -->
+      <aspect name="sys:localized">
+         <title>Translation</title>
+         <properties>
+            <property name="sys:locale">
+               <title>Locale</title>    
+               <type>d:locale</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+
 	</aspects>
 
 </model>

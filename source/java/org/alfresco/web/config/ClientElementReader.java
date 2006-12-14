@@ -42,8 +42,6 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_SHELFVISIBLE = "shelf-visible";
    public static final String ELEMENT_AJAX_ENABLED = "ajax-enabled";
    public static final String ELEMENT_INITIALLOCATION = "initial-location";
-   public static final String ELEMENT_WCM_DOMAIN = "wcm-domain";
-   public static final String ELEMENT_WCM_PORT = "wcm-port";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -162,18 +160,6 @@ public class ClientElementReader implements ConfigElementReader
          if (initialLocation != null)
          {
             configElement.setInitialLocation(initialLocation.getTextTrim());
-         }
-         
-         // get the WCM domain and port
-         Element wcmDomain = element.element(ELEMENT_WCM_DOMAIN);
-         if (wcmDomain != null)
-         {
-            configElement.setWCMDomain(wcmDomain.getTextTrim());
-         }
-         Element wcmPort = element.element(ELEMENT_WCM_PORT);
-         if (wcmPort != null)
-         {
-            configElement.setWCMPort(wcmPort.getTextTrim());
          }
       }
       

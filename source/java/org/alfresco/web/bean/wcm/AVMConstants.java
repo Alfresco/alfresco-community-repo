@@ -284,8 +284,8 @@ public final class AVMConstants
    public final static String SPACE_ICON_WEBSITE = "space-icon-website";
    
    // URLs for preview of sandboxes and assets
-   private final static String PREVIEW_SANDBOX_URL = "http://www-{0}.avm.{1}:{2}";
-   private final static String PREVIEW_ASSET_URL = "http://www-{0}.avm.{1}:{2}{3}";
+   private final static String PREVIEW_SANDBOX_URL = "http://www-{0}.{1}:{2}";
+   private final static String PREVIEW_ASSET_URL = "http://www-{0}.{1}:{2}{3}";
    
    // patter for absolute AVM Path
    private final static Pattern absoluteAVMPath = Pattern.compile(

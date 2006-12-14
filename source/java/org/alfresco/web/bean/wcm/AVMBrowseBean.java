@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -141,9 +142,6 @@ public class AVMBrowseBean implements IContextListener
    /** Current AVM Node action context */
    private AVMNode avmNode = null;
    
-   private String wcmDomain;
-   private String wcmPort;
-   
    /** breadcrumb location */
    private List<IBreadcrumbHandler> location = null;
    
@@ -175,7 +173,10 @@ public class AVMBrowseBean implements IContextListener
    protected AVMSyncService avmSyncService;
    
    /** Action service bean reference */
-   protected ActionService actionService; 
+   protected ActionService actionService;
+   
+   /** Global exclude name matcher */
+   protected NameMatcher nameMatcher;
    
    
    /**
@@ -184,10 +185,6 @@ public class AVMBrowseBean implements IContextListener
    public AVMBrowseBean()
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
-      
-      ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      this.wcmDomain = config.getWCMDomain();
-      this.wcmPort = config.getWCMPort();
    }
 
    
@@ -285,6 +282,14 @@ public class AVMBrowseBean implements IContextListener
    public void setActionService(ActionService actionService)
    {
       this.actionService = actionService;
+   }
+
+   /**
+    * @param nameMatcher The nameMatcher to set.
+    */
+   public void setNameMatcher(NameMatcher nameMatcher)
+   {
+      this.nameMatcher = nameMatcher;
    }
 
    /**
@@ -691,6 +696,9 @@ public class AVMBrowseBean implements IContextListener
          Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(-1, getCurrentPath());
          this.files = new ArrayList<Map>(nodes.size());
          this.folders = new ArrayList<Map>(nodes.size());
+         ClientConfigElement config = Application.getClientConfig(context);
+         String wcmDomain = config.getWCMDomain();
+         String wcmPort = config.getWCMPort();
          for (String name : nodes.keySet())
          {
             AVMNodeDescriptor avmRef = nodes.get(name);
@@ -715,7 +723,7 @@ public class AVMBrowseBean implements IContextListener
             
             // common properties
             String assetPath = path.substring(rootPathIndex);
-            String previewUrl = AVMConstants.buildAVMAssetUrl(assetPath, this.wcmDomain, this.wcmPort, dns);
+            String previewUrl = AVMConstants.buildAVMAssetUrl(assetPath, wcmDomain, wcmPort, dns);
             node.getProperties().put("previewUrl", previewUrl);
          }
          
@@ -939,8 +947,8 @@ public class AVMBrowseBean implements IContextListener
          tx.begin();
          
          // calcluate the list of differences between the user store and the staging area
-         // TODO Need to pass the global exclude NameMatcher to the compare call.
-         List<AVMDifference> diffs = this.avmSyncService.compare(-1, store + ":/", -1, getStagingStore() + ":/", null);
+         List<AVMDifference> diffs = this.avmSyncService.compare(
+               -1, store + ":/", -1, getStagingStore() + ":/", this.nameMatcher);
          List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
          for (AVMDifference diff : diffs)
          {

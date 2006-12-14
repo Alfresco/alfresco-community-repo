@@ -2317,6 +2317,10 @@
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>nameMatcher</property-name>
+         <value>#{globalPathExcluder}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

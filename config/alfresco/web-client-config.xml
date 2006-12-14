@@ -69,10 +69,6 @@
          
          <!-- the from address to use when sending emails from the client -->
          <from-email-address>alfresco@alfresco.org</from-email-address>
-         
-         <!-- WCM domain and port for virtualisation server -->
-         <wcm-domain>127-0-0-1.ip.alfrescodemo.net</wcm-domain>
-         <wcm-port>8180</wcm-port>
       </client>
    </config>
 

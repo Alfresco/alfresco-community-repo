@@ -16,8 +16,15 @@
  */
 package org.alfresco.web.config;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.element.ConfigElementAdapter;
+import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.cache.ExpiringValueCache;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Custom config element that represents config values for the client
@@ -26,9 +33,16 @@ import org.alfresco.config.element.ConfigElementAdapter;
  */
 public class ClientConfigElement extends ConfigElementAdapter
 {
+   private static Log logger = LogFactory.getLog(ClientConfigElement.class);
+   
    public static final String CONFIG_ELEMENT_ID = "client";
    
-   private String fromEmailAddress = "alfresco@alfresco.org";   
+   private static final String BEAN_VIRT_SERVER_REGISTRY = "VirtServerRegistry";
+   private static final String DEFAULT_VSERVER_IP = "avm.127-0-0-1.ip.alfrescodemo.net";
+   private static final int DEFAULT_VSERVER_PORT = 8180;
+   private static final String DEFAULT_FROM_ADDRESS = "alfresco@alfresco.org";
+   
+   private String fromEmailAddress = DEFAULT_FROM_ADDRESS;   
    private String errorPage = null;
    private String loginPage = null;
    private int recentSpacesItems = 6;
@@ -42,8 +56,8 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String homeSpacePermission = null;
    private boolean ajaxEnabled = false;
    private String initialLocation = "myalfresco";
-   private String wcmDomain = null;
-   private String wcmPort = null;
+   private ExpiringValueCache<String> wcmDomain = new ExpiringValueCache(1000*10L);
+   private ExpiringValueCache<String> wcmPort = new ExpiringValueCache(1000*10L);
    
    /**
     * Default Constructor
@@ -163,24 +177,6 @@ public class ClientConfigElement extends ConfigElementAdapter
           newElement.getInitialLocation().equals(combinedElement.getInitialLocation()) == false)
       {
          combinedElement.setInitialLocation(newElement.getInitialLocation());
-      }
-      
-      if (newElement.getWCMDomain() == null)
-      {
-         combinedElement.setWCMDomain(this.wcmDomain);
-      }
-      else
-      {
-         combinedElement.setWCMDomain(newElement.wcmDomain);
-      }
-      
-      if (newElement.getWCMPort() == null)
-      {
-         combinedElement.setWCMPort(this.wcmPort);
-      }
-      else
-      {
-         combinedElement.setWCMPort(newElement.wcmPort);
       }
       
       return combinedElement;
@@ -426,34 +422,44 @@ public class ClientConfigElement extends ConfigElementAdapter
    }
 
    /**
-    * @return Returns the WCM Domain.
+    * @return Returns the WCM Domain obtained from the Virtualisation Server registry.
     */
    public String getWCMDomain()
    {
-      return this.wcmDomain;
+      String value = this.wcmDomain.get();
+      if (value == null)
+      {
+         VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
+               FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
+         value = vServerRegistry.getVirtServerFQDN();
+         if (value == null)
+         {
+            value = DEFAULT_VSERVER_IP;
+            logger.warn("Virtualisation Server not started - reverting to default IP: " + value);
+         }
+         this.wcmDomain.put(value);
+      }
+      return value;
    }
 
    /**
-    * @param wcmDomain The WCM Domain to set.
-    */
-   /*package*/ void setWCMDomain(String wcmDomain)
-   {
-      this.wcmDomain = wcmDomain;
-   }
-
-   /**
-    * @return Returns the WCM Port.
+    * @return Returns the WCM Port obtained from the Virtualisation Server registry.
     */
    public String getWCMPort()
    {
-      return this.wcmPort;
-   }
-
-   /**
-    * @param wcmPort The WCM Port to set.
-    */
-   /*package*/ void setWCMPort(String wcmPort)
-   {
-      this.wcmPort = wcmPort;
+      String value = this.wcmPort.get();
+      if (value == null)
+      {
+         VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
+               FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
+         Integer iValue = vServerRegistry.getVirtServerHttpPort();
+         if (iValue == null)
+         {
+            iValue = DEFAULT_VSERVER_PORT;
+            logger.warn("Virtualisation Server not started - reverting to default port: " + value);
+         }
+         this.wcmPort.put(iValue.toString());
+      }
+      return value;
    }
 }

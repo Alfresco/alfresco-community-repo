@@ -2,40 +2,40 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	   xmlns:alfresco="http://www.alfresco.org/alfresco"
 	   elementFormDefault="qualified">
-  <xs:simpleType id="five_string_values_id" name="five_string_values">
+  <xs:simpleType name="five_string_values">
     <xs:restriction base="xs:string">
       <xs:enumeration id="five_string_values_one" value="one">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>1 - eno</alfresco:label>
+	    <alfresco:label>${components-test.five_string_values.one}</alfresco:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="two">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>2 - owt</alfresco:label>
+	    <alfresco:label>${components-test.five_string_values.two}</alfresco:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="three">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>3 - eerht</alfresco:label>
+	    <alfresco:label>${components-test.five_string_values.three}</alfresco:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="four">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>4 - ruof</alfresco:label>
+	    <alfresco:label>${components-test.five_string_values.four}</alfresco:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="five">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>5 - evif</alfresco:label>
+	    <alfresco:label>${components-test.five_string_values.five}</alfresco:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
@@ -72,12 +72,19 @@
 	<xs:element name="required_textfield" type="xs:string" minOccurs="1" maxOccurs="1">
 	  <xs:annotation>
 	    <xs:appinfo>
-	      <alfresco:label>A Required String</alfresco:label>
-	      <alfresco:alert>Please enter a non zero length string</alfresco:alert>
+	      <alfresco:label>${components-test.required_textfield.label}</alfresco:label>
+	      <alfresco:alert>${components-test.required_textfield.alert}</alfresco:alert>
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>
-	<xs:element name="optional_textfield" type="xs:string" minOccurs="0" maxOccurs="1"/>
+	<xs:element name="optional_textfield" type="xs:string" minOccurs="0" maxOccurs="1">
+	  <xs:annotation>
+	    <xs:appinfo>
+	      <alfresco:label>${components-test.optional_textfield.label}</alfresco:label>
+	      <alfresco:alert>${components-test.optional_textfield.alert}</alfresco:alert>
+	    </xs:appinfo>
+	  </xs:annotation>
+	</xs:element>
 	<xs:element name="prefilled_textfield" type="xs:string" minOccurs="0" maxOccurs="1" default="i am the default value"/>
 	<xs:element name="textarea" type="xs:anyType"/>
       </xs:sequence>
@@ -103,8 +110,8 @@
 	<xs:element name="list_of_ten_select_three" type="ten_number_list_select_three">
 	  <xs:annotation>
 	    <xs:appinfo>
-	      <alfresco:label>10 select 3</alfresco:label>
-	      <alfresco:alert>Please select at least 3 items from the list.</alfresco:alert>
+	      <alfresco:label>${components-test.list_of_ten_select_three.label}</alfresco:label>
+	      <alfresco:alert>${components-test.list_of_ten_select_three.alert}</alfresco:alert>
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>

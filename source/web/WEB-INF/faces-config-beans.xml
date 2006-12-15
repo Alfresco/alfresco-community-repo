@@ -3038,6 +3038,22 @@
       <managed-bean-name>XFormsBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.forms.xforms.XFormsBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>schema2XFormsProperties</property-name>
+         <value>#{Schema2XFormsProperties}</value>
+      </managed-property>
    </managed-bean>
 </faces-config>
 

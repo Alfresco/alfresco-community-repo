@@ -35,7 +35,7 @@
    </bean>
 
    <!-- NOTE: This references a bean in the repository Spring configuration -->
-   <bean id="formsSerivce" class="org.alfresco.web.forms.FormsService">
+   <bean id="formsService" class="org.alfresco.web.forms.FormsService">
       <constructor-arg>
          <ref bean="ContentService" />
       </constructor-arg>
@@ -52,5 +52,27 @@
          <ref bean="AVMService" />
       </constructor-arg>
    </bean>
-   
+
+   <!-- NOTE: This references a bean in the repository Spring configuration -->
+   <bean id="Schema2XFormsProperties" class="org.alfresco.web.forms.xforms.Schema2XFormsProperties">
+      <constructor-arg>
+         <ref bean="ContentService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="NamespaceService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="NodeService" />
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="SearchService" />
+      </constructor-arg>
+      <property name="locations">
+	<list>
+	  <value>alfresco:/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.content_forms.childname}/${form.name}/cm:strings</value>
+	  <value>alfresco:/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.content_forms.childname}/cm:strings</value>
+	  <value>classpath:alfresco/messages/webclient</value>
+	</list>
+      </property>
+   </bean>
 </beans>

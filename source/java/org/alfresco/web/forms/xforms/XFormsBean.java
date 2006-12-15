@@ -22,11 +22,9 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -136,6 +134,46 @@ public class XFormsBean
    private static final Log LOGGER = LogFactory.getLog(XFormsBean.class);
 
    private XFormsSession xformsSession;
+   private Schema2XFormsProperties schema2XFormsProperties;
+   private AVMBrowseBean avmBrowseBean;
+   private AVMService avmService;
+   private NodeService nodeService;
+
+   public XFormsBean()
+   {
+   }
+
+   /**
+    * @param schema2XFormsProperties the schema2XFormsProperties to set.
+    */
+   public void setSchema2XFormsProperties(final Schema2XFormsProperties schema2XFormsProperties)
+   {
+      this.schema2XFormsProperties = schema2XFormsProperties;
+   }
+
+   /**
+    * @param avmBrowseBean the avmBrowseBean to set.
+    */
+   public void setAvmBrowseBean(final AVMBrowseBean avmBrowseBean)
+   {
+      this.avmBrowseBean = avmBrowseBean;
+   }
+   
+   /**
+    * @param nodeService the nodeService to set.
+    */
+   public void setNodeService(final NodeService nodeService)
+   {
+      this.nodeService = nodeService;
+   }
+
+   /**
+    * @param avmService the avmService to set.
+    */
+   public void setAvmService(final AVMService avmService)
+   {
+      this.avmService = avmService;
+   }
 
    /** @param xformsSession the current session */
    public void setXFormsSession(final XFormsSession xformsSession)
@@ -151,10 +189,7 @@ public class XFormsBean
       final ChibaBean chibaBean = new ChibaBean();
       XFormsBean.storeCookies(request.getCookies(), chibaBean);
 
-      final HttpSession session = (HttpSession)externalContext.getSession(true);
-      final AVMBrowseBean browseBean = (AVMBrowseBean)
-         session.getAttribute("AVMBrowseBean");
-      final String cwdAVMPath = browseBean.getCurrentPath();
+      final String cwdAVMPath = this.avmBrowseBean.getCurrentPath();
 
       if (LOGGER.isDebugEnabled())
       {
@@ -162,7 +197,12 @@ public class XFormsBean
                       " root element " + this.xformsSession.form.getSchemaRootElementName() +
                       " avm cwd " + cwdAVMPath);
       }
-                               
+
+      final Locale locale = Application.getLanguage(facesContext);
+      final ResourceBundle resourceBundle = 
+         this.schema2XFormsProperties.getResourceBundle(this.xformsSession.form, 
+                                                        locale);
+
       try
       {
          final Document schemaDocument = this.xformsSession.form.getSchema();
@@ -170,7 +210,8 @@ public class XFormsBean
          final Document xformsDocument = 
             this.xformsSession.schemaFormBuilder.buildXForm(this.xformsSession.formInstanceData, 
                                                             schemaDocument,
-                                                            this.xformsSession.form.getSchemaRootElementName());
+                                                            this.xformsSession.form.getSchemaRootElementName(),
+                                                            resourceBundle);
 
          if (LOGGER.isDebugEnabled())
          {
@@ -411,30 +452,22 @@ public class XFormsBean
    {
       final FacesContext facesContext = FacesContext.getCurrentInstance();
       final ExternalContext externalContext = facesContext.getExternalContext();
-      final HttpSession session = (HttpSession)
-         externalContext.getSession(true);
-      final AVMBrowseBean browseBean = (AVMBrowseBean)
-         session.getAttribute("AVMBrowseBean");
 
       final Map requestParameters = externalContext.getRequestParameterMap();
       String currentPath = (String)requestParameters.get("currentPath");
       if (currentPath == null)
       {
-         currentPath = browseBean.getCurrentPath();
+         currentPath = this.avmBrowseBean.getCurrentPath();
       }
       else
       {
          final String previewStorePath = 
-            browseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
-                                                     AVMConstants.STORE_PREVIEW);
+            this.avmBrowseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
+                                                             AVMConstants.STORE_PREVIEW);
          currentPath = AVMConstants.buildAbsoluteAVMPath(previewStorePath,
                                                          currentPath);
       }
       LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
-
-      final ServiceRegistry serviceRegistry = 
-         Repository.getServiceRegistry(facesContext);
-      final AVMService avmService = serviceRegistry.getAVMService();
 
       final FormsService formsService = FormsService.getInstance();
       final Document result = formsService.newDocument();
@@ -442,13 +475,13 @@ public class XFormsBean
       result.appendChild(filePickerDataElement);
 
 
-      final AVMNodeDescriptor currentNode = avmService.lookup(-1, currentPath);
+      final AVMNodeDescriptor currentNode = this.avmService.lookup(-1, currentPath);
       if (currentNode == null)
       {
          final Element errorElement = result.createElement("error");
          errorElement.appendChild(result.createTextNode("Path " + currentPath + " not found"));
          filePickerDataElement.appendChild(errorElement);
-         currentPath = browseBean.getCurrentPath();
+         currentPath = this.avmBrowseBean.getCurrentPath();
       }
       else if (! currentNode.isDirectory())
       {
@@ -464,7 +497,7 @@ public class XFormsBean
       filePickerDataElement.appendChild(e);
 
       for (Map.Entry<String, AVMNodeDescriptor> entry : 
-              avmService.getDirectoryListing(-1, currentPath).entrySet())
+              this.avmService.getDirectoryListing(-1, currentPath).entrySet())
       {
          e = result.createElement("child-node");
          e.setAttribute("avmPath", entry.getValue().getPath());
@@ -493,10 +526,6 @@ public class XFormsBean
       final ExternalContext externalContext = facesContext.getExternalContext();
       final HttpServletRequest request = (HttpServletRequest)
          externalContext.getRequest();
-      final HttpSession session = (HttpSession)
-         externalContext.getSession(true);
-      final AVMBrowseBean browseBean = (AVMBrowseBean)
-         session.getAttribute("AVMBrowseBean");
 
       final ServletFileUpload upload = 
          new ServletFileUpload(new DiskFileItemFactory());
@@ -518,8 +547,8 @@ public class XFormsBean
          else if (item.isFormField() && item.getFieldName().equals("currentPath"))
          {
             final String previewStorePath = 
-               browseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
-                                                        AVMConstants.STORE_PREVIEW);
+               this.avmBrowseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
+                                                                AVMConstants.STORE_PREVIEW);
             currentPath = AVMConstants.buildAbsoluteAVMPath(previewStorePath,
                                                             item.getString());
             LOGGER.debug("currentPath is " + currentPath);
@@ -541,13 +570,10 @@ public class XFormsBean
          }
       }
 
-      final ServiceRegistry serviceRegistry = 
-         Repository.getServiceRegistry(facesContext);
-      final AVMService avmService = serviceRegistry.getAVMService();
       LOGGER.debug("saving file " + filename + " to " + currentPath);
       
       FileCopyUtils.copy(fileInputStream, 
-                         avmService.createFile(currentPath, filename));
+                         this.avmService.createFile(currentPath, filename));
 
       final NodeRef uploadNodeRef = 
          AVMNodeConverter.ToNodeRef(-1, currentPath + "/" + filename);
@@ -555,8 +581,9 @@ public class XFormsBean
       props.put(ContentModel.PROP_TITLE, filename);
       props.put(ContentModel.PROP_DESCRIPTION, 
                 "Uploaded for form " + this.xformsSession.getForm().getName());
-      final NodeService nodeService = serviceRegistry.getNodeService();
-      nodeService.addAspect(uploadNodeRef, ContentModel.ASPECT_TITLED, props);
+      this.nodeService.addAspect(uploadNodeRef, 
+                                 ContentModel.ASPECT_TITLED, 
+                                 props);
 
       this.xformsSession.uploads.put(uploadId, uploadNodeRef);
 

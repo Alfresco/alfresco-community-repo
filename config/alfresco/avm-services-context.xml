@@ -263,6 +263,12 @@
         </property>
     </bean>
 
+    <bean id="AVMSubmittedAspect" class="org.alfresco.repo.avm.wf.AVMSubmittedAspect">
+        <property name="avmService">
+            <ref bean="AVMService"/>
+        </property>
+    </bean>
+
 	<!-- NameMatcher beans for filtering what shows up as different in compares. -->
 	
     <bean id="excludeRegexMatcher" class="org.alfresco.util.RegexNameMatcher">

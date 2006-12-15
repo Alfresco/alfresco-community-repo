@@ -14,8 +14,15 @@
     <start-state name="start">
         <task name="wcmwf:submitReviewTask" swimlane="initiator"/>
         <transition name="" to="serialorparallel"/>
-        
-        <event type="node-leave">
+    </start-state>
+
+
+    <!--                                      -->
+    <!-- Split into Serial or Parallel Review -->
+    <!--                                      -->
+
+    <decision name="serialorparallel">
+       <event type="node-enter">
             <script>
                <variable name="wcmwf_reviewerCnt" access="write"/>
                <variable name="wcmwf_approveCnt" access="write"/>
@@ -26,15 +33,8 @@
                   wcmwf_reviewType = wcmwf_submitReviewType;
                </expression>
             </script>
-        </event>
-    </start-state>
+       </event>
 
-
-    <!--                                      -->
-    <!-- Split into Serial or Parallel Review -->
-    <!--                                      -->
-
-    <decision name="serialorparallel">
        <transition name="serial" to="submitserialreview" />
        <transition name="parallel" to="submitparallelreview">
           <condition>#{wcmwf_reviewType == "Parallel"}</condition>
@@ -119,10 +119,12 @@
     <!--                -->
 
     <decision name="endreview">
-       <transition name="rejected" to="rejected" />
+       <transition name="rejected" to="rejected">
+           <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
+       </transition>
        <transition name="approved" to="approved">
-         <condition>#{wcmwf_approveCnt == wcmwf_reviewerCnt}</condition>
-         <action class="org.alfresco.repo.avm.wf.AVMSubmitPackageHandler"/>
+           <condition>#{wcmwf_approveCnt == wcmwf_reviewerCnt}</condition>
+           <action class="org.alfresco.repo.avm.wf.AVMSubmitPackageHandler"/>
        </transition>
     </decision>   
 
@@ -142,5 +144,9 @@
     <!--                 -->
 
     <end-state name="end"/>
+    
+    <event type="process-end">
+        <action class="org.alfresco.repo.avm.wf.AVMClearSubmittedHandler"/>
+    </event>
 
 </process-definition>

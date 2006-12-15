@@ -16,10 +16,8 @@
  */
 package org.alfresco.repo.avm.wf;
 
-import java.io.Serializable;
 import java.util.List;
 
-import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
@@ -32,8 +30,13 @@ import org.alfresco.util.Pair;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
-public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
-        Serializable 
+
+/**
+ * Clear "submitted" mark from (source of) items within the WCM Workflow Package
+ * 
+ * @author davidc
+ */
+public class AVMClearSubmittedHandler extends JBPMSpringActionHandler 
 {
     private static final long serialVersionUID = 4113360751217684995L;
 
@@ -46,11 +49,12 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
      * The AVMSyncService instance.
      */
     private AVMSyncService fAVMSyncService;
-
+    
     /**
      * The AVMSubmittedAspect instance.
      */
     private AVMSubmittedAspect fAVMSubmittedAspect;
+    
 
     
     /**
@@ -74,33 +78,24 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         // TODO: Allow submit parameters to be passed into this action handler
         //       rather than pulling directly from execution context
         
-        NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
-        Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
-
-        // submit the package changes
-        String description = (String)executionContext.getContextInstance().getVariable("bpm_workflowDescription");
-        String tag = (String)executionContext.getContextInstance().getVariable("wcmwf_label");
-        AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
-        String targetPath = pkgDesc.getIndirection();
-		List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
-        for (AVMDifference diff : stagingDiffs)
-        {
-            fAVMSubmittedAspect.clearSubmitted(diff.getSourceVersion(), diff.getSourcePath());
-        }
-        fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
-
-        // flatten source folder where changes were submitted from
+        // NOTE: Submitted items can only be marked as "submitted" if we know where they came from
         String from = (String)executionContext.getContextInstance().getVariable("wcmwf_fromPath");
         if (from != null && from.length() > 0)
         {
-            // first, submit changes back to sandbox forcing addition of edits in workflow (and submission 
-            // flag removal). second, flatten sandbox, removing modified items that have been submitted
-            // TODO: Without locking on the sandbox, it's possible that a change to a "submitted" item
-            //       may get lost when the item is finally approved
-            List<AVMDifference> sandboxDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, from, null);
-            fAVMSyncService.update(sandboxDiffs, null, false, false, true, true, tag, description);
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
-            fAVMSyncService.flatten(from, targetPath);
+            // retrieve list of changes in submitted package
+            NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
+            Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
+            AVMNodeDescriptor pkgDesc = fAVMService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
+            String targetPath = pkgDesc.getIndirection();
+            List<AVMDifference> diffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
+
+            // for each change, mark original as submitted
+            for (AVMDifference diff : diffs)
+            {
+                String submittedPath = from + diff.getSourcePath().substring(pkgPath.getSecond().length());
+                fAVMSubmittedAspect.clearSubmitted(-1, submittedPath);
+            }
         }
     }
+    
 }

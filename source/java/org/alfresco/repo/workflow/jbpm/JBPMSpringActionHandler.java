@@ -16,7 +16,9 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.jbpm.graph.def.ActionHandler;
+import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
@@ -50,4 +52,17 @@ public abstract class JBPMSpringActionHandler implements ActionHandler
      */
     protected abstract void initialiseHandler(BeanFactory factory);
 
+    
+    /**
+     * Gets the workflow instance id of the currently executing workflow
+     * 
+     * @param context  jBPM execution context
+     * @return  workflow instance id
+     */
+    protected String getWorkflowInstanceId(ExecutionContext context)
+    {
+        String id = new Long(context.getProcessInstance().getId()).toString();
+        return BPMEngineRegistry.createGlobalId("jbpm", id);
+    }
+    
 }

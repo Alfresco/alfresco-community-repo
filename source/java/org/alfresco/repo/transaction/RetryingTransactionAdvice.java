@@ -5,7 +5,6 @@ package org.alfresco.repo.transaction;
 
 import java.util.Random;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.log4j.Logger;
@@ -104,37 +103,44 @@ public class RetryingTransactionAdvice implements MethodInterceptor
                 }                
                 return result;
             }        
-            catch (Throwable e)
+            catch (RuntimeException e)
             {
                 if (txn != null && isNewTxn && !txn.isCompleted())
                 {
                     fTxnManager.rollback(txn);
                 }
-                if (e instanceof ConcurrencyFailureException ||
-                    e instanceof DeadlockLoserDataAccessException ||
-                    e instanceof StaleObjectStateException ||
-                    e instanceof LockAcquisitionException)
+                if (!isNewTxn)
                 {
-                    if (!isNewTxn)
+                    throw e;
+                }
+                lastException = e;
+                Throwable t = e;
+                boolean shouldRetry = false;
+                while (t != null)
+                {
+                    if (t instanceof ConcurrencyFailureException ||
+                        t instanceof DeadlockLoserDataAccessException ||
+                        t instanceof StaleObjectStateException ||
+                        t instanceof LockAcquisitionException)
                     {
-                        throw (RuntimeException)e;
+                        shouldRetry = true;
+                        try
+                        {
+                            Thread.sleep(fRandom.nextInt(500 * count + 500));
+                        }
+                        catch (InterruptedException ie)
+                        {
+                            // Do nothing.                                                                                  
+                        }
+                        break;
                     }
-                    lastException = (RuntimeException)e;
-                    try
-                    {
-                        Thread.sleep(fRandom.nextInt(500 * count + 500));
-                    }
-                    catch (InterruptedException ie)
-                    {
-                        // Do nothing.                                                                                  
-                    }
+                    t = t.getCause();
+                }
+                if (shouldRetry)
+                {
                     continue;
                 }
-                if (e instanceof RuntimeException)
-                {                    
-                    throw (RuntimeException)e;
-                }
-                throw new AlfrescoRuntimeException("Failure in Transaction.", e);
+                throw e;
             }
         }
         fgLogger.error("Txn Failed after " + fMaxRetries + " retries:", lastException);

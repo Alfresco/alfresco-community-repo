@@ -48,6 +48,6 @@ public class AVMLookupCacheListener extends TransactionListenerAdapter
     @Override
     public void afterCommit() 
     {
-        fLookupCache.commitLookups();
+        fLookupCache.onCommit();
     }
 }

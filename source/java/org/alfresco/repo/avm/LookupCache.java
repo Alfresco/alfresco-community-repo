@@ -5,8 +5,10 @@ package org.alfresco.repo.avm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -20,12 +22,18 @@ import org.apache.log4j.Logger;
 public class LookupCache 
 {
     private static Logger fgLogger = Logger.getLogger(LookupCache.class);
-
+    
+    
     /**
      * Per transaction lookup results to be added to the cache on successful
      * commit.
      */
     private ThreadLocal<Map<LookupKey, Lookup>> fToBeAdded;
+    
+    /**
+     * Per transaction set of invalidated lookup keys.
+     */
+    private ThreadLocal<Set<LookupKey>> fToBePurged;
     
     /**
      * The Map of of keys to lookups.
@@ -71,6 +79,7 @@ public class LookupCache
         fTimeStamps = new TreeMap<Long, LookupKey>();
         fInverseTimeStamps = new HashMap<LookupKey, Long>();
         fToBeAdded = new ThreadLocal<Map<LookupKey, Lookup>>();
+        fToBePurged = new ThreadLocal<Set<LookupKey>>();
         fTimeStamp = 0L;
         fMaxSize = 100;
     }
@@ -114,7 +123,9 @@ public class LookupCache
     public Lookup lookup(AVMStore store, int version, SimplePath path, 
                          boolean write, boolean includeDeleted)
     {
+        // Create a key object.
         LookupKey key = new LookupKey(version, path, store.getName(), write, includeDeleted);
+        // Is it in the cache?
         Lookup found = findInCache(key);
         if (found != null)
         {
@@ -186,43 +197,69 @@ public class LookupCache
      */
     private synchronized Lookup findInCache(LookupKey key)
     {
-        Map<LookupKey, Lookup> map = fToBeAdded.get();
-        Lookup found = (map != null) ? map.get(key) : null;
+        // Get the current transaction's purged set.
+        Set<LookupKey> purged = fToBePurged.get();
+        // Get the current transaction's added map.
+        Map<LookupKey, Lookup> added = fToBeAdded.get();
+        // See if it's cached in the transaction.
+        Lookup found = (added != null) ? added.get(key) : null;
+        // It's not.
         if (found == null)
         {
+            // If it's been purged in the transaction it is 
+            // a miss.
+            if (purged != null && purged.contains(key))
+            {
+                return null;
+            }
             found = fCache.get(key);
         }
+        // Despite the odds, we found a hit.
         if (found != null)
         {
+            // Get a freshened Lookup.
             Lookup result = new Lookup(found, fAVMNodeDAO, fAVMStoreDAO);
+            // Check that nothing horrible is wrong.  This should
+            // be assertible, but I'll leave the check in for now.
             if (!result.isValid())
             {
                 fgLogger.error("Invalid entry in cache: " + key);
-                onRollback();
                 return null;
             }
+            // Prepare the cache for a timestamp update on commit.
             updateCache(key, found);
             return result;
         }
         // Alternatively for a read lookup a write can match.
         if (!key.isWrite())
         {
+            // Make a copy of the key and set it to 'write'
             LookupKey newKey = new LookupKey(key);
             newKey.setWrite(true);
-            found = (map != null) ? map.get(newKey) : null;
+            // Is it in the transaction's cache?
+            found = (added != null) ? added.get(newKey) : null;
+            // If not.
             if (found == null)
             {
+                // If it's been purged it's a miss.
+                if (purged != null && purged.contains(newKey))
+                {
+                    return null;
+                }
                 found = fCache.get(newKey);
             }
             if (found != null)
             {
+                // We found it. Make a freshened copy of the Lookup.
                 Lookup result = new Lookup(found, fAVMNodeDAO, fAVMStoreDAO);
+                // Check for badness.  This should be assertible but I'll
+                // leave the check in for now.
                 if (!result.isValid())
                 {
                     fgLogger.error("Invalid entry in cache: " + newKey);
-                    onRollback();
                     return null;
                 }
+                // Prepare the cache to update time stamp.
                 updateCache(newKey, found);
                 return result;
             }
@@ -237,29 +274,47 @@ public class LookupCache
      */
     private void updateCache(LookupKey key, Lookup lookup)
     {
+        // First, put it in the transaction scoped cache.
         Map<LookupKey, Lookup> map = fToBeAdded.get();
         if (map == null)
         {
             map = new HashMap<LookupKey, Lookup>();
         }
         map.put(key, lookup);
+        // Remove any corresponding entry from the purge list.
+        Set<LookupKey> purged = fToBePurged.get();
+        if (purged == null)
+        {
+            return;
+        }
+        purged.remove(key);
     }     
    
     /**
      * Called when a transaction has successfully committed,
      * to make lookups from the transaction available to other transactions.
      */
-    public synchronized void commitLookups()
+    public synchronized void onCommit()
     {
-        Map<LookupKey, Lookup> map = fToBeAdded.get();
-        if (map == null)
+        // First get rid of all entries purged by the transaction.
+        Set<LookupKey> purged = fToBePurged.get();
+        if (purged != null)
+        {
+            purgeEntries(purged);
+        }
+        // Null out the thread local.
+        fToBePurged.set(null);
+        // Get and go through the transaction's added list.
+        Map<LookupKey, Lookup> added = fToBeAdded.get();
+        if (added == null)
         {
             return;
         }
-        for (Map.Entry<LookupKey, Lookup> entry : map.entrySet())
+        for (Map.Entry<LookupKey, Lookup> entry : added.entrySet())
         {
             LookupKey key = entry.getKey();
             Lookup lookup = entry.getValue();
+            // If the cache already has the key, remove it.
             if (fCache.containsKey(key))
             {
                 fCache.remove(key);
@@ -267,10 +322,13 @@ public class LookupCache
                 fInverseTimeStamps.remove(key);
                 fTimeStamps.remove(oldTime);
             }
+            // Add the entry.
             long timeStamp = fTimeStamp++;
             fTimeStamps.put(timeStamp, key);
             fInverseTimeStamps.put(key, timeStamp);
             fCache.put(key, lookup);
+            // Check if we're over the limit and purge the 
+            // LRU entry if we are.
             if (fCache.size() > fMaxSize)
             {
                 // Get rid of the oldest entry.
@@ -280,14 +338,15 @@ public class LookupCache
                 fCache.remove(old);
             }
         }
+        // Null out the ThreadLocal.
         fToBeAdded.set(null);
     }
     
     /**
-     * Remove a List of entries.
-     * @param keys The List of entries.
+     * Remove a Set of entries.
+     * @param keys The Set of entries.
      */
-    private void purgeEntries(List<LookupKey> keys)
+    private void purgeEntries(Set<LookupKey> keys)
     {
         for (LookupKey key : keys)
         {
@@ -305,17 +364,39 @@ public class LookupCache
      */
     public synchronized void onWrite(String storeName)
     {
-        List<LookupKey> toDelete = new ArrayList<LookupKey>();
+        // Get or make up the purged Set for this transaction.
+        Set<LookupKey> purged = fToBePurged.get();
+        if (purged == null)
+        {
+            purged = new HashSet<LookupKey>();
+            fToBePurged.set(purged);
+        }
+        // Invalidate if it's a read lookup in the store, or
+        // any read lookup is it's layered.
         for (Map.Entry<LookupKey, Lookup> entry : fCache.entrySet())
         {
             if ((entry.getKey().getStoreName().equals(storeName) &&
                 !entry.getKey().isWrite()) || 
                 (!entry.getKey().isWrite() && entry.getValue().isLayered()))
             {
-                toDelete.add(entry.getKey());
+                purged.add(entry.getKey());
             }
         }
-        purgeEntries(toDelete);
+        // Remove entries from the added set using the same criteria.
+        Map<LookupKey, Lookup> added = fToBeAdded.get();
+        if (added == null)
+        {
+            return;
+        }
+        for (Map.Entry<LookupKey, Lookup> entry : added.entrySet())
+        {
+            if ((entry.getKey().getStoreName().equals(storeName) &&
+                 !entry.getKey().isWrite()) || 
+                 (!entry.getKey().isWrite() && entry.getValue().isLayered()))
+            {
+                added.remove(entry.getKey());
+            }
+        }
     }
     
     /**
@@ -324,16 +405,36 @@ public class LookupCache
      */
     public synchronized void onDelete(String storeName)
     {
-        List<LookupKey> toDelete = new ArrayList<LookupKey>();
+        // Get or make up a fresh purged Set.
+        Set<LookupKey> purged = fToBePurged.get();
+        if (purged == null)
+        {
+            purged = new HashSet<LookupKey>();
+            fToBePurged.set(purged);
+        }
+        // Invalidate any entries that are in the store or are layered lookups.
         for (Map.Entry<LookupKey, Lookup> entry : fCache.entrySet())
         {
             if (entry.getKey().getStoreName().equals(storeName) || 
                 entry.getValue().isLayered())
             {
-                toDelete.add(entry.getKey());
+                purged.add(entry.getKey());
             }
         }
-        purgeEntries(toDelete);
+        // Get rid of any similarly matching elements in the added list.
+        Map<LookupKey, Lookup> added = fToBeAdded.get();
+        if (added == null)
+        {
+            return;
+        }
+        for (Map.Entry<LookupKey, Lookup> entry : added.entrySet())
+        {
+            if (entry.getKey().getStoreName().equals(storeName) || 
+                entry.getValue().isLayered())
+            {
+                added.remove(entry.getKey());
+            }
+        }
     }
     
     /**
@@ -342,28 +443,48 @@ public class LookupCache
      */
     public synchronized void onSnapshot(String storeName)
     {
-        List<LookupKey> toDelete = new ArrayList<LookupKey>();
+        // Get or make up a purged set.
+        Set<LookupKey> purged = fToBePurged.get();
+        if (purged == null)
+        {
+            purged = new HashSet<LookupKey>();
+            fToBePurged.set(purged);
+        }
+        // Invalidate any entries that in the store and writes or
+        // any layered lookups.
         for (Map.Entry<LookupKey, Lookup> entry : fCache.entrySet())
         {
             if ((entry.getKey().getStoreName().equals(storeName) &&
                  entry.getKey().isWrite()) ||
-                entry.getValue().isLayered())
+                 entry.getValue().isLayered())
             {
-                toDelete.add(entry.getKey());
+                purged.add(entry.getKey());
             }
         }
-        purgeEntries(toDelete);
+        // Remove from the added list by the same criteria.
+        Map<LookupKey, Lookup> added = fToBeAdded.get();
+        if (added == null)
+        {
+            return;
+        }
+        for (Map.Entry<LookupKey, Lookup> entry : added.entrySet())
+        {
+            if ((entry.getKey().getStoreName().equals(storeName) &&
+                 entry.getKey().isWrite()) ||
+                 entry.getValue().isLayered())
+            {
+                added.remove(entry.getKey());
+            }
+        }
     }
     
     /**
-     * Called when a rollback has occurred.  This invalidates the entire
-     * cache.  Heavy handed but quick.
+     * Called when a rollback has occurred.
      */
     public synchronized void onRollback()
     {
-        fCache.clear();
-        fTimeStamps.clear();
-        fInverseTimeStamps.clear();
+        // Just toss the transaction level changes.
         fToBeAdded.set(null);
+        fToBePurged.set(null);
     }
 }

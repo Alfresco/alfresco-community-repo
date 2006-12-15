@@ -35,8 +35,8 @@ public class AVMStressTestP extends AVMServiceTestBase
     {
         try
         {
-            int nCopies = 4;
-            int nThreads = 2;
+            int nCopies = 8;
+            int nThreads = 4;
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             long start = System.currentTimeMillis();
@@ -52,9 +52,9 @@ public class AVMStressTestP extends AVMServiceTestBase
             for (int i = 0; i < nThreads; i++)
             {
                 AVMTester tester
-                    = new AVMTester(800,      // create file.
+                    = new AVMTester(400,      // create file.
                                     20,        // create dir,
-                                    0,        // rename
+                                    5,        // rename
                                     5,         // create layered dir
                                     5,         // create layered file
                                     10,        // remove node

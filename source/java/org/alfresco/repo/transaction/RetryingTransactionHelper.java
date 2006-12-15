@@ -5,7 +5,6 @@ package org.alfresco.repo.transaction;
 
 import java.util.Random;
 
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
@@ -159,30 +158,35 @@ public class RetryingTransactionHelper
                         throw new AlfrescoRuntimeException("Failure during rollback.", e1);
                     }
                 }
-                // This handles the case of an unexpected rollback in 
-                // the UserTransaction.
-                if (e instanceof RollbackException)
+                lastException = (e instanceof RuntimeException) ? 
+                        (RuntimeException)e : new AlfrescoRuntimeException("Unknown Exception in Transaction.", e);
+                Throwable t = e;
+                boolean shouldRetry = false;
+                while (t != null)
                 {
-                    RollbackException re = (RollbackException)e;
-                    e = re.getCause();
+                    // These are the 'OK' exceptions. These mean we can retry.
+                    if (t instanceof ConcurrencyFailureException ||
+                        t instanceof DeadlockLoserDataAccessException ||
+                        t instanceof StaleObjectStateException ||
+                        t instanceof LockAcquisitionException)
+                    {
+                        shouldRetry = true;
+                        // Sleep a random amount of time before retrying.
+                        // The sleep interval increases with the number of retries.
+                        try
+                        {
+                            Thread.sleep(fRandom.nextInt(500 * count + 500));
+                        }
+                        catch (InterruptedException ie)
+                        {
+                            // Do nothing.                                                                                  
+                        }
+                        break;
+                    }
+                    t = t.getCause();
                 }
-                // These are the 'OK' exceptions. These mean we can retry.
-                if (e instanceof ConcurrencyFailureException ||
-                    e instanceof DeadlockLoserDataAccessException ||
-                    e instanceof StaleObjectStateException ||
-                    e instanceof LockAcquisitionException)
+                if (shouldRetry)
                 {
-                    lastException = (RuntimeException)e;
-                    // Sleep a random amount of time before retrying.
-                    // The sleep interval increases with the number of retries.
-                    try
-                    {
-                        Thread.sleep(fRandom.nextInt(500 * count + 500));
-                    }
-                    catch (InterruptedException ie)
-                    {
-                        // Do nothing.                                                                                  
-                    }
                     continue;
                 }
                 // It was a 'bad' exception.

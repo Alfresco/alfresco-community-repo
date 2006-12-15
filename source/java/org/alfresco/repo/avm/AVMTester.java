@@ -27,13 +27,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.hibernate.HibernateException;
-import org.springframework.dao.ConcurrencyFailureException;
+import org.alfresco.service.cmr.repository.ContentIOException;
 
 /**
  * This is a Runnable which randomly performs operations on an AVM Repository.
@@ -572,11 +569,11 @@ class AVMTester implements Runnable
     private void handleException(Exception e)
     {
         e.printStackTrace(System.err);
-        if (e instanceof AVMException ||
-            e instanceof AlfrescoRuntimeException ||
-            e instanceof ConcurrencyFailureException ||
-            e instanceof HibernateException ||
-            e instanceof InvalidNodeRefException)
+        if (e instanceof AVMException)
+        {
+            return;
+        }
+        if (e instanceof ContentIOException)
         {
             return;
         }

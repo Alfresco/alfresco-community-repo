@@ -287,7 +287,12 @@ public class DefaultTypeConverter
         {
             public String convert(Locale source)
             {
-                return source.toString();
+                String localeStr = source.toString();
+                if (localeStr.length() < 6)
+                {
+                    localeStr += "_";
+                }
+                return localeStr;
             }
         });
 

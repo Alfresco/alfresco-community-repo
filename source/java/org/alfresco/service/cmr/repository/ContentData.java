@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -126,7 +127,7 @@ public class ContentData implements Serializable
     }
     
     /**
-     * Create a content data without a locale.
+     * Create a content data using the {@link I18NUtil#getLocale() default locale}.
      * 
      * @see #ContentData(String, String, long, String, Locale)
      */
@@ -146,7 +147,8 @@ public class ContentData implements Serializable
      * @param mimetype the content mimetype.  This is mandatory if the <b>contentUrl</b> is specified.
      * @param size the content size.
      * @param encoding the content encoding (may be <tt>null</tt>).
-     * @param locale the locale of the content (may be <tt>null</tt>).
+     * @param locale the locale of the content (may be <tt>null</tt>).  If <tt>null</tt>, the
+     *      {@link I18NUtil#getLocale() default locale} will be used.
      */
     public ContentData(String contentUrl, String mimetype, long size, String encoding, Locale locale)
     {
@@ -155,6 +157,10 @@ public class ContentData implements Serializable
         this.mimetype = mimetype;
         this.size = size;
         this.encoding = encoding;
+        if (locale == null)
+        {
+            locale = I18NUtil.getLocale();
+        }
         this.locale = locale;
     }
     
@@ -184,7 +190,7 @@ public class ContentData implements Serializable
           .append("|mimetype=").append(mimetype == null ? "" : mimetype)
           .append("|size=").append(size)
           .append("|encoding=").append(encoding == null ? "" : encoding)
-          .append("|locale=").append(locale == null ? "" : locale);
+          .append("|locale=").append(locale == null ? "" : DefaultTypeConverter.INSTANCE.convert(String.class, locale));
         return sb.toString();
     }
     

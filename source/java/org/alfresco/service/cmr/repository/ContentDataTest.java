@@ -16,9 +16,12 @@
  */
 package org.alfresco.service.cmr.repository;
 
-import org.alfresco.i18n.I18NUtil;
+import java.util.Locale;
 
 import junit.framework.TestCase;
+
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
  * @see org.alfresco.service.cmr.repository.ContentData
@@ -35,18 +38,20 @@ public class ContentDataTest extends TestCase
 
     public void testToAndFromString() throws Exception
     {
-        ContentData property = new ContentData(null, null, 0L, null);
+        Locale locale = I18NUtil.getLocale();
+        String localeStr = DefaultTypeConverter.INSTANCE.convert(String.class, locale);
+        ContentData property = new ContentData(null, null, 0L, null, null);
         
         // check null string
         String propertyStr = property.toString();
         assertEquals("Null values not converted correctly",
-                "contentUrl=|mimetype=|size=0|encoding=|locale=", propertyStr);
+                "contentUrl=|mimetype=|size=0|encoding=|locale=" + localeStr,
+                propertyStr);
         
         // convert back
         ContentData checkProperty = ContentData.createContentProperty(propertyStr);
         assertEquals("Conversion from string failed", property, checkProperty);
         
-        String localeStr = I18NUtil.getLocale().toString();
         property = new ContentData("uuu", "mmm", 123L, "eee", I18NUtil.getLocale());
 
         // convert to a string

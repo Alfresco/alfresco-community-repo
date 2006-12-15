@@ -90,9 +90,12 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(ISO8601DateFormat.format(date), DefaultTypeConverter.INSTANCE.convert(String.class, date));
         assertEquals("P0Y25D", DefaultTypeConverter.INSTANCE.convert(String.class, new Duration("P0Y25D")));
         assertEquals("woof", DefaultTypeConverter.INSTANCE.convert(String.class, "woof"));
+        // MLText
         MLText mlText = new MLText("woof");
         mlText.addValue(Locale.SIMPLIFIED_CHINESE, "缂");
         assertEquals("woof", DefaultTypeConverter.INSTANCE.convert(String.class, mlText));
+        // Locale
+        assertEquals("fr_FR_", DefaultTypeConverter.INSTANCE.convert(String.class, Locale.FRANCE));
     }
 
     public void testFromString()
@@ -114,6 +117,9 @@ public class DefaultTypeConverterTest extends TestCase
         
         MLText converted = DefaultTypeConverter.INSTANCE.convert(MLText.class, "woof");
         assertEquals("woof", converted.getValue(Locale.getDefault()));
+        
+        assertEquals(Locale.FRANCE, DefaultTypeConverter.INSTANCE.convert(Locale.class, "fr_FR"));
+        assertEquals(Locale.FRANCE, DefaultTypeConverter.INSTANCE.convert(Locale.class, "fr_FR_"));
     }
 
     public void testPrimativeAccessors()

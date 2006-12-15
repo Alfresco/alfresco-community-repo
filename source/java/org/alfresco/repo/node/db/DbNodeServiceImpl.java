@@ -45,7 +45,6 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -750,6 +749,49 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 		
         // done
     }
+    
+    /**
+     * Remove properties that should not be persisted as general properties.  Where necessary, the
+     * properties are set on the node.
+     * 
+     * @param node the node to set properties on
+     * @param properties properties to change
+     */
+    private void extractIntrinsicProperties(Node node, Map<QName, Serializable> properties)
+    {
+        properties.remove(ContentModel.PROP_STORE_PROTOCOL);
+        properties.remove(ContentModel.PROP_STORE_IDENTIFIER);
+        properties.remove(ContentModel.PROP_NODE_UUID);
+        properties.remove(ContentModel.PROP_NODE_DBID);
+    }
+    
+    /**
+     * Adds all properties used by the
+     * {@link ContentModel#ASPECT_REFERENCEABLE referencable aspect}.
+     * <p>
+     * This method can be used to ensure that the values used by the aspect
+     * are present as node properties.
+     * <p>
+     * This method also ensures that the {@link ContentModel#PROP_NAME name property}
+     * is always present as a property on a node.
+     * 
+     * @param node the node with the values
+     * @param nodeRef the node reference containing the values required
+     * @param properties the node properties
+     */
+    private void addIntrinsicProperties(Node node, Map<QName, Serializable> properties)
+    {
+        NodeRef nodeRef = node.getNodeRef();
+        properties.put(ContentModel.PROP_STORE_PROTOCOL, nodeRef.getStoreRef().getProtocol());
+        properties.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
+        properties.put(ContentModel.PROP_NODE_UUID, nodeRef.getId());
+        properties.put(ContentModel.PROP_NODE_DBID, node.getId());
+        // add the ID as the name, if required
+        if (properties.get(ContentModel.PROP_NAME) == null)
+        {
+            properties.put(ContentModel.PROP_NAME, nodeRef.getId());
+        }
+    }
 
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
@@ -759,8 +801,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     private Map<QName, Serializable> getPropertiesImpl(Node node) throws InvalidNodeRefException
     {
-        NodeRef nodeRef = node.getNodeRef();
-        
         Map<QName, PropertyValue> nodeProperties = node.getProperties();
         Map<QName, Serializable> ret = new HashMap<QName, Serializable>(nodeProperties.size());
         // copy values
@@ -776,7 +816,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             ret.put(propertyQName, value);
         }
         // spoof referencable properties
-        addReferencableProperties(nodeRef, node.getId(), ret);
+        addIntrinsicProperties(node, ret);
         // done
         return ret;
     }
@@ -866,7 +906,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ParameterCheck.mandatory("properties", properties);
         
         // remove referencable properties
-        removeReferencableProperties(properties);
+        extractIntrinsicProperties(node, properties);
         
         // copy properties onto node
         Map<QName, PropertyValue> nodeProperties = node.getProperties();

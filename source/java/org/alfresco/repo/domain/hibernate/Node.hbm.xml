@@ -7,6 +7,7 @@
 <hibernate-mapping>
 
    <typedef class="org.alfresco.repo.domain.hibernate.QNameUserType" name="QName" />
+   <typedef class="org.alfresco.repo.domain.hibernate.LocaleUserType" name="Locale" />
 
    <class
          name="org.alfresco.repo.domain.hibernate.NodeImpl"

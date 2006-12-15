@@ -134,6 +134,11 @@ public class RetryingTransactionAdvice implements MethodInterceptor
                         }
                         break;
                     }
+                    // Apparently java.lang.Throwable default the cause as 'this'.
+                    if (t == t.getCause())
+                    {
+                        break;
+                    }
                     t = t.getCause();
                 }
                 if (shouldRetry)

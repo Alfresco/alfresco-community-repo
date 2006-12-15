@@ -183,6 +183,10 @@ public class RetryingTransactionHelper
                         }
                         break;
                     }
+                    if (t == t.getCause())
+                    {
+                        break;
+                    }
                     t = t.getCause();
                 }
                 if (shouldRetry)

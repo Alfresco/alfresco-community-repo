@@ -34,6 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -80,6 +81,7 @@ public class SubmitDialog extends BaseDialogBean
    private List<UIListItem> workflowItems;
    
    protected AVMService avmService;
+   protected AVMSubmittedAspect avmSubmittedAspect;
    protected AVMBrowseBean avmBrowseBean;
    protected WorkflowService workflowService;
    protected AVMSyncService avmSyncService;
@@ -93,6 +95,14 @@ public class SubmitDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
+   /**
+    * @param avmSubmittedAspect  The AVM Submitted Aspect to set.
+    */
+   public void setAvmSubmittedAspect(AVMSubmittedAspect avmSubmittedAspect)
+   {
+      this.avmSubmittedAspect = avmSubmittedAspect;
+   }
+
    /**
     * @param avmSyncService   The AVMSyncService to set.
     */
@@ -189,18 +199,9 @@ public class SubmitDialog extends BaseDialogBean
          
          if (params != null)
          {
-            // create container for our avm workflow package
-            NodeRef workflowPackage = createWorkflowPackage();
-            params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
-            
-            // add submission parameters
-            params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
-            params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
-            params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox()));
-            
             // start the workflow to get access to the start task
             WorkflowDefinition wfDef = workflowService.getDefinitionByName(workflowName);
-            WorkflowPath path = this.workflowService.startWorkflow(wfDef.id, params);
+            WorkflowPath path = this.workflowService.startWorkflow(wfDef.id, null);
             if (path != null)
             {
                // extract the start task
@@ -211,6 +212,18 @@ public class SubmitDialog extends BaseDialogBean
                   
                   if (startTask.state == WorkflowTaskState.IN_PROGRESS)
                   {
+                     // create container for our avm workflow package
+                     NodeRef workflowPackage = createWorkflowPackage(path.instance.id);
+                     params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+                      
+                     // add submission parameters
+                     params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
+                     params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
+                     params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox()));
+                      
+                     // update start task with submit parameters
+                     this.workflowService.updateTask(startTask.id, params, null, null);
+                      
                      // end the start task to trigger the first 'proper' task in the workflow
                      this.workflowService.endTask(startTask.id, null);
                   }
@@ -552,9 +565,10 @@ public class SubmitDialog extends BaseDialogBean
     * Construct a workflow package as a layered directory over the staging sandbox. The items for
     * submission are pushed into the layer and the package constructed around it.
     * 
+    * @param workflowInstanceId  workflow instance id
     * @return Reference to the package
     */
-   private NodeRef createWorkflowPackage()
+   private NodeRef createWorkflowPackage(String workflowInstanceId)
    {
       List<ItemWrapper> items = getSubmitItems();
       
@@ -563,6 +577,7 @@ public class SubmitDialog extends BaseDialogBean
       String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, stagingPath);
       
       // construct diffs for selected items for submission
+      // mark selected items for submission
       String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
       List<AVMDifference> diffs = new ArrayList<AVMDifference>(this.submitItems.size());
       for (ItemWrapper wrapper : this.submitItems)
@@ -571,6 +586,7 @@ public class SubmitDialog extends BaseDialogBean
          String destPath = packagesPath + wrapper.getPath();
          AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
          diffs.add(diff);
+         avmSubmittedAspect.markSubmitted(-1, srcPath, workflowInstanceId);
       }
       
       // write changes to layer so files are marked as modified

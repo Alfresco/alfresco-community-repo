@@ -2133,6 +2133,10 @@
          <value>#{AVMSyncService}</value>
       </managed-property>
       <managed-property>
+         <property-name>avmSubmittedAspect</property-name>
+         <value>#{AVMSubmittedAspect}</value>
+      </managed-property>
+      <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
       </managed-property>
@@ -2790,6 +2794,10 @@
       <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmSubmittedAspect</property-name>
+         <value>#{AVMSubmittedAspect}</value>
       </managed-property>
       <managed-property>
          <property-name>workflowService</property-name>

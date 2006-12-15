@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -97,6 +98,9 @@ public class CreateWebContentWizard extends BaseContentWizard
    /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
 
+   /** AVM Submitted Aspect reference */
+   protected AVMSubmittedAspect avmSubmittedAspect;
+
    /** Workflow service bean reference */
    protected WorkflowService workflowService;
    
@@ -114,6 +118,14 @@ public class CreateWebContentWizard extends BaseContentWizard
    public void setAvmSyncService(final AVMSyncService avmSyncService)
    {
       this.avmSyncService = avmSyncService;
+   }
+   
+   /**
+    * @param avmSubmittedAspect  The AVM Submitted Aspect to set.
+    */
+   public void setAvmSubmittedAspect(AVMSubmittedAspect avmSubmittedAspect)
+   {
+      this.avmSubmittedAspect = avmSubmittedAspect;
    }
    
    /**
@@ -346,67 +358,10 @@ public class CreateWebContentWizard extends BaseContentWizard
          }
          
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("creating workflow package");
-         
-         // create package paths (layered to user sandbox area as target)
-         String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
-         String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, stagingPath);
-         
-         List<AVMDifference> diffs = new ArrayList<AVMDifference>(8);
-         // construct diffs for selected items for submission
-         String webapp = this.avmBrowseBean.getWebapp();
-         String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
-         if (form)
-         {
-            // collect diffs for form data instance and all renditions
-            for (Rendition rendition : this.getRenditions())
-            {
-               String renditionPath = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
-               int webappIndex = renditionPath.indexOf('/' + webapp);
-               renditionPath = renditionPath.substring(webappIndex);
-               String srcPath = sandboxPath + renditionPath;
-               String destPath = packagesPath + renditionPath;
-               AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
-               diffs.add(diff);
-            }
-            String instancePath = AVMNodeConverter.ToAVMVersionPath(this.formInstanceData.getNodeRef()).getSecond();
-            int webappIndex = instancePath.indexOf('/' + webapp);
-            instancePath = instancePath.substring(webappIndex);
-            String srcPath = sandboxPath + instancePath;
-            String destPath = packagesPath + instancePath;
-            AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
-            diffs.add(diff);
-         }
-         else
-         {
-            // diff for txt or html content
-            int webappIndex = this.createdPath.indexOf('/' + webapp);
-            String itemPath = this.createdPath.substring(webappIndex);
-            String srcPath = sandboxPath + itemPath;
-            String destPath = packagesPath + itemPath;
-            AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
-            diffs.add(diff);
-         }
-         
-         // write changes to layer so files are marked as modified
-         this.avmSyncService.update(diffs, null, true, true, false, false, null, null);
-         
-         // convert package to workflow package
-         AVMNodeDescriptor packageDesc = this.avmService.lookup(-1, packagesPath);
-         NodeRef packageNodeRef = this.workflowService.createPackage(
-               AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
-         this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
-         parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
-         // TODO: capture label and comment?
-         parameters.put(AVMWorkflowUtil.PROP_LABEL, form ? this.formInstanceData.getName() : this.fileName);
-         parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(
-               this.avmBrowseBean.getSandbox()));
-         
-         if (LOGGER.isDebugEnabled())
             LOGGER.debug("starting workflow " + wd + " with parameters " + parameters);
          
          // start the workflow to get access to the start task
-         WorkflowPath path = this.workflowService.startWorkflow(wd.id, parameters);
+         WorkflowPath path = this.workflowService.startWorkflow(wd.id, null);
          if (path != null)
          {
             // extract the start task
@@ -417,6 +372,69 @@ public class CreateWebContentWizard extends BaseContentWizard
                
                if (startTask.state == WorkflowTaskState.IN_PROGRESS)
                {
+                  if (LOGGER.isDebugEnabled())
+                       LOGGER.debug("creating workflow package");
+                    
+                  // create package paths (layered to user sandbox area as target)
+                  String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
+                  String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, stagingPath);
+                    
+                  List<AVMDifference> diffs = new ArrayList<AVMDifference>(8);
+                  // construct diffs for selected items for submission
+                  String webapp = this.avmBrowseBean.getWebapp();
+                  String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
+                  if (form)
+                  {
+                     // collect diffs for form data instance and all renditions
+                     for (Rendition rendition : this.getRenditions())
+                     {
+                        String renditionPath = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
+                        int webappIndex = renditionPath.indexOf('/' + webapp);
+                        renditionPath = renditionPath.substring(webappIndex);
+                        String srcPath = sandboxPath + renditionPath;
+                        String destPath = packagesPath + renditionPath;
+                        AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+                        diffs.add(diff);
+                        avmSubmittedAspect.markSubmitted(-1, srcPath, path.instance.id);
+                     }
+                     String instancePath = AVMNodeConverter.ToAVMVersionPath(this.formInstanceData.getNodeRef()).getSecond();
+                     int webappIndex = instancePath.indexOf('/' + webapp);
+                     instancePath = instancePath.substring(webappIndex);
+                     String srcPath = sandboxPath + instancePath;
+                     String destPath = packagesPath + instancePath;
+                     AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+                     diffs.add(diff);
+                     avmSubmittedAspect.markSubmitted(-1, srcPath, path.instance.id);
+                  }
+                  else
+                  {
+                     // diff for txt or html content
+                     int webappIndex = this.createdPath.indexOf('/' + webapp);
+                     String itemPath = this.createdPath.substring(webappIndex);
+                     String srcPath = sandboxPath + itemPath;
+                     String destPath = packagesPath + itemPath;
+                     AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
+                     diffs.add(diff);
+                     avmSubmittedAspect.markSubmitted(-1, srcPath, path.instance.id);
+                  }
+                    
+                  // write changes to layer so files are marked as modified
+                  this.avmSyncService.update(diffs, null, true, true, false, false, null, null);
+                    
+                  // convert package to workflow package
+                  AVMNodeDescriptor packageDesc = this.avmService.lookup(-1, packagesPath);
+                  NodeRef packageNodeRef = this.workflowService.createPackage(
+                     AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
+                  this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
+                  parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
+                  // TODO: capture label and comment?
+                  parameters.put(AVMWorkflowUtil.PROP_LABEL, form ? this.formInstanceData.getName() : this.fileName);
+                  parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(
+                     this.avmBrowseBean.getSandbox()));
+                    
+                  // update start task with submit parameters
+                  this.workflowService.updateTask(startTask.id, parameters, null, null);
+                   
                   // end the start task to trigger the first 'proper' task in the workflow
                   this.workflowService.endTask(startTask.id, null);
                }

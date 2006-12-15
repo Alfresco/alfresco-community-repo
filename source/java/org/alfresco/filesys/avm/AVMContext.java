@@ -181,9 +181,9 @@ public class AVMContext extends AlfrescoContext
 		
 		// Find the file state for the root folder
 		
-		FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR);
+		FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR, true, true);
 
-		if ( rootState != null && rootState.hasPseudoFiles())
+		if ( rootState != null)
 		{
 			// Add a pseudo folder for the new store
 			
@@ -228,6 +228,7 @@ public class AVMContext extends AlfrescoContext
 		// Find the file state for the root folder
 		
 		FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR);
+		
 		if ( rootState != null && rootState.hasPseudoFiles())
 		{
 			// Remove the pseudo folder for the store
@@ -289,7 +290,7 @@ public class AVMContext extends AlfrescoContext
 		
 		FileState verState = fsTable.findFileState( pathStr.toString());
 
-		if ( verState != null && verState.hasPseudoFiles())
+		if ( verState != null)
 		{
 			// Create the version folder name
 			

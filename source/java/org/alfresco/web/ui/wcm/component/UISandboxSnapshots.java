@@ -174,7 +174,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
          String dateFilter = getDateFilter();
          if (dateFilter == null || dateFilter.equals(FILTER_DATE_ALL))
          {
-            versions = avmService.getAVMStoreVersions(sandbox);
+            versions = avmService.getStoreVersions(sandbox);
          }
          else
          {
@@ -201,7 +201,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             {
                throw new IllegalArgumentException("Unknown date filter mode: " + dateFilter);
             }
-            versions = avmService.getAVMStoreVersions(sandbox, fromDate, toDate);
+            versions = avmService.getStoreVersions(sandbox, fromDate, toDate);
          }
          Map requestMap = context.getExternalContext().getRequestMap();
          for (VersionDescriptor item : versions)

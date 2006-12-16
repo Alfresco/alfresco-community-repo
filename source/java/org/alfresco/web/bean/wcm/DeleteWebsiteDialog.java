@@ -79,9 +79,9 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
    private void deleteStore(String store)
    {
       // check it exists before we try to remove it
-      if (this.avmService.getAVMStore(store) != null)
+      if (this.avmService.getStore(store) != null)
       {
-         this.avmService.purgeAVMStore(store);
+         this.avmService.purgeStore(store);
       }
    }
    

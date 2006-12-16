@@ -79,11 +79,11 @@ public class DeleteSandboxDialog extends BaseDialogBean
                
                // purge the user main sandbox store from the system
                String sandbox = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
-               this.avmService.purgeAVMStore(sandbox);
+               this.avmService.purgeStore(sandbox);
                
                // purge the user preview sandbox store from the system
                sandbox = AVMConstants.buildAVMUserPreviewStoreName(storeRoot, username);
-               this.avmService.purgeAVMStore(sandbox);
+               this.avmService.purgeStore(sandbox);
                
                // remove the association to this web project user meta-data
                this.nodeService.removeChild(website.getNodeRef(), ref.getChildRef());

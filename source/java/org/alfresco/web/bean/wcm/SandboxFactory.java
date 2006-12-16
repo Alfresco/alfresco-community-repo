@@ -75,7 +75,7 @@ public final class SandboxFactory
       
       // create the 'staging' store for the website
       String stagingStore = AVMConstants.buildAVMStagingStoreName(name);
-      avmService.createAVMStore(stagingStore);
+      avmService.createStore(stagingStore);
       if (logger.isDebugEnabled())
          logger.debug("Created staging sandbox store: " + stagingStore);
       
@@ -106,7 +106,7 @@ public final class SandboxFactory
       
       // create the 'preview' store for the website
       String previewStore = AVMConstants.buildAVMStagingPreviewStoreName(name);
-      avmService.createAVMStore(previewStore);
+      avmService.createStore(previewStore);
       if (logger.isDebugEnabled())
          logger.debug("Created staging sandbox store: " + previewStore);
       
@@ -175,9 +175,9 @@ public final class SandboxFactory
       
       // create the user 'main' store
       String userStore = AVMConstants.buildAVMUserMainStoreName(name, username);
-      if (avmService.getAVMStore(userStore) == null)
+      if (avmService.getStore(userStore) == null)
       {
-         avmService.createAVMStore(userStore);
+         avmService.createStore(userStore);
          if (logger.isDebugEnabled())
             logger.debug("Created user sandbox store: " + userStore);
          
@@ -218,7 +218,7 @@ public final class SandboxFactory
          
          // create the user 'preview' store
          String previewStore = AVMConstants.buildAVMUserPreviewStoreName(name, username);
-         avmService.createAVMStore(previewStore);
+         avmService.createStore(previewStore);
          if (logger.isDebugEnabled())
             logger.debug("Created user sandbox store: " + previewStore);
          

@@ -68,7 +68,7 @@ public class AVMWorkflowUtil extends WorkflowUtil
       AVMNodeDescriptor packagesDesc = avmService.lookup(-1, packagesRoot);
       if (packagesDesc == null)
       {
-         avmService.createAVMStore(STORE_WORKFLOW_SYSTEM);
+         avmService.createStore(STORE_WORKFLOW_SYSTEM);
          avmService.createDirectory(STORE_WORKFLOW_SYSTEM + ":/", FOLDER_PACKAGES);
       }
       return packagesRoot;

@@ -311,7 +311,7 @@ public class AVMBrowseBean implements IContextListener
       ResourceBundle msg = Application.getBundle(fc);
       String storeRoot = (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE);
       String stagingStore = getStagingStore();
-      AVMStoreDescriptor store = this.avmService.getAVMStore(stagingStore);
+      AVMStoreDescriptor store = this.avmService.getStore(stagingStore);
       if (store != null)
       {
          // count user stores

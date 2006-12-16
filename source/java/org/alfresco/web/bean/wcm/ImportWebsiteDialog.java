@@ -216,7 +216,7 @@ public class ImportWebsiteDialog
             if (storeRoot != null && webapp != null)
             {
                String store = AVMConstants.buildAVMStagingStoreName(storeRoot);
-               if (this.avmService.getAVMStore(store) != null)
+               if (this.avmService.getStore(store) != null)
                {
                   // get the path to the root webapp import area of the store
                   String rootPath = AVMConstants.buildAVMStoreWebappPath(store, webapp);

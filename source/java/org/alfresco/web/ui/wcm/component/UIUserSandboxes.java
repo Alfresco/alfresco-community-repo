@@ -296,7 +296,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
             String mainStore = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
             
             // check it exists before we render the view
-            if (avmService.getAVMStore(mainStore) != null)
+            if (avmService.getStore(mainStore) != null)
             {
                // check the permissions on this store for the current user
                if (logger.isDebugEnabled())

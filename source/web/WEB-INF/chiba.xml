@@ -1,70 +1,14 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- $Id: default.xml,v 1.2 2005/12/15 09:27:01 unl Exp $ -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: default.xml,v 1.40 2006/08/02 20:37:26 unl Exp $ -->
 <!-- Copyright 2005 Chibacon -->
 <chiba-config>
     <!-- PLEASE COMMENT YOUR ENTRIES -->
     <properties>
-        <!--
-            Language is not a config-property any more as soon as
-            Chiba starts to support user-agents. Language may vary from
-            instance to instance or even from request to request
-        -->
-        <property name="language" value="de"/>
-
-        <!--
-            This property allows to switch the stylesheet compilation on.
-            Because of the significant performance gain this option is turned on by default.
-
-            Note: If you extend stylesheets and use custom xpath extensions, compilation can become
-            a problem cause XSLTC has limitations in this area.
-        -->
-        <property name="chiba.stylesheets.compiled" value="true"/>
-
-        <!-- ********* web adapter properties ********* -->
-        <!--
-            Normally there should be no reason to change the following prefixes unless they're
-            in conflict with your application that uses Chiba.
-        -->
-        <!-- prefix used in http request param names to denote a data (value) parameter. -->
-        <property name="chiba.web.dataPrefix" value="d_"/>
-        <!-- prefix used in http request param names to denote the id of an action to be fired. -->
-        <property name="chiba.web.triggerPrefix" value="t_"/>
-        <!-- prefix used in http request param names to denote a selector parameter (used for repeats). -->
-        <property name="chiba.web.selectorPrefix" value="s_"/>
-
-        <!-- ********* ui handler properties ********* -->
-        <!--
-            This option allows to steer the processor behaviour regarding the initialization of
-            <case> elements which are not visible currently (unselected). If setting this option
-            to false, only the current <case> will be initialized.
-
-            The default is to initialize all <case> elements.
-        -->
-        <property name="chiba.ui.initializeDeselectedCases" value="true"/>
-
-        <!-- generate default alert Elements for UI controls. default is false -->
+        <!-- generate default alert elements if none present. -->
         <property name="chiba.ui.generateDefaultAlerts" value="false"/>
-
-        <!--
-            allows the define the default error-message for automatically generated alert elements.
-        -->
+        <!-- define the default text for automatically generated alert elements. -->
         <property name="chiba.ui.defaultAlertText" value="The specified value is invalid"/>
     </properties>
-
-    <error-messages>
-        <message id="session-invalid" value="Invalid session - You probably used the back button to visit an already finished form."/>
-    </error-messages>
-
-    <stylesheets>
-        <!--
-            Maps internal names to external file-names.
-            The internal name is used by the framework to identify
-            entities and resolve these to the associated filenames.
-        -->
-
-        <!-- Standard stylesheet used for simple HTML 3.2 compatible Browsers without Javascript support -->
-        <stylesheet name="html-default" value="html4.xsl"/>
-    </stylesheets>
 
     <connectors>
         <!--
@@ -75,36 +19,25 @@
         <uri-resolver scheme="class" class="org.chiba.util.ClassResourceLoader"/>
         <uri-resolver scheme="xmlrpc" class="org.chiba.connectors.xmlrpc.XMLRPCURIResolver"/>
         <uri-resolver scheme="context" class="org.chiba.xml.xforms.connector.context.ContextResolver"/>
-        <uri-resolver scheme="contextobject" class="org.chiba.xml.xforms.connector.context.ContextObjectResolver"/>
 
-        <submission-handler scheme="context" class="org.chiba.xml.xforms.connector.context.ContextSubmissionHandler"/>
         <submission-handler scheme="file" class="org.chiba.xml.xforms.connector.file.FileSubmissionHandler"/>
         <submission-handler scheme="http" class="org.chiba.xml.xforms.connector.http.HTTPSubmissionHandler"/>
         <submission-handler scheme="mailto" class="org.chiba.connectors.smtp.SMTPSubmissionHandler"/>
         <submission-handler scheme="xmlrpc" class="org.chiba.connectors.xmlrpc.XMLRPCSubmissionHandler"/>
-        <!--        <submission-handler scheme="jms" class="org.chiba.connectors.jms.JMSSubmissionHandler"/>-->
-        <!--
-            These connector types are deprecated. Their usage is strongly discouraged,
-            since they may disappear without notice. Use custom extension functions instead.
-        -->
-        <!--        <modelitem-calculator scheme="http" class="org.chiba.xml.xforms.connector.http.HTTPModelItemCalculator"/>-->
-        <!--        <modelitem-validator scheme="http" class="org.chiba.xml.xforms.connector.http.HTTPModelItemValidator"/>-->
+        <submission-handler scheme="echo" class="org.chiba.xml.xforms.connector.echo.EchoSubmissionHandler"/>
     </connectors>
     <extension-functions>
         <!--
             Specifies external functions to be used in the XForms' XPath expressions. If the 'java-name' attribute
             is ommitted, the Java function name is considered to be the same as that of the XPath function.
         -->
-        <function namespace="http://chiba.sourceforge.net/xforms" name="declare" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions"/>
-        <function namespace="http://chiba.sourceforge.net/xforms" name="undeclare" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions"/>
+        <function namespace="http://chiba.sourceforge.net/xforms" name="context" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions" />
+
         <!--<function namespace="http://exslt.org/regular-expressions" prefix="regexp" name="test" class="org.galasoft.util.xml.servlet.xforms.exslt.Regexp" java-name="test"/>-->
         <function namespace="http://exslt.org/regular-expressions" name="test" class="org.galasoft.util.xml.servlet.xforms.exslt.Regexp" java-name="test"/>
-        <function namespace="http://chiba.sourceforge.net/xforms" name="formatDateString" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions"/>
         <function namespace="http://chiba.sourceforge.net/xforms" name="fileDate" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions"/>
         <function namespace="http://chiba.sourceforge.net/xforms" name="fileSize" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions"/>
         <function namespace="http://chiba.sourceforge.net/xforms" name="match" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions"/>
-        <function namespace="http://chiba.sourceforge.net/xforms" name="validate" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions"/>
-        <function namespace="http://chiba.sourceforge.net/xforms" name="calculate" class="org.chiba.xml.xforms.xpath.ChibaExtensionFunctions"/>
     </extension-functions>
 
 	<custom-elements>

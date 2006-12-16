@@ -109,9 +109,10 @@ public class UIFormProcessor extends SelfRenderingComponent
                                                     out));
          }
       }
-      catch (FormProcessor.ProcessingException fppe)
+      catch (Throwable t)
       {
-         Utils.addErrorMessage(fppe.getMessage(), fppe);
+         Utils.addErrorMessage(t.getMessage(), t);
+         out.write(t.toString());
       }
    }
    

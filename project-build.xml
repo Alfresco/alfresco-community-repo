@@ -42,7 +42,6 @@
          <fileset dir="${dir.common.lib}/treecache" includes="*.jar" />
          <fileset dir="${dir.common.lib}/swarmcache" includes="*.jar" />
          <fileset dir="${dir.common.lib}/jbpm" includes="*.jar" />
-         <fileset dir="${dir.common.lib}/chiba" includes="*.jar" />
 	 <fileset dir="${dir.common.lib}/fop" includes="*.jar"/>
          <fileset dir="${dir.project.core}/build/dist" includes="${dir.name.core}.jar" />
          <fileset dir="${dir.project.repository}/build/dist" includes="${dir.name.repository}.jar" />

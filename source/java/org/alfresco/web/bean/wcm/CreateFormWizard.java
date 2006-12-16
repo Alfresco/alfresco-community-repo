@@ -18,13 +18,7 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
@@ -76,6 +70,7 @@ public class CreateFormWizard
     * Simple wrapper class to represent a form data renderer
     */
    public class RenderingEngineTemplateData
+      implements Serializable
    {
       private final String fileName;
       private final File file;
@@ -171,12 +166,13 @@ public class CreateFormWizard
    protected ContentService contentService;
    protected MimetypeService mimetypeService;
    protected WorkflowService workflowService;
-   private DataModel renderingEngineTemplatesDataModel;
+   private transient DataModel renderingEngineTemplatesDataModel;
    private List<RenderingEngineTemplateData> renderingEngineTemplates = null;
    private String outputPathPatternForFormInstanceData = null;
    private String outputPathPatternForRendition = null;
    private String mimetypeForRendition = null;
-   private List<SelectItem> mimetypeChoices = null;
+   private transient List<SelectItem> mimetypeChoices = null;
+   private transient List<SelectItem> schemaRootElementNameChoices = null;
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -305,6 +301,7 @@ public class CreateFormWizard
       this.removeUploadedSchemaFile();
       this.removeUploadedRenderingEngineTemplateFile();
       this.schemaRootElementName = null;
+      this.schemaRootElementNameChoices = null;
       this.formName = null;
       this.formTitle = null;
       this.formDescription = null;
@@ -472,6 +469,7 @@ public class CreateFormWizard
    public String removeUploadedSchemaFile()
    {
       clearUpload(FILE_SCHEMA);
+      this.schemaRootElementNameChoices = null;
       
       // refresh the current page
       return null;
@@ -488,7 +486,10 @@ public class CreateFormWizard
       return null;
    }
    
-   public String validateSchema()
+   /**
+    * Action handler called when the schema has been uploaded.
+    */
+   public String schemaFileValueChanged(final ValueChangeEvent vce)
    {
       if (this.getSchemaFile() != null)
       {
@@ -692,9 +693,13 @@ public class CreateFormWizard
     */
    public List<SelectItem> getSchemaRootElementNameChoices()
    {
-      final List<SelectItem> result = new LinkedList<SelectItem>();
-      if (this.getSchemaFile() != null)
+      if (this.getSchemaFile() == null)
       {
+         return Collections.EMPTY_LIST;
+      }
+      if (this.schemaRootElementNameChoices == null)
+      {
+         this.schemaRootElementNameChoices = new LinkedList<SelectItem>();
          final FormsService ts = FormsService.getInstance();
          try
          {
@@ -704,7 +709,7 @@ public class CreateFormWizard
             for (int i = 0; i < elementsMap.getLength(); i++)
             {
                final XSElementDeclaration e = (XSElementDeclaration)elementsMap.item(i);
-               result.add(new SelectItem(e.getName(), e.getName()));
+               this.schemaRootElementNameChoices.add(new SelectItem(e.getName(), e.getName()));
             }
          }
          catch (Exception e)
@@ -714,7 +719,7 @@ public class CreateFormWizard
             Utils.addErrorMessage(msg, e);
          }
       }
-      return result;
+      return this.schemaRootElementNameChoices;
    }
    
    /**
@@ -722,7 +727,7 @@ public class CreateFormWizard
     */
    public void setFormName(final String formName)
    {
-      this.formName = formName;
+      this.formName = formName != null && formName.length() != 0 ? formName : null;
    }
 
    /**
@@ -759,7 +764,7 @@ public class CreateFormWizard
     */
    public void setFormTitle(final String formTitle)
    {
-      this.formTitle = formTitle;
+      this.formTitle = formTitle != null && formTitle.length() != 0 ? formTitle : null;
    }
 
    /**

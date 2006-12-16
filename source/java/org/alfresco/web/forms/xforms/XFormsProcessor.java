@@ -19,10 +19,8 @@ package org.alfresco.web.forms.xforms;
 import java.io.*;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.ServletContext;
 
 import org.alfresco.web.forms.*;
-import org.chiba.xml.util.DOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,18 +45,10 @@ public class XFormsProcessor
                           final Writer out)
       throws FormProcessor.ProcessingException
    {
-      try
-      {
-         final Session result = 
-            XFormsBean.createSession(instanceDataDocument, form);
-         this.process(result, out);
-         return result;
-      }
-      catch (XFormsException xfe)
-      {
-         LOGGER.error(xfe);
-         throw new FormProcessor.ProcessingException(xfe);
-      }
+      final Session result = 
+         XFormsBean.createSession(instanceDataDocument, form);
+      this.process(result, out);
+      return result;
    }
 
    /**
@@ -76,6 +66,11 @@ public class XFormsProcessor
       try
       {
          xforms.setXFormsSession((XFormsBean.XFormsSession)session);
+      }
+      catch (FormBuilderException fbe)
+      {
+         LOGGER.error(fbe);
+         throw new ProcessingException(fbe);
       }
       catch (XFormsException xfe)
       {

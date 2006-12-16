@@ -80,7 +80,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    
    protected String content = null;
    protected String formName;
-   protected List<SelectItem> createMimeTypes;
+   protected transient List<SelectItem> createMimeTypes;
    protected String createdPath = null;
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;

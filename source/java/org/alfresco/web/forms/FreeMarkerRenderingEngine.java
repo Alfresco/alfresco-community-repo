@@ -32,7 +32,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.chiba.xml.util.DOMUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

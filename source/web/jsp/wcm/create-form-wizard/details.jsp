@@ -34,7 +34,10 @@
    
    function pageLoaded()
    {
-      document.getElementById("wizard:wizard-body:file-input").focus();
+      if (document.getElementById("wizard:wizard-body:file-input"))
+        document.getElementById("wizard:wizard-body:file-input").focus()
+      else
+        document.getElementById("wizard:wizard-body:form-name").focus();
       document.getElementById("wizard").onsubmit = validate;
       document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
       document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
@@ -42,7 +45,14 @@
    
    function validate()
    {
-     return true;
+     if (!finishButtonPressed)
+       return true;
+     finishButtonPressed = false;
+     var formName = document.getElementById("wizard:wizard-body:form-name");
+     return validateMandatory(formName) &&
+            validateName(formName, 
+                         '</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>',
+                         true)
    }
    
    function handle_upload(target)
@@ -55,9 +65,10 @@
 
    function upload_complete(id, path)
    {
-     var validate_button = 
-       document.getElementById("wizard:wizard-body:command_button_validate_schema");
-     validate_button.click();
+     var schema_file_input = 
+       document.getElementById("wizard:wizard-body:schema-file");
+     schema_file_input.value = path;
+     schema_file_input.form.submit();
    }
 </script>
 </f:verbatim>
@@ -81,7 +92,7 @@
     <h:graphicImage id="graphic_image_schema"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="output_text_schema"
-                 value="#{msg.schema}:"/>
+                  value="#{msg.schema}:"/>
     <h:column id="column_schema">
 <%
 FileUploadBean upload = (FileUploadBean)
@@ -96,12 +107,11 @@ if (upload == null || upload.getFile() == null)
 	       name="alfFileInput" 
 	       onchange="javascript:handle_upload(this)"/>
       </f:verbatim>
-      <h:commandButton id="command_button_validate_schema" 
-		       value="" 
-		       immediate="true"
-		       style="display: none"
-		       action="#{WizardManager.bean.validateSchema}"/>
-
+      <h:inputText id="schema-file" 
+		   value="#{WizardManager.bean.schemaFileName}" 
+		   rendered="#{empty WizardManager.bean.schemaFileName}"
+		   style="display: none"
+		   valueChangeListener="#{WizardManager.bean.schemaFileValueChanged}"/>
 <%
 } else {
 %>
@@ -146,21 +156,21 @@ if (upload == null || upload.getFile() == null)
 		    value="/images/icons/required_field.gif" 
 		    alt="Required Field" />
     <h:outputText id="output_text_name" value="#{msg.name}:"/>
-    <h:inputText id="file-name" 
-		 value="#{WizardManager.bean.formName}" 
+    <h:inputText id="form-name" 
+		 value="#{WizardManager.bean.formName}"
                  maxlength="1024" 
 		 size="35"/>
     
     <h:outputText id="no_graphic_image_title" value=""/>
     <h:outputText id="output_text_title" value="#{msg.title}:"/>
-    <h:inputText id="title" 
+    <h:inputText id="form-title" 
 		 value="#{WizardManager.bean.formTitle}" 
                  maxlength="1024" 
 		 size="35"/>
     
     <h:outputText id="no_graphic_image_description" value=""/>
     <h:outputText id="output_text_description" value="#{msg.description}:"/>
-    <h:inputText id="description" 
+    <h:inputText id="form-description" 
 		 value="#{WizardManager.bean.formDescription}" 
                  maxlength="1024" 
 		 style="width:100%"/>

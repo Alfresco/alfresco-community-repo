@@ -18,10 +18,14 @@ package org.alfresco.web.forms.xforms;
 
 import java.io.*;
 import java.util.*;
+
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
+
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
@@ -40,23 +44,29 @@ import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.Utils;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.chiba.xml.events.ChibaEventNames;
+import org.chiba.xml.events.DOMEventNames;
+import org.chiba.xml.events.XFormsEventNames;
+import org.chiba.xml.events.XMLEvent;
 import org.chiba.xml.xforms.ChibaBean;
-import org.chiba.xml.xforms.Instance;
 import org.chiba.xml.xforms.XFormsElement;
 import org.chiba.xml.xforms.connector.http.AbstractHTTPConnector;
+import org.chiba.xml.xforms.core.Instance;
 import org.chiba.xml.xforms.core.ModelItem;
-import org.chiba.xml.xforms.events.XFormsEvent;
-import org.chiba.xml.xforms.events.XFormsEventFactory;
 import org.chiba.xml.xforms.exception.XFormsException;
 import org.chiba.xml.xforms.ui.BoundElement;
 import org.chiba.xml.xforms.ui.Upload;
+import org.chiba.xml.ns.NamespaceConstants;
 import org.springframework.util.FileCopyUtils;
+
 import org.w3c.dom.*;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.events.Event;
@@ -85,7 +95,7 @@ public class XFormsBean
       private ChibaBean chibaBean;
       private final SchemaFormBuilder schemaFormBuilder;
       private final HashMap<String, NodeRef> uploads = new HashMap<String, NodeRef>();
-      private final List<XFormsEvent> eventLog = new LinkedList<XFormsEvent>();
+      private final List<XMLEvent> eventLog = new LinkedList<XMLEvent>();
 
       public XFormsSession(final Document formInstanceData,
                            final Form form,
@@ -95,7 +105,7 @@ public class XFormsBean
          this.form = form;
          this.schemaFormBuilder = 
             new SchemaFormBuilder("/ajax/invoke/XFormsBean.handleAction",
-                                  SchemaFormBuilder.SUBMIT_METHOD_POST,
+                                  SchemaFormBuilder.SubmitMethod.POST,
                                   new XHTMLWrapperElementsBuilder(),
                                   baseUrl);
       }
@@ -177,7 +187,8 @@ public class XFormsBean
 
    /** @param xformsSession the current session */
    public void setXFormsSession(final XFormsSession xformsSession)
-      throws XFormsException
+      throws FormBuilderException,
+      XFormsException
    {
       this.xformsSession = xformsSession;
 
@@ -185,87 +196,47 @@ public class XFormsBean
       final ExternalContext externalContext = facesContext.getExternalContext();
       final HttpServletRequest request = (HttpServletRequest)
          externalContext.getRequest();
-
+      final ServletContext servletContext = (ServletContext)
+         externalContext.getContext();
+      
       final ChibaBean chibaBean = new ChibaBean();
+      chibaBean.setConfig(servletContext.getRealPath("/WEB-INF/chiba.xml"));
       XFormsBean.storeCookies(request.getCookies(), chibaBean);
+      chibaBean.setXMLContainer(this.getXFormsDocument());
 
-      final String cwdAVMPath = this.avmBrowseBean.getCurrentPath();
-
-      if (LOGGER.isDebugEnabled())
+      final EventTarget et = (EventTarget)
+         chibaBean.getXMLContainer().getDocumentElement();
+      final EventListener el = new EventListener()
       {
-         LOGGER.debug("building xform for schema " + this.xformsSession.form.getName() +
-                      " root element " + this.xformsSession.form.getSchemaRootElementName() +
-                      " avm cwd " + cwdAVMPath);
-      }
-
-      final Locale locale = Application.getLanguage(facesContext);
-      final ResourceBundle resourceBundle = 
-         this.schema2XFormsProperties.getResourceBundle(this.xformsSession.form, 
-                                                        locale);
-
-      try
-      {
-         final Document schemaDocument = this.xformsSession.form.getSchema();
-         XFormsBean.rewriteInlineURIs(schemaDocument, cwdAVMPath);
-         final Document xformsDocument = 
-            this.xformsSession.schemaFormBuilder.buildXForm(this.xformsSession.formInstanceData, 
-                                                            schemaDocument,
-                                                            this.xformsSession.form.getSchemaRootElementName(),
-                                                            resourceBundle);
-
-         if (LOGGER.isDebugEnabled())
+         public void handleEvent(final Event e)
          {
-            LOGGER.debug("generated xform: " + 
-                         FormsService.getInstance().writeXMLToString(xformsDocument));
+            XFormsBean.LOGGER.debug("received event " + e);
+            XFormsBean.this.xformsSession.eventLog.add((XMLEvent)e);
          }
+      };
+      // interaction events my occur during init so we have to register before
+      et.addEventListener(ChibaEventNames.LOAD_URI, el, true);
+      et.addEventListener(ChibaEventNames.RENDER_MESSAGE, el, true);
+      et.addEventListener(ChibaEventNames.REPLACE_ALL, el, true);
 
-         chibaBean.setXMLContainer(xformsDocument);
+      chibaBean.init();
 
-         final EventTarget et = (EventTarget)
-            chibaBean.getXMLContainer().getDocumentElement();
-         final EventListener el = new EventListener()
-         {
-            public void handleEvent(final Event e)
-            {
-               XFormsBean.LOGGER.debug("received event " + e);
-               XFormsBean.this.xformsSession.eventLog.add((XFormsEvent)e);
-            }
-         };
-         // interaction events my occur during init so we have to register before
-         et.addEventListener(XFormsEventFactory.CHIBA_LOAD_URI, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_RENDER_MESSAGE, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_REPLACE_ALL, el, true);
-
-         chibaBean.init();
-
-         // register for notification events
-         et.addEventListener(XFormsEventFactory.SUBMIT_DONE, el, true);
-         et.addEventListener(XFormsEventFactory.SUBMIT_ERROR, el, true);
-         et.addEventListener(XFormsEventFactory.REQUIRED, el, true);
-         et.addEventListener(XFormsEventFactory.OPTIONAL, el, true);
-         et.addEventListener(XFormsEventFactory.VALID, el, true);
-         et.addEventListener(XFormsEventFactory.INVALID, el, true);
-         et.addEventListener(XFormsEventFactory.OUT_OF_RANGE, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_STATE_CHANGED, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_PROTOTYPE_CLONED, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_ID_GENERATED, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_ITEM_INSERTED, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_ITEM_DELETED, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_INDEX_CHANGED, el, true);
-         et.addEventListener(XFormsEventFactory.CHIBA_SWITCH_TOGGLED, el, true);
-      }
-      catch (FormBuilderException fbe)
-      {
-         LOGGER.error(fbe);
-      }
-      catch (IOException ioe)
-      {
-         LOGGER.error(ioe);
-      }
-      catch (SAXException saxe)
-      {
-         LOGGER.error(saxe);
-      }
+      // register for notification events
+      et.addEventListener(XFormsEventNames.SUBMIT, el, true);
+      et.addEventListener(XFormsEventNames.SUBMIT_DONE, el, true);
+      et.addEventListener(XFormsEventNames.SUBMIT_ERROR, el, true);
+      et.addEventListener(XFormsEventNames.REQUIRED, el, true);
+      et.addEventListener(XFormsEventNames.OPTIONAL, el, true);
+      et.addEventListener(XFormsEventNames.VALID, el, true);
+      et.addEventListener(XFormsEventNames.INVALID, el, true);
+      et.addEventListener(XFormsEventNames.OUT_OF_RANGE, el, true);
+      et.addEventListener(ChibaEventNames.STATE_CHANGED, el, true);
+      et.addEventListener(ChibaEventNames.PROTOTYPE_CLONED, el, true);
+      et.addEventListener(ChibaEventNames.ID_GENERATED, el, true);
+      et.addEventListener(ChibaEventNames.ITEM_INSERTED, el, true);
+      et.addEventListener(ChibaEventNames.ITEM_DELETED, el, true);
+      et.addEventListener(ChibaEventNames.INDEX_CHANGED, el, true);
+      et.addEventListener(ChibaEventNames.SWITCH_TOGGLED, el, true);
       this.xformsSession.chibaBean = chibaBean;
    }
 
@@ -275,7 +246,6 @@ public class XFormsBean
     */
    public static XFormsSession createSession(final Document formInstanceData,
                                              final Form form)
-      throws XFormsException
    {
       if (LOGGER.isDebugEnabled())
       {
@@ -328,7 +298,7 @@ public class XFormsBean
 
       LOGGER.debug(this + ".setXFormsValue(" + id + ", " + value + ")");
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      if (chibaBean.lookup(id) instanceof Upload)
+      if (chibaBean.getContainer().lookup(id) instanceof Upload)
       {
          chibaBean.updateControlValue(id, null, value, value.getBytes());
       }
@@ -380,7 +350,7 @@ public class XFormsBean
 
       LOGGER.debug(this + ".fireAction(" + id + ")");
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      chibaBean.dispatch(id, XFormsEventFactory.DOM_ACTIVATE);
+      chibaBean.dispatch(id, DOMEventNames.ACTIVATE);
 
       final ResponseWriter out = context.getResponseWriter();
       FormsService.getInstance().writeXML(this.getEventLog(), out);
@@ -435,8 +405,8 @@ public class XFormsBean
       final String toItemId = (String)requestParameters.get("toItemId");
       LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      this.swapRepeatItems(chibaBean.lookup(fromItemId), 
-                           chibaBean.lookup(toItemId));
+      this.swapRepeatItems(chibaBean.getContainer().lookup(fromItemId), 
+                           chibaBean.getContainer().lookup(toItemId));
 
       final ResponseWriter out = context.getResponseWriter();
       FormsService.getInstance().writeXML(this.getEventLog(), out);
@@ -648,7 +618,7 @@ public class XFormsBean
                                          final String cwdAvmPath)
    {
       final NodeList includes = 
-         schemaDocument.getElementsByTagNameNS(SchemaFormBuilder.XMLSCHEMA_NS, "include");
+         schemaDocument.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "include");
       LOGGER.debug("rewriting " + includes.getLength() + " includes");
       for (int i = 0; i < includes.getLength(); i++)
       {
@@ -672,7 +642,7 @@ public class XFormsBean
       final Document result = formsService.newDocument();
       final Element eventsElement = result.createElement("events");
       result.appendChild(eventsElement);
-      for (XFormsEvent xfe : this.xformsSession.eventLog)
+      for (XMLEvent xfe : this.xformsSession.eventLog)
       {
          final String type = xfe.getType();
          if (LOGGER.isDebugEnabled())
@@ -738,6 +708,50 @@ public class XFormsBean
          }
          chibaBean.getContext().put(AbstractHTTPConnector.REQUEST_COOKIE,
                                     commonsCookies);
+      }
+   }
+   
+   private Document getXFormsDocument()
+      throws FormBuilderException
+   {
+      final String cwdAVMPath = this.avmBrowseBean.getCurrentPath();
+
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("building xform for schema " + this.xformsSession.form.getName() +
+                      " root element " + this.xformsSession.form.getSchemaRootElementName() +
+                      " avm cwd " + cwdAVMPath);
+      }
+
+      final Locale locale = 
+         Application.getLanguage(FacesContext.getCurrentInstance());
+      final ResourceBundle resourceBundle = 
+         this.schema2XFormsProperties.getResourceBundle(this.xformsSession.form, 
+                                                        locale);
+      try
+      {
+         final Document schemaDocument = this.xformsSession.form.getSchema();
+         XFormsBean.rewriteInlineURIs(schemaDocument, cwdAVMPath);
+         final String rootElementName = this.xformsSession.form.getSchemaRootElementName();
+         final Document result = 
+            this.xformsSession.schemaFormBuilder.buildXForm(this.xformsSession.formInstanceData, 
+                                                            schemaDocument,
+                                                            rootElementName,
+                                                            resourceBundle);
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("generated xform: " + 
+                         FormsService.getInstance().writeXMLToString(result));
+         }
+         return result;
+      }
+      catch (IOException ioe)
+      {
+         throw new FormBuilderException(ioe);
+      }
+      catch (SAXException saxe)
+      {
+         throw new FormBuilderException(saxe);
       }
    }
 }

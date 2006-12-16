@@ -64,7 +64,7 @@ public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase
             AVMNodeDescriptor parent = fAVMService.lookup(-1, parentChild[0], true);
             if (parent.isLayeredDirectory())
             {
-                fAVMService.flatten(parentChild[0], parentChild[1]);
+                fAVMService.makeTransparent(parentChild[0], parentChild[1]);
             }
         }
     }

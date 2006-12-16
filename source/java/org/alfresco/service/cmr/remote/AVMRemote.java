@@ -136,7 +136,7 @@ public interface AVMRemote
      * Create a new AVMStore.
      * @param name The name to give the new store.
      */
-    public void createAVMStore(String name);
+    public void createStore(String name);
     
     /**
      * Create a new branch.
@@ -171,11 +171,11 @@ public interface AVMRemote
     public void uncover(String dirPath, String name);
 
     /**
-     * Get the latest version id of the given AVMStore.
+     * Get the next version id of the given AVMStore.
      * @param storeName The name of the AVMStore.
      * @return The latest version id.
      */
-    public int getLatestVersionID(String storeName);
+    public int getNextVersionID(String storeName);
 
     /**
      * Get the id of the latest extant snpashot.
@@ -196,7 +196,7 @@ public interface AVMRemote
      * @param name The name of the store.
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name);
+    public List<VersionDescriptor> getStoreVersions(String name);
     
     /**
      * Get AVMStore versions between given dates.
@@ -205,20 +205,20 @@ public interface AVMRemote
      * @param to The date to which (inclusive).
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to);
+    public List<VersionDescriptor> getStoreVersions(String name, Date from, Date to);
     
     /**
      * Get a list of all AVM stores.
      * @return A List of AVMStoreDescriptors.
      */
-    public List<AVMStoreDescriptor> getAVMStores();
+    public List<AVMStoreDescriptor> getStores();
     
     /**
      * Get the descriptor for a given AVMStore.
      * @param name The name of the store.
      * @return An AVMStoreDescriptor.
      */
-    public AVMStoreDescriptor getAVMStore(String name);
+    public AVMStoreDescriptor getStore(String name);
     
     /**
      * Get the specified root of the specified store.
@@ -226,7 +226,7 @@ public interface AVMRemote
      * @param name The name of the store.
      * @return The AVMNodeDescriptor for the root.
      */
-    public AVMNodeDescriptor getAVMStoreRoot(int version, String name);
+    public AVMNodeDescriptor getStoreRoot(int version, String name);
     
     /**
      * Get a descriptor for the specified node.
@@ -256,7 +256,7 @@ public interface AVMRemote
      * Purge an AVMStore.
      * @param name The name of the store to purge.
      */
-    public void purgeAVMStore(String name);
+    public void purgeStore(String name);
     
     /**
      * Purge a given version from a given store.

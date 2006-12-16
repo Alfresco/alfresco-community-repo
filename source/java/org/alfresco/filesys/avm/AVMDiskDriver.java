@@ -281,7 +281,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	            
 	            // Get a list of the available AVM stores
 	            
-	            List<AVMStoreDescriptor> storeList = m_avmService.getAVMStores();
+	            List<AVMStoreDescriptor> storeList = m_avmService.getStores();
 	            
 	            if ( storeList != null && storeList.size() > 0)
 	            {
@@ -384,7 +384,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	            	
 	            	try
 	            	{
-	            		storeDesc = m_avmService.getAVMStore( storeName);
+	            		storeDesc = m_avmService.getStore( storeName);
 	            	}
 	            	catch (AVMNotFoundException ex)
 	            	{
@@ -393,7 +393,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	            	// Create a new store if it does not exist
 	            	
 	            	if ( storeDesc == null)
-	            		m_avmService.createAVMStore( storeName);
+	            		m_avmService.createStore( storeName);
 	            	
 	            	// Check if there is an optional path
 	            	
@@ -527,7 +527,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 
             // Get the list of AVM stores
             
-            List<AVMStoreDescriptor> storeList = m_avmService.getAVMStores();
+            List<AVMStoreDescriptor> storeList = m_avmService.getStores();
             
             if ( storeList != null)
             {
@@ -1945,7 +1945,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 						
 						// Get the list of versions for the store
 						
-						List<VersionDescriptor> verList = m_avmService.getAVMStoreVersions( avmPath.getStoreName());
+						List<VersionDescriptor> verList = m_avmService.getStoreVersions( avmPath.getStoreName());
 						
 						// Add pseudo files for the versions to the store state
 	

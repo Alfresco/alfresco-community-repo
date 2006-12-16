@@ -48,9 +48,9 @@ public class AVMRemoteImpl implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#createAVMStore(java.lang.String)
      */
-    public void createAVMStore(String name) 
+    public void createStore(String name) 
     {
-        fTransport.createAVMStore(ClientTicketHolder.GetTicket(), name);   
+        fTransport.createStore(ClientTicketHolder.GetTicket(), name);   
     }
 
     /* (non-Javadoc)
@@ -131,42 +131,42 @@ public class AVMRemoteImpl implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStore(java.lang.String)
      */
-    public AVMStoreDescriptor getAVMStore(String name) 
+    public AVMStoreDescriptor getStore(String name) 
     {
-        return fTransport.getAVMStore(ClientTicketHolder.GetTicket(), name);
+        return fTransport.getStore(ClientTicketHolder.GetTicket(), name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStoreRoot(int, java.lang.String)
      */
-    public AVMNodeDescriptor getAVMStoreRoot(int version, String name) 
+    public AVMNodeDescriptor getStoreRoot(int version, String name) 
     {
-        return fTransport.getAVMStoreRoot(ClientTicketHolder.GetTicket(), version, name);
+        return fTransport.getStoreRoot(ClientTicketHolder.GetTicket(), version, name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStoreVersions(java.lang.String)
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name) 
+    public List<VersionDescriptor> getStoreVersions(String name) 
     {
-        return fTransport.getAVMStoreVersions(ClientTicketHolder.GetTicket(), name);
+        return fTransport.getStoreVersions(ClientTicketHolder.GetTicket(), name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStoreVersions(java.lang.String, java.util.Date, java.util.Date)
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from,
+    public List<VersionDescriptor> getStoreVersions(String name, Date from,
             Date to) 
     {
-        return fTransport.getAVMStoreVersions(ClientTicketHolder.GetTicket(), name);
+        return fTransport.getStoreVersions(ClientTicketHolder.GetTicket(), name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStores()
      */
-    public List<AVMStoreDescriptor> getAVMStores() 
+    public List<AVMStoreDescriptor> getStores() 
     {
-        return fTransport.getAVMStores(ClientTicketHolder.GetTicket());
+        return fTransport.getStores(ClientTicketHolder.GetTicket());
     }
 
     /* (non-Javadoc)
@@ -267,9 +267,9 @@ public class AVMRemoteImpl implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getLatestVersionID(java.lang.String)
      */
-    public int getLatestVersionID(String storeName) 
+    public int getNextVersionID(String storeName) 
     {
-        return fTransport.getLatestVersionID(ClientTicketHolder.GetTicket(), storeName);
+        return fTransport.getNextVersionID(ClientTicketHolder.GetTicket(), storeName);
     }
 
     /* (non-Javadoc)
@@ -339,9 +339,9 @@ public class AVMRemoteImpl implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#purgeAVMStore(java.lang.String)
      */
-    public void purgeAVMStore(String name) 
+    public void purgeStore(String name) 
     {
-        fTransport.purgeAVMStore(ClientTicketHolder.GetTicket(), name);
+        fTransport.purgeStore(ClientTicketHolder.GetTicket(), name);
     }
 
     /* (non-Javadoc)

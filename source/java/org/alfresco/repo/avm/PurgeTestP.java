@@ -118,7 +118,7 @@ public class PurgeTestP extends AVMServiceTestBase
             fService.removeNode("main:/layer/java/org/alfresco", "repo");
             fService.createFile("main:/layer/java/org/alfresco", "goofy").close();
             fService.createSnapshot("main", null, null);
-            fService.purgeAVMStore("main");
+            fService.purgeStore("main");
             fReaper.activate();
             while (fReaper.isActive())
             {

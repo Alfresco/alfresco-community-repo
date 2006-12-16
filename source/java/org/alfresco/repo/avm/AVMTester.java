@@ -425,7 +425,7 @@ class AVMTester implements Runnable
         fAllPaths.add("main:/");
         fAllDirectories.add("main:/");
         Set<Long> visited = new HashSet<Long>();
-        AVMNodeDescriptor root = fService.getAVMStoreRoot(-1, "main");
+        AVMNodeDescriptor root = fService.getStoreRoot(-1, "main");
         recursiveRefresh(root, visited);
     }
 

@@ -193,7 +193,7 @@ public class AVMInterpreter
             }
             else if (command[0].equals("lsrep"))
             {
-                List<AVMStoreDescriptor> repos = fService.getAVMStores();
+                List<AVMStoreDescriptor> repos = fService.getStores();
                 for (AVMStoreDescriptor repo : repos)
                 {
                     out.println(repo);
@@ -205,7 +205,7 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                List<VersionDescriptor> listing = fService.getAVMStoreVersions(command[1]);
+                List<VersionDescriptor> listing = fService.getStoreVersions(command[1]);
                 for (VersionDescriptor desc : listing)
                 {
                     out.println(desc);
@@ -217,7 +217,7 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                fService.createAVMStore(command[1]);
+                fService.createStore(command[1]);
             }
             else if (command[0].equals("load"))
             {
@@ -339,7 +339,7 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                fService.purgeAVMStore(command[1]);
+                fService.purgeStore(command[1]);
             }
             else if (command[0].equals("rmver"))
             {
@@ -449,7 +449,7 @@ public class AVMInterpreter
                 {
                     return "Syntax Error.";
                 }
-                AVMStoreDescriptor desc = fService.getAVMStore(command[1]);
+                AVMStoreDescriptor desc = fService.getStore(command[1]);
                 if (desc == null)
                 {
                     return "Not Found.";

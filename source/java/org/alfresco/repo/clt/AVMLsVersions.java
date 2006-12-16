@@ -24,7 +24,7 @@ public class AVMLsVersions extends CltBase
     @Override
     protected void run(Map<String, List<String>> flags, List<String> args) 
     {
-        List<VersionDescriptor> versions = fAVMRemote.getAVMStoreVersions(args.get(0));
+        List<VersionDescriptor> versions = fAVMRemote.getStoreVersions(args.get(0));
         for (VersionDescriptor version : versions)
         {
             System.out.println(version);

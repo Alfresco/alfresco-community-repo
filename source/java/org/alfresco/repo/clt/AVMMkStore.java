@@ -22,7 +22,7 @@ public class AVMMkStore extends CltBase
     @Override
     protected void run(Map<String, List<String>> flags, List<String> args) 
     {
-        fAVMRemote.createAVMStore(args.get(0));
+        fAVMRemote.createStore(args.get(0));
     }
 
     /**

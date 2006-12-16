@@ -86,7 +86,7 @@ public interface AVMService
      * @throws AVMNotFoundException
      * @throws AVMWrongTypeException
      */
-    public ContentWriter createContentWriter(String path);   
+    public ContentWriter getContentWriter(String path);   
     
     /**
      * Get a listing of a Folder by name.
@@ -277,7 +277,7 @@ public interface AVMService
      * @param name The name to give the AVMStore.
      * @throws AVMExistsException
      */
-    public void createAVMStore(String name);
+    public void createStore(String name);
     
     /**
      * Create a branch from a given version and path.  As a side effect 
@@ -350,7 +350,7 @@ public interface AVMService
      * @throws AVMNotFoundException
      * @throws AVMWrongTypeException
      */
-    public void flatten(String dirPath, String name);
+    public void makeTransparent(String dirPath, String name);
     
     /**
      * Gets the id that the next snapshotted version of a store 
@@ -370,17 +370,6 @@ public interface AVMService
     public int getLatestSnapshotID(String storeName);
     
     /**
-     * Snapshot the given AVMStores.  When this is called everything that has been added,
-     * deleted, or modified since the last time this function was called, is marked 
-     * as needing to be copied, so that further modifications will trigger copy on write
-     * semantics.
-     * @param stores The names of the AVMStores to snapshot.
-     * @return A List of the version ids of the newly created snapshots.
-     * @throws AVMNotFoundException If any of the stores do not exist.
-     */
-    // public List<Integer> createSnapshot(List<String> stores);
-    
-    /**
      * Snapshot the given AVMStore.
      * @param store The name of the AVMStore to snapshot.
      * @param tag The short description.
@@ -397,7 +386,7 @@ public interface AVMService
      * @return A Set of version descriptors.
      * @throws AVMNotFoundException
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name);
+    public List<VersionDescriptor> getStoreVersions(String name);
     
     /**
      * Get AVMStore version descriptors by creation date. Either from or
@@ -410,13 +399,13 @@ public interface AVMService
      * @return The Set of version descriptors that match.
      * @throws AVMNotFoundException
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to);
+    public List<VersionDescriptor> getStoreVersions(String name, Date from, Date to);
     
     /**
      * Get the descriptors of all AVMStores. 
      * @return A List of all AVMStores.
      */
-    public List<AVMStoreDescriptor> getAVMStores();
+    public List<AVMStoreDescriptor> getStores();
 
     /**
      * Get (and create if necessary) the system store. This store houses things
@@ -424,14 +413,14 @@ public interface AVMService
      * It isn't used internally at this time but may be in the future.
      * @return The descriptor.
      */
-    public AVMStoreDescriptor getAVMSystemStore();
+    public AVMStoreDescriptor getSystemStore();
     
     /**
      * Get a descriptor for an AVMStore.
      * @param name The AVMStore's name.
      * @return A Descriptor, or null if not foun.
      */
-    public AVMStoreDescriptor getAVMStore(String name);
+    public AVMStoreDescriptor getStore(String name);
     
     /**
      * Get the specified root of an AVMStore.
@@ -440,7 +429,7 @@ public interface AVMService
      * @return A descriptor for the specified root.
      * @throws AVMNotFoundException
      */
-    public AVMNodeDescriptor getAVMStoreRoot(int version, String name);
+    public AVMNodeDescriptor getStoreRoot(int version, String name);
         
     /**
      * Lookup a node by version ids and path.
@@ -524,7 +513,7 @@ public interface AVMService
      * @param name The name of the AVMStore.
      * @throws AVMNotFoundException 
      */
-    public void purgeAVMStore(String name);
+    public void purgeStore(String name);
     
     /**
      * Purge a version from an AVMStore.  Deletes everything that lives in

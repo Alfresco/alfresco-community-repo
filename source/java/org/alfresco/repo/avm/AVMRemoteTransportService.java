@@ -549,10 +549,10 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * Create a new AVMStore.
      * @param name The name to give the new store.
      */
-    public void createAVMStore(String ticket, String name)
+    public void createStore(String ticket, String name)
     {
         fAuthService.validate(ticket);
-        fAVMService.createAVMStore(name);
+        fAVMService.createStore(name);
     }
     
     /**
@@ -608,7 +608,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * @param storeName The name of the AVMStore.
      * @return The latest version id.
      */
-    public int getLatestVersionID(String ticket, String storeName)
+    public int getNextVersionID(String ticket, String storeName)
     {
         fAuthService.validate(ticket);
         return fAVMService.getNextVersionID(storeName);
@@ -640,10 +640,10 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * @param name The name of the store.
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String ticket, String name)
+    public List<VersionDescriptor> getStoreVersions(String ticket, String name)
     {
         fAuthService.validate(ticket);
-        return fAVMService.getAVMStoreVersions(name);
+        return fAVMService.getStoreVersions(name);
     }
     
     /**
@@ -653,20 +653,20 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * @param to The date to which (inclusive).
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String ticket, String name, Date from, Date to)
+    public List<VersionDescriptor> getStoreVersions(String ticket, String name, Date from, Date to)
     {
         fAuthService.validate(ticket);
-        return fAVMService.getAVMStoreVersions(name, from, to);
+        return fAVMService.getStoreVersions(name, from, to);
     }
     
     /**
      * Get a list of all AVM stores.
      * @return A List of AVMStoreDescriptors.
      */
-    public List<AVMStoreDescriptor> getAVMStores(String ticket)
+    public List<AVMStoreDescriptor> getStores(String ticket)
     {
         fAuthService.validate(ticket);
-        return fAVMService.getAVMStores();
+        return fAVMService.getStores();
     }
     
     /**
@@ -674,10 +674,10 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * @param name The name of the store.
      * @return An AVMStoreDescriptor.
      */
-    public AVMStoreDescriptor getAVMStore(String ticket, String name)
+    public AVMStoreDescriptor getStore(String ticket, String name)
     {
         fAuthService.validate(ticket);
-        return fAVMService.getAVMStore(name);
+        return fAVMService.getStore(name);
     }
     
     /**
@@ -686,10 +686,10 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * @param name The name of the store.
      * @return The AVMNodeDescriptor for the root.
      */
-    public AVMNodeDescriptor getAVMStoreRoot(String ticket, int version, String name)
+    public AVMNodeDescriptor getStoreRoot(String ticket, int version, String name)
     {
         fAuthService.validate(ticket);
-        return fAVMService.getAVMStoreRoot(version, name);
+        return fAVMService.getStoreRoot(version, name);
     }
     
     /**
@@ -732,10 +732,10 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      * Purge an AVMStore.
      * @param name The name of the store to purge.
      */
-    public void purgeAVMStore(String ticket, String name)
+    public void purgeStore(String ticket, String name)
     {
         fAuthService.validate(ticket);
-        fAVMService.purgeAVMStore(name);
+        fAVMService.purgeStore(name);
     }
     
     /**

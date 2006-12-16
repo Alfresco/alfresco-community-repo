@@ -154,7 +154,7 @@ public interface AVMRemoteTransport
      * Create a new AVMStore.
      * @param name The name to give the new store.
      */
-    public void createAVMStore(String ticket, String name);
+    public void createStore(String ticket, String name);
     
     /**
      * Create a new branch.
@@ -193,7 +193,7 @@ public interface AVMRemoteTransport
      * @param storeName The name of the AVMStore.
      * @return The latest version id.
      */
-    public int getLatestVersionID(String ticket, String storeName);
+    public int getNextVersionID(String ticket, String storeName);
 
     /**
      * Get the id of the latest extant snpashot.
@@ -214,7 +214,7 @@ public interface AVMRemoteTransport
      * @param name The name of the store.
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String ticket, String name);
+    public List<VersionDescriptor> getStoreVersions(String ticket, String name);
     
     /**
      * Get AVMStore versions between given dates.
@@ -223,20 +223,20 @@ public interface AVMRemoteTransport
      * @param to The date to which (inclusive).
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String ticket, String name, Date from, Date to);
+    public List<VersionDescriptor> getStoreVersions(String ticket, String name, Date from, Date to);
     
     /**
      * Get a list of all AVM stores.
      * @return A List of AVMStoreDescriptors.
      */
-    public List<AVMStoreDescriptor> getAVMStores(String ticket);
+    public List<AVMStoreDescriptor> getStores(String ticket);
     
     /**
      * Get the descriptor for a given AVMStore.
      * @param name The name of the store.
      * @return An AVMStoreDescriptor.
      */
-    public AVMStoreDescriptor getAVMStore(String ticket, String name);
+    public AVMStoreDescriptor getStore(String ticket, String name);
     
     /**
      * Get the specified root of the specified store.
@@ -244,7 +244,7 @@ public interface AVMRemoteTransport
      * @param name The name of the store.
      * @return The AVMNodeDescriptor for the root.
      */
-    public AVMNodeDescriptor getAVMStoreRoot(String ticket, int version, String name);
+    public AVMNodeDescriptor getStoreRoot(String ticket, int version, String name);
     
     /**
      * Get a descriptor for the specified node.
@@ -274,7 +274,7 @@ public interface AVMRemoteTransport
      * Purge an AVMStore.
      * @param name The name of the store to purge.
      */
-    public void purgeAVMStore(String ticket, String name);
+    public void purgeStore(String ticket, String name);
     
     /**
      * Purge a given version from a given store.

@@ -72,10 +72,10 @@ public class AVMTestRemote extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        List<AVMStoreDescriptor> stores = fAVMRemote.getAVMStores();
+        List<AVMStoreDescriptor> stores = fAVMRemote.getStores();
         for (AVMStoreDescriptor desc : stores)
         {
-            fAVMRemote.purgeAVMStore(desc.getName());
+            fAVMRemote.purgeStore(desc.getName());
         }
         fContext.close();
     }
@@ -87,7 +87,7 @@ public class AVMTestRemote extends TestCase
     {
         try
         {
-            List<AVMStoreDescriptor> stores = fAVMRemote.getAVMStores();
+            List<AVMStoreDescriptor> stores = fAVMRemote.getStores();
             for (AVMStoreDescriptor store : stores)
             {
                 System.out.println(store);
@@ -108,7 +108,7 @@ public class AVMTestRemote extends TestCase
         try
         {
             // Create a test store.
-            fAVMRemote.createAVMStore("test2933");
+            fAVMRemote.createStore("test2933");
             // Create a directory.
             fAVMRemote.createDirectory("test2933:/", "a");
             // Write out a file.
@@ -141,7 +141,7 @@ public class AVMTestRemote extends TestCase
     {
         try
         {
-            fAVMRemote.createAVMStore("froo");
+            fAVMRemote.createStore("froo");
             // Create a file.
             byte [] buff = new byte[64];
             for (int i = 0; i < 64; i++)
@@ -190,13 +190,13 @@ public class AVMTestRemote extends TestCase
         try
         {
             // Create a store.
-            fAVMRemote.createAVMStore("froo");
+            fAVMRemote.createStore("froo");
             // Create a directory.
             fAVMRemote.createDirectory("froo:/", "a");
             // Create a file.
             fAVMRemote.createFile("froo:/a", "foo").close();
             // Create another store.
-            fAVMRemote.createAVMStore("broo");
+            fAVMRemote.createStore("broo");
             // Create a branch.
             fAVMRemote.createBranch(-1, "froo:/a", "broo:/", "a");
             List<AVMDifference> diffs = fAVMSync.compare(-1, "froo:/a", -1, "broo:/a", null);

@@ -418,7 +418,7 @@ public class AVMNetworkFile extends NetworkFile {
         		
         		// Create a writer to access the file data
         		
-        		cWriter = m_avmService.createContentWriter( m_avmPath);
+        		cWriter = m_avmService.getContentWriter( m_avmPath);
         		
         		// Set the mime-type
 

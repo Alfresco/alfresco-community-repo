@@ -100,7 +100,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public List<StoreRef> getStores()
     {
         // For AVM stores we fake up StoreRefs.
-        List<AVMStoreDescriptor> stores = fAVMService.getAVMStores();
+        List<AVMStoreDescriptor> stores = fAVMService.getStores();
         List<StoreRef> result = new ArrayList<StoreRef>();
         for (AVMStoreDescriptor desc : stores)
         {
@@ -123,7 +123,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // invokeBeforeCreateStore(ContentModel.TYPE_STOREROOT, result);
         try
         {
-            fAVMService.createAVMStore(identifier);
+            fAVMService.createStore(identifier);
             NodeRef rootRef = getRootNode(result);
             addAspect(rootRef, ContentModel.ASPECT_ROOT,
                       Collections.<QName, Serializable>emptyMap());
@@ -143,7 +143,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public boolean exists(StoreRef storeRef)
     {
-        return fAVMService.getAVMStore(storeRef.getIdentifier()) != null;
+        return fAVMService.getStore(storeRef.getIdentifier()) != null;
     }
     
     /**
@@ -181,7 +181,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public NodeRef getRootNode(StoreRef storeRef) throws InvalidStoreRefException
     {
         String storeName = storeRef.getIdentifier();
-        if (fAVMService.getAVMStore(storeName) != null)
+        if (fAVMService.getStore(storeName) != null)
         {
             return AVMNodeConverter.ToNodeRef(-1, storeName + ":/");
         }

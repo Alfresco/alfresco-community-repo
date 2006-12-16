@@ -24,7 +24,7 @@ public class AVMLsStores extends CltBase
     @Override
     protected void run(Map<String, List<String>> flags, List<String> args) 
     {
-        List<AVMStoreDescriptor> stores = fAVMRemote.getAVMStores();
+        List<AVMStoreDescriptor> stores = fAVMRemote.getStores();
         for (AVMStoreDescriptor store : stores)
         {
             System.out.println(store);

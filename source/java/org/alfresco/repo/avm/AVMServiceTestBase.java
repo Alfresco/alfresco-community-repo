@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -75,6 +76,8 @@ public class AVMServiceTestBase extends TestCase
             fService = (AVMService)fContext.getBean("AVMService");
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
+            AuthenticationService authService = (AuthenticationService)fContext.getBean("authenticationService");
+            authService.authenticate("admin", "admin".toCharArray());
             CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");
             cstl.addCallback(
                 new CreateStoreCallback()
@@ -116,7 +119,7 @@ public class AVMServiceTestBase extends TestCase
                 }
             );
         }
-        fService.createAVMStore("main");
+        fService.createStore("main");
         fStartTime = System.currentTimeMillis();
     }
 
@@ -129,10 +132,10 @@ public class AVMServiceTestBase extends TestCase
     {
         long now = System.currentTimeMillis();
         System.out.println("Timing: " + (now - fStartTime) + "ms");
-        List<AVMStoreDescriptor> descriptors = fService.getAVMStores();
+        List<AVMStoreDescriptor> descriptors = fService.getStores();
         for (AVMStoreDescriptor desc : descriptors)
         {
-            fService.purgeAVMStore(desc.getName());
+            fService.purgeStore(desc.getName());
         }
         // fContext.close();
         // File alfData = new File("alf_data");

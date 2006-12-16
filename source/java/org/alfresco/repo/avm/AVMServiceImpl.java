@@ -156,7 +156,7 @@ public class AVMServiceImpl implements AVMService
      * @param path The path to the file.
      * @return A ContentWriter.
      */
-    public ContentWriter createContentWriter(String path)
+    public ContentWriter getContentWriter(String path)
     {
         if (path == null)
         {
@@ -454,7 +454,7 @@ public class AVMServiceImpl implements AVMService
      * Create an AVMStore with the given name.  It must not exist.
      * @param name The name to give the AVMStore.   
      */
-    public void createAVMStore(String name)
+    public void createStore(String name)
     {
         if (name == null || !FileNameValidator.IsValid(name))
         {
@@ -557,7 +557,7 @@ public class AVMServiceImpl implements AVMService
      * @param dirPath The path to the layered directory.
      * @param name The name of the item to flatten.
      */
-    public void flatten(String dirPath, String name)
+    public void makeTransparent(String dirPath, String name)
     {
         if (dirPath == null || name == null)
         {
@@ -750,7 +750,7 @@ public class AVMServiceImpl implements AVMService
      * is only referenced in that AVMStore.
      * @param name The name of the AVMStore to purge.
      */
-    public void purgeAVMStore(String name)
+    public void purgeStore(String name)
     {
         if (name == null)
         {
@@ -793,7 +793,7 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the AVMStore.
      * @return A List of VersionDescriptors.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name)
+    public List<VersionDescriptor> getStoreVersions(String name)
     {
         if (name == null)
         {
@@ -810,7 +810,7 @@ public class AVMServiceImpl implements AVMService
      * @param to The latest versions to return.
      * @return The Set of matching version IDs.
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from, Date to)
+    public List<VersionDescriptor> getStoreVersions(String name, Date from, Date to)
     {
         if (name == null || (from == null && to == null))
         {
@@ -851,7 +851,7 @@ public class AVMServiceImpl implements AVMService
      * Get a list of all AVMStores.
      * @return The AVMStores.
      */
-    public List<AVMStoreDescriptor> getAVMStores()
+    public List<AVMStoreDescriptor> getStores()
     {
         return fAVMRepository.getAVMStores();
     }
@@ -861,7 +861,7 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the AVMStore to get.
      * @return The AVMStore.
      */
-    public AVMStoreDescriptor getAVMStore(String name)
+    public AVMStoreDescriptor getStore(String name)
     {
         if (name == null)
         {
@@ -882,13 +882,13 @@ public class AVMServiceImpl implements AVMService
      * like workflow packages.
      * @return The descriptor.
      */
-    public AVMStoreDescriptor getAVMSystemStore()
+    public AVMStoreDescriptor getSystemStore()
     {
-        AVMStoreDescriptor store = getAVMStore(SYSTEM);
+        AVMStoreDescriptor store = getStore(SYSTEM);
         if (store == null)
         {
-            createAVMStore(SYSTEM);
-            return getAVMStore(SYSTEM);
+            createStore(SYSTEM);
+            return getStore(SYSTEM);
         }
         return store;
     }
@@ -899,7 +899,7 @@ public class AVMServiceImpl implements AVMService
      * @param name The name of the AVMStore.
      * @return The root descriptor.
      */
-    public AVMNodeDescriptor getAVMStoreRoot(int version, String name)
+    public AVMNodeDescriptor getStoreRoot(int version, String name)
     {
         if (name == null)
         {

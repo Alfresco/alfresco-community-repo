@@ -48,9 +48,9 @@ public class AVMRemoteLocal implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#createAVMStore(java.lang.String)
      */
-    public void createAVMStore(String name) 
+    public void createStore(String name) 
     {
-        fService.createAVMStore(name);
+        fService.createStore(name);
     }
 
     /* (non-Javadoc)
@@ -130,42 +130,42 @@ public class AVMRemoteLocal implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStore(java.lang.String)
      */
-    public AVMStoreDescriptor getAVMStore(String name) 
+    public AVMStoreDescriptor getStore(String name) 
     {
-        return fService.getAVMStore(name);
+        return fService.getStore(name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStoreRoot(int, java.lang.String)
      */
-    public AVMNodeDescriptor getAVMStoreRoot(int version, String name) 
+    public AVMNodeDescriptor getStoreRoot(int version, String name) 
     {
-        return fService.getAVMStoreRoot(version, name);
+        return fService.getStoreRoot(version, name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStoreVersions(java.lang.String)
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name) 
+    public List<VersionDescriptor> getStoreVersions(String name) 
     {
-        return fService.getAVMStoreVersions(name);
+        return fService.getStoreVersions(name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStoreVersions(java.lang.String, java.util.Date, java.util.Date)
      */
-    public List<VersionDescriptor> getAVMStoreVersions(String name, Date from,
+    public List<VersionDescriptor> getStoreVersions(String name, Date from,
             Date to) 
     {
-        return fService.getAVMStoreVersions(name, from, to);
+        return fService.getStoreVersions(name, from, to);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getAVMStores()
      */
-    public List<AVMStoreDescriptor> getAVMStores() 
+    public List<AVMStoreDescriptor> getStores() 
     {
-        return fService.getAVMStores();
+        return fService.getStores();
     }
 
     /* (non-Javadoc)
@@ -263,7 +263,7 @@ public class AVMRemoteLocal implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#getLatestVersionID(java.lang.String)
      */
-    public int getLatestVersionID(String storeName) 
+    public int getNextVersionID(String storeName) 
     {
         return fService.getNextVersionID(storeName);
     }
@@ -335,9 +335,9 @@ public class AVMRemoteLocal implements AVMRemote
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#purgeAVMStore(java.lang.String)
      */
-    public void purgeAVMStore(String name) 
+    public void purgeStore(String name) 
     {
-        fService.purgeAVMStore(name);
+        fService.purgeStore(name);
     }
 
     /* (non-Javadoc)

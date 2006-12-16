@@ -782,7 +782,7 @@ public class WorkflowInterpreter
                 	AVMNodeDescriptor packagesDesc = avmService.lookup(-1, packagesPath);
                 	if (packagesDesc == null)
                 	{
-                		avmService.createAVMStore("workflow-system");
+                		avmService.createStore("workflow-system");
                 		avmService.createDirectory("workflow-system:/", "packages");
                 	}
 

@@ -79,7 +79,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();       
-            fService.createAVMStore("branch");
+            fService.createStore("branch");
             fService.createBranch(-1, "main:/a", "branch:/", "a");
             fService.removeNode("branch:/a/b/c/foo");
             List<AVMDifference> diffs = fSyncService.compare(-1, "branch:/a", -1, "main:/a", null);
@@ -112,7 +112,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             fService.renameStore("main", "foo");
-            assertNotNull(fService.getAVMStore("foo"));
+            assertNotNull(fService.getStore("foo"));
         }
         catch (Exception e)
         {
@@ -236,7 +236,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("layer");
+            fService.createStore("layer");
             fService.createLayeredDirectory("main:/a", "layer:/", "a");
             fService.getFileOutputStream("layer:/a/b/c/foo").close();
             fService.createFile("layer:/a/b", "bing").close();
@@ -268,7 +268,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("layer");
+            fService.createStore("layer");
             fService.createLayeredDirectory("main:/a", "layer:/", "layer");
             assertEquals("main:/a", fService.getIndirectionPath(-1, "layer:/layer"));
             assertEquals("main:/a/b", fService.getIndirectionPath(-1, "layer:/layer/b"));
@@ -292,7 +292,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("area");
+            fService.createStore("area");
             fService.createLayeredDirectory("main:/a", "area:/", "a");
             fService.getFileOutputStream("area:/a/b/c/foo").close();
             List<AVMDifference> diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
@@ -344,7 +344,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("area");
+            fService.createStore("area");
             fService.createLayeredDirectory("main:/a", "area:/", "a");
             fService.getFileOutputStream("area:/a/b/c/foo").close();
             List<AVMDifference> diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
@@ -395,7 +395,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.rename("main:/", "a", "main:/appBase", "a");
             fService.rename("main:/", "d", "main:/appBase", "d");
             fService.createSnapshot("main", null, null);
-            fService.createAVMStore("source");
+            fService.createStore("source");
             fService.createLayeredDirectory("main:/appBase", "source:/", "appBase");
             fService.getFileOutputStream("source:/appBase/a/b/c/foo").close();
             final ActionImpl action = new ActionImpl(AVMNodeConverter.ToNodeRef(-1, "source:/appBase/a"), 
@@ -430,7 +430,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("staging");
+            fService.createStore("staging");
             List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "staging:/", null);
             assertEquals(2, diffs.size());
             List<AVMDifference> noodle = new ArrayList<AVMDifference>();
@@ -457,14 +457,14 @@ public class AVMServiceTest extends AVMServiceTestBase
     {
         try
         {
-            fService.createAVMStore("foo-staging");
+            fService.createStore("foo-staging");
             fService.createDirectory("foo-staging:/", "appBase");
             fService.createDirectory("foo-staging:/appBase", "a");
             fService.createDirectory("foo-staging:/appBase/a","b");
             fService.createDirectory("foo-staging:/appBase/a/b", "c");
             fService.createFile("foo-staging:/appBase/a/b/c", "foo").close();
             fService.createFile("foo-staging:/appBase/a/b/c", "bar").close();
-            fService.createAVMStore("area");
+            fService.createStore("area");
             fService.setStoreProperty("area", QName.createQName(null, ".website.name"),
                                       new PropertyValue(null, "foo"));   
             fService.createLayeredDirectory("foo-staging:/appBase", "area:/", "appBase");
@@ -532,8 +532,8 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
-            fService.createAVMStore("source");
-            fService.createAVMStore("dest");
+            fService.createStore("source");
+            fService.createStore("dest");
             loader.recursiveLoad("config/alfresco/bootstrap", "source:/");
             int version1 = fService.createSnapshot("source", null, null);
             loader.recursiveLoad("config/alfresco/extension", "source:/");
@@ -567,7 +567,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("branch");
+            fService.createStore("branch");
             fService.createBranch(-1, "main:/", "branch:/", "branch");
             // Modify some things in the branch.
             fService.createFile("branch:/branch/a/b", "fing").close();
@@ -623,7 +623,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
-            fService.createAVMStore("layer");
+            fService.createStore("layer");
             fService.createLayeredDirectory("main:/", "layer:/", "layer");
             loader.recursiveLoad("config/alfresco/bootstrap", "layer:/layer");
             List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
@@ -638,7 +638,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             System.out.println(recursiveList("layer", -1, true));
             System.out.println("Main:");
             System.out.println(recursiveList("main", -1, true));
-            fService.createAVMStore("layer2");
+            fService.createStore("layer2");
             fService.createLayeredDirectory("layer:/layer", "layer2:/", "layer");
             loader.recursiveLoad("config/alfresco/bootstrap", "layer2:/layer/bootstrap");
             fService.createSnapshot("layer2", null, null);
@@ -821,8 +821,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(fService.lookup(-1, "main:/a/monkey", true).getId(),
                          fService.lookup(-1, "main:/abranch/monkey", true).getId());
             // Cleanup for layered tests.
-            fService.purgeAVMStore("main");
-            fService.createAVMStore("main");
+            fService.purgeStore("main");
+            fService.createStore("main");
             setupBasicTree();
             fService.createLayeredDirectory("main:/a", "main:/", "layer");
             fService.createFile("main:/layer", "monkey").close();
@@ -1084,7 +1084,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("layer");
+            fService.createStore("layer");
             fService.createLayeredDirectory("main:/a", "layer:/", "alayer");
             fService.createSnapshot("layer", null, null);
             LayeringDescriptor info = fService.getLayeringInfo(-1, "layer:/alayer");
@@ -1774,7 +1774,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             out.println("This is testfile2");
             out.close();
             fService.createSnapshot("main", null, null);
-            List<VersionDescriptor> versions = fService.getAVMStoreVersions("main");
+            List<VersionDescriptor> versions = fService.getStoreVersions("main");
             for (VersionDescriptor version : versions)
             {
                 System.out.println("V:" + version.getVersionID());
@@ -1807,7 +1807,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             fService.createBranch(-1, "main:/a", "main:/d/e", "abranch");
             fService.createSnapshot("main", null, null);
-            List<VersionDescriptor> versions = fService.getAVMStoreVersions("main");
+            List<VersionDescriptor> versions = fService.getStoreVersions("main");
             for (VersionDescriptor version : versions)
             {
                 System.out.println("V:" + version.getVersionID());
@@ -1958,8 +1958,8 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("second");
-            List<AVMStoreDescriptor> repos = fService.getAVMStores();
+            fService.createStore("second");
+            List<AVMStoreDescriptor> repos = fService.getStores();
             assertEquals(2, repos.size());
             System.out.println(repos.get(0));
             System.out.println(repos.get(1));
@@ -1997,7 +1997,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("second");
+            fService.createStore("second");
             fService.createLayeredDirectory("main:/", "second:/", "main");
             fService.createSnapshot("second", null, null);
             System.out.println(recursiveList("second", -1, true));
@@ -2020,7 +2020,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             line = reader.readLine();
             reader.close();
             assertEquals("I am main:/a/b/c/foo", line);
-            fService.purgeAVMStore("second");
+            fService.purgeStore("second");
             fService.purgeVersion(1, "main");
         }
         catch (Exception e)
@@ -2038,7 +2038,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createAVMStore("second");
+            fService.createStore("second");
             fService.rename("main:/a/b", "c", "second:/", "cmoved");
             ArrayList<String> toSnapshot = new ArrayList<String>();
             toSnapshot.add("main");
@@ -2913,7 +2913,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            AVMNodeDescriptor desc = fService.getAVMStoreRoot(-1, "main");
+            AVMNodeDescriptor desc = fService.getStoreRoot(-1, "main");
             assertNotNull(desc);
             System.out.println(desc.toString());
             AVMNodeDescriptor child = fService.lookup(desc, "a");
@@ -2949,9 +2949,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
             times.add(System.currentTimeMillis());
             assertEquals(3, fService.createSnapshot("main", null, null));
-            assertEquals(1, fService.getAVMStoreVersions("main", null, new Date(times.get(0))).size());
-            assertEquals(3, fService.getAVMStoreVersions("main", new Date(times.get(0)), null).size());
-            assertEquals(2, fService.getAVMStoreVersions("main", new Date(times.get(1)),
+            assertEquals(1, fService.getStoreVersions("main", null, new Date(times.get(0))).size());
+            assertEquals(3, fService.getStoreVersions("main", new Date(times.get(0)), null).size());
+            assertEquals(2, fService.getStoreVersions("main", new Date(times.get(1)),
                                                            new Date(System.currentTimeMillis())).size());
         }
         catch (Exception e)
@@ -2972,7 +2972,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             // AVMStore that exists.
             try
             {
-                fService.createAVMStore("main");
+                fService.createStore("main");
                 fail();
             }
             catch (AVMExistsException ae)
@@ -2980,7 +2980,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 // Do nothing.
             }
             // Now make sure getRepository() works.
-            AVMStoreDescriptor desc = fService.getAVMStore("main");
+            AVMStoreDescriptor desc = fService.getStore("main");
             assertNotNull(desc);
             System.out.println(desc);
         }
@@ -3453,7 +3453,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             Map<QName, PropertyValue> result = 
                 fService.queryStorePropertyKey("main", QName.createQName("", ".dns.%"));
             assertEquals(1, result.size());
-            fService.createAVMStore("second");
+            fService.createStore("second");
             fService.setStoreProperty("second", QName.createQName("", ".dns.alice"),
                                       new PropertyValue(null, "alice-space"));
             Map<String, Map<QName, PropertyValue>> matches =

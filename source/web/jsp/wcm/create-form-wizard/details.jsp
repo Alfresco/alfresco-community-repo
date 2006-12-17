@@ -18,7 +18,6 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
-<%@ page import="org.alfresco.web.bean.FileUploadBean" %>
 <%@ page import="org.alfresco.web.bean.wcm.CreateFormWizard" %>
 <f:verbatim>
 <script type="text/javascript" 
@@ -63,18 +62,26 @@
                           "<%= request.getContextPath() %>")
    }
 
-   function upload_complete(id, path)
+   function upload_complete(id, path, filename)
    {
      var schema_file_input = 
        document.getElementById("wizard:wizard-body:schema-file");
-     schema_file_input.value = path;
+     schema_file_input.value = filename;
      schema_file_input.form.submit();
    }
 </script>
+
 </f:verbatim>
 
+<h:inputText id="schema-file" 
+	     value="#{WizardManager.bean.schemaFileName}" 
+	     immediate="true"
+	     style="display:none;"
+	     valueChangeListener="#{WizardManager.bean.schemaFileValueChanged}"/>
+
 <h:panelGrid id="panel_grid_1"
-             columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             columns="1" cellpadding="2" 
+	     style="padding-top: 4px; padding-bottom: 4px;"
              width="100%" rowClasses="wizardSectionHeading">
    <h:outputText id="panel_grid_1_output_text_1"
                  value="&nbsp;#{msg.general_properties}" escape="false" />
@@ -93,13 +100,8 @@
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="output_text_schema"
                   value="#{msg.schema}:"/>
-    <h:column id="column_schema">
-<%
-FileUploadBean upload = (FileUploadBean)
-   session.getAttribute(FileUploadBean.getKey(CreateFormWizard.FILE_SCHEMA));
-if (upload == null || upload.getFile() == null)
-{
-%>
+    <h:column id="column_schema_empty"
+	      rendered="#{empty WizardManager.bean.schemaFileName}">
       <f:verbatim>
         <input id="wizard:wizard-body:file-input" 
 	       type="file" 
@@ -107,14 +109,9 @@ if (upload == null || upload.getFile() == null)
 	       name="alfFileInput" 
 	       onchange="javascript:handle_upload(this)"/>
       </f:verbatim>
-      <h:inputText id="schema-file" 
-		   value="#{WizardManager.bean.schemaFileName}" 
-		   rendered="#{empty WizardManager.bean.schemaFileName}"
-		   style="display: none"
-		   valueChangeListener="#{WizardManager.bean.schemaFileValueChanged}"/>
-<%
-} else {
-%>
+    </h:column>
+    <h:column id="column_schema_not_empty"
+	      rendered="#{!empty WizardManager.bean.schemaFileName}">
       <h:outputText id="output_text_schema_name"
                     value="#{WizardManager.bean.schemaFileName}"/>
       <h:outputText id="output_text_schema_space"
@@ -126,9 +123,6 @@ if (upload == null || upload.getFile() == null)
                     action="#{WizardManager.bean.removeUploadedSchemaFile}"
                     showLink="false" 
 		    target="top"/>
-<%
-}
-%>
     </h:column>
     
     <h:outputText id="no_graphic_image_root_element_name"

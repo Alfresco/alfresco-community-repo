@@ -255,7 +255,7 @@ public class SchemaFormBuilder
                               final ResourceBundle resourceBundle) 
       throws FormBuilderException 
    {
-      final XSModel schema = SchemaUtil.loadSchema(schemaDocument);
+      final XSModel schema = SchemaUtil.parseSchema(schemaDocument);
       this.typeTree = SchemaUtil.buildTypeTree(schema);
 	
       //refCounter = 0;

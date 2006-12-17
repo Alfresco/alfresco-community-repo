@@ -376,8 +376,22 @@
          <action id="create_form">
             <evaluator>org.alfresco.web.action.evaluator.CreateFormEvaluator</evaluator>
             <label-id>create_form</label-id>
-            <image>/images/icons/new_content.gif</image>
+            <image>/images/icons/new_form.gif</image>
             <action>wizard:createForm</action>
+         </action>
+
+	 <action id="edit_form">
+            <evaluator>org.alfresco.web.action.evaluator.EditFormEvaluator</evaluator>
+            <permissions>
+               <permission allow="true">Write,CreateChildren</permission>
+            </permissions>
+            <label-id>edit_form</label-id>
+            <image>/images/icons/edit_form.gif</image>
+            <action>wizard:editForm</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
          </action>
          
          <!-- Create space -->
@@ -641,6 +655,7 @@
          
          <!-- Actions Menu for More Actions in Browse screen -->
          <action-group id="browse_actions_menu">
+            <action idref="edit_form" />
             <action idref="details_space" />
             <action idref="delete_space" />
             <action idref="cut_node" />

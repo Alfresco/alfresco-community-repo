@@ -18,9 +18,8 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
@@ -30,11 +29,11 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
- * UI Action Evaluator - Create Web Form in the Forms DataDictionary folder
+ * UI Action Evaluator - Edit Web Form in the Forms DataDictionary folder
  * 
- * @author Kevin Roast
+ * @author Ariel Backenroth
  */
-public class CreateFormEvaluator implements ActionEvaluator
+public class EditFormEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -43,13 +42,11 @@ public class CreateFormEvaluator implements ActionEvaluator
    {
       final FacesContext fc = FacesContext.getCurrentInstance();
       final ServiceRegistry services = Repository.getServiceRegistry(fc);
-      final NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
+      final NavigationBean navigator = (NavigationBean)
+         FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
       // get the path to the current name - compare last element with the Website folder assoc name
-      final Path path = services.getNodeService().getPath(navigator.getCurrentNode().getNodeRef());
-      final Path.Element element = path.get(path.size() - 1);
-      final String endPath = element.getPrefixedString(services.getNamespaceService());
-      // check we have the permission to create nodes in that Website folder
-      return (Application.getContentFormsFolderName(fc).equals(endPath) &&
-              navigator.getCurrentNode().hasPermission(PermissionService.ADD_CHILDREN));
+      final Node currentNode = navigator.getCurrentNode();
+      return (currentNode.hasAspect(WCMAppModel.ASPECT_FORM) &&
+              currentNode.hasPermission(PermissionService.ADD_CHILDREN));
    }
 }

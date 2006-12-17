@@ -202,7 +202,7 @@ public class SchemaUtil
       return SchemaUtil.DATA_TYPE_TO_NAME.get(type);
    }
 
-   public static XSModel loadSchema(final Document schemaDocument)
+   public static XSModel parseSchema(final Document schemaDocument)
       throws FormBuilderException
    {
       try

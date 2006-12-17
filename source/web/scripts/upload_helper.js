@@ -46,5 +46,5 @@ function handle_upload_helper(fileInputElement,
 function upload_complete_helper(id)
 {
   var upload = _uploads[id];
-  upload.callback(id, upload.path);
+  upload.callback(id, upload.path, upload.path.replace(/.*[\/\\]([^\/\\]+)/, "$1"));
 }

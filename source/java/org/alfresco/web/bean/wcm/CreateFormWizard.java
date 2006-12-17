@@ -73,12 +73,25 @@ public class CreateFormWizard
       implements Serializable
    {
       private final String fileName;
+      private final NodeRef nodeRef;
       private final File file;
       private final String title;
       private final String description;
       private final String mimetypeForRendition;
       private final String outputPathPatternForRendition;
       private final RenderingEngine renderingEngine;
+
+      public RenderingEngineTemplateData(final RenderingEngineTemplate ret)
+      {
+         this.file = null;
+         this.nodeRef = ret.getNodeRef();
+         this.fileName = ret.getName();
+         this.title = ret.getTitle();
+         this.description = ret.getDescription();
+         this.outputPathPatternForRendition = ret.getOutputPathPattern();
+         this.mimetypeForRendition = ret.getMimetypeForRendition();
+         this.renderingEngine = ret.getRenderingEngine();
+      }
 
       public RenderingEngineTemplateData(final String fileName, 
                                          final File file,
@@ -88,6 +101,7 @@ public class CreateFormWizard
                                          final String mimetypeForRendition,
                                          final RenderingEngine renderingEngine)
       {
+         this.nodeRef = null;
          this.fileName = fileName;
          this.file = file;
          this.title = title;
@@ -115,6 +129,11 @@ public class CreateFormWizard
       public File getFile()
       {
          return this.file;
+      }
+      
+      public NodeRef getNodeRef()
+      {
+         return this.nodeRef;
       }
 
       public String getTitle()
@@ -155,20 +174,25 @@ public class CreateFormWizard
 
    private final static Log LOGGER = LogFactory.getLog(CreateFormWizard.class);
    
+   protected String defaultWorkflowName = null;
+   protected List<RenderingEngineTemplateData> renderingEngineTemplates = null;
+   protected transient XSModel schema;
+   protected String schemaFileName;
+   protected ContentService contentService;
+   protected MimetypeService mimetypeService;
+   protected WorkflowService workflowService;
+
    private String schemaRootElementName = null;
    private String formName = null;
    private String formTitle = null;
    private String formDescription = null;
+   private String outputPathPatternForFormInstanceData = null;
    private String renderingEngineTemplateTitle = null;
    private String renderingEngineTemplateDescription = null;
-   private String defaultWorkflowName = null;
+
    private RenderingEngine renderingEngine = null;
-   protected ContentService contentService;
-   protected MimetypeService mimetypeService;
-   protected WorkflowService workflowService;
-   private transient DataModel renderingEngineTemplatesDataModel;
-   private List<RenderingEngineTemplateData> renderingEngineTemplates = null;
-   private String outputPathPatternForFormInstanceData = null;
+   protected transient DataModel renderingEngineTemplatesDataModel;
+
    private String outputPathPatternForRendition = null;
    private String mimetypeForRendition = null;
    private transient List<SelectItem> mimetypeChoices = null;
@@ -181,7 +205,10 @@ public class CreateFormWizard
    protected String finishImpl(final FacesContext context, final String outcome)
       throws Exception
    {
-      LOGGER.debug("creating form " + this.getFormName());
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("creating form " + this.getFormName());
+      }
 
       final FormsService ts = FormsService.getInstance();
       // get the node ref of the node that will contain the content
@@ -224,73 +251,80 @@ public class CreateFormWizard
          
       for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
       {
-         LOGGER.debug("adding rendering engine template " + retd + 
-                      " to form " + this.getFormName());
-
-         NodeRef renderingEngineTemplateNodeRef = 
-            this.fileFolderService.searchSimple(folderInfo.getNodeRef(), retd.getFileName());
-         if (renderingEngineTemplateNodeRef == null)
-         {
-            try
-            {
-               fileInfo = this.fileFolderService.create(folderInfo.getNodeRef(),
-                                                        retd.getFileName(),
-                                                        ContentModel.TYPE_CONTENT);
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("Created file node for file: " + retd.getFileName());
-               renderingEngineTemplateNodeRef = fileInfo.getNodeRef();            
-            }
-            catch (final FileExistsException fee)
-            {
-               LOGGER.error(fee.getName() + " already exists in " + 
-                            fee.getParentNodeRef());
-               throw fee;
-            }
-
-            // get a writer for the content and put the file
-            writer = this.contentService.getWriter(renderingEngineTemplateNodeRef, 
-                                                   ContentModel.PROP_CONTENT, 
-                                                   true);
-            // set the mimetype and encoding
-            // XXXarielb mime type of template isn't known
-            // writer.setMimetype("text/xml");
-            writer.setEncoding("UTF-8");
-            writer.putContent(retd.getFile());
-
-            this.nodeService.createAssociation(folderInfo.getNodeRef(),
-                                               renderingEngineTemplateNodeRef,
-                                               WCMAppModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
-            props = new HashMap<QName, Serializable>(2, 1.0f);
-            props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME, 
-                      retd.getRenderingEngine().getName());
-            props.put(WCMAppModel.PROP_FORM_SOURCE, folderInfo.getNodeRef());
-            this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
-                                       WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE, 
-                                       props);
-
-            // apply the titled aspect - title and description
-            props = new HashMap<QName, Serializable>(2, 1.0f);
-            props.put(ContentModel.PROP_TITLE, retd.getTitle());
-            props.put(ContentModel.PROP_DESCRIPTION, retd.getDescription());
-            this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
-                                       ContentModel.ASPECT_TITLED, 
-                                       props);
-         }
-
-         LOGGER.debug("adding rendition properties to " + renderingEngineTemplateNodeRef);
-         props = new HashMap<QName, Serializable>(2, 1.0f);
-         props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN_RENDITION, 
-                   retd.getOutputPathPatternForRendition());
-         props.put(WCMAppModel.PROP_MIMETYPE_FOR_RENDITION, 
-                   retd.getMimetypeForRendition());
-         this.nodeService.createNode(renderingEngineTemplateNodeRef,
-                                     WCMAppModel.ASSOC_RENDITION_PROPERTIES,
-                                     WCMAppModel.ASSOC_RENDITION_PROPERTIES,
-                                     WCMAppModel.TYPE_RENDITION_PROPERTIES,
-                                     props);
+         this.saveRenderingEngineTemplate(retd, folderInfo.getNodeRef());
       }
       // return the default outcome
       return outcome;
+   }
+
+   protected void saveRenderingEngineTemplate(final RenderingEngineTemplateData retd,
+                                              final NodeRef formNodeRef)
+   {
+      LOGGER.debug("adding rendering engine template " + retd + 
+                   " to form " + this.getFormName());
+
+      NodeRef renderingEngineTemplateNodeRef = 
+         this.fileFolderService.searchSimple(formNodeRef, retd.getFileName());
+      HashMap<QName, Serializable> props;
+      if (renderingEngineTemplateNodeRef == null)
+      {
+         try
+         {
+            final FileInfo fileInfo = this.fileFolderService.create(formNodeRef,
+                                                                    retd.getFileName(),
+                                                                    ContentModel.TYPE_CONTENT);
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("Created file node for file: " + retd.getFileName());
+            renderingEngineTemplateNodeRef = fileInfo.getNodeRef();            
+         }
+         catch (final FileExistsException fee)
+         {
+            LOGGER.error(fee.getName() + " already exists in " + 
+                         fee.getParentNodeRef());
+            throw fee;
+         }
+
+         // get a writer for the content and put the file
+         final ContentWriter writer = this.contentService.getWriter(renderingEngineTemplateNodeRef, 
+                                                                    ContentModel.PROP_CONTENT, 
+                                                                    true);
+         // set the mimetype and encoding
+         // XXXarielb mime type of template isn't known
+         // writer.setMimetype("text/xml");
+         writer.setEncoding("UTF-8");
+         writer.putContent(retd.getFile());
+
+         this.nodeService.createAssociation(formNodeRef,
+                                            renderingEngineTemplateNodeRef,
+                                            WCMAppModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
+         props = new HashMap<QName, Serializable>(2, 1.0f);
+         props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME, 
+                   retd.getRenderingEngine().getName());
+         props.put(WCMAppModel.PROP_FORM_SOURCE, formNodeRef);
+         this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
+                                    WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE, 
+                                    props);
+
+         // apply the titled aspect - title and description
+         props = new HashMap<QName, Serializable>(2, 1.0f);
+         props.put(ContentModel.PROP_TITLE, retd.getTitle());
+         props.put(ContentModel.PROP_DESCRIPTION, retd.getDescription());
+         this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
+                                    ContentModel.ASPECT_TITLED, 
+                                    props);
+      }
+
+      LOGGER.debug("adding rendition properties to " + renderingEngineTemplateNodeRef);
+      props = new HashMap<QName, Serializable>(2, 1.0f);
+      props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN_RENDITION, 
+                retd.getOutputPathPatternForRendition());
+      props.put(WCMAppModel.PROP_MIMETYPE_FOR_RENDITION, 
+                retd.getMimetypeForRendition());
+      this.nodeService.createNode(renderingEngineTemplateNodeRef,
+                                  WCMAppModel.ASSOC_RENDITION_PROPERTIES,
+                                  WCMAppModel.ASSOC_RENDITION_PROPERTIES,
+                                  WCMAppModel.TYPE_RENDITION_PROPERTIES,
+                                  props);
    }
 
    @Override
@@ -300,6 +334,8 @@ public class CreateFormWizard
       
       this.removeUploadedSchemaFile();
       this.removeUploadedRenderingEngineTemplateFile();
+      this.schema = null;
+      this.schemaFileName = null;
       this.schemaRootElementName = null;
       this.schemaRootElementNameChoices = null;
       this.formName = null;
@@ -331,7 +367,7 @@ public class CreateFormWizard
       //       checking step numbers
       
       boolean disabled = false;
-      int step = Application.getWizardManager().getCurrentStep();
+      final int step = Application.getWizardManager().getCurrentStep();
       switch(step)
       {
          case 1:
@@ -468,8 +504,10 @@ public class CreateFormWizard
     */
    public String removeUploadedSchemaFile()
    {
-      clearUpload(FILE_SCHEMA);
+      this.clearUpload(FILE_SCHEMA);
       this.schemaRootElementNameChoices = null;
+      this.schema = null;
+      this.schemaFileName = null;
       
       // refresh the current page
       return null;
@@ -491,13 +529,17 @@ public class CreateFormWizard
     */
    public String schemaFileValueChanged(final ValueChangeEvent vce)
    {
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("schemaFileValueChanged(" + this.getSchemaFile() + ")");
+      }
       if (this.getSchemaFile() != null)
       {
-         final FormsService ts = FormsService.getInstance();
          try
          {
-            final Document d = ts.parseXML(this.getSchemaFile());
-            final XSModel xsm = SchemaUtil.loadSchema(d);
+            final FormsService formsService = FormsService.getInstance();
+            final Document d = formsService.parseXML(this.getSchemaFile());
+            this.schema = SchemaUtil.parseSchema(d);
          }
          catch (Exception e)
          {
@@ -511,6 +553,12 @@ public class CreateFormWizard
    
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
+
+   /** Indicates whether or not the wizard is currently in edit mode */
+   public boolean getEditMode()
+   {
+      return false;
+   }
 
    /**
     * Returns the properties for current configured output methods JSF DataModel
@@ -644,15 +692,23 @@ public class CreateFormWizard
    {
       return this.getFile(FILE_SCHEMA);
    }
+
+   /**
+    * Sets the schema file name
+    */
+   public void setSchemaFileName(final String schemaFileName)
+   {
+      this.schemaFileName = (schemaFileName != null && schemaFileName.length() != 0
+                             ? schemaFileName
+                             : null);
+   }
    
    /**
     * @return Returns the schema file or <tt>null</tt>
     */
    public String getSchemaFileName()
    {
-      // try and retrieve the file and filename from the file upload bean
-      // representing the file we previously uploaded.
-      return this.getFileName(FILE_SCHEMA);
+      return this.schemaFileName;
    }
    
    /**
@@ -693,33 +749,27 @@ public class CreateFormWizard
     */
    public List<SelectItem> getSchemaRootElementNameChoices()
    {
-      if (this.getSchemaFile() == null)
+      List<SelectItem> result = Collections.EMPTY_LIST;
+      if (this.schema != null)
       {
-         return Collections.EMPTY_LIST;
-      }
-      if (this.schemaRootElementNameChoices == null)
-      {
-         this.schemaRootElementNameChoices = new LinkedList<SelectItem>();
-         final FormsService ts = FormsService.getInstance();
-         try
+         if (this.schemaRootElementNameChoices == null)
          {
-            final Document d = ts.parseXML(this.getSchemaFile());
-            final XSModel xsm = SchemaUtil.loadSchema(d);
-            final XSNamedMap elementsMap = xsm.getComponents(XSConstants.ELEMENT_DECLARATION);
+            this.schemaRootElementNameChoices = new LinkedList<SelectItem>();
+            final XSNamedMap elementsMap = this.schema.getComponents(XSConstants.ELEMENT_DECLARATION);
             for (int i = 0; i < elementsMap.getLength(); i++)
             {
                final XSElementDeclaration e = (XSElementDeclaration)elementsMap.item(i);
                this.schemaRootElementNameChoices.add(new SelectItem(e.getName(), e.getName()));
             }
          }
-         catch (Exception e)
-         {
-            final String msg = "unable to parse " + this.getSchemaFileName();
-            this.removeUploadedSchemaFile();
-            Utils.addErrorMessage(msg, e);
-         }
+         result = this.schemaRootElementNameChoices;
       }
-      return this.schemaRootElementNameChoices;
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("getSchemaRootElementNameChoices(" + this.schema +
+                      ") = " + result.size());
+      }
+      return result;
    }
    
    /**

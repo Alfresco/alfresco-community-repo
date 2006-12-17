@@ -29,14 +29,14 @@ function handle_upload_helper(fileInputElement,
   form.appendChild(fileInputElement.cloneNode(true));
 
   var id = document.createElement("input");
-  form.appendChild(id);
   id.type = "hidden";
+  form.appendChild(id);
   id.name = "upload-id";
   id.value = uploadId;
 
   var rp = document.createElement("input");
-  form.appendChild(rp);
   rp.type = "hidden";
+  form.appendChild(rp);
   rp.name = "return-page";
   rp.value = "javascript:window.parent.upload_complete_helper('" + uploadId + "')";
 

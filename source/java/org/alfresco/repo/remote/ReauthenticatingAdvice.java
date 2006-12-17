@@ -8,7 +8,6 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * This is an interceptor that continuosly tries to reauthenticate when

@@ -67,6 +67,7 @@
     
     <Service name="ContentService" mode="none">
         <Method name="getWriter" mode="all"/>
+        <Method name="transform" mode="all"/>
     </Service>
     
     <Service name="CopyService" mode="none">

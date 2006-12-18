@@ -400,7 +400,10 @@ public interface NodeService
     
     /**
      * Gets all child associations where the pattern of the association qualified
-     * name is a match.
+     * name is a match.  Using a {@link org.alfresco.service.namespace.RegexQNamePattern#MATCH_ALL wildcard}
+     * for the type and a specific {@link QName qualified name} for the association is
+     * akin to using the XPath browse expression <b>./{url}localname</b> in the context of the
+     * parent node.
      * 
      * @param nodeRef the parent node - usually a <b>container</b>
      * @param typeQNamePattern the pattern that the type qualified name of the association must match

@@ -42,6 +42,25 @@ public class RegexQNamePattern implements QNamePattern
             {
                 return true;
             }
+
+            @Override
+            public boolean equals(Object obj)
+            {
+                // this is equal if the object's class is the same as this instances
+                if (obj == null)
+                {
+                    return false;
+                }
+                else if (obj.getClass().equals(this.getClass()))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            
         };
     
     private String namespaceUriPattern;

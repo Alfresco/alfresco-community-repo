@@ -107,6 +107,8 @@ public class LuceneTest2 extends TestCase
     QName orderLong = QName.createQName(TEST_NAMESPACE, "orderLong");
 
     QName orderInt = QName.createQName(TEST_NAMESPACE, "orderInt");
+    
+    QName aspectWithChildren = QName.createQName(TEST_NAMESPACE, "aspectWithChildren");
 
     TransactionService transactionService;
 
@@ -391,6 +393,38 @@ public class LuceneTest2 extends TestCase
         super(arg0);
     }
 
+    public void testAuxDataIsPresent() throws Exception
+    {
+        luceneFTS.pause();
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        runBaseTests();
+        
+        LuceneSearcherImpl2 searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null, null);
+        assertEquals(1, results.length()); // one node
+        results.close();
+        
+        nodeService.addAspect(n14, aspectWithChildren, null);
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        searcher = LuceneSearcherImpl2.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null, null);
+        assertEquals(10, results.length()); // one node + 9 aux paths to n14
+        results.close();
+    }
+    
     public void testFirst() throws Exception
     {
         testReadAgainstDelta();

@@ -160,6 +160,14 @@ public interface NodeDaoService
     public Collection<ChildAssociationRef> getChildAssocRefs(Node parentNode);
     
     /**
+     * Get a collection of all child association references for a given parent node.
+     * 
+     * @param parentNode the parent node
+     * @return Returns a collection of association references
+     */
+    public Collection<ChildAssociationRef> getChildAssocRefs(Node parentNode, QName assocQName);
+    
+    /**
      * @return Returns a matching association or null if one was not found
      * 
      * @see ChildAssoc

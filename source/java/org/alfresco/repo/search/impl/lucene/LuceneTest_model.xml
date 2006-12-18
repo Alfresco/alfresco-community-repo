@@ -267,6 +267,22 @@
     </types>
    
    <aspects>
+      <aspect name="test:aspectWithChildren">
+         <title>Aspect With Children</title>
+         <associations>
+             <child-association name="test:unused">
+                 <source>
+                     <mandatory>false</mandatory>
+                     <many>true</many>
+                 </source>
+                 <target>
+                     <class>sys:base</class>
+                     <mandatory>false</mandatory>
+                     <many>true</many>
+                 </target>
+             </child-association>
+         </associations>
+      </aspect>
       <aspect name="test:testSuperAspect">
          <title>Test Super Aspect</title>
       </aspect>

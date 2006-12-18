@@ -203,6 +203,8 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         Method method = invocation.getMethod();
         Class[] params = method.getParameterTypes();
 
+        Boolean hasMethodEntry = null;
+        
         for (ConfigAttributeDefintion cad : supportedDefinitions)
         {
             NodeRef testNodeRef = null;
@@ -213,14 +215,18 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             }
             else if (cad.typeString.equals(ACL_METHOD))
             {
+                if(hasMethodEntry == null)
+                {
+                    hasMethodEntry = Boolean.FALSE;
+                }
+                
                 if (authenticationService.getCurrentUserName().equals(cad.authority))
                 {
-                    return AccessDecisionVoter.ACCESS_GRANTED;
+                    hasMethodEntry = Boolean.TRUE;
                 }
-                else
+                else if(authorityService.getAuthorities().contains(cad.authority)) 
                 {
-                    return authorityService.getAuthorities().contains(cad.authority) ? AccessDecisionVoter.ACCESS_GRANTED
-                            : AccessDecisionVoter.ACCESS_DENIED;
+                    hasMethodEntry = Boolean.TRUE;
                 }
             }
             else if (cad.parameter >= invocation.getArguments().length)
@@ -353,7 +359,14 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             }
         }
 
-        return AccessDecisionVoter.ACCESS_GRANTED;
+        if((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
+        {
+             return AccessDecisionVoter.ACCESS_GRANTED;
+        }
+        else
+        {
+            return AccessDecisionVoter.ACCESS_DENIED;
+        }
     }
 
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)

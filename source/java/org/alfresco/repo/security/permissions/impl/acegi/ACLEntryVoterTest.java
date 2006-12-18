@@ -70,7 +70,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
 
         }
-        
+
         try
         {
             method.invoke(proxy, new Object[] { systemNodeRef });
@@ -80,16 +80,15 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
 
         }
-        
+
         // Check we are allowed access to deleted nodes ..
-        
+
         nodeService.deleteNode(systemNodeRef);
-        
+
         assertNull(method.invoke(proxy, new Object[] { systemNodeRef }));
 
     }
-    
-    
+
     public void testBasicDenyStore() throws Exception
     {
         runAs("andy");
@@ -137,7 +136,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         method.invoke(proxy, new Object[] { null });
 
     }
-    
+
     public void testAllowNullStore() throws Exception
     {
         runAs("andy");
@@ -276,7 +275,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
     {
         runAs("andy");
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testOneNodeRef", new Class[] { NodeRef.class });
@@ -292,13 +292,13 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         method.invoke(proxy, new Object[] { rootNodeRef });
     }
-    
-    
+
     public void testBasicAllow() throws Exception
     {
         runAs("andy");
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testOneNodeRef", new Class[] { NodeRef.class });
@@ -314,12 +314,13 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         method.invoke(proxy, new Object[] { rootNodeRef });
     }
-    
+
     public void testBasicAllowStore() throws Exception
     {
         runAs("andy");
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testOneStoreRef", new Class[] { StoreRef.class });
@@ -340,7 +341,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
     {
         runAs("andy");
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
@@ -361,7 +363,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
     {
         runAs("andy");
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
@@ -382,7 +385,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
     {
         runAs("andy");
 
-        permissionService.setPermission(new SimplePermissionEntry(systemNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(systemNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
@@ -411,9 +415,10 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
     {
         runAs("andy");
 
-        permissionService.setPermission(new SimplePermissionEntry(systemNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ_CHILDREN), "andy",
-                AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(systemNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef,
+                getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
@@ -458,7 +463,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         }
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
         method.invoke(proxy, new Object[] { rootNodeRef, null, null, null });
     }
 
@@ -489,7 +495,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         }
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
         method.invoke(proxy, new Object[] { null, rootNodeRef, null, null });
     }
 
@@ -520,7 +527,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         }
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
         method.invoke(proxy, new Object[] { null, null, rootNodeRef, null });
     }
 
@@ -551,7 +559,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         }
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
         method.invoke(proxy, new Object[] { null, null, null, rootNodeRef });
     }
 
@@ -584,7 +593,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         }
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
         method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef), null, null, null });
     }
 
@@ -617,7 +627,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         }
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
         method.invoke(proxy, new Object[] { null, nodeService.getPrimaryParent(rootNodeRef), null, null });
     }
 
@@ -650,7 +661,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         }
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
         method.invoke(proxy, new Object[] { null, null, nodeService.getPrimaryParent(rootNodeRef), null });
     }
 
@@ -683,7 +695,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         }
 
-        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
+                "andy", AccessStatus.ALLOWED));
         method.invoke(proxy, new Object[] { null, null, null, nodeService.getPrimaryParent(rootNodeRef) });
     }
 
@@ -692,52 +705,91 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod(
-                "testMethod",
-                new Class[] { });
+        Method method = o.getClass().getMethod("testMethod", new Class[] {});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
         ProxyFactory proxyFactory = new ProxyFactory();
-        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("ACL_METHOD.andy")));
+        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("ACL_METHOD.andy", "ACL_METHOD.BANANA")));
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        method.invoke(proxy, new Object[] {  });
+        method.invoke(proxy, new Object[] {});
     }
-    
+
     public void testMethodACL2() throws Exception
     {
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod(
-                "testMethod",
-                new Class[] { });
+        Method method = o.getClass().getMethod("testMethod", new Class[] {});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
         ProxyFactory proxyFactory = new ProxyFactory();
-        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("ACL_METHOD."+PermissionService.ALL_AUTHORITIES)));
+        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("ACL_METHOD.BANANA", "ACL_METHOD."
+                + PermissionService.ALL_AUTHORITIES)));
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        method.invoke(proxy, new Object[] {  });
+        method.invoke(proxy, new Object[] {});
     }
 
-    
+    public void testMethodACL3() throws Exception
+    {
+        runAs("andy");
+
+        Object o = new ClassWithMethods();
+        Method method = o.getClass().getMethod("testMethod", new Class[] {});
+
+        AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
+
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("ACL_METHOD.andy", "ACL_METHOD."
+                + PermissionService.ALL_AUTHORITIES)));
+        proxyFactory.setTargetSource(new SingletonTargetSource(o));
+        Object proxy = proxyFactory.getProxy();
+
+        method.invoke(proxy, new Object[] {});
+
+    }
+
+    public void testMethodACL4() throws Exception
+    {
+        runAs("andy");
+
+        Object o = new ClassWithMethods();
+        Method method = o.getClass().getMethod("testMethod", new Class[] {});
+
+        AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
+
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("ACL_METHOD.woof", "ACL_METHOD.BOO")));
+        proxyFactory.setTargetSource(new SingletonTargetSource(o));
+        Object proxy = proxyFactory.getProxy();
+
+        try
+        {
+            method.invoke(proxy, new Object[] {});
+        }
+        catch (InvocationTargetException e)
+        {
+
+        }
+    }
+
     public static class ClassWithMethods
     {
         public void testMethod()
         {
-            
+
         }
-        
+
         public void testOneStoreRef(StoreRef storeRef)
         {
-            
+
         }
-        
+
         public void testOneNodeRef(NodeRef nodeRef)
         {
 
@@ -763,6 +815,38 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
     public class Interceptor implements MethodInterceptor
     {
         ConfigAttributeDefinition cad = new ConfigAttributeDefinition();
+
+        Interceptor(final String config1, final String config2)
+        {
+            cad.addConfigAttribute(new ConfigAttribute()
+            {
+
+                /**
+                 * Comment for <code>serialVersionUID</code>
+                 */
+                private static final long serialVersionUID = 1L;
+
+                public String getAttribute()
+                {
+                    return config1;
+                }
+
+            });
+            cad.addConfigAttribute(new ConfigAttribute()
+            {
+
+                /**
+                 * Comment for <code>serialVersionUID</code>
+                 */
+                private static final long serialVersionUID = 1L;
+
+                public String getAttribute()
+                {
+                    return config2;
+                }
+
+            });
+        }
 
         Interceptor(final String config)
         {

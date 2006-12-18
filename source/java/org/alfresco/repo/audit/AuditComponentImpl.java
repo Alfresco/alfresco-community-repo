@@ -29,8 +29,10 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.audit.AuditInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -130,7 +132,7 @@ public class AuditComponentImpl implements AuditComponent
                 Method method = mi.getMethod();
                 String methodName = method.getName();
                 String serviceName = publicServiceIdentifier.getPublicServiceName(mi);
-                
+
                 if (!auditInternal)
                 {
                     auditFlag.set(Boolean.TRUE);
@@ -143,7 +145,6 @@ public class AuditComponentImpl implements AuditComponent
                     }
                 }
 
-             
                 if (method.isAnnotationPresent(Auditable.class))
                 {
 
@@ -291,6 +292,18 @@ public class AuditComponentImpl implements AuditComponent
                 {
                     auditInfo.setKeyStore((StoreRef) returnObject);
                 }
+                else if (returnObject instanceof ChildAssociationRef)
+                {
+                    ChildAssociationRef car = (ChildAssociationRef) returnObject;
+                    auditInfo.setKeyStore(car.getChildRef().getStoreRef());
+                    auditInfo.setKeyGUID(car.getChildRef().getId());
+                }
+                else
+                {
+                    s_logger.warn("Key argument is not a node, store or child assoc ref for return object on "
+                            + publicServiceIdentifier.getPublicServiceName(mi) + "." + mi.getMethod().getName()
+                            + " it is " + returnObject.getClass().getName());
+                }
             }
         }
 
@@ -335,33 +348,43 @@ public class AuditComponentImpl implements AuditComponent
             switch (auditable.key())
             {
             case ARG_0:
+                checkArgLength(mi, methodName, serviceName, 0);
                 key = mi.getArguments()[0];
                 break;
             case ARG_1:
+                checkArgLength(mi, methodName, serviceName, 1);
                 key = mi.getArguments()[1];
                 break;
             case ARG_2:
+                checkArgLength(mi, methodName, serviceName, 2);
                 key = mi.getArguments()[2];
                 break;
             case ARG_3:
+                checkArgLength(mi, methodName, serviceName, 3);
                 key = mi.getArguments()[3];
                 break;
             case ARG_4:
+                checkArgLength(mi, methodName, serviceName, 4);
                 key = mi.getArguments()[4];
                 break;
             case ARG_5:
+                checkArgLength(mi, methodName, serviceName, 5);
                 key = mi.getArguments()[5];
                 break;
             case ARG_6:
+                checkArgLength(mi, methodName, serviceName, 6);
                 key = mi.getArguments()[6];
                 break;
             case ARG_7:
+                checkArgLength(mi, methodName, serviceName, 7);
                 key = mi.getArguments()[7];
                 break;
             case ARG_8:
+                checkArgLength(mi, methodName, serviceName, 8);
                 key = mi.getArguments()[8];
                 break;
             case ARG_9:
+                checkArgLength(mi, methodName, serviceName, 9);
                 key = mi.getArguments()[9];
                 break;
             case NO_KEY:
@@ -378,6 +401,25 @@ public class AuditComponentImpl implements AuditComponent
                 else if (key instanceof StoreRef)
                 {
                     auditInfo.setKeyStore((StoreRef) key);
+                }
+                else if (key instanceof ChildAssociationRef)
+                {
+                    ChildAssociationRef car = (ChildAssociationRef) key;
+                    auditInfo.setKeyStore(car.getParentRef().getStoreRef());
+                    auditInfo.setKeyGUID(car.getParentRef().getId());
+                }
+                else if (key instanceof SearchParameters)
+                {
+                    SearchParameters sp = (SearchParameters) key;
+                    if (sp.getStores().size() > 0)
+                    {
+                        auditInfo.setKeyStore(sp.getStores().get(0));
+                    }
+                }
+                else
+                {
+                    s_logger.warn("Key argument is not a node, store or child assoc reference or search parameters on "
+                            + serviceName + "." + methodName + " it is " + key.getClass().getName());
                 }
             }
             auditInfo.setKeyPropertiesAfter(null);
@@ -420,6 +462,15 @@ public class AuditComponentImpl implements AuditComponent
         }
 
         return effectiveAuditMode;
+    }
+
+    private void checkArgLength(MethodInvocation mi, String methodName, String serviceName, int position)
+    {
+        if (mi.getArguments().length <= position)
+        {
+            s_logger.warn("Auditable annotation on "
+                    + serviceName + "." + methodName + " references non existant argument");
+        }
     }
 
     /**

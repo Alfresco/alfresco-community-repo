@@ -389,10 +389,13 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.ALLOWED;
         }
         
+        
+        
         // Get the current authentications
         // Use the smart authentication cache to improve permissions performance
         Authentication auth = authenticationComponent.getCurrentAuthentication();
         Set<String> authorisations = getAuthorisations(auth, nodeRef);
+      
         Serializable key = generateKey(
                 authorisations,
                 nodeRef,
@@ -415,6 +418,11 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.DENIED;
         }
 
+        if (authenticationComponent.getCurrentUserName().equals(authenticationComponent.getSystemUserName()))
+        {
+            return  AccessStatus.ALLOWED;
+        }
+        
         //
         // TODO: Dynamic permissions via evaluators
         //

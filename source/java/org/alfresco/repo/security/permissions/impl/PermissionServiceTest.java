@@ -23,6 +23,7 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -82,6 +83,46 @@ public class PermissionServiceTest extends AbstractPermissionTest
                 getPermission(PermissionService.READ_PROPERTIES), "andy", AccessStatus.ALLOWED);
         allowAndyReadChildren = new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ_CHILDREN),
                 "andy", AccessStatus.ALLOWED);
+    }
+    
+    public void testSystemUserPermissions()
+    {
+        AuthenticationUtil.setSystemUserAsCurrentUser();
+        try
+        {
+            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CONSUMER) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED);
+            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CANCEL_CHECK_OUT) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CHECK_OUT) == AccessStatus.ALLOWED);
+            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.COORDINATOR) == AccessStatus.ALLOWED);
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+    }
+    
+    
+    public void testAdminUserPermissions()
+    {
+        runAs("admin");
+        try
+        {
+            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CONSUMER) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED);
+            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CANCEL_CHECK_OUT) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CHECK_OUT) == AccessStatus.ALLOWED);
+            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.COORDINATOR) == AccessStatus.ALLOWED);
+            
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
     }
     
     public void testWeSetConsumerOnRootIsNotSupportedByHasPermisssionAsItIsTheWrongType()

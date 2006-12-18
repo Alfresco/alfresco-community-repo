@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1041,8 +1042,39 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern)
     {
         Node node = getNodeNotNull(nodeRef);
-        // get the assocs pointing from it
-        Collection<ChildAssociationRef> childAssocRefs = nodeDaoService.getChildAssocRefs(node);
+        
+        Collection<ChildAssociationRef> childAssocRefs = null;
+        // if the type is the wildcard type, and the qname is not a search, then use a shortcut query
+        if (typeQNamePattern.equals(RegexQNamePattern.MATCH_ALL) && qnamePattern instanceof QName)
+        {
+            // get all child associations with the specific qualified name
+            childAssocRefs = nodeDaoService.getChildAssocRefs(node, (QName)qnamePattern);
+        }
+        else
+        {
+            // get all child associations
+            childAssocRefs = nodeDaoService.getChildAssocRefs(node);
+            // remove non-matching assocs
+            Iterator<ChildAssociationRef> iterator = childAssocRefs.iterator();
+            while (iterator.hasNext())
+            {
+                ChildAssociationRef childAssocRef = iterator.next();
+                // does the qname match the pattern?
+                if (!qnamePattern.isMatch(childAssocRef.getQName()) || !typeQNamePattern.isMatch(childAssocRef.getTypeQName()))
+                {
+                    // no match - remove
+                    iterator.remove();
+                }
+            }
+        }
+        // sort the results
+        List<ChildAssociationRef> orderedList = reorderChildAssocs(childAssocRefs);
+        // done
+        return orderedList;
+    }
+    
+    private List<ChildAssociationRef> reorderChildAssocs(Collection<ChildAssociationRef> childAssocRefs)
+    {
         // shortcut if there are no assocs
         if (childAssocRefs.size() == 0)
         {
@@ -1058,17 +1090,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         while(iterator.hasNext())
         {
             ChildAssociationRef childAssocRef = iterator.next();
-            // does the qname match the pattern?
-            if (!qnamePattern.isMatch(childAssocRef.getQName()) || !typeQNamePattern.isMatch(childAssocRef.getTypeQName()))
-            {
-                // no match - remove
-                iterator.remove();
-            }
-            else
-            {
-                childAssocRef.setNthSibling(nthSibling);
-                nthSibling++;
-            }
+            childAssocRef.setNthSibling(nthSibling);
+            nthSibling++;
         }
         // done
         return orderedList;

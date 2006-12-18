@@ -206,6 +206,9 @@
         <property name="mimetypeService">
             <ref bean="mimetypeService" />
         </property>
+        <property name="transformerRegistry">
+            <ref bean="contentTransformerRegistry" />
+        </property>
         <property name="applicableTypes">
         	<list>
         		<value>{http://www.alfresco.org/model/content/1.0}content</value>

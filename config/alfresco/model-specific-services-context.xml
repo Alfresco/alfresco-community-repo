@@ -24,5 +24,18 @@
          </list>
       </property>
    </bean>
+   
+   <bean name="tempFileMarkerInterceptor" class="org.alfresco.repo.model.filefolder.TempFileMarkerInterceptor">
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="filterRegularExpressions">
+         <list>
+            <value><![CDATA[.*\.tmp]]></value>
+            <value><![CDATA[.*\.temp]]></value>
+            <value><![CDATA[\~.*]]></value>
+         </list>
+      </property>
+   </bean>
 
 </beans>

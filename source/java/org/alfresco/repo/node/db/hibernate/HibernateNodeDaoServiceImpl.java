@@ -85,6 +85,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_CHILD_ASSOCS = "node.GetChildAssocs";
     private static final String QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME = "node.GetChildAssocByTypeAndName";
     private static final String QUERY_GET_CHILD_ASSOC_REFS = "node.GetChildAssocRefs";
+    private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME = "node.GetChildAssocRefsByQName";
     private static final String QUERY_GET_NODE_ASSOC = "node.GetNodeAssoc";
     private static final String QUERY_GET_NODE_ASSOCS_TO_AND_FROM = "node.GetNodeAssocsToAndFrom";
     private static final String QUERY_GET_TARGET_ASSOCS = "node.GetTargetAssocs";
@@ -100,6 +101,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static TransactionAwareSingleton<Long> serverIdSingleton = new TransactionAwareSingleton<Long>();
     private final String ipAddress;
 
+    /** used for debugging */
+    private Set<String> changeTxnIdSet;
+
     /**
      * 
      */
@@ -114,6 +118,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             throw new AlfrescoRuntimeException("Failed to get server IP address", e);
         }
+        
+        changeTxnIdSet = new HashSet<String>(0);
     }
 
     /**
@@ -206,17 +212,32 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         Serializable txnId = (Serializable) AlfrescoTransactionSupport.getResource(RESOURCE_KEY_TRANSACTION_ID);
         if (txnId == null)
         {
+            String changeTxnId = AlfrescoTransactionSupport.getTransactionId();
             // no transaction instance has been bound to the transaction
             transaction = new TransactionImpl();
-            transaction.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+            transaction.setChangeTxnId(changeTxnId);
             transaction.setServer(getServer());
             txnId = getHibernateTemplate().save(transaction);
             // bind the id
             AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_TRANSACTION_ID, txnId);
+            
+            if (logger.isDebugEnabled())
+            {
+                if (!changeTxnIdSet.add(changeTxnId))
+                {
+                    // the txn id was already used!
+                    logger.error("Change transaction ID already used: " + transaction);
+                }
+                logger.debug("Created new transaction: " + transaction);
+            }
         }
         else
         {
             transaction = (Transaction) getHibernateTemplate().get(TransactionImpl.class, txnId);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Using existing transaction: " + transaction);
+            }
         }
         return transaction;
     }
@@ -355,7 +376,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         else
         {
-            status.getTransaction().setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
+            // make sure that the status has the latest transaction attached
+            Transaction currentTxn = getCurrentTransaction();
+            status.setTransaction(currentTxn);
         }
     }
 
@@ -655,6 +678,38 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
         };
         List<Object[]> queryResults = (List<Object[]>) getHibernateTemplate().execute(callback);
+        Collection<ChildAssociationRef> refs = convertToChildAssocRefs(parentNode, queryResults);
+        // done
+        return refs;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Collection<ChildAssociationRef> getChildAssocRefs(final Node parentNode, final QName assocQName)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME)
+                    .setLong("parentId", parentNode.getId())
+                    .setParameter("childAssocQName", assocQName);
+                return query.list();
+            }
+        };
+        List<Object[]> queryResults = (List<Object[]>) getHibernateTemplate().execute(callback);
+        Collection<ChildAssociationRef> refs = convertToChildAssocRefs(parentNode, queryResults);
+        // done
+        return refs;
+    }
+
+    /**
+     * <pre>
+     * assocTypeQName, assocQName, assocIsPrimary, assocIndex, ?, childProtocol, childIdentifier, childUuid
+     * </pre> 
+     */
+    private Collection<ChildAssociationRef> convertToChildAssocRefs(Node parentNode, List<Object[]> queryResults)
+    {
         Collection<ChildAssociationRef> refs = new ArrayList<ChildAssociationRef>(queryResults.size());
         NodeRef parentNodeRef = parentNode.getNodeRef();
         for (Object[] row : queryResults)

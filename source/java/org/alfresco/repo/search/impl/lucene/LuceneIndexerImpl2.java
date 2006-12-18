@@ -1325,14 +1325,11 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     counter.increment();
                 }
 
-                // TODO: DC: Should this also include aspect child definitions?
-                QName nodeTypeRef = nodeService.getType(nodeRef);
-                TypeDefinition nodeTypeDef = getDictionaryService().getType(nodeTypeRef);
                 // check for child associations
 
                 if (includeDirectoryDocuments)
                 {
-                    if (nodeTypeDef != null && nodeTypeDef.getChildAssociations().size() > 0)
+                    if (mayHaveChildren(nodeRef))
                     {
                         if (directPaths.contains(pair.getFirst()))
                         {
@@ -1427,6 +1424,34 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         }
 
         return docs;
+    }
+
+    /**
+     * Does the node type or any applied aspect allow this node to have child associations?
+     * 
+     * @param nodeRef
+     * @return
+     */
+    private boolean mayHaveChildren(NodeRef nodeRef)
+    {
+        // 1) Does the type support children?
+        QName nodeTypeRef = nodeService.getType(nodeRef);
+        TypeDefinition nodeTypeDef = getDictionaryService().getType(nodeTypeRef);
+        if ((nodeTypeDef != null) && (nodeTypeDef.getChildAssociations().size() > 0))
+        {
+            return true;
+        }
+        // 2) Do any of the applied aspects support children?
+        Set<QName> aspects = nodeService.getAspects(nodeRef);
+        for (QName aspect : aspects)
+        {
+            AspectDefinition aspectDef = getDictionaryService().getAspect(aspect);
+            if ((aspectDef != null) && (aspectDef.getChildAssociations().size() > 0))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ArrayList<NodeRef> getParents(Path path)

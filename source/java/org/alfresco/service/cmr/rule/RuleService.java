@@ -215,7 +215,7 @@ public interface RuleService
      * @param rule  the rule
      * @return      the owning node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"rule"})
+    @Auditable(key = Auditable.Key.RETURN, parameters = {"rule"})
     public NodeRef getOwningNodeRef(Rule rule);
     
     /**
@@ -227,6 +227,6 @@ public interface RuleService
      * @param action    the action
      * @return          the owning node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"action"})
+    @Auditable(key = Auditable.Key.RETURN, parameters = {"action"})
     public NodeRef getOwningNodeRef(Action action);
 }

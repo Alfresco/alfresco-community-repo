@@ -20,10 +20,13 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -67,6 +70,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 	private ContentService contentService;
 	private CopyService copyService;
     private MimetypeService mimetypeService;
+    private ContentTransformerRegistry transformerRegistry;
     
     /**
      * Set the mime type service
@@ -119,6 +123,16 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 	}
 	
 	/**
+	 * Set the transformer registry
+	 * 
+	 * @param transformerRegistry	the transformer registry
+	 */
+	public void setTransformerRegistry(ContentTransformerRegistry transformerRegistry)
+    {
+        this.transformerRegistry = transformerRegistry;
+    }
+	
+	/**
 	 * Add parameter definitions
 	 */
 	@Override
@@ -151,8 +165,21 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             // it is not content, so can't transform
             return;
         }
+		
+		// Get the source mimetype 
+		ContentData contentData = (ContentData)this.nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_CONTENT);
+		String sourceMimeType = contentData.getMimetype();
+		
 		// Get the mime type
 		String mimeType = (String)ruleAction.getParameterValue(PARAM_MIME_TYPE);
+		
+		// Check that a transformer is available to the transformation before we go any further
+		ContentTransformer contentTransformer = this.transformerRegistry.getTransformer(sourceMimeType, mimeType);
+		if (contentTransformer == null)
+		{
+			// Throw an exception since the transformer is not present
+			throw new NoTransformerException(sourceMimeType, mimeType);
+		}
 		
 		// Get the details of the copy destination
 		NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);

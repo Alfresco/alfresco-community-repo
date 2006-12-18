@@ -18,8 +18,6 @@ package org.alfresco.web.api;
 
 import java.io.IOException;
 
-import javax.servlet.ServletContext;
-
 /**
  * API Service
  * 
@@ -29,13 +27,26 @@ public interface APIService
 {
 
     /**
-     * Initialise service
+     * Gets the required authentication level for execution of this service
      * 
-     * @param context
+     * @return  the required authentication level 
      */
-    public void init(ServletContext context);
-    
+    public APIRequest.RequiredAuthentication getRequiredAuthentication();
 
+    /**
+     * Gets the HTTP method this service is bound to
+     * 
+     * @return  HTTP method
+     */
+    public APIRequest.HttpMethod getHttpMethod();
+
+    /**
+     * Gets the HTTP uri this service is bound to
+     * 
+     * @return  HTTP uri
+     */
+    public String getHttpUri();
+    
     /**
      * Execute service
      * 

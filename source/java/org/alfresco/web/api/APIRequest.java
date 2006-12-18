@@ -37,6 +37,16 @@ public class APIRequest extends HttpServletRequestWrapper
         // TODO: Complete list...
     }
 
+    /**
+     * Enumeration of "required" Authentication level
+     */
+    public enum RequiredAuthentication
+    {
+        None,
+        Guest,
+        User
+    }
+    
     
     /**
      * Construct

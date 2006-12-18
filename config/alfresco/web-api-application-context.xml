@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--  -->   
+   <!--  Web API Authentication -->
+   <!--  -->   
+
+   <!--  TODO: For now, experiment with HTTP Basic Authentication -->
+   <alias alias="web.api.Authentication" name="web.api.BasicAuthentication" />
+   
+   <bean id="web.api.BasicAuthentication" class="org.alfresco.web.api.BasicAuthentication">
+      <property name="authenticationService" ref="AuthenticationService" />
+   </bean>
+
+
+   <!--  -->
+   <!--  Web API Services -->
+   <!--  -->
+
+   <bean id="web.api.TextSearchDescription" class="org.alfresco.web.api.services.TextSearchDescription">
+      <property name="httpUri" value="/search/textsearchdescription.xml" />
+      <property name="templateService" ref="TemplateService" />
+   </bean>
+
+   <bean id="web.api.TextSearch" class="org.alfresco.web.api.services.TextSearch">
+      <property name="httpUri" value="/search/text" />
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="searchService" ref="SearchService" />
+      <property name="templateService" ref="TemplateService"/>
+   </bean>
+   
+</beans>

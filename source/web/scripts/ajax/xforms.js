@@ -61,11 +61,14 @@ dojo.declare("alfresco.xforms.Widget",
                  {
                    dojo.debug("no binding found for " + this.id);
                  }
+                 this.domNode = document.createElement("div");
+                 this.domNode.setAttribute("id", this.id + "-domNode")
+                 this.domNode.widget = this;
+                 dojo.html.setClass(this.domNode, "xformsItem");
                },
                xformsNode: null,
                labelNode: null,
                parent: null,
-               domNode: null,
                domContainer: null,
                setModified: function(b)
                {
@@ -257,25 +260,15 @@ dojo.declare("alfresco.xforms.FilePicker",
                },
                render: function(attach_point)
                {
-                 this.domNode = document.createElement("div");
+                 dojo.html.prependClass(this.domNode, "xformsFilePicker");
                  attach_point.appendChild(this.domNode);
-                 this.domNode.setAttribute("id", this.id + "-widget");
-                 this.domNode.style.width = "100%";
-
-                 this.domNode.widget = this;
-                 dojo.event.browser.addListener(this.domNode,
-                                                "resize", 
-                                                this._filePicker_resizeHandler,
-                                                false);
-                 dojo.event.connect(this.domNode, "onresize", function() { alert('foo'); });
-
                  //XXXarielb support readonly and disabled
-                 this.widget = new FilePickerWidget(this.domNode, this.getInitialValue(), false);
+                 this.widget = new FilePickerWidget(this.domNode, 
+                                                    this.getInitialValue(), 
+                                                    false,
+                                                    this._filePicker_changeHandler,
+                                                    this._filePicker_resizeHandler);
                  this.widget.render();
-                 dojo.event.browser.addListener(this.domNode,
-                                                "change",
-                                                this._filePicker_changeHandler,
-                                                false);
                },
                getValue: function()
                {
@@ -288,15 +281,15 @@ dojo.declare("alfresco.xforms.FilePicker",
                  else
                    this.widget.setValue(value);
                },
-               _filePicker_changeHandler: function(event)
+               _filePicker_changeHandler: function(fpw)
                {
-                 this.xform.setXFormsValue(this.id, this.getValue());
+                 var w = fpw.node.widget;
+                 w.xform.setXFormsValue(w.id, w.getValue());
                },
-               _filePicker_resizeHandler: function(event) 
+               _filePicker_resizeHandler: function(fpw) 
                { 
-                 alert("recieved file picker resize " + event);
-                 var w = event.target.widget;
-                 w.domContainer.style.height = event.target.offsetHeight + "px";
+                 var w = fpw.node.widget;
+                 w.domContainer.style.height = fpw.node.offsetHeight + "px";
                }
              });
 
@@ -311,7 +304,6 @@ dojo.declare("alfresco.xforms.DatePicker",
                {
                  var initial_value = this.getInitialValue() || "";
                
-                 this.domNode = document.createElement("div");
                  attach_point.appendChild(this.domNode);
                  this.widget = document.createElement("input");
                  this.widget.setAttribute("id", this.id + "-widget");
@@ -376,7 +368,6 @@ dojo.declare("alfresco.xforms.TextField",
                render: function(attach_point)
                {
                  var initial_value = this.getInitialValue() || "";
-                 this.domNode = document.createElement("div");
                  attach_point.appendChild(this.domNode);
                
                  this.widget = document.createElement("input");
@@ -428,10 +419,8 @@ dojo.declare("alfresco.xforms.TextArea",
                },
                render: function(attach_point)
                {
-                 this.domNode = document.createElement("div");
                  attach_point.appendChild(this.domNode);
-                 this.domNode.setAttribute("id", this.id);
-                 dojo.html.setClass(this.domNode, "xforms_textArea");
+                 dojo.html.prependClass(this.domNode, "xformsTextArea");
                  this.domNode.innerHTML = this.getInitialValue() || "";
                  tinyMCE.addMCEControl(this.domNode, this.id);
 
@@ -721,8 +710,7 @@ dojo.declare("alfresco.xforms.Group",
                initializer: function(xform, xformsNode) 
                {
                  this.children = [];
-                 this.domNode = document.createElement("div");
-                 this.domNode.setAttribute("id", this.id + "-domNode");
+                 dojo.html.removeClass(this.domNode, "xformsItem");
                  this.showHeader = false;
                },
                setShowHeader: function(showHeader)
@@ -816,9 +804,10 @@ dojo.declare("alfresco.xforms.Group",
                  }
                  var contentDiv = document.createElement("div");
                  contentDiv.setAttribute("id", child.id + "-content");
+                 dojo.html.setClass(contentDiv, "xformsGroupItem");
                  child.domContainer.appendChild(contentDiv);
-                 contentDiv.style.position = "relative";
-                 contentDiv.style.marginRight = "2px";
+
+
                  contentDiv.style.left = (child instanceof alfresco.xforms.Group 
                                           ? "0px" 
                                           : "30%");
@@ -881,9 +870,9 @@ dojo.declare("alfresco.xforms.Group",
                {
                  this.domNode.widget = this;
                  attach_point.appendChild(this.domNode);
-                 dojo.html.setClass(this.domNode, "xforms_group");
+                 dojo.html.setClass(this.domNode, "xformsGroup");
 
-                 if (djConfig.isDebug)
+                 if (false && djConfig.isDebug)
                  {
                    var idNode = document.createElement("div");
                    idNode.style.backgroundColor = "red";
@@ -894,7 +883,7 @@ dojo.declare("alfresco.xforms.Group",
                  this.groupHeaderNode = document.createElement("div");
                  this.groupHeaderNode.id = this.id + "-groupHeaderNode";
                  this.domNode.appendChild(this.groupHeaderNode);
-                 dojo.html.setClass(this.groupHeaderNode, "xforms_groupHeader");
+                 dojo.html.setClass(this.groupHeaderNode, "xformsGroupHeader");
                  this.groupHeaderNode.style.display = "none";
 
                  this.toggleExpandedImage = document.createElement("img");
@@ -1038,7 +1027,7 @@ dojo.declare("alfresco.xforms.Repeat",
                  else
                    result.parentNode.appendChild(this.repeatControls[position]);
 
-                 dojo.html.setClass(this.repeatControls[position], "xforms_repeatControls");
+                 dojo.html.setClass(this.repeatControls[position], "xformsRepeatControls");
                  this.repeatControls[position].style.width = repeatControlsWidth + "px";
                  this.repeatControls[position].style.backgroundColor = result.style.backgroundColor;
 
@@ -1328,9 +1317,9 @@ dojo.declare("alfresco.xforms.Trigger",
                  attach_point.appendChild(nodeRef);
                  this.widget = dojo.widget.createWidget("Button", 
                                                         {
-                                                        widgetId: this.id + "-widget",
-                                                            caption: this.getLabel() + " " + this.id
-                                                            }, 
+                                                          widgetId: this.id + "-widget",
+                                                          caption: this.getLabel() + " " + this.id
+                                                        }, 
                                                         nodeRef);
                  dojo.event.connect(this.widget, "onClick", this, this._clickHandler);
                  this.domContainer.style.display = "none";
@@ -1909,7 +1898,7 @@ function _show_error(msg)
   {
     errorDiv = document.createElement("div");
     errorDiv.setAttribute("id", "alfresco-xforms-error");
-    dojo.html.setClass(errorDiv, "infoText statusErrorText xforms_error");
+    dojo.html.setClass(errorDiv, "infoText statusErrorText xformsError");
     var alfUI = document.getElementById("alfresco-xforms-ui");
     dojo.dom.prependChild(errorDiv, alfUI);
   }
@@ -1933,7 +1922,7 @@ function _get_ajax_loader_element()
     return result;
   result = document.createElement("div");
   result.setAttribute("id", "alfresco-ajax-loader");
-  dojo.html.setClass(result, "xforms_ajaxLoader");
+  dojo.html.setClass(result, "xformsAjaxLoader");
   dojo.style.hide(result);
   document.body.appendChild(result);
   return result;
@@ -2067,11 +2056,13 @@ if (!Array.prototype.indexOf)
   }
 }
 
-function FilePickerWidget(node, value, readonly)
+function FilePickerWidget(node, value, readonly, change_callback, resize_callback)
 {
   this.node = node;
   this.value = value == null || value.length == 0 ? null : value;
   this.readonly =  readonly || false;
+  this.change_callback = change_callback;
+  this.resize_callback = resize_callback;
 }
 
 FilePickerWidget._uploads = [];
@@ -2137,8 +2128,12 @@ getValue: function()
 setValue: function(v)
 {
   this.value = (v == null || v.length == 0 ? null : v);
+  if (this.selectedPathInput)
+  {
+    this.selectedPathInput.value = v;
+  }
 
-  alfresco.event.dispatchEvent(this.selectedPathInput, "change", {});
+  this.change_callback(this);
 },
 setReadonly: function(r)
 {
@@ -2159,12 +2154,12 @@ _showStatus: function(text)
   {
     this.statusDiv = d.createElement("div");
     this.node.insertBefore(this.statusDiv, this.node.firstChild);
-    dojo.html.setClass(this.statusDiv, "infoText xforms_filePicker_status");
+    dojo.html.setClass(this.statusDiv, "infoText xformsFilePickerStatus");
     this.statusDiv.appendChild(d.createTextNode(text));
     this.node.style.height = (parseInt(this.node.style.height) +
                               dojo.style.getMarginHeight(this.statusDiv) +
                               this.statusDiv.offsetHeight) + "px";
-    alfresco.event.dispatchEvent(this.node, "resize", {});
+    this.resize_callback(this);
   }
   else
   {
@@ -2179,21 +2174,20 @@ _hideStatus: function()
                               this.statusDiv.offsetHeight) + "px";
     dojo.dom.removeChildren(this.statusDiv);
     dojo.dom.removeNode(this.statusDiv);
-    alfresco.event.dispatchEvent(this.node, "resize", {});
+    this.resize_callback(this);
   }
 },
 _showSelectedValue: function()
 {
   var d = this.node.ownerDocument;
   dojo.dom.removeChildren(this.node);
-  dojo.html.setClass(this.node, "selector");
 
   this.node.style.height = "20px";
   this.node.style.lineHeight = this.node.style.height;
   this.node.style.position = "relative";
   this.node.style.whiteSpace = "nowrap";
 
-  alfresco.event.dispatchEvent(this.node, "resize", {});
+  this.resize_callback(this);
 
   this.selectedPathInput = d.createElement("input");
   this.selectedPathInput.type = "text";
@@ -2214,7 +2208,6 @@ _showSelectedValue: function()
                                         ((this.selectButton.offsetWidth +
                                           dojo.style.getMarginWidth(this.selectButton)) /
                                          dojo.style.getContentBoxWidth(this.node))) * 100 + "%";
-  alert(this.selectedPathInput.style.width);
   dojo.event.browser.addListener(this.selectButton, 
                                  "click", 
                                  function(event)
@@ -2255,14 +2248,14 @@ _showPicker: function(data)
                                 parseInt(this.statusDiv.style.marginTop) +
                                 parseInt(this.statusDiv.style.marginBottom))
                              : 0) + "px");
-  alfresco.event.dispatchEvent(this.node, "resize", {});
+  this.resize_callback(this);
 
   var currentPath = data.getElementsByTagName("current-node")[0];
   currentPath = currentPath.getAttribute("webappRelativePath");
   var currentPathName = currentPath.replace(/.*\/([^/]+)/, "$1")
 
   var headerDiv = d.createElement("div");
-  dojo.html.setClass(headerDiv, "xforms_filePicker_header");
+  dojo.html.setClass(headerDiv, "xformsFilePickerHeader");
   this.node.appendChild(headerDiv);
   headerDiv.appendChild(d.createTextNode("In: "));
 
@@ -2270,7 +2263,7 @@ _showPicker: function(data)
   this.headerMenuTriggerLink.filePickerWidget = this;
   this.headerMenuTriggerLink.setAttribute("href", "javascript:void(0)");
   this.headerMenuTriggerLink.setAttribute("webappRelativePath", currentPath);
-  dojo.html.setClass(headerMenuTriggerLink, "xforms_filePicker_headerMenuTrigger");
+  dojo.html.setClass(this.headerMenuTriggerLink, "xformsFilePickerHeaderMenuTrigger");
   headerDiv.appendChild(this.headerMenuTriggerLink);
 
   dojo.event.connect(this.headerMenuTriggerLink,
@@ -2379,7 +2372,7 @@ _showPicker: function(data)
   this.node.appendChild(this.contentDiv);
 
   var footerDiv = d.createElement("div");
-  dojo.html.setClass(footerDiv, "xforms_filePicker_footer");
+  dojo.html.setClass(footerDiv, "xformsFilePickerFooter");
   this.node.appendChild(footerDiv);
 
   var cancelButton = d.createElement("input");
@@ -2415,8 +2408,7 @@ _showPicker: function(data)
     row.setAttribute("id", name + "-row");
     this.contentDiv.appendChild(row);
     row.rowIndex = i;
-    dojo.html.setClass("xforms_filePicker_row xforms_row" +
-                       (row.rowIndex % 2 ? "Even" : "Odd"));
+    dojo.html.setClass(row, "xformsFilePickerRow xformsRow" + (row.rowIndex % 2 ? "Even" : "Odd"));
     dojo.event.browser.addListener(row,
                                    "mouseover", 
                                    function(event)
@@ -2481,8 +2473,8 @@ _showPicker: function(data)
     dojo.event.connect(e, "onclick", function(event)
                        {
                          var w = event.target.filePickerWidget;
-                         w._showSelectedValue();
                          w.setValue(event.target.name);
+                         w._showSelectedValue();
                        });
   }
 },
@@ -2491,7 +2483,7 @@ _showAddContentPanel: function(addContentLink, currentPath)
   var d = this.node.ownerDocument;
   this.addContentDiv = d.createElement("div");
   this.contentDiv.style.opacity = .3;
-  dojo.html.setClass(this.addContentDiv, "xforms_filePicker_addContent");
+  dojo.html.setClass(this.addContentDiv, "xformsFilePickerAddContent");
   this.node.insertBefore(this.addContentDiv, this.contentDiv);
 
   var e = d.createElement("div");
@@ -2573,7 +2565,7 @@ _openParentPathMenu: function(target, path)
   };
   d.addEventListener("click", parentPathMenu_documentClickHandler, true);
 
-  dojo.html.setClass(this.parentPathMenu, "xforms_filePicker_parentPathMenu");
+  dojo.html.setClass(this.parentPathMenu, "xformsFilePickerParentPathMenu");
 
   var left = 0;
   var top = 0;
@@ -2650,47 +2642,3 @@ _openParentPathMenu: function(target, path)
   this.node.appendChild(this.parentPathMenu);
 }
 };
-
-alfresco.event = new function()
-{
-  this.addListener = function(node, eventName, fp, capture)
-  {
-    if (node.addEventListener)
-    {
-      node.addEventListener(eventName, fp, capture);
-    }
-    else
-    {
-      node.attachEvent("on" + eventName.toLowerCase(), function() { fp(window.event) });
-    }
-  },
-  this.dispatchEvent = function(target, eventName, properties)
-  {
-    if (document.createEvent)
-    {
-      var event = document.createEvent("UIEvents");
-      event.initUIEvent(eventName, true, true, window, 0);
-      for (var i in properties)
-      {
-        event[i] = properties[i];
-      }
-      target.dispatchEvent(event);
-    }
-    else
-    {
-      var el = document.createElement("public");
-      document.body.appendChild(el);
-      el = document.createElement("event");
-      document.body.lastChild.appendChild(el);
-      el.setAttribute("name", eventName);
-
-      var event = document.createEventObject();
-      for (var i in properties)
-      {
-        event[i] = properties[i];
-      }
-      target.fireEvent("on" + eventName.toLowerCase(), event);
-    }
-  }
-}
-

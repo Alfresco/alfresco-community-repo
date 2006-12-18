@@ -89,8 +89,7 @@ public class XFormsProcessor
       Element e = result.createElement("link");
       e.setAttribute("rel", "stylesheet");
       e.setAttribute("type", "text/css");
-      e.setAttribute("src", cp + "/css/xforms.css");
-      e.appendChild(result.createTextNode("\n"));
+      e.setAttribute("href", cp + "/css/xforms.css");
       div.appendChild(e);      
 
       // a script with config information and globals.

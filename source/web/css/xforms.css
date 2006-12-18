@@ -1,4 +1,9 @@
-.xforms_group
+.xformsItem
+{
+/*	border: 1px dashed blue; */
+}
+
+.xformsGroup
 {
 	position: relative;
 	top: 0px;
@@ -7,11 +12,18 @@
 	margin-bottom: 10px;
 }
 
-.xforms_groupHeader
+.xformsGroupItem
+{
+	position: relative;
+	margin-right: 2px;
+/*	border: 1px dashed #cccccc; */
+}
+
+.xformsGroupHeader
 {
 	position: relative;
 	top: 0px;
-	left: px;
+	left: 0px;
 	height: 20px;
 	line-height: 20px;
 	background-color: #cddbe8;
@@ -19,12 +31,12 @@
 	width: 100%;
 }
 
-.xforms_textArea
+.xformsTextArea
 {
 	height: 200px;
 }
 
-.xforms_repeatControl
+.xformsRepeatControl
 {
 	position: relative;
 	white-space: nowrap;
@@ -33,28 +45,28 @@
 	line-height: 20px;
 }
 
-.xforms_rowEven
+.xformsRowEven
 {
 	background-color: #f0f0ee;
 }
 
-.xforms_rowOdd
+.xformsRowOdd
 {
 	background-color: #ffffff;
 }
 
-.xforms_rowHover
+.xformsRowHover
 {
 	background-color: #ffffcc;
 }
 
-.xforms_error
+.xformsError
 {
 	padding: 2px;
 	border: 1px solid #003366;
 }
 
-.xforms_ajaxLoader
+.xformsAjaxLoader
 {
 	position: absolute;
 	top: 0px;
@@ -63,7 +75,12 @@
 	background-color: red;
 }
 
-.xforms_filePicker_status
+.xformsFilePicker
+{
+	width: 100%;
+}
+
+.xformsFilePickerStatus
 {
 	padding: 2px;
 	border: 1px solid #003366;
@@ -72,7 +89,7 @@
 	text-align: center;
 }
 
-.xforms_filePicker_header
+.xformsFilePickerHeader
 {
 	position: relative;
 	width: 100%;
@@ -82,7 +99,7 @@
 	padding-left: 2px;
 }
 
-.xforms_filePicker_headerMenuTrigger
+.xformsFilePickerHeaderMenuTrigger
 {
 	padding: 2px;
 	font-weight: bold;
@@ -90,7 +107,7 @@
 	border: 1px solid lightgrey;
 }
 
-.xforms_filePicker_footer
+.xformsFilePickerFooter
 {
 	background-color: lightgrey;
 	text-align: center;
@@ -98,14 +115,14 @@
 	line-height: 30px;
 }
 
-.xforms_filePicker_row
+.xformsFilePickerRow
 {
 	position: relative;
 	height: 20px;
 	line-height: 20px;
 }
 
-.xforms_filePicker_addContent
+.xformsFilePickerAddContent
 {
 	background-color: lightgrey;
 	position: absolute;
@@ -116,7 +133,7 @@
 	line-height: 20px;
 }
 
-.xforms_filePicker_parentPathMenu
+.xformsFilePickerParentPathMenu
 {
 	position: absolute;
 	background-color: lightgrey;

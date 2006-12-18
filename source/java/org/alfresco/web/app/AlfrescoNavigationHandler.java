@@ -122,7 +122,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       
       // reset the dispatch context
-      Object bean = FacesHelper.getManagedBean(context, CONFIG_NAV_BEAN);
+      Object bean = FacesHelper.getManagedBean(context, NavigationBean.BEAN_NAME);
       if (bean instanceof NavigationBean)
       {
          ((NavigationBean)bean).resetDispatchContext();

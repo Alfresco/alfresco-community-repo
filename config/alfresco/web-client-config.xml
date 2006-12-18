@@ -45,7 +45,7 @@
          <search-and-terms>false</search-and-terms>
           
          <!-- Limit search results. -1 for unlimited. -->
-         <search-max-results>-1</search-max-results>
+         <search-max-results>500</search-max-results>
          
          <!-- Limit search results within selectors, -1 for unlimited. -->
          <selectors-search-max-results>500</selectors-search-max-results>

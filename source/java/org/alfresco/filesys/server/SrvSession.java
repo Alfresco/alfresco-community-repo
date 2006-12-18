@@ -502,7 +502,7 @@ public abstract class SrvSession
      * @return boolean
      * @exception AlfrescoRuntimeException
      */
-    private final boolean beginTransaction(TransactionService transService, boolean readOnly)
+    public final boolean beginTransaction(TransactionService transService, boolean readOnly)
         throws AlfrescoRuntimeException
     {
         boolean created = false;

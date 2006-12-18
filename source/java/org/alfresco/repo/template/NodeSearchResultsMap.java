@@ -48,7 +48,7 @@ public class NodeSearchResultsMap extends BaseSearchResultsMap
         if (key != null)
         {
             String ref = key.toString().replace(":", "\\:");
-            ref = ref.replace("/", "\\/");
+            ref = "ID:" + ref.replace("/", "\\/");
             
             List<TemplateNode> results = query(ref);
             

@@ -25,6 +25,7 @@
 #include "util\DataBuffer.h"
 #include "util\FileName.h"
 #include "util\Integer.h"
+#include "util\Debug.h"
 
 #include <shellapi.h>
 
@@ -68,6 +69,22 @@ BOOL CAlfrescoApp::InitInstance()
 	CWinApp::InitInstance();
 	AfxEnableControlContainer();
 
+	// Check if debug logging is enabled
+
+	char dbgLogName[MAX_PATH];
+	size_t dbgLogSize;
+
+	if ( getenv_s( &dbgLogSize, dbgLogName, sizeof( dbgLogName), "ALFDEBUG") == 0) {
+
+		// Enable debug output
+
+		Debug::openLog( dbgLogName);
+
+		// Log the application startup
+
+		DBGOUT_TS << "---------- Desktop client app started ----------" << endl; 
+	}
+
 	// Get the application path
 
 	String appPath = __wargv[0];
@@ -76,6 +93,7 @@ BOOL CAlfrescoApp::InitInstance()
 
 	if ( pos < 0) {
 		AfxMessageBox( L"Invalid application path", MB_OK | MB_ICONSTOP);
+		DBGOUT_TS << "Error, bad application path, " << appPath << endl;
 		return 1;
 	}
 
@@ -91,9 +109,28 @@ BOOL CAlfrescoApp::InitInstance()
 
 		try {
 
+			// DEBUG
+
+			DBGOUT_TS << "Using folder " << folderPath << endl;
+
 			// Get the action information
 
 			AlfrescoActionInfo actionInfo = alfresco.getActionInformation(exeName);
+
+			// DEBUG
+
+			if ( HAS_DEBUG) {
+				DBGOUT_TS << "Action " << actionInfo.getName() << endl;
+				DBGOUT_TS << "  PreProcess: ";
+
+				if ( actionInfo.hasPreProcessAction( PreConfirmAction))
+					DBGOUT << "Confirm ";
+				if ( actionInfo.hasPreProcessAction( PreCopyToTarget))
+					DBGOUT << "CopyToTarget ";
+				if ( actionInfo.hasPreProcessAction( PreLocalToWorkingCopy))
+					DBGOUT << "LocalToWorkingCopy";
+				DBGOUT << endl;
+			}
 
 			// Check if the action should be confirmed
 
@@ -105,10 +142,16 @@ BOOL CAlfrescoApp::InitInstance()
 				if ( confirmMsg.length() == 0)
 					confirmMsg = L"Run action ?";
 
+				// DEBUG
+
+				DBGOUT_TS << "Confirm action, message = " << confirmMsg << endl;
+
 				// Display a confirmation dialog
 
-				if ( AfxMessageBox( confirmMsg, MB_OKCANCEL | MB_ICONQUESTION) == IDCANCEL)
+				if ( AfxMessageBox( confirmMsg, MB_OKCANCEL | MB_ICONQUESTION) == IDCANCEL) {
+					DBGOUT_TS << "User cancelled action" << endl;
 					return FALSE;
+				}
 			}
 
 			// Check if the action supports multiple paths, if not then call the action once for each supplied path
@@ -164,6 +207,7 @@ BOOL CAlfrescoApp::InitInstance()
 	}
 	else {
 		AfxMessageBox( L"Not a valid Alfresco CIFS folder", MB_OK | MB_ICONSTOP);
+		DBGOUT_TS << "Error, not a valid Alfresco CIFS folder, " << folderPath << endl;
 		return 1;
 	}
 
@@ -198,6 +242,10 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 
 		String curFile = paths.getStringAt( i);
 
+		// DEBUG
+
+		DBGOUT_TS << "Parameter: " << curFile << endl;
+
 		// Check if the path is on an Alfresco mapped drive
 
 		if ( alfresco.isMappedDrive() && curFile.startsWithIgnoreCase( alfresco.getDrivePath())) {
@@ -223,10 +271,12 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 
 			if ( isDir && actionInfo.supportsFolders() == false) {
 				AfxMessageBox(L"Action does not support folders", MB_OK | MB_ICONSTOP);
+				DBGOUT_TS << "Error, action does not support folders" << endl;
 				return false;
 			}
 			else if ( actionInfo.supportsFiles() == false) {
 				AfxMessageBox(L"Action does not support files", MB_OK | MB_ICONSTOP);
+				DBGOUT_TS << "Error, action does not support files" << endl;
 				return false;
 			}
 
@@ -244,10 +294,12 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 
 				if ( isDir == false && actionInfo.hasAttribute(AttrClientFiles) == false) {
 					AfxMessageBox(L"Action does not support local files", MB_OK | MB_ICONSTOP);
+					DBGOUT_TS << "Error, action does not support local files" << endl;
 					return false;
 				}
 				else if ( isDir == true && actionInfo.hasAttribute(AttrClientFolders) == false) {
 					AfxMessageBox(L"Action does not support local folders", MB_OK | MB_ICONSTOP);
+					DBGOUT_TS << "Error, action does not support local folders" << endl;
 					return false;
 				}
 
@@ -260,10 +312,12 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 
 					if ( fInfo->getLockType() != LockNone) {
 						AfxMessageBox( L"Cannot copy file to Alfresco folder, destination file is locked", MB_OK | MB_ICONEXCLAMATION);
+						DBGOUT_TS << "Error, cannot copy to Alfresco folder, destination file is locked" << endl;
 						return false;
 					}
 					else if ( actionInfo.hasPreProcessAction(PreLocalToWorkingCopy) == true && fInfo->isWorkingCopy() == false) {
 						AfxMessageBox( L"Cannot copy to Alfresco folder, destination must overwrite a working copy", MB_OK | MB_ICONEXCLAMATION);
+						DBGOUT_TS << "Error, cannot copy to Alfresco folder, destination must overwrite a working copy" << endl;
 						return false;
 					}
 				}
@@ -274,6 +328,7 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 					CString msg;
 					msg.FormatMessage( L"No matching working copy for %1", curName.data());
 					AfxMessageBox( msg, MB_OK | MB_ICONEXCLAMATION);
+					DBGOUT_TS << "Error, no matching working copy for " << curName << endl;
 					return false;
 				}
 
@@ -293,6 +348,7 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 						msg.FormatMessage( isDir ? L"Failed to copy folder %1" : L"Failed to copy file %1", curFile.data());
 
 						AfxMessageBox( msg, MB_OK | MB_ICONSTOP);
+						DBGOUT_TS << "Error, copy failed for " << curName << endl;
 						return false;
 					}
 					else {
@@ -302,9 +358,14 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 						CString msg;
 						msg.FormatMessage( L"Copy aborted for %1", curFile.data());
 						AfxMessageBox( msg, MB_OK | MB_ICONSTOP);
+						DBGOUT_TS << "Error, copy aborted by user, " << curName << endl;
 						return false;
 					}
 				}
+
+				// DEBUG
+
+				DBGOUT_TS << "Added target " << curName << endl;
 
 				// Add a desktop target for the copied file
 
@@ -355,6 +416,7 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 								msg.FormatMessage( isDir ? L"Failed to copy folder %1" : L"Failed to copy file %1", curFile.data());
 
 								AfxMessageBox( msg, MB_OK | MB_ICONSTOP);
+								DBGOUT_TS << "Error, copy failed for " << curName << endl;
 								return false;
 							}
 							else {
@@ -364,6 +426,7 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 								CString msg;
 								msg.FormatMessage( L"Copy aborted for %1", curFile.data());
 								AfxMessageBox( msg, MB_OK | MB_ICONSTOP);
+								DBGOUT_TS << "Error, copy aborted for " << curName << endl;
 								return false;
 							}
 						}
@@ -380,6 +443,10 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 						pTarget = new DesktopTarget( isDir ? TargetFolder : TargetFile, rootRelPath);
 					}
 				}
+
+				// DEBUG
+
+				DBGOUT_TS << "Added target " << pTarget->getTarget() << endl;
 
 				// Add the desktop target
 
@@ -402,6 +469,10 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
  * @return bool
  */
 bool CAlfrescoApp::copyFilesUsingShell(const String& fromFileFolder, const String& toFolder, bool& aborted) {
+
+	// DEBUG
+
+	DBGOUT_TS << "Copy from " << fromFileFolder << " to " << toFolder << endl;
 
 	// Build the from/to paths, must be double null terminated
 
@@ -469,6 +540,7 @@ bool CAlfrescoApp::runAction( AlfrescoInterface& alfresco, StringList& pathList,
 
 		if ( actionInfo.allowsNoParameters() == false && desktopParams.numberOfTargets() == 0) {
 			AfxMessageBox( L"No parameters for action", MB_OK | MB_ICONEXCLAMATION);
+			DBGOUT_TS << "Error, no parameters for action" << endl;
 			return false;
 		}
 
@@ -484,6 +556,10 @@ bool CAlfrescoApp::runAction( AlfrescoInterface& alfresco, StringList& pathList,
 
 			if ( response.getStatus() == StsCommandLine) {
 
+				// DEBUG
+
+				DBGOUT_TS << "Action returned command line, " << response.getStatusMessage() << endl;
+
 				// Launch a process using the command line
 
 				sts = doCommandLine( alfresco, response.getStatusMessage());
@@ -492,6 +568,10 @@ bool CAlfrescoApp::runAction( AlfrescoInterface& alfresco, StringList& pathList,
 			// Check if a web browser should be launched with a URL
 
 			else if ( response.getStatus() == StsLaunchURL) {
+
+				// DEBUG
+
+				DBGOUT_TS << "Action returned URL, " << response.getStatusMessage() << endl;
 
 				// Use the Windows shell to open the URL
 
@@ -534,6 +614,8 @@ bool CAlfrescoApp::runAction( AlfrescoInterface& alfresco, StringList& pathList,
 					msg = errMsg.data();
 
 				AfxMessageBox( msg, MB_OK | MB_ICONERROR);
+
+				DBGOUT_TS << "Action returned error status, " << msg << endl;
 			}
 		}
 		else if ( response.hasStatusMessage()) {
@@ -543,6 +625,8 @@ bool CAlfrescoApp::runAction( AlfrescoInterface& alfresco, StringList& pathList,
 			CString msg;
 			msg.FormatMessage( L"Action returned message\n\n%1", response.getStatusMessage().data());
 			AfxMessageBox( msg, MB_OK | MB_ICONINFORMATION);
+
+			DBGOUT_TS << "Action returned error message, " << msg << endl;
 		}
 	}
 
@@ -684,6 +768,10 @@ bool CAlfrescoApp::doCommandLine( AlfrescoInterface& alfresco, const String& cmd
 		CString msg;
 		msg.FormatMessage( L"Failed to launch command line\n\n%1\n\nError %2!d!", cmdLine.data(), GetLastError());
 		AfxMessageBox( msg, MB_OK | MB_ICONERROR);
+
+		// DEBUG
+
+		DBGOUT_TS << "Error, failed to launch command line, status " << GetLastError() << endl;
 	}
 	else
 		sts = true;

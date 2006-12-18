@@ -16,6 +16,7 @@
  */
 package org.alfresco.filesys.ftp;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -37,6 +38,11 @@ public class FTPDate
     protected final static String[] _months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
             "Nov", "Dec" };
 
+    // Machine listing date/time formatters
+    
+    protected final static SimpleDateFormat _mlstFormat     = new SimpleDateFormat( "yyyyMMddHHmmss");
+    protected final static SimpleDateFormat _mlstFormatLong = new SimpleDateFormat( "yyyyMMddHHmmss.SSS");
+    
     /**
      * Pack a date string in Unix format The format is 'Mmm dd hh:mm' if the file is less than six
      * months old, else the format is 'Mmm dd yyyy'.
@@ -103,5 +109,27 @@ public class FTPDate
                 buf.append("0");
             buf.append(min);
         }
+    }
+
+    /**
+     * Return a machine listing date/time, in the format 'YYYYMMDDHHSS'.
+     * 
+     * @param dateTime long
+     * @return String
+     */
+    public final static String packMlstDateTime( long dateTime)
+    {
+    	return _mlstFormat.format( new Date( dateTime));
+    }
+
+    /**
+     * Return a machine listing date/time, in the format 'YYYYMMDDHHSS.sss'.
+     * 
+     * @param dateTime long
+     * @return String
+     */
+    public final static String packMlstDateTimeLong( long dateTime)
+    {
+    	return _mlstFormatLong.format( new Date( dateTime));
     }
 }

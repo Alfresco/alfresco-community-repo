@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 
 import org.alfresco.filesys.server.ServerListener;
@@ -46,8 +47,8 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
 
     // Constants
     //
-    
     // Session Thread group
+
     private static final ThreadGroup THREAD_GROUP_SESSION = new ThreadGroup("FTP_SESSION_GROUP");
     
     // Listen backlog for the server socket
@@ -86,6 +87,14 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
 
     private String m_localFTPaddress;
 
+    // SITE command interface
+    
+    private FTPSiteInterface m_siteInterface;
+    
+    // Default character encoding to use for file names
+    
+    private String m_charSet;
+    
     /**
      * Class constructor
      * 
@@ -122,6 +131,12 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
                 logger.error(ex);
             }
         }
+        
+        // Set the default character set
+        
+        m_charSet = config.getFTPCharacterSet();
+        if ( m_charSet == null)
+        	m_charSet = Charset.defaultCharset().name();
     }
 
     /**
@@ -334,6 +349,16 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
     }
 
     /**
+     * Get the character set to use for file name encoding/decoding
+     * 
+     * @return String
+     */
+    public final String getCharacterSet()
+    {
+    	return m_charSet;
+    }
+    
+    /**
      * Notify the server that a user has logged on.
      * 
      * @param sess SrvSession
@@ -357,6 +382,8 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
         if (logger.isDebugEnabled() && hasDebug())
         {
             logger.debug("FTP Server starting on port " + getPort());
+            if ( getCharacterSet() != null)
+            	logger.debug( "Using character set " + getCharacterSet());
         }
 
         // Create a server socket to listen for incoming FTP session requests
@@ -581,5 +608,35 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
         // Fire a server startup event
 
         fireServerEvent(ServerListener.ServerStartup);
+    }
+    
+    /**
+     * Check if the site interface is valid
+     * 
+     * @return boolean
+     */
+    public final boolean hasSiteInterface()
+    {
+    	return m_siteInterface != null ? true : false;
+    }
+    
+    /**
+     * Return the site interface
+     * 
+     * @return FTPSiteInterface
+     */
+    public final FTPSiteInterface getSiteInterface()
+    {
+    	return m_siteInterface;
+    }
+    
+    /**
+     * Set the site specific commands interface
+     * 
+     * @param siteInterface FTPSiteInterface
+     */
+    public final void setSiteInterface( FTPSiteInterface siteInterface)
+    {
+    	m_siteInterface = siteInterface;
     }
 }

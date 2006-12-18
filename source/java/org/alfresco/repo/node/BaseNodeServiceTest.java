@@ -645,12 +645,17 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // control checks
         assertEquals("n6 not present", 1, countNodesByReference(n6Ref));
         assertEquals("n8 not present", 1, countNodesByReference(n8Ref));
+        assertTrue("n8 exists failure", nodeService.exists(n8Ref));
         assertEquals("n6 primary parent association not present on n3", 1, countChildrenOfNode(n3Ref));
         assertEquals("n6 secondary parent association not present on n4", 1, countChildrenOfNode(n4Ref));
         assertEquals("n8 secondary parent association not present on n7", 1, countChildrenOfNode(n7Ref));
         
         // delete n6
         nodeService.deleteNode(n6Ref);
+        
+        // ensure that we can't see cascaded nodes in-transaction
+        assertFalse("n8 not cascade deleted in-transaction", nodeService.exists(n8Ref));
+        
         // commit to check
         setComplete();
         endTransaction();

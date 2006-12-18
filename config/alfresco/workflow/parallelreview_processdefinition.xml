@@ -6,14 +6,7 @@
 
     <start-state name="start">
         <task name="wf:submitParallelReviewTask" swimlane="initiator" />
-        <transition name="" to="startreview">
-            <script>
-                <variable name="wf_approveCount" access="write" />
-                <expression>
-                    wf_approveCount = 0;
-                </expression>
-            </script>
-        </transition>
+        <transition name="" to="startreview"/>
     </start-state>
 
     <node name="startreview">
@@ -21,6 +14,14 @@
             <foreach>#{bpm_assignees}</foreach>
             <var>reviewer</var>
         </action>
+        <event type="node-enter">
+            <script>
+                <variable name="wf_approveCount" access="write" />
+                <expression>
+                    wf_approveCount = 0;
+                </expression>
+            </script>
+        </event>
         <transition name="review" to="review" />
     </node>
 

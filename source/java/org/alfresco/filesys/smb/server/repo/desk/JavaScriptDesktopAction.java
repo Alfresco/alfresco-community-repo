@@ -69,7 +69,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
 	 */
 	public JavaScriptDesktopAction()
 	{
-		super( DesktopAction.AttrAnyFiles, DesktopAction.PreConfirmAction + DesktopAction.PreCopyToTarget);
+		super( 0, 0);
 	}
 
 	/**
@@ -209,30 +209,31 @@ public class JavaScriptDesktopAction extends DesktopAction {
 		{
 			// Check if the pre-process string is empty
 			
-			if ( elem.getValue().length() == 0)
-				throw new DesktopActionException("Empty desktop action pre-processing flags");
-			
-			// Parse the pre-process string
-			
 			int pre = 0;
-			StringTokenizer tokens = new StringTokenizer( elem.getValue(), ",");
 			
-			while ( tokens.hasMoreTokens())
+			if ( elem.getValue() != null && elem.getValue().length() > 0)
 			{
-				// Get the current pre-process token and validate
+				// Parse the pre-process string
 				
-				String token = tokens.nextToken().trim();
+				StringTokenizer tokens = new StringTokenizer( elem.getValue(), ",");
 				
-				if ( token.equalsIgnoreCase( "copyToTarget"))
-					pre |= PreCopyToTarget;
-				else if ( token.equalsIgnoreCase( "confirm"))
-					pre |= PreConfirmAction;
-				else if ( token.equalsIgnoreCase( "localToWorkingCopy"))
-					pre |= PreLocalToWorkingCopy;
-				else
-					throw new DesktopActionException("Unknown pre-processing flag, " + token);
+				while ( tokens.hasMoreTokens())
+				{
+					// Get the current pre-process token and validate
+					
+					String token = tokens.nextToken().trim();
+					
+					if ( token.equalsIgnoreCase( "copyToTarget"))
+						pre |= PreCopyToTarget;
+					else if ( token.equalsIgnoreCase( "confirm"))
+						pre |= PreConfirmAction;
+					else if ( token.equalsIgnoreCase( "localToWorkingCopy"))
+						pre |= PreLocalToWorkingCopy;
+					else
+						throw new DesktopActionException("Unknown pre-processing flag, " + token);
+				}
 			}
-
+			
 			// Set the action pre-processing flags
 			
 			setPreProcessActions( pre);

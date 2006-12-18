@@ -68,8 +68,10 @@ public class FTPCommand
     public final static int XRmd = 39;
     public final static int XCup = 40;
     public final static int XCwd = 41;
+    public final static int MLst = 42;
+    public final static int MLsd = 43;
 
-    public final static int MaxId = 41;
+    public final static int MaxId = 43;
 
     public final static int InvalidCmd = -1;
 
@@ -78,7 +80,7 @@ public class FTPCommand
     private static final String[] _cmds = { "USER", "PASS", "ACCT", "CWD", "CDUP", "SMNT", "REIN", "QUIT", "PORT",
             "PASV", "TYPE", "STRU", "MODE", "RETR", "STOR", "STOU", "APPE", "ALLO", "REST", "RNFR", "RNTO", "ABOR",
             "DELE", "RMD", "MKD", "PWD", "LIST", "NLST", "SITE", "SYST", "STAT", "HELP", "NOOP", "MDTM", "SIZE",
-            "OPTS", "FEAT", "XPWD", "XMKD", "XRMD", "XCUP", "XCWD" };
+            "OPTS", "FEAT", "XPWD", "XMKD", "XRMD", "XCUP", "XCWD", "MLST", "MLSD" };
 
     /**
      * Convert an FTP command to an id

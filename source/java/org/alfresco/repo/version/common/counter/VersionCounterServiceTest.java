@@ -112,6 +112,7 @@ public class VersionCounterServiceTest extends TestCase
 
     public void testConcurrentVersionNumber() throws Throwable
     {
+        counter.currentVersionNumber(storeRef1);
         VersionCounterThread[] threads = new VersionCounterThread[threadCount];
         for (int i = 0; i < threadCount; i++)
         {

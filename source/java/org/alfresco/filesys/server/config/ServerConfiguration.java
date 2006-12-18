@@ -23,6 +23,9 @@ import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
@@ -315,6 +318,10 @@ public class ServerConfiguration extends AbstractLifecycleBean
 
     private int m_ftpDebug;
 
+    // FTP character set
+    
+    private String m_ftpCharSet;
+    
 	//--------------------------------------------------------------------------------
 	//	NFS specific configuration parameters
 	//
@@ -1659,6 +1666,29 @@ public class ServerConfiguration extends AbstractLifecycleBean
             //  Set the FTP debug flags
         
             setFTPDebug(ftpDbg);
+        }
+        
+        // Check if a character set has been specified
+        
+        elem = config.getConfigElement( "charSet");
+        if ( elem != null) {
+        	
+        	try {
+        		
+            	// Validate the character set name
+            	
+        		Charset.forName( elem.getValue());
+        		
+        		// Set the FTP character set
+        		
+        		setFTPCharacterSet( elem.getValue());
+        	}
+        	catch ( IllegalCharsetNameException ex) {
+        		throw new AlfrescoRuntimeException("Illegal character set name, " + elem.getValue());
+        	}
+        	catch ( UnsupportedCharsetException ex) {
+        		throw new AlfrescoRuntimeException("Unsupported character set name, " + elem.getValue());
+        	}
         }
     }
 
@@ -3640,6 +3670,16 @@ public class ServerConfiguration extends AbstractLifecycleBean
     }
 
     /**
+     * Return the FTP character set
+     * 
+     * @return String
+     */
+    public final String getFTPCharacterSet()
+    {
+    	return m_ftpCharSet;
+    }
+    
+    /**
      * Set the FTP server port to use for incoming connections, -1 indicates disable the FTP server
      * 
      * @param port int
@@ -3687,6 +3727,16 @@ public class ServerConfiguration extends AbstractLifecycleBean
     public final void setFTPDebug(int dbg)
     {
         m_ftpDebug = dbg;
+    }
+
+    /**
+     * Set the FTP character set
+     * 
+     * @param charSet String
+     */
+    public final void setFTPCharacterSet( String charSet)
+    {
+    	m_ftpCharSet = charSet;
     }
     
     /**

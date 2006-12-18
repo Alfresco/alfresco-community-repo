@@ -193,12 +193,9 @@
     </bean>
     
     <!-- Hibernate-specific implementations of persistence components -->
-   <bean id="versionCounterDaoComponent" class="org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl" init-method="init">
+   <bean id="versionCounterDaoComponent" class="org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
-      </property>
-      <property name="policyComponent">
-         <ref bean="policyComponent" />
       </property>
    </bean>
    

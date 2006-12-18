@@ -27,14 +27,6 @@ import org.alfresco.service.namespace.QName;
 public interface VersionCounterService
 {
     /**
-     * Helper method for simple patching
-     * 
-     * @param nodeTypeQName not used
-     * @param storeRef the store to create a counter for
-     */
-    public void beforeCreateStore(QName nodeTypeQName, StoreRef storeRef);
-    
-    /**
      * Get the next available version number for the specified store.
      * 
      * @param storeRef  the store reference

@@ -53,6 +53,20 @@
          </overrides>
       </type>
 
+      <type name="wf:approvedTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="wf:rejectedTask">
+         <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
+      </type>
+
       <type name="wf:rejectedParallelTask">
          <parent>bpm:workflowTask</parent>
          <mandatory-aspects>
@@ -99,6 +113,9 @@
 
       <type name="wf:completedAdhocTask">
          <parent>bpm:workflowTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:assignee</aspect>
+         </mandatory-aspects>
       </type>
 
 

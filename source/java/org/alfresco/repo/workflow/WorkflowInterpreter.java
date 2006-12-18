@@ -648,7 +648,7 @@ public class WorkflowInterpreter
                     return "Syntax Error.  Workflow Id not specified.\n";
                 }
                 workflowService.cancelWorkflow(workflowId);
-                out.println("cancelled workflow" + workflowId);
+                out.println("workflow " + workflowId + " cancelled.");
                 out.print(interpretCommand("show transitions"));
             }
             else

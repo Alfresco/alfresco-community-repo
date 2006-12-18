@@ -446,10 +446,8 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     }
                     else                                                        // node created
                     {
-                        // get the primary assoc for the node
-                        ChildAssociationRef primaryAssocRef = nodeService.getPrimaryParent(nodeRef);
                         // reindex
-                        indexer.createNode(primaryAssocRef);
+                        indexer.updateNode(nodeRef);
                     }
                 }
                 // done

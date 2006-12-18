@@ -564,7 +564,7 @@ public class ImportFileUpdater
 		}
 		else
 		{
-			System.out.println(" ImportFileUpdater <destination> <source>");
+			System.out.println(" ImportFileUpdater <source> <destination>");
 			System.out.println("    source - 1.3 import file name to be updated");
 			System.out.println("    destination - name of the generated 1.4 import file");
 		}

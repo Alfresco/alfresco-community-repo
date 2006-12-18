@@ -370,9 +370,7 @@ public abstract class AlfrescoTransactionSupport
             return txnSynch;
         }
         // we need a unique ID for the transaction
-        StringBuilder sb = new StringBuilder(56);
-        sb.append(System.currentTimeMillis()).append(":").append(GUID.generate());
-        String txnId = sb.toString();
+        String txnId = GUID.generate();
         // register the synchronization
         txnSynch = new TransactionSynchronizationImpl(txnId);
         TransactionSynchronizationManager.registerSynchronization(txnSynch);

@@ -40,48 +40,8 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class VersionCounterDaoComponentImpl
         extends HibernateDaoSupport
-        implements VersionCounterService, NodeServicePolicies.BeforeCreateStorePolicy
+        implements VersionCounterService
 {
-    private PolicyComponent policyComponent;
-
-    /**
-     * @param policyComponent the component to register behaviour
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-    
-    /**
-     * Bind to receive notifications of store creations
-     */
-    public void init()
-    {
-        policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateStore"),
-                this,
-                new JavaBehaviour(this, "beforeCreateStore"));
-    }
-
-    /**
-     * Create a version counter for the store
-     * @param nodeTypeQName
-     * @param storeRef
-     */
-    public void beforeCreateStore(QName nodeTypeQName, StoreRef storeRef)
-    {
-        final StoreKey storeKey = new StoreKey(storeRef.getProtocol(), storeRef.getIdentifier());
-        VersionCount versionCount = (VersionCount) getHibernateTemplate().get(VersionCountImpl.class, storeKey);
-        if (versionCount != null)
-        {
-            // already exists
-            return;
-        }
-        versionCount = new VersionCountImpl();
-        versionCount.setKey(storeKey);
-        getHibernateTemplate().save(versionCount);
-    }
-
     /**
      * Retrieves or creates a version counter.  This locks the counter against updates for the
      * current transaction.

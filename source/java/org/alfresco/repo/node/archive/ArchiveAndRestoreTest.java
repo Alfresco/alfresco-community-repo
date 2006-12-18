@@ -520,7 +520,7 @@ public class ArchiveAndRestoreTest extends TestCase
     
     public void testInTransactionRestore() throws Exception
     {
-        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(a);
+        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(a_);
         // expect a failure due to missing archive node
         assertEquals("Expected failure", RestoreStatus.FAILURE_INVALID_ARCHIVE_NODE, report.getStatus());
         // check that our transaction was not affected
@@ -529,10 +529,8 @@ public class ArchiveAndRestoreTest extends TestCase
     
     public void testInTransactionPurge() throws Exception
     {
-        nodeArchiveService.purgeArchivedNode(a);
+        nodeArchiveService.purgeArchivedNode(a_);
         // the node should still be there (it was not available to the purge transaction)
-        assertTrue("Node should not have been touched", nodeService.exists(a));
-        // check that our transaction was not affected
         assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
     }
     
@@ -617,6 +615,8 @@ public class ArchiveAndRestoreTest extends TestCase
      */
     public void testPermissionsForRestore() throws Exception
     {
+       
+        
         // user A deletes 'a'
         authenticationService.authenticate(USER_A, USER_A.toCharArray());
         nodeService.deleteNode(a);
@@ -624,6 +624,7 @@ public class ArchiveAndRestoreTest extends TestCase
         authenticationService.authenticate(USER_B, USER_B.toCharArray());
         nodeService.deleteNode(b);
 
+        commitAndBeginNewTransaction();
         // user B can't see archived 'a'
         List<RestoreNodeReport> restoredByB = nodeArchiveService.restoreAllArchivedNodes(workStoreRef);
         assertEquals("User B should be able to see only B's delete", 1, restoredByB.size());

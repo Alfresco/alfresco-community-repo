@@ -258,6 +258,9 @@
     
     <!-- Mime Type Service -->
     
+    <alias name="mimetypeService" alias="MimetypeService"/>
+    
+    <!--
     <bean id="MimetypeService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.repository.MimetypeService</value>
@@ -274,6 +277,7 @@
             </list>
         </property>
     </bean>
+    -->
     
     <bean id="MimetypeService_descriptor" parent="AlfrescoServiceDescriptor">
         <property name="interface">

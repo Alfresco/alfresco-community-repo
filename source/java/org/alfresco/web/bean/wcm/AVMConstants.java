@@ -294,7 +294,7 @@ public final class AVMConstants
          {
             path = path.substring(0, webappIndex);
          }
-         vServerRegistry.webappUpdated(-1, path);
+         vServerRegistry.webappUpdated(-1, path, true);
       }
    }
    
@@ -315,7 +315,7 @@ public final class AVMConstants
          {
             path = path.substring(0, webappIndex);
          }
-         vServerRegistry.webappRemoved(-1, path);
+         vServerRegistry.webappRemoved(-1, path, true);
       }
    }
    

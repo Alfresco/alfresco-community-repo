@@ -863,7 +863,14 @@ public class AVMBrowseBean implements IContextListener
          String[] parts = path.split("[-:]");
          String storename = parts[0];
          String username = parts[1];
-         setupSandboxActionImpl(AVMConstants.buildAVMUserMainStoreName(storename, username), username, false);
+         if (username.equals(AVMConstants.STORE_STAGING.substring(1)))
+         {
+            setupSandboxActionImpl(null, null, false);
+         }
+         else
+         {
+            setupSandboxActionImpl(AVMConstants.buildAVMUserMainStoreName(storename, username), username, false);
+         }
          
          // setup the action node
          AVMNodeDescriptor node = avmService.lookup(-1, path, true);

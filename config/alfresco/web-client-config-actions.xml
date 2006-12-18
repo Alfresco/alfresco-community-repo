@@ -380,11 +380,12 @@
             <action>wizard:createForm</action>
          </action>
 
-	 <action id="edit_form">
-            <evaluator>org.alfresco.web.action.evaluator.EditFormEvaluator</evaluator>
+         <!-- Edit XML content type -->
+         <action id="edit_form">
             <permissions>
                <permission allow="true">Write,CreateChildren</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditFormEvaluator</evaluator>
             <label-id>edit_form</label-id>
             <image>/images/icons/edit_form.gif</image>
             <action>wizard:editForm</action>

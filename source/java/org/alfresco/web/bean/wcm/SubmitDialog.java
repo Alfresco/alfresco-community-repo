@@ -471,7 +471,7 @@ public class SubmitDialog extends BaseDialogBean
          this.warningItems = new ArrayList<ItemWrapper>(selected.size() >> 1);
          for (AVMNodeDescriptor node : selected)
          {
-            if (hasAssociatedWorkflow(AVMNodeConverter.ToNodeRef(-1, node.getPath())) == false)
+            if (this.avmService.hasAspect(-1, node.getPath(), AVMSubmittedAspect.ASPECT) == false)
             {
                NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
                if (submittedPaths.contains(node.getPath()) == false)
@@ -553,12 +553,6 @@ public class SubmitDialog extends BaseDialogBean
          this.submitItems = Collections.<ItemWrapper>emptyList();
          this.warningItems = Collections.<ItemWrapper>emptyList();
       }
-   }
-   
-   private boolean hasAssociatedWorkflow(NodeRef ref)
-   {
-      // TODO: does not appear to work for AVM - need a specific impl instead
-      return (this.workflowService.getWorkflowsForContent(ref, true).size() != 0);
    }
    
    /**

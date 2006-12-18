@@ -8,6 +8,7 @@
             <permissions>
                <permission allow="true">Write</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>edit</label-id>
             <image>/images/icons/edit_icon.gif</image>
             <action-listener>#{AVMEditBean.setupEditAction}</action-listener>
@@ -21,6 +22,7 @@
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -35,6 +37,7 @@
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -49,6 +52,7 @@
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -63,6 +67,7 @@
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -77,6 +82,7 @@
             <permissions>
                <permission allow="true">Read</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>submit</label-id>
             <image>/images/icons/submit.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -91,6 +97,7 @@
             <permissions>
                <permission allow="true">Read</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>revert</label-id>
             <image>/images/icons/revert.gif</image>
             <action-listener>#{AVMBrowseBean.revertNode}</action-listener>
@@ -161,6 +168,7 @@
             <permissions>
                <permission allow="true">Write</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>update</label-id>
             <image>/images/icons/update.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>

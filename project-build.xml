@@ -39,7 +39,6 @@
          <fileset dir="${dir.common.lib}/jmagick" includes="*.jar" />
          <fileset dir="${dir.common.lib}/commons" includes="*.jar" />
          <fileset dir="${dir.common.lib}/jgroups" includes="*.jar" />
-         <fileset dir="${dir.common.lib}/treecache" includes="*.jar" />
          <fileset dir="${dir.common.lib}/swarmcache" includes="*.jar" />
          <fileset dir="${dir.common.lib}/jbpm" includes="*.jar" />
 	 <fileset dir="${dir.common.lib}/fop" includes="*.jar"/>

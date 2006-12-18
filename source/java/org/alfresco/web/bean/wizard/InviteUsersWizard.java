@@ -47,8 +47,6 @@ import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.mail.javamail.JavaMailSender;
 
 /**
@@ -58,8 +56,6 @@ import org.springframework.mail.javamail.JavaMailSender;
  */
 public abstract class InviteUsersWizard extends BaseWizardBean
 {
-   private static Log logger = LogFactory.getLog(InviteUsersWizard.class);
-   
    /** I18N message strings */
    protected static final String MSG_USERROLES = "invite_users_summary";
    private static final String MSG_USERS  = "users";
@@ -70,6 +66,7 @@ public abstract class InviteUsersWizard extends BaseWizardBean
    protected static final String STEP_NOTIFY = "notify";
    
    private static final String NOTIFY_YES = "yes";
+   private static final String NOTIFY_NO = "no";
    
    /** NamespaceService bean reference */
    protected NamespaceService namespaceService;
@@ -99,7 +96,7 @@ public abstract class InviteUsersWizard extends BaseWizardBean
    protected boolean allowDuplicateAuthorities = true;
    
    /** dialog state */
-   private String notify = NOTIFY_YES;
+   private String notify = NOTIFY_NO;
    
    /**
     * @return a cached list of available permissions for the type being dealt with
@@ -159,7 +156,7 @@ public abstract class InviteUsersWizard extends BaseWizardBean
    {
       super.init(parameters);
       
-      notify = NOTIFY_YES;
+      notify = NOTIFY_NO;
       userGroupRoles = new ArrayList<UserGroupRole>(8);
       mailHelper = new TemplateMailHelperBean();
       mailHelper.setMailSender(mailSender);

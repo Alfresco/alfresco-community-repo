@@ -11,9 +11,12 @@
    <!-- ************************************** -->
    <!-- Copyright Alfresco Software, Inc. 2005 -->
    <!-- ************************************** -->
-   <wsdl:import namespace="http://www.alfresco.org/ws/cml/1.0" location="../wsdl/types.xsd"/>
+   
    <wsdl:types>
       <schema elementFormDefault="qualified" targetNamespace="http://www.alfresco.org/ws/service/authoring/1.0" xmlns="http://www.w3.org/2001/XMLSchema">
+      
+         <xsd:import namespace="http://www.alfresco.org/ws/cml/1.0" schemaLocation="../wsdl/types.xsd"/>
+         
          <element name="checkout">
             <complexType>
                <sequence>

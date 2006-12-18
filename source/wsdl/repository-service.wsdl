@@ -13,10 +13,12 @@
    <!-- ************************************** -->
    <!-- Copyright Alfresco Software, Inc. 2005 -->
    <!-- ************************************** -->
-   <wsdl:import namespace="http://www.alfresco.org/ws/headers/1.0" location="../wsdl/headers.xsd" />
-   <wsdl:import namespace="http://www.alfresco.org/ws/cml/1.0" location="../wsdl/cml.xsd"/>
+
    <wsdl:types>
       <schema elementFormDefault="qualified" targetNamespace="http://www.alfresco.org/ws/service/repository/1.0" xmlns="http://www.w3.org/2001/XMLSchema">
+         
+         <xsd:import namespace="http://www.alfresco.org/ws/headers/1.0" schemaLocation="../wsdl/headers.xsd"></xsd:import>
+         <xsd:import namespace="http://www.alfresco.org/ws/cml/1.0" schemaLocation="../wsdl/cml.xsd"></xsd:import>
          
          <element name="createStore">
          	<complexType>

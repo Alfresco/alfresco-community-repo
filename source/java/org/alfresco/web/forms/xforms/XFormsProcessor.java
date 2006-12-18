@@ -85,9 +85,16 @@ public class XFormsProcessor
       final Element div = result.createElement("div");
       div.setAttribute("id", "alfresco-xforms-ui");
       result.appendChild(div);
+      
+      Element e = result.createElement("link");
+      e.setAttribute("rel", "stylesheet");
+      e.setAttribute("type", "text/css");
+      e.setAttribute("src", cp + "/css/xforms.css");
+      e.appendChild(result.createTextNode("\n"));
+      div.appendChild(e);      
 
       // a script with config information and globals.
-      Element e = result.createElement("script");
+      e = result.createElement("script");
       e.setAttribute("type", "text/javascript");
       e.appendChild(result.createTextNode("\ndjConfig = { isDebug: " + LOGGER.isDebugEnabled() +
                                           " };\n" +

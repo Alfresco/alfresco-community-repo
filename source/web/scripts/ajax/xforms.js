@@ -267,6 +267,8 @@ dojo.declare("alfresco.xforms.FilePicker",
                                                 "resize", 
                                                 this._filePicker_resizeHandler,
                                                 false);
+                 dojo.event.connect(this.domNode, "onresize", function() { alert('foo'); });
+
                  //XXXarielb support readonly and disabled
                  this.widget = new FilePickerWidget(this.domNode, this.getInitialValue(), false);
                  this.widget.render();
@@ -292,6 +294,7 @@ dojo.declare("alfresco.xforms.FilePicker",
                },
                _filePicker_resizeHandler: function(event) 
                { 
+                 alert("recieved file picker resize " + event);
                  var w = event.target.widget;
                  w.domContainer.style.height = event.target.offsetHeight + "px";
                }
@@ -428,7 +431,7 @@ dojo.declare("alfresco.xforms.TextArea",
                  this.domNode = document.createElement("div");
                  attach_point.appendChild(this.domNode);
                  this.domNode.setAttribute("id", this.id);
-                 this.domNode.style.height = "200px";
+                 dojo.html.setClass(this.domNode, "xforms_textArea");
                  this.domNode.innerHTML = this.getInitialValue() || "";
                  tinyMCE.addMCEControl(this.domNode, this.id);
 
@@ -777,7 +780,7 @@ dojo.declare("alfresco.xforms.Group",
                  child.domContainer.style.position = "relative";
                  child.domContainer.style.left = "0px";
                  child.domContainer.style.top = "0px";
-//           child.domContainer.style.width = "100%";
+
                  if (this.parent && this.parent.domNode)
                    child.domContainer.style.top = this.parent.domNode.style.bottom;
          
@@ -821,9 +824,8 @@ dojo.declare("alfresco.xforms.Group",
                                           : "30%");
                  if (!(child instanceof alfresco.xforms.Group))
                  {
-                   contentDiv.style.width = (child.domContainer.offsetWidth -
-                                             contentDiv.offsetLeft) + "px";
-                   //     contentDiv.style.width = ((child.domContainer.offsetWidth - contentDiv.offsetLeft) - 10) + "px";
+                   contentDiv.style.width = (1 - (contentDiv.offsetLeft / 
+                                                  child.domContainer.offsetWidth)) * 100 + "%";
                  }
                  child.render(contentDiv);
                  if (!(child instanceof alfresco.xforms.Group))
@@ -863,7 +865,7 @@ dojo.declare("alfresco.xforms.Group",
                    };
                  anim.play();
 
-                 alfresco.event.dispatchEvent(this.domNode, "change", {});
+                 this._childRemoved(child);
 
                  return child;
                },
@@ -879,12 +881,8 @@ dojo.declare("alfresco.xforms.Group",
                {
                  this.domNode.widget = this;
                  attach_point.appendChild(this.domNode);
-         
-                 this.domNode.style.position = "relative";
-                 this.domNode.style.top = "0px";
-                 this.domNode.style.left = "0px";
-                 this.domNode.style.width = "100%";
-                 this.domNode.style.marginBottom = "10px";
+                 dojo.html.setClass(this.domNode, "xforms_group");
+
                  if (djConfig.isDebug)
                  {
                    var idNode = document.createElement("div");
@@ -896,14 +894,7 @@ dojo.declare("alfresco.xforms.Group",
                  this.groupHeaderNode = document.createElement("div");
                  this.groupHeaderNode.id = this.id + "-groupHeaderNode";
                  this.domNode.appendChild(this.groupHeaderNode);
-                 this.groupHeaderNode.style.position = "relative";
-                 this.groupHeaderNode.style.top = "0px";
-                 this.groupHeaderNode.style.left = "0px";
-                 this.groupHeaderNode.style.height = "20px";
-                 this.groupHeaderNode.style.lineHeight = "20px";
-                 this.groupHeaderNode.style.backgroundColor = "#cddbe8";
-                 this.groupHeaderNode.style.fontWeight = "bold";
-                 this.groupHeaderNode.style.width = "100%";
+                 dojo.html.setClass(this.groupHeaderNode, "xforms_groupHeader");
                  this.groupHeaderNode.style.display = "none";
 
                  this.toggleExpandedImage = document.createElement("img");
@@ -1047,13 +1038,10 @@ dojo.declare("alfresco.xforms.Repeat",
                  else
                    result.parentNode.appendChild(this.repeatControls[position]);
 
-                 this.repeatControls[position].style.position = "relative";
+                 dojo.html.setClass(this.repeatControls[position], "xforms_repeatControls");
                  this.repeatControls[position].style.width = repeatControlsWidth + "px";
-                 this.repeatControls[position].style.whiteSpace = "nowrap";
-                 this.repeatControls[position].style.border = "1px solid black";
-                 this.repeatControls[position].style.height = "20px";
-                 this.repeatControls[position].style.lineHeight = "20px";
                  this.repeatControls[position].style.backgroundColor = result.style.backgroundColor;
+
                  result.style.paddingBottom = (.5 * this.repeatControls[position].offsetHeight) + "px";
 
                  this.repeatControls[position].style.top = -(.5 * (this.repeatControls[position].offsetHeight ) +
@@ -1088,8 +1076,8 @@ dojo.declare("alfresco.xforms.Repeat",
                  this.inherited("_updateDisplay", []);
                  for (var i = 0; i < this.children.length; i++)
                  {
-                   this.children[i].domContainer.style.backgroundColor = 
-                     i % 2 ? "#f0f0ee" : "#ffffff"; 
+                   dojo.html.addClass(this.children[i].domContainer, 
+                                      "xformsRow" + (i % 2 ? "Even" : "Odd")); 
                  }
                },
                _getRepeatItemTrigger: function(type, properties)
@@ -1234,10 +1222,9 @@ dojo.declare("alfresco.xforms.Repeat",
                  var parentRepeats = this.getRepeatIndices();
                  this.domNode.style.marginLeft = (parentRepeats.length * 10) + "px";
                  this.domNode.style.marginRight = (parseInt(this.domNode.style.marginLeft) / 2) + "px";
-                 this.domNode.style.width = (this.domNode.offsetParent.offsetWidth - 
-                                             parseInt(this.domNode.style.borderWidth) -
-                                             parseInt(this.domNode.style.marginLeft) -
-                                             parseInt(this.domNode.style.marginRight)) + "px";
+                 this.domNode.style.width = (1 - ((dojo.style.getBorderWidth(this.domNode) +
+                                                   dojo.style.getMarginWidth(this.domNode)) /
+                                                  this.domNode.offsetParent.offsetWidth)) * 100 + "%";
 
                  this.groupHeaderNode.style.display = "block";
                  this.groupHeaderNode.repeat = this;
@@ -1922,9 +1909,7 @@ function _show_error(msg)
   {
     errorDiv = document.createElement("div");
     errorDiv.setAttribute("id", "alfresco-xforms-error");
-    dojo.html.setClass(errorDiv, "infoText statusErrorText");
-    errorDiv.style.padding = "2px";
-    errorDiv.style.border = "1px solid #003366";
+    dojo.html.setClass(errorDiv, "infoText statusErrorText xforms_error");
     var alfUI = document.getElementById("alfresco-xforms-ui");
     dojo.dom.prependChild(errorDiv, alfUI);
   }
@@ -1948,11 +1933,7 @@ function _get_ajax_loader_element()
     return result;
   result = document.createElement("div");
   result.setAttribute("id", "alfresco-ajax-loader");
-  result.style.position = "absolute";
-  result.style.right = "0px";
-  result.style.top = "0px";
-  result.style.color = "white";
-  result.style.backgroundColor = "red";
+  dojo.html.setClass(result, "xforms_ajaxLoader");
   dojo.style.hide(result);
   document.body.appendChild(result);
   return result;
@@ -2178,16 +2159,10 @@ _showStatus: function(text)
   {
     this.statusDiv = d.createElement("div");
     this.node.insertBefore(this.statusDiv, this.node.firstChild);
-    dojo.html.setClass(this.statusDiv, "infoText");
-    this.statusDiv.style.padding = "2px";
-    this.statusDiv.style.border = "1px solid #003366";
-    this.statusDiv.style.fontWeight = "bold";
-    this.statusDiv.style.margin = "2px 5%";
-    this.statusDiv.style.textAlign = "center";
+    dojo.html.setClass(this.statusDiv, "infoText xforms_filePicker_status");
     this.statusDiv.appendChild(d.createTextNode(text));
     this.node.style.height = (parseInt(this.node.style.height) +
-                              parseInt(this.statusDiv.style.marginTop) +
-                              parseInt(this.statusDiv.style.marginBottom) +
+                              dojo.style.getMarginHeight(this.statusDiv) +
                               this.statusDiv.offsetHeight) + "px";
     alfresco.event.dispatchEvent(this.node, "resize", {});
   }
@@ -2231,16 +2206,15 @@ _showSelectedValue: function()
   this.selectButton.filePickerWidget = this;
   this.selectButton.type = "button";
   this.selectButton.value = this.value == null ? "Select" : "Change";
-  this.selectButton.label = this.value == null ? "Select" : "Change";
   this.selectButton.disabled = this.readonly;
   this.selectButton.style.margin = "0px 10px 0px 10px";
   this.node.appendChild(this.selectButton);
 
-  this.selectedPathInput.style.width = (this.node.offsetWidth - 
-                                        this.selectButton.offsetWidth - 
-                                        parseInt(this.selectButton.style.marginRight) -
-                                        parseInt(this.selectButton.style.marginLeft))
-                                        + "px";
+  this.selectedPathInput.style.width = (1 -
+                                        ((this.selectButton.offsetWidth +
+                                          dojo.style.getMarginWidth(this.selectButton)) /
+                                         dojo.style.getContentBoxWidth(this.node))) * 100 + "%";
+  alert(this.selectedPathInput.style.width);
   dojo.event.browser.addListener(this.selectButton, 
                                  "click", 
                                  function(event)
@@ -2288,24 +2262,17 @@ _showPicker: function(data)
   var currentPathName = currentPath.replace(/.*\/([^/]+)/, "$1")
 
   var headerDiv = d.createElement("div");
-  headerDiv.style.position = "relative";
+  dojo.html.setClass(headerDiv, "xforms_filePicker_header");
   this.node.appendChild(headerDiv);
-  headerDiv.style.width = "100%";
-  headerDiv.style.height = "30px";
-  headerDiv.style.lineHeight = "30px";
-  headerDiv.style.backgroundColor = "lightgrey";
-  headerDiv.style.paddingLeft = "2px";
   headerDiv.appendChild(d.createTextNode("In: "));
 
   this.headerMenuTriggerLink = d.createElement("a");
   this.headerMenuTriggerLink.filePickerWidget = this;
   this.headerMenuTriggerLink.setAttribute("href", "javascript:void(0)");
   this.headerMenuTriggerLink.setAttribute("webappRelativePath", currentPath);
+  dojo.html.setClass(headerMenuTriggerLink, "xforms_filePicker_headerMenuTrigger");
   headerDiv.appendChild(this.headerMenuTriggerLink);
-  this.headerMenuTriggerLink.style.padding = "2px";
-  this.headerMenuTriggerLink.style.fontWeight = "bold";
-  this.headerMenuTriggerLink.style.textDecoration = "none";
-  this.headerMenuTriggerLink.style.border = "solid 1px lightgrey";
+
   dojo.event.connect(this.headerMenuTriggerLink,
                      "onmouseover",
                      function(event)
@@ -2412,11 +2379,8 @@ _showPicker: function(data)
   this.node.appendChild(this.contentDiv);
 
   var footerDiv = d.createElement("div");
+  dojo.html.setClass(footerDiv, "xforms_filePicker_footer");
   this.node.appendChild(footerDiv);
-  footerDiv.style.backgroundColor = "lightgrey";
-  footerDiv.style.textAlign = "center";
-  footerDiv.style.height = headerDiv.style.height;
-  footerDiv.style.lineHeight = footerDiv.style.height;
 
   var cancelButton = d.createElement("input");
   cancelButton.type = "button";
@@ -2451,10 +2415,8 @@ _showPicker: function(data)
     row.setAttribute("id", name + "-row");
     this.contentDiv.appendChild(row);
     row.rowIndex = i;
-    row.style.position = "relative";
-    row.style.height = "20px";
-    row.style.lineHeight = "20px";
-    row.style.backgroundColor = row.rowIndex % 2 ? "#f0f0ee" : "#ffffff";
+    dojo.html.setClass("xforms_filePicker_row xforms_row" +
+                       (row.rowIndex % 2 ? "Even" : "Odd"));
     dojo.event.browser.addListener(row,
                                    "mouseover", 
                                    function(event)
@@ -2462,11 +2424,10 @@ _showPicker: function(data)
                                      var prevHover = event.currentTarget.parentNode.hoverNode;
                                      if (prevHover)
                                      {
-                                       prevHover.style.backgroundColor = 
-                                         prevHover.rowIndex %2 ? "#f0f0ee" :"#ffffff";
+                                       dojo.html.removeClass(prevHover, "xformsRowHover");
                                      }
                                      event.currentTarget.parentNode.hoverNode = event.currentTarget;
-                                     event.currentTarget.style.backgroundColor = "ffffcc";
+                                     dojo.html.addClass(event.currentTarget, "xformsRowHover")
                                    },
                                    true);
     dojo.event.browser.addListener(row,
@@ -2478,8 +2439,7 @@ _showPicker: function(data)
                                      {
                                        return true;
                                      }
-                                     event.currentTarget.style.backgroundColor = 
-                                       event.currentTarget.rowIndex %2 ? "#f0f0ee" :"#ffffff";
+                                     dojo.html.removeClass(event.currentTarget, "xformsRowHover");
                                    },
                                    true);
     var e = d.createElement("img");
@@ -2531,14 +2491,9 @@ _showAddContentPanel: function(addContentLink, currentPath)
   var d = this.node.ownerDocument;
   this.addContentDiv = d.createElement("div");
   this.contentDiv.style.opacity = .3;
+  dojo.html.setClass(this.addContentDiv, "xforms_filePicker_addContent");
   this.node.insertBefore(this.addContentDiv, this.contentDiv);
-  this.addContentDiv.style.backgroundColor = "lightgrey";
-  this.addContentDiv.style.position = "absolute";
-  this.addContentDiv.style.left = "10%";
-  this.addContentDiv.style.right = "10%";
-  this.addContentDiv.style.width = "80%";
-  this.addContentDiv.style.marginLeft = "4px";
-  this.addContentDiv.style.lineHeight = "20px";
+
   var e = d.createElement("div");
   e.style.marginLeft = "4px";
   this.addContentDiv.appendChild(e);
@@ -2618,12 +2573,7 @@ _openParentPathMenu: function(target, path)
   };
   d.addEventListener("click", parentPathMenu_documentClickHandler, true);
 
-  this.parentPathMenu.style.position = "absolute";
-  this.parentPathMenu.style.backgroundColor = "lightgrey";
-  this.parentPathMenu.style.borderStyle = "outset";
-  this.parentPathMenu.style.borderWidth = "1px";
-  this.parentPathMenu.style.lineHeight = "20px";
-  this.parentPathMenu.style.minWidth = "100px";
+  dojo.html.setClass(this.parentPathMenu, "xforms_filePicker_parentPathMenu");
 
   var left = 0;
   var top = 0;
@@ -2743,3 +2693,4 @@ alfresco.event = new function()
     }
   }
 }
+

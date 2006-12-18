@@ -376,7 +376,7 @@
          <action id="create_form">
             <evaluator>org.alfresco.web.action.evaluator.CreateFormEvaluator</evaluator>
             <label-id>create_form</label-id>
-            <image>/images/icons/new_form.gif</image>
+            <image>/images/icons/create_form.gif</image>
             <action>wizard:createForm</action>
          </action>
 

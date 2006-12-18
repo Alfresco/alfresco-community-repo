@@ -348,7 +348,7 @@
          <!-- Definition of the create form wizard -->
          <wizard name="createForm" managed-bean="CreateFormWizard"
                  title-id="create_form_title" description-id="create_form_desc"
-                 icon="/images/icons/new_content_large.gif">
+                 icon="/images/icons/create_form_large.gif">
             <step name="form_details" title-id="create_form_form_details_title" 
                   description-id="create_form_form_details_desc">
                <page path="/jsp/wcm/create-form-wizard/details.jsp" 
@@ -383,7 +383,7 @@
          <!-- Definition of the edit form wizard -->
          <wizard name="editForm" managed-bean="EditFormWizard"
                  title-id="edit_form_title" description-id="edit_form_desc"
-                 icon="/images/icons/new_content_large.gif">
+                 icon="/images/icons/edit_form_large.gif">
             <step name="form_details" title-id="create_form_form_details_title" 
                   description-id="create_form_form_details_desc">
                <page path="/jsp/wcm/create-form-wizard/details.jsp" 

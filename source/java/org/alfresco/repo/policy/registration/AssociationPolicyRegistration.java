@@ -32,14 +32,17 @@ public class AssociationPolicyRegistration extends PolicyRegistration
 	@Override
 	public void register() 
 	{
-		// Register the association behaviour
-		if (this.associationType == null)
-		{		
-			this.policyComponent.bindAssociationBehaviour(this.policyName, this.className, this.behaviour);
-		}
-		else
+		for (QName policyName : this.policyNames) 
 		{
-			this.policyComponent.bindAssociationBehaviour(this.policyName, this.className, this.associationType, this.behaviour);
+			// Register the association behaviour
+			if (this.associationType == null)
+			{		
+				this.policyComponent.bindAssociationBehaviour(policyName, this.className, this.behaviour);
+			}
+			else
+			{
+				this.policyComponent.bindAssociationBehaviour(policyName, this.className, this.associationType, this.behaviour);
+			}
 		}
 	}
 

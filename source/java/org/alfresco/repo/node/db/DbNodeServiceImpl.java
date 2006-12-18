@@ -267,6 +267,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 		// Invoke policy behaviour
 		invokeBeforeUpdateNode(parentRef);
 		invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
+		invokeBeforeCreateNodeAssociation(parentRef, assocTypeQName, assocQName);
         
         // get the store that the parent belongs to
         StoreRef storeRef = parentRef.getStoreRef();
@@ -318,6 +319,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // Invoke policy behaviour
 		invokeOnCreateNode(childAssocRef);
+		invokeOnCreateNodeAssociation(childAssocRef);
         invokeOnUpdateNode(parentRef);
         if (propertiesAfter != null)
         {

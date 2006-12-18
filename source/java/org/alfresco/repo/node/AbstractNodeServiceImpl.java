@@ -28,6 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateChildAssociationPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodeAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateStorePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteChildAssociationPolicy;
@@ -37,6 +38,7 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodeAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateStorePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteAssociationPolicy;
@@ -110,6 +112,8 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private ClassPolicyDelegate<OnAddAspectPolicy> onAddAspectDelegate;
     private ClassPolicyDelegate<BeforeRemoveAspectPolicy> beforeRemoveAspectDelegate;
     private ClassPolicyDelegate<OnRemoveAspectPolicy> onRemoveAspectDelegate;
+    private AssociationPolicyDelegate<BeforeCreateNodeAssociationPolicy> beforeCreateNodeAssociationDelegate;
+    private AssociationPolicyDelegate<OnCreateNodeAssociationPolicy> onCreateNodeAssociationDelegate;
     private AssociationPolicyDelegate<BeforeCreateChildAssociationPolicy> beforeCreateChildAssociationDelegate;
     private AssociationPolicyDelegate<OnCreateChildAssociationPolicy> onCreateChildAssociationDelegate;
     private AssociationPolicyDelegate<BeforeDeleteChildAssociationPolicy> beforeDeleteChildAssociationDelegate;
@@ -183,6 +187,8 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         beforeRemoveAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeRemoveAspectPolicy.class);
         onRemoveAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnRemoveAspectPolicy.class);
 
+        beforeCreateNodeAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeCreateNodeAssociationPolicy.class);
+        onCreateNodeAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateNodeAssociationPolicy.class);
         beforeCreateChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeCreateChildAssociationPolicy.class);
         onCreateChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateChildAssociationPolicy.class);
         beforeDeleteChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeDeleteChildAssociationPolicy.class);
@@ -391,6 +397,34 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     {
         NodeServicePolicies.OnRemoveAspectPolicy policy = onRemoveAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.onRemoveAspect(nodeRef, aspectTypeQName);
+    }
+    
+    /**
+     * @see NodeServicePolicies.BeforeCreateNodeAssociationPolicy#beforeCreateChildAssociation(NodeRef,
+     *      NodeRef, QName, QName)
+     */
+    protected void invokeBeforeCreateNodeAssociation(NodeRef parentNodeRef, QName assocTypeQName, QName assocQName)
+    {
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
+        // execute policy for node type
+        NodeServicePolicies.BeforeCreateNodeAssociationPolicy policy = beforeCreateNodeAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
+        policy.beforeCreateNodeAssociation(parentNodeRef, assocTypeQName, assocQName);
+    }
+
+    /**
+     * @see NodeServicePolicies.OnCreateNodeAssociationPolicy#onCreateChildAssociation(ChildAssociationRef)
+     */
+    protected void invokeOnCreateNodeAssociation(ChildAssociationRef childAssocRef)
+    {
+        // Get the parent reference and the assoc type qName
+        NodeRef parentNodeRef = childAssocRef.getParentRef();
+        QName assocTypeQName = childAssocRef.getTypeQName();
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
+        // execute policy for node type and aspects
+        NodeServicePolicies.OnCreateNodeAssociationPolicy policy = onCreateNodeAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
+        policy.onCreateNodeAssociation(childAssocRef);
     }
 
     /**

@@ -200,6 +200,31 @@ public interface NodeServicePolicies
          */
         public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName);
     }
+    
+    public interface BeforeCreateNodeAssociationPolicy extends AssociationPolicy
+    {
+        /**
+         * Called before a new node is created with the details of the new child association.
+         * 
+         * @param parentNodeRef
+         * @param assocTypeQName the type of the association
+         * @param assocQName the name of the association
+         */
+        public void beforeCreateNodeAssociation(
+                NodeRef parentNodeRef,
+                QName assocTypeQName,
+                QName assocQName);
+    }
+    
+    public interface OnCreateNodeAssociationPolicy extends AssociationPolicy
+    {
+        /**
+         * Called after a node is created with the created association details
+         * 
+         * @param childAssocRef the child association that has been created
+         */
+        public void onCreateNodeAssociation(ChildAssociationRef childAssocRef);
+    }
 
     public interface BeforeCreateChildAssociationPolicy extends AssociationPolicy
     {

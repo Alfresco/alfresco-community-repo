@@ -3,6 +3,8 @@
  */
 package org.alfresco.repo.policy.registration;
 
+import org.alfresco.service.namespace.QName;
+
 /**
  * Deal with the registration of a class policy
  * 
@@ -17,8 +19,11 @@ public class ClassPolicyRegistration extends PolicyRegistration
 	@Override
 	public void register() 
 	{
-		// Register the class behaviour
-		this.policyComponent.bindClassBehaviour(this.policyName, this.className, this.behaviour);
+		for (QName policyName : this.policyNames) 
+		{			
+			// Register the class behaviour
+			this.policyComponent.bindClassBehaviour(policyName, this.className, this.behaviour);
+		}
 	}
 
 }

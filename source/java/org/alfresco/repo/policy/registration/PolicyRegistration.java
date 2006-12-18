@@ -3,6 +3,9 @@
  */
 package org.alfresco.repo.policy.registration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.namespace.QName;
@@ -17,8 +20,8 @@ public abstract class PolicyRegistration
 	/** The policy componenet **/
 	protected PolicyComponent policyComponent;
 	
-	/** The policy name **/
-	protected QName policyName;
+	/** The policy names **/
+	protected List<QName> policyNames;	
 	
 	/** The class name **/
 	protected QName className;
@@ -43,7 +46,22 @@ public abstract class PolicyRegistration
 	 */
 	public void setPolicyName(String policyName)
 	{
-		this.policyName = QName.createQName(policyName);
+		this.policyNames = new ArrayList<QName>(1);
+		this.policyNames.add(QName.createQName(policyName));
+	}
+	
+	/**
+	 * Set the policy names.  The behaviour will be added for each for the policies.
+	 * 
+	 * @param policyNames	the policy names
+	 */
+	public void setPolicyNames(List<String> policyNames)
+	{
+		this.policyNames = new ArrayList<QName>(policyNames.size());
+		for (String policyName : policyNames) 
+		{
+			this.policyNames.add(QName.createQName(policyName));
+		}
 	}
 	
 	/**

@@ -26,7 +26,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
-import org.alfresco.web.app.servlet.ExternalAccessServlet;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.dialog.DialogManager;
 import org.alfresco.web.bean.dialog.DialogState;
@@ -119,6 +119,13 @@ public class AlfrescoNavigationHandler extends NavigationHandler
          {
             handleDispatch(context, fromAction, outcome);
          }
+      }
+      
+      // reset the dispatch context
+      Object bean = FacesHelper.getManagedBean(context, CONFIG_NAV_BEAN);
+      if (bean instanceof NavigationBean)
+      {
+         ((NavigationBean)bean).resetDispatchContext();
       }
       
       if (logger.isDebugEnabled())
@@ -659,28 +666,14 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       }
       else
       {
-         // the details pages can be loaded via the external access servlet,
-         // if this is the case the details page would not have been loaded as
-         // a dialog, in this scenario just use the global "browse" outcome.
-         String referer = (String)context.getExternalContext().
-               getRequestHeaderMap().get("referer");
-         if ((referer != null) && 
-             ((referer.indexOf(ExternalAccessServlet.OUTCOME_DOCDETAILS) != -1) || 
-             (referer.indexOf(ExternalAccessServlet.OUTCOME_SPACEDETAILS) != -1)))
+         // we are trying to close a dialog when one hasn't been opened!
+         // return to the main page of the app (print warning if debug is enabled)
+         if (logger.isDebugEnabled())
          {
-            navigate(context, fromAction, "browse");
+            logger.debug("Attempting to close a " + closingItem + " with an empty view stack, returning 'browse' outcome");
          }
-         else
-         {
-            // we are trying to close a dialog when one hasn't been opened!
-            // log a warning and return a null outcome to stay on the same page
-            if (logger.isWarnEnabled())
-            {
-               logger.warn("Attempting to close a " + closingItem + " with an empty view stack, returning null outcome");
-            }
-            
-            navigate(context, fromAction, null);
-         }
+         
+         navigate(context, fromAction, "browse");
       }
    }
    

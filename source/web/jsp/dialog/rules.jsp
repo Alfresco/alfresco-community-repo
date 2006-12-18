@@ -150,7 +150,7 @@
                               <a:richList id="rulesList" viewMode="details" value="#{RulesBean.rules}" var="r"
                                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
                                           altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
-                                          initialSortColumn="title" initialSortDescending="true"
+                                          initialSortColumn="createdDate" initialSortDescending="false"
                                           binding="#{RulesBean.richList}">
                         
                                  <%-- Primary column for details view mode --%>

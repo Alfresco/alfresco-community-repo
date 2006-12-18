@@ -21,6 +21,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
@@ -50,7 +51,8 @@ public class EditDocWebDavEvaluator implements ActionEvaluator
              "webdav".equals(Application.getClientConfig(fc).getEditLinkType()))
          {
             if (node.isWorkingCopyOwner() == true ||
-                  (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false))
+               (node.hasAspect(ContentModel.ASPECT_WORKING_COPY) && node.hasPermission(PermissionService.WRITE)) ||
+               (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false))
             {
                result = true;
             }

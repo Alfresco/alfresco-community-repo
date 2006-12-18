@@ -229,7 +229,7 @@ public final class User
       Map<QName, Serializable> props = nodeService.getProperties(user);
       String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
       String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
-      String fullName = firstName + " " + (lastName != null ? lastName : "");
+      String fullName = firstName + ((lastName != null && lastName.length() > 0) ? " " + lastName : "");
       
       return fullName;
    }

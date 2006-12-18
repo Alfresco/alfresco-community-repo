@@ -251,7 +251,7 @@ public class TransientNode extends Node
       TypeDefinition typeDef = ddService.getType(this.type);
       if (typeDef == null)
       {
-         throw new AlfrescoRuntimeException("Failed to find type definition for start task: " + this.type);
+         throw new AlfrescoRuntimeException("Failed to find type definition: " + this.type);
       }
       
       this.aspects = new HashSet<QName>();

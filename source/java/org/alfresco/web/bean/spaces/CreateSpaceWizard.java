@@ -460,16 +460,18 @@ public class CreateSpaceWizard extends BaseWizardBean
          FacesContext context = FacesContext.getCurrentInstance();
          String xpath = Application.getRootPath(context) + "/" + Application.getGlossaryFolderName(context) +
                "/" + Application.getSpaceTemplatesFolderName(context) + "/*";
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-         NamespaceService resolver = Repository.getServiceRegistry(context).getNamespaceService();
-         List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
+         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());         
+         List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, this.namespaceService, false);
          
          if (results.size() > 0)
          {
             for (NodeRef assocRef : results)
             {
                Node childNode = new Node(assocRef);
-               this.templates.add(new SelectItem(childNode.getId(), childNode.getName()));
+               if (this.dictionaryService.isSubClass(childNode.getType(), ContentModel.TYPE_FOLDER))
+               {
+                  this.templates.add(new SelectItem(childNode.getId(), childNode.getName()));
+               }
             }
             
             // make sure the list is sorted by the label

@@ -136,7 +136,7 @@
 <a:panel rendered="false" id="workflow-outline" label="#{msg.workflow_outline}" progressive="true" expanded="false" 
          border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
 
-   <h:graphicImage value="#{DialogManager.bean.workflowDefinitionImageUrl}"/>
+   <h:graphicImage value="#{WizardManager.bean.workflowDefinitionImageUrl}"/>
    
 </a:panel>
          

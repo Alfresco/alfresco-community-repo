@@ -2,8 +2,10 @@ package org.alfresco.web.bean.workflow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
@@ -14,13 +16,17 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientMapNode;
+import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -31,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class WorkflowBean
 {
+   protected NavigationBean navigationBean;
    protected NodeService nodeService;
    protected WorkflowService workflowService;
    protected List<Node> tasks;
@@ -142,6 +149,16 @@ public class WorkflowBean
    }
    
    /**
+    * Sets the navigation bean to use
+    * 
+    * @param navigationBean The NavigationBean to set.
+    */
+   public void setNavigationBean(NavigationBean navigationBean)
+   {
+      this.navigationBean = navigationBean;
+   }
+   
+   /**
     * Sets the workflow service to use
     * 
     * @param workflowService WorkflowService instance
@@ -159,6 +176,24 @@ public class WorkflowBean
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Navigation handlers
+   
+   public void setupTaskDialog(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String id = params.get("id");
+      String type = params.get("type");
+      
+      // setup the dispatch context with the task we're opening a dialog for
+      TransientNode node = new TransientNode(QName.createQName(type), id, null);
+      this.navigationBean.setupDispatchContext(node);
+      
+      // pass on parameters for the dialog
+      Application.getDialogManager().setupParameters(event);
    }
    
    // ------------------------------------------------------------------------------
@@ -181,7 +216,7 @@ public class WorkflowBean
       
       // add properties for the other useful metadata
       node.getProperties().put(ContentModel.PROP_NAME.toString(), task.title);
-      node.getProperties().put("type", taskDef.metadata.getTitle());
+      node.getProperties().put("type", node.getType().toString());
       node.getProperties().put("id", task.id);
       
       // add extra properties for completed tasks

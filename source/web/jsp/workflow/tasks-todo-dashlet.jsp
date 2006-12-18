@@ -18,13 +18,15 @@
       </f:facet>
       <f:facet name="small-icon">
          <a:actionLink id="col1-act1" value="#{r['bpm:description']}" image="/images/icons/workflow_task.gif" showLink="false"
-                       actionListener="#{DialogManager.setupParameters}" action="dialog:manageTask">
+                       actionListener="#{WorkflowBean.setupTaskDialog}" action="dialog:manageTask">
             <f:param name="id" value="#{r.id}" />
+            <f:param name="type" value="#{r.type}" />
          </a:actionLink>
       </f:facet>
-      <a:actionLink id="col1-act2" value="#{r['bpm:description']}" actionListener="#{DialogManager.setupParameters}" 
+      <a:actionLink id="col1-act2" value="#{r['bpm:description']}" actionListener="#{WorkflowBean.setupTaskDialog}" 
                     action="dialog:manageTask">
          <f:param name="id" value="#{r.id}" />
+         <f:param name="type" value="#{r.type}" />
       </a:actionLink>
    </a:column>
 

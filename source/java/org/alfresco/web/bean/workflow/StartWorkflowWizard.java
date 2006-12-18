@@ -533,6 +533,22 @@ public class StartWorkflowWizard extends BaseWizardBean
    }
 
    /**
+    * Returns the URL to the Workflow Definition Image of the current task
+    * 
+    * @return  the url
+    */
+   public String getWorkflowDefinitionImageUrl()
+   {
+       String url = null;
+       if (selectedWorkflow != null)
+       {
+           WorkflowDefinition def = workflows.get(selectedWorkflow);
+           url = "/workflowdefinitionimage/" + def.id; 
+       }
+       return url; 
+   }
+      
+   /**
     * Returns a list of resources associated with this task
     * i.e. the children of the workflow package
     * 

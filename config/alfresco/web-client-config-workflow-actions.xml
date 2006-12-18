@@ -17,9 +17,10 @@
             <label-id>manage_task</label-id>
             <image>/images/icons/manage_workflow_task.gif</image>
             <action>dialog:manageTask</action>
-            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <action-listener>#{WorkflowBean.setupTaskDialog}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
+               <param name="type">#{actionContext.type}</param>
             </params>
          </action>
          
@@ -27,9 +28,10 @@
             <label-id>view_completed_task_title</label-id>
             <image>/images/icons/view_workflow_task.gif</image>
             <action>dialog:viewCompletedTask</action>
-            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <action-listener>#{WorkflowBean.setupTaskDialog}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
+               <param name="type">#{actionContext.type}</param>
             </params>
          </action>
          
@@ -37,9 +39,10 @@
             <label-id>reassign</label-id>
             <image>/images/icons/reassign_task.gif</image>
             <action>dialog:reassignTask</action>
-            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <action-listener>#{WorkflowBean.setupTaskDialog}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
+               <param name="type">#{actionContext.type}</param>
             </params>
          </action>
          

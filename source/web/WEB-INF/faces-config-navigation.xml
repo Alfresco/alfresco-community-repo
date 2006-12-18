@@ -269,6 +269,10 @@
          <from-outcome>checkoutFileLink</from-outcome>
          <to-view-id>/jsp/dialog/checkout-file-link.jsp</to-view-id>
       </navigation-case>
+      <navigation-case>
+         <from-outcome>workingCopyMissing</from-outcome>
+         <to-view-id>/jsp/dialog/working-copy-missing.jsp</to-view-id>
+      </navigation-case>
    </navigation-rule>
    
    <navigation-rule>

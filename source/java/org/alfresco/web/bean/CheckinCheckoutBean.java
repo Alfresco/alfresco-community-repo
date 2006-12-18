@@ -445,6 +445,7 @@ public class CheckinCheckoutBean
    public String checkoutFile()
    {
       String outcome = null;
+      boolean checkoutSuccessful = false;
       
       UserTransaction tx = null;
       
@@ -518,8 +519,8 @@ public class CheckinCheckoutBean
             // commit the transaction
             tx.commit();
             
-            // show the page that display the checkout link
-            outcome = "checkoutFileLink";
+            // mark as successful
+            checkoutSuccessful = true;
          }
          catch (Throwable err)
          {
@@ -534,6 +535,23 @@ public class CheckinCheckoutBean
          logger.warn("WARNING: checkoutFile called without a current Document!");
       }
       
+      // determine which page to show next if the checkout was successful.
+      if (checkoutSuccessful)
+      {
+         // If a check-in rule is present in the space
+         // the document was checked out to the working copy would have already disappeared!
+         if (this.nodeService.exists(this.workingDocument.getNodeRef()))
+         {
+            // go to the page that allows the user to download the content for editing
+            outcome = "checkoutFileLink";
+         }
+         else
+         {
+            // show a page telling the user that the content has already been checked in
+            outcome = "workingCopyMissing";
+         }
+      }
+
       return outcome;
    }
    

@@ -70,7 +70,7 @@
                               <h:graphicImage id="wizard-logo" url="/images/icons/check_out_large.gif" />
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.check_out_of}" /> '<h:outputText value="#{CheckinCheckoutBean.document.name}" />' Complete</div>
+                              <div class="mainTitle"><h:outputText value="#{msg.check_out_of}" /> '<h:outputText value="#{CheckinCheckoutBean.document.name}" />' <h:outputText value="#{msg.complete}" /></div>
                               <div class="mainSubText"><h:outputText value="#{msg.checkoutfilelink_description}" /></div>
                            </td>
                         </tr>

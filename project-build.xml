@@ -56,7 +56,6 @@
          <lib dir="${dir.common.lib}/jmagick" includes="*.jar" />
          <lib dir="${dir.common.lib}/commons" includes="*.jar" />
          <lib dir="${dir.common.lib}/jgroups" includes="*.jar" />
-         <lib dir="${dir.common.lib}/treecache" includes="*.jar" />
          <lib dir="${dir.common.lib}/swarmcache" includes="*.jar" />
          <lib dir="${dir.dist}" includes="${file.name.jar}" />
          <lib dir="${dir.project.core}/build/dist" includes="${dir.name.core}.jar" />

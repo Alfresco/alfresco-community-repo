@@ -15,15 +15,12 @@
         </property>
         <property name="locations">
             <list>
-                <value>classpath:alfresco/alfresco-shared.properties</value>
                 <value>classpath:alfresco/repository.properties</value>
                 <value>classpath:alfresco/version.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
 
-                <!-- Override data location properties -->
-                <value>classpath:alfresco/extension/custom-data-location.properties</value>
-                <!-- Override database connection properties -->
-                <value>classpath:alfresco/extension/custom-db-connection.properties</value>
+                <!-- Override basic repository properties -->
+                <value>classpath:alfresco/extension/custom-repository.properties</value>
             </list>
         </property>
     </bean>

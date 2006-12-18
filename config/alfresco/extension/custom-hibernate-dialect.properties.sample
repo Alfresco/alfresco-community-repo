@@ -1,7 +1,3 @@
-# Sample Hibernate configuration to disnable Hibernate schema updates
-# Values are "validate" or "update" (default)
-#hibernate.hbm2ddl.auto=validate
-
 #
 # Sample Hibernate configuration for changing Database dialect
 # For a full list: http://www.hibernate.org/hib_docs/v3/reference/en/html_single/#configuration-optional-dialects

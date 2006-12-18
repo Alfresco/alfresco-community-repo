@@ -1,12 +1,27 @@
+###############################
+## Common Alfresco Properties #
+###############################
+
+#
+# Sample custom content and index data location
+#
+#dir.root=/srv/alfresco/data
+
 #
 # Sample database connection properties
 #
-
-#db.schema.update=true
 #db.username=alfresco
 #db.password=alfresco
 #db.pool.initial=10
 #db.pool.max=100
+
+#
+# Property to control whether schema updates are performed automatically.
+# Updates must be enabled during upgrades as, apart from the static upgrade scripts,
+# there are also auto-generated update scripts that will need to be executed.  After
+# upgrading to a new version, this can be disabled.
+#
+#db.schema.update=true
 
 #
 # HSQL connection
@@ -41,7 +56,5 @@
 #
 # SQLServer connection using Microsoft JDDB driver
 #
-#db.username=sa
-#db.password=sa
 #db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
 #db.url=jdbc:sqlserver://localhost;DatabaseName=alfresco

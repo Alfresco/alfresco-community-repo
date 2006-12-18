@@ -54,6 +54,7 @@ import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -80,6 +81,10 @@ public class NTLMAuthenticationFilter implements Filter
     // Authenticated user session object name
 
     public final static String AUTHENTICATION_USER = "_alfDAVAuthTicket";
+    
+    // Allow an authenitcation ticket to be passed as part of a request to bypass authentication
+    
+    private static final String ARG_TICKET = "ticket";
     
     // NTLM flags mask, used to mask out features that are not supported
     
@@ -285,7 +290,86 @@ public class NTLMAuthenticationFilter implements Filter
         
         if ( authHdr == null) {
 
-            // Debug
+        	// Check if the request includes an authentication ticket
+            
+        	String ticket = req.getParameter( ARG_TICKET);
+        	
+        	if ( ticket != null &&  ticket.length() > 0)
+        	{
+            	// Debug
+                
+                if ( logger.isDebugEnabled())
+                    logger.debug("Logon via ticket from " + req.getRemoteHost() + " (" +
+                            req.getRemoteAddr() + ":" + req.getRemotePort() + ")" + " ticket=" + ticket);
+                
+        		UserTransaction tx = null;
+        	    try
+        	    {
+        	    	// Validate the ticket
+        	    	  
+        	    	m_authService.validate(ticket);
+
+        	    	// Need to create the User instance if not already available
+        	    	  
+        	        String currentUsername = m_authService.getCurrentUserName();
+
+        	        // Start a transaction
+        	          
+      	            tx = m_transactionService.getUserTransaction();
+        	        tx.begin();
+        	            
+        	        NodeRef personRef = m_personService.getPerson(currentUsername);
+        	        user = new WebDAVUser( currentUsername, m_authService.getCurrentTicket(), personRef);
+        	        NodeRef homeRef = (NodeRef) m_nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+        	            
+        	        // Check that the home space node exists - else Login cannot proceed
+        	            
+        	        if (m_nodeService.exists(homeRef) == false)
+        	        {
+        	        	throw new InvalidNodeRefException(homeRef);
+        	        }
+        	        user.setHomeNode(homeRef);
+        	            
+        	        tx.commit();
+        	        tx = null; 
+        	            
+        	        // Store the User object in the Session - the authentication servlet will then proceed
+        	            
+        	        req.getSession().setAttribute( AUTHENTICATION_USER, user);
+
+        	        // Chain to the next filter
+                    
+                    chain.doFilter(sreq, sresp);
+        	        return;
+        	    }
+            	catch (AuthenticationException authErr)
+            	{
+            		// Clear the user object to signal authentication failure
+            		
+            		user = null;
+            	}
+            	catch (Throwable e)
+            	{
+            		// Clear the user object to signal authentication failure
+            		
+            		user = null;
+            	}
+            	finally
+            	{
+            		try
+            	    {
+            			if (tx != null)
+            	        {
+            				tx.rollback();
+           	        	}
+            	    }
+            	    catch (Exception tex)
+            	    {
+            	    }
+            	}
+        	}
+        	
+        	// Debug
             
             if ( logger.isDebugEnabled())
                 logger.debug("New NTLM auth request from " + req.getRemoteHost() + " (" +

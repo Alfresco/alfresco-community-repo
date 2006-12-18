@@ -28,16 +28,22 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -48,10 +54,18 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class AuthenticationFilter implements Filter
 {
+    // Debug logging
+    
+    private static Log logger = LogFactory.getLog(NTLMAuthenticationFilter.class);
+    
     // Authenticated user session object name
 
     public final static String AUTHENTICATION_USER = "_alfDAVAuthTicket";
 
+    // Allow an authenitcation ticket to be passed as part of a request to bypass authentication
+    
+    private static final String ARG_TICKET = "ticket";
+    
     // Servlet context
 
     private ServletContext m_context;
@@ -61,6 +75,7 @@ public class AuthenticationFilter implements Filter
     private AuthenticationService m_authService;
     private PersonService m_personService;
     private NodeService m_nodeService;
+    private TransactionService m_transactionService;
     
     /**
      * Initialize the filter
@@ -81,6 +96,7 @@ public class AuthenticationFilter implements Filter
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         m_nodeService = serviceRegistry.getNodeService();
         m_authService = serviceRegistry.getAuthenticationService();
+        m_transactionService = serviceRegistry.getTransactionService();
         m_personService = (PersonService) ctx.getBean("PersonService");   // transactional and permission-checked
     }
 
@@ -137,12 +153,16 @@ public class AuthenticationFilter implements Filter
                 try
                 {
                     // Authenticate the user
-                    m_authService.authenticate(username, password.toCharArray());
+
+                	m_authService.authenticate(username, password.toCharArray());
                     
                     // Get the user node and home folder
+                	
                     NodeRef personNodeRef = m_personService.getPerson(username);
                     NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+                    
                     // Setup User object and Home space ID etc.
+                    
                     user = new WebDAVUser(username, m_authService.getCurrentTicket(), homeSpaceRef);
                     
                     httpReq.getSession().setAttribute(AUTHENTICATION_USER, user);
@@ -155,6 +175,82 @@ public class AuthenticationFilter implements Filter
                 {
                     // Do nothing, user object will be null
                 }
+            }
+            else
+            {
+            	// Check if the request includes an authentication ticket
+            
+            	String ticket = req.getParameter( ARG_TICKET);
+            	
+            	if ( ticket != null &&  ticket.length() > 0)
+            	{
+                	// Debug
+                    
+                    if ( logger.isDebugEnabled())
+                        logger.debug("Logon via ticket from " + req.getRemoteHost() + " (" +
+                                req.getRemoteAddr() + ":" + req.getRemotePort() + ")" + " ticket=" + ticket);
+                    
+            		UserTransaction tx = null;
+            	    try
+            	    {
+            	    	// Validate the ticket
+            	    	  
+            	    	m_authService.validate(ticket);
+
+            	    	// Need to create the User instance if not already available
+            	    	  
+            	        String currentUsername = m_authService.getCurrentUserName();
+
+            	        // Start a transaction
+            	          
+          	            tx = m_transactionService.getUserTransaction();
+            	        tx.begin();
+            	            
+            	        NodeRef personRef = m_personService.getPerson(currentUsername);
+            	        user = new WebDAVUser( currentUsername, m_authService.getCurrentTicket(), personRef);
+            	        NodeRef homeRef = (NodeRef) m_nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+            	            
+            	        // Check that the home space node exists - else Login cannot proceed
+            	            
+            	        if (m_nodeService.exists(homeRef) == false)
+            	        {
+            	        	throw new InvalidNodeRefException(homeRef);
+            	        }
+            	        user.setHomeNode(homeRef);
+            	            
+            	        tx.commit();
+            	        tx = null; 
+            	            
+            	        // Store the User object in the Session - the authentication servlet will then proceed
+            	            
+            	        httpReq.getSession().setAttribute( AUTHENTICATION_USER, user);
+            	    }
+	            	catch (AuthenticationException authErr)
+	            	{
+	            		// Clear the user object to signal authentication failure
+	            		
+	            		user = null;
+	            	}
+	            	catch (Throwable e)
+	            	{
+	            		// Clear the user object to signal authentication failure
+	            		
+	            		user = null;
+	            	}
+	            	finally
+	            	{
+	            		try
+	            	    {
+	            			if (tx != null)
+	            	        {
+	            				tx.rollback();
+	           	        	}
+	            	    }
+	            	    catch (Exception tex)
+	            	    {
+	            	    }
+	            	}
+            	}
             }
             
             // Check if the user is authenticated, if not then prompt again

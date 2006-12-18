@@ -932,7 +932,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void setNodeProperty(String path, QName name, PropertyValue value)
     {
-        Lookup lPath = lookup(-1, path, true, false);
+        Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -948,7 +948,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void setNodeProperties(String path, Map<QName, PropertyValue> properties)
     {
-        Lookup lPath = lookup(-1, path, true, false);
+        Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -966,7 +966,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public PropertyValue getNodeProperty(int version, String path, QName name)
     {
-        Lookup lPath = lookup(version, path, false, false);
+        Lookup lPath = lookup(version, path, false, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -983,7 +983,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public Map<QName, PropertyValue> getNodeProperties(int version, String path)
     {
-        Lookup lPath = lookup(version, path, false, false);
+        Lookup lPath = lookup(version, path, false, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -999,7 +999,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void deleteNodeProperty(String path, QName name)
     {
-        Lookup lPath = lookup(-1, path, true, false);
+        Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -1014,7 +1014,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void deleteNodeProperties(String path)
     {
-        Lookup lPath = lookup(-1, path, true, false);
+        Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -1158,7 +1158,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void setMetaDataFrom(String path, AVMNode from)
     {
-        Lookup lPath = lookup(-1, path, true, false);
+        Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found: " + path);
@@ -1174,7 +1174,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void addAspect(String path, QName aspectName)
     {
-        Lookup lPath = lookup(-1, path, true, false);
+        Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -1199,7 +1199,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public List<QName> getAspects(int version, String path)
     {
-        Lookup lPath = lookup(version, path, false, false);
+        Lookup lPath = lookup(version, path, false, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -1222,7 +1222,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void removeAspect(String path, QName aspectName)
     {
-        Lookup lPath = lookup(-1, path, true, false);
+        Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -1247,7 +1247,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public boolean hasAspect(int version, String path, QName aspectName)
     {
-        Lookup lPath = lookup(version, path, false, false);
+        Lookup lPath = lookup(version, path, false, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");
@@ -1263,7 +1263,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void setACL(String path, DbAccessControlList acl)
     {
-        Lookup lPath = lookup(-1, path, true, false);
+        Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
         {
             throw new AVMNotFoundException("Path not found.");

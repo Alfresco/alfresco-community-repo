@@ -3110,6 +3110,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createSnapshot("main", null, null);
             props = fService.getNodeProperties(-1, "main:/a/b/c/bar");
             assertEquals(0, props.size());
+            fService.removeNode("main:/a/b/c/foo");
+            fService.setNodeProperty("main:/a/b/c/foo", QName.createQName("silly.uri", "Prop1"), 
+                                     new PropertyValue(null, 42));
+            assertEquals(1, fService.getNodeProperties(-1, "main:/a/b/c/foo").size());
         }
         catch (Exception e)
         {
@@ -3167,10 +3171,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
             fService.addAspect("main:/a/b/c/foo", ContentModel.ASPECT_AUDITABLE);
             fService.createSnapshot("main", null, null);
+            fService.removeNode("main:/a/b/c/bar");
+            fService.addAspect("main:/a/b/c/bar", ContentModel.ASPECT_TITLED);
             List<QName> names = fService.getAspects(-1, "main:/a/b/c/foo");
             assertEquals(2, names.size());
             assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
             assertFalse(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_AUTHOR));
+            assertTrue(fService.hasAspect(-1, "main:/a/b/c/foo", ContentModel.ASPECT_TITLED));
             fService.removeAspect("main:/a/b/c/foo", ContentModel.ASPECT_TITLED);
             fService.createSnapshot("main", null, null);
             fService.getFileOutputStream("main:/a/b/c/foo").close();

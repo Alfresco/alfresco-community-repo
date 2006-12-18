@@ -73,6 +73,20 @@ public interface ScriptService
     /**
      * Process a script against the supplied data model.
      * 
+     * @param scriptLocation	object representing the script location
+     * @param model				Object model to process script against
+     * 
+     * @return	output of the script (may be null or any other valid wrapped JavaScript object)
+     * 
+     * @throws ScriptException
+     */
+    @Auditable(parameters = {"scriptLocation", "model"})
+    public Object executeScript(ScriptLocation scriptLocation, Map<String, Object> model)
+    	throws ScriptException;
+    
+    /**
+     * Process a script against the supplied data model.
+     * 
      * @param script       Script content as a String.
      * @param model        Object model to process script against
      * 

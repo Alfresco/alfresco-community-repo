@@ -541,6 +541,65 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             if ( hasPseudoFileInterface(ctx))
             {
+            	// Make sure the parent folder has a file state, and the path exists
+        		
+                String[] paths = FileName.splitPath( path);
+                FileState fstate = ctx.getStateTable().findFileState( paths[0]);
+                
+                if ( fstate == null)
+                {
+                	NodeRef nodeRef = getNodeForPath(tree, paths[0]);
+                        
+                    if ( nodeRef != null)
+                    {
+                        // Get the file information for the node
+                            
+                        session.beginTransaction(transactionService, true);
+                        finfo = cifsHelper.getFileInformation(nodeRef);
+                    }
+                        
+              		// Create the file state
+                		
+               		fstate = ctx.getStateTable().findFileState( paths[0], true, true);
+                		
+               		fstate.setFileStatus( FileStatus.DirectoryExists);
+   	                fstate.setNodeRef( nodeRef);
+                		
+               		// Add pseudo files to the folder
+                		
+               		getPseudoFileInterface( ctx).addPseudoFilesToFolder( session, tree, paths[0]);
+                		
+               		// Debug
+                		
+              		if ( logger.isInfoEnabled())
+               			logger.info( "Added file state for pseudo files folder (getinfo) - " + paths[0]);
+                }
+                else if ( fstate.hasPseudoFiles() == false)
+                {
+            		// Make sure the file state has the node ref
+            		
+            		if ( fstate.hasNodeRef() == false)
+            		{
+    	            	// Create the transaction
+    	                
+    	                session.beginTransaction(transactionService, true);
+    	            
+    	                // Get the node for the folder path
+    	                
+    	                fstate.setNodeRef( getNodeForPath( tree, paths[0]));
+            		}
+            		
+                	// Add pseudo files for the parent folder
+                	
+            		getPseudoFileInterface( ctx).addPseudoFilesToFolder( session, tree, paths[0]);
+            		
+            		// Debug
+            		
+            		if ( logger.isInfoEnabled())
+            			logger.info( "Added pseudo files for folder (exists) - " + paths[0]);
+                }
+            	
+            	
                 // Get the pseudo file
                 
                 PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( session, tree, path);
@@ -868,6 +927,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 	// Check if the file name is a pseudo file name
                 	
                 	if ( getPseudoFileInterface( ctx).isPseudoFile(sess, tree, name)) {
+                		
     	            	// Make sure the parent folder has a file state, and the path exists
                 		
     	                String[] paths = FileName.splitPath( name);

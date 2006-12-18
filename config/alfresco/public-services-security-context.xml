@@ -210,7 +210,13 @@
         </property>  
         <property name="authenticationService">
              <ref bean="authenticationServiceImpl" />
-        </property>  
+        </property>
+        <property name="maxPermissionCheckTimeMillis">
+            <value>${lucene.query.maxPermissionCheckTimeMillis}</value>
+        </property>
+        <property name="maxPermissionChecks">
+            <value>${lucene.query.maxPermissionChecks}</value>
+        </property>
     </bean>
    
     <!-- Link up after method call security --> 

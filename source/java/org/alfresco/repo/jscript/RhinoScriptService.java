@@ -33,9 +33,11 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptImplementation;
+import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.apache.log4j.Logger;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
@@ -156,6 +158,37 @@ public class RhinoScriptService implements ScriptService
         catch (Throwable err)
         {
             throw new ScriptException("Failed to execute script '" + scriptRef.toString() + "': " + err.getMessage(), err);
+        }
+        finally
+        {
+            if (reader != null)
+            {
+                try {reader.close();} catch (IOException ioErr) {}
+            }
+        }
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(org.alfresco.service.cmr.repository.ScriptLocation, java.util.Map)
+     */
+    public Object executeScript(ScriptLocation location, Map<String, Object> model)
+    	throws ScriptException
+    {
+    	ParameterCheck.mandatory("Location", location);
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script: " + location.toString());
+        }
+        
+        Reader reader = null;
+        try
+        {   
+            return executeScriptImpl(location.getReader(), model);
+        }
+        catch (Throwable err)
+        {
+            throw new ScriptException("Failed to execute script '" + location.toString() + "': " + err.getMessage(), err);
         }
         finally
         {

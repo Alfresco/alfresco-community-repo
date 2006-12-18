@@ -318,6 +318,11 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private void addTypePermissions(QName type, Set<PermissionReference> permissions, boolean exposedOnly)
     {
         TypeDefinition typeDef = dictionaryService.getType(type);
+        if (typeDef == null)
+        {
+            // the type definition is no longer in the dictionary - ignore
+            return;
+        }
         if (typeDef.getParentName() != null)
         {
             PermissionSet permissionSet = permissionSets.get(type);
@@ -342,6 +347,11 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private void addAspectPermissions(QName type, Set<PermissionReference> permissions, boolean exposedOnly)
     {
         AspectDefinition aspectDef = dictionaryService.getAspect(type);
+        if (aspectDef == null)
+        {
+            // the aspect definition is no longer in the dictionary - ignore
+            return;
+        }
         if (aspectDef.getParentName() != null)
         {
             PermissionSet permissionSet = permissionSets.get(type);

@@ -34,7 +34,7 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
-    </bean>
+    </bean>    
     
      <bean id="avmScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.AVM">
         <property name="scriptName">

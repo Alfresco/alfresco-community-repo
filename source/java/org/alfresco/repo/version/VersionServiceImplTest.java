@@ -19,11 +19,13 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -31,6 +33,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionServiceException;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -681,4 +684,30 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             }
         });
     }
+    
+    public void testAR807() 
+    {
+    	QName prop = QName.createQName("http://www.alfresco.org/test/versionstorebasetest/1.0", "intProp");
+    	
+        ChildAssociationRef childAssociation = 
+        	nodeService.createNode(this.rootNodeRef, 
+                    				 ContentModel.ASSOC_CHILDREN, 
+                    				 QName.createQName("http://www.alfresco.org/test/versionstorebasetest/1.0", "integerTest"), 
+                    				 TEST_TYPE_QNAME);
+        NodeRef newNode = childAssociation.getChildRef();
+        nodeService.setProperty(newNode, prop, 1);
+
+        Object editionCode = nodeService.getProperty(newNode, prop);
+        assertEquals(editionCode.getClass(), Integer.class);
+
+        Map<String, Serializable> versionProps = new HashMap<String, Serializable>(1);
+        versionProps.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        Version version = versionService.createVersion(newNode, versionProps);
+
+        NodeRef versionNodeRef = version.getFrozenStateNodeRef();
+        assertNotNull(versionNodeRef);
+        
+        Object editionCodeArchive = nodeService.getProperty(versionNodeRef, prop);
+        assertEquals(editionCodeArchive.getClass(), Integer.class);
+    }    
 }

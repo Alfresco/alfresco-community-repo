@@ -23,7 +23,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeArray;
@@ -38,7 +41,6 @@ import org.mozilla.javascript.Wrapper;
  */
 public class ValueConverter
 {
-
     /**
      * Convert an object from any repository serialized value to a valid script object.
      * This includes converting Collection multi-value properties into JavaScript Array objects.
@@ -62,6 +64,18 @@ public class ValueConverter
             // NodeRef object properties are converted to new Node objects
             // so they can be used as objects within a template
             value = new Node(((NodeRef)value), services, null, scope);
+        }
+        else if (value instanceof QName || value instanceof StoreRef)
+        {
+        	value = value.toString();
+        }
+        else if (value instanceof ChildAssociationRef)
+        {
+        	value = new ChildAssociation(services, (ChildAssociationRef)value, scope);
+        }
+        else if (value instanceof AssociationRef)
+        {
+        	value = new Association(services, (AssociationRef)value, scope);
         }
         else if (value instanceof Date)
         {
@@ -109,6 +123,14 @@ public class ValueConverter
         {
             // convert back to NodeRef
             value = ((Node)value).getNodeRef();
+        }
+        else if (value instanceof ChildAssociation)
+        {
+        	value = ((ChildAssociation)value).getChildAssociationRef();
+        }
+        else if (value instanceof Association)
+        {
+        	value = ((Association)value).getAssociationRef();
         }
         else if (value instanceof Wrapper)
         {

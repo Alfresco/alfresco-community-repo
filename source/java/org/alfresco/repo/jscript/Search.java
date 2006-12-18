@@ -20,6 +20,7 @@ import java.io.StringReader;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -101,9 +102,8 @@ public final class Search implements Scopeable
      */
     public Node findNode(String ref)
     {
-        String query = ref.replace(":", "\\:");
-        query = query.replace("/", "\\/");
-        Node[] result = query("ID:" + query);
+        String query = "ID:" + LuceneQueryParser.escape(ref);
+        Node[] result = query(query);
         if (result.length == 1)
         {
             return result[0];

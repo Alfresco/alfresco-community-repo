@@ -49,6 +49,15 @@ ok> use definition [<workflowDefId>]
     <workflowDefId> is ommited, the currently selected workflow definition 
     is shown. 
 
+ok> undeploy definition <workflowDefId>
+
+    Undeploy the latest version of the workflow definition identified by 
+    <workflowDefId>.  This will also terminate and remove all "in-flight" 
+    workflows associated with the definition.
+    
+    If multiple versions of the definition exist, you will have to undeploy
+    each in turn to remove the definition completely.
+
 ## 
 ##  Variable Commands 
 ## 
@@ -112,10 +121,11 @@ ok> start [<varName[=varValue>]]*
     
     start bpm:assignee=david wf:predefined 
     
-ok> show workflows 
+ok> show workflows [all]
 
     Display the list of active workflows for the currently selected workflow 
-    definition. 
+    definition.  Or, display the list of all workflows when used with additional
+    keyword 'all'.
 
 ok> use workflow <workflowId>
 
@@ -149,6 +159,10 @@ ok> delete workflow <workflowId>
 
     Force deletion of the specified <workflowId>.
 
+ok> delete all workflows
+
+    Force deletion of all "in-flight" workflows.  Use with care!
+
 ## 
 ##  Task Commands 
 ## 
@@ -176,7 +190,7 @@ ok> update task <taskid> [<varName[=varValue>]]*
     Update the state of the specified <taskId>.  Task properties are provided as 
     name/value pairs or references to pre-defined variables. 
 
-   <varName> variable name 
+    <varName> variable name 
     [*] if specified, define a collection 
     <varValue> variable value (comma-seperate to specify a list of values) 
     

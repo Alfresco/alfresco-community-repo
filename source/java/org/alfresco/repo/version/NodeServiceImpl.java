@@ -29,6 +29,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -39,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -301,31 +303,29 @@ public class NodeServiceImpl implements NodeService, VersionModel
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
 		Map<QName, Serializable> result = new HashMap<QName, Serializable>();
-		
-        // TODO should be doing this using a path query ..
         
-        Collection<ChildAssociationRef> children = this.dbNodeService.getChildAssocs(convertNodeRef(nodeRef));
+        Collection<ChildAssociationRef> children = this.dbNodeService.getChildAssocs(convertNodeRef(nodeRef), CHILD_QNAME_VERSIONED_ATTRIBUTES, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef child : children)
         {
-            if (child.getQName().equals(CHILD_QNAME_VERSIONED_ATTRIBUTES))
-            {
-                NodeRef versionedAttribute = child.getChildRef();
+            NodeRef versionedAttribute = child.getChildRef();
 
-                // Get the QName and the value
-                Serializable value = null;
-                QName qName = (QName)this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_QNAME);
-                Boolean isMultiValue = (Boolean)this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_IS_MULTI_VALUE);
-                if (isMultiValue.booleanValue() == false)
-                {
-                    value = this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_VALUE);
-                }
-                else
-                {
-                    value = this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_MULTI_VALUE);
-                }
-                
-                result.put(qName, value);
+            // Get the QName and the value
+            Serializable value = null;
+            QName qName = (QName)this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_QNAME);
+            PropertyDefinition propDef = this.dicitionaryService.getProperty(qName);
+            
+            Boolean isMultiValue = (Boolean)this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_IS_MULTI_VALUE);
+            if (isMultiValue.booleanValue() == false)
+            {
+                value = this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_VALUE);  
+                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), value);                 
             }
+            else
+            {
+                value = this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_MULTI_VALUE);
+            }
+            
+            result.put(qName, value);
         }        
         
 		return result;

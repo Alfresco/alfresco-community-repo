@@ -430,5 +430,32 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         NodeRef wk3 = this.cociService.getWorkingCopy(this.nodeRef);
         assertNull(wk3);
     }
+    
+    public void testAR1056()
+    {
+    	// Check out the node
+		NodeRef workingCopy = this.cociService.checkout(
+				this.nodeRef, 
+				this.rootNodeRef, 
+				ContentModel.ASSOC_CHILDREN, 
+				QName.createQName("{test}workingCopy"));
+		assertNotNull(workingCopy);
+		
+		// Try and check the same node out again
+		try
+		{
+			this.cociService.checkout(
+				this.nodeRef, 
+				this.rootNodeRef, 
+				ContentModel.ASSOC_CHILDREN, 
+				QName.createQName("{test}workingCopy2"));
+			fail("This document has been checked out twice.");
+		}
+		catch (Exception exception)
+		{
+			// Good because we shouldnt be able to checkout a document twice
+		}
+    
+    }
 
 }

@@ -100,8 +100,6 @@ public class WorkflowInterpreter
 
     /**
      * Main entry point.
-     *   
-     * Syntax: AVMInteractiveConsole storage (new|old).
      */
     public static void main(String[] args)
     {
@@ -206,6 +204,8 @@ public class WorkflowInterpreter
     /**
      * Interpret a single command using the BufferedReader passed in for any data needed.
      * 
+     * TODO: Use decent parser!
+     * 
      * @param line The unparsed command
      * @return The textual output of the command.
      */
@@ -300,14 +300,41 @@ public class WorkflowInterpreter
             
             else if (command[1].equals("workflows"))
             {
-                if (currentWorkflowDef == null)
+                String id = (currentWorkflowDef != null) ? currentWorkflowDef.id : null;
+                if (id == null && command.length == 2)
                 {
-                    return "workflow definition not in use.  Enter command use <workflowDefId>.\n";
+                    return "workflow definition not in use.  Enter command 'show workflows all' or 'use <workflowDefId>'.\n";
                 }
-                List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(currentWorkflowDef.id);
-                for (WorkflowInstance workflow : workflows)
+                if (command.length == 3)
                 {
-                    out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.title);
+                    if (command[2].equals("all"))
+                    {
+                        id = "all";
+                    }
+                    else
+                    {
+                        return "Syntax Error.\n";
+                    }
+                }
+                
+                if (id.equals("all"))
+                {
+                    for (WorkflowDefinition def : workflowService.getDefinitions())
+                    {
+                        List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
+                        for (WorkflowInstance workflow : workflows)
+                        {
+                            out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.title);
+                        }
+                    }
+                }
+                else
+                {
+                    List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(id);
+                    for (WorkflowInstance workflow : workflows)
+                    {
+                        out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.title);
+                    }
                 }
             }
             
@@ -485,6 +512,25 @@ public class WorkflowInterpreter
             out.print(interpretCommand("deploy " + currentDeploy));
         }
         
+        else if (command[0].equals("undeploy"))
+        {
+            if (command.length < 2)
+            {
+                return "Syntax Error.\n";
+            }
+            if (command[1].equals("definition"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.\n";
+                }
+                workflowService.undeployDefinition(command[2]);
+                currentWorkflowDef = null;
+                currentPath = null;
+                out.print(interpretCommand("show definitions"));
+            }
+        }
+        
         else if (command[0].equals("use"))
         {
             if (command.length == 1)
@@ -526,8 +572,7 @@ public class WorkflowInterpreter
                 {
                     return "Syntax Error.\n";
                 }
-            }
-            
+            }            
         }
         
         else if (command[0].equals("user"))
@@ -659,11 +704,11 @@ public class WorkflowInterpreter
 
         else if (command[0].equals("delete"))
         {
-            if (command.length < 3)
+            if (command.length < 2)
             {
                 return "Syntax Error.\n";
             }
-            else if (command[1].equals("workflow"))
+            if (command[1].equals("workflow"))
             {
                 String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.instance.id;
                 if (workflowId == null)
@@ -672,6 +717,40 @@ public class WorkflowInterpreter
                 }
                 workflowService.deleteWorkflow(workflowId);
                 out.println("workflow " + workflowId + " deleted.");
+            }
+            else if (command[1].equals("all"))
+            {
+                if (command.length < 3)
+                {
+                    return "Syntax Error.\n";
+                }
+                if (command[2].equals("workflows"))
+                {
+                    if (command.length < 4)
+                    {
+                        return "Enter the command 'delete all workflows imeanit' to really delete all workflows\n";
+                    }
+                    if (command[3].equals("imeanit"))
+                    {
+                        for (WorkflowDefinition def : workflowService.getDefinitions())
+                        {
+                            List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
+                            for (WorkflowInstance workflow : workflows)
+                            {
+                                workflowService.deleteWorkflow(workflow.id);
+                                out.println("workflow " + workflow.id + " deleted.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return "Syntax Error.\n";
+                    }
+                }
+                else
+                {
+                    return "Syntax Error.\n";
+                }
             }
             else
             {

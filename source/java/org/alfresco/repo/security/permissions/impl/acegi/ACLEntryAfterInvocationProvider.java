@@ -60,16 +60,17 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     private static final String AFTER_ACL_PARENT = "AFTER_ACL_PARENT";
 
     private PermissionService permissionService;
-
     private NamespacePrefixResolver nspr;
-
     private NodeService nodeService;
-
     private AuthenticationService authenticationService;
+    private int maxPermissionChecks;
+    private long maxPermissionCheckTimeMillis;
 
     public ACLEntryAfterInvocationProvider()
     {
         super();
+        maxPermissionChecks = Integer.MAX_VALUE;
+        maxPermissionCheckTimeMillis = Long.MAX_VALUE;
     }
 
     public void setPermissionService(PermissionService permissionService)
@@ -110,6 +111,16 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
+    }
+    
+    public void setMaxPermissionChecks(int maxPermissionChecks)
+    {
+        this.maxPermissionChecks = maxPermissionChecks;
+    }
+    
+    public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
+    {
+        this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
     }
 
     public void afterPropertiesSet() throws Exception
@@ -401,10 +412,24 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
         }
 
-       
+        // record the start time
+        long startTimeMillis = System.currentTimeMillis();
+        // set the default, unlimited resultset type
+        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
         
         for (int i = 0; i < returnedObject.length(); i++)
         {
+            long currentTimeMillis = System.currentTimeMillis();
+            if ( i >= maxPermissionChecks || (currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
+            {
+                filteringResultSet.setResultSetMetaData(
+                        new SimpleResultSetMetaData(
+                                LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS,
+                                PermissionEvaluationMode.EAGER,
+                                returnedObject.getResultSetMetaData().getSearchParameters()));
+                break;
+            }
+            
             // All permission checks must pass
             filteringResultSet.setIncluded(i, true);
             
@@ -429,16 +454,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
             
             // Bug out if we are limiting by size
-            
-            if((maxSize != null) && (filteringResultSet.length() > maxSize.intValue()))
+            if ((maxSize != null) && (filteringResultSet.length() > maxSize.intValue()))
             {
                 // Renove the last match to fix the correct size
                 filteringResultSet.setIncluded(i, false);
                 filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
-                return filteringResultSet;
+                break;
             }
         }
-        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
         return filteringResultSet;
     }
 
@@ -465,8 +488,24 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             log.debug("Entries are " + supportedDefinitions);
         }
 
-        for (Object nextObject : returnedObject)
+        // record search start time
+        long startTimeMillis = System.currentTimeMillis();
+        int count = 0;
+        
+        Iterator iterator = returnedObject.iterator();
+        while (iterator.hasNext())
         {
+            Object nextObject = iterator.next();
+            
+            // if the maximum result size or time has been exceeded, then we have to remove only
+            long currentTimeMillis = System.currentTimeMillis();
+            if ( count >= maxPermissionChecks || (currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
+            {
+                // just remove it
+                iterator.remove();
+                continue;
+            }
+            
             boolean allowed = true;
             for (ConfigAttributeDefintion cad : supportedDefinitions)
             {

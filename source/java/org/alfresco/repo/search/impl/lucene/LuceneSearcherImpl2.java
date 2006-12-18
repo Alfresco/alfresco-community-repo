@@ -259,8 +259,13 @@ public class LuceneSearcherImpl2 extends LuceneBase2 implements LuceneSearcher2
                     hits = searcher.search(query);
                 }
 
-                return new LuceneResultSet(hits, searcher, nodeService, searchParameters.getAttributePaths().toArray(
-                        new Path[0]), searchParameters);
+                Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
+                return new LuceneResultSet(
+                        hits,
+                        searcher,
+                        nodeService,
+                        paths,
+                        searchParameters);
 
             }
             catch (ParseException e)

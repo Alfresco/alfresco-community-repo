@@ -3,7 +3,7 @@
 
 <beans>
 
-    <bean id="sample.workflowBootstrap" parent="workflowDeployer">
+    <bean id="parallel.workflowBootstrap" parent="workflowDeployer">
 		<property name="workflowDefinitions">
 			<list>
 				<props>
@@ -19,6 +19,8 @@
 			   <!-- NOTE: The above process definition relies on the default workflowModel.xml -->
 			   <!--       which is already registered during Alfresco startup. -->
 			   <!--       See bootstrap-context.xml (workflowBootstrap). -->
+
+               <!-- <value>alfresco/workflow/workflowModel.xml</value> -->
 			</list>
 		</property>
 		<property name="labels">
@@ -26,6 +28,8 @@
 			   <!-- NOTE: The above process definition relies on the default workflow-messages.properties -->
 			   <!--       which is already registered during Alfresco startup -->
 			   <!--       See bootstrap-context.xml (workflowBootstrap). -->
+
+               <!-- <value>alfresco/workflow/workflow-messages</value> -->
 			</list>
 		</property>
 	</bean>

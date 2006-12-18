@@ -82,26 +82,6 @@
     
     <alias name="namespaceService" alias="NamespaceService"/>
 
-    <!-- 
-    <bean id="NamespaceService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.service.namespace.NamespaceService</value>
-        </property>
-        <property name="target">
-            <ref bean="namespaceService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="NamespaceService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
-                <idref bean="NamespaceService_security"/>
-                <idref local="NamespaceService_descriptor"/>
-            </list>
-        </property>
-    </bean>
-    -->
-    
     <bean id="NamespaceService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -129,26 +109,6 @@
     <!-- Dictionary Service -->
     
     <alias name="dictionaryService" alias="DictionaryService"/>
-    
-    <!-- 
-    <bean id="DictionaryService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.service.cmr.dictionary.DictionaryService</value>
-        </property>
-        <property name="target">
-            <ref bean="dictionaryService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="DictionaryService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
-                <idref bean="DictionaryService_security"/>
-                <idref local="DictionaryService_descriptor"/>
-            </list>
-        </property>
-    </bean>
-    -->
     
     <bean id="DictionaryService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
@@ -259,25 +219,6 @@
     <!-- Mime Type Service -->
     
     <alias name="mimetypeService" alias="MimetypeService"/>
-    
-    <!--
-    <bean id="MimetypeService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.service.cmr.repository.MimetypeService</value>
-        </property>
-        <property name="target">
-            <ref bean="mimetypeService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
-                <idref bean="MimetypeService_security"/>
-                <idref local="MimetypeService_descriptor"/>
-            </list>
-        </property>
-    </bean>
-    -->
     
     <bean id="MimetypeService_descriptor" parent="AlfrescoServiceDescriptor">
         <property name="interface">

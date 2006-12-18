@@ -58,6 +58,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected TransactionService transactionService;
     protected MutableAuthenticationDao authenticationDAO;
     protected NodeArchiveService nodeArchiveService;
+    protected NodeService nodeService;
 	
     /*
      * Data used by tests
@@ -139,6 +140,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
         this.nodeArchiveService = (NodeArchiveService) applicationContext.getBean("nodeArchiveService");
+        this.nodeService = (NodeService)applicationContext.getBean("nodeService");
         
         authenticationService.clearCurrentSecurityContext();
         

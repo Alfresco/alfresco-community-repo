@@ -30,6 +30,24 @@ import org.alfresco.service.namespace.QNamePattern;
 
 /**
  * Interface for public and internal <b>node</b> and <b>store</b> operations.
+ * <p>
+ * Amongst other things, this service must enforce the unique name check as mandated
+ * by the <b>duplicate</b> entity in the model.
+ * <pre></code>
+ *    <type name="cm:folder">
+ *       ...
+ *       <associations>
+ *          <child-association name="cm:contains">
+ *             ...
+ *             <duplicate>false</duplicate>
+ *          </child-association>
+ *       </associations>
+ *    </type>
+ * </code></pre>
+ * When duplicates are not allowed, and the <b>cm:name</b> property of a node changes,
+ * then the {@link org.alfresco.service.cmr.repository.DuplicateChildNodeNameException}
+ * exception must be thrown.  Client code can catch this exception and deal with it
+ * appropriately.
  * 
  * @author Derek Hulley
  */

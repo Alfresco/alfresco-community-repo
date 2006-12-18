@@ -41,6 +41,9 @@
                <type>d:text</type>             
                <multiple>true</multiple>
             </property>
+            <property name="test:intProp">
+               <type>d:int</type>     
+            </property>
          </properties>
          
          <associations>

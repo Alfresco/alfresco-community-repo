@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <import resource="classpath:alfresco/application-context.xml" />
+
+    <bean id="onAddAspect" class="org.alfresco.repo.policy.registration.ClassPolicyRegistration" parent="policyRegistration">   
+        <property name="policyName">
+            <value>{http://www.alfresco.org}onAddAspect</value>
+        </property>  	   
+        <property name="className">
+            <value>{http://www.alfresco.org/model/content/1.0}countable</value>
+        </property> 	   
+        <property name="behaviour">
+           <bean class="org.alfresco.repo.jscript.ScriptBehaviour" parent="scriptBehaviour">
+		        <property name="location">
+		        	<bean class="org.alfresco.repo.jscript.ClasspathScriptLocation">
+		            	<constructor-arg>
+		            		<value>org/alfresco/repo/jscript/test_onAddAspect_cmCountable.js</value>
+		            	</constructor-arg>
+		            </bean>
+				</property>
+			</bean>        
+        </property> 
+    </bean>
+    
+    <bean id="onCreateChildAssociation" class="org.alfresco.repo.policy.registration.AssociationPolicyRegistration" parent="policyRegistration">   
+        <property name="policyName">
+            <value>{http://www.alfresco.org}onCreateChildAssociation</value>
+        </property>  	   
+        <property name="className">
+            <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+        </property> 	        	   
+        <property name="associationType">
+            <value>{http://www.alfresco.org/model/content/1.0}contains</value>
+        </property>    
+        <property name="behaviour">
+           <bean class="org.alfresco.repo.jscript.ScriptBehaviour" parent="scriptBehaviour">
+		        <property name="location">
+		        	<bean class="org.alfresco.repo.jscript.ClasspathScriptLocation">
+		            	<constructor-arg>
+		            		<value>org/alfresco/repo/jscript/test_onCreateChildAssociation.js</value>
+		            	</constructor-arg>
+		            </bean>
+				</property>
+			</bean>        
+        </property> 
+    </bean>
+    
+</beans>

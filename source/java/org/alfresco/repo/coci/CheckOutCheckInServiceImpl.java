@@ -57,6 +57,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     private static final String MSG_ERR_ALREADY_WORKING_COPY = "coci_service.err_workingcopy_checkout";
     private static final String MSG_ERR_NOT_AUTHENTICATED = "coci_service.err_not_authenticated";
     private static final String MSG_ERR_WORKINGCOPY_HAS_NO_MIMETYPE = "coci_service.err_workingcopy_has_no_mimetype"; 
+    private static final String MSG_ALREADY_CHECKEDOUT = "coci_service.err_already_checkedout";
 
     /**
      * Extension character, used to recalculate the working copy names
@@ -189,6 +190,12 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             QName destinationAssocTypeQName, 
             QName destinationAssocQName) 
     {
+    	LockType lockType = this.lockService.getLockType(nodeRef);
+    	if (LockType.READ_ONLY_LOCK.equals(lockType) == true)
+    	{
+    		throw new CheckOutCheckInServiceException(MSG_ALREADY_CHECKEDOUT);
+    	}
+    	
         // Make sure we are no checking out a working copy node
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
         {

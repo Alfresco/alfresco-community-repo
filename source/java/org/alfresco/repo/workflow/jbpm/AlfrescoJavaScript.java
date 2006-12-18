@@ -21,7 +21,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.jscript.Classification;
+import org.alfresco.repo.jscript.Search;
+import org.alfresco.repo.jscript.Session;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.dom4j.Element;
@@ -54,6 +58,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     
     private static JpdlXmlReader jpdlReader = new JpdlXmlReader((InputSource)null);
     private ScriptService scriptService;
+    private ServiceRegistry services;
     private Element script;
     
 
@@ -64,6 +69,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     protected void initialiseHandler(BeanFactory factory)
     {
         scriptService = (ScriptService)factory.getBean(ServiceRegistry.SCRIPT_SERVICE.getLocalName());
+        services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
     }
 
     
@@ -139,6 +145,16 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     public Map<String, Object> createInputMap(ExecutionContext executionContext, List<VariableAccess> variableAccesses)
     {
         Map<String, Object> inputMap = new HashMap<String, Object>();
+
+        // initialise global script variables
+        JBPMNode companyHome = (JBPMNode)executionContext.getContextInstance().getVariable("companyhome");
+        if (companyHome != null)
+        {
+            NodeRef companyHomeRef = companyHome.getNodeRef();
+            inputMap.put("search", new Search(services, companyHomeRef.getStoreRef(), null));
+            inputMap.put("session", new Session(services, null));
+            inputMap.put("classification", new Classification(services, companyHomeRef.getStoreRef(), null));
+        }
 
         // initialise process variables
         Token token = executionContext.getToken();

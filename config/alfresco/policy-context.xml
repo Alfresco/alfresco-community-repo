@@ -36,5 +36,11 @@
         	<ref bean="policyTransactionHandlerFactory"/>
         </property>
     </bean>
+    
+    <bean id="policyRegistration" abstract="true" init-method="register">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>  	    
+    </bean>
 
 </beans>

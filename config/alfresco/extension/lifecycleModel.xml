@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="wfl:workflowlifecyclemodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <!-- Optional meta-data about the model -->
+    <description>Workflow Lifecycle Model</description>
+    <author></author>
+    <version>1.0</version>
+
+    <!-- Imports are required to allow references to definitions in other models -->
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <!-- Import Alfresco Content Domain Model Definitions -->
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+    </imports>
+
+    <namespaces>
+        <namespace uri="wfl.model" prefix="wfl" />
+    </namespaces>
+
+    <constraints>
+        <constraint name="wfl:status" type="LIST">
+            <parameter name="allowedValues">
+                <list>
+                    <value>Draft</value>
+                    <value>In Review</value>
+                    <value>Approved</value>
+                </list>
+            </parameter>
+        </constraint>
+    </constraints>
+
+    <aspects>
+
+        <!-- Status property is used to manage workflow approval -->
+        <aspect name="wfl:status">
+            <title>Status</title>
+            <properties>
+                <property name="wfl:status">
+                    <title>Status</title>
+                    <type>d:text</type>
+                    <default>Draft</default>
+                    <constraints>
+                        <constraint ref="wfl:status" />
+                    </constraints>
+                </property>
+            </properties>
+        </aspect>
+
+    </aspects>
+
+</model>

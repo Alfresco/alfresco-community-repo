@@ -20,9 +20,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
 
 import org.alfresco.util.ParameterCheck;
 
@@ -36,24 +33,14 @@ import org.alfresco.util.ParameterCheck;
  * @author David Caruana
  *
  */
-public class JavaBehaviour implements Behaviour
+public class JavaBehaviour extends BaseBehaviour
 {
     // The object instance holding the method
-    private Object instance;
+    Object instance;
     
     // The method name
-    private String method;
+    String method;
 
-    // Notification Frequency
-    private NotificationFrequency frequency;
-    
-    // Cache of interface proxies (by interface class)
-    private Map<Class, Object> proxies = new HashMap<Class, Object>();
-    
-    // Enable / Disable invocation of behaviour
-    private StackThreadLocal disabled = new StackThreadLocal();
-
-    
     /**
      * Construct.
      * 
@@ -73,76 +60,33 @@ public class JavaBehaviour implements Behaviour
      */
     public JavaBehaviour(Object instance, String method, NotificationFrequency frequency)
     {
-        ParameterCheck.mandatory("Instance", instance);
+    	super(frequency);
+    	ParameterCheck.mandatory("Instance", instance);
         ParameterCheck.mandatory("Method", method);
-        this.instance = instance;
         this.method = method;
-        this.frequency = frequency;
+        this.instance = instance;
     }
 
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.Behaviour#getInterface(java.lang.Class)
-     */
-    @SuppressWarnings("unchecked")
-    public synchronized <T> T getInterface(Class<T> policy)
-    {
-        ParameterCheck.mandatory("Policy class", policy);
-        Object proxy = proxies.get(policy);
-        if (proxy == null)
-        {
-            InvocationHandler handler = getInvocationHandler(instance, method, policy);
-            proxy = Proxy.newProxyInstance(policy.getClassLoader(), new Class[]{policy}, handler);
-            proxies.put(policy, proxy);
-        }
-        return (T)proxy;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.Behaviour#disable()
-     */
-    public void disable()
-    {
-        Stack<Integer> stack = disabled.get();
-        stack.push(hashCode());
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.Behaviour#enable()
-     */
-    public void enable()
-    {
-        Stack<Integer> stack = disabled.get();
-        if (stack.peek().equals(hashCode()) == false)
-        {
-            throw new PolicyException("Cannot enable " + this.toString() + " at this time - mismatched with disable calls");
-        }
-        stack.pop();
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.Behaviour#isEnabled()
-     */
-    public boolean isEnabled()
-    {
-        Stack<Integer> stack = disabled.get();
-        return stack.search(hashCode()) == -1;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.Behaviour#getNotificationFrequency()
-     */
-    public NotificationFrequency getNotificationFrequency()
-    {
-        return frequency;
-    }
-    
-    
     @Override
     public String toString()
     {
         return "Java method[class=" + instance.getClass().getName() + ", method=" + method + "]";
     }
+    
+    @SuppressWarnings("unchecked")
+	public synchronized <T> T getInterface(Class<T> policy) 
+	{
+	    ParameterCheck.mandatory("Policy class", policy);
+	    Object proxy = proxies.get(policy);
+	    if (proxy == null)
+	    {
+	        InvocationHandler handler = getInvocationHandler(instance, method, policy);
+	        proxy = Proxy.newProxyInstance(policy.getClassLoader(), new Class[]{policy}, handler);
+	        proxies.put(policy, proxy);
+	    }
+	    return (T)proxy;
+	}
 
     /**
      * Gets the Invocation Handler.
@@ -153,7 +97,7 @@ public class JavaBehaviour implements Behaviour
      * @param policyIF  the policy interface class  
      * @return  the invocation handler
      */
-    private <T> InvocationHandler getInvocationHandler(Object instance, String method, Class<T> policyIF)
+    <T> InvocationHandler getInvocationHandler(Object instance, String method, Class<T> policyIF)
     {
         Method[] policyIFMethods = policyIF.getMethods();
         if (policyIFMethods.length != 1)
@@ -171,23 +115,7 @@ public class JavaBehaviour implements Behaviour
         {
             throw new PolicyException("Method " + method + " not found or accessible on " + instance.getClass(), e);
         }
-    }
-    
-
-    /**
-     * Stack specific Thread Local
-     * 
-     * @author David Caruana
-     */
-    private class StackThreadLocal extends ThreadLocal<Stack<Integer>>
-    {
-        @Override
-        protected Stack<Integer> initialValue()
-        {
-            return new Stack<Integer>();
-        }
-    }
-    
+    }    
     
     /**
      * Java Method Invocation Handler

@@ -91,7 +91,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
             if (!mode.equals(Mode.ALL))
             {
-                luceneQuery.append(mode.equals(Mode.SUB_CATEGORIES) ? "-" : "").append("PATH_WITH_REPEATS:\"");
+                luceneQuery.append(mode.equals(Mode.SUB_CATEGORIES) ? "-" : "").append("PATH:\"");
                 luceneQuery.append(buildXPath(nodeService.getPath(categoryRef))).append("/");
                 if (depth.equals(Depth.ANY))
                 {
@@ -102,7 +102,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
             if (!mode.equals(Mode.MEMBERS))
             {
-                luceneQuery.append("PATH_WITH_REPEATS:\"");
+                luceneQuery.append("PATH:\"");
                 luceneQuery.append(buildXPath(nodeService.getPath(categoryRef))).append("/");
                 if (depth.equals(Depth.ANY))
                 {
@@ -203,7 +203,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
         ResultSet resultSet = null;
         try
         {
-            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene", "PATH_WITH_REPEATS:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"",
+            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene", "PATH:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"",
                     null, null);
 
             Set<NodeRef> nodeRefs = new HashSet<NodeRef>(resultSet.length());
@@ -228,7 +228,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
         ResultSet resultSet = null;
         try
         {
-            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene", "PATH_WITH_REPEATS:\"//cm:categoryRoot/*\"", null, null);
+            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene", "PATH:\"//cm:categoryRoot/*\"", null, null);
             return resultSetToChildAssocCollection(resultSet);
         }
         finally

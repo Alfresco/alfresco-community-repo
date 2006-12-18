@@ -383,6 +383,9 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         checkAbleToDoWork(false, true);
         try
         {
+            // The requires a reindex - a delete may remove too much from under this node - that also lives under
+            // other nodes via secondary associations. All the nodes below require reindex.
+            // This is true if the deleted node is via secondary or primary assoc.
             delete(relationshipRef.getChildRef());
         }
         catch (LuceneIndexException e)
@@ -942,6 +945,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     Set<NodeRef> set = deleteImpl(command.nodeRef, false, true, mainReader);
                     // Remove any pending indexes
                     forIndex.removeAll(set);
+                    // Add the leaf nodes for reindex
+                    forIndex.addAll(set);
                 }
             }
             commandList.clear();
@@ -995,24 +1000,38 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         getDeltaReader();
         // outputTime("Delete "+nodeRef+" size = "+getDeltaWriter().docCount());
         Set<NodeRef> refs = new LinkedHashSet<NodeRef>();
+        Set<NodeRef> temp = null;
 
-        refs.addAll(deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade));
-        refs.addAll(deleteContainerAndBelow(nodeRef, mainReader, false, cascade));
-
-        if (!forReindex)
+        if (forReindex)
         {
-            Set<NodeRef> leafrefs = new LinkedHashSet<NodeRef>();
-
-            leafrefs.addAll(deletePrimary(refs, getDeltaReader(), true));
-            leafrefs.addAll(deletePrimary(refs, mainReader, false));
-
-            leafrefs.addAll(deleteReference(refs, getDeltaReader(), true));
-            leafrefs.addAll(deleteReference(refs, mainReader, false));
-
-            refs.addAll(leafrefs);
+            temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+            refs.addAll(temp);
+            deletions.addAll(temp);
+            temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
+            refs.addAll(temp);
+            deletions.addAll(temp);
         }
+        else
+        {
+            // Delete all and reindex as they could be secondary links we have deleted and they need to be updated.
+            // Most will skip any indexing as they will really have gone.
+            temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+            deletions.addAll(temp);
+            refs.addAll(temp);
+            temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
+            deletions.addAll(temp);
+            refs.addAll(temp);
 
-        deletions.addAll(refs);
+            Set<NodeRef> leafrefs = new LinkedHashSet<NodeRef>();
+            leafrefs.addAll(deletePrimary(deletions, getDeltaReader(), true));
+            leafrefs.addAll(deletePrimary(deletions, mainReader, false));
+            // May not have to delete references
+            leafrefs.addAll(deleteReference(deletions, getDeltaReader(), true));
+            leafrefs.addAll(deleteReference(deletions, mainReader, false));
+            refs.addAll(leafrefs);
+            deletions.addAll(leafrefs);
+
+        }
 
         return refs;
 

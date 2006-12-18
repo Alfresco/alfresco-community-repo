@@ -568,11 +568,11 @@ public class LuceneCategoryTest2 extends TestCase
         
         
         result = impl.getChildren(catACBase , CategoryService.Mode.MEMBERS, CategoryService.Depth.ANY);
-        assertEquals(18, result.size());
+        assertEquals(14, result.size());
         
         
         result = impl.getChildren(catACBase , CategoryService.Mode.ALL, CategoryService.Depth.ANY);
-        assertEquals(21, result.size());
+        assertEquals(17, result.size());
        
         
         result = impl.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY);
@@ -580,7 +580,7 @@ public class LuceneCategoryTest2 extends TestCase
         
         
         result = impl.getClassifications(rootNodeRef.getStoreRef());
-        assertEquals(4, result.size());
+        assertEquals(2, result.size());
         
         
         result = impl.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE);
@@ -612,10 +612,10 @@ public class LuceneCategoryTest2 extends TestCase
         assertEquals(1, categoryService.getChildren(catACBase , CategoryService.Mode.MEMBERS, CategoryService.Depth.IMMEDIATE).size());
         assertEquals(2, categoryService.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.IMMEDIATE).size());
         assertEquals(3, categoryService.getChildren(catACBase , CategoryService.Mode.ALL, CategoryService.Depth.IMMEDIATE).size());
-        assertEquals(18, categoryService.getChildren(catACBase , CategoryService.Mode.MEMBERS, CategoryService.Depth.ANY).size());
+        assertEquals(14, categoryService.getChildren(catACBase , CategoryService.Mode.MEMBERS, CategoryService.Depth.ANY).size());
         assertEquals(3, categoryService.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY).size());
-        assertEquals(21, categoryService.getChildren(catACBase , CategoryService.Mode.ALL, CategoryService.Depth.ANY).size());
-        assertEquals(4, categoryService.getClassifications(rootNodeRef.getStoreRef()).size());
+        assertEquals(17, categoryService.getChildren(catACBase , CategoryService.Mode.ALL, CategoryService.Depth.ANY).size());
+        assertEquals(2, categoryService.getClassifications(rootNodeRef.getStoreRef()).size());
         assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
         assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
         assertEquals(6, categoryService.getClassificationAspects().size());

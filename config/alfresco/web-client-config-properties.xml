@@ -232,6 +232,17 @@
    
    <!-- Generic workflow task -->
    
+   <config evaluator="node-type" condition="bpm:workflowTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="bpm:dueDate" read-only="true" />
+         <show-property name="bpm:priority" read-only="true" />
+         <show-property name="bpm:status" />
+      </property-sheet>
+   </config>
+   
    <config evaluator="node-type" condition="bpm:startTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -245,6 +256,17 @@
    
    <!-- Review and Approve workflow tasks -->
    
+   <config evaluator="node-type" condition="wf:submitReviewTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:workflowDescription" component-generator="TextAreaGenerator" />
+         <show-property name="bpm:workflowPriority" display-label-id="wf_review_priority" />
+         <show-property name="bpm:workflowDueDate" display-label-id="wf_review_due_date" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="bpm:assignee" display-label-id="wf_reviewer" />
+      </property-sheet>
+   </config>
+   
    <config evaluator="node-type" condition="wf:reviewTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
@@ -255,15 +277,30 @@
          <show-property name="bpm:status" />
       </property-sheet>
    </config>
-   
-   <config evaluator="node-type" condition="wf:submitReviewTask" replace="true">
+
+   <config evaluator="node-type" condition="wf:rejectedTask" replace="true">
       <property-sheet>
          <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
-         <show-property name="bpm:workflowDescription" component-generator="TextAreaGenerator" />
-         <show-property name="bpm:workflowPriority" display-label-id="wf_review_priority" />
-         <show-property name="bpm:workflowDueDate" display-label-id="wf_review_due_date" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="bpm:dueDate" read-only="true" />
+         <show-property name="bpm:priority" read-only="true" />
+         <show-property name="bpm:status" />
          <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
-         <show-association name="bpm:assignee" display-label-id="wf_reviewer" />
+         <show-association name="bpm:assignee" display-label-id="wf_reviewer" read-only="true" />
+      </property-sheet>
+   </config>
+
+   <config evaluator="node-type" condition="wf:approvedTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="bpm:dueDate" read-only="true" />
+         <show-property name="bpm:priority" read-only="true" />
+         <show-property name="bpm:status" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="bpm:assignee" display-label-id="wf_reviewer" read-only="true" />
       </property-sheet>
    </config>
 
@@ -322,7 +359,7 @@
          <show-property name="bpm:workflowDueDate" display-label-id="wf_adhoc_due_date" />
          <show-property name="wf:notifyMe" />
          <separator name="sep2" display-label-id="user_filter_user" component-generator="HeaderSeparatorGenerator" />
-         <show-association name="bpm:assignee" display-label-id="wf_adhoc_assignee" />
+         <show-association name="bpm:assignee" display-label-id="wf_adhoc_assign_to" />
       </property-sheet>
    </config>
    
@@ -344,6 +381,8 @@
          <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true" />
          <show-property name="bpm:dueDate" read-only="true" />
          <show-property name="bpm:priority" read-only="true" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="bpm:assignee" display-label-id="wf_adhoc_assignee" read-only="true" />
       </property-sheet>
    </config>
    

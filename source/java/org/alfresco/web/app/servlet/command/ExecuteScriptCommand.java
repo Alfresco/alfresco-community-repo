@@ -25,7 +25,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;
 
 /**
  * Execute Script command implementation.
@@ -89,8 +88,7 @@ public final class ExecuteScriptCommand implements Command
             (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER),
             scriptRef,
             docRef,
-            spaceRef,
-            DefaultModelHelper.imageResolver);
+            spaceRef);
       
       // add the url arguments map
       model.put("args", properties.get(PROP_ARGS));

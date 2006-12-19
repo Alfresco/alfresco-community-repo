@@ -19,7 +19,6 @@ package org.alfresco.repo.template;
 import java.util.Date;
 import java.util.List;
 
-import freemarker.ext.beans.BeanModel;
 import freemarker.template.TemplateDateModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;

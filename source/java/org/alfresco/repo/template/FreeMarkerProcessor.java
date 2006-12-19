@@ -337,6 +337,7 @@ public class FreeMarkerProcessor implements TemplateProcessor
         model.put("hasAspect", new HasAspectMethod());
         model.put("message", new I18NMessageMethod());
         model.put("dateCompare", new DateCompareMethod());
+        model.put("incrementDate", new DateIncrementMethod());
         
         return model;
     }

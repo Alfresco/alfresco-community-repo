@@ -104,7 +104,7 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
     {
         Map<String, Object> model = getModel();
 
-        TemplateNode companyRootNode = new TemplateNode(nodeRef, serviceRegistry);
+        TemplateNode companyRootNode = new TemplateNode(nodeRef, serviceRegistry, null);
         model.put("node", companyRootNode);
 
         return model;

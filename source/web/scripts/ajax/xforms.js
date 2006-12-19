@@ -374,7 +374,7 @@ dojo.declare("alfresco.xforms.TextField",
                  this.widget.setAttribute("type", "text");
                  this.widget.setAttribute("id", this.id + "-widget");
                  this.widget.setAttribute("value", initial_value);
-                 if (this.xform.getType(this.xformsNode) == "string")
+                 if (this.xform.getBinding(this.xformsNode).getType() == "string")
                  {
                    this.widget.style.width = "100%";
                  }
@@ -508,10 +508,15 @@ dojo.declare("alfresco.xforms.Select",
                  this._selectedValues = [];
                  if (values.length <= 5)
                  {
+                   this.widget = document.createElement("div");
+                   this.widget.style.width = "100%";
+                   attach_point.appendChild(this.widget);
                    for (var i = 0; i < values.length; i++)
                    {
-                     this.widget = document.createElement("span");
-                     attach_point.appendChild(this.widget);
+                     var checkboxDiv = document.createElement("div");
+                     checkboxDiv.style.lineHeight = "16px";
+                     this.widget.appendChild(checkboxDiv);
+
                      var checkbox = document.createElement("input");
                      checkbox.setAttribute("id", this.id + "_" + i + "-widget");
                      checkbox.setAttribute("name", this.id + "_" + i + "-widget");
@@ -522,9 +527,9 @@ dojo.declare("alfresco.xforms.Select",
                        this._selectedValues.push(values[i].value);
                        checkbox.checked = true;
                      }
+                     checkboxDiv.appendChild(checkbox);
+                     checkboxDiv.appendChild(document.createTextNode(values[i].label));
                      dojo.event.connect(checkbox, "onclick", this, this._checkbox_clickHandler);
-                     this.widget.appendChild(checkbox);
-                     this.widget.appendChild(document.createTextNode(values[i].label));
                    }
                  }
                  else
@@ -1440,11 +1445,45 @@ dojo.declare("alfresco.xforms.XFormsEvent",
                  return targetDomNode.widget;
                }
              });
+dojo.declare("alfresco.xforms.Binding",
+             null,
+             {
+               initializer: function(xformsNode, parent)
+               {
+                 this.xformsNode = xformsNode;
+                 this.id = this.xformsNode.getAttribute("id");
+                 this.readonly =  this.xformsNode.getAttribute(XFORMS_PREFIX + ":readonly");
+                 this.required =  this.xformsNode.getAttribute(XFORMS_PREFIX + ":required");
+                 this.nodeset =  this.xformsNode.getAttribute(XFORMS_PREFIX + ":nodeset");
+                 this._type = (this.xformsNode.hasAttribute(XFORMS_PREFIX + ":type")
+                               ? this.xformsNode.getAttribute(XFORMS_PREFIX + ":type")
+                               : null);
+                 this.constraint =  (this.xformsNode.hasAttribute(XFORMS_PREFIX + ":constraint")
+                                     ? this.xformsNode.getAttribute(XFORMS_PREFIX + ":constraint")
+                                     : null);
+                 this.maximum = parseInt(this.xformsNode.getAttribute(ALFRESCO_NS_PREFIX + ":maximum"));
+                 this.minimum = parseInt(this.xformsNode.getAttribute(ALFRESCO_NS_PREFIX + ":minimum"));
+                 this.parent =  parent;
+                 this.widgets =  {};
+               },
+               getType: function()
+               {
+                 return (this._type != null
+                         ? this._type
+                         : (this.parent != null ? this.parent.getType() : null));
+               },
+               toString: function()
+               {
+                 return ("{id:" + this.id + 
+                         ",type:" + this.getType() + 
+                         ",nodeset:" + this.nodeset + "}");
+               }
+             });
 
 dojo.declare("alfresco.xforms.XForm",
              null,
              {
-             initializer: function()
+               initializer: function()
                {
                  send_ajax_request(create_ajax_request(this,
                                                        "getXForm",
@@ -1489,34 +1528,36 @@ dojo.declare("alfresco.xforms.XForm",
                  case XFORMS_PREFIX + ":upload":
                    return new alfresco.xforms.FilePicker(this, node);
                  case XFORMS_PREFIX + ":input":
-                   var type = this.getType(node);
-                 switch (type)
                  {
-                 case "date":
-                   return new alfresco.xforms.DatePicker(this, node);
-                 case "byte":
-                 case "double":
-                 case "float":
-                 case "int":
-                 case "integer":
-                 case "long":
-                 case "negativeInteger":
-                 case "nonNegativeInteger":
-                 case "nonPositiveInteger":
-                 case "short":
-                 case "unsignedByte":
-                 case "unsignedInt":
-                 case "unsignedLong":
-                 case "unsignedShort":
-                 case "positiveInteger":
-                 case "string":
-                 default:
-                   return new alfresco.xforms.TextField(this, node);
+                   var type = this.getBinding(node).getType();
+                   switch (type)
+                   {
+                   case "date":
+                     return new alfresco.xforms.DatePicker(this, node);
+                   case "byte":
+                   case "double":
+                   case "float":
+                   case "int":
+                   case "integer":
+                   case "long":
+                   case "negativeInteger":
+                   case "nonNegativeInteger":
+                   case "nonPositiveInteger":
+                   case "short":
+                   case "unsignedByte":
+                   case "unsignedInt":
+                   case "unsignedLong":
+                   case "unsignedShort":
+                   case "positiveInteger":
+                   case "string":
+                   default:
+                     return new alfresco.xforms.TextField(this, node);
+                   }
                  }
                  case XFORMS_PREFIX + ":select":
                    return new alfresco.xforms.Select(this, node);
                  case XFORMS_PREFIX + ":select1":
-                   return (this.getType(node) == "boolean"
+                   return (this.getBinding(node).getType() == "boolean"
                            ? new alfresco.xforms.Checkbox(this, node)
                            : new alfresco.xforms.Select1(this, node));
                  case XFORMS_PREFIX + ":submit":
@@ -1580,10 +1621,6 @@ dojo.declare("alfresco.xforms.XForm",
                                                  "body");
                  return b[b.length - 1];
                },
-               getType: function(node)
-               {
-                 return this.getBinding(node).type;
-               },
                getBinding: function(node)
                {
                  return this._bindings[node.getAttribute(XFORMS_PREFIX + ":bind")];
@@ -1600,22 +1637,10 @@ dojo.declare("alfresco.xforms.XForm",
                  {
                    if (bind.childNodes[i].nodeName.toLowerCase() == XFORMS_PREFIX + ":bind")
                    {
-                     var id = bind.childNodes[i].getAttribute("id");
-                     dojo.debug("loading binding " + id);
-                     result[id] = 
-                       {
-                       id: bind.childNodes[i].getAttribute("id"),
-                       readonly: bind.childNodes[i].getAttribute(XFORMS_PREFIX + ":readonly"),
-                       required: bind.childNodes[i].getAttribute(XFORMS_PREFIX + ":required"),
-                       nodeset: bind.childNodes[i].getAttribute(XFORMS_PREFIX + ":nodeset"),
-                       type: bind.childNodes[i].getAttribute(XFORMS_PREFIX + ":type"),
-                       constraint: bind.childNodes[i].getAttribute(XFORMS_PREFIX + ":constraint"),
-                       maximum: parseInt(bind.childNodes[i].getAttribute(ALFRESCO_NS_PREFIX + ":maximum")),
-                       minimum: parseInt(bind.childNodes[i].getAttribute(ALFRESCO_NS_PREFIX + ":minimum")),
-                       parent: parent,
-                       widgets: {}
-                       };
-                     this._loadBindings(bind.childNodes[i], result[id], result);
+                     var b = new alfresco.xforms.Binding(bind.childNodes[i], parent);
+                     result[b.id] = b;
+                     dojo.debug("loaded binding " + b);
+                     this._loadBindings(bind.childNodes[i], result[b.id], result);
                    }
                  }
                  return result;

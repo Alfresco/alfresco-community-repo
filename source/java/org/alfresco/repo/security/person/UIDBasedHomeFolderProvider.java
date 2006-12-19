@@ -53,6 +53,12 @@ public class UIDBasedHomeFolderProvider extends ExistingPathBasedHomeFolderProvi
         {
             String uid = DefaultTypeConverter.INSTANCE.convert(String.class, getServiceRegistry().getNodeService()
                     .getProperty(person, ContentModel.PROP_USERNAME));
+            
+            if((uid == null) || (uid.length() == 0))
+            {
+                throw new PersonException("Can not create a home space when the uid is null or empty");
+            }
+            
             FileInfo fileInfo;
 
             // Test if it already exists

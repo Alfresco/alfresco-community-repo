@@ -3,9 +3,14 @@
  */
 package org.alfresco.repo.admin.patch.util;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +39,12 @@ public class ImportFileUpdater
 	
 	/** The destination export version number **/
 	private static String EXPORT_VERSION = "1.4.0";
+    
+    /** Default encoding **/
+    private static String DEFAULT_ENCODING = "UTF-8";
+    
+    /** File encoding */
+    private String fileEncoding = DEFAULT_ENCODING;
 	
 	/** Element names **/
 	private static String NAME_EXPORTER_VERSION = "exporterVersion";
@@ -42,6 +53,16 @@ public class ImportFileUpdater
 	/** The current import version number **/
 	private String version;
 	private boolean shownWarning = false;
+    
+    /**
+     * Set the file encoding.
+     * 
+     * @param fileEncoding  the file encoding
+     */
+    public void setFileEncoding(String fileEncoding)
+    {
+        this.fileEncoding = fileEncoding;
+    }
 
 	/**
 	 * Updates the passed import file into the equivalent 1.4 format.
@@ -95,8 +116,11 @@ public class ImportFileUpdater
 			XmlPullParserFactory factory = XmlPullParserFactory.newInstance(System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
 			factory.setNamespaceAware(true);
 	    
+            InputStream inputStream = new FileInputStream(source);
+            Reader inputReader = new InputStreamReader(inputStream, this.fileEncoding);
+            
 			XmlPullParser xpp = factory.newPullParser();
-			xpp.setInput(new FileReader(source));
+			xpp.setInput(new BufferedReader(inputReader));
 			
 			return xpp;
 		}
@@ -108,6 +132,10 @@ public class ImportFileUpdater
 		{
 			throw new AlfrescoRuntimeException("The source file could not be loaded.", fileNotFound);
 		}
+        catch (UnsupportedEncodingException exception)
+        {
+            throw new AlfrescoRuntimeException("Unsupported encoding", exception);
+        }
 	}
 	
 	/**
@@ -124,7 +152,7 @@ public class ImportFileUpdater
 	        OutputFormat format = OutputFormat.createPrettyPrint();
 	        format.setNewLineAfterDeclaration(false);
 	        format.setIndentSize(INDENT_SIZE);
-	        format.setEncoding("UTF-8");
+	        format.setEncoding(this.fileEncoding);
 	
 	        return new XMLWriter(new FileOutputStream(destination), format);
 		}
@@ -573,11 +601,18 @@ public class ImportFileUpdater
 			ImportFileUpdater util = new ImportFileUpdater();
 			util.updateImportFile(args[0], args[1]);
 		}
+        else if (args.length == 3)
+        {
+            ImportFileUpdater util = new ImportFileUpdater();
+            util.setFileEncoding(args[2]);
+            util.updateImportFile(args[0], args[1]);
+        }
 		else
 		{
 			System.out.println(" ImportFileUpdater <source> <destination>");
 			System.out.println("    source - 1.3 import file name to be updated");
 			System.out.println("    destination - name of the generated 1.4 import file");
+            System.out.println("    file encoding (optional) - the file encoding, default is UTF-8");
 		}
 	}
 

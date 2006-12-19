@@ -39,6 +39,8 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.SaltSource;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,6 +56,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
+@SuppressWarnings("unchecked")
 public class AuthenticationTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -81,6 +84,8 @@ public class AuthenticationTest extends TestCase
     private SaltSource saltSource;
 
     private TicketComponent ticketComponent;
+    
+    private SimpleCache<String, Ticket> ticketsCache;
 
     private AuthenticationService authenticationService;
 
@@ -116,6 +121,7 @@ public class AuthenticationTest extends TestCase
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
+        ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
 
         dao = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
         authenticationManager = (AuthenticationManager) ctx.getBean("authenticationManager");
@@ -143,7 +149,6 @@ public class AuthenticationTest extends TestCase
 
         deleteAndy();
         authenticationComponent.clearCurrentSecurityContext();
-
     }
 
     private void deleteAndy()
@@ -476,6 +481,7 @@ public class AuthenticationTest extends TestCase
         tc.setOneOff(false);
         tc.setTicketsExpire(false);
         tc.setValidDuration("P0D");
+        tc.setTicketsCache(ticketsCache);
 
         dao.createUser("Andy", "ticket".toCharArray());
 
@@ -499,6 +505,7 @@ public class AuthenticationTest extends TestCase
         tc.setOneOff(true);
         tc.setTicketsExpire(false);
         tc.setValidDuration("P0D");
+        tc.setTicketsCache(ticketsCache);
 
         dao.createUser("Andy", "ticket".toCharArray());
 
@@ -530,6 +537,7 @@ public class AuthenticationTest extends TestCase
         tc.setOneOff(false);
         tc.setTicketsExpire(true);
         tc.setValidDuration("P5S");
+        tc.setTicketsCache(ticketsCache);
 
         dao.createUser("Andy", "ticket".toCharArray());
 
@@ -619,6 +627,7 @@ public class AuthenticationTest extends TestCase
         tc.setOneOff(false);
         tc.setTicketsExpire(true);
         tc.setValidDuration("P1D");
+        tc.setTicketsCache(ticketsCache);
 
         dao.createUser("Andy", "ticket".toCharArray());
 

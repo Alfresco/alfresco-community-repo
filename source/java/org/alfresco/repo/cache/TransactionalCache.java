@@ -17,6 +17,8 @@
 package org.alfresco.repo.cache;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import net.sf.ehcache.Cache;
@@ -225,6 +227,39 @@ public class TransactionalCache<K extends Serializable, V extends Serializable>
         {
             return true;
         }
+    }
+    
+    /**
+     * The keys returned are a union of the set of keys in the current transaction and
+     * those in the backing cache.
+     */
+    @SuppressWarnings("unchecked")
+    public Collection<K> getKeys()
+    {
+        Collection<K> keys = null;
+        // in-txn layering
+        if (AlfrescoTransactionSupport.getTransactionId() != null)
+        {
+            keys = new HashSet<K>(23);
+            TransactionData txnData = getTransactionData();
+            if (!txnData.isClearOn)
+            {
+                // the backing cache is not due for a clear
+                Collection<K> backingKeys = (Collection<K>) sharedCache.getKeys();
+                keys.addAll(backingKeys);
+            }
+            // add keys
+            keys.addAll((Collection<K>) txnData.updatedItemsCache.getKeys());
+            // remove keys
+            keys.removeAll((Collection<K>) txnData.removedItemsCache.getKeys());
+        }
+        else
+        {
+            // no transaction, so just use the backing cache
+            keys = (Collection<K>) sharedCache.getKeys();
+        }
+        // done
+        return keys;
     }
 
     /**

@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.naming.NamingEnumeration;
@@ -67,7 +68,7 @@ public class LDAPPersonExportSource implements ExportSource
     private NamespaceService namespaceService;
 
     private Map<String, String> attributeDefaults;
-    
+
     private boolean errorOnMissingUID;
 
     public LDAPPersonExportSource()
@@ -119,7 +120,7 @@ public class LDAPPersonExportSource implements ExportSource
     {
         this.errorOnMissingUID = errorOnMissingUID;
     }
-    
+
     public void generateExport(XMLWriter writer)
     {
         QName nodeUUID = QName.createQName("sys:node-uuid", namespaceService);
@@ -147,6 +148,8 @@ public class LDAPPersonExportSource implements ExportSource
             writer.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, "view",
                     NamespaceService.REPOSITORY_VIEW_PREFIX + ":" + "view", new AttributesImpl());
 
+            HashSet<String> uids = new HashSet<String>();
+
             InitialDirContext ctx = null;
             try
             {
@@ -157,35 +160,44 @@ public class LDAPPersonExportSource implements ExportSource
 
                 SearchControls userSearchCtls = new SearchControls();
                 userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-               
+
                 userSearchCtls.setCountLimit(Integer.MAX_VALUE);
 
                 NamingEnumeration searchResults = ctx.search(searchBase, personQuery, userSearchCtls);
-                while (searchResults.hasMoreElements())
+                RESULT_LOOP: while (searchResults.hasMoreElements())
                 {
                     SearchResult result = (SearchResult) searchResults.next();
                     Attributes attributes = result.getAttributes();
                     Attribute uidAttribute = attributes.get(userIdAttributeName);
                     if (uidAttribute == null)
                     {
-                        if(errorOnMissingUID)
+                        if (errorOnMissingUID)
                         {
-                        throw new ExportSourceImporterException(
-                                "User returned by user search does not have mandatory user id attribute " + attributes);
+                            throw new ExportSourceImporterException(
+                                    "User returned by user search does not have mandatory user id attribute "
+                                            + attributes);
                         }
                         else
                         {
-                            s_logger.warn("User returned by user search does not have mandatory user id attribute " + attributes);
-                            continue;
+                            s_logger.warn("User returned by user search does not have mandatory user id attribute "
+                                    + attributes);
+                            continue RESULT_LOOP;
                         }
                     }
                     String uid = (String) uidAttribute.get(0);
+
+                    if (uids.contains(uid))
+                    {
+                        s_logger.warn("Duplicate uid found - there will be more than one person object for this user - "
+                                + uid);
+                    }
+
+                    uids.add(uid);
 
                     if (s_logger.isDebugEnabled())
                     {
                         s_logger.debug("Adding user for " + uid);
                     }
-                  
 
                     writer.startElement(ContentModel.TYPE_PERSON.getNamespaceURI(), ContentModel.TYPE_PERSON
                             .getLocalName(), ContentModel.TYPE_PERSON.toPrefixString(namespaceService), attrs);
@@ -234,7 +246,7 @@ public class LDAPPersonExportSource implements ExportSource
                             else
                             {
                                 String defaultValue = attributeDefaults.get(key);
-                                if(defaultValue != null)
+                                if (defaultValue != null)
                                 {
                                     writer.characters(defaultValue.toCharArray(), 0, defaultValue.length());
                                 }
@@ -243,7 +255,7 @@ public class LDAPPersonExportSource implements ExportSource
                         else
                         {
                             String defaultValue = attributeDefaults.get(key);
-                            if(defaultValue != null)
+                            if (defaultValue != null)
                             {
                                 writer.characters(defaultValue.toCharArray(), 0, defaultValue.length());
                             }
@@ -316,7 +328,7 @@ public class LDAPPersonExportSource implements ExportSource
         TransactionService txs = (TransactionService) ctx.getBean("transactionComponent");
         UserTransaction tx = txs.getUserTransaction();
         tx.begin();
-        
+
         File file = new File(args[0]);
         Writer writer = new BufferedWriter(new FileWriter(file));
         XMLWriter xmlWriter = createXMLExporter(writer);

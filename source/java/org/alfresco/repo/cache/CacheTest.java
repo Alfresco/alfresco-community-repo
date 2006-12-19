@@ -17,6 +17,7 @@
 package org.alfresco.repo.cache;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -86,6 +87,9 @@ public class CacheTest extends TestCase
         
         assertEquals("AAA", backingCache.get("A"));
         
+        Collection<String> keys = backingCache.getKeys();
+        assertEquals("Backing cache didn't return correct number of keys", 1, keys.size());
+        
         backingCache.remove("A");
         assertNull(backingCache.get("A"));
     }
@@ -140,6 +144,11 @@ public class CacheTest extends TestCase
             transactionalCache.put(updatedTxnThree, "XXX");
             assertEquals("Item not updated in txn cache", "XXX", transactionalCache.get(updatedTxnThree));
             assertFalse("Item was put into backing cache", backingCache.contains(updatedTxnThree));
+            
+            // check that the keys collection is correct
+            Collection<String> transactionalKeys = transactionalCache.getKeys();
+            assertFalse("Transactionally removed item found in keys", transactionalKeys.contains(newGlobalOne));
+            assertTrue("Transactionally added item not found in keys", transactionalKeys.contains(updatedTxnThree));
             
             // commit the transaction
             txn.commit();

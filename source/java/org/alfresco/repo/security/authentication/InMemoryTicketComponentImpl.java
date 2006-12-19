@@ -16,11 +16,12 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.util.GUID;
 public class InMemoryTicketComponentImpl implements TicketComponent
@@ -33,11 +34,16 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     
     private boolean oneOff;
 
-    private HashMap<String, Ticket> tickets = new HashMap<String, Ticket>();
+    private SimpleCache<String, Ticket> ticketsCache;     // Can't use Ticket as it's private
 
     public InMemoryTicketComponentImpl()
     {
         super();
+    }
+
+    public void setTicketsCache(SimpleCache<String, Ticket> ticketsCache)
+    {
+        this.ticketsCache = ticketsCache; 
     }
 
     public String getTicket(String userName) throws AuthenticationException
@@ -48,7 +54,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
                 expiryDate = Duration.add(new Date(), validDuration);
             }
             Ticket ticket = new Ticket(ticketsExpire, expiryDate, userName);
-            tickets.put(ticket.getTicketId(), ticket);
+            ticketsCache.put(ticket.getTicketId(), ticket);
        
             return GRANTED_AUTHORITY_TICKET_PREFIX + ticket.getTicketId();
     }
@@ -61,7 +67,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         }
         
         String key = ticketString.substring(GRANTED_AUTHORITY_TICKET_PREFIX.length());
-        Ticket ticket = tickets.get(key);
+        Ticket ticket = ticketsCache.get(key);
         if (ticket == null)
         {
             throw new AuthenticationException("Missing ticket for " + ticketString);
@@ -74,7 +80,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         // TODO: Strengthen ticket as GUID is predicatble
         if(oneOff)
         {
-            tickets.remove(key);
+            ticketsCache.remove(key);
         }
         return ticket.getUserName();
     }
@@ -82,16 +88,16 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     public void invalidateTicketById(String ticketString)
     {
         String key = ticketString.substring(GRANTED_AUTHORITY_TICKET_PREFIX.length());
-        tickets.remove(key);
+        ticketsCache.remove(key);
     }
     
     public void invalidateTicketByUser(String userName)
     {
         Set<String> toRemove = new HashSet<String>();
         
-        for(String key: tickets.keySet())
+        for(String key: ticketsCache.getKeys())
         {
-            Ticket ticket = tickets.get(key);
+            Ticket ticket = ticketsCache.get(key);
             if(ticket.getUserName().equals(userName))
             {
                 toRemove.add(ticket.getTicketId());
@@ -100,14 +106,16 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         
         for(String id: toRemove)
         {
-            tickets.remove(id);
+            ticketsCache.remove(id);
         }
     }
     
     
     
-    private static class Ticket
+    public static class Ticket implements Serializable
     {
+        private static final long serialVersionUID = -5904510560161261049L;
+
         private boolean expires;
 
         private Date expiryDate;

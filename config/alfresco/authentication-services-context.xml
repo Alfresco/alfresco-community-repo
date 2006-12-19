@@ -255,6 +255,20 @@
 		<property name="userNamesAreCaseSensitive">
           <value>${user.name.caseSensitive}</value>
         </property>
+        <!-- New properties after 1.4.0 to deal with duplicate user ids when found -->
+        <property name="processDuplicates">
+            <value>true</value>
+        </property>
+        <!-- one of:  LEAVE, SPLIT, DELETE -->
+        <property name="duplicateMode">
+            <value>SPLIT</value>
+        </property>
+        <property name="lastIsBest">
+            <value>true</value>
+        </property>
+        <property name="includeAutoCreated">
+            <value>false</value>
+        </property>
     </bean>
 
     <bean name="homeFolderManager" class="org.alfresco.repo.security.person.HomeFolderManager">
@@ -342,6 +356,9 @@
     <!-- The ticket component.                                              -->
     <!-- Used for reauthentication                                          -->
     <bean id="ticketComponent" class="org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl">
+        <property name="ticketsCache">
+            <ref bean="ticketsCache"/>
+        </property>
         <!-- The period for which tickets are valid in XML duration format. -->
         <!-- The default is P1H for one hour.                               -->
         <property name="validDuration">

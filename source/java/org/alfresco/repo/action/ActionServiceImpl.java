@@ -475,11 +475,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     		}
     		catch (Throwable exception)
     		{
-    			// Log the exception
-    			logger.error(
-    						"An error was encountered whilst executing the action '" + action.getActionDefinitionName() + "'.",
-    						exception);
-    			
+                // DH:  No logging of the exception.  Leave the logging decision to the client code,
+                //      which can handle the rethrown exception.
     			if (executedAsynchronously == true)
     			{				
     				// If one is specified, queue the compensating action ready for execution

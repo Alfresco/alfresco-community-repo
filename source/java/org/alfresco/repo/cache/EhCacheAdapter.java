@@ -17,6 +17,7 @@
 package org.alfresco.repo.cache;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
@@ -62,6 +63,12 @@ public class EhCacheAdapter<K extends Serializable, V extends Serializable>
         {
             throw new AlfrescoRuntimeException("contains failed", e);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Collection<K> getKeys()
+    {
+        return cache.getKeys();
     }
 
     @SuppressWarnings("unchecked")

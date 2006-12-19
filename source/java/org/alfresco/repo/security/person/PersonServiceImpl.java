@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.ldap.LDAPPersonExportSource;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -41,9 +42,20 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class PersonServiceImpl implements PersonService
 {
+    private static Log s_logger = LogFactory.getLog(PersonServiceImpl.class);
+
+    private static final String DELETE = "DELETE";
+
+    private static final String SPLIT = "SPLIT";
+
+    private static final String LEAVE = "LEAVE";
+
     public static final String SYSTEM_FOLDER = "/sys:system";
 
     public static final String PEOPLE_FOLDER = SYSTEM_FOLDER + "/sys:people";
@@ -67,8 +79,16 @@ public class PersonServiceImpl implements PersonService
     private static Set<QName> mutableProperties;
 
     private boolean userNamesAreCaseSensitive = false;
-    
+
     private String defaultHomeFolderProvider;
+
+    private boolean processDuplicates = true;
+
+    private String duplicateMode = LEAVE;
+
+    private boolean lastIsBest = true;
+
+    private boolean includeAutoCreated = false;
 
     static
     {
@@ -96,10 +116,30 @@ public class PersonServiceImpl implements PersonService
     {
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
     }
-    
+
     void setDefaultHomeFolderProvider(String defaultHomeFolderProvider)
     {
         this.defaultHomeFolderProvider = defaultHomeFolderProvider;
+    }
+
+    public void setDuplicateMode(String duplicateMode)
+    {
+        this.duplicateMode = duplicateMode;
+    }
+
+    public void setIncludeAutoCreated(boolean includeAutoCreated)
+    {
+        this.includeAutoCreated = includeAutoCreated;
+    }
+
+    public void setLastIsBest(boolean lastIsBest)
+    {
+        this.lastIsBest = lastIsBest;
+    }
+
+    public void setProcessDuplicates(boolean processDuplicates)
+    {
+        this.processDuplicates = processDuplicates;
     }
 
     public NodeRef getPerson(String userName)
@@ -130,20 +170,22 @@ public class PersonServiceImpl implements PersonService
 
     public NodeRef getPersonOrNull(String searchUserName)
     {
+        NodeRef returnRef = null;
+
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\"" + searchUserName
-                + "\"");
+        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\""
+                + searchUserName + "\"");
         sp.addStore(storeRef);
         sp.excludeDataInTheCurrentTransaction(false);
 
         ResultSet rs = null;
 
+        boolean singleton = true;
+
         try
         {
             rs = searchService.query(sp);
-
-            NodeRef returnRef = null;
 
             for (ResultSetRow row : rs)
             {
@@ -164,8 +206,8 @@ public class PersonServiceImpl implements PersonService
                             }
                             else
                             {
-                                throw new AlfrescoRuntimeException("Found more than one user for " + searchUserName
-                                        + " (case sensitive)");
+                                singleton = false;
+                                break;
                             }
                         }
                     }
@@ -179,15 +221,13 @@ public class PersonServiceImpl implements PersonService
                             }
                             else
                             {
-                                throw new AlfrescoRuntimeException("Found more than one user for " + searchUserName
-                                        + " (case insensitive)");
+                                singleton = false;
+                                break;
                             }
                         }
                     }
                 }
             }
-            
-            return returnRef;
         }
         finally
         {
@@ -196,6 +236,269 @@ public class PersonServiceImpl implements PersonService
                 rs.close();
             }
         }
+
+        if (singleton)
+        {
+            return returnRef;
+        }
+        else
+        {
+            return handleDuplicates(searchUserName);
+        }
+    }
+
+    private NodeRef handleDuplicates(String searchUserName)
+    {
+        if (processDuplicates)
+        {
+            NodeRef best = findBest(searchUserName);
+            if (duplicateMode.equalsIgnoreCase(SPLIT))
+            {
+                split(searchUserName, best);
+                s_logger.info("Split duplicate person objects for uid " + searchUserName);
+            }
+            else if (duplicateMode.equalsIgnoreCase(DELETE))
+            {
+                delete(searchUserName, best);
+                s_logger.info("Deleted duplicate person objects for uid " + searchUserName);
+            }
+            else
+            {
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug("Duplicate person objects exist for uid " + searchUserName);
+                }
+            }
+            return best;
+        }
+        else
+        {
+            if (userNamesAreCaseSensitive)
+            {
+                throw new AlfrescoRuntimeException("Found more than one user for "
+                        + searchUserName + " (case sensitive)");
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("Found more than one user for "
+                        + searchUserName + " (case insensitive)");
+            }
+        }
+    }
+
+    private void delete(String searchUserName, NodeRef best)
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\""
+                + searchUserName + "\"");
+        sp.addStore(storeRef);
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        ResultSet rs = null;
+
+        try
+        {
+            rs = searchService.query(sp);
+
+            for (ResultSetRow row : rs)
+            {
+                NodeRef nodeRef = row.getNodeRef();
+                // Do not delete the best
+                if ((!best.equals(nodeRef)) && (nodeService.exists(nodeRef)))
+                {
+                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                            nodeRef, ContentModel.PROP_USERNAME));
+
+                    if (userNamesAreCaseSensitive)
+                    {
+                        if (realUserName.equals(searchUserName))
+                        {
+                            nodeService.deleteNode(nodeRef);
+                        }
+                    }
+                    else
+                    {
+                        if (realUserName.equalsIgnoreCase(searchUserName))
+                        {
+                            nodeService.deleteNode(nodeRef);
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
+            }
+        }
+
+    }
+
+    private void split(String searchUserName, NodeRef best)
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\""
+                + searchUserName + "\"");
+        sp.addStore(storeRef);
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        ResultSet rs = null;
+
+        try
+        {
+            rs = searchService.query(sp);
+
+            for (ResultSetRow row : rs)
+            {
+                NodeRef nodeRef = row.getNodeRef();
+                // Do not delete the best
+                if ((!best.equals(nodeRef)) && (nodeService.exists(nodeRef)))
+                {
+                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                            nodeRef, ContentModel.PROP_USERNAME));
+
+                    if (userNamesAreCaseSensitive)
+                    {
+                        if (realUserName.equals(searchUserName))
+                        {
+                            nodeService.setProperty(nodeRef, ContentModel.PROP_USERNAME, searchUserName
+                                    + "(" + GUID.generate() + ")");
+                        }
+                    }
+                    else
+                    {
+                        if (realUserName.equalsIgnoreCase(searchUserName))
+                        {
+                            nodeService.setProperty(nodeRef, ContentModel.PROP_USERNAME, searchUserName
+                                    + GUID.generate());
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
+            }
+        }
+
+    }
+
+    private NodeRef findBest(String searchUserName)
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("TYPE:\\{http\\://www.alfresco.org/model/content/1.0\\}person +@cm\\:userName:\""
+                + searchUserName + "\"");
+        sp.addStore(storeRef);
+        sp.excludeDataInTheCurrentTransaction(false);
+        if (lastIsBest)
+        {
+            sp.addSort(SearchParameters.SORT_IN_DOCUMENT_ORDER_DESCENDING);
+        }
+        else
+        {
+            sp.addSort(SearchParameters.SORT_IN_DOCUMENT_ORDER_ASCENDING);
+        }
+
+        ResultSet rs = null;
+
+        NodeRef fallBack = null;
+
+        try
+        {
+            rs = searchService.query(sp);
+
+            for (ResultSetRow row : rs)
+            {
+                NodeRef nodeRef = row.getNodeRef();
+                if (fallBack == null)
+                {
+                    fallBack = nodeRef;
+                }
+                // Do not delete the best
+                if (nodeService.exists(nodeRef))
+                {
+                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                            nodeRef, ContentModel.PROP_USERNAME));
+
+                    if (userNamesAreCaseSensitive)
+                    {
+                        if (realUserName.equals(searchUserName))
+                        {
+                            if (includeAutoCreated || !wasAutoCreated(nodeRef, searchUserName))
+                            {
+                                return nodeRef;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (realUserName.equalsIgnoreCase(searchUserName))
+                        {
+                            if (includeAutoCreated || !wasAutoCreated(nodeRef, searchUserName))
+                            {
+                                return nodeRef;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
+            }
+        }
+        return fallBack;
+    }
+
+    private boolean wasAutoCreated(NodeRef nodeRef, String userName)
+    {
+        String testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
+                ContentModel.PROP_FIRSTNAME));
+        if ((testString == null) || !testString.equals(userName))
+        {
+            return false;
+        }
+
+        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
+                ContentModel.PROP_LASTNAME));
+        if ((testString == null) || !testString.equals(""))
+        {
+            return false;
+        }
+
+        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
+                ContentModel.PROP_EMAIL));
+        if ((testString == null) || !testString.equals(""))
+        {
+            return false;
+        }
+
+        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
+                ContentModel.PROP_ORGID));
+        if ((testString == null) || !testString.equals(""))
+        {
+            return false;
+        }
+
+        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
+                ContentModel.PROP_HOME_FOLDER_PROVIDER));
+        if ((testString == null) || !testString.equals(defaultHomeFolderProvider))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public boolean createMissingPeople()
@@ -225,8 +528,8 @@ public class PersonServiceImpl implements PersonService
         }
         else
         {
-            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personNode,
-                    ContentModel.PROP_USERNAME));
+            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
+                    personNode, ContentModel.PROP_USERNAME));
             properties.put(ContentModel.PROP_USERNAME, realUserName);
         }
 

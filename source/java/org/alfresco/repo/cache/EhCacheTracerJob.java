@@ -62,10 +62,7 @@ public class EhCacheTracerJob implements Job
     {
         try
         {
-            if (logger.isDebugEnabled())
-            {
-                execute();
-            }
+            execute();
         }
         catch (Throwable e)
         {
@@ -86,6 +83,7 @@ public class EhCacheTracerJob implements Job
         // get all the caches
         String[] cacheNames = cacheManager.getCacheNames();
         logger.debug("Dumping EHCache info:");
+        boolean analyzeAll = true;
         for (String cacheName : cacheNames)
         {
             Cache cache = cacheManager.getCache(cacheName);
@@ -93,27 +91,39 @@ public class EhCacheTracerJob implements Job
             {
                 continue;
             }
+            Log cacheLogger = LogFactory.getLog(this.getClass().getName() + "." + cacheName);
+            // log each cache to its own logger
             // dump
-            CacheAnalysis analysis = new CacheAnalysis(cache);
-            logger.debug(analysis);
-            // get the size
-            allCachesTotalSize += analysis.getSize();
-            double cacheEstimatedMaxSize = analysis.getEstimatedMaxSize();
-            estimatedMaxSize += (Double.isNaN(cacheEstimatedMaxSize) || Double.isInfinite(cacheEstimatedMaxSize))
-                                ? 0.0
-                                : cacheEstimatedMaxSize;
+            if (cacheLogger.isDebugEnabled())
+            {
+                CacheAnalysis analysis = new CacheAnalysis(cache);
+                cacheLogger.debug(analysis);
+                // get the size
+                allCachesTotalSize += analysis.getSize();
+                double cacheEstimatedMaxSize = analysis.getEstimatedMaxSize();
+                estimatedMaxSize += (Double.isNaN(cacheEstimatedMaxSize) || Double.isInfinite(cacheEstimatedMaxSize))
+                                    ? 0.0
+                                    : cacheEstimatedMaxSize;
+            }
+            else
+            {
+                analyzeAll = false;
+            }
         }
-        // check the size
-        double sizePercentage = (double)allCachesTotalSize / (double)maxHeapSize * 100.0;
-        double maxSizePercentage = estimatedMaxSize / (double)maxHeapSize * 100.0;
-        String msg = String.format(
-                "EHCaches currently consume %5.2f MB or %3.2f percent of system VM size. \n" +
-                "The estimated maximum size is %5.2f MB or %3.2f percent of system VM size.",
-                (double)allCachesTotalSize / 1024.0 / 1024.0,
-                sizePercentage,
-                estimatedMaxSize / 1024.0 / 1024.0,
-                maxSizePercentage);
-        logger.debug(msg);
+        if (analyzeAll)
+        {
+            // check the size
+            double sizePercentage = (double)allCachesTotalSize / (double)maxHeapSize * 100.0;
+            double maxSizePercentage = estimatedMaxSize / (double)maxHeapSize * 100.0;
+            String msg = String.format(
+                    "EHCaches currently consume %5.2f MB or %3.2f percent of system VM size. \n" +
+                    "The estimated maximum size is %5.2f MB or %3.2f percent of system VM size.",
+                    (double)allCachesTotalSize / 1024.0 / 1024.0,
+                    sizePercentage,
+                    estimatedMaxSize / 1024.0 / 1024.0,
+                    maxSizePercentage);
+            logger.debug(msg);
+        }
     }
     
     private static class CacheAnalysis
@@ -211,15 +221,17 @@ public class EhCacheTracerJob implements Job
             long maxSize = cache.getMaxElementsInMemory();
             long currentSize = cache.getMemoryStoreSize();
             long hitCount = cache.getHitCount();
-            long missCount = cache.getMissCountNotFound();
+            long totalMissCount = cache.getMissCountNotFound() + cache.getMissCountExpired();
+            double hitRatio = (double)hitCount / (double)(totalMissCount + hitCount) * 100.0;
             double percentageFull = (double)currentSize / (double)maxSize * 100.0;
             double estMaxSize = sizeMB / (double) currentSize * (double) maxSize;
             
             StringBuilder sb = new StringBuilder(512);
-            sb.append("   Analyzing EHCache: \n")
-              .append("===>  ").append(cache.getName()).append("\n")
-              .append("      Hit Count:              ").append(String.format("%10d hits     ", hitCount      ))
-              .append("   |         Miss Count:    ").append(String.format("%10d misses   ", missCount     )).append("\n")
+            sb.append("\n")
+              .append("===>  EHCache: ").append(cache).append("\n")
+              .append("      Hit Ratio:              ").append(String.format("%10.2f percent  ", hitRatio      ))
+              .append("   |         Hit Count:     ").append(String.format("%10d hits     ", hitCount     ))
+              .append("   |         Miss Count:    ").append(String.format("%10d misses   ", totalMissCount     )).append("\n")
               .append("      Deep Size:              ").append(String.format("%10.2f MB     ", sizeMB        ))
               .append("     |         Current Count: ").append(String.format("%10d entries  ", currentSize   )).append("\n")
               .append("      Percentage used:        ").append(String.format("%10.2f percent", percentageFull))

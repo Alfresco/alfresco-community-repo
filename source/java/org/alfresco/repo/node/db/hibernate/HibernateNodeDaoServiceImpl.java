@@ -676,6 +676,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS)
+                    .setFlushMode(FlushMode.NEVER)
                     .setLong("parentId", parentNode.getId());
                 return query.list();
             }
@@ -693,6 +694,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS)
+                    .setFlushMode(FlushMode.NEVER)
                     .setLong("parentId", parentNode.getId());
                 return query.list();
             }
@@ -712,6 +714,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME)
+                    .setFlushMode(FlushMode.NEVER)
                     .setLong("parentId", parentNode.getId())
                     .setParameter("childAssocQName", assocQName);
                 return query.list();

@@ -212,10 +212,10 @@
              <ref bean="authenticationServiceImpl" />
         </property>
         <property name="maxPermissionCheckTimeMillis">
-            <value>${lucene.query.maxPermissionCheckTimeMillis}</value>
+            <value>${system.acl.maxPermissionCheckTimeMillis}</value>
         </property>
         <property name="maxPermissionChecks">
-            <value>${lucene.query.maxPermissionChecks}</value>
+            <value>${system.acl.maxPermissionChecks}</value>
         </property>
     </bean>
    
@@ -352,6 +352,7 @@
                org.alfresco.service.cmr.repository.NodeService.setProperty=ACL_NODE.0.sys:base.WriteProperties
                org.alfresco.service.cmr.repository.NodeService.getParentAssocs=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.getChildAssocs=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
+               org.alfresco.service.cmr.repository.NodeService.getChildByName=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.getPrimaryParent=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.createAssociation=ROLE_AUTHENTICATED
                org.alfresco.service.cmr.repository.NodeService.removeAssociation=ROLE_AUTHENTICATED
@@ -653,6 +654,10 @@
                 org.alfresco.service.cmr.security.AuthenticationService.getCurrentTicket=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.clearCurrentSecurityContext=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.isCurrentUserTheSystemUser=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthenticationService.getDomains=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.getDomainsThatAllowUserCreation=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.getDomainsThatAllowUserDeletion=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.getDomiansThatAllowUserPasswordChanges=ACL_METHOD.ROLE_ADMINISTRATOR
             </value>
         </property>
     </bean>
@@ -698,6 +703,8 @@
                 org.alfresco.service.cmr.security.PersonService.deletePerson=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PersonService.getAllPeople=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getPeopleContainer=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.getUserNamesAreCaseSensitive=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.getUserIdentifier=ACL_ALLOW
          </value>
         </property>
     </bean>

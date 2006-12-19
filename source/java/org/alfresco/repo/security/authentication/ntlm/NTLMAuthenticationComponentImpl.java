@@ -484,7 +484,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         // Authenticate using the token
         
         authenticate( authToken);
-        setCurrentUser( userName.toLowerCase());
     }
 
     /**

@@ -23,6 +23,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -36,8 +37,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
@@ -66,7 +67,6 @@ public class FileFolderPerformanceTester extends TestCase
     private AuthenticationComponent authenticationComponent;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
-    private StoreRef storeRef;
     private NodeRef rootFolderRef;
     private File dataFile;
     
@@ -78,18 +78,30 @@ public class FileFolderPerformanceTester extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
+        SearchService searchService = serviceRegistry.getSearchService();
         
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();
         
-        // create a folder root to work in
-        storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + "_" + System.currentTimeMillis());
-        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-        rootFolderRef = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(NamespaceService.ALFRESCO_URI, getName()),
-                ContentModel.TYPE_FOLDER).getChildRef();
+        // find the guest folder
+        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+        ResultSet rs = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, "/app:company_home");
+        try
+        {
+            if (rs.length() == 0)
+            {
+                throw new AlfrescoRuntimeException("Didn't find Company Home");
+            }
+            NodeRef companyHomeNodeRef = rs.getNodeRef(0);
+            rootFolderRef = fileFolderService.create(
+                    companyHomeNodeRef,
+                    getName() + "_" + System.currentTimeMillis(),
+                    ContentModel.TYPE_FOLDER).getNodeRef();
+        }
+        finally
+        {
+            rs.close();
+        }
         dataFile = AbstractContentTransformerTest.loadQuickTestFile("txt");
     }
     
@@ -302,16 +314,12 @@ public class FileFolderPerformanceTester extends TestCase
         }
     }
 
-    public void test_1_ordered_1_10() throws Exception
-    {
-        buildStructure(rootFolderRef, 1, false, 1, 10, null);
-    }
-//    public void test_1_ordered_1_10_read() throws Exception
+//    /** Load 5000 files into a single folder using 2 threads */
+//    public void test_2_ordered_1_2500() throws Exception
 //    {
-//        buildStructure(rootFolderRef, 1, false, 50, 1, null);
-//        readStructure(rootFolderRef, 50, 1000, null);
+//        buildStructure(rootFolderRef, 2, false, 1, 2500, new double[] {0.25, 0.50, 0.75});
 //    }
-//    
+
 //    public void test_4_ordered_10_100() throws Exception
 //    {
 //        buildStructure(rootFolderRef, 4, false, 10, 100, new double[] {0.25, 0.50, 0.75});
@@ -341,16 +349,16 @@ public class FileFolderPerformanceTester extends TestCase
 //                400,
 //                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
 //    }
-    public void test_4_shuffled_10_100() throws Exception
-    {
-        buildStructure(
-                rootFolderRef,
-                4,
-                true,
-                10,
-                100,
-                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
-    }
+//    public void test_4_shuffled_10_100() throws Exception
+//    {
+//        buildStructure(
+//                rootFolderRef,
+//                4,
+//                true,
+//                10,
+//                100,
+//                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+//    }
 //    public void test_1_ordered_1_50000() throws Exception
 //    {
 //        buildStructure(

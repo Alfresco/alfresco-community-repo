@@ -52,6 +52,22 @@ public class InvalidNameEndingPatch extends AbstractPatch
     private SessionFactory sessionFactory;
     private NodeDaoService nodeDaoService;
     
+    
+    public static void main(String[] args)
+    {
+        String name = "fred. ...   ";
+        
+        int i = (name.length() == 0) ? 0 : name.length() - 1;
+        while (i >= 0 && (name.charAt(i) == '.' || name.charAt(i) == ' '))
+        {
+            i--;
+        }
+
+        String updatedName = (i == 0) ? "unnamed" : name.substring(0, i + 1);
+        System.out.println(updatedName);
+    }
+    
+    
     public InvalidNameEndingPatch()
     {
     }
@@ -149,7 +165,7 @@ public class InvalidNameEndingPatch extends AbstractPatch
                         i--;
                     }
 
-                    String updatedName = name.substring(0, i);
+                    String updatedName = (i == 0) ? "unnamed" : name.substring(0, i + 1);
                     int idx = 0;
                     boolean applied = false;
                     while (!applied)

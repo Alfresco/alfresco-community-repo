@@ -487,6 +487,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // set the index
         assoc.setIndex(index);
+        // flush
+        nodeDaoService.flush();
     }
 
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException

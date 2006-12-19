@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptImplementation;
 import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptImplementation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
@@ -267,7 +268,7 @@ public class RhinoScriptService implements ScriptService
             for (ScriptImplementation script : this.globalScripts) 
             {
             	model.put(script.getScriptName(), script);
-			   }
+			}
             
             // insert supplied object model into root of the default scope
             for (String key : model.keySet())

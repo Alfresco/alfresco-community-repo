@@ -17,7 +17,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
@@ -61,7 +60,7 @@ public class WorkflowBean
          // get the current username
          FacesContext context = FacesContext.getCurrentInstance();
          User user = Application.getCurrentUser(context);
-         String userName = ISO9075.encode(user.getUserName());
+         String userName = user.getUserName();
          
          UserTransaction tx = null;
          try
@@ -111,7 +110,7 @@ public class WorkflowBean
          // get the current username
          FacesContext context = FacesContext.getCurrentInstance();
          User user = Application.getCurrentUser(context);
-         String userName = ISO9075.encode(user.getUserName());
+         String userName = user.getUserName();
          
          UserTransaction tx = null;
          try

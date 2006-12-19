@@ -63,8 +63,7 @@ class IPCHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = smbPkt.getTreeId();
-        TreeConnection conn = sess.findConnection(treeId);
+        TreeConnection conn = sess.findTreeConnection(smbPkt);
 
         if (conn == null)
         {
@@ -75,7 +74,7 @@ class IPCHandler
         // Debug
 
         if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_IPC))
-            logger.debug("IPC$ Request [" + treeId + "] - cmd = " + smbPkt.getPacketTypeString());
+            logger.debug("IPC$ Request [" + smbPkt.getTreeId() + "] - cmd = " + smbPkt.getPacketTypeString());
 
         // Determine the SMB command
 
@@ -136,11 +135,12 @@ class IPCHandler
     /**
      * Process an IPC$ transaction request.
      * 
+     * @param vc VirtualCircuit
      * @param tbuf SrvTransactBuffer
      * @param sess SMBSrvSession
      * @param outPkt SMBSrvPacket
      */
-    protected static void procTransaction(SrvTransactBuffer tbuf, SMBSrvSession sess, SMBSrvPacket outPkt)
+    protected static void procTransaction(VirtualCircuit vc, SrvTransactBuffer tbuf, SMBSrvSession sess, SMBSrvPacket outPkt)
             throws IOException, SMBSrvException
     {
 
@@ -169,13 +169,13 @@ class IPCHandler
         // Set named pipe handle state
 
         case NamedPipeTransaction.SetNmPHandState:
-            procSetNamedPipeHandleState(sess, tbuf, outPkt);
+            procSetNamedPipeHandleState(sess, vc, tbuf, outPkt);
             break;
 
         // Named pipe transation request, pass the request to the DCE/RPC handler
 
         case NamedPipeTransaction.TransactNmPipe:
-            DCERPCHandler.processDCERPCRequest(sess, tbuf, outPkt);
+            DCERPCHandler.processDCERPCRequest(sess, vc, tbuf, outPkt);
             break;
 
         // Unknown command
@@ -223,8 +223,7 @@ class IPCHandler
 
         // Get the tree connection details
 
-        int treeId = rxPkt.getTreeId();
-        TreeConnection conn = sess.findConnection(treeId);
+        TreeConnection conn = sess.findTreeConnection(rxPkt);
 
         if (conn == null)
         {
@@ -431,8 +430,7 @@ class IPCHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = rxPkt.getTreeId();
-        TreeConnection conn = sess.findConnection(treeId);
+        TreeConnection conn = sess.findTreeConnection(rxPkt);
 
         if (conn == null)
         {
@@ -454,7 +452,7 @@ class IPCHandler
         // Debug
 
         if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_IPC))
-            logger.debug("IPC$ File close [" + treeId + "] fid=" + fid);
+            logger.debug("IPC$ File close [" + rxPkt.getTreeId() + "] fid=" + fid);
 
         // Remove the file from the connections list of open files
 
@@ -474,10 +472,11 @@ class IPCHandler
      * Process a set named pipe handle state request
      * 
      * @param sess SMBSrvSession
+     * @param vc VirtualCircuit
      * @param tbuf SrvTransactBuffer
      * @param outPkt SMBSrvPacket
      */
-    protected static void procSetNamedPipeHandleState(SMBSrvSession sess, SrvTransactBuffer tbuf, SMBSrvPacket outPkt)
+    protected static void procSetNamedPipeHandleState(SMBSrvSession sess, VirtualCircuit vc, SrvTransactBuffer tbuf, SMBSrvPacket outPkt)
             throws IOException, SMBSrvException
     {
 
@@ -492,7 +491,7 @@ class IPCHandler
 
         // Get the connection for the request
 
-        TreeConnection conn = sess.findConnection(tbuf.getTreeId());
+        TreeConnection conn = vc.findConnection(tbuf.getTreeId());
 
         // Get the IPC pipe file for the specified file id
 
@@ -536,8 +535,7 @@ class IPCHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = rxPkt.getTreeId();
-        TreeConnection conn = sess.findConnection(treeId);
+        TreeConnection conn = sess.findTreeConnection(rxPkt);
 
         if (conn == null)
         {
@@ -574,7 +572,7 @@ class IPCHandler
         // Debug
 
         if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_IPC))
-            logger.debug("NT Create AndX [" + treeId + "] name=" + fileName + ", flags=0x"
+            logger.debug("NT Create AndX [" + rxPkt.getTreeId() + "] name=" + fileName + ", flags=0x"
                     + Integer.toHexString(flags) + ", attr=0x" + Integer.toHexString(attrib) + ", allocSize="
                     + allocSize);
 

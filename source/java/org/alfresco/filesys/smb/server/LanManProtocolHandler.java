@@ -191,6 +191,16 @@ class LanManProtocolHandler extends CoreProtocolHandler
         int flags = m_smbPkt.getAndXParameter(cmdOff, 2);
         int pwdLen = m_smbPkt.getAndXParameter(cmdOff, 3);
 
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( outPkt.getUserId());
+        
+        if (vc == null)
+        {
+        	outPkt.setError(m_smbPkt.isLongErrorCode(), SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+        	return endOff;
+        }
+
         // Get the data bytes position and length
 
         int dataPos = m_smbPkt.getAndXByteOffset(cmdOff);
@@ -328,12 +338,12 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
             // Allocate the tree id for this connection
 
-            int treeId = m_sess.addConnection(shareDev);
+            int treeId = vc.addConnection(shareDev);
             outPkt.setTreeId(treeId);
 
             // Set the file permission that this user has been granted for this share
 
-            TreeConnection tree = m_sess.findConnection(treeId);
+            TreeConnection tree = vc.findConnection(treeId);
             tree.setPermission(filePerm);
 
             // Inform the driver that a connection has been opened
@@ -392,10 +402,19 @@ class LanManProtocolHandler extends CoreProtocolHandler
             return;
         }
 
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null)
+        {
+        	m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+        	return;
+        }
+        
         // Get the tree connection details
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = vc.findConnection(treeId);
 
         if (conn == null)
         {
@@ -420,7 +439,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Get the search context
 
-        SearchContext ctx = m_sess.getSearchContext(searchId);
+        SearchContext ctx = vc.getSearchContext(searchId);
 
         if (ctx == null)
         {
@@ -438,7 +457,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Deallocate the search slot, close the search.
 
-        m_sess.deallocateSearchSlot(searchId);
+        vc.deallocateSearchSlot(searchId);
 
         // Return a success status SMB
 
@@ -463,8 +482,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Get the tree connection details
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection(m_smbPkt);
 
         if (conn == null)
         {
@@ -524,18 +542,37 @@ class LanManProtocolHandler extends CoreProtocolHandler
      */
     protected final void procLogoffAndX(SMBSrvPacket outPkt) throws java.io.IOException, SMBSrvException
     {
+        //  Check that the received packet looks like a valid logoff andX request
 
-        // Check that the received packet looks like a valid logoff andX request
-
-        if (m_smbPkt.checkPacketIsValid(15, 1) == false)
+        if (m_smbPkt.checkPacketIsValid(2, 0) == false)
         {
-            m_sess.sendErrorResponseSMB(SMBStatus.SRVUnrecognizedCommand, SMBStatus.ErrSrv);
-            return;
+        	m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+        	return;
         }
 
-        // Return a success status SMB
+        //  Get the virtual circuit for the request
+        
+        int uid = m_smbPkt.getUserId();
+        VirtualCircuit vc = m_sess.findVirtualCircuit( uid);
+        
+        if (vc == null)
+        {
+        	m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.DOSInvalidDrive, SMBStatus.ErrDos);
+        	return;
+        }
 
-        m_sess.sendSuccessResponseSMB();
+        //  DEBUG
+        
+        if ( logger.isDebugEnabled() && m_sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
+        	logger.debug("Logoff vc=" + vc);
+
+        //  Close the virtual circuit
+        
+        m_sess.removeVirtualCircuit( uid);
+        
+        //  Return a success status SMB
+
+   		m_sess.sendSuccessResponseSMB();
     }
 
     /**
@@ -556,8 +593,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Get the tree connection details
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection(m_smbPkt);
 
         if (conn == null)
         {
@@ -631,7 +667,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
         // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
-            logger.debug("File Open AndX [" + treeId + "] params=" + params);
+            logger.debug("File Open AndX [" + m_smbPkt.getTreeId() + "] params=" + params);
 
         // Access the disk interface and open the requested file
 
@@ -819,8 +855,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Get the tree connection details
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection(m_smbPkt);
 
         if (conn == null)
         {
@@ -981,8 +1016,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection(m_smbPkt);
 
         if (conn == null)
         {
@@ -1042,12 +1076,9 @@ class LanManProtocolHandler extends CoreProtocolHandler
         // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
-            logger.debug("File Rename [" + treeId + "] old name=" + oldName + ", new name=" + newName);
+            logger.debug("File Rename [" + m_smbPkt.getTreeId() + "] old name=" + oldName + ", new name=" + newName);
 
         // Access the disk interface and rename the requested file
-
-        int fid;
-        NetworkFile netFile = null;
 
         try
         {
@@ -1339,11 +1370,19 @@ class LanManProtocolHandler extends CoreProtocolHandler
             return;
         }
 
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null)
+        {
+        	m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+        	return;
+        }
+        
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection(m_smbPkt);
 
         if (conn == null)
         {
@@ -1414,7 +1453,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
             // Save the partial transaction data
 
-            m_sess.setTransaction(transBuf);
+            vc.setTransaction(transBuf);
 
             // Send an intermediate acknowedgement response
 
@@ -1427,14 +1466,14 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         if (conn.getSharedDevice().getType() == ShareType.ADMINPIPE)
         {
-            IPCHandler.procTransaction(transBuf, m_sess, outPkt);
+            IPCHandler.procTransaction(vc, transBuf, m_sess, outPkt);
             return;
         }
 
         // DEBUG
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_TRAN))
-            logger.debug("Transaction [" + treeId + "] tbuf=" + transBuf);
+            logger.debug("Transaction [" + m_smbPkt.getTreeId() + "] tbuf=" + transBuf);
 
         // Process the transaction buffer
 
@@ -1461,11 +1500,20 @@ class LanManProtocolHandler extends CoreProtocolHandler
             return;
         }
 
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null)
+        {
+        	m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+        	return;
+        }
+        
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = vc.findConnection(treeId);
 
         if (conn == null)
         {
@@ -1486,9 +1534,9 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Check if there is an active transaction, and it is an NT transaction
 
-        if (m_sess.hasTransaction() == false
-                || (m_sess.getTransaction().isType() == PacketType.Transaction && m_smbPkt.getCommand() != PacketType.TransactionSecond)
-                || (m_sess.getTransaction().isType() == PacketType.Transaction2 && m_smbPkt.getCommand() != PacketType.Transaction2Second))
+        if (vc.hasTransaction() == false
+                || (vc.getTransaction().isType() == PacketType.Transaction && m_smbPkt.getCommand() != PacketType.TransactionSecond)
+                || (vc.getTransaction().isType() == PacketType.Transaction2 && m_smbPkt.getCommand() != PacketType.Transaction2Second))
         {
 
             // No transaction to continue, or packet does not match the existing transaction, return
@@ -1502,7 +1550,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         SMBSrvTransPacket tpkt = new SMBSrvTransPacket(m_smbPkt.getBuffer());
         byte[] buf = tpkt.getBuffer();
-        SrvTransactBuffer transBuf = m_sess.getTransaction();
+        SrvTransactBuffer transBuf = vc.getTransaction();
 
         // Append the parameter data to the transaction buffer, if any
 
@@ -1551,14 +1599,14 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
             // Clear the in progress transaction
 
-            m_sess.setTransaction(null);
+            vc.setTransaction(null);
 
             // Check if the transaction is on the IPC$ named pipe, the request requires special
             // processing
 
             if (conn.getSharedDevice().getType() == ShareType.ADMINPIPE)
             {
-                IPCHandler.procTransaction(transBuf, m_sess, outPkt);
+                IPCHandler.procTransaction(vc, transBuf, m_sess, outPkt);
                 return;
             }
 
@@ -1644,11 +1692,18 @@ class LanManProtocolHandler extends CoreProtocolHandler
     protected final void procTrans2FindFirst(SrvTransactBuffer tbuf, SMBSrvPacket outPkt) throws java.io.IOException,
             SMBSrvException
     {
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null) {
+          m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+          return;
+        }
 
         // Get the tree connection details
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = vc.findConnection(treeId);
 
         if (conn == null)
         {
@@ -1705,7 +1760,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
             // Allocate a search slot for the new search
 
-            searchId = m_sess.allocateSearchSlot();
+            searchId = vc.allocateSearchSlot();
             if (searchId == -1)
             {
 
@@ -1744,7 +1799,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
             // Save the search context
 
-            m_sess.setSearchContext(searchId, ctx);
+            vc.setSearchContext(searchId, ctx);
 
             // Create the reply transact buffer
 
@@ -1859,7 +1914,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
                 // Release the search context
 
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
             }
         }
         catch (FileNotFoundException ex)
@@ -1868,12 +1923,11 @@ class LanManProtocolHandler extends CoreProtocolHandler
             // Deallocate the search
 
             if (searchId != -1)
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
 
             // Search path does not exist
 
             m_sess.sendErrorResponseSMB(SMBStatus.DOSNoMoreFiles, SMBStatus.ErrDos);
-            // m_sess.sendErrorResponseSMB(SMBStatus.DOSFileNotFound, SMBStatus.ErrDos);
         }
         catch (InvalidDeviceInterfaceException ex)
         {
@@ -1881,7 +1935,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
             // Deallocate the search
 
             if (searchId != -1)
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
 
             // Failed to get/initialize the disk interface
 
@@ -1893,7 +1947,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
             // Deallocate the search
 
             if (searchId != -1)
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
 
             // Requested information level is not supported
 
@@ -1912,11 +1966,18 @@ class LanManProtocolHandler extends CoreProtocolHandler
     protected final void procTrans2FindNext(SrvTransactBuffer tbuf, SMBSrvPacket outPkt) throws java.io.IOException,
             SMBSrvException
     {
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null) {
+          m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+          return;
+        }
 
         // Get the tree connection details
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = vc.findConnection(treeId);
 
         if (conn == null)
         {
@@ -1961,7 +2022,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
             // Retrieve the search context
 
-            ctx = m_sess.getSearchContext(searchId);
+            ctx = vc.getSearchContext(searchId);
             if (ctx == null)
             {
 
@@ -2091,7 +2152,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
                 // Release the search context
 
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
             }
         }
         catch (FileNotFoundException ex)
@@ -2100,12 +2161,11 @@ class LanManProtocolHandler extends CoreProtocolHandler
             // Deallocate the search
 
             if (searchId != -1)
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
 
             // Search path does not exist
 
             m_sess.sendErrorResponseSMB(SMBStatus.DOSNoMoreFiles, SMBStatus.ErrDos);
-            // m_sess.sendErrorResponseSMB(SMBStatus.DOSFileNotFound, SMBStatus.ErrDos);
         }
         catch (InvalidDeviceInterfaceException ex)
         {
@@ -2113,7 +2173,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
             // Deallocate the search
 
             if (searchId != -1)
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
 
             // Failed to get/initialize the disk interface
 
@@ -2125,7 +2185,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
             // Deallocate the search
 
             if (searchId != -1)
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
 
             // Requested information level is not supported
 
@@ -2147,8 +2207,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Get the tree connection details
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection(m_smbPkt);
 
         if (conn == null)
         {
@@ -2317,8 +2376,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Get the tree connection details
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection(m_smbPkt);
 
         if (conn == null)
         {
@@ -2450,6 +2508,14 @@ class LanManProtocolHandler extends CoreProtocolHandler
         {
             m_sess.sendErrorResponseSMB(SMBStatus.SRVUnrecognizedCommand, SMBStatus.ErrSrv);
             return;
+        }
+
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null) {
+          m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+          return;
         }
 
         // Extract the parameters
@@ -2590,12 +2656,12 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Allocate a tree id for the new connection
 
-        int treeId = m_sess.addConnection(shareDev);
+        int treeId = vc.addConnection(shareDev);
         outPkt.setTreeId(treeId);
 
         // Set the file permission that this user has been granted for this share
 
-        TreeConnection tree = m_sess.findConnection(treeId);
+        TreeConnection tree = vc.findConnection(treeId);
         tree.setPermission(filePerm);
 
         // Debug
@@ -2645,8 +2711,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
 
         // Get the tree connection details
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection(m_smbPkt);
 
         if (conn == null)
         {
@@ -2896,7 +2961,7 @@ class LanManProtocolHandler extends CoreProtocolHandler
             int treeId = m_smbPkt.getTreeId();
             TreeConnection conn = null;
             if (treeId != -1)
-                conn = m_sess.findConnection(treeId);
+                conn = m_sess.findTreeConnection(m_smbPkt);
 
             if (conn != null)
             {

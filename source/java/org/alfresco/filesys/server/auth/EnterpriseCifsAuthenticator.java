@@ -60,6 +60,7 @@ import org.alfresco.filesys.smb.SMBStatus;
 import org.alfresco.filesys.smb.server.SMBSrvException;
 import org.alfresco.filesys.smb.server.SMBSrvPacket;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
+import org.alfresco.filesys.smb.server.VirtualCircuit;
 import org.alfresco.filesys.util.DataPacker;
 import org.alfresco.filesys.util.HexDump;
 import org.alfresco.repo.security.authentication.NTLMMode;
@@ -507,29 +508,17 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         
         if ( reqPkt.getParameterCount() == 13)
         {
-            try
-            {
-                //  Process the hashed password session setup
+            //  Process the hashed password session setup
                 
-                doHashedPasswordLogon( sess, reqPkt, respPkt);
-                return;
-            }
-            catch (SMBSrvException ex)
-            {
-                //  Cleanup any stored context
-                
-                sess.setSetupObject( null);
-                
-                //  Rethrow the exception
-                
-                throw ex;
-            }
+            doHashedPasswordLogon( sess, reqPkt, respPkt);
+            return;
         }
         
         //  Extract the session details
 
         int maxBufSize = reqPkt.getParameter(2);
         int maxMpx     = reqPkt.getParameter(3);
+        int vcNum      = reqPkt.getParameter(4);
         int secBlobLen = reqPkt.getParameter(7);
         int capabs     = reqPkt.getParameterLong(10);
 
@@ -601,9 +590,13 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         if ( sess.hasRemoteAddress())
           client.setClientAddress(sess.getRemoteAddress().getHostAddress());
 
-        //  Save the setup object, if valid
+        //  Set the process id for this client, for multi-stage logons
         
-        Object setupObj = sess.getSetupObject();
+        client.setProcessId( reqPkt.getProcessId());
+        
+        // Get the current sesion setup object, or null
+        
+        Object setupObj = sess.getSetupObject( client.getProcessId());
         
         //  Process the security blob
         
@@ -646,7 +639,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         {
             //  Cleanup any stored context
             
-            sess.setSetupObject( null);
+            sess.removeSetupObject( client.getProcessId());
             
             //  Rethrow the exception
             
@@ -675,15 +668,23 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         //  Check if there is/was a session setup object stored in the session, this indicates a multi-stage session
         //  setup so set the status code accordingly
         
-        if ( useRawNTLMSSP() || isNTLMSSP == true || sess.hasSetupObject() || setupObj != null)
+        boolean loggedOn = false;
+        
+        if ( useRawNTLMSSP() || isNTLMSSP == true || sess.hasSetupObject( client.getProcessId()) || setupObj != null)
         {
             //  NTLMSSP has two stages, if there is a stored setup object then indicate more processing
             //  required
             
-            if ( sess.hasSetupObject())
+            if ( sess.hasSetupObject( client.getProcessId()))
                 respPkt.setLongErrorCode( SMBStatus.NTMoreProcessingRequired);
             else
+            {
                 respPkt.setLongErrorCode( SMBStatus.NTSuccess);
+                
+                // Indicate that the user is logged on
+                
+                loggedOn = true;
+            }
 
             respPkt.setParameterCount(4);
             respPkt.setParameter(0, 0xFF);      //  No chained response
@@ -712,6 +713,44 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                                                 //  security blob length
             respPkt.setParameterLong(8, 0);     //  reserved
             respPkt.setParameterLong(10, getServerCapabilities());
+            
+            // Indicate that the user is logged on
+            
+            loggedOn = true;
+        }
+        
+        // If the user is logged on then allocate a virtual circuit
+
+        int uid = 0;
+        
+        if ( loggedOn == true) {
+
+          // Clear any stored session setup object for the logon
+          
+          sess.removeSetupObject( client.getProcessId());
+          
+          // Create a virtual circuit for the new logon
+          
+          VirtualCircuit vc = new VirtualCircuit( vcNum, client);
+          uid = sess.addVirtualCircuit( vc);
+          
+          if ( uid == VirtualCircuit.InvalidUID)
+          {
+        	  // DEBUG
+            
+        	  if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
+        		  logger.debug("Failed to allocate UID for virtual circuit, " + vc);
+            
+        	  // Failed to allocate a UID
+            
+        	  throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+          }
+          else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE)) {
+            
+        	  // DEBUG
+            
+        	  logger.debug("Allocated UID=" + uid + " for VC=" + vc);
+          }
         }
         
         // Common session setup response
@@ -719,8 +758,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         respPkt.setCommand( reqPkt.getCommand());
         respPkt.setByteCount(0);
 
-        respPkt.setTreeId(0);
-        respPkt.setUserId(0);
+        respPkt.setTreeId( 0);
+        respPkt.setUserId( uid);
 
         //  Set the various flags
 
@@ -834,7 +873,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
             //  Store the type 2 message in the session until the session setup is complete
             
-            sess.setSetupObject( type2Msg);
+            sess.setSetupObject( client.getProcessId(), type2Msg);
             
             // Set the response blob using the type 2 message
             
@@ -848,11 +887,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             //  Make sure a type 2 message was stored in the first stage of the session setup
             
-            if ( sess.hasSetupObject() == false || sess.getSetupObject() instanceof Type2NTLMMessage == false)
+            if ( sess.hasSetupObject( client.getProcessId()) == false || sess.getSetupObject( client.getProcessId()) instanceof Type2NTLMMessage == false)
             {
                 //  Clear the setup object
                 
-                sess.setSetupObject( null);
+                sess.removeSetupObject( client.getProcessId());
                 
                 //  Return a logon failure
 
@@ -937,7 +976,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         
         NegTokenTarg negTarg = null;
         
-        if ( tokType == SPNEGO.NegTokenTarg && sess.hasSetupObject() && sess.getSetupObject() instanceof Type2NTLMMessage)
+        if ( tokType == SPNEGO.NegTokenTarg && sess.hasSetupObject( client.getProcessId()) && sess.getSetupObject( client.getProcessId()) instanceof Type2NTLMMessage)
         {
             //  Get the NTLMSSP blob from the NegTokenTarg blob
             
@@ -972,7 +1011,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             
             int spnegoSts = SPNEGO.AcceptCompleted;
             
-            if ( sess.hasSetupObject())
+            if ( sess.hasSetupObject( client.getProcessId()))
                 spnegoSts = SPNEGO.AcceptIncomplete;
             
             //  Package the NTLMSSP response in an SPNEGO response
@@ -1022,7 +1061,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 int spnegoSts = SPNEGO.AcceptCompleted;
                 
-                if ( sess.hasSetupObject())
+                if ( sess.hasSetupObject( client.getProcessId()))
                     spnegoSts = SPNEGO.AcceptIncomplete;
                 
                 //  Package the NTLMSSP response in an SPNEGO response
@@ -1183,8 +1222,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         
         //  Get the type 2 message that contains the challenge sent to the client
         
-        Type2NTLMMessage type2Msg = (Type2NTLMMessage) sess.getSetupObject();
-        sess.setSetupObject( null);
+        Type2NTLMMessage type2Msg = (Type2NTLMMessage) sess.getSetupObject( client.getProcessId());
+        sess.removeSetupObject( client.getProcessId());
         
         // Check if we are using local MD4 password hashes or passthru authentication
         
@@ -1432,8 +1471,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
     {
         //  Get the type 2 message that contains the challenge sent to the client
         
-        Type2NTLMMessage type2Msg = (Type2NTLMMessage) sess.getSetupObject();
-        sess.setSetupObject( null);
+        Type2NTLMMessage type2Msg = (Type2NTLMMessage) sess.getSetupObject( client.getProcessId());
+        sess.removeSetupObject( client.getProcessId());
         
         // Check if we are using local MD4 password hashes or passthru authentication
         
@@ -1677,8 +1716,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
     {
         //  Get the type 2 message that contains the challenge sent to the client
        
-        Type2NTLMMessage type2Msg = (Type2NTLMMessage) sess.getSetupObject();
-        sess.setSetupObject( null);
+        Type2NTLMMessage type2Msg = (Type2NTLMMessage) sess.getSetupObject( client.getProcessId());
+        sess.removeSetupObject( client.getProcessId());
        
         // Check if we are using local MD4 password hashes or passthru authentication
        
@@ -1980,17 +2019,30 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 logger.debug("User " + user + ", logged on as guest");
         }
 
-        // Update the client information if not already set
+        // Create a virtual circuit and allocate a UID to the new circuit
 
-        if (sess.getClientInformation() == null
-                || sess.getClientInformation().getUserName().length() == 0)
+        VirtualCircuit vc = new VirtualCircuit( vcNum, client);
+        int uid = sess.addVirtualCircuit( vc);
+        
+        if ( uid == VirtualCircuit.InvalidUID)
         {
-
-            // Set the client details for the session
-
-            sess.setClientInformation(client);
+        
+        	// DEBUG
+          
+        	if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
+        		logger.debug("Failed to allocate UID for virtual circuit, " + vc);
+          
+        	// Failed to allocate a UID
+          
+        	throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
         }
-
+        else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
+        {
+        	// DEBUG
+          
+        	logger.debug("Allocated UID=" + uid + " for VC=" + vc);
+        }
+        
         // Set the guest flag for the client, indicate that the session is logged on
 
         client.setGuest(isGuest);
@@ -2005,7 +2057,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         respPkt.setByteCount(0);
 
         respPkt.setTreeId(0);
-        respPkt.setUserId(0);
+        respPkt.setUserId(uid);
 
         // Set the various flags
 

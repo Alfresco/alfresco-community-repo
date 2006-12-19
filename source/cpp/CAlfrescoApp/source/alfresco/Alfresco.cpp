@@ -44,67 +44,9 @@ AlfrescoInterface::AlfrescoInterface(String& path) {
 
 	m_protocolVersion = 1;
 
-	// Check if the path is to a mapped drive
+	// Set the working directory path
 
-	String alfPath = path;
-
-	if ( alfPath.length() >= 3 && alfPath.substring(1,3).equals( L":\\")) {
-
-		// Try and convert the local path to a UNC path
-
-		m_mappedDrive = alfPath.substring(0, 2);
-		wchar_t remPath[MAX_PATH];
-		DWORD remPathLen = MAX_PATH;
-
-		DWORD sts = WNetGetConnection(( LPWSTR) m_mappedDrive.data(), remPath, &remPathLen);
-		if ( sts != NO_ERROR)
-			return;
-
-		// Build the UNC path to the folder
-
-		alfPath = remPath;
-		if ( alfPath.endsWith( PathSeperator) == false)
-			alfPath.append( PathSeperator);
-
-		if ( path.length() > 3)
-			alfPath.append( path.substring( 3));
-	}
-
-	// Save the UNC path
-
-	m_uncPath = alfPath;
-
-	// Check if the UNC path is valid
-
-	if ( m_uncPath.startsWith(UNCPathPrefix)) {
-
-		// Strip any trailing separator from the path
-
-		if ( m_uncPath.endsWith(PathSeperator))
-			m_uncPath = m_uncPath.substring(0, m_uncPath.length() - 1);
-
-		// Make sure the path is to a folder
-
-		DWORD attr = GetFileAttributes(m_uncPath);
-
-		if ( attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY)) {
-
-			// Open the path
-
-			m_handle = CreateFile(m_uncPath, FILE_WRITE_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-		}
-
-		// Set the root path
-
-		int pos = m_uncPath.indexOf( PathSeperator, 2);
-		if ( pos != -1) {
-			pos = m_uncPath.indexOf( PathSeperator, pos + 1);
-			if ( pos == -1)
-				m_rootPath = m_uncPath;
-			else
-				m_rootPath = m_uncPath.substring(0, pos);
-		}
-	}
+	setRootPath( path);
 }
 
 /**
@@ -372,6 +314,87 @@ void AlfrescoInterface::sendIOControl( const unsigned int ctlCode, DataBuffer& r
 	}
 	else
 		throw Exception( L"Send I/O control error", Integer::toString( GetLastError()));
+}
+
+/**
+ * Set the root path to be used as the working directory
+ *
+ * @param rootPath const wchar_t*
+ * @return bool
+ */
+bool AlfrescoInterface::setRootPath( const wchar_t* rootPath) {
+
+	// Close the existing folder, if valid
+
+	if ( m_handle != INVALID_HANDLE_VALUE)
+		CloseHandle(m_handle);
+
+	// Check if the path is to a mapped drive
+
+	String path    = rootPath;
+	String alfPath = rootPath;
+
+	if ( alfPath.length() >= 3 && alfPath.substring(1,3).equals( L":\\")) {
+
+		// Try and convert the local path to a UNC path
+
+		m_mappedDrive = alfPath.substring(0, 2);
+		wchar_t remPath[MAX_PATH];
+		DWORD remPathLen = MAX_PATH;
+
+		DWORD sts = WNetGetConnection(( LPWSTR) m_mappedDrive.data(), remPath, &remPathLen);
+		if ( sts != NO_ERROR)
+			return false;
+
+		// Build the UNC path to the folder
+
+		alfPath = remPath;
+		if ( alfPath.endsWith( PathSeperator) == false)
+			alfPath.append( PathSeperator);
+
+		if ( path.length() > 3)
+			alfPath.append( path.substring( 3));
+	}
+
+	// Save the UNC path
+
+	m_uncPath = alfPath;
+
+	// Check if the UNC path is valid
+
+	if ( m_uncPath.startsWith(UNCPathPrefix)) {
+
+		// Strip any trailing separator from the path
+
+		if ( m_uncPath.endsWith(PathSeperator))
+			m_uncPath = m_uncPath.substring(0, m_uncPath.length() - 1);
+
+		// Make sure the path is to a folder
+
+		DWORD attr = GetFileAttributes(m_uncPath);
+
+		if ( attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY)) {
+
+			// Open the path
+
+			m_handle = CreateFile(m_uncPath, FILE_WRITE_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+		}
+
+		// Set the root path
+
+		int pos = m_uncPath.indexOf( PathSeperator, 2);
+		if ( pos != -1) {
+			pos = m_uncPath.indexOf( PathSeperator, pos + 1);
+			if ( pos == -1)
+				m_rootPath = m_uncPath;
+			else
+				m_rootPath = m_uncPath.substring(0, pos);
+		}
+	}
+
+	// Return the folder status
+
+	return isAlfrescoFolder();
 }
 
 /**

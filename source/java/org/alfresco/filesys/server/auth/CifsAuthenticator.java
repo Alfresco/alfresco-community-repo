@@ -41,6 +41,7 @@ import org.alfresco.filesys.smb.server.SMBSrvException;
 import org.alfresco.filesys.smb.server.SMBSrvPacket;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.smb.server.SecurityMode;
+import org.alfresco.filesys.smb.server.VirtualCircuit;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
 import org.alfresco.filesys.util.DataPacker;
 import org.alfresco.filesys.util.HexDump;
@@ -491,8 +492,6 @@ public abstract class CifsAuthenticator
 
         // Authenticate the user
 
-        boolean isGuest = false;
-
         int sts = authenticateUser(client, sess, CifsAuthenticator.NTLM1);
 
         if (sts > 0 && (sts & CifsAuthenticator.AUTH_GUEST) != 0)
@@ -500,7 +499,7 @@ public abstract class CifsAuthenticator
 
             // Guest logon
 
-            isGuest = true;
+            client.setGuest( true);
 
             // DEBUG
 
@@ -509,57 +508,55 @@ public abstract class CifsAuthenticator
         }
         else if (sts != CifsAuthenticator.AUTH_ALLOW)
         {
+            // DEBUG
 
-            // Check if the session already has valid client details and the new client details
-            // have null username/password values
+            if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+                logger.debug("User " + user + ", access denied");
 
-            if (sess.getClientInformation() != null && client.getUserName().length() == 0)
-            {
+            // Invalid user, reject the session setup request
 
-                // Use the existing client information details
-
-                client = sess.getClientInformation();
-
-                // DEBUG
-
-                if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
-                    logger.debug("Null client information, reusing existing client=" + client);
-            }
-            else
-            {
-                // DEBUG
-
-                if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
-                    logger.debug("User " + user + ", access denied");
-
-                // Invalid user, reject the session setup request
-
-                throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
-            }
+            throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
         }
         else if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
         {
-
+        	// Save the current user token in the client information
+        	
+        	if ( client.isNullSession() == false)
+        		client.setAuthenticationToken( m_authComponent.getCurrentAuthentication());
+        	else
+        		client.setAuthenticationToken( null);
+        	
             // DEBUG
 
             logger.debug("User " + user + " logged on "
                     + (client != null ? " (type " + client.getLogonTypeString() + ")" : ""));
         }
 
-        // Update the client information if not already set
+        // Create a virtual circuit and allocate a UID to the new circuit
 
-        if (sess.getClientInformation() == null
-                || sess.getClientInformation().getUserName().length() == 0)
+        VirtualCircuit vc = new VirtualCircuit( vcNum, client);
+        int uid = sess.addVirtualCircuit( vc);
+        
+        if ( uid == VirtualCircuit.InvalidUID)
         {
-
-            // Set the client details for the session
-
-            sess.setClientInformation(client);
+        	// DEBUG
+          
+        	if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
+        		logger.debug("Failed to allocate UID for virtual circuit, " + vc);
+          
+        	// Failed to allocate a UID
+          
+        	throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+        }
+        else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE)) {
+          
+        	// DEBUG
+          
+        	logger.debug("Allocated UID=" + uid + " for VC=" + vc);
         }
 
-        // Set the guest flag for the client, indicate that the session is logged on
+        // Indicate that the session is logged on
 
-        client.setGuest(isGuest);
         sess.setLoggedOn(true);
 
         // Build the session setup response SMB
@@ -567,11 +564,11 @@ public abstract class CifsAuthenticator
         respPkt.setParameterCount(3);
         respPkt.setParameter(0, 0); // No chained response
         respPkt.setParameter(1, 0); // Offset to chained response
-        respPkt.setParameter(2, isGuest ? 1 : 0);
+        respPkt.setParameter(2, client.isGuest() ? 1 : 0);
         respPkt.setByteCount(0);
 
         respPkt.setTreeId(0);
-        respPkt.setUserId(0);
+        respPkt.setUserId(uid);
 
         // Set the various flags
 
@@ -832,8 +829,7 @@ public abstract class CifsAuthenticator
         
         client.setGuest( true);
 
-        // Create a dynamic share for the guest user
-        // Create the disk driver and context
+        // Create a dynamic share for the guest user, create the disk driver and context
         
         DiskInterface diskDrv = m_config.getDiskInterface();
         DiskDeviceContext diskCtx = new ContentContext(client.getUserName(), "", "", client.getHomeFolder());
@@ -935,5 +931,34 @@ public abstract class CifsAuthenticator
         // Return the person name
         
         return personName;
+    }
+    
+    /**
+     * Set the current authenticated user context for this thread
+     * 
+     * @param client ClientInfo
+     */
+    public void setCurrentUser( ClientInfo client)
+    {
+    	// Check the account type and setup the authentication context
+    	
+    	if ( client.isNullSession())
+    	{
+    		// Clear the authentication, null user should not be allowed to do any service calls
+    		
+    		m_authComponent.clearCurrentSecurityContext();
+    	}
+    	else if ( client.isGuest() == false)
+    	{
+    		// Set the authentication context for the request
+    		
+    		m_authComponent.setCurrentAuthentication( client.getAuthenticationToken());
+    	}
+    	else
+    	{
+    		// Enable guest access for the request
+    		
+    		m_authComponent.setGuestUserAsCurrentUser();
+    	}
     }
 }

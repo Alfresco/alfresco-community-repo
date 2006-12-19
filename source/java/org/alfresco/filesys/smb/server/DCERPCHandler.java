@@ -60,8 +60,7 @@ public class DCERPCHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = srvTrans.getTreeId();
-        TreeConnection conn = sess.findConnection(treeId);
+        TreeConnection conn = sess.findTreeConnection( srvTrans);
 
         if (conn == null)
         {
@@ -187,12 +186,13 @@ public class DCERPCHandler
      * Process a DCE/RPC request
      * 
      * @param sess SMBSrvSession
+     * @param vc VirtualCircuit
      * @param tbuf TransactBuffer
      * @param outPkt SMBSrvPacket
      * @exception IOException
      * @exception SMBSrvException
      */
-    public static final void processDCERPCRequest(SMBSrvSession sess, TransactBuffer tbuf, SMBSrvPacket outPkt)
+    public static final void processDCERPCRequest(SMBSrvSession sess, VirtualCircuit vc, TransactBuffer tbuf, SMBSrvPacket outPkt)
             throws IOException, SMBSrvException
     {
 
@@ -207,8 +207,7 @@ public class DCERPCHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = tbuf.getTreeId();
-        TreeConnection conn = sess.findConnection(treeId);
+        TreeConnection conn = vc.findConnection( tbuf.getTreeId());
 
         if (conn == null)
         {
@@ -348,8 +347,7 @@ public class DCERPCHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = inPkt.getTreeId();
-        TreeConnection conn = sess.findConnection(treeId);
+        TreeConnection conn = sess.findTreeConnection( inPkt);
 
         if (conn == null)
         {
@@ -482,8 +480,7 @@ public class DCERPCHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = inPkt.getTreeId();
-        TreeConnection conn = sess.findConnection(treeId);
+        TreeConnection conn = sess.findTreeConnection( inPkt);
 
         if (conn == null)
         {

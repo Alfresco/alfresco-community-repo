@@ -132,6 +132,11 @@ BEGIN
     IDS_ABOUTBOX            "&About CAlfrescoApp..."
 END
 
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "Alfresco Desktop Action"
+END
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

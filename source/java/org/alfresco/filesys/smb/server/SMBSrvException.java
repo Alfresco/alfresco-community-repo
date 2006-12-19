@@ -39,7 +39,7 @@ public class SMBSrvException extends Exception
     
     // NT 32-bit error code
     
-    protected int m_NTerror;
+    protected int m_NTerror = -1;
 
     /**
      * Construct an SMB exception with the specified error class/error code.
@@ -116,6 +116,16 @@ public class SMBSrvException extends Exception
         return m_errorcode;
     }
 
+    /**
+     * Check if the NT error code has been set
+     * 
+     * @return boolean
+     */
+    public final boolean hasNTErrorCode()
+    {
+    	return m_NTerror != -1 ? true : false;
+    }
+    
     /**
      * Return the NT error code
      * 

@@ -197,7 +197,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -310,7 +310,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -416,7 +416,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -539,7 +539,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -684,7 +684,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -802,7 +802,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -842,9 +842,6 @@ class CoreProtocolHandler extends ProtocolHandler
             logger.debug("File Delete [" + treeId + "] name=" + fileName);
 
         // Access the disk interface and delete the file(s)
-
-        int fid;
-        NetworkFile netFile = null;
 
         try
         {
@@ -913,7 +910,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree connection details
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1084,7 +1081,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1185,7 +1182,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1316,8 +1313,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1484,8 +1480,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1557,7 +1552,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1714,8 +1709,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1769,8 +1763,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1906,7 +1899,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -1971,9 +1964,6 @@ class CoreProtocolHandler extends ProtocolHandler
 
         // Access the disk interface and rename the requested file
 
-        int fid;
-        NetworkFile netFile = null;
-
         try
         {
 
@@ -2021,7 +2011,6 @@ class CoreProtocolHandler extends ProtocolHandler
      */
     protected final void procSearch(SMBSrvPacket outPkt) throws java.io.IOException, SMBSrvException
     {
-
         // Check that the received packet looks like a valid search request
 
         if (m_smbPkt.checkPacketIsValid(2, 5) == false)
@@ -2030,10 +2019,18 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null)
+        {
+        	m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+        	return;
+        }
+        
         // Get the tree connection details
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = vc.findConnection( m_smbPkt.getTreeId());
 
         if (conn == null)
         {
@@ -2146,7 +2143,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
             // Allocate a search slot for the new search
 
-            searchId = m_sess.allocateSearchSlot();
+            searchId = vc.allocateSearchSlot();
             if (searchId == -1)
             {
 
@@ -2158,7 +2155,7 @@ class CoreProtocolHandler extends ProtocolHandler
                 // is started but never continued.
 
                 int idx = 0;
-                ctx = m_sess.getSearchContext(idx);
+                ctx = vc.getSearchContext(idx);
 
                 while (ctx != null && searchId == -1)
                 {
@@ -2175,18 +2172,18 @@ class CoreProtocolHandler extends ProtocolHandler
 
                         // Deallocate the search context
 
-                        m_sess.deallocateSearchSlot(idx);
+                        vc.deallocateSearchSlot(idx);
 
                         // Allocate the slot for the new search
 
-                        searchId = m_sess.allocateSearchSlot();
+                        searchId = vc.allocateSearchSlot();
                     }
                     else
                     {
 
                         // Update the search index and get the next search context
 
-                        ctx = m_sess.getSearchContext(++idx);
+                        ctx = vc.getSearchContext(++idx);
                     }
                 }
 
@@ -2216,13 +2213,13 @@ class CoreProtocolHandler extends ProtocolHandler
 
                 // Store details of the search in the context
 
-                ctx.setTreeId(treeId);
+                ctx.setTreeId(m_smbPkt.getTreeId());
                 ctx.setMaximumFiles(maxFiles);
             }
 
             // Save the search context
 
-            m_sess.setSearchContext(searchId, ctx);
+            vc.setSearchContext(searchId, ctx);
         }
         else
         {
@@ -2236,7 +2233,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
             int id = CoreResumeKey.getServerArea(resumeKey, 0);
             searchId = (id & 0xFFFF0000) >> 16;
-            ctx = m_sess.getSearchContext(searchId);
+            ctx = vc.getSearchContext(searchId);
 
             // Check if the search context is valid
 
@@ -2277,7 +2274,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
                     // Release the search context
 
-                    m_sess.deallocateSearchSlot(searchId);
+                    vc.deallocateSearchSlot(searchId);
                     return;
                 }
             }
@@ -2293,7 +2290,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
         // Check that the search context and tree connection match
 
-        if (ctx.getTreeId() != treeId)
+        if (ctx.getTreeId() != m_smbPkt.getTreeId())
         {
             m_sess.sendErrorResponseSMB(SMBStatus.SRVInvalidTID, SMBStatus.ErrSrv);
             return;
@@ -2432,7 +2429,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
             // Release the search context
 
-            m_sess.deallocateSearchSlot(searchId);
+            vc.deallocateSearchSlot(searchId);
         }
         else
         {
@@ -2466,7 +2463,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
                 // Release the search context
 
-                m_sess.deallocateSearchSlot(searchId);
+                vc.deallocateSearchSlot(searchId);
             }
         }
     }
@@ -2481,8 +2478,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
         // Get the tree connection details
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -2605,8 +2601,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -2646,7 +2641,6 @@ class CoreProtocolHandler extends ProtocolHandler
 
         // Seek to the specified position within the file
 
-        byte[] buf = outPkt.getBuffer();
         long pos = 0;
 
         try
@@ -2702,36 +2696,9 @@ class CoreProtocolHandler extends ProtocolHandler
     protected void procSessionSetup(SMBSrvPacket outPkt) throws SMBSrvException, IOException,
             TooManyConnectionsException
     {
-
-        // Build the session setup response SMB
-
-        outPkt.setParameterCount(3);
-        outPkt.setParameter(0, 0);
-        outPkt.setParameter(1, 0);
-        outPkt.setParameter(2, 8192);
-        outPkt.setByteCount(0);
-
-        outPkt.setTreeId(0);
-        outPkt.setUserId(0);
-
-        // Pack the OS, dialect and domain name strings.
-
-        int pos = outPkt.getByteOffset();
-        byte[] buf = outPkt.getBuffer();
-
-        pos = DataPacker.putString("Java", buf, pos, true);
-        pos = DataPacker.putString("JLAN Server " + m_sess.getServer().isVersion(), buf, pos, true);
-        pos = DataPacker.putString(m_sess.getServer().getConfiguration().getDomainName(), buf, pos, true);
-
-        outPkt.setByteCount(pos - outPkt.getByteOffset());
-
-        // Send the negotiate response
-
-        m_sess.sendResponseSMB(outPkt);
-
-        // Update the session state
-
-        m_sess.setState(SMBSrvSessionState.SMBSESSION);
+        // Return an access denied error, require a logon
+        
+        m_sess.sendErrorResponseSMB(SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
     }
 
     /**
@@ -2756,7 +2723,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -2869,8 +2836,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -2998,6 +2964,15 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null)
+        {
+        	m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+        	return;
+        }
+        
         // Get the data bytes position and length
 
         int dataPos = m_smbPkt.getByteOffset();
@@ -3126,7 +3101,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
         // Allocate a tree id for the new connection
 
-        int treeId = m_sess.addConnection(shareDev);
+        int treeId = vc.addConnection(shareDev);
 
         // Authenticate the share connection depending upon the security mode the server is running
         // under
@@ -3152,7 +3127,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
         // Set the file permission that this user has been granted for this share
 
-        TreeConnection tree = m_sess.findConnection(treeId);
+        TreeConnection tree = m_sess.findTreeConnection( m_smbPkt);
         tree.setPermission(filePerm);
 
         // Build the tree connect response
@@ -3192,11 +3167,20 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        //  Get the virtual circuit for the request
+        
+        VirtualCircuit vc = m_sess.findVirtualCircuit( m_smbPkt.getUserId());
+        if ( vc == null)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            return;
+        }
+
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
         int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -3211,7 +3195,7 @@ class CoreProtocolHandler extends ProtocolHandler
 
         // Remove the specified connection from the session
 
-        m_sess.removeConnection(treeId);
+        vc.removeConnection(treeId, m_sess);
 
         // Build the tree disconnect response
 
@@ -3247,8 +3231,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -3334,8 +3317,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {
@@ -3470,8 +3452,7 @@ class CoreProtocolHandler extends ProtocolHandler
         // Get the tree id from the received packet and validate that it is a valid
         // connection id.
 
-        int treeId = m_smbPkt.getTreeId();
-        TreeConnection conn = m_sess.findConnection(treeId);
+        TreeConnection conn = m_sess.findTreeConnection( m_smbPkt);
 
         if (conn == null)
         {

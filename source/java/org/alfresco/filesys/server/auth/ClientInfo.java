@@ -67,6 +67,10 @@ public class ClientInfo
 
     private String m_ipAddr;
 
+    // PID of the logon process for multi-stage logons
+    
+    private int m_pid = -1;
+    
     // Authentication token
     
     private Authentication m_authToken;
@@ -394,6 +398,26 @@ public class ClientInfo
 		return m_nfsAuthType;
 	}
 	
+    /**
+     * Return the process id
+     * 
+     * @return int
+     */
+    public final int getProcessId()
+    {
+    	return m_pid;
+    }
+    
+    /**
+     * Set the process id
+     * 
+     * @param pid int
+     */
+    public final void setProcessId( int pid)
+    {
+    	m_pid = pid;
+    }
+    
     /**
      * Set the remote users domain
      * 

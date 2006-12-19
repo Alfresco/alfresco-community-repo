@@ -169,6 +169,10 @@ public:
 
 	DesktopResponse runAction(AlfrescoActionInfo& action, DesktopParams& params);
 
+	// Set the root path to be used as the working directory
+
+	bool setRootPath( const wchar_t* rootPath);
+
 private:
 	// Send an I/O control request, receive and validate the response
 

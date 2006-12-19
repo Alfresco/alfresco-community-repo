@@ -42,7 +42,6 @@ BEGIN_MESSAGE_MAP(CAlfrescoApp, CWinApp)
 	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
-
 // CCAlfrescoApp construction
 
 CAlfrescoApp::CAlfrescoApp()
@@ -102,9 +101,80 @@ BOOL CAlfrescoApp::InitInstance()
 	String folderPath = appPath.substring(0, pos);
 	String exeName    = appPath.substring(pos + 1);
 
+	// Create a list of the command line arguments
+
+	StringList argList;
+	bool argSetWorkDir = false;
+
+	for ( int i = 1; i < __argc; i++) {
+
+		// Check if the argument is a path or switch
+
+		String arg = __wargv[i];
+
+		if ( arg.startsWith( "/")) {
+
+			// Check for the set working directory switch
+
+			if ( arg.equalsIgnoreCase( "/D")) {
+				argSetWorkDir = true;
+
+				// DEBUG
+
+				DBGOUT_TS << "/D switch specified" << endl;
+			}
+			else {
+				String msg = L"Invalid command line switch - ";
+				msg.append( arg);
+				AfxMessageBox( msg.data(), MB_OK | MB_ICONSTOP);
+				DBGOUT_TS << "Error, " << msg << endl;
+				return 2;
+			}
+		}
+		else {
+
+			// Add the path to the argument list
+
+			argList.addString( arg);
+		}
+	}
+
+	// Check if the working directory should be set to the path of the first document
+
+	if ( argSetWorkDir == true) {
+
+		// Check if there are any document paths
+
+		if ( argList.numberOfStrings() == 0) {
+			AfxMessageBox( L"Cannot set working directory, no document paths", MB_OK | MB_ICONSTOP);
+			DBGOUT_TS << "Error, cannot set working directory, no document paths" << endl;
+			return 3;
+		}
+
+		// Get the first document path and remove the file name
+
+		String docPath = argList[0];
+		pos = docPath.lastIndexOf( PathSeperator);
+
+		if ( pos < 0) {
+			AfxMessageBox( L"Invalid document path", MB_OK | MB_ICONSTOP);
+			DBGOUT_TS << "Error, invalid document path, " << docPath << endl;
+			return 4;
+		}
+
+		// Set the document path as the working directory folder
+
+		folderPath = docPath.substring(0, pos);
+
+		// DEBUG
+
+		DBGOUT_TS << "Using document path as working directory, " << folderPath << endl;
+	}
+
 	// Create the Alfresco interface
 
 	AlfrescoInterface alfresco(folderPath);
+
 	if ( alfresco.isAlfrescoFolder()) {
 
 		try {
@@ -158,16 +228,9 @@ BOOL CAlfrescoApp::InitInstance()
 
 			if ( actionInfo.hasAttribute(AttrMultiplePaths)) {
 
-				// Build a list of paths from the command line arguments
-
-				StringList pathList;
-
-				for ( int i = 1; i < __argc; i++)
-					pathList.addString( String(__wargv[i]));
-
 				// Run the action
 
-				runAction( alfresco, pathList, actionInfo);
+				runAction( alfresco, argList, actionInfo);
 			}
 
 			// Check if the action supports file/folder targets
@@ -176,12 +239,12 @@ BOOL CAlfrescoApp::InitInstance()
 
 				// Pass one path at a time to the action
 
-				for ( int i = 1; i < __argc; i++) {
+				for ( size_t i = 0; i < argList.numberOfStrings(); i++) {
 
 					// Create a path list with a single path
 
 					StringList pathList;
-					pathList.addString( String(__wargv[i]));
+					pathList.addString( argList[i]);
 
 					// Run the action
 

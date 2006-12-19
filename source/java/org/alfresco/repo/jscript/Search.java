@@ -17,6 +17,8 @@
 package org.alfresco.repo.jscript;
 
 import java.io.StringReader;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -193,9 +195,17 @@ public final class Search implements Scopeable
         }
     }
     
+    /**
+     * Execute the query
+     * 
+     * Removes any duplicates that may be present (ID can cause duplicates - it is better to remove them here)
+     * 
+     * @param search
+     * @return
+     */
     private Node[] query(String search)
-    {
-        Node[] nodes = null;
+    {   
+        LinkedHashSet<Node> set = new LinkedHashSet<Node> ();
         
         // perform the search against the repo
         ResultSet results = null;
@@ -208,13 +218,10 @@ public final class Search implements Scopeable
             
             if (results.length() != 0)
             {
-                nodes = new Node[results.length()];
-                int count = 0;
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
-                    nodes[count] = new Node(nodeRef, services, this.imageResolver, this.scope);
-                    count++;
+                    set.add(new Node(nodeRef, services, this.imageResolver, this.scope));
                 }
             }
         }
@@ -229,7 +236,7 @@ public final class Search implements Scopeable
                 results.close();
             }
         }
-        
-        return nodes != null ? nodes : new Node[0];
+     
+        return set.toArray(new Node[(set.size())]);
     }
 }

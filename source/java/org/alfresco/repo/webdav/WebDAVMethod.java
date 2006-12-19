@@ -29,8 +29,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -139,10 +137,13 @@ public abstract class WebDAVMethod
         }
         catch (Throwable e)
         {
-            Throwable cause = e.getCause();
-            if (cause instanceof WebDAVServerException)
+            if (e instanceof WebDAVServerException)
             {
-                throw (WebDAVServerException) cause;
+               throw (WebDAVServerException) e;
+            }
+            else if (e.getCause() instanceof WebDAVServerException)
+            {
+                throw (WebDAVServerException) e.getCause();
             }
             else
             {

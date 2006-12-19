@@ -513,6 +513,7 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         for (String userName : userNames)
         {
+            this.authenticationService.deleteAuthentication(userName);
             this.personService.deletePerson(userName);
         }        
     }

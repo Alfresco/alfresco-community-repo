@@ -240,7 +240,7 @@
                join assoc.child as child
             where
                assoc.parent.id = :parentId and
-               assoc.isPrimary = 1
+               assoc.isPrimary = true
          )
    </query>
    

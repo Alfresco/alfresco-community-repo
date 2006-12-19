@@ -103,6 +103,7 @@ public class TemplateServiceImplTest extends TestCase
             transactionService,
             new TransactionUtil.TransactionWork<Object>()
             {
+                @SuppressWarnings("unchecked")
                 public Object doWork() throws Exception
                 {
                     StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "template_" + System.currentTimeMillis());

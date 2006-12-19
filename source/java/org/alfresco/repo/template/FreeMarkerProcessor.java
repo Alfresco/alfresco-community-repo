@@ -32,8 +32,6 @@ import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.apache.log4j.Logger;
 
-import bsh.This;
-
 import freemarker.cache.MruCacheStorage;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;

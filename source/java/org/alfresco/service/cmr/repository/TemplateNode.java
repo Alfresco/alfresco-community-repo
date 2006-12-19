@@ -134,6 +134,14 @@ public class TemplateNode implements Serializable
     // Node API
     
     /**
+     * Gets the image resolver
+     */
+    public TemplateImageResolver getImageResolver()
+    {
+        return imageResolver;
+    }
+    
+    /**
      * @return The GUID for the node
      */
     public String getId()

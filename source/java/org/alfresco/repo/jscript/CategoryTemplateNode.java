@@ -35,6 +35,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class CategoryTemplateNode extends TemplateNode
 {
+    private static final long serialVersionUID = -2595282439089450151L;
+
     /**
      * Constructor
      * 

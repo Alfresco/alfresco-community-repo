@@ -239,8 +239,8 @@ public interface FileFolderService
      * Get the reader to the file represented by the node according to the File/Folder model.
      * (This is not the same as the method on the ContentService)
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef the content node
+     * @return Returns a handle to the content associated with the node
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public ContentReader getReader(NodeRef nodeRef);
@@ -249,8 +249,8 @@ public interface FileFolderService
      * Get the writer to the file represented by the node according to the File/Folder model.
      * (This is not the same as the method on the ContentService)
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef the content node
+     * @return Returns a handle to the content associated with the node
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public ContentWriter getWriter(NodeRef nodeRef);

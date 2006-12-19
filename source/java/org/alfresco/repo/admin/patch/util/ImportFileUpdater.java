@@ -41,6 +41,7 @@ public class ImportFileUpdater
 	
 	/** The current import version number **/
 	private String version;
+	private boolean shownWarning = false;
 
 	/**
 	 * Updates the passed import file into the equivalent 1.4 format.
@@ -52,6 +53,7 @@ public class ImportFileUpdater
 	{
 		XmlPullParser reader = getReader(source);
 		XMLWriter writer = getWriter(destination);
+		this.shownWarning = false;
 		
 		try
 		{
@@ -206,10 +208,19 @@ public class ImportFileUpdater
 		}
 		else if (reader.getName().equals(NAME_RULE) == true)
 		{
-			if (this.version.startsWith("1.3") == true)
+			if (this.shownWarning == false && this.version == null)
+			{
+				System.out.println("WARNING:  No version information has been found in this import file.  It will be presumed it has been exported from 1.3");
+				this.shownWarning = true;
+			}
+			if (this.version == null || this.version.startsWith("1.3") == true || this.version.startsWith("1.2") == true)
 			{
 				new RuleCallback().doCallback(reader, writer);
 				result = true;
+			}
+			else
+			{
+				throw new RuntimeException("Import files of version " + this.version + " are not supported by this tool.");
 			}
 		}
 		return result;

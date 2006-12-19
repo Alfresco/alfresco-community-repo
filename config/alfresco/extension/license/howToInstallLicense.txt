@@ -1,0 +1,9 @@
+A license is installed by placing the license file (.lic) within this directory.
+
+Only one license file may exist within this directory.
+
+Upon restarting the Alfresco server, the license file is read and installed.  
+If installed successfully, the license file is renamed by adding ".installed"
+to the end of the filename.
+
+

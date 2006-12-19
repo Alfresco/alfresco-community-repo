@@ -193,11 +193,11 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         
         String content = "ABC";
         // write some content
-//        long before = System.currentTimeMillis();
+        long before = System.currentTimeMillis();
         writer.setMimetype("text/plain");
         writer.setEncoding("UTF-8");
         writer.putContent(content);
-//        long after = System.currentTimeMillis();
+        long after = System.currentTimeMillis();
         
         // get a reader from the writer
         ContentReader readerFromWriter = writer.getReader();
@@ -219,13 +219,17 @@ public abstract class AbstractContentReadWriteTest extends TestCase
         int length = content.getBytes(writer.getEncoding()).length;
         assertEquals("Reader content length is incorrect", length, readerFromWriter.getSize());
 
-//
-// This check has been disabled as Linux is out by some variable amount of time
-//        // check that the last modified time is correct
-//        long modifiedTimeCheck = readerFromWriter.getLastModified();
-//        assertTrue("Reader last modified is incorrect", before <= modifiedTimeCheck);
-//        assertTrue("Reader last modified is incorrect", modifiedTimeCheck <= after);
-//
+        // check that the last modified time is correct
+        long modifiedTimeCheck = readerFromWriter.getLastModified();
+
+        // On some versionms of Linux (e.g. Centos) this test won't work as the 
+        // modified time accuracy is only to the second.
+        long beforeSeconds = before/1000L;
+        long afterSeconds = after/1000L;
+        long modifiedTimeCheckSeconds = modifiedTimeCheck/1000L;
+
+        assertTrue("Reader last modified is incorrect", beforeSeconds <= modifiedTimeCheckSeconds);
+        assertTrue("Reader last modified is incorrect", modifiedTimeCheckSeconds <= afterSeconds);
     }
     
     public void testClosedState() throws Exception
@@ -275,6 +279,7 @@ public abstract class AbstractContentReadWriteTest extends TestCase
     /**
      * Checks that the store disallows concurrent writers to be issued to the same URL.
      */
+    @SuppressWarnings("unused")
     public void testConcurrentWriteDetection() throws Exception
     {
         String contentUrl = AbstractContentStore.createNewUrl();

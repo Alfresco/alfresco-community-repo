@@ -144,6 +144,11 @@ public interface NodeDaoService
     public void setChildNameUnique(ChildAssoc childAssoc, String childName);
     
     /**
+     * Get the statuses of all the child primary child nodes of the given parent
+     */
+    public Collection<NodeStatus> getPrimaryChildNodeStatuses(final Node parentNode);
+    
+    /**
      * Get all child associations for a given node
      * 
      * @param parentNode the parent of the child associations

@@ -63,6 +63,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.FlushMode;
 import org.hibernate.ObjectDeletedException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
@@ -82,6 +83,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 {
     private static final String QUERY_GET_ALL_STORES = "store.GetAllStores";
     private static final String UPDATE_SET_CHILD_ASSOC_NAME = "node.updateChildAssocName";
+    private static final String QUERY_GET_PRIMARY_CHILD_NODE_STATUSES = "node.GetPrimaryChildNodeStatuses";
     private static final String QUERY_GET_CHILD_ASSOCS = "node.GetChildAssocs";
     private static final String QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME = "node.GetChildAssocByTypeAndName";
     private static final String QUERY_GET_CHILD_ASSOC_REFS = "node.GetChildAssocRefs";
@@ -647,6 +649,24 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
     
+    @SuppressWarnings("unchecked")
+    public Collection<NodeStatus> getPrimaryChildNodeStatuses(final Node parentNode)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_PRIMARY_CHILD_NODE_STATUSES)
+                    .setLong("parentId", parentNode.getId())
+                    .setFlushMode(FlushMode.NEVER);
+                return query.list();
+            }
+        };
+        List<NodeStatus> queryResults = (List<NodeStatus>) getHibernateTemplate().execute(callback);
+        return queryResults;
+    }
+
     @SuppressWarnings("unchecked")
     public Collection<ChildAssoc> getChildAssocs(final Node parentNode)
     {

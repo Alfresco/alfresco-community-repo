@@ -28,9 +28,9 @@
               if (wf_notifyMe)
               {
                  var mail = actions.create("mail");
-                 mail.parameters.to = initiator.properties["cm:email"];
+                 mail.parameters.to = initiator.properties.email;
                  mail.parameters.subject = "Adhoc Task " + bpm_workflowDescription;
-                 mail.parameters.from = bpm_assignee.properties["cm:email"];
+                 mail.parameters.from = bpm_assignee.properties.email;
                  mail.parameters.text = "It's done";
                  mail.execute(bpm_package);
               }

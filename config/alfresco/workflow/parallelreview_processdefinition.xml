@@ -30,7 +30,7 @@
             <event type="task-create">
                <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
                    <script>
-                      taskInstance.actorId = reviewer.properties["cm:userName"];
+                      taskInstance.actorId = reviewer.properties.userName;
                    </script>
                 </action>
             </event>

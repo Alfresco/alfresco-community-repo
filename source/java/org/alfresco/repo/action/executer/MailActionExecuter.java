@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -54,7 +55,8 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
  * 
  * @author Roy Wetherall
  */
-public class MailActionExecuter extends ActionExecuterAbstractBase 
+public class MailActionExecuter extends ActionExecuterAbstractBase
+    implements InitializingBean
 {
     private static Log logger = LogFactory.getLog(MailActionExecuter.class);
     
@@ -72,7 +74,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     /**
      * From address
      */
-    public static final String FROM_ADDRESS = "alfresco_repository@alfresco.org";
+    private static final String FROM_ADDRESS = "alfresco@alfresco.org";
     
     /**
      * The java mail sender
@@ -113,6 +115,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      * Mail header encoding scheme
      */
     private String headerEncoding = null;
+    
+    /**
+     * Default from address
+     */
+    private String fromAddress = null;
     
     /**
      * @param javaMailSender    the java mail sender
@@ -178,6 +185,25 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         this.headerEncoding = headerEncoding;
     }
 
+    /**
+     * @param fromAddress   The default mail address.
+     */
+    public void setFromAddress(String fromAddress)
+    {
+        this.fromAddress = fromAddress;
+    }
+
+    /**
+     * Initialise bean
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        if (fromAddress == null || fromAddress.length() == 0)
+        {
+            fromAddress = FROM_ADDRESS;
+        }
+    }
+    
     /**
      * Execute the rule action
      */
@@ -274,13 +300,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 
                 // set the from address - use the default if not set
                 String from = (String)ruleAction.getParameterValue(PARAM_FROM);
-                if (from != null)
+                if (from == null || from.length() == 0)
                 {
-                    message.setFrom(from);
+                    message.setFrom(fromAddress);
                 }
                 else
                 {
-                    message.setFrom(FROM_ADDRESS);
+                    message.setFrom(from);
                 }
             }
         };
@@ -336,4 +362,5 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_FROM, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_FROM)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE)));
     }
+
 }

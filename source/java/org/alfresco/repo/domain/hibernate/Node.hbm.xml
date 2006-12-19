@@ -224,6 +224,26 @@
          assoc.id = :childAssocId
    </query>
    
+   <query name="node.GetPrimaryChildNodeStatuses">
+      select
+         status
+      from
+         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         join status.node as node
+      where
+         node.id in
+         (
+            select
+               child.id
+            from
+               org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+               join assoc.child as child
+            where
+               assoc.parent.id = :parentId and
+               assoc.isPrimary = 1
+         )
+   </query>
+   
    <query name="node.GetChildAssocs">
       select
          assoc

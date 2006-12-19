@@ -123,6 +123,22 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return unchecked;
     }
     
+    /**
+     * Gets the node status for a live node.
+     * @param nodeRef the node reference
+     * @return Returns the node status, which will not be <tt>null</tt> and will have a live node attached.
+     * @throws InvalidNodeRefException if the node is deleted or never existed
+     */
+    public NodeStatus getNodeStatusNotNull(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+        NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef, false);
+        if (nodeStatus == null || nodeStatus.getNode() == null)
+        {
+            throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
+        }
+        return nodeStatus;
+    }
+    
     public boolean exists(StoreRef storeRef)
     {
         Store store = nodeDaoService.getStore(storeRef.getProtocol(), storeRef.getIdentifier());
@@ -1411,7 +1427,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     private void archiveNode(NodeRef nodeRef, StoreRef archiveStoreRef)
     {
-        Node node = getNodeNotNull(nodeRef);
+        NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef, false);
+        Node node = nodeStatus.getNode();
         ChildAssoc primaryParentAssoc = nodeDaoService.getPrimaryParentAssoc(node);
         
         // add the aspect
@@ -1454,17 +1471,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedItem"));
         
-        // get the IDs of all the node's primary children, including its own
-        Map<Long, Node> nodesById = getNodeHierarchy(node, null);
-        
-        // Archive all the associations between the archived nodes and non-archived nodes
-        for (Node nodeToArchive : nodesById.values())
-        {
-            archiveAssocs(nodeToArchive, nodesById);
-        }
-        
         // the node reference has changed due to the store move
         nodeRef = node.getNodeRef();
+        // as has the node status
+        nodeStatus = nodeDaoService.getNodeStatus(nodeRef, true);
+        
+        // get the IDs of all the node's primary children, including its own
+        Map<Long, NodeStatus> nodeStatusesById = getNodeHierarchy(nodeStatus, null);
+        
+        // Archive all the associations between the archived nodes and non-archived nodes
+        for (NodeStatus nodeStatusToArchive : nodeStatusesById.values())
+        {
+            Node nodeToArchive = nodeStatusToArchive.getNode();
+            if (nodeToArchive == null)
+            {
+                continue;
+            }
+            archiveAssocs(nodeToArchive, nodeStatusesById);
+        }
     }
     
     /**
@@ -1477,22 +1501,25 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     private void moveNodeToStore(Node node, Store store)
     {
+        NodeRef nodeRef = node.getNodeRef();
+        NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef, true);
         // get the IDs of all the node's primary children, including its own
-        Map<Long, Node> nodesById = getNodeHierarchy(node, null);
+        Map<Long, NodeStatus> nodeStatusesById = getNodeHierarchy(nodeStatus, null);
         
         // move each node into the archive store
-        for (Node nodeToMove : nodesById.values())
+        for (NodeStatus oldNodeStatus : nodeStatusesById.values())
         {
-            NodeRef oldNodeRef = nodeToMove.getNodeRef();
+            Node nodeToMove = oldNodeStatus.getNode();
             nodeToMove.setStore(store);
             NodeRef newNodeRef = nodeToMove.getNodeRef();
             
             // update old status
-            NodeStatus oldNodeStatus = nodeDaoService.getNodeStatus(oldNodeRef, true);
             oldNodeStatus.setNode(null);
             // create the new status
             NodeStatus newNodeStatus = nodeDaoService.getNodeStatus(newNodeRef, true);
             newNodeStatus.setNode(nodeToMove);
+            
+            invokeOnUpdateNode(newNodeRef);
         }
     }
     
@@ -1501,38 +1528,42 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * The given node will be added to the map and the method is recursive
      * to all primary children.
      * 
-     * @param node the start of the hierarchy
-     * @param nodesById a map of nodes that will be reused as the return value
+     * @param nodeStatus the status of the node at the top of the hierarchy
+     * @param nodeStatusesById a map of node statuses that will be reused as the return value
      * @return Returns a map of nodes in the hierarchy keyed by their IDs
      */
-    private Map<Long, Node> getNodeHierarchy(Node node, Map<Long, Node> nodesById)
+    private Map<Long, NodeStatus> getNodeHierarchy(NodeStatus nodeStatus, Map<Long, NodeStatus> nodeStatusesById)
     {
-        if (nodesById == null)
+        if (nodeStatusesById == null)
         {
-            nodesById = new HashMap<Long, Node>(23);
+            nodeStatusesById = new HashMap<Long, NodeStatus>(23);
+            // this is the entry into the hierarchy - flush to ensure we are not stale
+            nodeDaoService.flush();
         }
         
-        Long id = node.getId();
-        if (nodesById.containsKey(id))
+        Node node = nodeStatus.getNode();
+        if (node == null)
+        {
+            // the node has already been deleted
+            return nodeStatusesById;
+        }
+        Long nodeId = node.getId();
+        if (nodeStatusesById.containsKey(nodeId))
         {
             // this ID was already added - circular reference
-            logger.warn("Circular hierarchy found including node " + id);
-            return nodesById;
+            logger.warn("Circular hierarchy found including node " + nodeId);
+            return nodeStatusesById;
         }
         // add the node to the map
-        nodesById.put(id, node);
+        nodeStatusesById.put(nodeId, nodeStatus);
         // recurse into the primary children
-        Collection<ChildAssoc> childAssocs = nodeDaoService.getChildAssocs(node);
-        for (ChildAssoc childAssoc : childAssocs)
+        Collection<NodeStatus> primaryChildNodeStatuses = nodeDaoService.getPrimaryChildNodeStatuses(node);
+        for (NodeStatus primaryChildNodeStatus : primaryChildNodeStatuses)
         {
             // cascade into primary associations
-            if (childAssoc.getIsPrimary())
-            {
-                Node primaryChild = childAssoc.getChild();
-                nodesById = getNodeHierarchy(primaryChild, nodesById);
-            }
+            nodeStatusesById = getNodeHierarchy(primaryChildNodeStatus, nodeStatusesById);
         }
-        return nodesById;
+        return nodeStatusesById;
     }
     
     /**
@@ -1544,7 +1575,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * @param node the node whose associations must be archived
      * @param nodesById a map of nodes partaking in the archival process
      */
-    private void archiveAssocs(Node node, Map<Long, Node> nodesById)
+    private void archiveAssocs(Node node, Map<Long, NodeStatus> nodeStatusesById)
     {
         List<ChildAssoc> childAssocsToDelete = new ArrayList<ChildAssoc>(5);
         // child associations
@@ -1553,7 +1584,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         for (ChildAssoc assoc : childAssocs)
         {
             Long relatedNodeId = assoc.getChild().getId();
-            if (nodesById.containsKey(relatedNodeId))
+            if (nodeStatusesById.containsKey(relatedNodeId))
             {
                 // a sibling in the archive process
                 continue;
@@ -1566,7 +1597,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         for (ChildAssoc assoc : node.getParentAssocs())
         {
             Long relatedNodeId = assoc.getParent().getId();
-            if (nodesById.containsKey(relatedNodeId))
+            if (nodeStatusesById.containsKey(relatedNodeId))
             {
                 // a sibling in the archive process
                 continue;
@@ -1586,7 +1617,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         for (NodeAssoc assoc : nodeDaoService.getSourceNodeAssocs(node))
         {
             Long relatedNodeId = assoc.getSource().getId();
-            if (nodesById.containsKey(relatedNodeId))
+            if (nodeStatusesById.containsKey(relatedNodeId))
             {
                 // a sibling in the archive process
                 continue;
@@ -1599,7 +1630,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         for (NodeAssoc assoc : nodeDaoService.getTargetNodeAssocs(node))
         {
             Long relatedNodeId = assoc.getTarget().getId();
-            if (nodesById.containsKey(relatedNodeId))
+            if (nodeStatusesById.containsKey(relatedNodeId))
             {
                 // a sibling in the archive process
                 continue;
@@ -1665,7 +1696,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
     {
-        Node archivedNode = getNodeNotNull(archivedNodeRef);
+        NodeStatus archivedNodeStatus = getNodeStatusNotNull(archivedNodeRef);
+        Node archivedNode = archivedNodeStatus.getNode();
         Set<QName> aspects = archivedNode.getAspects();
         Map<QName, PropertyValue> properties = archivedNode.getProperties();
         // the node must be a top-level archive node
@@ -1707,18 +1739,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
 
         // move the node to the target parent, which may or may not be the original parent
-        moveNode(
+        ChildAssociationRef newChildAssocRef = moveNode(
                 archivedNodeRef,
                 destinationParentNodeRef,
                 assocTypeQName,
                 assocQName);
+        archivedNodeRef = newChildAssocRef.getChildRef();
+        archivedNodeStatus = nodeDaoService.getNodeStatus(archivedNodeRef, false);
 
         // get the IDs of all the node's primary children, including its own
-        Map<Long, Node> restoredNodesById = getNodeHierarchy(archivedNode, null);
+        Map<Long, NodeStatus> restoreNodeStatusesById = getNodeHierarchy(archivedNodeStatus, null);
         // Restore the archived associations, if required
-        for (Node restoredNode : restoredNodesById.values())
+        for (NodeStatus restoreNodeStatus : restoreNodeStatusesById.values())
         {
-            restoreAssocs(restoredNode);
+            Node restoreNode = restoreNodeStatus.getNode();
+            restoreAssocs(restoreNode);
         }
         
         // the node reference has changed due to the store move

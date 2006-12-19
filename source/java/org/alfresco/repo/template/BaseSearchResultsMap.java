@@ -75,7 +75,7 @@ public abstract class BaseSearchResultsMap extends BaseTemplateMap
                         NodeRef nodeRef = row.getNodeRef();
                         if (!nodeRefs.contains(nodeRef))
                         {
-                            nodes.add(new TemplateNode(nodeRef, services, this.parent.getImageResolver()));
+                            nodes.add(new TemplateNode(nodeRef, services));
                             nodeRefs.add(nodeRef);
                         }
                     }

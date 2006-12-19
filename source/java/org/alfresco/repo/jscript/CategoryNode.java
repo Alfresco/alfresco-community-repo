@@ -22,7 +22,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
@@ -41,9 +40,9 @@ public class CategoryNode extends Node
      * @param services
      * @param resolver
      */
-    public CategoryNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
+    public CategoryNode(NodeRef nodeRef, ServiceRegistry services)
     {
-        super(nodeRef, services, resolver);
+        super(nodeRef, services);
     }
 
     /**
@@ -54,9 +53,9 @@ public class CategoryNode extends Node
      * @param resolver
      * @param scope
      */
-    public CategoryNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver, Scriptable scope)
+    public CategoryNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
-        super(nodeRef, services, resolver, scope);
+        super(nodeRef, services, scope);
     }
 
     /**
@@ -146,7 +145,7 @@ public class CategoryNode extends Node
      */
     public CategoryNode createSubCategory(String name)
     {
-       return  new CategoryNode(services.getCategoryService().createCategory(getNodeRef(), name), this.services, this.imageResolver, this.scope);
+       return  new CategoryNode(services.getCategoryService().createCategory(getNodeRef(), name), this.services, this.scope);
     }
 
     /**
@@ -169,7 +168,7 @@ public class CategoryNode extends Node
         int i = 0;
         for (ChildAssociationRef car : cars)
         {
-            categoryNodes[i++] = new CategoryNode(car.getChildRef(), this.services, this.imageResolver, this.scope);
+            categoryNodes[i++] = new CategoryNode(car.getChildRef(), this.services, this.scope);
         }
         return categoryNodes;
     }
@@ -180,7 +179,7 @@ public class CategoryNode extends Node
         int i = 0;
         for (ChildAssociationRef car : cars)
         {
-            nodes[i++] = new Node(car.getChildRef(), this.services, this.imageResolver, this.scope);
+            nodes[i++] = new Node(car.getChildRef(), this.services, this.scope);
         }
         return nodes;
     }
@@ -194,11 +193,11 @@ public class CategoryNode extends Node
             QName type = services.getNodeService().getType(car.getChildRef());
             if (services.getDictionaryService().isSubClass(type, ContentModel.TYPE_CATEGORY))
             {
-                nodes[i++] = new CategoryNode(car.getChildRef(), this.services, this.imageResolver, this.scope);
+                nodes[i++] = new CategoryNode(car.getChildRef(), this.services, this.scope);
             }
             else
             {
-                nodes[i++] = new Node(car.getChildRef(), this.services, this.imageResolver, this.scope);
+                nodes[i++] = new Node(car.getChildRef(), this.services, this.scope);
             }
         }
         return nodes;

@@ -17,7 +17,6 @@
 package org.alfresco.repo.jscript;
 
 import java.io.StringReader;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -27,12 +26,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -51,28 +47,35 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Kevin Roast
  */
-public final class Search implements Scopeable
+public final class Search extends BaseScriptImplementation implements Scopeable
 {
-    private static Log logger = LogFactory.getLog(Search.class);
-    
+    /** Service registry */
     private ServiceRegistry services;
+    
+    /** Default store reference */
     private StoreRef storeRef;
-    private TemplateImageResolver imageResolver;
     
     /** Root scope for this object */
     private Scriptable scope;
     
+    /**
+     * Set the default store reference
+     * 
+     * @param   storeRef the default store reference
+     */
+    public void setStoreUrl(String storeRef)
+    {
+        this.storeRef = new StoreRef(storeRef);
+    }
     
     /**
-     * Constructor
+     * Set the service registry
      * 
-     * @param services      The ServiceRegistry to use
+     * @param services  the service registry
      */
-    public Search(ServiceRegistry services, StoreRef storeRef, TemplateImageResolver imageResolver)
+    public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
-        this.storeRef = storeRef;
-        this.imageResolver = imageResolver;
     }
     
     /**
@@ -105,7 +108,7 @@ public final class Search implements Scopeable
     public Node findNode(String ref)
     {
         String query = "ID:" + LuceneQueryParser.escape(ref);
-        Node[] result = query(query);
+        Node[] result = query(query, SearchService.LANGUAGE_LUCENE);
         if (result.length == 1)
         {
             return result[0];
@@ -113,6 +116,25 @@ public final class Search implements Scopeable
         else
         {
             return null;
+        }
+    }
+    
+    /**
+     * Execute a XPath search
+     * 
+     * @param search        XPath search string to execute
+     * 
+     * @return Node[] of results from the search - can be empty but not null
+     */
+    public Node[] xpathSearch(String search)
+    {
+        if (search != null && search.length() != 0)
+        {
+           return query(search, SearchService.LANGUAGE_XPATH);
+        }
+        else
+        {
+           return new Node[0];
         }
     }
     
@@ -127,7 +149,7 @@ public final class Search implements Scopeable
     {
         if (search != null && search.length() != 0)
         {
-           return query(search);
+           return query(search, SearchService.LANGUAGE_LUCENE);
         }
         else
         {
@@ -173,7 +195,7 @@ public final class Search implements Scopeable
             throw new AlfrescoRuntimeException("Failed to find or load saved Search: " + savedSearch.getNodeRef(), err);
         }
         
-        return search != null ? query(search) : new Node[0];
+        return search != null ? query(search, SearchService.LANGUAGE_LUCENE) : new Node[0];
     }
     
     /**
@@ -194,7 +216,7 @@ public final class Search implements Scopeable
             return new Node[0];
         }
     }
-    
+
     /**
      * Execute the query
      * 
@@ -203,7 +225,7 @@ public final class Search implements Scopeable
      * @param search
      * @return
      */
-    private Node[] query(String search)
+    private Node[] query(String search, String language)
     {   
         LinkedHashSet<Node> set = new LinkedHashSet<Node> ();
         
@@ -213,7 +235,7 @@ public final class Search implements Scopeable
         {
             results = this.services.getSearchService().query(
                       this.storeRef,
-                      SearchService.LANGUAGE_LUCENE,
+                      language,
                       search);
             
             if (results.length() != 0)
@@ -221,7 +243,7 @@ public final class Search implements Scopeable
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
-                    set.add(new Node(nodeRef, services, this.imageResolver, this.scope));
+                    set.add(new Node(nodeRef, services, this.scope));
                 }
             }
         }

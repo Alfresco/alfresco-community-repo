@@ -67,11 +67,11 @@ public class RhinoScriptTest extends TestCase
     {
         super.setUp();
         
-        transactionService = (TransactionService)this.ctx.getBean("transactionComponent");
-        contentService = (ContentService)this.ctx.getBean("contentService");
-        nodeService = (NodeService)this.ctx.getBean("nodeService");
-        scriptService = (ScriptService)this.ctx.getBean("scriptService");
-        serviceRegistry = (ServiceRegistry)this.ctx.getBean("ServiceRegistry");
+        transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        contentService = (ContentService)ctx.getBean("contentService");
+        nodeService = (NodeService)ctx.getBean("nodeService");
+        scriptService = (ScriptService)ctx.getBean("scriptService");
+        serviceRegistry = (ServiceRegistry)ctx.getBean("ServiceRegistry");
         
         this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();

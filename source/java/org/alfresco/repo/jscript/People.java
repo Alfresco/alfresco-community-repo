@@ -16,21 +16,10 @@
  */
 package org.alfresco.repo.jscript;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionDefinition;
-import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.Wrapper;
 
 /**
  * Scripted People service for describing and executing actions against People & Groups.
@@ -75,7 +64,7 @@ public final class People extends BaseScriptImplementation implements Scopeable
         if (personService.personExists(username))
         {
             NodeRef personRef = personService.getPerson(username);
-            person = new Node(personRef, services, null, scope);
+            person = new Node(personRef, services, scope);
         }
         return person;
     }

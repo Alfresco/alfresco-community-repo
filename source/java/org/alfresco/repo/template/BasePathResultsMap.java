@@ -77,7 +77,7 @@ public abstract class BasePathResultsMap extends BaseTemplateMap
                 if (nodes.size() != 0)
                 {
                     result = new ArrayList<TemplateNode>(1);
-                    result.add(new TemplateNode(nodes.get(0), this.services, this.parent.getImageResolver()));
+                    result.add(new TemplateNode(nodes.get(0), this.services));
                 }
             }
             // or all the results
@@ -86,7 +86,7 @@ public abstract class BasePathResultsMap extends BaseTemplateMap
                 result = new ArrayList<TemplateNode>(nodes.size()); 
                 for (NodeRef ref : nodes)
                 {
-                    result.add(new TemplateNode(ref, this.services, this.parent.getImageResolver()));
+                    result.add(new TemplateNode(ref, this.services));
                 }
             }
         }

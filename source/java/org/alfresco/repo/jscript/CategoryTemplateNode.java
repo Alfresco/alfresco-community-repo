@@ -25,7 +25,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
@@ -44,9 +43,9 @@ public class CategoryTemplateNode extends TemplateNode
      * @param services
      * @param resolver
      */
-    public CategoryTemplateNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
+    public CategoryTemplateNode(NodeRef nodeRef, ServiceRegistry services)
     {
-        super(nodeRef, services, resolver);
+        super(nodeRef, services);
     }
     
     @Override
@@ -165,7 +164,7 @@ public class CategoryTemplateNode extends TemplateNode
         for (ChildAssociationRef ref : childRefs)
         {
             // create our Node representation from the NodeRef
-            TemplateNode child = new TemplateNode(ref.getChildRef(), this.services, this.imageResolver);
+            TemplateNode child = new TemplateNode(ref.getChildRef(), this.services);
             answer.add(child);
         }
         return answer;
@@ -177,7 +176,7 @@ public class CategoryTemplateNode extends TemplateNode
         for (ChildAssociationRef ref : childRefs)
         {
             // create our Node representation from the NodeRef
-            CategoryTemplateNode child = new CategoryTemplateNode(ref.getChildRef(), this.services, this.imageResolver);
+            CategoryTemplateNode child = new CategoryTemplateNode(ref.getChildRef(), this.services);
             answer.add(child);
         }
         return answer;
@@ -186,17 +185,16 @@ public class CategoryTemplateNode extends TemplateNode
     private List<TemplateNode> buildMixedNodeList(Collection<ChildAssociationRef> cars)
     {
         List<TemplateNode> nodes = new ArrayList<TemplateNode>(cars.size());
-        int i = 0;
         for (ChildAssociationRef car : cars)
         {
             QName type = services.getNodeService().getType(car.getChildRef());
             if (services.getDictionaryService().isSubClass(type, ContentModel.TYPE_CATEGORY))
             {
-                nodes.add(new CategoryTemplateNode(car.getChildRef(), this.services, this.imageResolver));
+                nodes.add(new CategoryTemplateNode(car.getChildRef(), this.services));
             }
             else
             {
-                nodes.add(new TemplateNode(car.getChildRef(), this.services, this.imageResolver));
+                nodes.add(new TemplateNode(car.getChildRef(), this.services));
             }
         }
         return nodes;

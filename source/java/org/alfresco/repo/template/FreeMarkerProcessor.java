@@ -309,18 +309,18 @@ public class FreeMarkerProcessor implements TemplateProcessor
         Map<String, Object> model = new HashMap<String, Object>(16, 1.0f);
         
         // supply the Company Home space as "companyhome"
-        model.put("companyhome", new TemplateNode(companyHome, services, imageResolver));
+        model.put("companyhome", new TemplateNode(companyHome, services));
         
         // supply the users Home Space as "userhome"
-        model.put("userhome", new TemplateNode(userHome, services, imageResolver));
+        model.put("userhome", new TemplateNode(userHome, services));
         
         // supply the current user Node as "person"
-        model.put("person", new TemplateNode(person, services, imageResolver));
+        model.put("person", new TemplateNode(person, services));
         
         // add the template itself as "template" if it comes from content on a node
         if (template != null)
         {
-            model.put("template", new TemplateNode(template, services, imageResolver));
+            model.put("template", new TemplateNode(template, services));
         }
         
         // current date/time is useful to have and isn't supplied by FreeMarker by default

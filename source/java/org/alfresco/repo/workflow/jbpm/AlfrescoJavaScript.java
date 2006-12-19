@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.Classification;
-import org.alfresco.repo.jscript.Search;
-import org.alfresco.repo.jscript.Session;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -149,14 +146,6 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         Map<String, Object> inputMap = new HashMap<String, Object>();
 
         // initialise global script variables
-        JBPMNode companyHome = (JBPMNode)executionContext.getContextInstance().getVariable("companyhome");
-        if (companyHome != null)
-        {
-            NodeRef companyHomeRef = companyHome.getNodeRef();
-            inputMap.put("search", new Search(services, companyHomeRef.getStoreRef(), null));
-            inputMap.put("session", new Session(services, null));
-            inputMap.put("classification", new Classification(services, companyHomeRef.getStoreRef(), null));
-        }
         String userName = AuthenticationUtil.getCurrentUserName();
         NodeRef person = services.getPersonService().getPerson(userName);
         if (person != null)

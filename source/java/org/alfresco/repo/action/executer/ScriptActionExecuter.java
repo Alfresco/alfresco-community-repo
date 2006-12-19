@@ -22,12 +22,14 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.jscript.RhinoScriptService;
+import org.alfresco.repo.jscript.ScriptAction;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 
@@ -47,6 +49,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     private PersonService personService;
     private String companyHomePath;
     private StoreRef storeRef;
+    private ScriptLocation scriptLocation;
     
     /**
      * @param serviceRegistry       The serviceRegistry to set.
@@ -73,6 +76,26 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     {
         this.companyHomePath = companyHomePath;
     }
+    
+    /**
+     * Set the script location from Spring
+     * 
+     * @param scriptLocation    the script location
+     */
+    public void setScriptLocation(ScriptLocation scriptLocation)
+    {
+        this.scriptLocation = scriptLocation;
+    }
+    
+    /**
+     * Allow adhoc properties to be passed to this action
+     * 
+     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#getAdhocPropertiesAllowed()
+     */
+    protected boolean getAdhocPropertiesAllowed()
+    {
+        return true;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -89,7 +112,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 spaceRef = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
             }
             
-            if (nodeService.exists(scriptRef))
+            if (this.scriptLocation != null || (scriptRef != null && nodeService.exists(scriptRef) == true))
             {
                 // get the references we need to build the default scripting data-model
                 String userName = this.serviceRegistry.getAuthenticationService().getCurrentUserName();
@@ -107,11 +130,23 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                         actionedUponNodeRef,
                         spaceRef);
                 
-                // execute the script against the default model
-                this.serviceRegistry.getScriptService().executeScript(
+                // Add the action to the default model
+                ScriptAction scriptAction = new ScriptAction(this.serviceRegistry, action, this.actionDefinition);
+                model.put("action", scriptAction);
+                
+                if (this.scriptLocation == null)
+                {
+                    // execute the script against the default model
+                    this.serviceRegistry.getScriptService().executeScript(
                         scriptRef,
                         ContentModel.PROP_CONTENT,
                         model);
+                }
+                else
+                {
+                    // execute the script at the specified script location
+                    this.serviceRegistry.getScriptService().executeScript(this.scriptLocation, model);
+                }
             }
         }
     }
@@ -121,9 +156,14 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
      */
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        paramList.add(new ParameterDefinitionImpl(PARAM_SCRIPTREF, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_SCRIPTREF)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_SCRIPTREF, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_SCRIPTREF)));
     }
     
+    /**
+     * Gets the company home node
+     * 
+     * @return  the company home node ref
+     */
     private NodeRef getCompanyHome()
     {
         NodeRef companyHomeRef;

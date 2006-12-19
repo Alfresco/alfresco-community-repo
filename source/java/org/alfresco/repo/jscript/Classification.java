@@ -21,11 +21,8 @@ import java.util.Collection;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -33,23 +30,33 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Andy Hind
  */
-public final class Classification implements Scopeable
+public final class Classification  extends BaseScriptImplementation implements Scopeable
 {
     @SuppressWarnings("unused")
     private Scriptable scope;
 
     private ServiceRegistry services;
 
-    @SuppressWarnings("unused")
-    private TemplateImageResolver imageResolver;
-
     private StoreRef storeRef;
-
-    public Classification(ServiceRegistry services, StoreRef storeRef, TemplateImageResolver imageResolver)
+    
+    /**
+     * Set the default store reference
+     * 
+     * @param   storeRef the default store reference
+     */
+    public void setStoreUrl(String storeRef)
+    {
+        this.storeRef = new StoreRef(storeRef);
+    }
+    
+    /**
+     * Set the service registry
+     * 
+     * @param services  the service registry
+     */
+    public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
-        this.imageResolver = imageResolver;
-        this.storeRef = storeRef;
     }
 
     /**
@@ -122,7 +129,7 @@ public final class Classification implements Scopeable
         int i = 0;
         for (ChildAssociationRef car : cars)
         {
-            categoryNodes[i++] = new CategoryNode(car.getChildRef(), this.services, this.imageResolver, this.scope);
+            categoryNodes[i++] = new CategoryNode(car.getChildRef(), this.services, this.scope);
         }
         return categoryNodes;
     }

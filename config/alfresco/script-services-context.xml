@@ -25,6 +25,9 @@
         <property name="scriptName">
             <value>utils</value>
         </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
     </bean>        
     
     <bean id="actionsScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Actions">
@@ -36,6 +39,30 @@
         </property>
     </bean>    
 
+    <bean id="searchScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Search">
+        <property name="scriptName">
+            <value>search</value>
+        </property>        
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+    </bean>     
+
+    <bean id="classificationScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Classification">
+        <property name="scriptName">
+            <value>classification</value>
+        </property>        
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+    </bean> 
+
     <bean id="peopleScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.People">
         <property name="scriptName">
             <value>people</value>
@@ -44,6 +71,15 @@
             <ref bean="ServiceRegistry"/>
         </property>
     </bean>    
+
+    <bean id="sessionScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Session">
+        <property name="scriptName">
+            <value>session</value>
+        </property>        
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean> 
     
      <bean id="avmScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.AVM">
         <property name="scriptName">

@@ -93,7 +93,6 @@ public class TemplateNode implements Serializable
     private String displayPath = null;
     private String mimetype = null;
     private Long size = null;
-    protected TemplateImageResolver imageResolver = null;
     private TemplateNode parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
     private Boolean isCategory = null;
@@ -109,7 +108,7 @@ public class TemplateNode implements Serializable
      * @param services      The ServiceRegistry the TemplateNode can use to access services
      * @param resolver      Image resolver to use to retrieve icons
      */
-    public TemplateNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
+    public TemplateNode(NodeRef nodeRef, ServiceRegistry services)
     {
         if (nodeRef == null)
         {
@@ -124,7 +123,6 @@ public class TemplateNode implements Serializable
         this.nodeRef = nodeRef;
         this.id = nodeRef.getId();
         this.services = services;
-        this.imageResolver = resolver;
         
         this.properties = new QNameMap<String, Object>(this.services.getNamespaceService());
     }
@@ -210,7 +208,7 @@ public class TemplateNode implements Serializable
             for (ChildAssociationRef ref : childRefs)
             {
                 // create our Node representation from the NodeRef
-                TemplateNode child = new TemplateNode(ref.getChildRef(), this.services, this.imageResolver);
+                TemplateNode child = new TemplateNode(ref.getChildRef(), this.services);
                 this.children.add(child);
             }
         }
@@ -237,7 +235,7 @@ public class TemplateNode implements Serializable
                     nodes = new ArrayList<TemplateNode>(4);
                     this.assocs.put(ref.getTypeQName().toString(), nodes);
                 }
-                nodes.add( new TemplateNode(ref.getTargetRef(), this.services, this.imageResolver) );
+                nodes.add( new TemplateNode(ref.getTargetRef(), this.services) );
             }
         }
         
@@ -260,7 +258,7 @@ public class TemplateNode implements Serializable
                 {
                     // NodeRef object properties are converted to new TemplateNode objects
                     // so they can be used as objects within a template
-                    propValue = new TemplateNode(((NodeRef)propValue), this.services, this.imageResolver);
+                    propValue = new TemplateNode(((NodeRef)propValue), this.services);
                 }
                 else if (propValue instanceof ContentData)
                 {
@@ -394,7 +392,7 @@ public class TemplateNode implements Serializable
             // handle root node (no parent!)
             if (parentRef != null)
             {
-                parent = new TemplateNode(parentRef, this.services, this.imageResolver);
+                parent = new TemplateNode(parentRef, this.services);
             }
         }
         
@@ -551,21 +549,7 @@ public class TemplateNode implements Serializable
      */
     public String getIcon16()
     {
-        if (this.imageResolver != null)
-        {
-            if (getIsDocument())
-            {
-                return this.imageResolver.resolveImagePathForName(getName(), true);
-            }
-            else
-            {
-                return "/images/icons/space_small.gif";
-            }
-        }
-        else
-        {
-            return "/images/filetypes/_default.gif";
-        }
+        return "/images/filetypes/_default.gif";
     }
     
     /**
@@ -573,29 +557,7 @@ public class TemplateNode implements Serializable
      */
     public String getIcon32()
     {
-        if (this.imageResolver != null)
-        {
-            if (getIsDocument())
-            {
-                return this.imageResolver.resolveImagePathForName(getName(), false);
-            }
-            else
-            {
-                String icon = (String)getProperties().get("app:icon");
-                if (icon != null)
-                {
-                    return "/images/icons/" + icon + ".gif";
-                }
-                else
-                {
-                    return "/images/icons/space-icon-default.gif";
-                }
-            }
-        }
-        else
-        {
-            return "/images/filetypes32/_default.gif";
-        }
+        return "/images/filetypes32/_default.gif";
     }
     
     
@@ -698,14 +660,6 @@ public class TemplateNode implements Serializable
     
     // ------------------------------------------------------------------------------
     // Misc helpers 
-    
-    /**
-     * @return the image resolver instance used by this node
-     */
-    public TemplateImageResolver getImageResolver()
-    {
-        return this.imageResolver;
-    }
     
     /**
      * Override Object.toString() to provide useful debug output

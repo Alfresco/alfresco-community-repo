@@ -465,4 +465,22 @@
     	    <value>false</value>
     	</property>
     </bean>
+    <!-- Scheduled action helper beans -->
+    
+    <!-- Base template action definition -->
+    <bean id="baseTemplateActionDefintion" abstract="true" class="org.alfresco.repo.action.scheduled.SimpleTemplateActionDefinition">
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+    </bean>
+    
 </beans>

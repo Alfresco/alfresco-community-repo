@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.jscript;
 
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -28,12 +30,25 @@ public final class ScriptUtils extends BaseScriptImplementation implements Scope
     /** Root scope for this object */
     private Scriptable scope;
     
+    /** Services */
+    private ServiceRegistry services;
+    
     /**
      * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
      */
     public void setScope(Scriptable scope)
     {
         this.scope = scope;
+    }
+    
+    /**
+     * Sets the service registry
+     * 
+     * @param services  the service registry
+     */
+    public void setServiceRegistry(ServiceRegistry services)
+    {
+        this.services = services;
     }
     
     /**
@@ -52,5 +67,17 @@ public final class ScriptUtils extends BaseScriptImplementation implements Scope
            result = "0" + result;
        }
        return result;
+    }
+    
+    /**
+     * Gets a JS node object from a string noderef
+     * 
+     * @param nodeRefString     string reference to a node
+     * @return                  a JS node object
+     */
+    public Node getNodeFromString(String nodeRefString)
+    {
+        NodeRef nodeRef = new NodeRef(nodeRefString);
+        return (Node)new ValueConverter().convertValueForScript(this.services, this.scope, null, nodeRef);
     }
 }

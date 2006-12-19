@@ -63,7 +63,7 @@ public class ValueConverter
         {
             // NodeRef object properties are converted to new Node objects
             // so they can be used as objects within a template
-            value = new Node(((NodeRef)value), services, null, scope);
+            value = new Node(((NodeRef)value), services, scope);
         }
         else if (value instanceof QName || value instanceof StoreRef)
         {

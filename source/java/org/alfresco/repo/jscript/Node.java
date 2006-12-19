@@ -49,7 +49,6 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -148,9 +147,9 @@ public class Node implements Serializable, Scopeable
      * @param resolver
      *            Image resolver to use to retrieve icons
      */
-    public Node(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
+    public Node(NodeRef nodeRef, ServiceRegistry services)
     {
-        this(nodeRef, services, resolver, null);
+        this(nodeRef, services, null);
     }
 
     /**
@@ -165,7 +164,7 @@ public class Node implements Serializable, Scopeable
      * @param scope
      *            Root scope for this Node
      */
-    public Node(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver, Scriptable scope)
+    public Node(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         if (nodeRef == null)
         {
@@ -181,7 +180,6 @@ public class Node implements Serializable, Scopeable
         this.id = nodeRef.getId();
         this.services = services;
         this.nodeService = services.getNodeService();
-        this.imageResolver = resolver;
         this.scope = scope;
     }
 
@@ -404,6 +402,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return associations as a Map of assoc name to an Array of Nodes.
      */
+    @SuppressWarnings("unchecked")
     public Map<String, Node[]> getAssocs()
     {
         if (this.assocs == null)
@@ -448,6 +447,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Map of properties for this Node.
      */
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getProperties()
     {
         if (this.properties == null)
@@ -614,21 +614,7 @@ public class Node implements Serializable, Scopeable
      */
     public String getIcon16()
     {
-        if (this.imageResolver != null)
-        {
-            if (getIsDocument())
-            {
-                return this.imageResolver.resolveImagePathForName(getName(), true);
-            }
-            else
-            {
-                return "/images/icons/space_small.gif";
-            }
-        }
-        else
-        {
-            return "/images/filetypes/_default.gif";
-        }
+        return "/images/filetypes/_default.gif";
     }
 
     public String jsGet_icon16()
@@ -641,29 +627,7 @@ public class Node implements Serializable, Scopeable
      */
     public String getIcon32()
     {
-        if (this.imageResolver != null)
-        {
-            if (getIsDocument())
-            {
-                return this.imageResolver.resolveImagePathForName(getName(), false);
-            }
-            else
-            {
-                String icon = (String) getProperties().get("app:icon");
-                if (icon != null)
-                {
-                    return "/images/icons/" + icon + ".gif";
-                }
-                else
-                {
-                    return "/images/icons/space-icon-default.gif";
-                }
-            }
-        }
-        else
-        {
-            return "/images/filetypes32/_default.gif";
-        }
+        return "/images/filetypes32/_default.gif";
     }
 
     public String jsGet_icon32()
@@ -874,14 +838,6 @@ public class Node implements Serializable, Scopeable
     public long jsGet_size()
     {
         return getSize();
-    }
-
-    /**
-     * @return the image resolver instance used by this node
-     */
-    public TemplateImageResolver getImageResolver()
-    {
-        return this.imageResolver;
     }
 
     // ------------------------------------------------------------------------------
@@ -1333,6 +1289,30 @@ public class Node implements Serializable, Scopeable
 
         return success;
     }
+    
+    /**
+     * Remove aspect from the node.
+     * 
+     * @param type  the aspect type
+     * @return      true if successful, false otherwise
+     */
+    public boolean removeAspect(String type)
+    {
+        boolean success = false;
+
+        if (type != null && type.length() != 0)
+        {   
+            QName aspectQName = createQName(type);
+            this.nodeService.removeAspect(this.nodeRef, aspectQName);
+
+            // reset the relevant cached node members
+            reset();
+
+            success = true;
+        }
+        
+        return success;
+    }
 
     // ------------------------------------------------------------------------------
     // Checkout/Checkin Services
@@ -1679,19 +1659,17 @@ public class Node implements Serializable, Scopeable
         // build default model for the template processing
         Map<String, Object> model = FreeMarkerProcessor.buildDefaultModel(services, ((Node) ((Wrapper) scope.get(
                 "person", scope)).unwrap()).getNodeRef(), ((Node) ((Wrapper) scope.get("companyhome", scope)).unwrap())
-                .getNodeRef(), ((Node) ((Wrapper) scope.get("userhome", scope)).unwrap()).getNodeRef(), templateRef,
-                this.imageResolver);
+                .getNodeRef(), ((Node) ((Wrapper) scope.get("userhome", scope)).unwrap()).getNodeRef(), templateRef, null);
 
         // add the current node as either the document/space as appropriate
         if (this.getIsDocument())
         {
-            model.put("document", new TemplateNode(this.nodeRef, this.services, this.imageResolver));
-            model.put("space", new TemplateNode(getPrimaryParentAssoc().getParentRef(), this.services,
-                    this.imageResolver));
+            model.put("document", new TemplateNode(this.nodeRef, this.services));
+            model.put("space", new TemplateNode(getPrimaryParentAssoc().getParentRef(), this.services));
         }
         else
         {
-            model.put("space", new TemplateNode(this.nodeRef, this.services, this.imageResolver));
+            model.put("space", new TemplateNode(this.nodeRef, this.services));
         }
 
         // add the supplied args to the 'args' root object
@@ -1935,6 +1913,8 @@ public class Node implements Serializable, Scopeable
      */
     public class ScriptContentData implements Serializable
     {
+        private static final long serialVersionUID = -7819328543933312278L;
+
         /**
          * Constructor
          * 

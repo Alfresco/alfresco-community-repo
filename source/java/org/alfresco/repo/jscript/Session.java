@@ -17,10 +17,6 @@
 package org.alfresco.repo.jscript;
 
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Support object for session level properties etc.
@@ -29,32 +25,19 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Andy Hind
  */
-public class Session implements Scopeable
+public class Session extends BaseScriptImplementation
 {
-
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(Session.class);
-    
-    @SuppressWarnings("unused")
-    private Scriptable scope;
-
+    /** Service registry */
     private ServiceRegistry services;
-
-    @SuppressWarnings("unused")
-    private TemplateImageResolver imageResolver;
-
-    public Session(ServiceRegistry services,  TemplateImageResolver imageResolver)
-    {
-        this.services = services;
-        this.imageResolver = imageResolver;
-    }
     
     /**
-     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
+     * Set the service registry
+     * 
+     * @param services  the service registry
      */
-    public void setScope(Scriptable scope)
+    public void setServiceRegistry(ServiceRegistry services)
     {
-        this.scope = scope;
+        this.services = services;
     }
     
     /**

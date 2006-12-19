@@ -137,21 +137,21 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.old_password}"/>:</td>
                                     <td>
-                                       <h:inputSecret id="old-password" value="#{UsersBean.oldPassword}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" />&nbsp;*
+                                       <h:inputSecret id="old-password" value="#{UsersBean.oldPassword}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
                                        &nbsp;<h:message id="errors0" for="old-password" style="color:red" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td><h:outputText value="#{msg.new_password}"/>:</td>
                                     <td>
-                                       <h:inputSecret id="password" value="#{UsersBean.password}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" />&nbsp;*
+                                       <h:inputSecret id="password" value="#{UsersBean.password}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
                                        &nbsp;<h:message id="errors1" for="password" style="color:red" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td><h:outputText value="#{msg.confirm}"/>:</td>
                                     <td>
-                                       <h:inputSecret id="confirm" value="#{UsersBean.confirm}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" />&nbsp;*
+                                       <h:inputSecret id="confirm" value="#{UsersBean.confirm}" size="35" maxlength="1024" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
                                        &nbsp;<h:message id="errors2" for="confirm" style="color:red" />
                                     </td>
                                  </tr>

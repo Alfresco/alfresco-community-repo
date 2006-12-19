@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateNode;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
@@ -638,7 +639,8 @@ public class DocumentDetailsBean extends BaseDetailsBean
    }
    
    /**
-    * @return the working copy document Node for this document if found or null if not
+    * @return the working copy document Node for this document if found and the 
+    *         current has permission or null if not
     */
    public Node getWorkingCopyDocument()
    {
@@ -650,6 +652,13 @@ public class DocumentDetailsBean extends BaseDetailsBean
          if (workingCopyRef != null)
          {
             workingCopyNode = new Node(workingCopyRef);
+            
+            // if the current user does not have read permission on 
+            // working copy return null
+            if (workingCopyNode.hasPermission(PermissionService.READ) == false)
+            {
+               workingCopyNode = null;
+            }
          }
       }
       

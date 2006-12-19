@@ -76,8 +76,8 @@
 	    
       <!-- add config files to WEB-INF/classes -->
       <copy todir="${dir.assemble}/WEB-INF/classes">
-         <fileset dir="${dir.config.repository}" excludes="**/*.sample" />
-         <fileset dir="${dir.config.webclient}" excludes="**/*.sample" />
+         <fileset dir="${dir.config.repository}" excludes="**/extension/**" />
+         <fileset dir="${dir.config.webclient}" excludes="**/extension/**" />
       </copy>
       
       <!-- clean up previously generated properties files -->

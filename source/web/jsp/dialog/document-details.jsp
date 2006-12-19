@@ -75,7 +75,7 @@
                               <div class="mainSubText">
                                  <h:outputText value="#{msg.location}" />: <r:nodePath value="#{DocumentDetailsBean.document.nodeRef}" breadcrumb="true" actionListener="#{BrowseBean.clickSpacePath}" />
                               </div>
-                              <a:panel id="working-copy" rendered="#{DocumentDetailsBean.locked}">
+                              <a:panel id="working-copy" rendered="#{DocumentDetailsBean.locked && DocumentDetailsBean.workingCopyDocument != null}">
                                  <div class="mainSubText">
                                     <h:outputText id="out-workingcopy" value="#{msg.working_copy_document}" />:
                                     <a:actionLink id="act-details" rendered="#{DocumentDetailsBean.workingCopyDocument != null}" value="#{DocumentDetailsBean.workingCopyDocument.properties.name}" actionListener="#{BrowseBean.setupContentAction}" action="showDocDetails">

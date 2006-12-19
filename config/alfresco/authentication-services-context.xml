@@ -246,10 +246,9 @@
         <!-- If dsiabled an error will be generated for missing       -->
         <!-- people. If enabled then a person will be created and     -->
         <!-- persisted.                                               -->
-        <!--                                                          -->
-        <!-- This value should be false or only true if the           -->
-        <!-- repository is mutable; set from the property             -->
-        <!-- ${server.transaction.allow-writes}                       -->
+        <!-- Valid values are                                         -->
+        <!--     ${server.transaction.allow-writes}                   -->
+        <!--     false                                                -->
         <property name="createMissingPeople">
            <value>${server.transaction.allow-writes}</value>
         </property>

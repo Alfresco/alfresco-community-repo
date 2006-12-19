@@ -489,22 +489,22 @@ public class PermissionServiceTest extends AbstractPermissionTest
         QName ownable = QName.createQName("cm", "ownable", namespacePrefixResolver);
 
         Set<String> answer = permissionService.getSettablePermissions(rootNodeRef);
-        assertEquals(42, answer.size());
+        assertEquals(36, answer.size());
 
         nodeService.addAspect(rootNodeRef, ownable, null);
         answer = permissionService.getSettablePermissions(rootNodeRef);
-        assertEquals(42, answer.size());
+        assertEquals(36, answer.size());
 
         nodeService.removeAspect(rootNodeRef, ownable);
         answer = permissionService.getSettablePermissions(rootNodeRef);
-        assertEquals(42, answer.size());
+        assertEquals(36, answer.size());
     }
 
     public void testSimplePermissionOnRoot()
     {
         runAs("andy");
 
-        assertEquals(42, permissionService.getPermissions(rootNodeRef).size());
+        assertEquals(36, permissionService.getPermissions(rootNodeRef).size());
         assertEquals(0, countGranted(permissionService.getPermissions(rootNodeRef)));
         assertEquals(0, permissionService.getAllSetPermissions(rootNodeRef).size());
 
@@ -517,7 +517,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(1, permissionService.getAllSetPermissions(rootNodeRef).size());
         runAs("andy");
 
-        assertEquals(42, permissionService.getPermissions(rootNodeRef).size());
+        assertEquals(36, permissionService.getPermissions(rootNodeRef).size());
         assertEquals(2, countGranted(permissionService.getPermissions(rootNodeRef)));
 
         assertTrue(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ_PROPERTIES)) == AccessStatus.ALLOWED);
@@ -633,7 +633,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(allowAndyRead);
         runAs("andy");
 
-        assertEquals(42, permissionService.getPermissions(rootNodeRef).size());
+        assertEquals(36, permissionService.getPermissions(rootNodeRef).size());
         assertEquals(7, countGranted(permissionService.getPermissions(rootNodeRef)));
         assertEquals(1, permissionService.getAllSetPermissions(rootNodeRef).size());
 

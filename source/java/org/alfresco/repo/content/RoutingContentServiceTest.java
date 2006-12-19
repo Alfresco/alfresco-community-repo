@@ -154,6 +154,29 @@ public class RoutingContentServiceTest extends TestCase
     }
     
     /**
+     * Check that a valid writer into the content store can be retrieved and used.
+     */
+    public void testSimpleNonTempWriter() throws Exception
+    {
+        ContentWriter writer = contentService.getWriter(null, null, false);
+        assertNotNull("Writer should not be null", writer);
+        assertNotNull("Content URL should not be null", writer.getContentUrl());
+        
+        // write some content
+        writer.putContent(SOME_CONTENT);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF8");
+        
+        // set the content property manually
+        nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, writer.getContentData());
+        
+        // get the reader
+        ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertNotNull("Reader should not be null", reader);
+        assertNotNull("Content URL should not be null", reader.getContentUrl());
+    }
+    
+    /**
      * Checks that the URL, mimetype and encoding are automatically set on the readers
      * and writers
      */

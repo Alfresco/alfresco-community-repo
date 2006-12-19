@@ -503,5 +503,19 @@
             <ref bean="nodeDaoService" />
         </property>
     </bean>
+    <bean id="patch.systemDescriptorContent" class="org.alfresco.repo.admin.patch.impl.SystemDescriptorContentPatch" parent="basePatch" >
+        <property name="id"><value>patch.systemDescriptorContent</value></property>
+        <property name="description"><value>patch.systemDescriptorContent.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>22</value></property>
+        <property name="targetSchema"><value>23</value></property>
+        <!-- helper beans -->
+        <property name="configurationChecker">
+            <ref bean="configurationChecker" />
+        </property>
+        <property name="contentService">
+            <ref bean="contentService" />
+        </property>
+    </bean>
 
 </beans>

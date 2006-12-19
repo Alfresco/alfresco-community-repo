@@ -23,7 +23,7 @@
             <ref bean="schedulerFactory" />
         </property>
         <property name="cronExpression">
-            <value>0,30 * * * * ?</value>
+            <value>0,10,20,30,40,50 * * * * ?</value>
         </property>
     </bean>
     

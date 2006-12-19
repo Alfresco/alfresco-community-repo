@@ -223,9 +223,6 @@
        <property name="strict">
            <value>${system.bootstrap.config_check.strict}</value>
        </property>
-       <property name="checkAllContent">
-           <value>false</value>
-       </property>
        <property name="dirRoot">
            <value>${dir.root}</value>
        </property>
@@ -233,20 +230,23 @@
            <value>${index.recovery.mode}</value>
        </property>
        <!-- helper beans -->
-       <property name="authenticationComponent">
-           <ref bean="authenticationComponent"/>
+       <property name="transactionService">
+           <ref bean="transactionComponent"/>
        </property>
-       <property name="dictionaryService">
-           <ref bean="DictionaryService"/>
+       <property name="systemBootstrap">
+           <ref bean="systemBootstrap"/>
+       </property>
+       <property name="namespaceService">
+           <ref bean="namespaceService"/>
        </property>
        <property name="nodeService">
-           <ref bean="NodeService"/>
+           <ref bean="nodeService"/>
        </property>
        <property name="searchService">
-           <ref bean="SearchService"/>
+           <ref bean="searchService"/>
        </property>
        <property name="contentService">
-           <ref bean="ContentService"/>
+           <ref bean="contentService"/>
        </property>
     </bean>
 

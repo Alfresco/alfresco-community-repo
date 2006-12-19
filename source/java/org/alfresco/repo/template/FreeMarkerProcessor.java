@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.apache.log4j.Logger;
 
+import bsh.This;
+
 import freemarker.cache.MruCacheStorage;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
@@ -70,6 +72,9 @@ public class FreeMarkerProcessor implements TemplateProcessor
     /** The Content Service to use */
     private ContentService contentService;
     
+    /** Template encoding */
+    private String defaultEncoding;
+    
     /**
      * Set the node service
      * 
@@ -88,6 +93,16 @@ public class FreeMarkerProcessor implements TemplateProcessor
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    /**
+     * Set the default template encoding
+     * 
+     * @param defaultEncoding  the default encoding 
+     */
+    public void setDefaultEncoding(String defaultEncoding)
+    {
+        this.defaultEncoding = defaultEncoding;
     }
     
     /**
@@ -110,6 +125,12 @@ public class FreeMarkerProcessor implements TemplateProcessor
         
         // rethrow any exception so we can deal with them
         config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        
+        // set default template encoding
+        if (defaultEncoding != null)
+        {
+            config.setDefaultEncoding(defaultEncoding);
+        }
         
         return config;
     }
@@ -139,6 +160,12 @@ public class FreeMarkerProcessor implements TemplateProcessor
         
         // rethrow any exception so we can deal with them
         config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        
+        // set default template encoding
+        if (defaultEncoding != null)
+        {
+            config.setDefaultEncoding(defaultEncoding);
+        }
         
         return config;
     }

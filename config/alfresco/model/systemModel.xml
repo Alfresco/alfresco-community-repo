@@ -53,6 +53,10 @@
 					<type>d:any</type>
 					<multiple>true</multiple>
 				</property>					
+				<property name="sys:versionProperties">
+					<type>d:content</type>
+					<multiple>false</multiple>
+				</property>					
 			</properties>
         </type>		
 

@@ -166,6 +166,9 @@ public class RepositoryExporterComponent implements RepositoryExporterService
             handle.mimeType = exportHandle.mimeType;
             handle.exportFile = repoExportFile;
             repoExportHandles.add(handle);
+            
+            // delete temporary export file
+            exportHandle.exportFile.delete();
         }
         
         return repoExportHandles.toArray(new RepositoryExportHandle[repoExportHandles.size()]);
@@ -326,7 +329,8 @@ public class RepositoryExporterComponent implements RepositoryExporterService
         public FileExportHandle exportStore(ExporterCrawlerParameters exportParameters, String packageName, Exporter progress)
         {
             // create a temporary file to hold the acp export
-            File tempFile = TempFileProvider.createTempFile("repoExp" + packageName, "." + ACPExportPackageHandler.ACP_EXTENSION);
+            File systemTempDir = TempFileProvider.getSystemTempDir();
+            File tempFile = TempFileProvider.createTempFile("repoExp" + packageName, "." + ACPExportPackageHandler.ACP_EXTENSION, systemTempDir);
 
             // create acp export handler around the temp file
             File dataFile = new File(packageName);
@@ -361,7 +365,8 @@ public class RepositoryExporterComponent implements RepositoryExporterService
         public FileExportHandle exportSystem(String packageName)
         {
             // create a temporary file to hold the system info export
-            File tempFile = TempFileProvider.createTempFile("repoExpSystemInfo", ".xml");
+            File systemTempDir = TempFileProvider.getSystemTempDir();
+            File tempFile = TempFileProvider.createTempFile("repoExpSystemInfo", ".xml", systemTempDir);
 
             try
             {

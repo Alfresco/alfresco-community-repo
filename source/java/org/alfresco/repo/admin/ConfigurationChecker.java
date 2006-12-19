@@ -18,31 +18,28 @@ package org.alfresco.repo.admin;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -82,17 +79,16 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     private boolean strict;
     private RecoveryMode indexRecoveryMode;
     private String dirRoot;
-    private boolean checkAllContent;
 
-    private AuthenticationComponent authenticationComponent;
-    private DictionaryService dictionaryService;
+    private ImporterBootstrap systemBootstrap;
+    private TransactionService transactionService;
+    private NamespaceService namespaceService;
     private NodeService nodeService;
     private SearchService searchService;
     private ContentService contentService;
     
     public ConfigurationChecker()
     {
-        this.checkAllContent = false;
     }
     
     @Override
@@ -101,7 +97,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         StringBuilder sb = new StringBuilder(50);
         sb.append("ConfigurationChecker")
           .append("[indexRecoveryMode=").append(indexRecoveryMode)
-          .append(", checkAllContent=").append(checkAllContent)
           .append("]");
         return sb.toString();
     }
@@ -117,16 +112,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     public void setStrict(boolean strict)
     {
         this.strict = strict;
-    }
-
-    /**
-     * @param checkAllContent <code>true</code> to get all content URLs when checking for
-     *      missing content, or <code>false</code> to just do a quick sanity check against
-     *      the content store.
-     */
-    public void setCheckAllContent(boolean checkAllContent)
-    {
-        this.checkAllContent = checkAllContent;
     }
 
     /**
@@ -147,14 +132,19 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         this.dirRoot = dirRoot;
     }
 
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setSystemBootstrap(ImporterBootstrap systemBootstrap)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.systemBootstrap = systemBootstrap;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
+    public void setTransactionService(TransactionService transactionService)
     {
-        this.dictionaryService = dictionaryService;
+        this.transactionService = transactionService;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 
     public void setNodeService(NodeService nodeService)
@@ -175,16 +165,15 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        // authenticate
-        try
+        TransactionWork<Object> checkWork = new TransactionWork<Object>()
         {
-            authenticationComponent.setSystemUserAsCurrentUser();
-            check();
-        }
-        finally
-        {
-            authenticationComponent.clearCurrentSecurityContext();
-        }
+            public Object doWork() throws Exception
+            {
+                check();
+                return null;
+            }
+        };
+        TransactionUtil.executeInUserTransaction(transactionService, checkWork);
     }
     
     /**
@@ -211,7 +200,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         // get all root nodes from the NodeService, i.e. database
         List<StoreRef> storeRefs = nodeService.getStores();
         List<StoreRef> missingIndexStoreRefs = new ArrayList<StoreRef>(0);
-        List<StoreRef> missingContentStoreRefs = new ArrayList<StoreRef>(0);
         for (StoreRef storeRef : storeRefs)
         {
             NodeRef rootNodeRef = null;
@@ -267,81 +255,23 @@ public class ConfigurationChecker extends AbstractLifecycleBean
                     throw new AlfrescoRuntimeException(msg);
                 }
             }
-            // select a content property
-            QName contentPropertyQName = null;
-            Collection<QName> typeQNames = dictionaryService.getAllTypes();
-            /* BREAK POINT */ contentPropertyFound:
-            for (QName typeQName : typeQNames)
+        }
+        // check for the system version properties content snippet
+        boolean versionPropertiesContentAvailable = true;
+        NodeRef descriptorNodeRef = getSystemDescriptor();
+        if (descriptorNodeRef != null)
+        {
+            // get the version properties
+            ContentReader reader = contentService.getReader(
+                    descriptorNodeRef,
+                    ContentModel.PROP_SYS_VERSION_PROPERTIES);
+            if (reader != null && !reader.exists())
             {
-                TypeDefinition classDef = dictionaryService.getType(typeQName);
-                Map<QName, PropertyDefinition> propertyDefs = classDef.getProperties();
-                for (PropertyDefinition propertyDef : propertyDefs.values())
-                {
-                    if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
-                    {
-                        continue;
-                    }
-                    contentPropertyQName = propertyDef.getName();
-                    break contentPropertyFound;
-                }
-            }
-            // do a search for nodes with content
-            if (contentPropertyQName != null)
-            {
-                String attributeName = "\\@" + LuceneQueryParser.escape(contentPropertyQName.toString());
-
-                SearchParameters sp = new SearchParameters();
-                sp.addStore(storeRef);
-                sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-                sp.setQuery(attributeName + ":*");
-                if (!checkAllContent)
-                {
-                    sp.setLimit(1);
-                    sp.setLimitBy(LimitBy.FINAL_SIZE);
-                }
-                ResultSet results = null;
-                try
-                {
-                    results = searchService.query(sp);
-                    // iterate and attempt to get the content
-                    for (ResultSetRow row : results)
-                    {
-                        NodeRef nodeRef = row.getNodeRef();
-                        ContentReader reader = contentService.getReader(nodeRef, contentPropertyQName);
-                        if (reader == null)
-                        {
-                            // content not written
-                            continue;
-                        }
-                        else if (reader.exists())
-                        {
-                            // the data is present in the content store
-                        }
-                        else
-                        {
-                            // URL is missing
-                            missingContentStoreRefs.add(storeRef);
-                            // debug
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Content missing from store: \n" +
-                                        "   store: " + storeRef + "\n" +
-                                        "   content: " + reader);
-                            }
-                        }
-                        // break out if necessary
-                        if (!checkAllContent)
-                        {
-                            break;
-                        }
-                    }
-                }
-                finally
-                {
-                    try { results.close(); } catch (Throwable e) {}
-                }
+                // the property is there, but the content is not
+                versionPropertiesContentAvailable = false;
             }
         }
+            
         // check for missing indexes
         int missingStoreIndexes = missingIndexStoreRefs.size();
         if (missingStoreIndexes > 0)
@@ -352,14 +282,13 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             logger.info(msgRecover);
         }
         // check for missing content
-        int missingStoreContent = missingContentStoreRefs.size();
-        if (missingStoreContent > 0)
+        if (!versionPropertiesContentAvailable)
         {
-            String msg = I18NUtil.getMessage(ERR_MISSING_CONTENT, missingStoreContent);
+            String msg = I18NUtil.getMessage(ERR_MISSING_CONTENT);
             logger.error(msg);
         }
         // handle either content or indexes missing
-        if (missingStoreIndexes > 0 || missingStoreContent > 0)
+        if (missingStoreIndexes > 0 || !versionPropertiesContentAvailable)
         {
             String msg = I18NUtil.getMessage(ERR_FIX_DIR_ROOT, dirRootFile);
             logger.error(msg);
@@ -375,6 +304,29 @@ public class ConfigurationChecker extends AbstractLifecycleBean
                 logger.warn(warn);
             }
         }
+    }
+    
+    /**
+     * @return Returns the system descriptor node or null
+     */
+    public NodeRef getSystemDescriptor()
+    {
+        StoreRef systemStoreRef = systemBootstrap.getStoreRef();
+        List<NodeRef> nodeRefs = null;
+        if (nodeService.exists(systemStoreRef))
+        {
+            Properties systemProperties = systemBootstrap.getConfiguration();
+            String path = systemProperties.getProperty("system.descriptor.current.childname");
+            String searchPath = "/" + path;
+            NodeRef rootNodeRef = nodeService.getRootNode(systemStoreRef);
+            nodeRefs = searchService.selectNodes(rootNodeRef, searchPath, null, namespaceService, false);
+            if (nodeRefs.size() > 0)
+            {
+                NodeRef descriptorNodeRef = nodeRefs.get(0);
+                return descriptorNodeRef;
+            }
+        }
+        return null;
     }
 
     @Override

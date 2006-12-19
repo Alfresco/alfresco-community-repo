@@ -24,9 +24,14 @@
     <bean id="freeMarkerProcessor" class="org.alfresco.repo.template.FreeMarkerProcessor" singleton="false">
         <property name="nodeService">
             <ref bean="NodeService"/>
-		  </property>
-		  <property name="contentService">
+        </property>
+        <property name="contentService">
             <ref bean="ContentService"/>
-		  </property>
+        </property>
+        <!-- 
+        <property name="defaultEncoding">
+            <value>UTF-8</value>
+        </property>
+        -->
     </bean>
 </beans>

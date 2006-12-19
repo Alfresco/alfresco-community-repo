@@ -329,10 +329,18 @@ public class RoutingContentService implements ContentService
 
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
     {
+        // TODO: Choose the store to write to at runtime
+        
+        if (nodeRef == null)
+        {
+            // for this case, we just give back a valid URL into the content store
+            ContentWriter writer = store.getWriter(null, null);
+            // done
+            return writer;
+        }
+        
         // check for an existing URL - the get of the reader will perform type checking
         ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
-        
-        // TODO: Choose the store to write to at runtime
         
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.

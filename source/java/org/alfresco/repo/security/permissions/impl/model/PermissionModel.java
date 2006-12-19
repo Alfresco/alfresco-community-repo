@@ -433,7 +433,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
         //
         QName typeName = nodeService.getType(nodeRef);
 
-        Set<PermissionReference> permissions = getAllPermissions(typeName);
+        Set<PermissionReference> permissions = getAllPermissionsImpl(typeName, exposedOnly);
         mergeGeneralAspectPermissions(permissions, exposedOnly);
         // Add non mandatory aspects...
         Set<QName> defaultAspects = new HashSet<QName>();

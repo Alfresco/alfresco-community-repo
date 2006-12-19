@@ -74,8 +74,12 @@ public interface ContentService
      * regardless of the state of the written binary data.  If the flag is on, then the node
      * property will be updated on the same thread as the code that closed the write
      * channel.
+     * <p>
+     * If no node is supplied, then the writer will provide a stream into the backing content
+     * store, but will not be associated with any new or previous content.
      * 
-     * @param nodeRef a reference to a node having a content property
+     * @param nodeRef a reference to a node having a content property, or <tt>null</tt>
+     *      to just get a valid writer into a backing content store.
      * @param propertyQName the name of the property, which must be of type <b>content</b>
      * @param update true if the property must be updated atomically when the content write
      *      stream is closed (attaches a listener to the stream); false if the client code

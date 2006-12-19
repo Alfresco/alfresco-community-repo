@@ -157,7 +157,10 @@
       <structure name="target">
          <value name="class" field="targetClassName"/>
          <value name="role" field="targetRoleName" usage="optional"/>
-         <value name="mandatory" field="isTargetMandatory" usage="optional"/>
+         <structure name="mandatory" usage="optional">
+           <value style="attribute" name="enforced" field="isTargetMandatoryEnforced" usage="optional"/>
+           <value style="text" field="isTargetMandatory" />
+         </structure>
          <value name="many" field="isTargetMany" usage="optional"/>
       </structure>         
    </mapping>

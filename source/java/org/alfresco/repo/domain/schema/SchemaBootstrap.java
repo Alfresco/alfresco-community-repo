@@ -557,7 +557,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             {
                 // it was marked as optional, so we just ignore it
                 String msg = I18NUtil.getMessage(MSG_OPTIONAL_STATEMENT_FAILED, sql, e.getMessage(), file.getAbsolutePath(), line);
-                logger.warn(msg);
+                logger.debug(msg);
             }
             else
             {

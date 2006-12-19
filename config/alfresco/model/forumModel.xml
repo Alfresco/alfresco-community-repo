@@ -46,7 +46,7 @@
                </source>
                <target>
                   <class>fm:forum</class>
-                  <mandatory>true</mandatory>
+                  <mandatory enforced="true">true</mandatory>
                   <many>false</many>
                </target>
                <duplicate>false</duplicate>

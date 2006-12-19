@@ -217,6 +217,38 @@
            <ref bean="searchService"/>
        </property>
     </bean>
+    
+    <!-- This component checks the interconnection between the metadata, indexes and content -->
+    <bean id="configurationChecker" class="org.alfresco.repo.admin.ConfigurationChecker">
+       <property name="strict">
+           <value>${system.bootstrap.config_check.strict}</value>
+       </property>
+       <property name="checkAllContent">
+           <value>false</value>
+       </property>
+       <property name="dirRoot">
+           <value>${dir.root}</value>
+       </property>
+       <property name="indexRecoveryMode">
+           <value>${index.recovery.mode}</value>
+       </property>
+       <!-- helper beans -->
+       <property name="authenticationComponent">
+           <ref bean="authenticationComponent"/>
+       </property>
+       <property name="dictionaryService">
+           <ref bean="DictionaryService"/>
+       </property>
+       <property name="nodeService">
+           <ref bean="NodeService"/>
+       </property>
+       <property name="searchService">
+           <ref bean="SearchService"/>
+       </property>
+       <property name="contentService">
+           <ref bean="ContentService"/>
+       </property>
+    </bean>
 
     <!-- This component ensures that patches get applied on startup -->
 

@@ -222,6 +222,15 @@ import org.alfresco.service.namespace.QName;
 
 
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMandatoryEnforced()
+     */
+    public boolean isTargetMandatoryEnforced()
+    {
+        return assoc.isTargetMandatoryEnforced();
+    }
+
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.AssociationDefinition#isTargetMany()
      */
     public boolean isTargetMany()

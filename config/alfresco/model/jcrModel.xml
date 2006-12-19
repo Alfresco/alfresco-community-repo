@@ -24,7 +24,7 @@
             <property name="jcr:primaryType">
                <type>d:qname</type>
                <protected>true</protected>
-               <mandatory>true</mandatory>
+               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="jcr:mixinTypes">
                <type>d:qname</type>
@@ -56,7 +56,7 @@
                </source>
                <target>
                   <class>nt:base</class>
-                  <mandatory>true</mandatory>
+                  <mandatory enforced="true">true</mandatory>
                   <many>false</many>
                </target>
                <child-name>jcr:content</child-name>

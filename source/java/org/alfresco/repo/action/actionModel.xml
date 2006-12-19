@@ -116,7 +116,7 @@
             <child-association name="act:actions">
                <target>
                   <class>act:action</class>
-                  <mandatory>true</mandatory>
+                  <mandatory enforced="true">true</mandatory>
                   <many>true</many>
                </target>
             </child-association>
@@ -130,7 +130,7 @@
             <child-association name="act:savedActions">
                <target>
                   <class>act:action</class>
-                  <mandatory>true</mandatory>
+                  <mandatory enforced="true">true</mandatory>
                   <many>true</many>
                </target>
             </child-association>

@@ -49,16 +49,19 @@ public class PdfBoxMetadataExtracter extends AbstractMetadataExtracter
             is = reader.getContentInputStream();
             // stream the document in
             pdf = PDDocument.load(is);
-            // Scoop out the metadata
-            PDDocumentInformation docInfo = pdf.getDocumentInformation();
-
-            trimPut(ContentModel.PROP_AUTHOR, docInfo.getAuthor(), destination);
-            trimPut(ContentModel.PROP_TITLE, docInfo.getTitle(), destination);
-            trimPut(ContentModel.PROP_DESCRIPTION, docInfo.getSubject(), destination);
-
-            Calendar created = docInfo.getCreationDate();
-            if (created != null)
-                destination.put(ContentModel.PROP_CREATED, created.getTime());
+            if (!pdf.isEncrypted())
+            {
+                // Scoop out the metadata
+                PDDocumentInformation docInfo = pdf.getDocumentInformation();
+    
+                trimPut(ContentModel.PROP_AUTHOR, docInfo.getAuthor(), destination);
+                trimPut(ContentModel.PROP_TITLE, docInfo.getTitle(), destination);
+                trimPut(ContentModel.PROP_DESCRIPTION, docInfo.getSubject(), destination);
+    
+                Calendar created = docInfo.getCreationDate();
+                if (created != null)
+                    destination.put(ContentModel.PROP_CREATED, created.getTime());
+            }
         }
         finally
         {

@@ -35,6 +35,7 @@ public abstract class M2ClassAssociation
     private String targetClassName = null;
     private String targetRoleName = null;
     private Boolean isTargetMandatory = null;
+    private Boolean isTargetMandatoryEnforced = null;
     private Boolean isTargetMany = null;
     
     
@@ -172,6 +173,18 @@ public abstract class M2ClassAssociation
     public void setTargetMandatory(boolean isTargetMandatory)
     {
         this.isTargetMandatory = isTargetMandatory;
+    }
+
+    
+    public boolean isTargetMandatoryEnforced()
+    {
+        return isTargetMandatoryEnforced == null ? false : isTargetMandatoryEnforced;
+    }
+    
+    
+    public void setTargetMandatoryEnforced(boolean isTargetMandatoryEnforced)
+    {
+        this.isTargetMandatoryEnforced = isTargetMandatoryEnforced;
     }
     
     

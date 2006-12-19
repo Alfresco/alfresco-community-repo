@@ -45,7 +45,7 @@
             <child-association name="rule:action">
                <target>
                   <class>act:action</class>
-                  <mandatory>true</mandatory>
+                  <mandatory enforced="true">true</mandatory>
                   <many>false</many>
                </target>
             </child-association>

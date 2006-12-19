@@ -259,6 +259,13 @@ public class RoutingContentServiceTest extends TestCase
         // check the indexing doesn't spank everthing
         txn.commit();
         txn = null;
+
+        // cleanup
+        txn = getUserTransaction();
+        txn.begin();
+        nodeService.deleteNode(contentNodeRef);
+        txn.commit();
+        txn = null;
     }
 	
 	/**

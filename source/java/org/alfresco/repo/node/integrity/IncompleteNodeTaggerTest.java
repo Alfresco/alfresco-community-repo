@@ -118,7 +118,7 @@ public class IncompleteNodeTaggerTest extends TestCase
         tagger.beforeCommit(false);
         assertEquals(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE), mustBeTagged);
     }
-    
+
     public void testCreateWithoutProperties() throws Exception
     {
         NodeRef nodeRef = createNode("abc", IntegrityTest.TEST_TYPE_WITH_PROPERTIES, null);
@@ -128,6 +128,24 @@ public class IncompleteNodeTaggerTest extends TestCase
     public void testCreateWithProperties() throws Exception
     {
         NodeRef nodeRef = createNode("abc", IntegrityTest.TEST_TYPE_WITH_PROPERTIES, properties);
+        checkTagging(nodeRef, false);
+    }
+
+    public void testCreateWithoutAssoc() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", IntegrityTest.TEST_TYPE_WITH_NON_ENFORCED_CHILD_ASSOCS, properties);
+        checkTagging(nodeRef, true);
+    }
+
+    public void testCreateWithAssoc() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", IntegrityTest.TEST_TYPE_WITH_NON_ENFORCED_CHILD_ASSOCS, properties);
+        nodeService.createNode(nodeRef, 
+                IntegrityTest.TEST_ASSOC_CHILD_NON_ENFORCED,
+                QName.createQName(IntegrityTest.NAMESPACE, "easyas"),
+                IntegrityTest.TEST_TYPE_WITHOUT_ANYTHING,
+                null
+                );        
         checkTagging(nodeRef, false);
     }
 }

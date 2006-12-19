@@ -106,6 +106,25 @@
             </child-association>
          </associations>
       </type>
+      <!-- Type with mandatory non-enforced child assocs -->
+      <type name="test:typeWithNonEnforcedChildAssocs">
+         <title>Type With Child Assocs</title>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="test:child-non-enforced">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>
    </types>
    
    <aspects>

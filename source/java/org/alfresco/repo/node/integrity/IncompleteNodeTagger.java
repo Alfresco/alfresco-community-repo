@@ -18,7 +18,9 @@ package org.alfresco.repo.node.integrity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,14 +32,17 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,12 +57,16 @@ public class IncompleteNodeTagger
         implements  NodeServicePolicies.OnCreateNodePolicy,
                     NodeServicePolicies.OnUpdatePropertiesPolicy,
                     NodeServicePolicies.OnAddAspectPolicy,
-                    NodeServicePolicies.OnRemoveAspectPolicy
+                    NodeServicePolicies.OnRemoveAspectPolicy,
+                    NodeServicePolicies.OnCreateChildAssociationPolicy,
+                    NodeServicePolicies.OnDeleteChildAssociationPolicy,
+                    NodeServicePolicies.OnCreateAssociationPolicy,
+                    NodeServicePolicies.OnDeleteAssociationPolicy
 {
     private static Log logger = LogFactory.getLog(IncompleteNodeTagger.class);
     
     /** key against which the set of nodes to check is stored in the current transaction */
-    private static final String KEY_NODE_SET = "IncompleteNodeTagger.NodeSet";
+    private static final String KEY_NODES = "IncompleteNodeTagger.Nodes";
     
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
@@ -118,48 +127,107 @@ public class IncompleteNodeTagger
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"),
                 this,
                 new JavaBehaviour(this, "onRemoveAspect"));   
+        policyComponent.bindAssociationBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
+                this,
+                new JavaBehaviour(this, "onCreateChildAssociation"));   
+        policyComponent.bindAssociationBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteChildAssociation"),
+                this,
+                new JavaBehaviour(this, "onDeleteChildAssociation"));   
+        policyComponent.bindAssociationBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateAssociation"),
+                this,
+                new JavaBehaviour(this, "onCreateAssociation"));   
+        policyComponent.bindAssociationBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteAssociation"),
+                this,
+                new JavaBehaviour(this, "onDeleteAssociation"));   
     }
     
     /**
-     * @return Returns the set of nodes to check, or null if none were registered
+     * @return Returns the set of nodes to check properties, or null if none were registered
      */
     @SuppressWarnings("unchecked")
-    private Set<NodeRef> getNodeSet()
+    private Map<NodeRef, Set<QName>> getNodes()
     {
-        return (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_NODE_SET);
+        return (Map<NodeRef, Set<QName>>) AlfrescoTransactionSupport.getResource(KEY_NODES);
     }
-    
+
     /**
      * Ensures that this service is registered with the transaction and saves the node
-     * reference for use later.
+     * reference for use (property check) later.
      * 
      * @param nodeRef
      */
-    private void save(NodeRef nodeRef)
+    private Set<QName> save(NodeRef nodeRef)
     {
+        Set<QName> assocs = null;
+        
         // register this service
         AlfrescoTransactionSupport.bindListener(this);
         
         // get the event list
-        Set<NodeRef> nodeRefs = getNodeSet();
-        if (nodeRefs == null)
+        Map<NodeRef, Set<QName>> nodes = getNodes();
+        if (nodes == null)
         {
-            nodeRefs = new HashSet<NodeRef>(31, 0.75F);
-            AlfrescoTransactionSupport.bindResource(KEY_NODE_SET, nodeRefs);
+            nodes = new HashMap<NodeRef, Set<QName>>(31, 0.75F);
+            AlfrescoTransactionSupport.bindResource(KEY_NODES, nodes);
         }
         // add node to the set
-        nodeRefs.add(nodeRef);
+        if (nodes.containsKey(nodeRef))
+        {
+            assocs = nodes.get(nodeRef);
+        }
+        else
+        {
+            nodes.put(nodeRef, null);
+        }
+        
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Added node reference to set: " + nodeRef);
+            logger.debug("Added node reference to property set: " + nodeRef);
         }
+        
+        return assocs;
     }
 
+    /**
+     * Ensures that this service is registered with the transaction and saves the node
+     * reference for use (association check) later.
+     * 
+     * @param nodeRef
+     * @param assocType
+     */
+    private void saveAssoc(NodeRef nodeRef, QName assocType)
+    {
+        // register this service
+        AlfrescoTransactionSupport.bindListener(this);
+
+        Set<QName> assocs = save(nodeRef);
+        if (assocs == null)
+        {
+            assocs = new HashSet<QName>(7, 0.75f);
+            Map<NodeRef, Set<QName>> nodes = getNodes();
+            nodes.put(nodeRef, assocs);
+        }
+        if (assocType != null)
+        {
+            assocs.add(assocType);
+        }
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Added association to node: " + nodeRef + ", " + assocType);
+        }
+    }
+    
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
         save(nodeRef);
+        saveAssoc(nodeRef, null);
     }
 
     public void onUpdateProperties(
@@ -203,27 +271,68 @@ public class IncompleteNodeTagger
     }
     
     /**
+     * @see AssocSourceTypeIntegrityEvent
+     * @see AssocTargetTypeIntegrityEvent
+     * @see AssocSourceMultiplicityIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
+     * @see AssocTargetRoleIntegrityEvent
+     */
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
+    }
+
+    /**
+     * @see AssocSourceMultiplicityIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
+     */
+    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
+    }
+
+    /**
+     * @see AssocSourceTypeIntegrityEvent
+     * @see AssocTargetTypeIntegrityEvent
+     * @see AssocSourceMultiplicityIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
+     */
+    public void onCreateAssociation(AssociationRef nodeAssocRef)
+    {
+        saveAssoc(nodeAssocRef.getSourceRef(), nodeAssocRef.getTypeQName());
+    }
+
+    /**
+     * @see AssocSourceMultiplicityIntegrityEvent
+     * @see AssocTargetMultiplicityIntegrityEvent
+     */
+    public void onDeleteAssociation(AssociationRef nodeAssocRef)
+    {
+        saveAssoc(nodeAssocRef.getSourceRef(), nodeAssocRef.getTypeQName());
+    }
+        
+    /**
      * Process all the nodes that require checking within the transaction.
      */
     @Override
     public void beforeCommit(boolean readOnly)
     {
-        Set<NodeRef> nodeRefs = getNodeSet();
+        Map<NodeRef, Set<QName>> nodes = getNodes();
         // clear the set out of the transaction
         // there may be processes that react to the addition/removal of the aspect,
         //    and these will, in turn, lead to further events
-        AlfrescoTransactionSupport.unbindResource(KEY_NODE_SET);
+        AlfrescoTransactionSupport.unbindResource(KEY_NODES);
         // process each node
-        for (NodeRef nodeRef : nodeRefs)
+        for (Map.Entry<NodeRef, Set<QName>> entry : nodes.entrySet())
         {
-            if (nodeService.exists(nodeRef))
+            if (nodeService.exists(entry.getKey()))
             {
-                processNode(nodeRef);
+                processNode(entry.getKey(), entry.getValue());
             }
         }
     }
 
-    private void processNode(NodeRef nodeRef)
+    private void processNode(NodeRef nodeRef, Set<QName> assocTypes)
     {
         // ignore the node if the marker aspect is already present
         boolean isTagged = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE);
@@ -267,7 +376,46 @@ public class IncompleteNodeTagger
                 return;
             }
         }
-        // all properties passed (both class- and aspect-defined) - remove aspect
+        
+        // test associations
+        if (assocTypes != null)
+        {
+            Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
+            if (assocTypes.size() > 0)
+            {
+                // check only those associations that have changed
+                for (QName assocType : assocTypes)
+                {
+                    AssociationDefinition assocDef = assocDefs.get(assocType);
+                    if (assocDef != null)
+                    {
+                        if (!checkAssociation(nodeRef, assocDef))
+                        {
+                            addOrRemoveTag(nodeRef, true, isTagged);
+                            return;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // check all associations (typically for new objects)
+                for (QName assocType : assocDefs.keySet())
+                {
+                    AssociationDefinition assocDef = assocDefs.get(assocType);
+                    if (assocDef != null)
+                    {
+                        if (!checkAssociation(nodeRef, assocDef))
+                        {
+                            addOrRemoveTag(nodeRef, true, isTagged);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // all properties and associations passed (both class- and aspect-defined) - remove aspect
         addOrRemoveTag(nodeRef, false, isTagged);
     }
     
@@ -303,6 +451,41 @@ public class IncompleteNodeTagger
         }
         // all properties were present
         return true;
+    }
+
+    /**
+     * @param nodeRef
+     * @param assocDef
+     * @return
+     */
+    private boolean checkAssociation(NodeRef nodeRef, AssociationDefinition assocDef)
+    {
+        boolean complete = true;
+        
+        if (assocDef.isTargetMandatory() && !assocDef.isTargetMandatoryEnforced())
+        {
+            int actualSize = 0;
+            if (assocDef.isChild())
+            {
+                // check the child assocs present
+                List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(
+                        nodeRef,
+                        assocDef.getName(),
+                        RegexQNamePattern.MATCH_ALL);
+                actualSize = childAssocRefs.size();
+            }
+            else
+            {
+                // check the target assocs present
+                List<AssociationRef> targetAssocRefs = nodeService.getTargetAssocs(nodeRef, assocDef.getName());
+                actualSize = targetAssocRefs.size();
+            }
+            if (assocDef.isTargetMandatory() && actualSize == 0)
+            {
+                complete = false;
+            }
+        }
+        return complete;
     }
     
     /**

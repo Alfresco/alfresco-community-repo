@@ -9,7 +9,8 @@
 -->
 <beans>
 
-    <!-- Datasource bean -->
+    <!-- DBCP Configuration -->
+    <!-- http://jakarta.apache.org/commons/dbcp/configuration.html -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <!-- connection settings -->
         <property name="driverClassName">
@@ -28,29 +29,38 @@
             <value>false</value>
         </property>
         <!-- pool settings -->
-        <property name="initialSize" >
+        <property name="minIdle" >
             <value>${db.pool.initial}</value>
         </property>
         <property name="maxActive" >
             <value>${db.pool.max}</value>
         </property>
+        <property name="maxWait" >
+            <value>10000</value>
+        </property>
+        <property name="validationQuery" >
+            <value>select 1</value>
+        </property>
         <property name="timeBetweenEvictionRunsMillis" >
             <value>300000</value>
         </property>
         <property name="minEvictableIdleTimeMillis" >
-            <value>-1</value>
+            <value>60000</value>
         </property>
         <property name="testOnBorrow" >
             <value>false</value>
         </property>
-        <property name="maxWait" >
-            <value>50000</value>
+        <property name="testOnReturn" >
+            <value>false</value>
         </property>
         <property name="testWhileIdle" >
             <value>true</value>
         </property>
-        <property name="validationQuery" >
-            <value>select 1</value>
+        <property name="removeAbandoned" >
+            <value>true</value>
+        </property>
+        <property name="removeAbandonedTimeout" >
+            <value>30</value>
         </property>
     </bean>
           

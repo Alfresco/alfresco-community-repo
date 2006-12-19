@@ -102,6 +102,13 @@ public interface AssociationDefinition
      * @return true => cardinality > 0
      */
     public boolean isTargetMandatory();
+    
+    /**
+     * Is the target class is mandatory, it is enforced?
+     *  
+     * @return true => enforced
+     */
+    public boolean isTargetMandatoryEnforced();
 
     /**
      * Can there be many target class instances in this association? 

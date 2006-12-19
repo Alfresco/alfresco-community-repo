@@ -62,12 +62,14 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_TYPE_WITH_PROPERTIES = QName.createQName(NAMESPACE, "typeWithProperties");
     public static final QName TEST_TYPE_WITH_ASSOCS = QName.createQName(NAMESPACE, "typeWithAssocs");
     public static final QName TEST_TYPE_WITH_CHILD_ASSOCS = QName.createQName(NAMESPACE, "typeWithChildAssocs");
+    public static final QName TEST_TYPE_WITH_NON_ENFORCED_CHILD_ASSOCS = QName.createQName(NAMESPACE, "typeWithNonEnforcedChildAssocs");
     
     public static final QName TEST_ASSOC_NODE_ZEROMANY_ZEROMANY = QName.createQName(NAMESPACE, "assoc-0to* - 0to*");
     public static final QName TEST_ASSOC_CHILD_ZEROMANY_ZEROMANY = QName.createQName(NAMESPACE, "child-0to* - 0to*");
     public static final QName TEST_ASSOC_NODE_ONE_ONE = QName.createQName(NAMESPACE, "assoc-1to1 - 1to1");
     public static final QName TEST_ASSOC_CHILD_ONE_ONE = QName.createQName(NAMESPACE, "child-1to1 - 1to1");
     public static final QName TEST_ASSOC_ASPECT_ONE_ONE = QName.createQName(NAMESPACE, "aspect-assoc-1to1 - 1to1");
+    public static final QName TEST_ASSOC_CHILD_NON_ENFORCED = QName.createQName(NAMESPACE, "child-non-enforced");
     
     public static final QName TEST_ASPECT_WITH_PROPERTIES = QName.createQName(NAMESPACE, "aspectWithProperties");
     public static final QName TEST_ASPECT_WITH_ASSOC = QName.createQName(NAMESPACE, "aspectWithAssoc");

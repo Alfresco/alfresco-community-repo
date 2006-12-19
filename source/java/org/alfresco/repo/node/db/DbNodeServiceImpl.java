@@ -220,7 +220,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Node node = store.getRootNode();
         if (node == null)
         {
-            throw new InvalidStoreRefException("Store does not have a root node", storeRef);
+            throw new InvalidStoreRefException("Store does not have a root node: " + storeRef, storeRef);
         }
         NodeRef nodeRef = node.getNodeRef();
         // done

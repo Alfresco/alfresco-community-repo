@@ -70,7 +70,7 @@ public class HibernateNodeTest extends BaseSpringTest
     {
         store = new StoreImpl();
 		StoreKey storeKey = new StoreKey(StoreRef.PROTOCOL_WORKSPACE,
-                "TestWorkspace@" + System.currentTimeMillis() + " - " + System.nanoTime());
+                "TestWorkspace@" + getName() + " - " + System.currentTimeMillis());
 		store.setKey(storeKey);
         // persist so that it is present in the hibernate cache
         getSession().save(store);

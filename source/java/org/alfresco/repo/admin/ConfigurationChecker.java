@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -213,7 +214,16 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         List<StoreRef> missingContentStoreRefs = new ArrayList<StoreRef>(0);
         for (StoreRef storeRef : storeRefs)
         {
-            NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+            NodeRef rootNodeRef = null;
+            try
+            {
+                rootNodeRef = nodeService.getRootNode(storeRef);
+            }
+            catch (InvalidStoreRefException e)
+            {
+                // the store is invalid and will therefore not have a root node entry
+                continue;
+            }
             if (indexRecoveryMode != RecoveryMode.FULL)
             {
                 if (logger.isDebugEnabled())

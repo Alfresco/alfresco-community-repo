@@ -104,10 +104,16 @@ public class UniqueChildNamePatch extends AbstractPatch
         HibernateHelper helper = new HibernateHelper();
         helper.setSessionFactory(sessionFactory);
 
-        String msg = helper.assignCrc();
-        
-        // done
-        return msg;
+        try
+        {
+            String msg = helper.assignCrc();
+            // done
+            return msg;
+        }
+        finally
+        {
+            helper.closeWriter();
+        }
     }
     
     private class HibernateHelper extends HibernateDaoSupport
@@ -138,6 +144,10 @@ public class UniqueChildNamePatch extends AbstractPatch
             write(obj);
             write("\n");
             return this;
+        }
+        private void closeWriter()
+        {
+            try { channel.close(); } catch (Throwable e) {}
         }
 
         public String assignCrc() throws Exception

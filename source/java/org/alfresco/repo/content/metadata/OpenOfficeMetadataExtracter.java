@@ -57,7 +57,6 @@ public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
     };
 
     private OpenOfficeConnection connection;
-    private boolean isConnected;
 
     public OpenOfficeMetadataExtracter()
     {
@@ -69,6 +68,25 @@ public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
         this.connection = connection;
     }
     
+    private synchronized void connect()
+    {
+        if (isConnected())
+        {
+            // just leave it
+        }
+        else
+        {
+            try
+            {
+                connection.connect();
+            }
+            catch (ConnectException e)
+            {
+                logger.warn(e.getMessage());
+            }
+        }
+    }
+
     /**
      * Initialises the bean by establishing an UNO connection
      */
@@ -76,17 +94,13 @@ public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
     {
         PropertyCheck.mandatory("OpenOfficeMetadataExtracter", "connection", connection);
 
-        // attempt to make an connection
-        try
+        // attempt a connection
+        connect();
+        if (isConnected())
         {
-            connection.connect();
-            isConnected = true;
-            // register
+            // Only register if the connection is available initially.  Reconnections are only supported
+            // if the server is able to connection initially.
             super.register();
-        }
-        catch (ConnectException e)
-        {
-            isConnected = false;
         }
     }
 
@@ -96,7 +110,7 @@ public class OpenOfficeMetadataExtracter extends AbstractMetadataExtracter
      */
     public boolean isConnected()
     {
-        return isConnected;
+        return connection.isConnected();
     }
 
     public void extractInternal(ContentReader reader, final Map<QName, Serializable> destination) throws Throwable

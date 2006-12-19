@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -86,6 +87,7 @@ public class WorkflowInterpreter
     private WorkflowDefinition currentWorkflowDef = null;
     private WorkflowPath currentPath = null;
     private String currentDeploy = null;
+    private String username = "admin";
     
     /**
      * Last command issued
@@ -105,7 +107,6 @@ public class WorkflowInterpreter
     {
         ApplicationContext context = ApplicationContextHelper.getApplicationContext();
         WorkflowInterpreter console = (WorkflowInterpreter)context.getBean("workflowInterpreter");
-        AuthenticationUtil.setSystemUserAsCurrentUser();
         console.rep();
         System.exit(0);
     }
@@ -179,16 +180,20 @@ public class WorkflowInterpreter
      */
     public void rep()
     {
+        // accept commands
         while (true)
         {
             System.out.print("ok> ");
             try
             {
-                String line = fIn.readLine();
+                // get command
+                final String line = fIn.readLine();
                 if (line.equals("exit") || line.equals("quit"))
                 {
                     return;
                 }
+                
+                // execute command in context of currently selected user
                 long startms = System.currentTimeMillis();
                 System.out.print(interpretCommand(line));
                 System.out.println("" + (System.currentTimeMillis() - startms) + "ms");
@@ -204,12 +209,31 @@ public class WorkflowInterpreter
     /**
      * Interpret a single command using the BufferedReader passed in for any data needed.
      * 
+     * @param line The unparsed command
+     * @return The textual output of the command.
+     */
+    public String interpretCommand(final String line)
+        throws IOException
+    {
+        // execute command in context of currently selected user
+        return AuthenticationUtil.runAs(new RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                return executeCommand(line);
+            }
+        }, username);
+    }
+    
+    /**
+     * Execute a single command using the BufferedReader passed in for any data needed.
+     * 
      * TODO: Use decent parser!
      * 
      * @param line The unparsed command
      * @return The textual output of the command.
      */
-    public String interpretCommand(String line)
+    private String executeCommand(String line)
         throws IOException
     {
         String[] command = line.split(" ");
@@ -229,7 +253,7 @@ public class WorkflowInterpreter
             {
                 return "No command entered yet.";
             }
-            return "repeating command " + lastCommand + "\n\n" + interpretCommand(lastCommand);
+            return "repeating command " + lastCommand + "\n\n" + executeCommand(lastCommand);
         }
         
         // remember last command
@@ -500,7 +524,7 @@ public class WorkflowInterpreter
             }
             out.println("deployed definition id: " + def.id + " , name: " + def.name + " , title: " + def.title + " , version: " + def.version);
             currentDeploy = command[1];
-            out.print(interpretCommand("use definition " + def.id));
+            out.print(executeCommand("use definition " + def.id));
         }
 
         else if (command[0].equals("redeploy"))
@@ -509,7 +533,7 @@ public class WorkflowInterpreter
             {
                 return "nothing to redeploy\n";
             }
-            out.print(interpretCommand("deploy " + currentDeploy));
+            out.print(executeCommand("deploy " + currentDeploy));
         }
         
         else if (command[0].equals("undeploy"))
@@ -527,7 +551,7 @@ public class WorkflowInterpreter
                 workflowService.undeployDefinition(command[2]);
                 currentWorkflowDef = null;
                 currentPath = null;
-                out.print(interpretCommand("show definitions"));
+                out.print(executeCommand("show definitions"));
             }
         }
         
@@ -554,7 +578,7 @@ public class WorkflowInterpreter
                     }
                     currentWorkflowDef = def;
                     currentPath = null;
-                    out.print(interpretCommand("use"));
+                    out.print(executeCommand("use"));
                 }
                 
                 else if (command[1].equals("workflow"))
@@ -566,7 +590,7 @@ public class WorkflowInterpreter
                     WorkflowInstance instance = workflowService.getWorkflowById(command[2]);
                     currentWorkflowDef = instance.definition;
                     currentPath = workflowService.getWorkflowPaths(instance.id).get(0);
-                    out.print(interpretCommand("use"));
+                    out.print(executeCommand("use"));
                 }
                 else
                 {
@@ -579,9 +603,9 @@ public class WorkflowInterpreter
         {
             if (command.length == 2)
             {
-                AuthenticationUtil.setCurrentUser(command[1]);
+                username = command[1];
             }
-            out.println("using user " + AuthenticationUtil.getCurrentUserName());
+            out.println("using user " + username);
         }
         
         else if (command[0].equals("start"))
@@ -942,7 +966,7 @@ public class WorkflowInterpreter
      */
     public String getCurrentUserName()
     {
-        return AuthenticationUtil.getCurrentUserName();
+        return username;
     }
         
 }

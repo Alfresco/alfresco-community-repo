@@ -469,6 +469,7 @@
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.schemaUpdateScript-V1.4-1" />
+                <ref bean="patch.InvalidNameEnding" />
             </list>
         </property>
     </bean>
@@ -486,6 +487,20 @@
             <list>
                 <ref bean="patch.schemaUpdateScript-V1.4-1" />
             </list>
+        </property>
+    </bean>
+    <bean id="patch.InvalidNameEnding" class="org.alfresco.repo.admin.patch.impl.InvalidNameEndingPatch" parent="basePatch" >
+        <property name="id"><value>patch.InvalidNameEnding</value></property>
+        <property name="description"><value>patch.invalidNameEnding.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>21</value></property>
+        <property name="targetSchema"><value>22</value></property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService" />
         </property>
     </bean>
 

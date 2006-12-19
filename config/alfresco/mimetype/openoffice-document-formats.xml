@@ -10,7 +10,6 @@
 	   <entry><family>Presentation</family><string>impress_pdf_Export</string></entry>
       <entry><family>Spreadsheet</family><string>calc_pdf_Export</string></entry>
       <entry><family>Text</family><string>writer_pdf_Export</string></entry>
-      <entry><family>Html</family><string>writer_web_pdf_Export</string></entry>
     </export-filters>
   </document-format>
 
@@ -28,7 +27,7 @@
 	-  2. output quality does not seem to be very good in many cases
   -->
   <document-format><name>Html</name>
-    <family>Html</family>
+    <family>Text</family>
     <mime-type>text/html</mime-type>
     <file-extension>html</file-extension>
     <export-filters>
@@ -46,7 +45,6 @@
     <file-extension>odt</file-extension>
     <export-filters>
       <entry><family>Text</family><string>writer8</string></entry>
-      <entry><family>Html</family><string>writerweb8_writer</string></entry>
     </export-filters>
   </document-format>
 

@@ -53,14 +53,12 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
     private static Log logger = LogFactory.getLog(OpenOfficeContentTransformer.class);
     
     private OpenOfficeConnection connection;
-    private boolean connected;
     private OpenOfficeDocumentConverter converter;
     private String documentFormatsConfiguration;
     private DocumentFormatRegistry formatRegistry;
     
     public OpenOfficeContentTransformer()
     {
-        this.connected = false;
     }
     
     public void setConnection(OpenOfficeConnection connection)
@@ -80,20 +78,25 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
 
     public boolean isConnected()
     {
-        return connected;
+        return connection.isConnected();
     }
 
     private synchronized void connect()
     {
-        try
+        if (isConnected())
         {
-            connection.connect();
-            connected = true;
+            // just leave it
         }
-        catch (ConnectException e)
+        else
         {
-            logger.warn(e.getMessage());
-            connected = false;
+            try
+            {
+                connection.connect();
+            }
+            catch (ConnectException e)
+            {
+                logger.warn(e.getMessage());
+            }
         }
     }
 
@@ -128,9 +131,10 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
             formatRegistry = new XmlDocumentFormatRegistry();
         }
         
-        if (connected)
+        if (isConnected())
         {
-            // register
+            // If the server starts with OO running, then it will attempt reconnections.  Otherwise it will
+            // just be wasting time trying to see if a connection is available all the time.
             super.register();
         }
     }
@@ -140,7 +144,7 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
      */
     public double getReliability(String sourceMimetype, String targetMimetype)
     {
-        if (!connected)
+        if (!isConnected())
         {
             return 0.0;
         }

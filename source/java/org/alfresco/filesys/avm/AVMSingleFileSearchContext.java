@@ -39,14 +39,20 @@ public class AVMSingleFileSearchContext extends SearchContext {
 	
 	private boolean m_endOfSearch;
 	
+	// Relative path to the file/folder
+	
+	private String m_relativePath;
+	
 	/**
 	 * Class constructor
 	 * 
 	 * @param fileDetails AVMNodeDescriptor
+	 * @param relPath String
 	 */
-	public AVMSingleFileSearchContext( AVMNodeDescriptor fileDetails)
+	public AVMSingleFileSearchContext( AVMNodeDescriptor fileDetails, String relPath)
 	{
-		m_fileDetails = fileDetails;
+		m_fileDetails  = fileDetails;
+		m_relativePath = relPath;
 	}
 	
     /**
@@ -102,6 +108,7 @@ public class AVMSingleFileSearchContext extends SearchContext {
     		attr += FileAttribute.Hidden;
     	
     	info.setFileAttributes( attr);
+    	info.setFileId( m_relativePath.hashCode());
     	
     	// Set the end of search flag, indicate that the file informatin is valid
     	

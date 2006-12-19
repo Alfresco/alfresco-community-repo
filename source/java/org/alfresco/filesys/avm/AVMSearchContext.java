@@ -19,6 +19,7 @@ package org.alfresco.filesys.avm;
 
 import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
+import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -45,18 +46,27 @@ public class AVMSearchContext extends SearchContext {
 	
 	private WildCard m_filter;
 	
+	// Relative path to the parent folder being searched
+	
+	private String m_parentPath;
+	
 	/**
 	 * Class constructor
 	 * 
 	 * @param fileList SortedMap<String, AVMNodeDescriptor>
 	 * @param attrib int
 	 * @param filter WildCard
+	 * @param parentPath String
 	 */
-	public AVMSearchContext( AVMNodeDescriptor[]  fileList, int attrib, WildCard filter)
+	public AVMSearchContext( AVMNodeDescriptor[]  fileList, int attrib, WildCard filter, String parentPath)
 	{
 		m_attrib   = attrib;
 		m_filter   = filter;
 		m_fileList = fileList;
+		
+		m_parentPath = parentPath;
+		if ( m_parentPath != null && m_parentPath.endsWith( FileName.DOS_SEPERATOR_STR) == false)
+			m_parentPath = m_parentPath + FileName.DOS_SEPERATOR_STR;
 	}
 	
     /**
@@ -163,6 +173,13 @@ public class AVMSearchContext extends SearchContext {
         		attr += FileAttribute.Hidden;
         	
         	info.setFileAttributes( attr);
+        	
+        	// Generate a file id for the current file
+        	
+        	StringBuilder pathStr = new StringBuilder( m_parentPath);
+        	pathStr.append ( curFile.getName());
+        	
+        	info.setFileId( pathStr.toString().hashCode());
         }
         
         // Indicate if the file information is valid

@@ -554,7 +554,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     {
                         // Get the file information for the node
                             
-                        session.beginTransaction(transactionService, true);
+                        session.beginReadTransaction(transactionService);
                         finfo = cifsHelper.getFileInformation(nodeRef);
                     }
                         
@@ -582,7 +582,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             		{
     	            	// Create the transaction
     	                
-    	                session.beginTransaction(transactionService, true);
+    	                session.beginReadTransaction(transactionService);
     	            
     	                // Get the node for the folder path
     	                

@@ -499,6 +499,99 @@ public class AVMPath {
 	}
 	
 	/**
+	 * Generate a file id for the path
+	 * 
+	 * @return int
+	 */
+	public final int generateFileId()
+	{
+		// Check if the path is a store path or pseudo path
+		
+		int fid = -1;
+		
+		if ( isLevel() == LevelId.StorePath)
+		{
+			// Use the share relative path to generate the file id
+			
+			fid = getRelativePath().hashCode();
+		}
+		else if ( isPseudoPath())
+		{
+			// Create a relative path to the pseudo folder
+			
+			StringBuilder relStr = new StringBuilder();
+			relStr.append( FileName.DOS_SEPERATOR);
+			
+			switch( isLevel())
+			{
+			case StoreRoot:
+				relStr.append( getStoreName());
+				break;
+			case Head:
+				relStr.append( getStoreName());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionNameHead);
+				break;
+			case HeadData:
+				relStr.append( getStoreName());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionNameHead);
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.DataFolder);
+				break;
+			case HeadMetaData:
+				relStr.append( getStoreName());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionNameHead);
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.MetaDataFolder);
+				break;
+			case VersionRoot:
+				relStr.append( getStoreName());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionsFolder);
+				break;
+			case Version:
+				relStr.append( getStoreName());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionsFolder);
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionFolderPrefix);
+				relStr.append( getVersion());
+				break;
+			case VersionData:
+				relStr.append( getStoreName());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionsFolder);
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionFolderPrefix);
+				relStr.append( getVersion());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.DataFolder);
+				break;
+			case VersionMetaData:
+				relStr.append( getStoreName());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionsFolder);
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.VersionFolderPrefix);
+				relStr.append( getVersion());
+				relStr.append( FileName.DOS_SEPERATOR);
+				relStr.append( AVMPath.MetaDataFolder);
+				break;
+			}
+			
+			// Generate the file id using the pseudo folder relative path
+			
+			fid = relStr.toString().hashCode();
+		}
+		
+		// Return the file id
+		
+		return fid;
+	}
+	
+	/**
 	 * Return the AVM path details as a string
 	 * 
 	 * @return String

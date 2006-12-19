@@ -279,28 +279,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	            
 	            context.enableStateTable( true, getStateReaper());
 	            
-	            // Get a list of the available AVM stores
-	            
-	            List<AVMStoreDescriptor> storeList = m_avmService.getStores();
-	            
-	            if ( storeList != null && storeList.size() > 0)
-	            {
-	            	// Create a file state for the root folder that does not expire, and add pseudo files
-	            	// for the stores
-
-	            	FileState rootState = context.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR, true, true);
-	            	rootState.setExpiryTime( FileState.NoTimeout);
-	            	
-	            	// Add pseudo files for the stores
-	            	
-	            	for ( AVMStoreDescriptor storeDesc : storeList)
-	            	{
-	            		// Add a pseudo file for the current store
-	            		
-	            		rootState.addPseudoFile( new StorePseudoFile( storeDesc));
-	            	}
-	            }
-	            
 	            // Plug the virtualization view context into the various store/version call back listeners
 	            // so that store/version pseudo folders can be kept in sync with AVM
 	            
@@ -756,6 +734,8 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	    	netFile.setGrantedAccess(NetworkFile.READWRITE);
 	    	    netFile.setFullName(params.getPath());
 	    	    
+	    	    netFile.setFileId( fileStorePath.generateFileId());
+	    	    
 	    	    // Set the mime-type for the new file
 	    	    
 	    	    netFile.setMimeType( m_mimetypeService.guessMimetype( paths[1]));
@@ -1067,7 +1047,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	
     	try
     	{
-	    	AVMNodeDescriptor nodeDesc = m_avmService.lookup( ctx.isVersion(), storePath.getAVMPath());
+	    	AVMNodeDescriptor nodeDesc = m_avmService.lookup( storePath.getVersion(), storePath.getAVMPath());
 	    	
 	    	if ( nodeDesc != null)
 	    	{
@@ -1107,7 +1087,11 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	        		attr += FileAttribute.ReadOnly;
 	        	
 	        	info.setFileAttributes( attr);
-	
+
+	        	// Set the file id
+	        	
+	        	info.setFileId( storePath.generateFileId());
+	        	
 	        	// DEBUG
 	        	
 	        	if ( logger.isDebugEnabled())
@@ -1226,6 +1210,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    	    	netFile.setGrantedAccess(NetworkFile.READWRITE);
 	    	    	
 	    	    netFile.setFullName(params.getPath());
+	    	    netFile.setFileId( storePath.generateFileId());
 	    	    
 	    	    
 	    	    // Set the mime-type for the new file
@@ -1462,6 +1447,11 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 		    			
 		   			if ( WildCard.containsWildcards( searchPath))
 		   			{
+		   				// Check if the pseudo file list is valid
+		   				
+		   				if ( searchList == null)
+		   					searchList = new PseudoFileList();
+		   				
 		   	    		// Create the search context, wildcard filter will take care of secondary filtering of the
 		   	    		// folder listing
 		    	    		
@@ -1523,7 +1513,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    		// folder listing
 	    		
 	    		WildCard wildCardFilter = new WildCard( paths[1], false);
-	    		context = new AVMSearchContext( fileList, attrib, wildCardFilter);
+	    		context = new AVMSearchContext( fileList, attrib, wildCardFilter, storePath.getRelativePath());
 	    	}
     	}
     	else
@@ -1540,7 +1530,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     		{
     			// Create the search context for the single file/folder
     			
-    			context = new AVMSingleFileSearchContext( nodeDesc);
+    			context = new AVMSingleFileSearchContext( nodeDesc, storePath.getRelativePath());
     		}
     		
     	}
@@ -1669,7 +1659,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    		// Get the root folder file state
 	    		
 	    		fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
-	    		if ( fstate != null)
+	    		if ( fstate != null && fstate.hasPseudoFiles())
 	    			psFile = fstate.getPseudoFileList().findFile( avmPath.getStoreName(), false);
 	    		break;
 	    		
@@ -1843,6 +1833,32 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    		// Get the root path file state
 				
 				fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
+				
+				// Check if the root file state is valid
+				
+				if ( fstate == null)
+				{
+					// Create a file state for the root folder
+					
+	            	fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR, true, true);
+	            	fstate.setExpiryTime( FileState.NoTimeout);
+	            	
+		            // Get a list of the available AVM stores
+		            
+		            List<AVMStoreDescriptor> storeList = m_avmService.getStores();
+		            
+		            if ( storeList != null && storeList.size() > 0)
+		            {
+		            	// Add pseudo files for the stores
+		            	
+		            	for ( AVMStoreDescriptor storeDesc : storeList)
+		            	{
+		            		// Add a pseudo file for the current store
+		            		
+		            		fstate.addPseudoFile( new StorePseudoFile( storeDesc));
+		            	}
+		            }
+				}
 	    		break;
 	    		
 	    	// Store folder

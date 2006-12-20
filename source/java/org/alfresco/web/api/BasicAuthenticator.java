@@ -22,6 +22,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.Base64;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -29,8 +31,11 @@ import org.aopalliance.intercept.MethodInvocation;
  * 
  * @author davidc
  */
-public class BasicAuthentication implements MethodInterceptor
+public class BasicAuthenticator implements MethodInterceptor
 {
+    // Logger
+    private static final Log logger = LogFactory.getLog(BasicAuthenticator.class);
+
     // dependencies
     private AuthenticationService authenticationService;
     
@@ -60,9 +65,22 @@ public class BasicAuthentication implements MethodInterceptor
             // validate credentials
             // 
 
+            boolean isGuest = request.isGuest();
             String authorization = request.getHeader("Authorization");
-            if ((authorization == null || authorization.length() == 0) && service.getRequiredAuthentication().equals(APIRequest.RequiredAuthentication.Guest))
+            
+            if (logger.isDebugEnabled())
             {
+                logger.debug("Service authentication required: " + service.getRequiredAuthentication());
+                logger.debug("Guest login: " + isGuest);
+                logger.debug("Authorization provided (overrides Guest login): " + (authorization != null && authorization.length() > 0));
+            }
+            
+            if (((authorization == null || authorization.length() == 0) || isGuest)
+                    && service.getRequiredAuthentication().equals(APIRequest.RequiredAuthentication.Guest))
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("Authenticating as Guest");
+
                 // authenticate as guest, if service allows
                 authenticationService.authenticateAsGuest();
                 authorized = true;
@@ -81,17 +99,26 @@ public class BasicAuthentication implements MethodInterceptor
                     
                     if (parts.length == 1)
                     {
+                        if (logger.isDebugEnabled())
+                            logger.debug("Authenticating ticket " + parts[0]);
+
                         // assume a ticket has been passed
                         authenticationService.validate(parts[0]);
                         authorized = true;
                     }
                     else
                     {
+                        if (logger.isDebugEnabled())
+                            logger.debug("Authenticating user " + parts[0]);
+
                         // assume username and password passed
                         if (parts[0].equals(AuthenticationUtil.getGuestUserName()))
                         {
-                            authenticationService.authenticateAsGuest();
-                            authorized = true;
+                            if (service.getRequiredAuthentication().equals(APIRequest.RequiredAuthentication.Guest))
+                            {
+                                authenticationService.authenticateAsGuest();
+                                authorized = true;
+                            }
                         }
                         else
                         {
@@ -109,6 +136,9 @@ public class BasicAuthentication implements MethodInterceptor
             //
             // execute API service or request authorization
             //
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Authenticated: " + authorized);
             
             if (authorized)
             {

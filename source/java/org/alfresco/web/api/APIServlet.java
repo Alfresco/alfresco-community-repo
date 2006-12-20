@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.web.app.servlet.BaseServlet;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -35,9 +37,12 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class APIServlet extends BaseServlet
 {
     private static final long serialVersionUID = 4209892938069597860L;
-    
+
+    // Logger
+    private static final Log logger = LogFactory.getLog(APIServlet.class);
+
     // API Services
-    private APIServiceMap apiServiceMap;
+    private APIServiceRegistry apiServiceRegistry;
     
     
     @Override
@@ -47,18 +52,12 @@ public class APIServlet extends BaseServlet
 
         // Retrieve all web api services and index by http url & http method
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        apiServiceMap = new APIServiceMap(context);
+        apiServiceRegistry = new APIServiceRegistry(getServletContext(), context);
     }
 
 
 // TODO:
 // - authentication (as suggested in http://www.xml.com/pub/a/2003/12/17/dive.html)
-// - atom
-//   - generator
-//   - author (authenticated)
-//   - icon
-// - html
-//   - icon
               
 
     /*
@@ -80,16 +79,32 @@ public class APIServlet extends BaseServlet
         APIRequest.HttpMethod method = request.getHttpMethod();
         String uri = request.getPathInfo();
 
-        APIService service = apiServiceMap.get(method, uri);
+        if (logger.isDebugEnabled())
+            logger.debug("Processing request ("  + request.getHttpMethod() + ") " + request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : ""));
+        
+        APIService service = apiServiceRegistry.get(method, uri);
         if (service != null)
         {
+            if (logger.isDebugEnabled())
+                logger.debug("Mapped to service "  + service.getName());
+            
+            long start = System.currentTimeMillis();
             service.execute(request, response);
+            long end = System.currentTimeMillis();
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Service " + service.getName() + " executed in " + (end - start) + "ms");
         }
         else
         {
+            if (logger.isDebugEnabled())
+                logger.debug("Request does not map to service.");
+
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             // TODO: add appropriate error detail 
         }
+        
+        // TODO: exception handling
     }
 
 }

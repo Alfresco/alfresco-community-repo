@@ -19,6 +19,8 @@ package org.alfresco.web.api;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+
 
 /**
  * API Service Request
@@ -47,13 +49,12 @@ public class APIRequest extends HttpServletRequestWrapper
         User
     }
     
-    
     /**
      * Construct
      * 
      * @param req
      */
-    public APIRequest(HttpServletRequest req)
+    /*package*/ APIRequest(HttpServletRequest req)
     {
         super(req);
     }
@@ -87,6 +88,26 @@ public class APIRequest extends HttpServletRequestWrapper
     public String getServicePath()
     {
         return getPath() + getServletPath();
+    }
+    
+    /**
+     * Gets the currently authenticated username
+     * 
+     * @return  username
+     */
+    public String getAuthenticatedUsername()
+    {
+        return AuthenticationUtil.getCurrentUserName();
+    }
+
+    /**
+     * Determine if Guest User?
+     * 
+     * @return  true => guest user
+     */
+    public boolean isGuest()
+    {
+        return Boolean.valueOf(getParameter("guest"));
     }
     
 }

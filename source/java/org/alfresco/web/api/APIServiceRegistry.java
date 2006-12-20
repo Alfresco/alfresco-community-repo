@@ -20,8 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.support.RegexpMethodPointcutAdvisor;
 import org.springframework.context.ApplicationContext;
 
 
@@ -30,7 +33,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author davidc
  */
-public class APIServiceMap
+public class APIServiceRegistry
 {
     // TODO: Support different kinds of uri resolution (e.g. regex:/search/.*)
     
@@ -44,17 +47,21 @@ public class APIServiceMap
      * 
      * @param context
      */
-    public APIServiceMap(ApplicationContext context)
+    public APIServiceRegistry(ServletContext servletContext, ApplicationContext appContext)
     {
-        // locate authentication interceptor
-        MethodInterceptor authInterceptor = (MethodInterceptor)context.getBean("web.api.Authentication");
-        
+        // retrieve service authenticator
+        MethodInterceptor authenticator = (MethodInterceptor)appContext.getBean("web.api.Authenticator");
+
         // register all API Services
-        // NOTE: An API Service is one registered in Spring which supports the APIService interface
-        Map<String, APIService> apiServices = context.getBeansOfType(APIService.class, false, false);
+        // NOTE: An API Service is one registered in Spring which is of type APIServiceImpl
+        Map<String, APIService> apiServices = appContext.getBeansOfType(APIService.class, false, false);
         for (Map.Entry<String, APIService> apiService : apiServices.entrySet())
         {
+            // retrieve service
             APIService service = apiService.getValue();
+            service.init(servletContext);
+            
+            // retrieve http method
             APIRequest.HttpMethod method = service.getHttpMethod();
             String httpUri = service.getHttpUri();
             if (httpUri == null || httpUri.length() == 0)
@@ -62,14 +69,21 @@ public class APIServiceMap
                 throw new APIException("Web API Service " + apiService.getKey() + " does not specify a HTTP URI mapping");
             }
             
-            if (authInterceptor != null && service.getRequiredAuthentication() != APIRequest.RequiredAuthentication.None)
+            // wrap API Service in appropriate interceptors (e.g. authentication)
+            if (service.getRequiredAuthentication() != APIRequest.RequiredAuthentication.None)
             {
-                // wrap API Service in appropriate interceptors (e.g. authentication)
-                ProxyFactory authFactory = new ProxyFactory(service);
-                authFactory.addAdvice(authInterceptor);
+                if (authenticator == null)
+                {
+                    throw new APIException("Web API Authenticator not specified");
+                }
+                
+                RegexpMethodPointcutAdvisor advisor = new RegexpMethodPointcutAdvisor(".*execute", authenticator);
+                ProxyFactory authFactory = new ProxyFactory((APIService)service);
+                authFactory.addAdvisor(advisor);
                 service = (APIService)authFactory.getProxy();
             }
-            
+                        
+            // register service
             methods.add(method);
             uris.add(httpUri);
             services.add(service);

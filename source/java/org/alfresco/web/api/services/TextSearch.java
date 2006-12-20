@@ -19,23 +19,30 @@ package org.alfresco.web.api.services;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.web.api.APIException;
 import org.alfresco.web.api.APIRequest;
 import org.alfresco.web.api.APIResponse;
-import org.alfresco.web.api.APIService;
+import org.alfresco.web.api.APIServlet;
 import org.alfresco.web.api.APIRequest.HttpMethod;
 import org.alfresco.web.api.APIRequest.RequiredAuthentication;
+import org.alfresco.web.ui.common.Utils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 
@@ -44,39 +51,27 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author davidc
  */
-public class TextSearch implements APIService
+public class TextSearch extends APIServiceImpl
 {
-    // NOTE: startPage and startIndex are 1 offset.
+    // Logger
+    private static final Log logger = LogFactory.getLog(APIServlet.class);
 
     // search parameters 
-    // TODO: allow configuration of these
-    private static final StoreRef searchStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-    private static final int itemsPerPage = 10;
+    // TODO: allow configuration of search store
+    protected static final StoreRef SEARCH_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+    protected static final int DEFAULT_ITEMS_PER_PAGE = 10;
 
     // dependencies
-    private String uri;
-    private ServiceRegistry serviceRegistry;
-    private SearchService searchService;
-    private TemplateService templateService;
+    protected SearchService searchService;
 
-    
-    /**
-     * Sets the Http URI
-     * 
-     * @param uri
-     */
-    public void setHttpUri(String uri)
+    // icon resolver
+    protected TemplateImageResolver iconResolver = new TemplateImageResolver()
     {
-        this.uri = uri;
-    }
-
-    /**
-     * @param serviceRegistry 
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
+        public String resolveImagePathForName(String filename, boolean small)
+        {
+            return Utils.getFileTypeImage(getServletContext(), filename, small);
+        }
+    };
 
     /**
      * @param searchService
@@ -84,14 +79,6 @@ public class TextSearch implements APIService
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
-    }
-
-    /**
-     * @param templateService
-     */
-    public void setTemplateService(TemplateService templateService)
-    {
-        this.templateService = templateService;
     }
 
     /* (non-Javadoc)
@@ -111,21 +98,13 @@ public class TextSearch implements APIService
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getHttpUri()
-     */
-    public String getHttpUri()
-    {
-        return this.uri;
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.web.api.APIService#execute(org.alfresco.web.api.APIRequest, org.alfresco.web.api.APIResponse)
      */
     public void execute(APIRequest req, APIResponse res)
         throws IOException
     {
         //
-        // execute the search
+        // process parameters
         //
         
         String searchTerms = req.getParameter("q");
@@ -139,8 +118,22 @@ public class TextSearch implements APIService
         {
             // NOTE: use default startPage
         }
+        String itemsPerPageArg = req.getParameter("c");
+        int itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
+        try
+        {
+            itemsPerPage = new Integer(itemsPerPageArg);
+        }
+        catch(NumberFormatException e)
+        {
+            // NOTE: use default itemsPerPage
+        }
         
-        SearchResult results = search(searchTerms, startPage);
+        //
+        // execute the search
+        //
+        
+        SearchResult results = search(searchTerms, startPage, itemsPerPage);
         
         //
         // render the results
@@ -160,12 +153,10 @@ public class TextSearch implements APIService
             }
         }
         
-        // execute template
-        Map<String, Object> searchModel = new HashMap<String, Object>(7, 1.0f);
-        searchModel.put("request", req);
-        searchModel.put("search", results);
+        Map<String, Object> model = createTemplateModel(req, res);
+        model.put("search", results);
         res.setContentType(contentType + ";charset=UTF-8");
-        templateService.processTemplateString(null, template, searchModel, res.getWriter());
+        renderTemplate(template, model, res);
     }
 
     /**
@@ -175,30 +166,38 @@ public class TextSearch implements APIService
      * @param startPage
      * @return
      */
-    private SearchResult search(String searchTerms, int startPage)
+    private SearchResult search(String searchTerms, int startPage, int itemsPerPage)
     {
         SearchResult searchResult = null;
         ResultSet results = null;
         
         try
         {
-            // Construct search statement
+            // construct search statement
             String[] terms = searchTerms.split(" "); 
             Map<String, Object> statementModel = new HashMap<String, Object>(7, 1.0f);
             statementModel.put("terms", terms);
-            String query = templateService.processTemplateString(null, QUERY_STATEMENT, statementModel);
-            results = searchService.query(searchStore, SearchService.LANGUAGE_LUCENE, query);
-
+            String query = getTemplateService().processTemplateString(null, QUERY_STATEMENT, statementModel);
+            
+            // execute query
+            if (logger.isDebugEnabled())
+                logger.debug("Issuing lucene search: " + query);
+            
+            results = searchService.query(SEARCH_STORE, SearchService.LANGUAGE_LUCENE, query);
             int totalResults = results.length();
-            int totalPages = (totalResults / itemsPerPage);
-            totalPages += (totalResults % itemsPerPage != 0) ? 1 : 0;
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Results: " + totalResults + " rows");
             
             // are we out-of-range
+            int totalPages = (totalResults / itemsPerPage);
+            totalPages += (totalResults % itemsPerPage != 0) ? 1 : 0;
             if (totalPages != 0 && (startPage < 1 || startPage > totalPages))
             {
                 throw new APIException("Start page " + startPage + " is outside boundary of " + totalPages + " pages");
             }
 
+            // construct search result
             searchResult = new SearchResult();
             searchResult.setSearchTerms(searchTerms);
             searchResult.setItemsPerPage(itemsPerPage);
@@ -207,13 +206,14 @@ public class TextSearch implements APIService
             searchResult.setTotalResults(totalResults);
             searchResult.setStartIndex(((startPage -1) * itemsPerPage) + 1);
             searchResult.setTotalPageItems(Math.min(itemsPerPage, totalResults - searchResult.getStartIndex() + 1));
-            TemplateNode[] nodes = new TemplateNode[searchResult.getTotalPageItems()];
+            SearchTemplateNode[] nodes = new SearchTemplateNode[searchResult.getTotalPageItems()];
             for (int i = 0; i < searchResult.getTotalPageItems(); i++)
             {
-                nodes[i] = new TemplateNode(results.getNodeRef(i + searchResult.getStartIndex() - 1), serviceRegistry, null);
+                NodeRef node = results.getNodeRef(i + searchResult.getStartIndex() - 1);
+                float score = results.getScore(i + searchResult.getStartIndex() - 1);
+                nodes[i] = new SearchTemplateNode(node, score);
             }
             searchResult.setResults(nodes);
-
             return searchResult;
         }
         finally
@@ -240,7 +240,7 @@ public class TextSearch implements APIService
         private int totalPageItems;
         private int startPage;
         private int startIndex;
-        private TemplateNode[] results;
+        private SearchTemplateNode[] results;
         
         
         public int getItemsPerPage()
@@ -258,7 +258,7 @@ public class TextSearch implements APIService
             return results;
         }
 
-        /*package*/ void setResults(TemplateNode[] results)
+        /*package*/ void setResults(SearchTemplateNode[] results)
         {
             this.results = results;
         }
@@ -333,41 +333,79 @@ public class TextSearch implements APIService
         }
     }
     
+    /**
+     * Search result row template node
+     */
+    public class SearchTemplateNode extends TemplateNode
+    {
+        private static final long serialVersionUID = -1791913270786140012L;
+        private float score;
+
+        /**
+         * Construct
+         * 
+         * @param nodeRef
+         * @param score
+         */
+        public SearchTemplateNode(NodeRef nodeRef, float score)
+        {
+            super(nodeRef, getServiceRegistry(), iconResolver);
+            this.score = score;
+        }
+        
+        /**
+         * Gets the result row score
+         * 
+         * @return  score
+         */
+        public float getScore()
+        {
+            return score;
+        }
+    }
+        
     
     // TODO: place into accessible file
     private final static String ATOM_TEMPLATE = 
         "<#assign dateformat=\"yyyy-MM-dd\">" +
         "<#assign timeformat=\"HH:mm:sszzz\">" +
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:opensearch=\"http://a9.com/-/spec/opensearch/1.1/\">\n" +
+        "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:opensearch=\"http://a9.com/-/spec/opensearch/1.1/\" xmlns:relevance=\"http://a9.com/-/opensearch/extensions/relevance/1.0/\">\n" +
+        "  <generator version=\"${agent.version}\">Alfresco (${agent.edition})</generator>\n" +
         "  <title>Alfresco Search: ${search.searchTerms}</title>\n" + 
-        "  <updated>2003-12-13T18:30:02Z</updated>\n" +   // TODO:
+        "  <updated>${date?string(dateformat)}T${date?string(timeformat)}</updated>\n" +
+        "  <icon>${request.path}/images/logo/AlfrescoLogo16.ico</icon>\n" +
         "  <author>\n" + 
-        "    <name>Alfresco</name>\n" +   // TODO: Issuer of search?
+        "    <name><#if request.authenticatedUsername?exists>${request.authenticatedUsername}<#else>unknown</#if></name>\n" +
         "  </author>\n" + 
         "  <id>urn:uuid:${search.id}</id>\n" +
         "  <opensearch:totalResults>${search.totalResults}</opensearch:totalResults>\n" +
         "  <opensearch:startIndex>${search.startIndex}</opensearch:startIndex>\n" +
         "  <opensearch:itemsPerPage>${search.itemsPerPage}</opensearch:itemsPerPage>\n" +
         "  <opensearch:Query role=\"request\" searchTerms=\"${search.searchTerms}\" startPage=\"${search.startPage}\"/>\n" +
-        "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;format=html\" type=\"text/html\"/>\n" +
-        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
-        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=1&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=html\" type=\"text/html\"/>\n" +
+        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=1&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "<#if search.startPage &gt; 1>" +
-        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage - 1}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "</#if>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage + 1}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
+        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
         "</#if>" +
-        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.totalPages}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.servicePath}/search/text/textsearchdescription.xml\"/>\n" +
         "<#list search.results as row>" +            
         "  <entry>\n" +
         "    <title>${row.name}</title>\n" +
-        "    <link href=\"${request.path}/${row.url}\"/>\n" +
+        "    <link href=\"${request.path}${row.url}\"/>\n" +
+        "    <icon>${request.path}${row.icon16}\"</icon>\n" +  // TODO: Standard for entry icons?
         "    <id>urn:uuid:${row.id}</id>\n" +
         "    <updated>${row.properties.modified?string(dateformat)}T${row.properties.modified?string(timeformat)}</updated>\n" +
         "    <summary>${row.properties.description}</summary>\n" +
+        "    <author>\n" + 
+        "      <name>${row.properties.creator}</name>\n" +
+        "    </author>\n" + 
+        "    <relevance:score>${row.score}</relevance:score>\n" +
         "  </entry>\n" +
         "</#list>" +
         "</feed>";        
@@ -386,53 +424,53 @@ public class TextSearch implements APIService
         "  </head>\n" +
         "  <body>\n" +
         "    <h2>Alfresco Text Search</h2>\n" +
-        "    Results <b>${search.startIndex}</b> - <b>${search.startIndex + search.totalPageItems - 1}</b> of <b>${search.totalResults}</b> for <b>${search.searchTerms}.</b>\n" +
+        "    Results <b>${search.startIndex}</b> - <b>${search.startIndex + search.totalPageItems - 1}</b> of <b>${search.totalResults}</b> for <b>${search.searchTerms}</b> " +
+            "visible to user <b><#if request.authenticatedUsername?exists>${request.authenticatedUsername}<#else>unknown</#if>.</b>\n" + 
         "    <ul>\n" +
         "<#list search.results as row>" +            
         "      <li>\n" +
-        "        <a href=\"${request.path}/${row.url}\">\n" +
-        "           ${row.name}\n" +
-        "        </a>\n" +
+        "        <img src=\"${request.path}${row.icon16}\"/>" +
+        "        <a href=\"${request.path}${row.url}\">${row.name}</a>\n" +
         "        <div>\n" +
         "          ${row.properties.description}\n" +
         "        </div>\n" +
         "      </li>\n" +
         "</#list>" +
         "    </ul>\n" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=1\">first</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=1&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">first</a>" +
         "<#if search.startPage &gt; 1>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage - 1}\">previous</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage - 1}&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">previous</a>" +
         "</#if>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage}\">${search.startPage}</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage}&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">${search.startPage}</a>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage + 1}\">next</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage + 1}&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">next</a>" +
         "</#if>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.totalPages}\">last</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.totalPages}&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">last</a>" +
         "  </body>\n" +
         "</html>\n";
 
     // TODO: place into accessible file
     private final static String QUERY_STATEMENT =  
-        "( " +
-        "  TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" AND " +
-        "  (" +
-        "    (" +
+        "(" +
+          "TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" AND " +
+          "(" +
+            "(" +
         "<#list 1..terms?size as i>" +
-        "      @\\{http\\://www.alfresco.org/model/content/1.0\\}name:${terms[i - 1]}" +
+              "@\\{http\\://www.alfresco.org/model/content/1.0\\}name:${terms[i - 1]}" +
         "<#if (i < terms?size)>" +
-        "      OR " +
+             " OR " +
         "</#if>" +
         "</#list>" +
-        "    ) " +
-        "    ( " +
+            ")" +
+            "(" +
         "<#list 1..terms?size as i>" +
-        "      TEXT:${terms[i - 1]}" +
+              "TEXT:${terms[i - 1]}" +
         "<#if (i < terms?size)>" +
-        "      OR " +
+             " OR " +
         "</#if>" +
         "</#list>" +
-        "    )" +
-        "  )" +
+            ")" +
+          ")" +
         ")";
 
     
@@ -453,6 +491,7 @@ public class TextSearch implements APIService
         method.setServiceRegistry((ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY));
         method.setTemplateService((TemplateService)context.getBean(ServiceRegistry.TEMPLATE_SERVICE.getLocalName()));
         method.setSearchService((SearchService)context.getBean(ServiceRegistry.SEARCH_SERVICE.getLocalName()));
+        method.setDescriptorService((DescriptorService)context.getBean(ServiceRegistry.DESCRIPTOR_SERVICE.getLocalName()));
         method.setHttpUri("/search/text");
         method.test();
     }
@@ -464,18 +503,21 @@ public class TextSearch implements APIService
      */
     private void test()
     {
-        SearchResult result = search("alfresco tutorial", 1);
+        SearchResult result = search("alfresco tutorial", 1, 5);
 
         Map<String, Object> searchModel = new HashMap<String, Object>(7, 1.0f);
         Map<String, Object> request = new HashMap<String, Object>();
         request.put("servicePath", "http://localhost:8080/alfresco/service");
         request.put("path", "http://localhost:8080/alfresco");
+        request.put("guest", false);
+        searchModel.put("date", new Date());
+        searchModel.put("agent", getDescriptorService().getServerDescriptor());
         searchModel.put("request", request);
         searchModel.put("search", result);
         
         StringWriter rendition = new StringWriter();
         PrintWriter writer = new PrintWriter(rendition);
-        templateService.processTemplateString(null, HTML_TEMPLATE, searchModel, writer);
+        getTemplateService().processTemplateString(null, ATOM_TEMPLATE, searchModel, writer);
         System.out.println(rendition.toString());
     }
 

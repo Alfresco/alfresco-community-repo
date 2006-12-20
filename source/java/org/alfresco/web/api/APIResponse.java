@@ -38,7 +38,7 @@ public class APIResponse extends HttpServletResponseWrapper
      * 
      * @param res
      */
-    public APIResponse(HttpServletResponse res)
+    /*package*/ APIResponse(HttpServletResponse res)
     {
         super(res);
     }

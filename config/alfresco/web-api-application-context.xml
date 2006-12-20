@@ -8,9 +8,9 @@
    <!--  -->   
 
    <!--  TODO: For now, experiment with HTTP Basic Authentication -->
-   <alias alias="web.api.Authentication" name="web.api.BasicAuthentication" />
+   <alias alias="web.api.Authenticator" name="web.api.BasicAuthenticator" />
    
-   <bean id="web.api.BasicAuthentication" class="org.alfresco.web.api.BasicAuthentication">
+   <bean id="web.api.BasicAuthenticator" class="org.alfresco.web.api.BasicAuthenticator">
       <property name="authenticationService" ref="AuthenticationService" />
    </bean>
 
@@ -19,16 +19,19 @@
    <!--  Web API Services -->
    <!--  -->
 
-   <bean id="web.api.TextSearchDescription" class="org.alfresco.web.api.services.TextSearchDescription">
-      <property name="httpUri" value="/search/textsearchdescription.xml" />
+   <bean id="web.api.APIService" abstract="true">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="descriptorService" ref="DescriptorService" />
       <property name="templateService" ref="TemplateService" />
    </bean>
 
-   <bean id="web.api.TextSearch" class="org.alfresco.web.api.services.TextSearch">
+   <bean id="web.api.TextSearchDescription" class="org.alfresco.web.api.services.TextSearchDescription" parent="web.api.APIService">
+      <property name="httpUri" value="/search/textsearchdescription.xml" />
+   </bean>
+
+   <bean id="web.api.TextSearch" class="org.alfresco.web.api.services.TextSearch" parent="web.api.APIService">
       <property name="httpUri" value="/search/text" />
-      <property name="serviceRegistry" ref="ServiceRegistry" />
       <property name="searchService" ref="SearchService" />
-      <property name="templateService" ref="TemplateService"/>
    </bean>
    
 </beans>

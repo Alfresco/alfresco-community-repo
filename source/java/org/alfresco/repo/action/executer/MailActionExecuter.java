@@ -333,10 +333,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
       Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
       
       NodeRef person = personService.getPerson(authService.getCurrentUserName());
-      model.put("person", new TemplateNode(person, serviceRegistry));
-      model.put("document", new TemplateNode(ref, serviceRegistry));
+      model.put("person", new TemplateNode(person, serviceRegistry, null));
+      model.put("document", new TemplateNode(ref, serviceRegistry, null));
       NodeRef parent = serviceRegistry.getNodeService().getPrimaryParent(ref).getParentRef();
-      model.put("space", new TemplateNode(parent, serviceRegistry));
+      model.put("space", new TemplateNode(parent, serviceRegistry, null));
       
       // current date/time is useful to have and isn't supplied by FreeMarker by default
       model.put("date", new Date());

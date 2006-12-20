@@ -102,7 +102,7 @@ public final class Classification
         ArrayList<CategoryTemplateNode> categoryNodes = new ArrayList<CategoryTemplateNode>(cars.size());
         for (ChildAssociationRef car : cars)
         {
-            categoryNodes.add(new CategoryTemplateNode(car.getChildRef(), this.services));
+            categoryNodes.add(new CategoryTemplateNode(car.getChildRef(), this.services, this.imageResolver));
         }
         return categoryNodes;
     }

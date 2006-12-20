@@ -68,7 +68,7 @@ public final class AVM extends BaseScriptImplementation implements Scopeable
            AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, rootPath);
            if (nodeDesc != null)
            {
-               rootNode = new AVMNode(AVMNodeConverter.ToNodeRef(-1, rootPath), this.services, null, this.scope);
+               rootNode = new AVMNode(AVMNodeConverter.ToNodeRef(-1, rootPath), this.services, this.scope);
            }
         }
         return rootNode;
@@ -89,7 +89,7 @@ public final class AVM extends BaseScriptImplementation implements Scopeable
             AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, path);
             if (nodeDesc != null)
             {
-                node = new AVMNode(AVMNodeConverter.ToNodeRef(-1, path), this.services, null, this.scope);
+                node = new AVMNode(AVMNodeConverter.ToNodeRef(-1, path), this.services, this.scope);
             }
         }
         return node;

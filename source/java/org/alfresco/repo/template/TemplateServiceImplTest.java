@@ -116,7 +116,7 @@ public class TemplateServiceImplTest extends TestCase
                     // create test model
                     Map model = new HashMap(7, 1.0f);
                     
-                    model.put("root", new TemplateNode(root, serviceRegistry));
+                    model.put("root", new TemplateNode(root, serviceRegistry, null));
                     
                     // execute on test template
                     String output = templateService.processTemplate("freemarker", TEMPLATE_1, model);

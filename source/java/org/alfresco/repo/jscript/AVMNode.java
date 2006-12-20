@@ -39,9 +39,9 @@ public class AVMNode extends Node
      * @param services
      * @param resolver
      */
-    public AVMNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
+    public AVMNode(NodeRef nodeRef, ServiceRegistry services)
     {
-        super(nodeRef, services, resolver);
+        super(nodeRef, services);
         this.path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
     }
 
@@ -53,9 +53,9 @@ public class AVMNode extends Node
      * @param resolver
      * @param scope
      */
-    public AVMNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver, Scriptable scope)
+    public AVMNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
-        super(nodeRef, services, resolver, scope);
+        super(nodeRef, services, scope);
         this.path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
     }
     
@@ -63,9 +63,9 @@ public class AVMNode extends Node
      * Factory method
      */
     @Override
-    public Node newInstance(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver, Scriptable scope)
+    public Node newInstance(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
-        return new AVMNode(nodeRef, services, resolver, scope);
+        return new AVMNode(nodeRef, services, scope);
     }
     
     // TODO: changing the 'name' property (either directly using .name or with .properties.name)
@@ -121,7 +121,7 @@ public class AVMNode extends Node
             this.services.getAVMService().copy(-1, getPath(), destination, getName());
             copy = newInstance(
                     AVMNodeConverter.ToNodeRef(-1, destination + '/' + getName()),
-                    this.services, null, this.scope);
+                    this.services, this.scope);
         }
         
         return copy;

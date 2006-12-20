@@ -29,6 +29,20 @@ public interface APIService
 {
 
     /**
+     * Initialise the Service
+     * 
+     * @param context
+     */
+    public void init(ServletContext context);
+
+    /**
+     * Gets the name of this service
+     * 
+     * @return  service name
+     */
+    public String getName();
+    
+    /**
      * Gets the required authentication level for execution of this service
      * 
      * @return  the required authentication level 
@@ -48,7 +62,7 @@ public interface APIService
      * @return  HTTP uri
      */
     public String getHttpUri();
-    
+
     /**
      * Execute service
      * 
@@ -59,7 +73,4 @@ public interface APIService
     public void execute(APIRequest req, APIResponse res)
         throws IOException;
     
-    public String getName();
-    
-    public void init(ServletContext sc);
 }

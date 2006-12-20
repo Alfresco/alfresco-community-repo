@@ -121,6 +121,7 @@ public class Node implements Serializable, Scopeable
    private ChildAssociationRef primaryParentAssoc = null;
    // NOTE: see the reset() method when adding new cached members!
 
+   
    // ------------------------------------------------------------------------------
    // Construction
 
@@ -202,6 +203,7 @@ public class Node implements Serializable, Scopeable
    {
       this.scope = scope;
    }
+   
 
    // ------------------------------------------------------------------------------
    // Node Wrapper API
@@ -286,8 +288,7 @@ public class Node implements Serializable, Scopeable
    /**
     * Helper to set the 'name' property for the node.
     * 
-    * @param name
-    *            Name to set
+    * @param name Name to set
     */
    public void setName(String name)
    {
@@ -328,7 +329,8 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * @return Returns the Node at the specified 'cm:name' based Path walking the children of this Node. So a valid call might be
+    * @return Returns the Node at the specified 'cm:name' based Path walking the children of this Node.
+    *         So a valid call might be:
     *         <code>mynode.childByNamePath("/QA/Testing/Docs");</code>
     */
    public Node childByNamePath(String path)
@@ -364,15 +366,11 @@ public class Node implements Serializable, Scopeable
       return getChildrenByXPath(xpath, false);
    }
 
-   // TODO: find out why this doesn't work - the function defs do not seem to get found
-   // public Node[] jsFunction_childrenByXPath(String xpath)
-   // {
-   // return childrenByXPath(xpath);
-   // }
-
    /**
-    * Return the associations for this Node. As a Map of assoc name to an Array of Nodes. The Map returned implements the Scriptable interface to allow access to the assoc arrays
-    * via JavaScript associative array access. This means associations of this node can be access thus: <code>node.assocs["translations"][0]</code>
+    * Return the associations for this Node. As a Map of assoc name to an Array of Nodes.
+    * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
+    * associative array access. This means associations of this node can be access thus:
+    * <code>node.assocs["translations"][0]</code>
     * 
     * @return associations as a Map of assoc name to an Array of Nodes.
     */
@@ -415,8 +413,9 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Return all the properties known about this node. The Map returned implements the Scriptable interface to allow access to the properties via JavaScript associative array
-    * access. This means properties of a node can be access thus: <code>node.properties["name"]</code>
+    * Return all the properties known about this node. The Map returned implements the Scriptable interface to
+    * allow access to the properties via JavaScript associative array access. This means properties of a node can
+    * be access thus: <code>node.properties["name"]</code>
     * 
     * @return Map of properties for this Node.
     */
@@ -455,8 +454,8 @@ public class Node implements Serializable, Scopeable
       if (isContainer == null)
       {
          DictionaryService dd = this.services.getDictionaryService();
-         isContainer = Boolean.valueOf((dd.isSubClass(getType(), ContentModel.TYPE_FOLDER) == true && dd.isSubClass(
-               getType(), ContentModel.TYPE_SYSTEM_FOLDER) == false));
+         isContainer = Boolean.valueOf((dd.isSubClass(getType(), ContentModel.TYPE_FOLDER) == true &&
+                                        dd.isSubClass(getType(), ContentModel.TYPE_SYSTEM_FOLDER) == false));
       }
 
       return isContainer.booleanValue();
@@ -526,8 +525,7 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * @param aspect
-    *            The aspect name to test for (full qualified or short-name form)
+    * @param aspect  The aspect name to test for (full qualified or short-name form)
     * @return true if the node has the aspect false otherwise
     */
    public boolean hasAspect(String aspect)
@@ -538,10 +536,10 @@ public class Node implements Serializable, Scopeable
    /**
     * Return true if the user has the specified permission on the node.
     * <p>
-    * The default permissions are found in <code>org.alfresco.service.cmr.security.PermissionService</code>. Most commonly used are "Write", "Delete" and "AddChildren".
+    * The default permissions are found in <code>org.alfresco.service.cmr.security.PermissionService</code>.
+    * Most commonly used are "Write", "Delete" and "AddChildren".
     * 
-    * @param permission
-    *            as found in <code>org.alfresco.service.cmr.security.PermissionService</code>
+    * @param permission as found in <code>org.alfresco.service.cmr.security.PermissionService</code>
     * @return true if the user has the specified permission on the node.
     */
    public boolean hasPermission(String permission)
@@ -699,8 +697,7 @@ public class Node implements Serializable, Scopeable
    /**
     * Set the content for this node
     * 
-    * @param content
-    *            Content string to set
+    * @param content    Content string to set
     */
    public void setContent(String content)
    {
@@ -722,7 +719,8 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * @return For a content document, this method returns the URL to the content stream for the default content property (@see ContentModel.PROP_CONTENT)
+    * @return For a content document, this method returns the URL to the content stream for the default content
+    *         property (@see ContentModel.PROP_CONTENT)
     *         <p>
     *         For a container node, this method return the URL to browse to the folder in the web-client
     */
@@ -754,7 +752,8 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * @return The mimetype encoding for content attached to the node from the default content property (@see ContentModel.PROP_CONTENT)
+    * @return The mimetype encoding for content attached to the node from the default content property
+    *         (@see ContentModel.PROP_CONTENT)
     */
    public String getMimetype()
    {
@@ -774,10 +773,10 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Set the mimetype encoding for the content attached to the node from the default content property (@see ContentModel.PROP_CONTENT)
+    * Set the mimetype encoding for the content attached to the node from the default content property
+    * (@see ContentModel.PROP_CONTENT)
     * 
-    * @param mimetype
-    *            Mimetype to set
+    * @param mimetype   Mimetype to set
     */
    public void setMimetype(String mimetype)
    {
@@ -794,7 +793,8 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * @return The size in bytes of the content attached to the node from the default content property (@see ContentModel.PROP_CONTENT)
+    * @return The size in bytes of the content attached to the node from the default content property
+    *         (@see ContentModel.PROP_CONTENT)
     */
    public long getSize()
    {
@@ -812,7 +812,8 @@ public class Node implements Serializable, Scopeable
    {
       return getSize();
    }
-
+   
+   
    // ------------------------------------------------------------------------------
    // Security API
 
@@ -827,8 +828,7 @@ public class Node implements Serializable, Scopeable
    /**
     * Set whether this node should inherit permissions from the parent node.
     * 
-    * @param inherit
-    *            True to inherit parent permissions, false otherwise.
+    * @param inherit True to inherit parent permissions, false otherwise.
     */
    public void setInheritsPermissions(boolean inherit)
    {
@@ -838,8 +838,7 @@ public class Node implements Serializable, Scopeable
    /**
     * Apply a permission for ALL users to the node.
     * 
-    * @param permission
-    *            Permission to apply
+    * @param permission Permission to apply
     * @see org.alfresco.service.cmr.security.PermissionService
     */
    public void setPermission(String permission)
@@ -851,11 +850,8 @@ public class Node implements Serializable, Scopeable
    /**
     * Apply a permission for the specified authority (e.g. username or group) to the node.
     * 
-    * @param permission
-    *            Permission to apply
-    * @see org.alfresco.service.cmr.security.PermissionService
-    * @param authority
-    *            Authority (generally a username or group name) to apply the permission for
+    * @param permission Permission to apply @see org.alfresco.service.cmr.security.PermissionService
+    * @param authority Authority (generally a username or group name) to apply the permission for
     */
    public void setPermission(String permission, String authority)
    {
@@ -865,9 +861,7 @@ public class Node implements Serializable, Scopeable
    /**
     * Remove a permission for ALL user from the node.
     * 
-    * @param permission
-    *            Permission to remove
-    * @see org.alfresco.service.cmr.security.PermissionService
+    * @param permission Permission to remove @see org.alfresco.service.cmr.security.PermissionService
     */
    public void removePermission(String permission)
    {
@@ -878,17 +872,15 @@ public class Node implements Serializable, Scopeable
    /**
     * Remove a permission for the specified authority (e.g. username or group) from the node.
     * 
-    * @param permission
-    *            Permission to remove
-    * @see org.alfresco.service.cmr.security.PermissionService
-    * @param authority
-    *            Authority (generally a username or group name) to apply the permission for
+    * @param permission Permission to remove @see org.alfresco.service.cmr.security.PermissionService
+    * @param authority  Authority (generally a username or group name) to apply the permission for
     */
    public void removePermission(String permission, String authority)
    {
       this.services.getPermissionService().deletePermission(this.nodeRef, authority, permission);
    }
 
+   
    // ------------------------------------------------------------------------------
    // Ownership API
 
@@ -928,6 +920,7 @@ public class Node implements Serializable, Scopeable
       return getOwner();
    }
 
+   
    // ------------------------------------------------------------------------------
    // Create and Modify API
 
@@ -951,12 +944,13 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Re-sets the type of the node. Can be called in order specialise a node to a sub-type. This should be used with caution since calling it changes the type of the node and thus
-    * implies a different set of aspects, properties and associations. It is the responsibility of the caller to ensure that the node is in a approriate state after changing the
-    * type.
+    * Re-sets the type of the node. Can be called in order specialise a node to a sub-type. This should be used
+    * with caution since calling it changes the type of the node and thus* implies a different set of aspects,
+    * properties and associations. It is the responsibility of the caller to ensure that the node is in a
+    * approriate state after changing the type.
     * 
-    * @param type
-    *            Type to specialize the node
+    * @param type Type to specialize the node
+    * 
     * @return true if successful, false otherwise
     */
    public boolean specializeType(String type)
@@ -964,8 +958,8 @@ public class Node implements Serializable, Scopeable
       QName qnameType = createQName(type);
 
       // Ensure that we are performing a specialise
-      if (getType().equals(qnameType) == false
-            && this.services.getDictionaryService().isSubClass(qnameType, getType()) == true)
+      if (getType().equals(qnameType) == false &&
+          this.services.getDictionaryService().isSubClass(qnameType, getType()) == true)
       {
          // Specialise the type of the node
          try
@@ -988,8 +982,8 @@ public class Node implements Serializable, Scopeable
     * <p>
     * Once created the file should have content set using the <code>content</code> property.
     * 
-    * @param name
-    *            Name of the file to create
+    * @param name Name of the file to create
+    * 
     * @return Newly created Node or null if failed to create.
     */
    public Node createFile(String name)
@@ -1021,8 +1015,8 @@ public class Node implements Serializable, Scopeable
    /**
     * Create a new folder (cm:folder) node as a child of this node.
     * 
-    * @param name
-    *            Name of the folder to create
+    * @param name Name of the folder to create
+    * 
     * @return Newly created Node or null if failed to create.
     */
    public Node createFolder(String name)
@@ -1054,10 +1048,9 @@ public class Node implements Serializable, Scopeable
    /**
     * Create a new Node of the specified type as a child of this node.
     * 
-    * @param name
-    *            Name of the node to create
-    * @param type
-    *            QName type (can either be fully qualified or short form such as 'cm:content')
+    * @param name Name of the node to create
+    * @param type QName type (can either be fully qualified or short form such as 'cm:content')
+    * 
     * @return Newly created Node or null if failed to create.
     */
    public Node createNode(String name, String type)
@@ -1114,8 +1107,8 @@ public class Node implements Serializable, Scopeable
    /**
     * Copy this Node to a new parent destination. Note that children of the source Node are not copied.
     * 
-    * @param destination
-    *            Node
+    * @param destination   Node
+    * 
     * @return The newly copied Node instance or null if failed to copy.
     */
    public Node copy(Node destination)
@@ -1126,10 +1119,9 @@ public class Node implements Serializable, Scopeable
    /**
     * Copy this Node and potentially all child nodes to a new parent destination.
     * 
-    * @param destination
-    *            Node
-    * @param deepCopy
-    *            True for a deep copy, false otherwise.
+    * @param destination   Node
+    * @param deepCopy      True for a deep copy, false otherwise.
+    * 
     * @return The newly copied Node instance or null if failed to copy.
     */
    public Node copy(Node destination, boolean deepCopy)
@@ -1160,8 +1152,8 @@ public class Node implements Serializable, Scopeable
    /**
     * Move this Node to a new parent destination.
     * 
-    * @param destination
-    *            Node
+    * @param destination   Node
+    * 
     * @return true on successful move, false on failure to move.
     */
    public boolean move(Node destination)
@@ -1196,8 +1188,8 @@ public class Node implements Serializable, Scopeable
    /**
     * Add an aspect to the Node. As no properties are provided in this call, it can only be used to add aspects that do not require any mandatory properties.
     * 
-    * @param type
-    *            Type name of the aspect to add
+    * @param type    Type name of the aspect to add
+    * 
     * @return true if the aspect was added successfully, false if an error occured.
     */
    public boolean addAspect(String type)
@@ -1208,10 +1200,10 @@ public class Node implements Serializable, Scopeable
    /**
     * Add an aspect to the Node.
     * 
-    * @param type
-    *            Type name of the aspect to add
-    * @param props
-    *            ScriptableObject (generally an assocative array) providing the named properties for the aspect - any mandatory properties for the aspect must be provided!
+    * @param type    Type name of the aspect to add
+    * @param props   ScriptableObject (generally an assocative array) providing the named properties for the aspect
+    *                - any mandatory properties for the aspect must be provided!
+    *                
     * @return true if the aspect was added successfully, false if an error occured.
     */
    public boolean addAspect(String type, Object props)
@@ -1267,6 +1259,7 @@ public class Node implements Serializable, Scopeable
     * Remove aspect from the node.
     * 
     * @param type  the aspect type
+    * 
     * @return      true if successful, false otherwise
     */
    public boolean removeAspect(String type)
@@ -1287,6 +1280,7 @@ public class Node implements Serializable, Scopeable
       return success;
    }
 
+   
    // ------------------------------------------------------------------------------
    // Checkout/Checkin Services
 
@@ -1329,8 +1323,9 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Check-in a working copy document. The current state of the working copy is copied to the original node, this will include any content updated in the working node. Note that
-    * this method can only be called on a working copy Node.
+    * Check-in a working copy document. The current state of the working copy is copied to the original node,
+    * this will include any content updated in the working node. Note that this method can only be called on a
+    * working copy Node.
     * 
     * @return the original Node that was checked out.
     */
@@ -1340,11 +1335,12 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Check-in a working copy document. The current state of the working copy is copied to the original node, this will include any content updated in the working node. Note that
-    * this method can only be called on a working copy Node.
+    * Check-in a working copy document. The current state of the working copy is copied to the original node,
+    * this will include any content updated in the working node. Note that this method can only be called on a
+    * working copy Node.
     * 
-    * @param history
-    *            Version history note
+    * @param history    Version history note
+    * 
     * @return the original Node that was checked out.
     */
    public Node checkin(String history)
@@ -1353,13 +1349,13 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Check-in a working copy document. The current state of the working copy is copied to the original node, this will include any content updated in the working node. Note that
-    * this method can only be called on a working copy Node.
+    * Check-in a working copy document. The current state of the working copy is copied to the original node,
+    * this will include any content updated in the working node. Note that this method can only be called on a
+    * working copy Node.
     * 
-    * @param history
-    *            Version history note
-    * @param majorVersion
-    *            True to save as a major version increment, false for minor version.
+    * @param history       Version history note
+    * @param majorVersion  True to save as a major version increment, false for minor version.
+    * 
     * @return the original Node that was checked out.
     */
    public Node checkin(String history, boolean majorVersion)
@@ -1372,8 +1368,9 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Cancel the check-out of a working copy document. The working copy will be deleted and any changes made to it are lost. Note that this method can only be called on a working
-    * copy Node. The reference to this working copy Node should be discarded.
+    * Cancel the check-out of a working copy document. The working copy will be deleted and any changes made to it
+    * are lost. Note that this method can only be called on a working copy Node. The reference to this working copy
+    * Node should be discarded.
     * 
     * @return the original Node that was checked out.
     */
@@ -1387,11 +1384,11 @@ public class Node implements Serializable, Scopeable
    // Transformation and Rendering API
 
    /**
-    * Transform a document to a new document mimetype format. A copy of the document is made and the extension changed to match the new mimetype, then the transformation is
-    * applied.
+    * Transform a document to a new document mimetype format. A copy of the document is made and the extension
+    * changed to match the new mimetype, then the transformation isapplied.
     * 
-    * @param mimetype
-    *            Mimetype destination for the transformation
+    * @param mimetype   Mimetype destination for the transformation
+    * 
     * @return Node representing the newly transformed document.
     */
    public Node transformDocument(String mimetype)
@@ -1400,13 +1397,12 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Transform a document to a new document mimetype format. A copy of the document is made in the specified destination folder and the extension changed to match the new
-    * mimetype, then then transformation is applied.
+    * Transform a document to a new document mimetype format. A copy of the document is made in the specified
+    * destination folder and the extension changed to match the new mimetype, then then transformation is applied.
     * 
-    * @param mimetype
-    *            Mimetype destination for the transformation
-    * @param destination
-    *            Destination folder location
+    * @param mimetype      Mimetype destination for the transformation
+    * @param destination   Destination folder location
+    * 
     * @return Node representing the newly transformed document.
     */
    public Node transformDocument(String mimetype, Node destination)
@@ -1445,12 +1441,10 @@ public class Node implements Serializable, Scopeable
    /**
     * Generic method to transform Node content from one mimetype to another.
     * 
-    * @param transformer
-    *            The Transformer delegate supplying the transformation logic
-    * @param mimetype
-    *            Mimetype of the destination content
-    * @param destination
-    *            Destination folder location for the resulting document
+    * @param transformer   The Transformer delegate supplying the transformation logic
+    * @param mimetype      Mimetype of the destination content
+    * @param destination   Destination folder location for the resulting document
+    * 
     * @return Node representing the transformed content - or null if the transform failed
     */
    private Node transformNode(Transformer transformer, String mimetype, NodeRef destination)
@@ -1488,10 +1482,11 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Transform an image to a new image format. A copy of the image document is made and the extension changed to match the new mimetype, then the transformation is applied.
+    * Transform an image to a new image format. A copy of the image document is made and the extension changed to
+    * match the new mimetype, then the transformation is applied.
     * 
-    * @param mimetype
-    *            Mimetype destination for the transformation
+    * @param mimetype   Mimetype destination for the transformation
+    * 
     * @return Node representing the newly transformed image.
     */
    public Node transformImage(String mimetype)
@@ -1500,12 +1495,12 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Transform an image to a new image format. A copy of the image document is made and the extension changed to match the new mimetype, then the transformation is applied.
+    * Transform an image to a new image format. A copy of the image document is made and the extension changed to
+    * match the new mimetype, then the transformation is applied.
     * 
-    * @param mimetype
-    *            Mimetype destination for the transformation
-    * @param options
-    *            Image convert command options
+    * @param mimetype   Mimetype destination for the transformation
+    * @param options    Image convert command options
+    * 
     * @return Node representing the newly transformed image.
     */
    public Node transformImage(String mimetype, String options)
@@ -1514,13 +1509,12 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Transform an image to a new image mimetype format. A copy of the image document is made in the specified destination folder and the extension changed to match the new
-    * mimetype, then then transformation is applied.
+    * Transform an image to a new image mimetype format. A copy of the image document is made in the specified
+    * destination folder and the extension changed to match the newmimetype, then then transformation is applied.
     * 
-    * @param mimetype
-    *            Mimetype destination for the transformation
-    * @param destination
-    *            Destination folder location
+    * @param mimetype      Mimetype destination for the transformation
+    * @param destination   Destination folder location
+    * 
     * @return Node representing the newly transformed image.
     */
    public Node transformImage(String mimetype, Node destination)
@@ -1529,15 +1523,14 @@ public class Node implements Serializable, Scopeable
    }
 
    /**
-    * Transform an image to a new image mimetype format. A copy of the image document is made in the specified destination folder and the extension changed to match the new
+    * Transform an image to a new image mimetype format. A copy of the image document is made in the specified
+    * destination folder and the extension changed to match the new
     * mimetype, then then transformation is applied.
     * 
-    * @param mimetype
-    *            Mimetype destination for the transformation
-    * @param options
-    *            Image convert command options
-    * @param destination
-    *            Destination folder location
+    * @param mimetype      Mimetype destination for the transformation
+    * @param options       Image convert command options
+    * @param destination   Destination folder location
+    * 
     * @return Node representing the newly transformed image.
     */
    public Node transformImage(String mimetype, String options, Node destination)
@@ -1575,8 +1568,8 @@ public class Node implements Serializable, Scopeable
    /**
     * Process a FreeMarker Template against the current node.
     * 
-    * @param template
-    *            Node of the template to execute
+    * @param template      Node of the template to execute
+    * 
     * @return output of the template execution
     */
    public String processTemplate(Node template)
@@ -1587,10 +1580,10 @@ public class Node implements Serializable, Scopeable
    /**
     * Process a FreeMarker Template against the current node.
     * 
-    * @param template
-    *            Node of the template to execute
-    * @param args
-    *            Scriptable object (generally an associative array) containing the name/value pairs of arguments to be passed to the template
+    * @param template   Node of the template to execute
+    * @param args       Scriptable object (generally an associative array) containing the name/value pairs of
+    *                   arguments to be passed to the template
+    *                   
     * @return output of the template execution
     */
    public String processTemplate(Node template, Object args)
@@ -1601,8 +1594,8 @@ public class Node implements Serializable, Scopeable
    /**
     * Process a FreeMarker Template against the current node.
     * 
-    * @param template
-    *            The template to execute
+    * @param template   The template to execute
+    * 
     * @return output of the template execution
     */
    public String processTemplate(String template)
@@ -1613,10 +1606,10 @@ public class Node implements Serializable, Scopeable
    /**
     * Process a FreeMarker Template against the current node.
     * 
-    * @param template
-    *            The template to execute
-    * @param args
-    *            Scriptable object (generally an associative array) containing the name/value pairs of arguments to be passed to the template
+    * @param template   The template to execute
+    * @param args       Scriptable object (generally an associative array) containing the name/value pairs of
+    *                   arguments to be passed to the template
+    *                   
     * @return output of the template execution
     */
    public String processTemplate(String template, Object args)
@@ -1675,6 +1668,7 @@ public class Node implements Serializable, Scopeable
       return this.services.getTemplateService().processTemplateString(null, template, model);
    }
 
+   
    // ------------------------------------------------------------------------------
    // Helper methods
 
@@ -1700,8 +1694,8 @@ public class Node implements Serializable, Scopeable
    /**
     * Helper to create a QName from either a fully qualified or short-name QName string
     * 
-    * @param s
-    *            Fully qualified or short-name QName string
+    * @param s    Fully qualified or short-name QName string
+    * 
     * @return QName
     */
    private QName createQName(String s)
@@ -1739,10 +1733,9 @@ public class Node implements Serializable, Scopeable
    /**
     * Return a list or a single Node from executing an xpath against the parent Node.
     * 
-    * @param xpath
-    *            XPath to execute
-    * @param firstOnly
-    *            True to return the first result only
+    * @param xpath      XPath to execute
+    * @param firstOnly  True to return the first result only
+    * 
     * @return Node[] can be empty but never null
     */
    private Node[] getChildrenByXPath(String xpath, boolean firstOnly)
@@ -1780,6 +1773,7 @@ public class Node implements Serializable, Scopeable
       return result != null ? result : new Node[0];
    }
 
+   
    // ------------------------------------------------------------------------------
    // Value Conversion
 
@@ -1815,13 +1809,12 @@ public class Node implements Serializable, Scopeable
    public class NodeValueConverter extends ValueConverter
    {
       /**
-       * Convert an object from any repository serialized value to a valid script object. This includes converting Collection multi-value properties into JavaScript Array
-       * objects.
+       * Convert an object from any repository serialized value to a valid script object. This includes converting
+       * Collection multi-value properties into JavaScript Array objects.
        * 
-       * @param qname
-       *            QName of the property value for conversion
-       * @param value
-       *            Property value
+       * @param qname      QName of the property value for conversion
+       * @param value      Property value
+       * 
        * @return Value safe for scripting usage
        */
       public Serializable convertValueForScript(QName qname, Serializable value)
@@ -1832,8 +1825,8 @@ public class Node implements Serializable, Scopeable
       /*
        * (non-Javadoc)
        * 
-       * @see org.alfresco.repo.jscript.ValueConverter#convertValueForScript(org.alfresco.service.ServiceRegistry, org.mozilla.javascript.Scriptable,
-       *      org.alfresco.service.namespace.QName, java.io.Serializable)
+       * @see org.alfresco.repo.jscript.ValueConverter#convertValueForScript(org.alfresco.service.ServiceRegistry,
+       *      org.mozilla.javascript.Scriptable, org.alfresco.service.namespace.QName, java.io.Serializable)
        */
       @Override
       public Serializable convertValueForScript(ServiceRegistry services, Scriptable scope, QName qname,
@@ -1873,6 +1866,7 @@ public class Node implements Serializable, Scopeable
       }
    }
 
+   
    // ------------------------------------------------------------------------------
    // Inner Classes
 
@@ -1886,10 +1880,8 @@ public class Node implements Serializable, Scopeable
       /**
        * Constructor
        * 
-       * @param contentData
-       *            The ContentData object this object wraps
-       * @param property
-       *            The property the ContentData is attached too
+       * @param contentData      The ContentData object this object wraps
+       * @param property         The property the ContentData is attached too
        */
       public ScriptContentData(ContentData contentData, QName property)
       {
@@ -1916,8 +1908,7 @@ public class Node implements Serializable, Scopeable
       /**
        * Set the content stream
        * 
-       * @param content
-       *            Content string to set
+       * @param content    Content string to set
        */
       public void setContent(String content)
       {
@@ -2005,14 +1996,11 @@ public class Node implements Serializable, Scopeable
       /**
        * Transform the reader to the specified writer
        * 
-       * @param contentService
-       *            ContentService
-       * @param noderef
-       *            NodeRef of the destination for the transform
-       * @param reader
-       *            Source reader
-       * @param writer
-       *            Destination writer
+       * @param contentService   ContentService
+       * @param noderef          NodeRef of the destination for the transform
+       * @param reader           Source reader
+       * @param writer           Destination writer
+       * 
        * @return Node representing the transformed entity
        */
       Node transform(ContentService contentService, NodeRef noderef, ContentReader reader, ContentWriter writer);

@@ -18,6 +18,8 @@ package org.alfresco.web.api;
 
 import java.io.IOException;
 
+import javax.servlet.ServletContext;
+
 /**
  * API Service
  * 
@@ -57,4 +59,7 @@ public interface APIService
     public void execute(APIRequest req, APIResponse res)
         throws IOException;
     
+    public String getName();
+    
+    public void init(ServletContext sc);
 }

@@ -202,6 +202,12 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         List<StoreRef> missingIndexStoreRefs = new ArrayList<StoreRef>(0);
         for (StoreRef storeRef : storeRefs)
         {
+            // TODO: For now, do not check existence of index for AVM stores
+            if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
+            {
+                continue;
+            }
+            
             NodeRef rootNodeRef = null;
             try
             {

@@ -77,7 +77,6 @@
       <!-- add config files to WEB-INF/classes -->
       <copy todir="${dir.assemble}/WEB-INF/classes">
          <fileset dir="${dir.config.repository}" excludes="**/extension/**" />
-         <fileset dir="${dir.config.repository}" includes="**/extension/dev-context.xml" />
          <fileset dir="${dir.config.webclient}" excludes="**/extension/**" />
          <!-- 
               Add dev-context.xml (if present) to WEB-INF/classes.

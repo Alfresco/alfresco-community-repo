@@ -59,6 +59,11 @@ body
 	  <span><xsl:value-of select="$alfresco:request_context_path"/></span>
 
 	  <div class="name">
+	    &lt;xsl:value-of select="$alfresco:request_context_path"/&gt;&lt;xsl:value-of select="/simple/uri"/&gt;
+	  </div>
+	  <span><xsl:value-of select="$alfresco:request_context_path"/><xsl:value-of select="/simple/uri"/></span>
+
+	  <div class="name">
 	    &lt;xsl:value-of select="alfresco:_getAVMPath('foo')"/&gt;
 	  </div>
 	  <span><xsl:value-of select="alfresco:_getAVMPath('foo')"/></span>

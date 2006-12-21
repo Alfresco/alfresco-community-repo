@@ -37,6 +37,9 @@
     <div class="name"><#noparse>${alfresco.request_context_path}</#noparse></div>
     <span>${alfresco.request_context_path}</span>
 
+    <div class="name"><#noparse>${alfresco.request_context_path}${simple.uri}</#noparse></div>
+    <span>${alfresco.request_context_path}${simple.uri}</span>
+
     <div class="name"><#noparse>${alfresco._getAVMPath('foo')}</#noparse></div>
     <span>${alfresco._getAVMPath('foo')}</span>
 

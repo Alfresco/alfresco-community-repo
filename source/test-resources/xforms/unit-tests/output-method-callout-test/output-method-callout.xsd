@@ -5,6 +5,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="string" type="xs:string" default="default string value"/>
+	<xs:element name="uri" type="xs:anyURI" default="/index.jsp"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

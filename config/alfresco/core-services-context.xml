@@ -336,7 +336,7 @@
     <bean id="luceneIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="mlAwareNodeService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />

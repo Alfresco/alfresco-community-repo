@@ -26,23 +26,28 @@
 <f:verbatim>
 <script type="text/javascript">
    window.onload = pageLoaded;
+   var noItems;
    
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:comment").focus();
+      noItems = document.getElementById("dialog:finish-button").disabled;
       checkButtonState();
    }
    
    function checkButtonState()
    {
-      if (document.getElementById("dialog:dialog-body:comment").value.length == 0 ||
-          document.getElementById("dialog:dialog-body:label").value.length == 0)
+      if (noItems == false)
       {
-         document.getElementById("dialog:finish-button").disabled = true;
-      }
-      else
-      {
-         document.getElementById("dialog:finish-button").disabled = false;
+         if (document.getElementById("dialog:dialog-body:comment").value.length == 0 ||
+             document.getElementById("dialog:dialog-body:label").value.length == 0)
+         {
+            document.getElementById("dialog:finish-button").disabled = true;
+         }
+         else
+         {
+            document.getElementById("dialog:finish-button").disabled = false;
+         }
       }
    }
    
@@ -69,11 +74,17 @@
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px">
-   <h:outputText value="#{msg.submit_workflow_selection}" rendered="#{DialogManager.bean.workflowListSize != 0}" />
-   <a:selectList id="workflow-list" multiSelect="false" styleClass="selectListTable" itemStyleClass="selectListItem"
-         value="#{DialogManager.bean.workflowSelectedValue}" rendered="#{DialogManager.bean.workflowListSize != 0}">
-      <a:listItems value="#{DialogManager.bean.workflowList}" />
-   </a:selectList>
+   <h:panelGroup rendered="#{DialogManager.bean.workflowListSize != 0}">
+      <h:outputText value="#{msg.submit_workflow_selection}" />
+      <h:panelGrid columns="2" cellpadding="2" cellpadding="2">
+         <a:selectList id="workflow-list" multiSelect="false" styleClass="selectListTable" itemStyleClass="selectListItem"
+               value="#{DialogManager.bean.workflowSelectedValue}">
+            <a:listItems value="#{DialogManager.bean.workflowList}" />
+         </a:selectList>
+         <h:commandButton value="#{msg.submit_configure_workflow}" style="margin:4px" styleClass="dialogControls"
+               action="dialog:submitConfigureWorkflow" actionListener="#{DialogManager.bean.setupConfigureWorkflow}" />
+      </h:panelGrid>
+   </h:panelGroup>
    <h:panelGroup rendered="#{DialogManager.bean.workflowListSize == 0}">
       <f:verbatim><% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %></f:verbatim>
       <h:panelGrid columns="2" cellpadding="0" cellpadding="0">

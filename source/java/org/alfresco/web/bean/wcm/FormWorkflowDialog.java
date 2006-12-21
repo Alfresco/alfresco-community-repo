@@ -16,7 +16,9 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -27,11 +29,11 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.TransientNode;
-import org.alfresco.web.bean.wcm.CreateWebsiteWizard.WorkflowWrapper;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -104,12 +106,34 @@ public class FormWorkflowDialog extends BaseDialogBean
       
       this.filenamePattern = null;
       this.workflowNode = null;
-      WorkflowWrapper workflow = getActionWorkflow();
-      if (workflow != null && workflow.getParams() != null)
+      
+      WorkflowConfiguration workflow = getActionWorkflow();
+      if (workflow == null)
       {
-         // get params from action Workflow and populate the TransientNode properties and assocs
+         throw new IllegalArgumentException("Workflow action context is mandatory.");
+      }
+      
+      // populate the workflow if exists and already has a task type assigned
+      if (workflow.getType() != null)
+      {
+         // bind against current params from action Workflow
          this.workflowNode = new TransientNode(workflow.getType(),
                   "task_" + System.currentTimeMillis(), workflow.getParams());
+      }
+      else
+      {
+         // no type found - init workflow node type based on workflow definition
+         WorkflowDefinition flowDef = this.workflowService.getDefinitionByName(workflow.getName());
+         if (flowDef != null)
+         {
+            WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
+            if (taskDef != null)
+            {
+               // create an instance of a task from the data dictionary
+               this.workflowNode = new TransientNode(taskDef.metadata.getName(),
+                     "task_" + System.currentTimeMillis(), workflow.getParams());
+            }
+         }
       }
    }
    
@@ -122,8 +146,31 @@ public class FormWorkflowDialog extends BaseDialogBean
       if (this.workflowNode != null)
       {
          // push serialized params back into workflow object
-         WorkflowWrapper wf = getActionWorkflow();
-         wf.setParams(WorkflowUtil.prepareTaskParams(this.workflowNode));
+         WorkflowConfiguration wf = getActionWorkflow();
+         Map<QName, Serializable> taskParams = WorkflowUtil.prepareTaskParams(this.workflowNode);
+         if (wf.getParams() == null)
+         {
+            wf.setParams(taskParams);
+         }
+         else
+         {
+            // merge existing with params - as only new items are returned from the editor
+            Map<QName, Serializable> params = wf.getParams();
+            for (QName qname : taskParams.keySet())
+            {
+               Serializable value = taskParams.get(qname);
+               if (params.get(qname) == null || (value instanceof List == false))
+               {
+                  params.put(qname, value);
+               }
+               else
+               {
+                  List current = (List)params.get(qname);
+                  current.addAll((List)value);
+               }
+            }
+            wf.setParams(params);
+         }
          wf.setType(this.workflowNode.getType());
          
          if (this.filenamePattern != null && this.filenamePattern.length() != 0)
@@ -158,7 +205,7 @@ public class FormWorkflowDialog extends BaseDialogBean
    /**
     * @return an object representing the workflow for the current action
     */
-   public WorkflowWrapper getActionWorkflow()
+   public WorkflowConfiguration getActionWorkflow()
    {
       return this.websiteWizard.getActionWorkflow();
    }
@@ -170,27 +217,6 @@ public class FormWorkflowDialog extends BaseDialogBean
     */
    public Node getWorkflowMetadataNode()
    {
-      if (this.workflowNode == null)
-      {
-         WorkflowDefinition flowDef = this.workflowService.getDefinitionByName(getActionWorkflow().getName());
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Selected workflow: "+ flowDef);
-         
-         if (flowDef != null)
-         {
-            WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
-            if (taskDef != null)
-            {
-               if (logger.isDebugEnabled())
-                  logger.debug("Start task definition: " + taskDef);
-               
-               // create an instance of a task from the data dictionary
-               this.workflowNode = new TransientNode(taskDef.metadata.getName(),
-                     "task_" + System.currentTimeMillis(), null);
-            }
-         }
-      }
       return this.workflowNode;
    }
 }

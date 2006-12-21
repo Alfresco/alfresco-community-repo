@@ -113,7 +113,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected List<WorkflowWrapper> workflows = null;
    
    /** Current workflow for dialog context */
-   protected WorkflowWrapper actionWorkflow = null;
+   protected WorkflowConfiguration actionWorkflow = null;
    
    
    // ------------------------------------------------------------------------------
@@ -578,13 +578,13 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public void setupWorkflowAction(ActionEvent event)
    {
-      setActionWorkflow( (WorkflowWrapper)this.workflowsDataModel.getRowData() );
+      setActionWorkflow( (WorkflowConfiguration)this.workflowsDataModel.getRowData() );
    }
    
    /**
     * @return Returns the action Workflow for dialog context
     */
-   public WorkflowWrapper getActionWorkflow()
+   public WorkflowConfiguration getActionWorkflow()
    {
       return this.actionWorkflow;
    }
@@ -592,7 +592,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * @param actionWorkflow   The action Workflow to set for dialog context
     */
-   public void setActionWorkflow(WorkflowWrapper actionWorkflow)
+   public void setActionWorkflow(WorkflowConfiguration actionWorkflow)
    {
       this.actionWorkflow = actionWorkflow;
    }
@@ -736,7 +736,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * Wrapper class for a configurable template Form instance
     */
-   public class FormWrapper
+   public static class FormWrapper
    {
       private Form form;
       private String title;
@@ -940,7 +940,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * Class to represent a single configured Workflow instance
     */
-   public static class WorkflowWrapper
+   public static class WorkflowWrapper implements WorkflowConfiguration
    {
       private String name;
       private String title;
@@ -956,7 +956,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.description = description;
       }
       
-     public WorkflowWrapper(String name, String title, String description, String filenamePattern)
+      public WorkflowWrapper(String name, String title, String description, String filenamePattern)
       {
          this.name = name;
          this.title = title;

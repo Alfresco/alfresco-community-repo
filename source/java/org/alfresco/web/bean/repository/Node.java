@@ -123,7 +123,7 @@ public class Node implements Serializable
          {
             String assocName = assocRef.getTypeQName().toString();
             
-            List list = (List)this.associations.get(assocName);
+            List<AssociationRef> list = (List<AssociationRef>)this.associations.get(assocName);
             // create the list if this is first association with 'assocName'
             if (list == null)
             {

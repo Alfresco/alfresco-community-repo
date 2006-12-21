@@ -2862,6 +2862,23 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <description>
+         The bean that backs up the Submit Configure Workflow dialog
+      </description>
+      <managed-bean-name>SubmitConfigureWorkflowDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.SubmitConfigureWorkflowDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>submitDialog</property-name>
+         <value>#{SubmitDialog}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>workflowService</property-name>
+         <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>
       <description>

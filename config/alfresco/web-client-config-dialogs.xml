@@ -182,6 +182,10 @@
                  icon="/images/icons/submit_large.gif" title-id="submit_items_title" 
                  description-id="submit_items_desc" />
          
+         <dialog name="submitConfigureWorkflow" page="/jsp/wcm/submit-config-workflow.jsp" managed-bean="SubmitConfigureWorkflowDialog"
+                 icon="/images/icons/manage_workflow_task_large.gif" title-id="submit_configure_workflow" 
+                 description-id="submit_configure_workflow_desc" />
+         
          <dialog name="createWebappFolder" page="/jsp/wcm/create-webapp.jsp" managed-bean="CreateWebappDialog"
                  icon="/images/icons/create_webapp_large.gif" title-id="create_webapp_title" 
                  description-id="create_webapp_desc" />

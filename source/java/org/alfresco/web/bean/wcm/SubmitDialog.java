@@ -28,8 +28,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMDAOs;
@@ -63,12 +63,15 @@ import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
 
 /**
+ * Submit items for WCM workflow dialog.
+ * 
  * @author Kevin Roast
  */
 public class SubmitDialog extends BaseDialogBean
 {
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
+   private static final String MSG_ERR_WORKFLOW_CONFIG = "submit_workflow_config_error";
    
    private String comment;
    private String label;
@@ -86,6 +89,9 @@ public class SubmitDialog extends BaseDialogBean
    protected WorkflowService workflowService;
    protected AVMSyncService avmSyncService;
    protected NameMatcher nameMatcher;
+   
+   /** Current workflow for dialog context */
+   protected WorkflowConfiguration actionWorkflow = null;
    
    /**
     * @param avmService       The AVM Service to set.
@@ -191,9 +197,9 @@ public class SubmitDialog extends BaseDialogBean
          String workflowName = this.workflowSelectedValue[0];
          for (FormWorkflowWrapper wrapper : this.workflows)
          {
-            if (wrapper.Name.equals(workflowName))
+            if (wrapper.name.equals(workflowName))
             {
-               params = wrapper.Params;
+               params = wrapper.params;
             }
          }
          
@@ -232,8 +238,9 @@ public class SubmitDialog extends BaseDialogBean
          }
          else
          {
-            // TODO: jump to dialog and allow user to finish wf properties config!
-            throw new AlfrescoRuntimeException("Workflow parameters have not been configured, cannot submit items.");
+            // create error msg for display in dialog - the user must configure the workflow params
+            Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_WORKFLOW_CONFIG));
+            outcome = null;
          }
       }
       else
@@ -262,6 +269,15 @@ public class SubmitDialog extends BaseDialogBean
       return outcome;
    }
    
+   /**
+    * @see org.alfresco.web.bean.dialog.BaseDialogBean#getFinishButtonDisabled()
+    */
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return (getSubmitItemsSize() == 0);
+   }
+
    /**
     * @return Returns the workflow comment.
     */
@@ -362,7 +378,7 @@ public class SubmitDialog extends BaseDialogBean
          List<UIListItem> items = new ArrayList<UIListItem>(this.workflows.size());
          for (FormWorkflowWrapper wrapper : this.workflows)
          {
-            WorkflowDefinition workflowDef = this.workflowService.getDefinitionByName(wrapper.Name);
+            WorkflowDefinition workflowDef = this.workflowService.getDefinitionByName(wrapper.name);
             UIListItem item = new UIListItem();
             item.setValue(workflowDef.getName());
             item.setLabel(workflowDef.getTitle());
@@ -522,9 +538,9 @@ public class SubmitDialog extends BaseDialogBean
                         String formName = (String)this.nodeService.getProperty(
                               formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM_NAME);
                         FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
-                        if (wrapper != null && wrapper.Params != null)
+                        if (wrapper != null)
                         {
-                           // found a workflow with params attached to the form
+                           // found a workflow attached to the form
                            this.workflows.add(wrapper);
                         }
                      }
@@ -595,32 +611,104 @@ public class SubmitDialog extends BaseDialogBean
       return packageNodeRef;
    }
    
+   /**
+    * Action method to setup a workflow for dialog context for the current row
+    */
+   public void setupConfigureWorkflow(ActionEvent event)
+   {
+      if (this.workflowSelectedValue != null)
+      {
+         String workflowName = this.workflowSelectedValue[0];
+         for (WorkflowConfiguration wrapper : this.workflows)
+         {
+            if (wrapper.getName().equals(workflowName))
+            {
+               setActionWorkflow(wrapper);
+            }
+         }
+      }
+   }
+   
+   /**
+    * @return Returns the action Workflow for dialog context
+    */
+   public WorkflowConfiguration getActionWorkflow()
+   {
+      return this.actionWorkflow;
+   }
+
+   /**
+    * @param actionWorkflow   The action Workflow to set for dialog context
+    */
+   public void setActionWorkflow(WorkflowConfiguration actionWorkflow)
+   {
+      this.actionWorkflow = actionWorkflow;
+   }
+   
    
    /**
     * Simple structure class to wrap form workflow name and default parameter values
     */
-   private static class FormWorkflowWrapper
+   private static class FormWorkflowWrapper implements WorkflowConfiguration
    {
-      public String Name;
-      public Map<QName, Serializable> Params;
+      private String name;
+      private Map<QName, Serializable> params;
+      private QName type;
+      private String strFilenamePattern;
       private Pattern filenamePattern;
       
       FormWorkflowWrapper(String name, Map<QName, Serializable> params)
       {
-         this.Name = name;
-         this.Params = params;
+         this.name = name;
+         this.params = params;
       }
       
       FormWorkflowWrapper(String name, Map<QName, Serializable> params, String filenamePattern)
       {
-         this.Name = name;
-         this.Params = params;
-         if (filenamePattern != null)
+         this.name = name;
+         this.params = params;
+         setFilenamePattern(filenamePattern);
+      }
+
+      public String getName()
+      {
+         return this.name;
+      }
+      
+      public String getFilenamePattern()
+      {
+         return this.strFilenamePattern;
+      }
+      
+      public void setFilenamePattern(String pattern)
+      {
+         if (pattern != null)
          {
-            this.filenamePattern = Pattern.compile(filenamePattern);
+            this.strFilenamePattern = pattern;
+            this.filenamePattern = Pattern.compile(pattern);
          }
       }
 
+      public Map<QName, Serializable> getParams()
+      {
+         return this.params;
+      }
+
+      public void setParams(Map<QName, Serializable> params)
+      {
+         this.params = params;
+      }
+
+      public QName getType()
+      {
+         return this.type;
+      }
+
+      public void setType(QName type)
+      {
+         this.type = type;
+      }
+      
       boolean matchesPath(String path)
       {
          if (filenamePattern != null)
@@ -632,11 +720,11 @@ public class SubmitDialog extends BaseDialogBean
             return false;
          }
       }
-      
+
       @Override
       public int hashCode()
       {
-         return this.Name.hashCode();
+         return this.name.hashCode();
       }
 
       @Override
@@ -644,7 +732,7 @@ public class SubmitDialog extends BaseDialogBean
       {
          if (obj instanceof FormWorkflowWrapper)
          {
-            return this.Name.equals( ((FormWorkflowWrapper)obj).Name );
+            return this.name.equals( ((FormWorkflowWrapper)obj).name );
          }
          else
          {

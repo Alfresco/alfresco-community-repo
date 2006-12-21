@@ -169,6 +169,7 @@ class AVMCrawler implements Runnable
                     for (int i = 0; i < 2; i++)
                     {
                         String path = files.get(fRandom.nextInt(files.size())).getPath();
+                        System.out.println("Modifying: " + path);
                         PrintStream out = new PrintStream(fService.getFileOutputStream(path));
                         out.println("I am " + path);
                         out.close();
@@ -181,6 +182,7 @@ class AVMCrawler implements Runnable
                     for (int i = 0; i < 1; i++)
                     {
                         String name = randomName();
+                        System.out.println("Creating File: " + name);
                         fService.createFile(dir.getPath(), name, 
                             new ByteArrayInputStream(("I am " + name).getBytes()));
                         fOpCount++;
@@ -190,6 +192,7 @@ class AVMCrawler implements Runnable
                 if (fRandom.nextInt(100) == 0)
                 {
                     String name = randomName();
+                    System.out.println("Creating Directory: " + name);
                     fService.createDirectory(dir.getPath(), name);
                     fOpCount++;
                 }
@@ -199,8 +202,10 @@ class AVMCrawler implements Runnable
                     if (fRandom.nextInt(100) == 0)
                     {
                         List<String> names = new ArrayList<String>(listing.keySet());
+                        String name = names.get(fRandom.nextInt(names.size()));
+                        System.out.println("Removing: " + name);
                         fService.removeNode(dir.getPath(), 
-                                            names.get(fRandom.nextInt(names.size())));
+                                            name);
                         fOpCount++;
                     }
                 }
@@ -216,6 +221,7 @@ class AVMCrawler implements Runnable
             }
             if (fRandom.nextInt(16) == 0)
             {
+                System.out.println("Snapshotting: " + repDesc.getName());
                 fService.createSnapshot(repDesc.getName(), null, null);
                 fOpCount++;
             }

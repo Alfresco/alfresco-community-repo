@@ -280,6 +280,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void putChild(String name, AVMNode node)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         ChildKey key = new ChildKey(this, name);
         ChildEntry existing = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (existing != null)
@@ -548,6 +552,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     @SuppressWarnings("unchecked")
     public void removeChild(Lookup lPath, String name)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         AVMNode child = null;
@@ -607,6 +615,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void rawSetPrimary(String path)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         fIndirection = path;
         fPrimaryIndirection = true;
     }
@@ -617,6 +629,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void turnPrimary(Lookup lPath)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         String path = lPath.getCurrentIndirection();
         rawSetPrimary(path);
     }
@@ -627,6 +643,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void retarget(Lookup lPath, String target)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         rawSetPrimary(target);
     }
     
@@ -637,6 +657,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void uncover(Lookup lPath, String name)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (entry.getChild().getType() != AVMNodeType.DELETED_NODE)
@@ -800,6 +824,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void link(Lookup lPath, String name, AVMNodeDescriptor toLink)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(toLink.getId());
         if (node == null)
         {
@@ -840,6 +868,10 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public void flatten(String name)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (entry != null)

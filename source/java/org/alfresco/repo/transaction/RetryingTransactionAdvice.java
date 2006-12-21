@@ -143,6 +143,7 @@ public class RetryingTransactionAdvice implements MethodInterceptor
                 }
                 if (shouldRetry)
                 {
+                    fgLogger.warn("Retry #" + (count + 1));
                     continue;
                 }
                 throw e;

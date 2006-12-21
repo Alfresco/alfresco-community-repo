@@ -25,6 +25,7 @@ import java.util.Map;
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMReadOnlyException;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -33,6 +34,8 @@ import org.alfresco.service.namespace.QName;
  */
 public abstract class AVMNodeImpl implements AVMNode, Serializable
 {
+    protected static final boolean DEBUG = true;
+    
     /**
      * The Object ID.
      */
@@ -284,6 +287,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void updateModTime()
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         String user = 
             RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
         if (user == null)
@@ -356,6 +363,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void setProperty(QName name, PropertyValue value)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         AVMNodeProperty prop = AVMDAOs.Instance().fAVMNodePropertyDAO.get(this, name);
         if (prop != null)
         {
@@ -376,6 +387,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void setProperties(Map<QName, PropertyValue> properties)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         for (QName name : properties.keySet())
         {
             setProperty(name, properties.get(name));
@@ -418,6 +433,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void deleteProperty(QName name)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         AVMDAOs.Instance().fAVMNodePropertyDAO.delete(this, name);
     }
     
@@ -426,6 +445,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      */
     public void deleteProperties()
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         AVMDAOs.Instance().fAVMNodePropertyDAO.deleteAll(this);
     }
     
@@ -463,5 +486,13 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     public AVMStore getStoreNew()
     {
         return fStoreNew;
+    }
+    
+    protected void checkReadOnly()
+    {
+        if (getStoreNew() == null)
+        {
+            throw new AVMReadOnlyException("Write Operation on R/O Node.");
+        }
     }
 }

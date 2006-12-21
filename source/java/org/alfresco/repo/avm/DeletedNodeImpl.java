@@ -50,6 +50,17 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
         super(id, store);
     }
     
+    public DeletedNodeImpl(DeletedNode other,
+                           AVMStore store)
+    {
+        super(store.getAVMRepository().issueID(), store);
+        AVMDAOs.Instance().fAVMNodeDAO.save(this);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        copyProperties(other);
+        copyAspects(other);
+        copyACLs(other);        
+    }
+    
     /**
      * Setter.   
      */
@@ -71,8 +82,9 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
      */
     public AVMNode copy(Lookup lPath)
     {
-        assert false;
-        return null;
+        AVMNode newMe = new DeletedNodeImpl(this, lPath.getAVMStore());
+        newMe.setAncestor(this);
+        return newMe;
     }
 
     /**

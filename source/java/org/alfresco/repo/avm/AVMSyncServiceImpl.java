@@ -382,7 +382,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 case AVMDifference.NEWER :
                 {
                     // You can't delete what isn't there.
-                    linkIn(dstParts[0], dstParts[1], srcDesc, excluder, dstDesc != null);
+                    linkIn(dstParts[0], dstParts[1], srcDesc, excluder, dstDesc != null && !dstDesc.isDeleted());
                     continue;
                 }
                 case AVMDifference.OLDER :

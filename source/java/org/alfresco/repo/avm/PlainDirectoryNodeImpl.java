@@ -220,6 +220,10 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     @SuppressWarnings("unchecked")
     public void removeChild(Lookup lPath, String name)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (entry != null)
@@ -254,6 +258,10 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     public void putChild(String name, AVMNode node)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }
         ChildKey key = new ChildKey(this, name);
         ChildEntry existing = AVMDAOs.Instance().fChildEntryDAO.get(key);
         if (existing != null)
@@ -434,6 +442,10 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     public void link(Lookup lPath, String name, AVMNodeDescriptor toLink)
     {
+        if (DEBUG)
+        {
+            checkReadOnly();
+        }        
         // Assure that the incoming node exists.
         AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(toLink.getId());
         if (node == null)

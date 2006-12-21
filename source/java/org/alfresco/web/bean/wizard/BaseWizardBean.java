@@ -44,6 +44,16 @@ public abstract class BaseWizardBean extends BaseDialogBean implements IWizardBe
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "finish_button");
    }
+
+   public String getStepTitle()
+   {
+      return null;
+   }
+
+   public String getStepDescription()
+   {
+      return null;
+   }
    
    /**
     * Build summary table from the specified list of Labels and Values

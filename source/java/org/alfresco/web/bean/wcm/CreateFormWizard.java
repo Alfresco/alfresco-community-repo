@@ -18,6 +18,7 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.File;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -366,19 +367,41 @@ public class CreateFormWizard
       //       wizard implementations don't have to worry about 
       //       checking step numbers
       
-      boolean disabled = false;
       final int step = Application.getWizardManager().getCurrentStep();
       switch(step)
       {
-         case 1:
-         {
-            disabled = (this.getSchemaFileName() == null || 
-                        this.getSchemaFileName().length() == 0);
-            break;
-         }
+      case 1:
+      {
+         return (this.getSchemaFileName() == null || 
+                 this.getSchemaFileName().length() == 0);
       }
-      
-      return disabled;
+      default:
+      {
+         return false;
+      }
+      }
+   }
+
+   @Override
+   public String getStepDescription()
+   {
+      final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+      final String stepName = Application.getWizardManager().getCurrentStepName();
+      if ("configure_rendering_engine_templates".equals(stepName))
+      {
+         return MessageFormat.format(bundle.getString("create_form_configure_rendering_engine_templates_desc"), 
+                                     this.getFormName());
+      }
+      else if ("select_default_workflow".equals(stepName))
+      {
+
+         return MessageFormat.format(bundle.getString("create_form_select_default_workflow_desc"), 
+                                     this.getFormName());
+      }
+      else
+      {
+         return super.getContainerDescription();
+      }
    }
    
    /**

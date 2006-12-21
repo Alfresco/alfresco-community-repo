@@ -38,6 +38,12 @@ public interface FormInstanceData
    /** the path relative to the containing webapp */
    public String getWebappRelativePath();
 
+   /** the path relative to the sandbox */
+   public String getSandboxRelativePath();
+
+   /** the path to the contents of this form instance data */
+   public String getPath();
+
    /** the url to the asset */
    public String getUrl();
 

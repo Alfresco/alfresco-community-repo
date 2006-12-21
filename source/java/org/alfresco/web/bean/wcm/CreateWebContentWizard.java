@@ -306,11 +306,16 @@ public class CreateWebContentWizard extends BaseContentWizard
       // reset all paths and structures to the main store
       this.createdPath = this.createdPath.replaceFirst(AVMConstants.STORE_PREVIEW,
                                                        AVMConstants.STORE_MAIN);
+      LOGGER.debug("reset path " + this.createdPath + " to main store");
+
+
       boolean form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null);
       if (form)
       {
          this.formInstanceData = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, this.createdPath));
          this.renditions = this.formInstanceData.getRenditions();
+         LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
+                      " and " + this.renditions.size() + " to main store");
       }
       if (this.startWorkflow)
       {
@@ -378,6 +383,8 @@ public class CreateWebContentWizard extends BaseContentWizard
                   // create package paths (layered to user sandbox area as target)
                   String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
                   String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, stagingPath);
+                  LOGGER.debug("created layered package " + packagesPath +
+                               " above " + stagingPath);
                     
                   List<AVMDifference> diffs = new ArrayList<AVMDifference>(8);
                   // construct diffs for selected items for submission
@@ -484,7 +491,10 @@ public class CreateWebContentWizard extends BaseContentWizard
       path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         path = this.getForm().getOutputPathForFormInstanceData(path, fileName, this.instanceDataDocument);
+         path = this.getForm().getOutputPathForFormInstanceData(this.instanceDataDocument,
+                                                                fileName,
+                                                                path, 
+                                                                this.avmBrowseBean.getWebapp());
          this.content = FormsService.getInstance().writeXMLToString(this.instanceDataDocument);
          final String[] sb = AVMNodeConverter.SplitBase(path);
          path = sb[0];
@@ -505,7 +515,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                             new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes()));
       
       // remember the created path
-      this.createdPath = path + '/' + fileName;
+      this.createdPath = AVMNodeConverter.ExtendAVMPath(path, fileName);
       
       // add titled aspect for the read/edit properties screens
       final NodeRef formInstanceDataNodeRef = AVMNodeConverter.ToNodeRef(-1, this.createdPath);
@@ -517,7 +527,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       {
          this.formInstanceData = new FormInstanceDataImpl(formInstanceDataNodeRef);
          this.getForm().registerFormInstanceData(formInstanceDataNodeRef);
-         this.renditions = FormsService.getInstance().generateRenditions(formInstanceDataNodeRef);
+         this.renditions = FormsService.getInstance().generateRenditions(this.formInstanceData);
       }
       else
       {
@@ -706,7 +716,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       if (this.formProcessorSession == null)
       {
-         return Collections.emptyList();
+         return Collections.EMPTY_LIST;
       }
 
       NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
@@ -725,6 +735,15 @@ public class CreateWebContentWizard extends BaseContentWizard
          result.add(item);
       }
       return result;
+   }
+
+   /**
+    * Returns the number of submittable files which is the total number of
+    * uploaded files, renditions, and the form instance data.
+    */
+   public int getNumberOfSubmittableFiles()
+   {
+      return 1 + this.getUploadedFiles().size() + this.getRenditions().size();
    }
 
    public boolean getFormSelectDisabled()

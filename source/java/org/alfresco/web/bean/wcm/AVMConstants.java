@@ -38,6 +38,32 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 public final class AVMConstants
 {
+   /////////////////////////////////////////////////////////////////////////////
+   
+   public static enum PathRelation
+   {
+      SANDBOX_RELATIVE
+      {
+         @Override
+         protected Pattern pattern() 
+         { 
+            return AVMConstants.SANDBOX_RELATIVE_PATH_PATTERN;
+         }
+      },
+      WEBAPP_RELATIVE
+      {
+         @Override
+         protected Pattern pattern()
+         {
+            return AVMConstants.WEBAPP_RELATIVE_PATH_PATTERN;
+         }
+      };
+
+      protected abstract Pattern pattern();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
    /**
     * Private constructor
     */
@@ -208,7 +234,7 @@ public final class AVMConstants
       Map<QName, PropertyValue> props = avmService.queryStorePropertyKey(store, QName.createQName(null, PROP_DNS + '%'));
       if (props.size() == 1)
       {
-         dns = props.entrySet().iterator().next().getKey().getLocalName().substring(PROP_DNS.length());
+         dns = props.keySet().iterator().next().getLocalName().substring(PROP_DNS.length());
       }
       
       return dns;
@@ -221,11 +247,13 @@ public final class AVMConstants
     * is relative, otherwise used to extract the parent path portion up until
     * the webapp directory.
     * @param path a path relative to the parentAVMPath path, or if it is
-    * absolute, it is relative to the webapp used in the parentAVMPath.
+    * absolute, it is relative to the sandbox used in the parentAVMPath.
     *
     * @return an absolute path within the avm using the paths provided.
     */
-   public static String buildAbsoluteAVMPath(final String parentAVMPath, final String path)
+   public static String buildAVMPath(final String parentAVMPath,
+                                     final String path,
+                                     final PathRelation relation)
    {
       String parent = parentAVMPath;
       if (path == null || path.length() == 0 || 
@@ -236,7 +264,7 @@ public final class AVMConstants
       
       if (path.charAt(0) == '/')
       {
-         final Matcher m = absoluteAVMPath.matcher(parent);
+         final Matcher m = relation.pattern().matcher(parent);
          if (m.matches())
          {
             parent = m.group(1);
@@ -258,10 +286,63 @@ public final class AVMConstants
     */
    public static String getWebappRelativePath(final String absoluteAVMPath)
    {
-      final Matcher m = webappRelativePath.matcher(absoluteAVMPath);
-      return m.matches() && m.group(1).length() != 0 ? m.group(1) : "/";
+      final Matcher m = WEBAPP_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
+      return m.matches() && m.group(3).length() != 0 ? m.group(3) : "/";
    }
    
+   /**
+    * Returns the webapp within the path
+    *
+    * @param absoluteAVMPath the path from which to extract the webapp name
+    *
+    * @return an the webapp name contained within the path or <tt>null</tt>.
+    */
+   public static String getWebapp(final String absoluteAVMPath)
+   {
+      final Matcher m = WEBAPP_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
+      return m.matches() && m.group(2).length() != 0 ? m.group(2) : null;
+   }
+
+   /**
+    * Returns the path portion up the webap
+    *
+    * @param absoluteAVMPath the path from which to extract the webapp path
+    *
+    * @return an absolute avm path to the webapp contained within
+    * the path or <tt>null</tt>.
+    */
+   public static String getWebappPath(final String absoluteAVMPath)
+   {
+      final Matcher m = WEBAPP_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
+      return m.matches() && m.group(1).length() != 0 ? m.group(1) : null;
+   }
+
+   /**
+    * Returns a path relative to the sandbox porition of the avm path.
+    *
+    * @param absoluteAVMPath an absolute path within the avm
+    * @return a relative path within the sandbox.
+    */
+   public static String getSandboxRelativePath(final String absoluteAVMPath)
+   {
+      final Matcher m = SANDBOX_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
+      return m.matches() && m.group(2).length() != 0 ? m.group(2) : "/";
+   }
+
+   /**
+    * Returns the path portion up the sandbox
+    *
+    * @param absoluteAVMPath the path from which to extract the sandbox path
+    *
+    * @return an absolute avm path to the sandbox contained within
+    * the path or <tt>null</tt>.
+    */
+   public static String getSandboxPath(final String absoluteAVMPath)
+   {
+      final Matcher m = SANDBOX_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
+      return m.matches() && m.group(1).length() != 0 ? m.group(1) : null;
+   }
+
    /**
     * @param path    Path to match against
     * 
@@ -274,7 +355,7 @@ public final class AVMConstants
          throw new IllegalArgumentException("Path value is mandatory.");
       }
       
-      return webinfPathPattern.matcher(path).matches();
+      return WEB_INF_PATH_PATTERN.matcher(path).matches();
    }
    
    /**
@@ -351,14 +432,15 @@ public final class AVMConstants
    private final static String PREVIEW_ASSET_URL = "http://www-{0}.{1}:{2}{3}";
    
    // pattern for absolute AVM Path
-   private final static Pattern absoluteAVMPath = Pattern.compile(
-         "([^:]+:/" + AVMConstants.DIR_APPBASE + "/[^/]+/[^/]+).*");
-   private final static Pattern webappRelativePath = Pattern.compile(
-         "[^:]+:/" + AVMConstants.DIR_APPBASE +
-         "/" + AVMConstants.DIR_WEBAPPS + "/[^/]+(.*)");
+   private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 
+      Pattern.compile("([^:]+:/" + AVMConstants.DIR_APPBASE +
+                      "/" + AVMConstants.DIR_WEBAPPS + "/([^/]+))(.*)");
+   private final static Pattern SANDBOX_RELATIVE_PATH_PATTERN = 
+      Pattern.compile("([^:]+:/" + AVMConstants.DIR_APPBASE +
+                      "/" + AVMConstants.DIR_WEBAPPS + ")(.*)");
    
    // patterns for WEB-INF files that require virtualisation server reload
-   private final static Pattern webinfPathPattern = Pattern.compile(
+   private final static Pattern WEB_INF_PATH_PATTERN = Pattern.compile(
          ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS +
          "/.*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
          Pattern.CASE_INSENSITIVE);

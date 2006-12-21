@@ -16,8 +16,6 @@
  */
 package org.alfresco.web.forms;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -64,15 +62,22 @@ public class RenditionImpl
          nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
    }
 
-   /** the path relative to the containing webapp */
+   /** the description of this rendition */
+   public String getDescription()
+   {
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      return (String)
+         nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION);
+   }
+
    public String getWebappRelativePath()
    {
-      final String path = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
-      final String p = ("[^:]+:/" + AVMConstants.DIR_APPBASE +
-                        "/" + AVMConstants.DIR_WEBAPPS +
-                        "/[^/]+(.*)/" + this.getName());
-      final Matcher m = Pattern.compile(p).matcher(path);
-      return m.matches() && m.group(1).length() != 0 ? m.group(1) : "/";
+      return AVMConstants.getWebappRelativePath(this.getPath());
+   }
+
+   public String getSandboxRelativePath()
+   {
+      return AVMConstants.getSandboxRelativePath(this.getPath());
    }
 
    public FormInstanceData getPrimaryFormInstanceData()
@@ -115,7 +120,7 @@ public class RenditionImpl
 
    public String getUrl()
    {
-      return AVMConstants.buildAVMAssetUrl(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond());
+      return AVMConstants.buildAVMAssetUrl(this.getPath());
    }
 
    public String getFileTypeImage()

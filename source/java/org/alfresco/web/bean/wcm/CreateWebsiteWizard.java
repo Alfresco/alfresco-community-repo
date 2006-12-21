@@ -33,6 +33,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -186,8 +187,12 @@ public class CreateWebsiteWizard extends BaseWizardBean
          SandboxFactory.createStagingSandbox(avmStore, wiz.getManagers());
          
          // create the default webapp folder under the hidden system folders
-         String stagingStore = AVMConstants.buildAVMStagingStoreName(avmStore);
-         this.avmService.createDirectory(AVMConstants.buildAVMStoreRootPath(stagingStore), webapp);
+         final String stagingStore = AVMConstants.buildAVMStagingStoreName(avmStore);
+         final String stagingStoreRoot = AVMConstants.buildAVMStoreRootPath(stagingStore);
+         this.avmService.createDirectory(stagingStoreRoot, webapp);
+         this.avmService.addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot,
+                                                                  webapp),
+                                   WCMAppModel.ASPECT_WEBAPP);
          
          // set the property on the node to reference the root AVM store
          this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_AVMSTORE, avmStore);

@@ -434,8 +434,9 @@ public class XFormsBean
          final String previewStorePath = 
             this.avmBrowseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
                                                              AVMConstants.STORE_PREVIEW);
-         currentPath = AVMConstants.buildAbsoluteAVMPath(previewStorePath,
-                                                         currentPath);
+         currentPath = AVMConstants.buildAVMPath(previewStorePath,
+                                                 currentPath,
+                                                 AVMConstants.PathRelation.WEBAPP_RELATIVE);
       }
       LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
 
@@ -519,8 +520,9 @@ public class XFormsBean
             final String previewStorePath = 
                this.avmBrowseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
                                                                 AVMConstants.STORE_PREVIEW);
-            currentPath = AVMConstants.buildAbsoluteAVMPath(previewStorePath,
-                                                            item.getString());
+            currentPath = AVMConstants.buildAVMPath(previewStorePath,
+                                                    item.getString(),
+                                                    AVMConstants.PathRelation.WEBAPP_RELATIVE);
             LOGGER.debug("currentPath is " + currentPath);
          }
          else

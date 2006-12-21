@@ -24,13 +24,12 @@
   window.onload = function() { document.getElementById("wizard:finish-button").focus(); }
 </script>
 
-
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
              width="100%" rowClasses="wizardSectionHeading">
   <h:outputText value="&nbsp;#{msg.create_web_content_summary_content_details}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
+<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%">
   <a:selectList id="form-instance-data-list" 
                 multiSelect="false"
                 activeSelect="true" 
@@ -41,18 +40,20 @@
                 image="/images/filetypes32/xml.gif">
       <jsp:attribute name="description">
         <div>${msg.form}: ${WizardManager.bean.formInstanceData.form.name}</div>
-        <div>${msg.location}: ${WizardManager.bean.formInstanceData.webappRelativePath}</div>
+        <div>${msg.location}: ${WizardManager.bean.formInstanceData.sandboxRelativePath}</div>
       </jsp:attribute>
     </a:listItem>
   </a:selectList>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
-             width="100%" rowClasses="wizardSectionHeading">
+             width="100%" rowClasses="wizardSectionHeading"
+	     rendered="#{!empty WizardManager.bean.renditions}">
   <h:outputText value="&nbsp;#{msg.create_web_content_summary_rendition_details}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%">
+<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%"
+	     rendered="#{!empty WizardManager.bean.renditions}">
   <a:selectList id="rendition-list" 
 		multiSelect="false"
 		activeSelect="true" 
@@ -81,7 +82,7 @@
 	      </jsp:element>
 	    </a>
 	  </span>
-	  Rendered by ${rendition.renderingEngineTemplate.name} into ${rendition.webappRelativePath}
+	  <span>${rendition.description}</span>
 	</jsp:attribute>
       </a:listItem>
     </c:forEach>
@@ -89,11 +90,13 @@
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
-             width="100%" rowClasses="wizardSectionHeading">
+             width="100%" rowClasses="wizardSectionHeading"
+	     rendered="#{!empty WizardManager.bean.uploadedFiles}">
   <h:outputText value="&nbsp;#{msg.create_web_content_summary_uploaded_files_details}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%">
+<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%"
+	     rendered="#{!empty WizardManager.bean.uploadedFiles}">
   <a:selectList id="uploaded-file-list" 
 		multiSelect="false"
 		activeSelect="true" 
@@ -108,6 +111,9 @@
   <h:column>
     <h:selectBooleanCheckbox id="startWorkflow"
 			     value="#{WizardManager.bean.startWorkflow}"/>
-    <h:outputText value="&nbsp;#{msg.create_web_content_summary_submit_message}" escape="false" />
+    <h:outputFormat value="&nbsp;#{msg.create_web_content_summary_submit_message}" escape="false">
+      <f:param value="#{WizardManager.bean.numberOfSubmittableFiles}"/>
+      <f:param value="#{WizardManager.bean.formInstanceData.name}"/>
+    </h:outputFormat>
   </h:column>
 </h:panelGrid>

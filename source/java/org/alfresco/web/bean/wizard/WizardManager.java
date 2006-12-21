@@ -206,7 +206,6 @@ public final class WizardManager
    {
       // try and get the description directly from the dialog
       String desc = this.currentWizardState.getWizard().getContainerDescription();
-      
       if (desc == null)
       {
          // try and get the description via a message bundle key
@@ -324,18 +323,15 @@ public final class WizardManager
     */
    public String getStepTitle()
    {
-      String title = this.currentWizardState.getCurrentPageCfg().getTitleId();
-      
-      if (title != null)
+      String result = this.currentWizardState.getWizard().getStepTitle();
+      if (result == null)
       {
-         title = Application.getMessage(FacesContext.getCurrentInstance(), title);
+         result = this.currentWizardState.getCurrentPageCfg().getTitleId();
+         result = (result != null
+                   ? Application.getMessage(FacesContext.getCurrentInstance(), result)
+                   : this.currentWizardState.getCurrentPageCfg().getTitle());
       }
-      else
-      {
-         title = this.currentWizardState.getCurrentPageCfg().getTitle();
-      }
-      
-      return title;
+      return result;
    }
    
    /**
@@ -345,18 +341,15 @@ public final class WizardManager
     */
    public String getStepDescription()
    {
-      String desc = this.currentWizardState.getCurrentPageCfg().getDescriptionId();
-      
-      if (desc != null)
+      String result = this.currentWizardState.getWizard().getStepDescription();
+      if (result == null)
       {
-         desc = Application.getMessage(FacesContext.getCurrentInstance(), desc);
+         result = this.currentWizardState.getCurrentPageCfg().getDescriptionId();
+         result = (result != null
+                   ? Application.getMessage(FacesContext.getCurrentInstance(), result)
+                   : this.currentWizardState.getCurrentPageCfg().getDescription());
       }
-      else
-      {
-         desc = this.currentWizardState.getCurrentPageCfg().getDescription();
-      }
-      
-      return desc;
+      return result;
    }
    
    /**
@@ -397,14 +390,8 @@ public final class WizardManager
     */
    public boolean getNextButtonDisabled()
    {
-      if (this.currentWizardState.getCurrentStep() == this.currentWizardState.getSteps().size())
-      {
-         return true;
-      }
-      else
-      {
-         return this.currentWizardState.getWizard().getNextButtonDisabled();
-      }
+      return (this.currentWizardState.getCurrentStep() == this.currentWizardState.getSteps().size() ||
+              this.currentWizardState.getWizard().getNextButtonDisabled());
    }
    
    /**
@@ -424,14 +411,7 @@ public final class WizardManager
     */
    public boolean getBackButtonDisabled()
    {
-      if (this.currentWizardState.getCurrentStep() == 1)
-      {
-         return true;
-      }
-      else
-      {
-         return false;
-      }
+      return this.currentWizardState.getCurrentStep() == 1;
    }
    
    /**
@@ -461,14 +441,8 @@ public final class WizardManager
     */
    public boolean getFinishButtonDisabled()
    {
-      if (this.currentWizardState.getCurrentStep() == this.currentWizardState.getSteps().size())
-      {
-         return false;
-      }
-      else
-      {
-         return this.currentWizardState.getWizard().getFinishButtonDisabled();
-      }
+      return (this.currentWizardState.getCurrentStep() != this.currentWizardState.getSteps().size() &&
+              this.currentWizardState.getWizard().getFinishButtonDisabled());
    }
    
    /**

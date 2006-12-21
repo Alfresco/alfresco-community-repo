@@ -43,4 +43,22 @@ public interface IWizardBean extends IDialogBean
     * @return true if the button should be disabled
     */
    public boolean getNextButtonDisabled();
+   
+   /**
+    * Returns the title to be used for the current step
+    * <p>If this returns <tt>null</tt> the WizardManager will
+    * lookup the title via the dialog configuration</p>
+    * 
+    * @return The title or <tt>null</tt> if the title is to be acquired via configuration
+    */
+   public String getStepTitle();
+   
+   /**
+    * Returns the description to be used for the current step
+    * <p>If this returns <tt>null</tt> the WizardManager will
+    * lookup the description via the dialog configuration</p>
+    * 
+    * @return The decsription or <tt>null</tt> if the title is to be acquired via configuration
+    */
+   public String getStepDescription();
 }

@@ -71,7 +71,7 @@ public interface RenderingEngineTemplate
     *
     * @return the output path for the rendition.
     */
-   public String getOutputPathForRendition(final NodeRef formInstanceDataNodeRef);
+   public String getOutputPathForRendition(final FormInstanceData formInstanceData);
 
    /**
     * Returns the mimetype to use when generating content for this
@@ -82,5 +82,6 @@ public interface RenderingEngineTemplate
     */
    public String getMimetypeForRendition();
 
-   public void registerRendition(final NodeRef rendition, final NodeRef primaryFormInstanceData);
+   public void registerRendition(final Rendition rendition, 
+                                 final FormInstanceData primaryFormInstanceData);
 }

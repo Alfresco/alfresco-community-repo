@@ -73,7 +73,7 @@ public class NodePathLinkRenderer extends BaseRenderer
    public void encodeEnd(FacesContext context, UIComponent component) throws IOException
    {
       // always check for this flag - as per the spec
-      if (component.isRendered() == false)
+      if (!component.isRendered())
       {
          return;
       }
@@ -84,17 +84,19 @@ public class NodePathLinkRenderer extends BaseRenderer
       Path path = null;
       NodeRef nodeRef = null;
       Object val = ((UINodePath)component).getValue();
-      if (val instanceof NodeRef == true)
+      if (val instanceof NodeRef)
       {
          nodeRef = (NodeRef)val;
       }
-      else if (val instanceof Path == true)
+      else if (val instanceof Path)
       {
          path = (Path)val;
       }
       else if (val != null)
       {
-         throw new IllegalArgumentException("UINodePath component 'value' property must resolve to a NodeRef or Path!");
+         throw new IllegalArgumentException("UINodePath component 'value' " +
+                                            "property must resolve to a NodeRef " +
+                                            "or Path.  Got a " + val.getClass().getName());
       }
       
       if (val != null)

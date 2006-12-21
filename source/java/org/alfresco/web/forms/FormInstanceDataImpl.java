@@ -18,8 +18,6 @@ package org.alfresco.web.forms;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -66,15 +64,19 @@ public class FormInstanceDataImpl
          nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
    }
 
-   /** the path relative to the containing webapp */
    public String getWebappRelativePath()
    {
-      final String path = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
-      final String p = ("[^:]+:/" + AVMConstants.DIR_APPBASE +
-                        "/" + AVMConstants.DIR_WEBAPPS +
-                        "/[^/]+(.*)/" + this.getName());
-      final Matcher m = Pattern.compile(p).matcher(path);
-      return m.matches() && m.group(1).length() != 0 ? m.group(1) : "/";
+      return AVMConstants.getWebappRelativePath(this.getPath());
+   }
+
+   public String getSandboxRelativePath()
+   {
+      return AVMConstants.getSandboxRelativePath(this.getPath());
+   }
+
+   public String getPath()
+   {
+      return AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
    }
 
    public Form getForm()
@@ -94,7 +96,7 @@ public class FormInstanceDataImpl
 
    public String getUrl()
    {
-      return AVMConstants.buildAVMAssetUrl(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond());
+      return AVMConstants.buildAVMAssetUrl(this.getPath());
    }
 
    public List<Rendition> getRenditions()
@@ -103,8 +105,7 @@ public class FormInstanceDataImpl
       final List<Rendition> result = new LinkedList<Rendition>();
       for (RenderingEngineTemplate ret : this.getForm().getRenderingEngineTemplates())
       {
-         final String renditionAvmPath = 
-            FormsService.getOutputAvmPathForRendition(ret, this.getNodeRef());
+         final String renditionAvmPath = ret.getOutputPathForRendition(this);
          if (avmService.lookup(-1, renditionAvmPath) == null)
          {
             LOGGER.warn("unable to locate rendition " + renditionAvmPath +

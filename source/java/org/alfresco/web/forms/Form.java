@@ -64,14 +64,16 @@ public interface Form
     * configured output path pattern.
     *
     * @param parentAVMPath the parent avm path
+    * @param webappname the current webapp name
     * @param formInstanceDataFileName the file name provided by the user.
     * @param formInstanceData the parsed xml content
     *
     * @return the path to use for writing the form instance data.
     */
-   public String getOutputPathForFormInstanceData(final String parentAVMPath,
+   public String getOutputPathForFormInstanceData(final Document formInstanceData,
                                                   final String formInstanceDataFileName,
-                                                  final Document formInstanceData);
+                                                  final String parentAVMPath,
+                                                  final String webappName);
 
    //XXXarielb not used currently and not sure if it's necessary...
    //    public void addInputMethod(final TemplateInputMethod in);

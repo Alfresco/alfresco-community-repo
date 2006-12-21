@@ -98,8 +98,10 @@ public class FreeMarkerRenderingEngine
             try 
             {
                final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
-               final String path = AVMConstants.buildAbsoluteAVMPath(parameters.get("parent_path"), 
-                                                                     (String)args.get(0));
+               final String path = 
+                  AVMConstants.buildAVMPath(parameters.get("parent_path"), 
+                                            (String)args.get(0),
+                                            AVMConstants.PathRelation.WEBAPP_RELATIVE);
                final Document d = ef.parseXMLDocument(path);
                return d != null ? d.getDocumentElement() : null;
             }
@@ -119,8 +121,9 @@ public class FreeMarkerRenderingEngine
             {
                final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
                final String path = 
-                  AVMConstants.buildAbsoluteAVMPath(parameters.get("parent_path"), 
-                                                    args.size() == 1 ? "" : (String)args.get(1));
+                  AVMConstants.buildAVMPath(parameters.get("parent_path"), 
+                                            args.size() == 1 ? "" : (String)args.get(1),
+                                            AVMConstants.PathRelation.WEBAPP_RELATIVE);
                final Map<String, Document> resultMap = ef.parseXMLDocuments((String)args.get(0), path);
                LOGGER.debug("received " + resultMap.size() + " documents in " + path);
 
@@ -165,8 +168,9 @@ public class FreeMarkerRenderingEngine
          {
             try 
             {
-               return AVMConstants.buildAbsoluteAVMPath(parameters.get("parent_path"), 
-                                                        (String)args.get(0));
+               return AVMConstants.buildAVMPath(parameters.get("parent_path"), 
+                                                (String)args.get(0),
+                                                AVMConstants.PathRelation.WEBAPP_RELATIVE);
             }
             catch (Exception e)
             {

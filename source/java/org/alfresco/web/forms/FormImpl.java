@@ -108,13 +108,15 @@ class FormImpl
               : null);
    }
 
-   public String getOutputPathForFormInstanceData(final String parentAVMPath,
+   public String getOutputPathForFormInstanceData(final Document formInstanceData,
                                                   final String formInstanceDataName,
-                                                  final Document formInstanceData)
+                                                  final String parentAVMPath,
+                                                  final String webappName)
    {
       final String outputPathPattern = this.getOutputPathPattern();
 
       final Map<String, Object> root = new HashMap<String, Object>();
+      root.put("webapp", webappName);
       root.put("xml", NodeModel.wrap(formInstanceData));
       root.put("name", formInstanceDataName);
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
@@ -124,7 +126,9 @@ class FormImpl
       String result = templateService.processTemplateString(null, 
                                                             outputPathPattern, 
                                                             new SimpleHash(root));
-      result = AVMConstants.buildAbsoluteAVMPath(parentAVMPath, result);
+      result = AVMConstants.buildAVMPath(parentAVMPath, 
+                                         result,
+                                         AVMConstants.PathRelation.SANDBOX_RELATIVE);
       LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
       return result;
    }

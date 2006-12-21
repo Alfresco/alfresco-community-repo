@@ -20,8 +20,10 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.repo.domain.PropertyValue;
 
 /**
  * Bean implementation for the AVM "Create Webapp Folder" dialog.
@@ -39,15 +41,18 @@ public class CreateWebappDialog extends CreateFolderDialog
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      String parent = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
+      final String parent = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
       this.avmService.createDirectory(parent, this.name);
       
-      String path = parent + '/' + this.name;
-      NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
-      this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
+      final String path = AVMNodeConverter.ExtendAVMPath(parent, this.name);
+      this.avmService.addAspect(path, ApplicationModel.ASPECT_UIFACETS);
+      this.avmService.addAspect(path, WCMAppModel.ASPECT_WEBAPP);
       if (this.description != null && this.description.length() != 0)
       {
-         this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
+         this.avmService.setNodeProperty(path, 
+                                         ContentModel.PROP_DESCRIPTION, 
+                                         new PropertyValue(DataTypeDefinition.TEXT,
+                                                           this.description));
       }
       
       return outcome;

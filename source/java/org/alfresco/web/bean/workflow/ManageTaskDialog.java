@@ -34,12 +34,22 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
+import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
+import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 
 /**
  * Bean implementation for the "Manage Task" dialog.
@@ -49,6 +59,8 @@ import org.apache.commons.logging.LogFactory;
 public class ManageTaskDialog extends BaseDialogBean
 {
    protected WorkflowService workflowService;
+   protected AVMService avmService;
+   protected AVMSyncService avmSyncService;
    protected Node taskNode;
    protected WorkflowTask task;
    protected WorkflowInstance workflowInstance;
@@ -62,7 +74,7 @@ public class ManageTaskDialog extends BaseDialogBean
    protected String[] itemsToAdd;
    protected boolean isItemBeingAdded = false;
    
-   protected final Log logger = LogFactory.getLog(getClass());
+   private final static Log LOGGER = LogFactory.getLog(ManageTaskDialog.class);
    
    protected static final String ID_PREFIX = "transition_";
    protected static final String CLIENT_ID_PREFIX = AlfrescoNavigationHandler.DIALOG_PREFIX + ID_PREFIX;
@@ -109,11 +121,11 @@ public class ManageTaskDialog extends BaseDialogBean
          // setup the workflow package for the task
          this.workflowPackage = (NodeRef)this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
          
-         if (logger.isDebugEnabled())
+         if (LOGGER.isDebugEnabled())
          {
-            logger.debug("Task: " + this.task);
-            logger.debug("Trasient node: " + this.taskNode);
-            logger.debug("Workflow package: " + this.workflowPackage );
+            LOGGER.debug("Task: " + this.task);
+            LOGGER.debug("Trasient node: " + this.taskNode);
+            LOGGER.debug("Workflow package: " + this.workflowPackage );
          }
       }
    }
@@ -133,14 +145,14 @@ public class ManageTaskDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
-      if (logger.isDebugEnabled())
-         logger.debug("Saving task: " + this.task.id);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Saving task: " + this.task.id);
       
       // prepare the edited parameters for saving
       Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
       
-      if (logger.isDebugEnabled())
-         logger.debug("Saving task with parameters: " + params);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Saving task with parameters: " + params);
       
       // remove any items the user selected to remove 
       if (this.workflowPackage != null && this.packageItemsToRemove != null && 
@@ -232,8 +244,8 @@ public class ManageTaskDialog extends BaseDialogBean
    {
       String outcome = getDefaultFinishOutcome();
       
-      if (logger.isDebugEnabled())
-         logger.debug("Transitioning task: " + this.task.id);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Transitioning task: " + this.task.id);
       
       // to find out which transition button was pressed we need
       // to look for the button's id in the request parameters,
@@ -263,8 +275,8 @@ public class ManageTaskDialog extends BaseDialogBean
          // prepare the edited parameters for saving
          Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
   
-         if (logger.isDebugEnabled())
-            logger.debug("Transitioning task with parameters: " + params);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Transitioning task with parameters: " + params);
         
          // update the task with the updated parameters
          this.workflowService.updateTask(this.task.id, params, null, null);
@@ -275,8 +287,8 @@ public class ManageTaskDialog extends BaseDialogBean
          // commit the changes
          tx.commit();
         
-         if (logger.isDebugEnabled())
-            logger.debug("Ended task with transition: " + selectedTransition);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Ended task with transition: " + selectedTransition);
       }
       catch (Throwable e)
       {
@@ -333,15 +345,15 @@ public class ManageTaskDialog extends BaseDialogBean
             {
                this.packageItemsToRemove.remove(item);
                
-               if (logger.isDebugEnabled())
-                  logger.debug("Removed item from the removed list: " + item);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("Removed item from the removed list: " + item);
             }
             else
             {
                this.packageItemsToAdd.add(item);
                
-               if (logger.isDebugEnabled())
-                  logger.debug("Added item to the added list: " + item);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("Added item to the added list: " + item);
             }
          }
          
@@ -369,8 +381,8 @@ public class ManageTaskDialog extends BaseDialogBean
          // remove the item from the added list if it was added in this dialog session
          this.packageItemsToAdd.remove(nodeRef);
          
-         if (logger.isDebugEnabled())
-            logger.debug("Removed item from the added list: " + nodeRef); 
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Removed item from the added list: " + nodeRef); 
       }
       else
       {
@@ -382,8 +394,8 @@ public class ManageTaskDialog extends BaseDialogBean
          
          this.packageItemsToRemove.add(nodeRef);
          
-         if (logger.isDebugEnabled())
-            logger.debug("Added item to the removed list: " + nodeRef);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Added item to the removed list: " + nodeRef);
       }
       
       // reset the rich list so it re-renders
@@ -523,54 +535,82 @@ public class ManageTaskDialog extends BaseDialogBean
             FacesContext context = FacesContext.getCurrentInstance();
             tx = Repository.getUserTransaction(context, true);
             tx.begin();
-            
-            // get existing workflow package items
-            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(
+
+            if ((Boolean)this.nodeService.getProperty(this.workflowPackage,
+                                                      WorkflowModel.PROP_IS_SYSTEM_PACKAGE))
+            {
+               final NodeRef stagingNodeRef = (NodeRef)
+                  this.nodeService.getProperty(this.workflowPackage,
+                                              WCMModel.PROP_AVM_DIR_INDIRECTION);
+               final String fromAvmPath = (String)this.task.properties.get(AVMWorkflowUtil.PROP_FROM_PATH);
+               final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
+               final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
+               LOGGER.debug("comparing " + packageAvmPath +
+                            " with " + stagingAvmPath);
+               for (AVMDifference d : this.avmSyncService.compare(-1, packageAvmPath,
+                                                                  -1, stagingAvmPath,
+                                                                  null))
+               {
+                  LOGGER.debug("got difference " + d);
+                  if (d.getDifferenceCode() == AVMDifference.NEWER ||
+                      d.getDifferenceCode() == AVMDifference.CONFLICT)
+                  {
+                     this.addAVMNode(new AVMNode(this.avmService.lookup(d.getSourceVersion(),
+                                                                        d.getSourcePath(),
+                                                                        true)));
+                  }
+               }
+            }
+            else
+            {
+               // get existing workflow package items
+               List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(
                   this.workflowPackage, ContentModel.ASSOC_CONTAINS, 
                   RegexQNamePattern.MATCH_ALL);   
             
-            for (ChildAssociationRef ref: childRefs)
-            {
-               // create our Node representation from the NodeRef
-               NodeRef nodeRef = ref.getChildRef();
-               
-               if (this.nodeService.exists(nodeRef))
+               for (ChildAssociationRef ref: childRefs)
                {
-                  // find it's type so we can see if it's a node we are interested in
-                  QName type = this.nodeService.getType(nodeRef);
-                  
-                  // make sure the type is defined in the data dictionary
-                  TypeDefinition typeDef = this.dictionaryService.getType(type);
-                  
-                  if (typeDef != null)
+                  // create our Node representation from the NodeRef
+                  NodeRef nodeRef = ref.getChildRef();
+               
+                  if (!this.nodeService.exists(nodeRef))
                   {
-                     // look for content nodes or links to content
-                     // NOTE: folders within workflow packages are ignored for now
-                     if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
-                         ApplicationModel.TYPE_FILELINK.equals(type))
-                     {
-                        // if the node is not in the removed list then add create the 
-                        // client side representation and add to the list
-                        if (this.packageItemsToRemove == null || 
-                            this.packageItemsToRemove.contains(nodeRef.toString()) == false)
-                        {
-                           createAndAddNode(nodeRef);
-                        }
-                     }
+                     if (LOGGER.isDebugEnabled())
+                        LOGGER.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
                   }
                   else
                   {
-                     if (logger.isWarnEnabled())
-                        logger.warn("Found invalid object in database: id = " + nodeRef + ", type = " + type);
+                     // find it's type so we can see if it's a node we are interested in
+                     QName type = this.nodeService.getType(nodeRef);
+                  
+                     // make sure the type is defined in the data dictionary
+                     TypeDefinition typeDef = this.dictionaryService.getType(type);
+                  
+                     if (typeDef == null)
+                     {
+                        if (LOGGER.isWarnEnabled())
+                           LOGGER.warn("Found invalid object in database: id = " + nodeRef + 
+                                       ", type = " + type);
+                     }
+                     else
+                     {
+                        // look for content nodes or links to content
+                        // NOTE: folders within workflow packages are ignored for now
+                        if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+                            ApplicationModel.TYPE_FILELINK.equals(type))
+                        {
+                           // if the node is not in the removed list then add create the 
+                           // client side representation and add to the list
+                           if (this.packageItemsToRemove == null || 
+                               this.packageItemsToRemove.contains(nodeRef.toString()) == false)
+                           {
+                              createAndAddNode(nodeRef);
+                           }
+                        }
+                     }
                   }
                }
-               else
-               {
-                  if (logger.isDebugEnabled())
-                     logger.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
-               }
             }
-            
             // now iterate through the items to add list and add them to the list of resources
             if (this.packageItemsToAdd != null)
             {
@@ -585,8 +625,8 @@ public class ManageTaskDialog extends BaseDialogBean
                   }
                   else
                   {
-                     if (logger.isDebugEnabled())
-                        logger.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
+                     if (LOGGER.isDebugEnabled())
+                        LOGGER.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
                   }
                }
             }
@@ -602,9 +642,9 @@ public class ManageTaskDialog extends BaseDialogBean
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
       }
-      else if (logger.isDebugEnabled())
+      else if (LOGGER.isDebugEnabled())
       {
-         logger.debug("Failed to find workflow package for task: " + this.task.id);
+         LOGGER.debug("Failed to find workflow package for task: " + this.task.id);
       }
       
       return this.resources;
@@ -621,8 +661,65 @@ public class ManageTaskDialog extends BaseDialogBean
       this.workflowService = workflowService;
    }
    
+   /**
+    * Sets the avm service to use
+    * 
+    * @param avmService
+    *           AvmService instance
+    */
+   public void setAvmService(final AVMService avmService)
+   {
+      this.avmService = avmService;
+   }
+
+   /**
+    * Sets the avm sync service to use
+    * 
+    * @param avmSyncService
+    *           AvmSycService instance
+    */
+   public void setAvmSyncService(final AVMSyncService avmSyncService)
+   {
+      this.avmSyncService = avmSyncService;
+   }
+   
    // ------------------------------------------------------------------------------
    // Helper methods
+
+   protected void addAVMNode(AVMNode node)
+   {
+      LOGGER.debug("adding node  " + node);
+      node.getProperties().put("taskId", this.task.id);
+      this.browseBean.setupCommonBindingProperties(node);
+      final String packagePath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
+      NodePropertyResolver resolverPath = new NodePropertyResolver()
+      {
+         public Object get(Node node)
+         {
+            Path result = new Path();
+            String s = node.getPath();
+            s = s.substring(packagePath.length());
+            for (final String s2 : s.split("/"))
+            {
+               if (s2.length() != 0)
+               {
+                  result.append(new Path.Element() 
+                  {
+                     public String getElementString() { return s2; }
+                  });
+               }
+            }
+            return result;
+         }
+      };
+      node.remove("path");
+      node.addPropertyResolver("path", resolverPath);
+      node.addPropertyResolver("displayPath", resolverPath);
+
+      LOGGER.debug("created mapnode  " + node);
+      
+      this.resources.add(node);
+   }
    
    protected void createAndAddNode(NodeRef nodeRef)
    {

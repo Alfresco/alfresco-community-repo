@@ -27,11 +27,17 @@ import java.io.Serializable;
 public interface Rendition
    extends Serializable
 {
-   /** the name of this instance data */
+   /** the name of this rendition */
    public String getName();
+
+   /** the description of this rendition */
+   public String getDescription();
 
    /** the path relative to the containing webapp */
    public String getWebappRelativePath();
+
+   /** the path relative to the sandbox */
+   public String getSandboxRelativePath();
 
    /** the primary form instance data used to generate this rendition */
    public FormInstanceData getPrimaryFormInstanceData();

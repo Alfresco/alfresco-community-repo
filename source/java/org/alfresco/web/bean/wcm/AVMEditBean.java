@@ -45,6 +45,7 @@ import org.alfresco.web.bean.CheckinCheckoutBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
@@ -409,8 +410,8 @@ public class AVMEditBean
          // regenerate form content
          if (nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            formsService.regenerateRenditions(avmRef);
-            NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
+            formsService.regenerateRenditions(new FormInstanceDataImpl(avmRef));
+            final NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
             final List<AVMDifference> diffList = new ArrayList<AVMDifference>(uploadedFiles.length);
             for (NodeRef uploadedFile : uploadedFiles)
             {

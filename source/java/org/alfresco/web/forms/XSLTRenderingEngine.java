@@ -79,7 +79,9 @@ public class XSLTRenderingEngine
       throws TransformerException
    {
       final XObject o = ec.getVariableOrParam(new QName(ALFRESCO_NS, ALFRESCO_NS_PREFIX, "parent_path"));
-      return o == null ? null : AVMConstants.buildAbsoluteAVMPath(o.toString(), path);
+      return o == null ? null : AVMConstants.buildAVMPath(o.toString(), 
+                                                          path,
+                                                          AVMConstants.PathRelation.WEBAPP_RELATIVE);
    }
 
    /**

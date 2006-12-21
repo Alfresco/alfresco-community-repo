@@ -152,9 +152,12 @@ public class EditFormWizard
                                       fileInfo.getNodeRef());
       }
 
-      for (RenderingEngineTemplateData retd : this.removedRenderingEngineTemplates)
+      if (this.removedRenderingEngineTemplates != null)
       {
-         this.nodeService.removeChild(formNodeRef, retd.getNodeRef());
+         for (RenderingEngineTemplateData retd : this.removedRenderingEngineTemplates)
+         {
+            this.nodeService.removeChild(formNodeRef, retd.getNodeRef());
+         }
       }
 
       for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)

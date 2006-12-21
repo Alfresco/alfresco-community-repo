@@ -16,17 +16,10 @@
  */
 package org.alfresco.web.action.evaluator;
 
-import javax.faces.context.FacesContext;
-
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.action.ActionEvaluator;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 
 /**
  * UI Action Evaluator - Edit Web Form in the Forms DataDictionary folder
@@ -38,15 +31,9 @@ public class EditFormEvaluator implements ActionEvaluator
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */
-   public boolean evaluate(Node node)
+   public boolean evaluate(final Node node)
    {
-      final FacesContext fc = FacesContext.getCurrentInstance();
-      final ServiceRegistry services = Repository.getServiceRegistry(fc);
-      final NavigationBean navigator = (NavigationBean)
-         FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
-      // get the path to the current name - compare last element with the Website folder assoc name
-      final Node currentNode = navigator.getCurrentNode();
-      return (currentNode.hasAspect(WCMAppModel.ASPECT_FORM) &&
-              currentNode.hasPermission(PermissionService.ADD_CHILDREN));
+      return (node.hasAspect(WCMAppModel.ASPECT_FORM) &&
+              node.hasPermission(PermissionService.ADD_CHILDREN));
    }
 }

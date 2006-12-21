@@ -631,7 +631,7 @@
          <action-group id="space_browse">
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
-            
+            <action idref="edit_form"/>
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="details_space" />

@@ -79,6 +79,14 @@
          <fileset dir="${dir.config.repository}" excludes="**/extension/**" />
          <fileset dir="${dir.config.repository}" includes="**/extension/dev-context.xml" />
          <fileset dir="${dir.config.webclient}" excludes="**/extension/**" />
+         <!-- 
+              Add dev-context.xml (if present) to WEB-INF/classes.
+              This allows developers doing private builds to override
+              default values in a repeatable way.  An individual's
+              dev-context.xml does not become part of the normal source
+              code tree (it's excluded from check-in automatically).
+         -->
+         <fileset dir="${dir.config.repository}" includes="**/extension/dev-context.xml"/>
       </copy>
       
       <!-- clean up previously generated properties files -->

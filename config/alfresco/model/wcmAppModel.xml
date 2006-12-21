@@ -182,6 +182,10 @@
 	</types>
 
 	<aspects>
+
+      <aspect name="wca:webapp">
+	<title>Webapp</title>
+      </aspect>
    
       <aspect name="wca:filenamepattern">
          <title>Filename Pattern</title>

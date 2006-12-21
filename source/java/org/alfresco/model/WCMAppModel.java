@@ -55,6 +55,9 @@ public interface WCMAppModel
     // AVM web workflow defaults
     static final QName TYPE_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webworkflowdefaults");
     
+    // AVM webapp aspect
+    static final QName ASPECT_WEBAPP = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webapp");
+
     // AVM filename pattern aspect
     static final QName ASPECT_FILENAMEPATTERN = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "filenamepattern");
     static final QName PROP_FILENAMEPATTERN = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "filenamepattern");

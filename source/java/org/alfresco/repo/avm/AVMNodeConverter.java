@@ -43,7 +43,7 @@ public class AVMNodeConverter
         String [] pathParts = avmPath.split(":");
         if (pathParts.length != 2)
         {
-            throw new AVMException("Malformed AVM Path.");
+            throw new AVMException("Malformed AVM Path: " + avmPath);
         }
         while (pathParts[1].endsWith("/") && pathParts[1].length() > 1)
         {
@@ -79,7 +79,7 @@ public class AVMNodeConverter
         if (off == -1)
         {
             fgLogger.error(translated);
-            throw new AVMException("Bad Node Reference.");
+            throw new AVMException("Bad Node Reference: " + nodeRef.getId());
         }
         int version = Integer.parseInt(translated.substring(0, off));
         String path = translated.substring(off);
@@ -119,15 +119,12 @@ public class AVMNodeConverter
         }
         if (path.endsWith(":/"))
         {
-            String [] res = new String[2];
-            res[0] = null;
-            res[1] = "";
-            return res;
+           return new String[] { null, "" };
         }
         int off = path.lastIndexOf("/");
         if (off == -1)
         {
-            throw new AVMException("Invalid Path.");
+            throw new AVMException("Invalid Path: " + path);
         }
         String [] decomposed = new String[2];
         decomposed[0] = path.substring(0, off);

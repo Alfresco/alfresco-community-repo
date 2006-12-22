@@ -272,6 +272,7 @@ public class LuceneTest2 extends TestCase
         testProperties.put(QName.createQName(TEST_NAMESPACE, "category-ista"), new NodeRef(storeRef, "CategoryId"));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "noderef-ista"), n1);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "path-ista"), nodeService.getPath(n3));
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "locale-ista"), Locale.UK);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "null"), null);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "list"), new ArrayList());
         MLText mlText = new MLText();
@@ -333,7 +334,7 @@ public class LuceneTest2 extends TestCase
         // InputStream is =
         // this.getClass().getClassLoader().getResourceAsStream("test.doc");
         // writer.putContent(is);
-        writer.putContent("The quick brown fox jumped over the lazy dog");
+        writer.putContent("The quick brown fox jumped over the lazy dog  \u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF");
 
         nodeService.addChild(rootNodeRef, n8, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}eight-0"));
         nodeService.addChild(n1, n8, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eight-1"));
@@ -2425,6 +2426,45 @@ public class LuceneTest2 extends TestCase
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
+        // locale
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":\"en_GB_\"",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":en_GB_",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":en_*",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":*_GB_*",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "locale-ista")) + ":*_gb_*",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
+        results.close();
+        
+        // Type
+        
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testType.toString() + "\"", null,
                 null);
         assertEquals(1, results.length());
@@ -2492,6 +2532,10 @@ public class LuceneTest2 extends TestCase
         assertEquals(1, results.length());
         results.close();
 
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fox cm\\:name:fox", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:fo AND TYPE:\""
                 + ContentModel.PROP_CONTENT.toString() + "\"", null, null);
         assertEquals(0, results.length());
@@ -2507,6 +2551,17 @@ public class LuceneTest2 extends TestCase
         assertEquals(1, results.length());
         results.close();
 
+        
+        // Accents
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"\u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"aeidnouy\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
         // FTS test
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"fox\"", null, null);
@@ -2540,7 +2595,7 @@ public class LuceneTest2 extends TestCase
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@"
-                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".size:\"90\"", null, null);
+                + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".size:\"110\"", null, null);
         assertEquals(1, results.length());
         results.close();
 

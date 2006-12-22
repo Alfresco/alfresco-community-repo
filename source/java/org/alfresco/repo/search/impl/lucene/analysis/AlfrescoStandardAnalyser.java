@@ -20,6 +20,7 @@ import java.io.Reader;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.ISOLatin1AccentFilter;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.analysis.StopFilter;
@@ -58,6 +59,7 @@ public class AlfrescoStandardAnalyser extends Analyzer
         result = new AlfrescoStandardFilter(result);
         result = new LowerCaseFilter(result);
         result = new StopFilter(result, stopSet);
+        result = new ISOLatin1AccentFilter(result);
         return result;
     }
 }

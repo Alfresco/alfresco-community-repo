@@ -1538,8 +1538,6 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                 // nothing to index
                 continue;
             }
-            // String strValue = ValueConverter.convert(String.class, value);
-            // TODO: Need to add with the correct language based analyser
 
             if (isContent)
             {
@@ -1557,6 +1555,14 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         Field.Index.TOKENIZED, Field.TermVector.NO));
                 // TODO: Use the node locale in preferanced to the system locale
                 Locale locale = contentData.getLocale();
+                if (locale == null)
+                {
+                    Serializable localeProperty = nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
+                    if (localeProperty != null)
+                    {
+                        locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, localeProperty);
+                    }
+                }
                 if (locale == null)
                 {
                     locale = Locale.getDefault();
@@ -1713,14 +1719,24 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                                 Field.TermVector.NO));
                     }
                 }
-                else if(isText)
+                else if (isText)
                 {
                     // TODO: Use the node locale in preferanced to the system locale
-                    Locale locale = Locale.getDefault();
+                    Locale locale = null;
+
+                    Serializable localeProperty = nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
+                    if (localeProperty != null)
+                    {
+                        locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, localeProperty);
+                    }
+
+                    if (locale == null)
+                    {
+                        locale = Locale.getDefault();
+                    }
                     StringBuilder builder = new StringBuilder();
                     builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
-                    doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
-                            Field.TermVector.NO));
+                    doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
                 }
                 else
                 {

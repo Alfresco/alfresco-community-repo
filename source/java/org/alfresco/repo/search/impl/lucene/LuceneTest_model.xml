@@ -259,6 +259,16 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
+				<property name="test:locale-ista">
+                    <type>d:locale</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
             </properties>
             <mandatory-aspects>
                 <aspect>test:testAspect</aspect>

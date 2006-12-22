@@ -454,7 +454,7 @@ public class SubmitDialog extends BaseDialogBean
    {
       // TODO: start txn here?
       List<AVMNodeDescriptor> selected;
-      if (this.avmBrowseBean.getSubmitAll())
+      if (this.avmBrowseBean.getAllItemsAction())
       {
          String webapp = this.avmBrowseBean.getWebapp();
          String userStore = AVMConstants.buildAVMStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);

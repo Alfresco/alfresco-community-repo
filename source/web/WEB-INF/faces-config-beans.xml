@@ -1790,7 +1790,6 @@
          <property-name>avmSyncService</property-name>
          <value>#{AVMSyncService}</value>
       </managed-property>
-
    </managed-bean>
    
    <managed-bean>
@@ -2364,10 +2363,6 @@
          <value>#{AVMService}</value>
       </managed-property>
       <managed-property>
-         <property-name>avmSyncService</property-name>
-         <value>#{AVMSyncService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>navigationBean</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>
@@ -2382,10 +2377,6 @@
       <managed-property>
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>nameMatcher</property-name>
-         <value>#{globalPathExcluder}</value>
       </managed-property>
    </managed-bean>
    
@@ -2885,6 +2876,48 @@
       <managed-property>
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Revert selected items Dialog
+      </description>
+      <managed-bean-name>RevertSelectedDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.RevertSelectedDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>actionService</property-name>
+         <value>#{ActionService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Revert all items Dialog
+      </description>
+      <managed-bean-name>RevertAllDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.RevertAllDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>actionService</property-name>
+         <value>#{ActionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmSyncService</property-name>
+         <value>#{AVMSyncService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nameMatcher</property-name>
+         <value>#{globalPathExcluder}</value>
       </managed-property>
    </managed-bean>
    

@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -49,7 +50,7 @@ public class Node implements Serializable
    protected NodeRef nodeRef;
    protected String name;
    protected QName type;
-   protected String path;
+   protected Path path;
    protected String id;
    protected Set<QName> aspects = null;
    protected Map<String, Boolean> permissions;
@@ -367,15 +368,22 @@ public class Node implements Serializable
    }
 
    /**
-    * @return The path for the node
+    * @return The simple display path for the node
     */
    public String getPath()
    {
+      return getNodePath().toString();
+   }
+   
+   /**
+    * @return the repo Path to the node
+    */
+   public Path getNodePath()
+   {
       if (this.path == null)
       {
-         this.path = getServiceRegistry().getNodeService().getPath(this.nodeRef).toString();
+         this.path = getServiceRegistry().getNodeService().getPath(this.nodeRef);
       }
-      
       return this.path;
    }
    

@@ -20,7 +20,6 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.app.Application;
@@ -44,10 +43,12 @@ public class CreateFormEvaluator implements ActionEvaluator
       final FacesContext fc = FacesContext.getCurrentInstance();
       final ServiceRegistry services = Repository.getServiceRegistry(fc);
       final NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
+      
       // get the path to the current name - compare last element with the Website folder assoc name
-      final Path path = services.getNodeService().getPath(navigator.getCurrentNode().getNodeRef());
+      final Path path = navigator.getCurrentNode().getNodePath();
       final Path.Element element = path.get(path.size() - 1);
       final String endPath = element.getPrefixedString(services.getNamespaceService());
+      
       // check we have the permission to create nodes in that Website folder
       return (Application.getContentFormsFolderName(fc).equals(endPath) &&
               navigator.getCurrentNode().hasPermission(PermissionService.ADD_CHILDREN));

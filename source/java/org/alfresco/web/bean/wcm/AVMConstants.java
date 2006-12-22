@@ -404,8 +404,8 @@ public final class AVMConstants
    private static final String STORE_SEPARATOR = "--";
    
    // names of the stores representing the layers for an AVM website
-   public final static String STORE_STAGING = "";
-   public final static String STORE_MAIN    = "";
+   public final static String STORE_STAGING = STORE_SEPARATOR + "staging";
+   public final static String STORE_MAIN    = STORE_SEPARATOR + "main";
    public final static String STORE_PREVIEW = STORE_SEPARATOR + "preview";
    
    // system directories at the top level of an AVM website
@@ -416,11 +416,8 @@ public final class AVMConstants
    public final static String DIR_APPBASE = "appBase";
    public final static String DIR_WEBAPPS = "avm_webapps";
 
-
-   
    // servlet default webapp
    //    Note: this webapp is mapped to the URL path ""
-   //
    public final static String DIR_ROOT = "ROOT";
    
    // system property keys for sandbox identification and DNS virtualisation mapping

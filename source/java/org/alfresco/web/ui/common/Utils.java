@@ -633,8 +633,7 @@ public final class Utils
                   NodeRef rootNode = contentCtx.getRootNode();
                   try
                   {
-                     Path path = nodeService.getPath(node.getNodeRef());
-                     url = Repository.getNamePath(nodeService, path, rootNode, "\\", 
+                     url = Repository.getNamePath(nodeService, node.getNodePath(), rootNode, "\\", 
                            "file:///" + navBean.getCIFSServerPath(diskShare));
                   }
                   catch (AccessDeniedException e)

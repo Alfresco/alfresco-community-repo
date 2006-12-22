@@ -261,7 +261,7 @@ public class TransientNode extends Node
       }
       
       // setup remaining variables
-      this.path = "";
+      this.path = null;
       this.locked = Boolean.FALSE;
       this.workingCopyOwner = Boolean.FALSE;
    }

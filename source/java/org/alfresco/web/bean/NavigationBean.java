@@ -523,7 +523,7 @@ public class NavigationBean
          }
          String icon = (String)props.get("app:icon");
          props.put("icon", icon != null ? icon : CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
-         Path path = this.nodeService.getPath(nodeRef);
+         Path path = node.getNodePath();
          
          // resolve CIFS network folder location for this node
          DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();

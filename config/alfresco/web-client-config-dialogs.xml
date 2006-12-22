@@ -189,6 +189,14 @@
          <dialog name="createWebappFolder" page="/jsp/wcm/create-webapp.jsp" managed-bean="CreateWebappDialog"
                  icon="/images/icons/create_webapp_large.gif" title-id="create_webapp_title" 
                  description-id="create_webapp_desc" />
+         
+         <dialog name="revertSelectedItems" page="/jsp/wcm/revert.jsp" managed-bean="RevertSelectedDialog"
+                 icon="/images/icons/revert_all_large.gif" title-id="revert_selected_title" 
+                 description-id="revert_selected_desc" />
+         
+         <dialog name="revertAllItems" page="/jsp/wcm/revert.jsp" managed-bean="RevertAllDialog"
+                 icon="/images/icons/revert_all_large.gif" title-id="revert_all_title" 
+                 description-id="revert_all_desc" />
       </dialogs>
    </config>
    

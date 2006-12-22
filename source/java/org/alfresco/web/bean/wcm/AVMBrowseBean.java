@@ -41,18 +41,12 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -88,8 +82,6 @@ public class AVMBrowseBean implements IContextListener
    private static Log logger = LogFactory.getLog(AVMBrowseBean.class);
    
    private static final String MSG_REVERT_SUCCESS = "revert_success";
-   private static final String MSG_REVERTALL_SUCCESS = "revertall_success";
-   private static final String MSG_REVERTSELECTED_SUCCESS = "revertselected_success";
    private static final String MSG_REVERT_SANDBOX = "revert_sandbox_success";
    private static final String MSG_SANDBOXTITLE = "sandbox_title";
    private static final String MSG_SANDBOXSTAGING = "sandbox_staging";
@@ -101,10 +93,10 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_SUBMITSELECTED_SUCCESS = "submitselected_success";
    
    /** Component id the status messages are tied too */
-   private static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
+   static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
    
    /** Top-level JSF form ID */
-   private static final String FORM_ID = "browse-website";
+   static final String FORM_ID = "browse-website";
    
    /** Content Manager role name */
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
@@ -128,7 +120,8 @@ public class AVMBrowseBean implements IContextListener
    private String currentPath = null;
    private AVMNode currentPathNode = null;
    
-   private boolean submitAll = false;
+   /** flag to indicate that all items in the sandbox are involved in the current action */
+   private boolean allItemsAction = false;
    
    /* component references */
    private UIRichList foldersRichList;
@@ -151,20 +144,8 @@ public class AVMBrowseBean implements IContextListener
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;
    
-      /** The DictionaryService bean reference */
-   protected DictionaryService dictionaryService;
-   
-   /** The SearchService bean reference. */
-   protected SearchService searchService;
-   
-   /** The NamespaceService bean reference. */
-   protected NamespaceService namespaceService;
-   
    /** The WorkflowService bean reference. */
    protected WorkflowService workflowService;
-   
-   /** The browse bean */
-   protected BrowseBean browseBean;
    
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
@@ -172,14 +153,8 @@ public class AVMBrowseBean implements IContextListener
    /** AVM service bean reference */
    protected AVMService avmService;
    
-   /** AVM Sync service bean reference */
-   protected AVMSyncService avmSyncService;
-   
    /** Action service bean reference */
    protected ActionService actionService;
-   
-   /** Global exclude name matcher */
-   protected NameMatcher nameMatcher;
    
    
    /**
@@ -202,14 +177,6 @@ public class AVMBrowseBean implements IContextListener
       this.avmService = avmService;
    }
    
-   /**
-    * @param avmSyncService   The AVMSyncService to set.
-    */
-   public void setAvmSyncService(AVMSyncService avmSyncService)
-   {
-      this.avmSyncService = avmSyncService;
-   }
-
    /**
     * @param nodeService The NodeService to set.
     */
@@ -238,40 +205,6 @@ public class AVMBrowseBean implements IContextListener
    }
 
    /**
-    * @param dictionaryService The DictionaryService to set.
-    */
-   public void setDictionaryService(DictionaryService dictionaryService)
-   {
-      this.dictionaryService = dictionaryService;
-   }
-   
-   /**
-    * @param searchService The SearchService to set.
-    */
-   public void setSearchService(SearchService searchService)
-   {
-      this.searchService = searchService;
-   }
-
-   /**
-    * @param namespaceService The NamespaceService to set.
-    */
-   public void setNamespaceService(NamespaceService namespaceService)
-   {
-      this.namespaceService = namespaceService;
-   }
-
-   /**
-    * Sets the BrowseBean instance to use to retrieve the current document
-    * 
-    * @param browseBean BrowseBean instance
-    */
-   public void setBrowseBean(BrowseBean browseBean)
-   {
-      this.browseBean = browseBean;
-   }
-   
-   /**
     * @param navigator The NavigationBean to set.
     */
    public void setNavigationBean(NavigationBean navigator)
@@ -285,14 +218,6 @@ public class AVMBrowseBean implements IContextListener
    public void setActionService(ActionService actionService)
    {
       this.actionService = actionService;
-   }
-
-   /**
-    * @param nameMatcher The nameMatcher to set.
-    */
-   public void setNameMatcher(NameMatcher nameMatcher)
-   {
-      this.nameMatcher = nameMatcher;
    }
 
    /**
@@ -758,11 +683,11 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * @return true if the special Submit All action has been initialised
+    * @return true if a special All Items action has been initialised
     */
-   public boolean getSubmitAll()
+   public boolean getAllItemsAction()
    {
-      return this.submitAll;
+      return this.allItemsAction;
    }
    
    
@@ -833,7 +758,7 @@ public class AVMBrowseBean implements IContextListener
          this.location = null;
          setCurrentPath(null);
          setAvmActionNode(null);
-         this.submitAll = false;
+         this.allItemsAction = false;
       }
    }
    
@@ -862,7 +787,7 @@ public class AVMBrowseBean implements IContextListener
          // calculate username and store name from specified path
          String[] parts = path.split("[-:]");
          String storename = parts[0];
-         String username = parts[1];
+         String username = parts[2];
          if (username.equals(AVMConstants.STORE_STAGING.substring(1)))
          {
             setupSandboxActionImpl(null, null, false);
@@ -889,12 +814,12 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * Submit all nodes from user sandbox into the staging area sandbox via workflow
+    * Action handler for all nodes from user sandbox
     */
-   public void setupSubmitAllAction(ActionEvent event)
+   public void setupAllItemsAction(ActionEvent event)
    {
       setupSandboxAction(event);
-      this.submitAll = true;
+      this.allItemsAction = true;
    }
    
    /**
@@ -936,102 +861,6 @@ public class AVMBrowseBean implements IContextListener
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
-   }
-   
-   /**
-    * Undo changes to the entire sandbox
-    */
-   public void revertAll(ActionEvent event)
-   {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String store = params.get("store");
-      String username = params.get("username");
-      
-      UserTransaction tx = null;
-      try
-      {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context, true);
-         tx.begin();
-         
-         // calcluate the list of differences between the user store and the staging area
-         List<AVMDifference> diffs = this.avmSyncService.compare(
-               -1, store + ":/", -1, getStagingStore() + ":/", this.nameMatcher);
-         List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
-         for (AVMDifference diff : diffs)
-         {
-            versionPaths.add(new Pair<Integer, String>(-1, diff.getSourcePath()));
-         }
-         Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-         args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-         Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
-         this.actionService.executeAction(action, null); // dummy action ref
-         
-         // commit the transaction
-         tx.commit();
-         
-         // if we get here, all was well - output friendly status message to the user
-         String msg = MessageFormat.format(Application.getMessage(
-               context, MSG_REVERTALL_SUCCESS), username);
-         displayStatusMessage(context, msg);
-      }
-      catch (Throwable err)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
-   }
-
-   /**
-    * Undo changes to items selected using multi-select
-    */
-   public void revertSelected(ActionEvent event)
-   {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String username = params.get("username");
-      
-      List<AVMNodeDescriptor> selected = this.userSandboxes.getSelectedNodes(username);
-      if (selected != null)
-      {
-         UserTransaction tx = null;
-         try
-         {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context, false);
-            tx.begin();
-            
-            List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
-            for (AVMNodeDescriptor node : selected)
-            {
-               versionPaths.add(new Pair<Integer, String>(-1, node.getPath()));
-            }
-            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-            args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-            for (AVMNodeDescriptor node : selected)
-            {
-               Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
-               this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, node.getPath()));
-            }
-            
-            // commit the transaction
-            tx.commit();
-            
-            // if we get here, all was well - output friendly status message to the user
-            String msg = MessageFormat.format(Application.getMessage(
-                  context, MSG_REVERTSELECTED_SUCCESS), username);
-            displayStatusMessage(context, msg);
-         }
-         catch (Throwable err)
-         {
-            err.printStackTrace(System.err);
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         }
       }
    }
    

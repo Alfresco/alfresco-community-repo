@@ -990,14 +990,14 @@ public class BrowseBean implements IContextListener
    
    public NodePropertyResolver resolverPath = new NodePropertyResolver() {
       public Object get(Node node) {
-         return nodeService.getPath(node.getNodeRef());
+         return node.getNodePath();
       }
    };
    
    public NodePropertyResolver resolverDisplayPath = new NodePropertyResolver() {
       public Object get(Node node) {
          // TODO: replace this with a method that shows the full display name - not QNames?
-         return Repository.getDisplayPath( (Path)node.getProperties().get("path") );
+         return Repository.getDisplayPath(node.getNodePath());
       }
    };
    

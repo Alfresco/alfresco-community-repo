@@ -38,7 +38,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    public static final String CONFIG_ELEMENT_ID = "client";
    
    private static final String BEAN_VIRT_SERVER_REGISTRY = "VirtServerRegistry";
-   private static final String DEFAULT_VSERVER_IP = "avm.127-0-0-1.ip.alfrescodemo.net";
+   private static final String DEFAULT_VSERVER_IP = "127-0-0-1.ip.alfrescodemo.net";
    private static final int DEFAULT_VSERVER_PORT = 8180;
    private static final String DEFAULT_FROM_ADDRESS = "alfresco@alfresco.org";
    

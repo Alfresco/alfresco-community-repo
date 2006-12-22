@@ -152,9 +152,9 @@ public final class SandboxFactory
    /**
     * Create a user sandbox for the named store.
     * 
-    * A user sandbox is comprised of two stores, the first named 'storename-username-main' layered
-    * over the staging store with a preview store named 'storename-username-preview' layered over
-    * the main store.
+    * A user sandbox is comprised of two stores, the first 
+    * named 'storename---username' layered over the staging store with a preview store 
+    * named 'storename--username--preview' layered over the main store.
     * 
     * Various store meta-data properties are set including:
     * Identifier for store-types: .sandbox.author.main and .sandbox.author.preview

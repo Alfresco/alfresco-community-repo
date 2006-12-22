@@ -99,7 +99,7 @@ public final class AVMConstants
       {
          throw new IllegalArgumentException("Username is mandatory.");
       }
-      return store + '-' + username + AVMConstants.STORE_MAIN;
+      return store + STORE_SEPARATOR + username + AVMConstants.STORE_MAIN;
    }
    
    public static String buildAVMUserPreviewStoreName(String store, String username)
@@ -112,7 +112,7 @@ public final class AVMConstants
       {
          throw new IllegalArgumentException("Username is mandatory.");
       }
-      return store + '-' + username + AVMConstants.STORE_PREVIEW;
+      return store + STORE_SEPARATOR + username + AVMConstants.STORE_PREVIEW;
    }
    
    public static String buildAVMStoreRootPath(String store)
@@ -304,7 +304,7 @@ public final class AVMConstants
    }
 
    /**
-    * Returns the path portion up the webap
+    * Returns the path portion up the webapp
     *
     * @param absoluteAVMPath the path from which to extract the webapp path
     *
@@ -400,17 +400,27 @@ public final class AVMConstants
       }
    }
    
+   // Component Separator.
+   private static final String STORE_SEPARATOR = "--";
    
    // names of the stores representing the layers for an AVM website
-   public final static String STORE_STAGING = "-staging";
-   public final static String STORE_MAIN = "-main";
-   public final static String STORE_PREVIEW = "-preview";
+   public final static String STORE_STAGING = "";
+   public final static String STORE_MAIN    = "";
+   public final static String STORE_PREVIEW = STORE_SEPARATOR + "preview";
    
    // system directories at the top level of an AVM website
+   //
+   // TODO:  The virtualization server should get these two parameters
+   //        from the Alfresco webapp at registration time.
+   //
    public final static String DIR_APPBASE = "appBase";
    public final static String DIR_WEBAPPS = "avm_webapps";
+
+
    
-   // servlet implicit root directory
+   // servlet default webapp
+   //    Note: this webapp is mapped to the URL path ""
+   //
    public final static String DIR_ROOT = "ROOT";
    
    // system property keys for sandbox identification and DNS virtualisation mapping
@@ -428,8 +438,8 @@ public final class AVMConstants
    private static final String BEAN_VIRT_SERVER_REGISTRY = "VirtServerRegistry";
    
    // URLs for preview of sandboxes and assets
-   private final static String PREVIEW_SANDBOX_URL = "http://www-{0}.{1}:{2}";
-   private final static String PREVIEW_ASSET_URL = "http://www-{0}.{1}:{2}{3}";
+   private final static String PREVIEW_SANDBOX_URL = "http://{0}.www--sandbox.{1}:{2}";
+   private final static String PREVIEW_ASSET_URL = "http://{0}.www--sandbox.{1}:{2}{3}";
    
    // pattern for absolute AVM Path
    private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 

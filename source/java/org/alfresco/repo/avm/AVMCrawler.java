@@ -248,8 +248,8 @@ class AVMCrawler implements Runnable
     private String randomName()
     {
         char [] chars = new char[2];
-        chars[0] = (char)('a' + fRandom.nextInt(26));
-        chars[1] = (char)('a' + fRandom.nextInt(26));
+        chars[0] = (char)('a' + fRandom.nextInt(12));
+        chars[1] = (char)('a' + fRandom.nextInt(12));
         return new String(chars);
     }
     

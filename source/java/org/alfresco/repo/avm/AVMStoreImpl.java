@@ -237,8 +237,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             newDir.setAncestor(child);
         }
-        dir.putChild(name, newDir);
         dir.updateModTime();
+        dir.putChild(name, newDir);
     }
 
     /**
@@ -280,8 +280,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             newDir.setAncestor(child);
         }
-        dir.putChild(name, newDir);
         dir.updateModTime();
+        dir.putChild(name, newDir);
         newDir.setVersionID(getNextVersionID());
     }
 
@@ -306,8 +306,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         file.setVersionID(getNextVersionID());
-        dir.putChild(name, file);
         dir.updateModTime();
+        dir.putChild(name, file);
         if (child != null)
         {
             file.setAncestor(child);
@@ -341,8 +341,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         file.setVersionID(getNextVersionID());
-        dir.putChild(name, file);
         dir.updateModTime();
+        dir.putChild(name, file);
         if (child != null)
         {
             file.setAncestor(child);
@@ -381,8 +381,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             newFile.setAncestor(child);
         }
-        dir.putChild(name, newFile);
         dir.updateModTime();
+        dir.putChild(name, newFile);
         newFile.setVersionID(getNextVersionID());
     }
 

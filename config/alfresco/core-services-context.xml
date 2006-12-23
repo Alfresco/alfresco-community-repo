@@ -154,7 +154,7 @@
     	    <ref bean="transactionComponent"/>
     	</property>
     	<property name="maxRetries">
-    	    <value>10</value>
+    	    <value>20</value>
     	</property>
     </bean>
 
@@ -184,7 +184,7 @@
             <ref bean="readWriteTransactionDefinition"/>
         </property>
         <property name="maxRetries">
-            <value>10</value>
+            <value>20</value>
         </property>
     </bean>
 
@@ -196,7 +196,7 @@
             <ref bean="readOnlyTransactionDefinition"/>
         </property>
         <property name="maxRetries">
-            <value>10</value>
+            <value>20</value>
         </property>
     </bean>
 

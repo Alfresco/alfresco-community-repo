@@ -687,8 +687,8 @@ public class AVMRepository
             {
                 dstNode.setAncestor(child);
             }
-            dstDir.putChild(dstName, dstNode);
             dstDir.updateModTime();
+            dstDir.putChild(dstName, dstNode);
             if (child == null)
             {
                 dstNode.setAncestor(srcNode);

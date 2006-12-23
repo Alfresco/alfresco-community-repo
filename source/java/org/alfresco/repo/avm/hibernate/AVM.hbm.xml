@@ -139,14 +139,12 @@
 		<property name="tag" type="string" length="255" column="tag"/>
 		<property name="description" type="string" length="8192" column="description"/>
 	</class>
-    <class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries"
-           optimistic-lock="version">
+    <class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries">
         <cache usage="read-write"/>
         <composite-id name="key" class="ChildKey">
             <key-many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl"/>
             <key-property name="name" column="name" type="string" length="160"/>
         </composite-id>
-		<version name="vers" column="vers" type="long"/>
         <many-to-one name="child" column="child_id" class="AVMNodeImpl"
 	                 not-null="true"/>
     </class>

@@ -2,156 +2,179 @@
 
 <model name="wcmwf:workflowmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
-   <imports>
-      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
-      <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
-   </imports>
+  <imports>
+    <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
+  </imports>
 
-   <namespaces>
-      <namespace uri="http://www.alfresco.org/model/wcmworkflow/1.0" prefix="wcmwf"/>
-   </namespaces>
-      
-   <constraints>
-   
-        <constraint name="wcmwf:reviewType" type="LIST">
-            <parameter name="allowedValues">
-                <!--  TODO: Determine if priority values can be mapped to human-readable strings -->
-                <list>
-                    <value>Serial</value>
-                    <value>Parallel</value>
-                </list>
-            </parameter>
-        </constraint>
+  <namespaces>
+    <namespace uri="http://www.alfresco.org/model/wcmworkflow/1.0" prefix="wcmwf"/>
+  </namespaces>
+  
+  <constraints>
+    
+    <constraint name="wcmwf:reviewType" type="LIST">
+      <parameter name="allowedValues">
+        <!--  TODO: Determine if priority values can be mapped to human-readable strings -->
+        <list>
+          <value>Serial</value>
+          <value>Parallel</value>
+        </list>
+      </parameter>
+    </constraint>
 
-   </constraints>
-   
-   <types>
+  </constraints>
+  
+  <types>
 
-      <!--                                                    -->
-      <!--  Base WCM "start" task & workflow task definitions -->
-      <!--                                                    -->
-      <!--  Note: Useful for dispatching WCM specific         -->
-      <!--        behaviour                                   -->
-      <!--                                                    -->
-      
-      <type name="wcmwf:startTask">
-         <parent>bpm:startTask</parent>
-      </type>
+    <!--                                                    -->
+    <!--  Base WCM "start" task & workflow task definitions -->
+    <!--                                                    -->
+    <!--  Note: Useful for dispatching WCM specific         -->
+    <!--        behaviour                                   -->
+    <!--                                                    -->
+    
+    <type name="wcmwf:startTask">
+      <parent>bpm:startTask</parent>
+      <overrides>
+        <property name="bpm:packageItemActionGroup">
+          <default>edit_and_remove_wcm_package_item_actions</default>
+        </property>
+      </overrides>
+    </type>
 
-      <type name="wcmwf:workflowTask">
-         <parent>bpm:workflowTask</parent>
-      </type>
+    <type name="wcmwf:workflowTask">
+      <parent>bpm:workflowTask</parent>
+      <overrides>
+        <property name="bpm:packageItemActionGroup">
+          <default>read_wcm_package_item_actions</default>
+        </property>
+      </overrides>
+    </type>
 
-      <!--                               -->
-      <!--  WCM Tasks                    -->               
-      <!--                               -->
+    <type name="wcmwf:submitReviewTask">
+      <parent>wcmwf:startTask</parent>
+      <properties>
+        <property name="wcmwf:submitReviewType">
+          <title>Serial or Parallel Review</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+          <default>Serial</default>
+          <constraints>
+            <constraint ref="wcmwf:reviewType" />
+          </constraints>
+        </property>
+      </properties>
+      <mandatory-aspects>
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:submission</aspect>
+      </mandatory-aspects>
+    </type>
 
-      <type name="wcmwf:submitReviewTask">
-         <parent>wcmwf:startTask</parent>
-         <properties>
-            <property name="wcmwf:submitReviewType">
-               <title>Serial or Parallel Review</title>
-               <type>d:text</type>
-               <mandatory>true</mandatory>
-               <default>Serial</default>
-               <constraints>
-                  <constraint ref="wcmwf:reviewType" />
-               </constraints>
-            </property>
-         </properties>
-         <mandatory-aspects>
-            <aspect>bpm:assignees</aspect>
-            <aspect>wcmwf:submission</aspect>
-         </mandatory-aspects>
-      </type>
+    <type name="wcmwf:reviewTask">
+      <parent>wcmwf:workflowTask</parent>
+      <overrides>
+        <property name="bpm:packageItemActionGroup">
+          <default>edit_wcm_package_item_actions</default>
+        </property>
+      </overrides>
+      <mandatory-aspects>
+        <!-- One or more reviewers - this is here to allow view of all reviewers -->
+        <!-- in the review task -->
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:submission</aspect>
+        <aspect>wcmwf:reviewType</aspect>
+      </mandatory-aspects>
+    </type>
 
-      <type name="wcmwf:reviewTask">
-         <parent>wcmwf:workflowTask</parent>
-         <mandatory-aspects>
-            <!-- One or more reviewers - this is here to allow view of all reviewers -->
-            <!-- in the review task -->
-            <aspect>bpm:assignees</aspect>
-            <aspect>wcmwf:submission</aspect>
-            <aspect>wcmwf:reviewType</aspect>
-         </mandatory-aspects>
-      </type>
+    <type name="wcmwf:rejectedTask">
+      <parent>wcmwf:workflowTask</parent>
+      <mandatory-aspects>
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:reviewType</aspect>
+        <aspect>wcmwf:reviewInfo</aspect>
+      </mandatory-aspects>
+    </type>
 
-      <type name="wcmwf:rejectedTask">
-         <parent>wcmwf:workflowTask</parent>
-         <mandatory-aspects>
-            <aspect>bpm:assignees</aspect>
-            <aspect>wcmwf:reviewType</aspect>
-            <aspect>wcmwf:reviewInfo</aspect>
-         </mandatory-aspects>
-      </type>
+    <type name="wcmwf:approvedTask">
+      <parent>wcmwf:workflowTask</parent>
+      <mandatory-aspects>
+        <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:reviewType</aspect>
+        <aspect>wcmwf:reviewInfo</aspect>
+      </mandatory-aspects>
+    </type>
 
-      <type name="wcmwf:approvedTask">
-         <parent>wcmwf:workflowTask</parent>
-         <mandatory-aspects>
-            <aspect>bpm:assignees</aspect>
-            <aspect>wcmwf:reviewType</aspect>
-            <aspect>wcmwf:reviewInfo</aspect>
-         </mandatory-aspects>
-      </type>
+    <type name="wcmwf:submitWebContentTask">
+      <parent>wcmwf:startTask</parent>
+      <properties>
+        <property name="wcmwf:from">
+          <type>d:text</type>
+        </property>
+      </properties>
+      <mandatory-aspects>
+        <aspect>bpm:assignee</aspect>
+      </mandatory-aspects>
+    </type>
 
-   </types>
+  </types>
 
-   <aspects>
-   
-      <aspect name="wcmwf:submission">
-         <properties>
-            <property name="wcmwf:fromPath">
-               <title>Source Folder Path</title>
-               <description>Folder where items have been submitted from</description>
-               <type>d:text</type>
-               <mandatory>true</mandatory>
-            </property>
-            <property name="wcmwf:label">
-               <title>Snapshot Label</title>
-               <type>d:text</type>
-               <mandatory>true</mandatory>
-            </property>
-         </properties>
-      </aspect>
+  <aspects>
+    
+    <aspect name="wcmwf:submission">
+      <properties>
+        <property name="wcmwf:fromPath">
+          <title>Source Folder Path</title>
+          <description>Folder where items have been submitted from</description>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+        </property>
+        <property name="wcmwf:label">
+          <title>Snapshot Label</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+        </property>
+      </properties>
+    </aspect>
 
-      <aspect name="wcmwf:reviewType">
-         <properties>
-            <property name="wcmwf:reviewType">
-               <title>Review Type</title>
-               <type>d:text</type>
-               <mandatory>true</mandatory>
-               <constraints>
-                  <constraint ref="wcmwf:reviewType" />
-               </constraints>
-            </property>
-         </properties>
-      </aspect>
+    <aspect name="wcmwf:reviewType">
+      <properties>
+        <property name="wcmwf:reviewType">
+          <title>Review Type</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+          <constraints>
+            <constraint ref="wcmwf:reviewType" />
+          </constraints>
+        </property>
+      </properties>
+    </aspect>
 
-      <aspect name="wcmwf:reviewInfo">
-         <properties>
-            <property name="wcmwf:reviewerCnt">
-               <title>Reviewer Count</title>
-               <type>d:int</type>
-               <mandatory>true</mandatory>
-            </property>
-            <property name="wcmwf:approveCnt">
-               <title>Approver Count</title>
-               <type>d:int</type>
-               <mandatory>true</mandatory>
-            </property>
-         </properties>
-      </aspect>
-   
-      <aspect name="wcmwf:submitted">
-         <properties>
-            <property name="wcmwf:workflowInstanceId">
-               <title>Workflow Instance Id</title>
-               <type>d:text</type>
-               <mandatory>true</mandatory>
-            </property>
-         </properties>
-      </aspect>
+    <aspect name="wcmwf:reviewInfo">
+      <properties>
+        <property name="wcmwf:reviewerCnt">
+          <title>Reviewer Count</title>
+          <type>d:int</type>
+          <mandatory>true</mandatory>
+        </property>
+        <property name="wcmwf:approveCnt">
+          <title>Approver Count</title>
+          <type>d:int</type>
+          <mandatory>true</mandatory>
+        </property>
+      </properties>
+    </aspect>
+    
+    <aspect name="wcmwf:submitted">
+      <properties>
+        <property name="wcmwf:workflowInstanceId">
+          <title>Workflow Instance Id</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+        </property>
+      </properties>
+    </aspect>
 
-   </aspects>
+  </aspects>
 
 </model>

@@ -120,7 +120,7 @@ public class RenditionImpl
 
    public String getUrl()
    {
-      return AVMConstants.buildAVMAssetUrl(this.getPath());
+      return AVMConstants.buildAssetUrl(this.getPath());
    }
 
    public String getFileTypeImage()

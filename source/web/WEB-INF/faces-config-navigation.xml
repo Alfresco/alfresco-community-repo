@@ -892,10 +892,6 @@
          <from-outcome>browseSandbox</from-outcome>
          <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
       </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/wcm/*</from-view-id>
       <navigation-case>
          <from-outcome>importContent</from-outcome>
          <to-view-id>/jsp/wcm/import-content-dialog.jsp</to-view-id>
@@ -925,10 +921,6 @@
          <to-view-id>/jsp/wcm/update-file.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>showFileDetails</from-outcome>
          <to-view-id>/jsp/wcm/file-details.jsp</to-view-id>
       </navigation-case>
@@ -937,5 +929,11 @@
          <to-view-id>/jsp/wcm/folder-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
-   
+   <navigation-rule> 
+      <from-view-id>/jsp/wcm/*</from-view-id>
+      <navigation-case>
+         <from-outcome>cancel</from-outcome>
+         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
+      </navigation-case>
+   </navigation-rule>
 </faces-config>

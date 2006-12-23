@@ -78,18 +78,18 @@ public class DeleteSandboxDialog extends BaseDialogBean
                // TODO: would it be better to use the .sandbox-id. property to delete all sandboxes?
                
                // purge the user main sandbox store from the system
-               String sandbox = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
+               String sandbox = AVMConstants.buildUserMainStoreName(storeRoot, username);
                this.avmService.purgeStore(sandbox);
                
                // purge the user preview sandbox store from the system
-               sandbox = AVMConstants.buildAVMUserPreviewStoreName(storeRoot, username);
+               sandbox = AVMConstants.buildUserPreviewStoreName(storeRoot, username);
                this.avmService.purgeStore(sandbox);
                
                // remove the association to this web project user meta-data
                this.nodeService.removeChild(website.getNodeRef(), ref.getChildRef());
                
                // update virtualisation server for the sandbox removal
-               String path = AVMConstants.buildAVMStoreWebappPath(sandbox, this.avmBrowseBean.getWebapp());
+               String path = AVMConstants.buildStoreWebappPath(sandbox, this.avmBrowseBean.getWebapp());
                AVMConstants.removeVServerWebapp(path, true);
                
                break;

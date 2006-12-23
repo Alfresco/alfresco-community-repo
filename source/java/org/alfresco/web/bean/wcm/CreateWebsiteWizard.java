@@ -187,8 +187,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
          SandboxFactory.createStagingSandbox(avmStore, wiz.getManagers());
          
          // create the default webapp folder under the hidden system folders
-         final String stagingStore = AVMConstants.buildAVMStagingStoreName(avmStore);
-         final String stagingStoreRoot = AVMConstants.buildAVMStoreRootPath(stagingStore);
+         final String stagingStore = AVMConstants.buildStagingStoreName(avmStore);
+         final String stagingStoreRoot = AVMConstants.buildSandboxRootPath(stagingStore);
          this.avmService.createDirectory(stagingStoreRoot, webapp);
          this.avmService.addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot,
                                                                   webapp),

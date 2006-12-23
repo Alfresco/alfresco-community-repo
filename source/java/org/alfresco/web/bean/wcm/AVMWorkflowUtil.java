@@ -22,18 +22,28 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.wf.AVMSubmittedAspect;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.web.bean.repository.Repository;
@@ -42,6 +52,7 @@ import org.alfresco.web.bean.workflow.WorkflowUtil;
 /**
  * AVM Specific workflow related helper methods.
  * 
+ * @author Ariel Backenroth
  * @author Kevin Roast
  */
 public class AVMWorkflowUtil extends WorkflowUtil
@@ -50,45 +61,39 @@ public class AVMWorkflowUtil extends WorkflowUtil
    private static final String WCM_WORKFLOW_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmworkflow/1.0";
    public static final QName PROP_FROM_PATH = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "fromPath");
    public static final QName PROP_LABEL = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "label");
-    
-   private static final String STORE_WORKFLOW_SYSTEM = "workflow-system";
-   private static final String FOLDER_PACKAGES = "packages";
-   
-   /**
-    * Return the AVM workflow package root folder path - creating the default
-    * store and root folder if required.
-    * 
-    * @param avmService       AVMService to use
-    * 
-    * @return AVM Root package path
-    */
-   public static String getAVMPackageRoot(AVMService avmService)
+
+   public static NodeRef createWorkflowPackage(final List<String> srcPaths,
+                                               final String storeId,
+                                               final WorkflowPath path,
+                                               final AVMSubmittedAspect avmSubmittedAspect,
+                                               final AVMSyncService avmSyncService,
+                                               final AVMService avmService,
+                                               final WorkflowService workflowService,
+                                               final NodeService nodeService)
    {
-      String packagesRoot = STORE_WORKFLOW_SYSTEM + ":/" + FOLDER_PACKAGES;
-      AVMNodeDescriptor packagesDesc = avmService.lookup(-1, packagesRoot);
-      if (packagesDesc == null)
+      // create package paths (layered to user sandbox area as target)
+      final String packageName = SandboxFactory.createWorkflowSandbox(storeId);
+      final String workflowMainStoreName =
+         AVMConstants.buildWorkflowMainStoreName(storeId, packageName);
+      final String packagesPath = AVMConstants.buildStoreRootPath(workflowMainStoreName);
+                    
+      final List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
+      for (final String srcPath : srcPaths)
       {
-         avmService.createStore(STORE_WORKFLOW_SYSTEM);
-         avmService.createDirectory(STORE_WORKFLOW_SYSTEM + ":/", FOLDER_PACKAGES);
+         diffs.add(new AVMDifference(-1, srcPath, 
+                                     -1, AVMConstants.getCorrespondingPath(srcPath, workflowMainStoreName),
+                                     AVMDifference.NEWER));
+         avmSubmittedAspect.markSubmitted(-1, srcPath, path.instance.id);
       }
-      return packagesRoot;
-   }
-   
-   /**
-    * Create an AVM layered workflow package against the specified sandbox path. 
-    * 
-    * @param avmService       AVMService to use
-    * @param sandboxPath      The sandbox path to layer the package over
-    * 
-    * @return Path to the layered package.
-    */
-   public static String createAVMLayeredPackage(AVMService avmService, String sandboxPath)
-   {
-      String packagesRoot = getAVMPackageRoot(avmService);
-      String packageName = GUID.generate();
-      avmService.createLayeredDirectory(sandboxPath, packagesRoot, packageName);
-      
-      return packagesRoot + "/" + packageName;
+                  
+      // write changes to layer so files are marked as modified
+      avmSyncService.update(diffs, null, true, true, false, false, null, null);
+                    
+      // convert package to workflow package
+      final AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);
+      final NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
+      nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
+      return packageNodeRef;
    }
    
    /**

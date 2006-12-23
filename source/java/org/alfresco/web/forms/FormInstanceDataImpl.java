@@ -96,7 +96,7 @@ public class FormInstanceDataImpl
 
    public String getUrl()
    {
-      return AVMConstants.buildAVMAssetUrl(this.getPath());
+      return AVMConstants.buildAssetUrl(this.getPath());
    }
 
    public List<Rendition> getRenditions()

@@ -41,7 +41,7 @@ public class CreateWebappDialog extends CreateFolderDialog
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      final String parent = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
+      final String parent = AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
       this.avmService.createDirectory(parent, this.name);
       
       final String path = AVMNodeConverter.ExtendAVMPath(parent, this.name);

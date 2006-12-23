@@ -215,11 +215,11 @@ public class ImportWebsiteDialog
             String webapp = this.avmBrowseBean.getWebapp();
             if (storeRoot != null && webapp != null)
             {
-               String store = AVMConstants.buildAVMStagingStoreName(storeRoot);
+               String store = AVMConstants.buildStagingStoreName(storeRoot);
                if (this.avmService.getStore(store) != null)
                {
                   // get the path to the root webapp import area of the store
-                  String rootPath = AVMConstants.buildAVMStoreWebappPath(store, webapp);
+                  String rootPath = AVMConstants.buildStoreWebappPath(store, webapp);
                   
                   // convert the AVM path to a NodeRef so we can use the NodeService to perform import
                   NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);

@@ -241,7 +241,7 @@ public class AVMBrowseBean implements IContextListener
       {
          // count user stores
          int users = avmService.queryStoresPropertyKeys(QName.createQName(null,
-               AVMConstants.PROP_SANDBOX_STORE_PREFIX + storeRoot + "-%" + AVMConstants.STORE_MAIN)).size();
+                                                                          AVMConstants.PROP_SANDBOX_STORE_PREFIX + storeRoot + "-%")).size() / 2;
          summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
                 .append(Utils.getDateFormat(fc).format(new Date(store.getCreateDate())))
                 .append("<p>");
@@ -263,7 +263,7 @@ public class AVMBrowseBean implements IContextListener
    public String getStagingStore()
    {
       String storeRoot = (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE);
-      return AVMConstants.buildAVMStagingStoreName(storeRoot);
+      return AVMConstants.buildStagingStoreName(storeRoot);
    }
    
    /**
@@ -271,7 +271,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getStagingPreviewUrl()
    {
-      return AVMConstants.buildAVMWebappUrl(getStagingStore(), getWebapp());
+      return AVMConstants.buildWebappUrl(getStagingStore(), getWebapp());
    }
    
    /**
@@ -279,7 +279,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getSandboxPreviewUrl()
    {
-      return AVMConstants.buildAVMWebappUrl(getSandbox(), getWebapp());
+      return AVMConstants.buildWebappUrl(getSandbox(), getWebapp());
    }
    
    /**
@@ -387,7 +387,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public List<SelectItem> getWebapps()
    {
-      String path = AVMConstants.buildAVMStoreRootPath(getStagingStore());
+      String path = AVMConstants.buildSandboxRootPath(getStagingStore());
       Map<String, AVMNodeDescriptor> folders = this.avmService.getDirectoryListing(-1, path);
       List<SelectItem> webapps = new ArrayList<SelectItem>(folders.size());
       for (AVMNodeDescriptor node : folders.values())
@@ -496,7 +496,7 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.currentPath == null)
       {
-         this.currentPath = AVMConstants.buildAVMStoreWebappPath(getSandbox(), getWebapp());
+         this.currentPath = AVMConstants.buildStoreWebappPath(getSandbox(), getWebapp());
       }
       return this.currentPath;
    }
@@ -623,7 +623,7 @@ public class AVMBrowseBean implements IContextListener
          tx.begin();
          
          String dns = AVMConstants.lookupStoreDNS(getSandbox());
-         int rootPathIndex = AVMConstants.buildAVMStoreRootPath(getSandbox()).length();
+         int rootPathIndex = AVMConstants.buildSandboxRootPath(getSandbox()).length();
          
          Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(-1, getCurrentPath());
          this.files = new ArrayList<Map>(nodes.size());
@@ -655,7 +655,7 @@ public class AVMBrowseBean implements IContextListener
             
             // common properties
             String assetPath = path.substring(rootPathIndex);
-            String previewUrl = AVMConstants.buildAVMAssetUrl(assetPath, wcmDomain, wcmPort, dns);
+            String previewUrl = AVMConstants.buildAssetUrl(assetPath, wcmDomain, wcmPort, dns);
             node.getProperties().put("previewUrl", previewUrl);
          }
          
@@ -747,7 +747,7 @@ public class AVMBrowseBean implements IContextListener
       else
       {
          // get the staging store from the current website node
-         setSandbox(AVMConstants.buildAVMStagingStoreName(
+         setSandbox(AVMConstants.buildStagingStoreName(
                (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE)));
       }
       
@@ -777,33 +777,39 @@ public class AVMBrowseBean implements IContextListener
       setupContentAction(path, true);
    }
    
-   /*package*/ void setupContentAction(String path, boolean refresh)
+   /*package*/ void setupContentAction(final String path, final boolean refresh)
    {
-      if (path != null && path.length() != 0)
+      if (logger.isDebugEnabled())
+         logger.debug("Setup content action for path: " + path);
+
+      if (path == null && path.length() == 0)
       {
-         if (logger.isDebugEnabled())
-            logger.debug("Setup content action for path: " + path);
-         
-         // calculate username and store name from specified path
-         String[] parts = path.split("[-:]");
-         String storename = parts[0];
-         String username = parts[2];
-         if (username.equals(AVMConstants.STORE_STAGING.substring(1)))
-         {
-            setupSandboxActionImpl(null, null, false);
-         }
-         else
-         {
-            setupSandboxActionImpl(AVMConstants.buildAVMUserMainStoreName(storename, username), username, false);
-         }
-         
-         // setup the action node
-         AVMNodeDescriptor node = avmService.lookup(-1, path, true);
-         setAVMActionNodeDescriptor(node);
+         setAvmActionNode(null);
       }
       else
       {
-         setAvmActionNode(null);
+         // calculate username and store name from specified path
+         String storeName = AVMConstants.getStoreName(path);
+         final String storeId = AVMConstants.getStoreId(storeName);
+         final String username = AVMConstants.getUserName(storeName);
+         final boolean preview = AVMConstants.isPreviewStore(storeName);
+         if (username == null)
+         {
+            storeName = (preview
+                         ? AVMConstants.buildStagingPreviewStoreName(storeId)
+                         : AVMConstants.buildStagingStoreName(storeId));
+            setupSandboxActionImpl(storeName, null, false);
+         }
+         else
+         {
+            storeName = (preview
+                         ? AVMConstants.buildUserPreviewStoreName(storeId, username)
+                         : AVMConstants.buildUserMainStoreName(storeId, username));
+            setupSandboxActionImpl(storeName, username, false);
+         }
+         
+         // setup the action node
+         setAVMActionNodeDescriptor(avmService.lookup(-1, path, true));
       }
       
       // update UI state ready for return after dialog close
@@ -1028,7 +1034,7 @@ public class AVMBrowseBean implements IContextListener
       @Override
       public String toString()
       {
-         if (AVMConstants.buildAVMStoreRootPath(getSandbox()).equals(path))
+         if (AVMConstants.buildSandboxRootPath(getSandbox()).equals(path))
          {
             // don't display the 'root' webapps path as this will confuse users
             // instead display which sandbox we are in

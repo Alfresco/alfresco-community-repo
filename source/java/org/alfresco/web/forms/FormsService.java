@@ -378,7 +378,7 @@ public final class FormsService
                                                                        final String renditionAvmPath)
    {
       final HashMap<String, String> parameters = new HashMap<String, String>();      
-      parameters.put("avm_sandbox_url", AVMConstants.buildAVMStoreUrl(formInstanceDataAvmPath));
+      parameters.put("avm_sandbox_url", AVMConstants.buildStoreUrl(formInstanceDataAvmPath));
       parameters.put("form_instance_data_file_name", AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[1]);
       parameters.put("rendition_file_name", AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
       parameters.put("parent_path", AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0]);

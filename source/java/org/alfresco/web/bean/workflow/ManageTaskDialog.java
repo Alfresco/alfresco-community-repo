@@ -542,7 +542,6 @@ public class ManageTaskDialog extends BaseDialogBean
                final NodeRef stagingNodeRef = (NodeRef)
                   this.nodeService.getProperty(this.workflowPackage,
                                               WCMModel.PROP_AVM_DIR_INDIRECTION);
-               final String fromAvmPath = (String)this.task.properties.get(AVMWorkflowUtil.PROP_FROM_PATH);
                final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
                final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
                LOGGER.debug("comparing " + packageAvmPath +
@@ -712,9 +711,9 @@ public class ManageTaskDialog extends BaseDialogBean
             return result;
          }
       };
-      node.remove("path");
-      node.addPropertyResolver("path", resolverPath);
-      node.addPropertyResolver("displayPath", resolverPath);
+//      node.remove("path");
+//      node.addPropertyResolver("path", resolverPath);
+//      node.addPropertyResolver("displayPath", resolverPath);
 
       LOGGER.debug("created mapnode  " + node);
       

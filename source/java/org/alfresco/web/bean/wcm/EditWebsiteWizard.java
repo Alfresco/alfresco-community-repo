@@ -180,11 +180,11 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       // change/create the root webapp name for the website
       if (this.webapp != null && this.webapp.length() != 0)
       {
-         String stagingStore = AVMConstants.buildAVMStagingStoreName(this.dnsName);
-         String webappPath = AVMConstants.buildAVMStoreWebappPath(stagingStore, this.webapp);
+         String stagingStore = AVMConstants.buildStagingStoreName(this.dnsName);
+         String webappPath = AVMConstants.buildStoreWebappPath(stagingStore, this.webapp);
          if (this.avmService.lookup(-1, webappPath) == null)
          {
-            this.avmService.createDirectory(AVMConstants.buildAVMStoreRootPath(stagingStore), this.webapp);
+            this.avmService.createDirectory(AVMConstants.buildSandboxRootPath(stagingStore), this.webapp);
          }
          this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, this.webapp);
       }

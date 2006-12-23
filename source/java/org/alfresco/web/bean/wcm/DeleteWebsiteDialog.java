@@ -57,15 +57,15 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
          String username = (String)nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
          
          // delete the preview store for this user
-         deleteStore(AVMConstants.buildAVMUserPreviewStoreName(storeRoot, username));
+         deleteStore(AVMConstants.buildUserPreviewStoreName(storeRoot, username));
          
          // delete the main store for this user
-         deleteStore(AVMConstants.buildAVMUserMainStoreName(storeRoot, username));
+         deleteStore(AVMConstants.buildUserMainStoreName(storeRoot, username));
       }
       
       // remove the main staging and preview stores
-      deleteStore(AVMConstants.buildAVMStagingPreviewStoreName(storeRoot));
-      deleteStore(AVMConstants.buildAVMStagingStoreName(storeRoot));
+      deleteStore(AVMConstants.buildStagingPreviewStoreName(storeRoot));
+      deleteStore(AVMConstants.buildStagingStoreName(storeRoot));
       
       // use the super implementation to delete the node itself
       return super.finishImpl(context, outcome);

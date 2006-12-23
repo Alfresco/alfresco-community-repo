@@ -126,9 +126,9 @@ class FormImpl
       String result = templateService.processTemplateString(null, 
                                                             outputPathPattern, 
                                                             new SimpleHash(root));
-      result = AVMConstants.buildAVMPath(parentAVMPath, 
-                                         result,
-                                         AVMConstants.PathRelation.SANDBOX_RELATIVE);
+      result = AVMConstants.buildPath(parentAVMPath, 
+                                      result,
+                                      AVMConstants.PathRelation.SANDBOX_RELATIVE);
       LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
       return result;
    }

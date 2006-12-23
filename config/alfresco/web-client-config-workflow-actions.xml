@@ -162,6 +162,10 @@
             <action idref="view_content_properties" />
          </action-group>
 
+         <action-group id="read_wcm_package_item_actions">
+            <action idref="file_details" />
+         </action-group>
+
          <action-group id="edit_package_item_actions">
             <action idref="view_content_properties" />
             <action idref="edit_content_properties" />
@@ -174,8 +178,22 @@
             <action idref="workflow_cancelcheckout_doc" />
          </action-group>
 
+         <action-group id="edit_wcm_package_item_actions">
+            <action idref="file_details" />
+            <action idref="edit_file" />
+            <action idref="update_file" />
+            <action idref="workflow_checkout_doc" />
+            <action idref="workflow_checkin_doc" />
+            <action idref="workflow_cancelcheckout_doc" />
+         </action-group>
+
          <action-group id="remove_package_item_actions">
             <action idref="view_content_properties" />
+            <action idref="remove_package_item" />
+         </action-group>
+
+         <action-group id="remove_wcm_package_item_actions">
+            <action idref="file_details" />
             <action idref="remove_package_item" />
          </action-group>
          
@@ -186,6 +204,16 @@
             <action idref="edit_doc_webdav" />
             <action idref="edit_doc_cifs" />
             <action idref="update_doc" />
+            <action idref="workflow_checkout_doc" />
+            <action idref="workflow_checkin_doc" />
+            <action idref="workflow_cancelcheckout_doc" />
+            <action idref="remove_package_item" />
+         </action-group>
+
+         <action-group id="edit_and_remove_wcm_package_item_actions">
+            <action idref="file_details" />
+            <action idref="edit_file"/>
+            <action idref="update_file" />
             <action idref="workflow_checkout_doc" />
             <action idref="workflow_checkin_doc" />
             <action idref="workflow_cancelcheckout_doc" />

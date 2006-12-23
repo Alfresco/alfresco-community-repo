@@ -25,12 +25,14 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
@@ -70,74 +72,235 @@ public final class AVMConstants
    private AVMConstants()
    {
    }
-   
-   public static String buildAVMStagingStoreName(String store)
+
+   /**
+    * Extracts the store name from the avmpath
+    *
+    * @param avmPath an absolute avm pth
+    * @return the store name
+    */
+   public static String getStoreName(final String avmPath)
    {
-      if (store == null || store.length() == 0)
+      final int i = avmPath.indexOf(':');
+      if (i == -1)
       {
-         throw new IllegalArgumentException("Store name is mandatory.");
+         throw new IllegalArgumentException("path " + avmPath + " does not contain a store");
       }
-      return store + AVMConstants.STORE_STAGING;
+      return avmPath.substring(0, i);
+   }
+
+   /**
+    * Indicates whether the store name describes a preview store.
+    *
+    * @param storeName the store name
+    * @return <tt>true</tt> if the store is a preview store, <tt>false</tt> otherwise.
+    */
+   public static boolean isPreviewStore(final String storeName)
+   {
+      return storeName.endsWith(AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW);
+   }
+
+   public static boolean isWorkflowStore(String storeName)
+   {
+      if (AVMConstants.isPreviewStore(storeName))
+      {
+         storeName = AVMConstants.getCorrespondingMainStoreName(storeName);
+      }
+      
+      return storeName.indexOf(STORE_SEPARATOR + STORE_WORKFLOW) != -1;
+   }
+
+   /**
+    * Indicates whether the store name describes a user store.
+    *
+    * @param storeName the store name
+    * @return <tt>true</tt> if the store is a user store, <tt>false</tt> otherwise.
+    */
+   public static boolean isUserStore(String storeName)
+   {
+      if (AVMConstants.isPreviewStore(storeName))
+      {
+         storeName = AVMConstants.getCorrespondingMainStoreName(storeName);
+      }
+      return storeName.indexOf(AVMConstants.STORE_SEPARATOR) != -1;
+   }
+
+   /**
+    * Extracts the username from the store name.
+    *
+    * @param storeName the store name
+    * @return the username associated or <tt>null</tt> if this is a staging store.
+    */
+   public static String getUserName(String storeName)
+   {
+      if (AVMConstants.isPreviewStore(storeName))
+      {
+         storeName = AVMConstants.getCorrespondingMainStoreName(storeName);
+      }
+      final int index = storeName.indexOf(AVMConstants.STORE_SEPARATOR);
+      return (index == -1
+              ? null
+              : storeName.substring(index + AVMConstants.STORE_SEPARATOR.length()));
+   }
+
+   /**
+    * Extracts the store id from the store name.
+    *
+    * @param storeName the store name.
+    * @return the store id.
+    */
+   public static String getStoreId(final String storeName)
+   {
+      final int index = storeName.indexOf(AVMConstants.STORE_SEPARATOR);
+      return (index == -1
+              ? storeName
+              : storeName.substring(0, index));
+   }
+
+   /**
+    * Returns the corresponding main store name if this is a preview store name.
+    *
+    * @param storeName the preview store name.
+    * @return the corresponding main store name.
+    * @exception IllegalArgumentException if this is not a preview store name.
+    */
+   public static String getCorrespondingMainStoreName(final String storeName)
+   {
+      if (!AVMConstants.isPreviewStore(storeName))
+      {
+         throw new IllegalArgumentException("store " + storeName + " is not a preview store");
+      }
+      return storeName.substring(0, 
+                                 (storeName.length() - 
+                                  (AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW).length()));
+   }
+
+   /**
+    * Returns the corresponding preview store name if this is a main store name.
+    *
+    * @param storeName the main store name.
+    * @return the corresponding preview store name.
+    * @exception IllegalArgumentException if this is not a main store name.
+    */
+   public static String getCorrespondingPreviewStoreName(final String storeName)
+   {
+      if (AVMConstants.isPreviewStore(storeName))
+      {
+         throw new IllegalArgumentException("store " + storeName + " is already a preview store");
+      }
+      return storeName + AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW;
+   }
+
+   /**
+    * Returns the corresponding path in the preview store name if this is a path in 
+    * a main store.
+    *
+    * @param avmPath an avm path within the main store.
+    * @return the corresponding path within the preview store.
+    * @exception IllegalArgumentException if this is not a path within the preview store.
+    */
+   public static String getCorrespondingPathInMainStore(final String avmPath)
+   {
+      String storeName = AVMConstants.getStoreName(avmPath);
+      storeName = AVMConstants.getCorrespondingMainStoreName(storeName);
+      return AVMConstants.getCorrespondingPath(avmPath, storeName);
+   }
+
+   /**
+    * Returns the corresponding path in the preview store name if this is a path in 
+    * a main store.
+    *
+    * @param avmPath an avm path within the main store.
+    * @return the corresponding path within the preview store.
+    * @exception IllegalArgumentException if this is not a path within the preview store.
+    */
+   public static String getCorrespondingPathInPreviewStore(final String avmPath)
+   {
+      String storeName = AVMConstants.getStoreName(avmPath);
+      storeName = AVMConstants.getCorrespondingPreviewStoreName(storeName);
+      return AVMConstants.getCorrespondingPath(avmPath, storeName);
+   }
+
+   public static String getCorrespondingPath(final String avmPath, final String otherStore)
+   {
+      return (otherStore + ':' + AVMConstants.getStoreRelativePath(avmPath));
    }
    
-   public static String buildAVMStagingPreviewStoreName(String store)
+   public static String buildStagingStoreName(final String storeId)
    {
-      if (store == null || store.length() == 0)
+      if (storeId == null || storeId.length() == 0)
       {
-         throw new IllegalArgumentException("Store name is mandatory.");
+         throw new IllegalArgumentException("Store id is mandatory.");
       }
-      return store + AVMConstants.STORE_PREVIEW;
+      return storeId;
    }
    
-   public static String buildAVMUserMainStoreName(String store, String username)
+   public static String buildStagingPreviewStoreName(final String storeId)
    {
-      if (store == null || store.length() == 0)
-      {
-         throw new IllegalArgumentException("Store name is mandatory.");
-      }
+      return (AVMConstants.buildStagingStoreName(storeId) + 
+              AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW);
+   }
+   
+   public static String buildUserMainStoreName(final String storeId, 
+                                                  final String username)
+   {
       if (username == null || username.length() == 0)
       {
          throw new IllegalArgumentException("Username is mandatory.");
       }
-      return store + STORE_SEPARATOR + username + AVMConstants.STORE_MAIN;
+      return (AVMConstants.buildStagingStoreName(storeId) + AVMConstants.STORE_SEPARATOR + 
+              username);
    }
    
-   public static String buildAVMUserPreviewStoreName(String store, String username)
+   public static String buildUserPreviewStoreName(final String storeId, 
+                                                     final String username)
    {
-      if (store == null || store.length() == 0)
+      return (AVMConstants.buildUserMainStoreName(storeId, username) +
+              AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW);
+   }
+
+   public static String buildWorkflowMainStoreName(final String storeId, 
+                                                      final String workflowId)
+   {
+      if (workflowId == null || workflowId.length() == 0)
+      {
+         throw new IllegalArgumentException("workflowId is mandatory.");
+      }
+      return (AVMConstants.buildStagingStoreName(storeId) + AVMConstants.STORE_SEPARATOR +
+              workflowId);
+   }
+
+   public static String buildWorkflowPreviewStoreName(final String storeId, 
+                                                         final String workflowId)
+   {
+      return (AVMConstants.buildWorkflowMainStoreName(storeId, workflowId) +
+              AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW);
+   }
+
+   public static String buildStoreRootPath(final String storeName)
+   {
+      if (storeName == null || storeName.length() == 0)
       {
          throw new IllegalArgumentException("Store name is mandatory.");
       }
-      if (username == null || username.length() == 0)
-      {
-         throw new IllegalArgumentException("Username is mandatory.");
-      }
-      return store + STORE_SEPARATOR + username + AVMConstants.STORE_PREVIEW;
+      return storeName + ":/" + DIR_APPBASE;
+   }
+
+   public static String buildSandboxRootPath(final String storeName)
+   {
+      return AVMConstants.buildStoreRootPath(storeName) + '/' + DIR_WEBAPPS;
    }
    
-   public static String buildAVMStoreRootPath(String store)
+   public static String buildStoreWebappPath(final String storeName, String webapp)
    {
-      if (store == null || store.length() == 0)
-      {
-         throw new IllegalArgumentException("Store name is mandatory.");
-      }
-      return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS;
-   }
-   
-   public static String buildAVMStoreWebappPath(String store, String webapp)
-   {
-      if (store == null || store.length() == 0)
-      {
-         throw new IllegalArgumentException("Store name is mandatory.");
-      }
       if (webapp == null || webapp.length() == 0)
       {
          throw new IllegalArgumentException("Webapp name is mandatory.");
       }
-      return store + ":/" + DIR_APPBASE + '/' + DIR_WEBAPPS + '/' + webapp;
+      return AVMConstants.buildSandboxRootPath(storeName) + '/' + webapp;
    }
    
-   public static String buildAVMStoreUrl(String store)
+   public static String buildStoreUrl(String store)
    {
       if (store == null || store.length() == 0)
       {
@@ -148,26 +311,25 @@ public final class AVMConstants
          store = store.substring(0, store.indexOf(':'));
       }
       ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      return MessageFormat.format(PREVIEW_SANDBOX_URL, lookupStoreDNS(store), config.getWCMDomain(), config.getWCMPort());
+      return MessageFormat.format(PREVIEW_SANDBOX_URL, 
+                                  lookupStoreDNS(store), 
+                                  config.getWCMDomain(), 
+                                  config.getWCMPort());
    }
    
-   public static String buildAVMWebappUrl(String store, String webapp)
+   public static String buildWebappUrl(final String store, 
+                                          final String webapp)
    {
       if (webapp == null || webapp.length() == 0)
       {
          throw new IllegalArgumentException("Webapp name is mandatory.");
       }
-      if (!webapp.equals(DIR_ROOT))
-      {
-         return buildAVMStoreUrl(store) + '/' + webapp;
-      }
-      else
-      {
-         return buildAVMStoreUrl(store);
-      }
+      return (webapp.equals(DIR_ROOT)
+              ? buildStoreUrl(store)
+              : buildStoreUrl(store) + '/' + webapp);
    }
    
-   public static String buildAVMAssetUrl(final String avmPath)
+   public static String buildAssetUrl(final String avmPath)
    {
       if (avmPath == null || avmPath.length() == 0)
       {
@@ -178,10 +340,10 @@ public final class AVMConstants
       {
          throw new IllegalArgumentException("expected exactly one ':' in " + avmPath);
       }
-      return AVMConstants.buildAVMAssetUrl(s[0], s[1]);
+      return AVMConstants.buildAssetUrl(s[0], s[1]);
    }
    
-   public static String buildAVMAssetUrl(String store, String assetPath)
+   public static String buildAssetUrl(String store, String assetPath)
    {
       if (store == null || store.length() == 0)
       {
@@ -192,10 +354,10 @@ public final class AVMConstants
          throw new IllegalArgumentException("Asset path is mandatory.");
       }
       ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      return buildAVMAssetUrl(assetPath, config.getWCMDomain(), config.getWCMPort(), lookupStoreDNS(store));
+      return buildAssetUrl(assetPath, config.getWCMDomain(), config.getWCMPort(), lookupStoreDNS(store));
    }
    
-   public static String buildAVMAssetUrl(String assetPath, String domain, String port, String dns)
+   public static String buildAssetUrl(String assetPath, String domain, String port, String dns)
    {
       if (domain == null || port == null || dns == null)
       {
@@ -228,16 +390,14 @@ public final class AVMConstants
          throw new IllegalArgumentException("Store name is mandatory.");
       }
       
-      String dns = null;
-      
-      AVMService avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
-      Map<QName, PropertyValue> props = avmService.queryStorePropertyKey(store, QName.createQName(null, PROP_DNS + '%'));
-      if (props.size() == 1)
-      {
-         dns = props.keySet().iterator().next().getLocalName().substring(PROP_DNS.length());
-      }
-      
-      return dns;
+      final ServiceRegistry serviceRegistry =
+         Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      final AVMService avmService = serviceRegistry.getAVMService();
+      final Map<QName, PropertyValue> props = 
+         avmService.queryStorePropertyKey(store, QName.createQName(null, PROP_DNS + '%'));
+      return (props.size() == 1
+              ? props.keySet().iterator().next().getLocalName().substring(PROP_DNS.length())
+              : null);
    }
 
    /**
@@ -251,9 +411,9 @@ public final class AVMConstants
     *
     * @return an absolute path within the avm using the paths provided.
     */
-   public static String buildAVMPath(final String parentAVMPath,
-                                     final String path,
-                                     final PathRelation relation)
+   public static String buildPath(final String parentAVMPath,
+                                  final String path,
+                                  final PathRelation relation)
    {
       String parent = parentAVMPath;
       if (path == null || path.length() == 0 || 
@@ -276,6 +436,18 @@ public final class AVMConstants
       }
 
       return parent + path;
+   }
+
+   /**
+    * Returns a path relative to the store portion of the avm path.
+    *
+    * @param absoluteAVMPath an absolute path within the avm
+    * @return the path without the store prefix.
+    */
+   public static String getStoreRelativePath(final String absoluteAVMPath)
+   {
+      final Matcher m = STORE_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
+      return m.matches() && m.group(1).length() != 0 ? m.group(1) : null;
    }
 
    /**
@@ -368,8 +540,7 @@ public final class AVMConstants
    {
       if (force || requiresVServerUpdate(path))
       {
-         VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
+         VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
          int webappIndex = path.indexOf('/', path.indexOf(DIR_WEBAPPS) + DIR_WEBAPPS.length() + 1);
          if (webappIndex != -1)
          {
@@ -389,8 +560,8 @@ public final class AVMConstants
    {
       if (force || requiresVServerUpdate(path))
       {
-         VirtServerRegistry vServerRegistry = (VirtServerRegistry)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean(BEAN_VIRT_SERVER_REGISTRY);
+         VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
+            
          int webappIndex = path.indexOf('/', path.indexOf(DIR_WEBAPPS) + DIR_WEBAPPS.length() + 1);
          if (webappIndex != -1)
          {
@@ -400,13 +571,20 @@ public final class AVMConstants
       }
    }
    
+   private static VirtServerRegistry getVirtServerRegistry()
+   {
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      final WebApplicationContext ac = FacesContextUtils.getRequiredWebApplicationContext(fc);
+      return (VirtServerRegistry)ac.getBean(BEAN_VIRT_SERVER_REGISTRY);
+   }
+   
    // Component Separator.
    private static final String STORE_SEPARATOR = "--";
    
    // names of the stores representing the layers for an AVM website
-   public final static String STORE_STAGING = STORE_SEPARATOR + "staging";
-   public final static String STORE_MAIN    = STORE_SEPARATOR + "main";
-   public final static String STORE_PREVIEW = STORE_SEPARATOR + "preview";
+   //XXXarielb this should be private
+   public final static String STORE_WORKFLOW = "workflow";
+   private final static String STORE_PREVIEW = "preview";
    
    // system directories at the top level of an AVM website
    //
@@ -426,6 +604,8 @@ public final class AVMConstants
    public final static String PROP_SANDBOX_STAGING_PREVIEW = ".sandbox.staging.preview";
    public final static String PROP_SANDBOX_AUTHOR_MAIN = ".sandbox.author.main";
    public final static String PROP_SANDBOX_AUTHOR_PREVIEW = ".sandbox.author.preview";
+   public final static String PROP_SANDBOX_WORKFLOW_MAIN = ".sandbox.workflow.main";
+   public final static String PROP_SANDBOX_WORKFLOW_PREVIEW = ".sandbox.workflow.preview";
    public final static String PROP_DNS = ".dns.";
    public final static String PROP_WEBSITE_NAME = ".website.name";
    public final static String PROP_SANDBOX_STORE_PREFIX = ".sandbox.store.";
@@ -439,6 +619,8 @@ public final class AVMConstants
    private final static String PREVIEW_ASSET_URL = "http://{0}.www--sandbox.{1}:{2}{3}";
    
    // pattern for absolute AVM Path
+   private final static Pattern STORE_RELATIVE_PATH_PATTERN = 
+      Pattern.compile("[^:]+:(.+)");
    private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + AVMConstants.DIR_APPBASE +
                       "/" + AVMConstants.DIR_WEBAPPS + "/([^/]+))(.*)");

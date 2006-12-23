@@ -18,7 +18,7 @@ package org.alfresco.web.ui.common.renderer;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.component.UIComponent;
@@ -81,26 +81,33 @@ public abstract class BaseRenderer extends Renderer
     * 
     * @param component to find UIParameter child values for
     * 
-    * @return a Map of name/value pairs or null if none found
+    * @return a Map of name/value pairs or <tt>null</tt> if none found
     */
-   protected static Map<String, String> getParameterComponents(UIComponent component)
+   protected static Map<String, String> getParameterComponents(final UIComponent component)
    {
-      Map<String, String> params = null;
-      
-      if (component.getChildCount() != 0)
+      if (component.getChildCount() == 0)
       {
-         params = new HashMap<String, String>(component.getChildCount(), 1.0f);
-         for (Iterator i=component.getChildren().iterator(); i.hasNext(); /**/)
+         return null;
+      }
+
+      final Map<String, String> params = new HashMap<String, String>(component.getChildCount(), 1.0f);
+      for (UIComponent child : (List<UIComponent>)component.getChildren())
+      {
+         if (child instanceof UIParameter)
          {
-            UIComponent child = (UIComponent)i.next();
-            if (child instanceof UIParameter)
+            final UIParameter param = (UIParameter)child;
+            if (param.getValue() == null || param.getValue() instanceof String)
             {
-               UIParameter param = (UIParameter)child;
                params.put(param.getName(), (String)param.getValue());
+            }
+            else
+            {
+               throw new ClassCastException("value of parameter " + param.getName() +
+                                            " is a " + param.getValue().getClass().getName() +
+                                            ". Expected a " + String.class.getName());
             }
          }
       }
-      
       return params;
    }
 }

@@ -219,13 +219,27 @@ public class SubmitDialog extends BaseDialogBean
                   if (startTask.state == WorkflowTaskState.IN_PROGRESS)
                   {
                      // create container for our avm workflow package
-                     NodeRef workflowPackage = createWorkflowPackage(path.instance.id);
+                     final List<ItemWrapper> items = this.getSubmitItems();
+                     final List<String> srcPaths = new ArrayList<String>(items.size());
+                     for (ItemWrapper wrapper : items)
+                     {
+                        srcPaths.add(wrapper.getDescriptor().getPath());
+                     }
+                     final NodeRef workflowPackage =
+                        AVMWorkflowUtil.createWorkflowPackage(srcPaths,
+                                                              this.avmBrowseBean.getStagingStore(),
+                                                              path,
+                                                              avmSubmittedAspect,
+                                                              this.avmSyncService,
+                                                              this.avmService,
+                                                              this.workflowService,
+                                                              this.nodeService);
                      params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
                       
                      // add submission parameters
                      params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
                      params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
-                     params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox()));
+                     params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getSandbox()));
                       
                      // update start task with submit parameters
                      this.workflowService.updateTask(startTask.id, params, null, null);
@@ -249,8 +263,8 @@ public class SubmitDialog extends BaseDialogBean
          List<ItemWrapper> items = getSubmitItems();
          
          // construct diffs for selected items for submission
-         String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
-         String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
+         String sandboxPath = AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
+         String stagingPath = AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
          List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
          for (ItemWrapper wrapper : items)
          {
@@ -457,8 +471,8 @@ public class SubmitDialog extends BaseDialogBean
       if (this.avmBrowseBean.getAllItemsAction())
       {
          String webapp = this.avmBrowseBean.getWebapp();
-         String userStore = AVMConstants.buildAVMStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
-         String stagingStore = AVMConstants.buildAVMStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
+         String userStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
+         String stagingStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
          List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
          selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
          for (AVMDifference diff : diffs)
@@ -569,46 +583,6 @@ public class SubmitDialog extends BaseDialogBean
          this.submitItems = Collections.<ItemWrapper>emptyList();
          this.warningItems = Collections.<ItemWrapper>emptyList();
       }
-   }
-   
-   /**
-    * Construct a workflow package as a layered directory over the staging sandbox. The items for
-    * submission are pushed into the layer and the package constructed around it.
-    * 
-    * @param workflowInstanceId  workflow instance id
-    * @return Reference to the package
-    */
-   private NodeRef createWorkflowPackage(String workflowInstanceId)
-   {
-      List<ItemWrapper> items = getSubmitItems();
-      
-      // create package paths (layered to staging area as target)
-      String stagingPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getStagingStore());
-      String packagesPath = AVMWorkflowUtil.createAVMLayeredPackage(this.avmService, stagingPath);
-      
-      // construct diffs for selected items for submission
-      // mark selected items for submission
-      String sandboxPath = AVMConstants.buildAVMStoreRootPath(this.avmBrowseBean.getSandbox());
-      List<AVMDifference> diffs = new ArrayList<AVMDifference>(this.submitItems.size());
-      for (ItemWrapper wrapper : this.submitItems)
-      {
-         String srcPath = sandboxPath + wrapper.getPath();
-         String destPath = packagesPath + wrapper.getPath();
-         AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
-         diffs.add(diff);
-         avmSubmittedAspect.markSubmitted(-1, srcPath, workflowInstanceId);
-      }
-      
-      // write changes to layer so files are marked as modified
-      this.avmSyncService.update(diffs, null, true, true, false, false, null, null);
-      
-      // convert package to workflow package
-      AVMNodeDescriptor packageDesc = this.avmService.lookup(-1, packagesPath);
-      NodeRef packageNodeRef = this.workflowService.createPackage(
-            AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
-      this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
-      
-      return packageNodeRef;
    }
    
    /**
@@ -761,15 +735,12 @@ public class SubmitDialog extends BaseDialogBean
       
       public String getName()
       {
-         if (descriptor.isDeleted() == false)
+         String result = descriptor.getName();
+         if (descriptor.isDeleted())
          {
-            return descriptor.getName();
+            result +=  " [" + Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETED_ITEM) + "]";
          }
-         else
-         {
-            return descriptor.getName() + " [" +
-               Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETED_ITEM) + "]";
-         }
+         return result;
       }
       
       public String getModifiedDate()
@@ -801,16 +772,16 @@ public class SubmitDialog extends BaseDialogBean
                AVMNodeConverter.ToNodeRef(-1, descriptor.getPath()), descriptor.getName());
       }
       
+      public AVMNodeDescriptor getDescriptor()
+      {
+         return this.descriptor;
+      }
+
       public String getIcon()
       {
-         if (descriptor.isFile() || descriptor.isDeletedFile())
-         {
-            return Utils.getFileTypeImage(descriptor.getName(), true);
-         }
-         else
-         {
-            return SPACE_ICON;
-         }
+         return (descriptor.isFile() || descriptor.isDeletedFile()
+                 ? Utils.getFileTypeImage(descriptor.getName(), true)
+                 : SPACE_ICON);
       }
 
       @Override

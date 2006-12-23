@@ -53,7 +53,7 @@ public class FolderDetailsBean extends AVMDetailsBean
     */
    public String getPreviewUrl()
    {
-      return AVMConstants.buildAVMAssetUrl(getAvmNode().getPath());
+      return AVMConstants.buildAssetUrl(getAvmNode().getPath());
    }
 
    /**

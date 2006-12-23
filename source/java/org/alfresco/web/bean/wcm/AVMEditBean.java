@@ -309,9 +309,9 @@ public class AVMEditBean
       if (this.nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          // reset the preview layer
-         String path = this.avmBrowseBean.getCurrentPath();
-         path = path.replaceFirst(AVMConstants.STORE_MAIN, AVMConstants.STORE_PREVIEW);
-         path = path.split(":")[0] + ":/" + AVMConstants.DIR_APPBASE;
+         String storeName = AVMConstants.getStoreName(this.avmBrowseBean.getCurrentPath());
+         storeName = AVMConstants.getCorrespondingPreviewStoreName(storeName);
+         final String path = AVMConstants.buildStoreRootPath(storeName);
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("reseting layer " + path);
          this.avmSyncService.resetLayer(path);
@@ -417,8 +417,7 @@ public class AVMEditBean
             {
                final String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
                diffList.add(new AVMDifference(-1, path,
-                                              -1, path.replaceFirst(AVMConstants.STORE_PREVIEW,
-                                                                    AVMConstants.STORE_MAIN),
+                                              -1, AVMConstants.getCorrespondingPathInMainStore(path),
                                               AVMDifference.NEWER));
             }
             this.avmSyncService.update(diffList, null, true, true, true, true, null, null);

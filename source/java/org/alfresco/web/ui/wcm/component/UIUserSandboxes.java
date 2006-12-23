@@ -293,7 +293,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
             this.rowToUserLookup.put(username, index);
             
             // build the name of the main store for this user
-            String mainStore = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
+            String mainStore = AVMConstants.buildUserMainStoreName(storeRoot, username);
             
             // check it exists before we render the view
             if (avmService.getStore(mainStore) != null)
@@ -302,7 +302,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                if (logger.isDebugEnabled())
                      logger.debug("Checking user permissions for store: " + mainStore);
                if (permissionService.hasPermission(
-                     AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildAVMStoreRootPath(mainStore)),
+                     AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(mainStore)),
                      PermissionService.READ) == AccessStatus.ALLOWED)
                {
                   if (logger.isDebugEnabled())
@@ -334,7 +334,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(")</td><td><nobr>");
                   
                   // direct actions for a sandbox
-                  String websiteUrl = AVMConstants.buildAVMWebappUrl(mainStore, getWebapp());
+                  String websiteUrl = AVMConstants.buildWebappUrl(mainStore, getWebapp());
                   Map requestMap = context.getExternalContext().getRequestMap();
                   requestMap.put(REQUEST_PREVIEW_REF, websiteUrl);
                   Utils.encodeRecursive(context, aquireAction(
@@ -480,14 +480,14 @@ public class UIUserSandboxes extends SelfRenderingComponent
       ResourceBundle bundle = Application.getBundle(fc);
       
       // build the paths to the stores to compare - filter by current webapp
-      String userStore = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
-      String userStorePath = AVMConstants.buildAVMStoreWebappPath(userStore, getWebapp());
-      String stagingStore = AVMConstants.buildAVMStagingStoreName(storeRoot);
-      String stagingStorePath = AVMConstants.buildAVMStoreWebappPath(stagingStore, getWebapp());
+      String userStore = AVMConstants.buildUserMainStoreName(storeRoot, username);
+      String userStorePath = AVMConstants.buildStoreWebappPath(userStore, getWebapp());
+      String stagingStore = AVMConstants.buildStagingStoreName(storeRoot);
+      String stagingStorePath = AVMConstants.buildStoreWebappPath(stagingStore, getWebapp());
       
       // info we need to calculate preview paths for assets
       String dns = AVMConstants.lookupStoreDNS(userStore);
-      int rootPathIndex = AVMConstants.buildAVMStoreRootPath(userStore).length();
+      int rootPathIndex = AVMConstants.buildSandboxRootPath(userStore).length();
       ClientConfigElement config = Application.getClientConfig(fc);
       
       // get the UIActions component responsible for rendering context related user actions
@@ -603,7 +603,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                // build node context required for actions
                AVMNode avmNode = new AVMNode(node);
                String assetPath = sourcePath.substring(rootPathIndex);
-               String previewUrl = AVMConstants.buildAVMAssetUrl(
+               String previewUrl = AVMConstants.buildAssetUrl(
                      assetPath, config.getWCMDomain(), config.getWCMPort(), dns);
                avmNode.getProperties().put("previewUrl", previewUrl);
                
@@ -704,7 +704,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    {
       NodeService nodeService = getNodeService(fc);
       Map requestMap = fc.getExternalContext().getRequestMap();
-      String userStorePrefix = AVMConstants.buildAVMUserMainStoreName(storeRoot, username);
+      String userStorePrefix = AVMConstants.buildUserMainStoreName(storeRoot, username);
       
       // only need to collect the list of forms once per render
       // TODO: execute permission evaluations on a per user basis against each form?

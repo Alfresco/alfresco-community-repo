@@ -177,9 +177,9 @@ public class RenderingEngineTemplateImpl
                                                             outputPathPattern, 
                                                             new SimpleHash(root));
       final String parentAVMPath = AVMNodeConverter.SplitBase(formInstanceDataAVMPath)[0];
-      result = AVMConstants.buildAVMPath(parentAVMPath, 
-                                         result,
-                                         AVMConstants.PathRelation.SANDBOX_RELATIVE);
+      result = AVMConstants.buildPath(parentAVMPath, 
+                                      result,
+                                      AVMConstants.PathRelation.SANDBOX_RELATIVE);
       LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
       return result;
    }

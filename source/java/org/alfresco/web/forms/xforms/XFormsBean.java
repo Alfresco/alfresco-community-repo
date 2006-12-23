@@ -432,11 +432,10 @@ public class XFormsBean
       else
       {
          final String previewStorePath = 
-            this.avmBrowseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
-                                                             AVMConstants.STORE_PREVIEW);
-         currentPath = AVMConstants.buildAVMPath(previewStorePath,
-                                                 currentPath,
-                                                 AVMConstants.PathRelation.WEBAPP_RELATIVE);
+            AVMConstants.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
+         currentPath = AVMConstants.buildPath(previewStorePath,
+                                              currentPath,
+                                              AVMConstants.PathRelation.WEBAPP_RELATIVE);
       }
       LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
 
@@ -518,11 +517,10 @@ public class XFormsBean
          else if (item.isFormField() && item.getFieldName().equals("currentPath"))
          {
             final String previewStorePath = 
-               this.avmBrowseBean.getCurrentPath().replaceFirst(AVMConstants.STORE_MAIN,
-                                                                AVMConstants.STORE_PREVIEW);
-            currentPath = AVMConstants.buildAVMPath(previewStorePath,
-                                                    item.getString(),
-                                                    AVMConstants.PathRelation.WEBAPP_RELATIVE);
+               AVMConstants.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
+            currentPath = AVMConstants.buildPath(previewStorePath,
+                                                 item.getString(),
+                                                 AVMConstants.PathRelation.WEBAPP_RELATIVE);
             LOGGER.debug("currentPath is " + currentPath);
          }
          else
@@ -629,8 +627,8 @@ public class XFormsBean
          {
             String uri = includeEl.getAttribute("schemaLocation");
             final String baseURI = (uri.charAt(0) == '/'
-                                    ? AVMConstants.buildAVMStoreUrl(cwdAvmPath)
-                                    : AVMConstants.buildAVMAssetUrl(cwdAvmPath));
+                                    ? AVMConstants.buildStoreUrl(cwdAvmPath)
+                                    : AVMConstants.buildAssetUrl(cwdAvmPath));
 
             LOGGER.debug("rewriting " + uri + " as " + (baseURI + uri));
             includeEl.setAttribute("schemaLocation", baseURI + uri);

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -36,6 +37,7 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -79,7 +81,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMBrowseBean implements IContextListener
 {
-   private static Log logger = LogFactory.getLog(AVMBrowseBean.class);
+   private static final Log LOGGER = LogFactory.getLog(AVMBrowseBean.class);
    
    private static final String MSG_REVERT_SUCCESS = "revert_success";
    private static final String MSG_REVERT_SANDBOX = "revert_sandbox_success";
@@ -165,7 +167,6 @@ public class AVMBrowseBean implements IContextListener
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
    }
 
-   
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
    
@@ -230,31 +231,56 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getStagingSummary()
    {
-      StringBuilder summary = new StringBuilder(128);
-      
-      FacesContext fc = FacesContext.getCurrentInstance();
-      ResourceBundle msg = Application.getBundle(fc);
-      String storeRoot = (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE);
-      String stagingStore = getStagingStore();
-      AVMStoreDescriptor store = this.avmService.getStore(stagingStore);
+      final StringBuilder summary = new StringBuilder(128);
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      final ResourceBundle msg = Application.getBundle(fc);
+      final String stagingStore = this.getStagingStore();
+      final AVMStoreDescriptor store = this.avmService.getStore(stagingStore);
+      final String storeId = (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE);
       if (store != null)
       {
-         // count user stores
-         int users = avmService.queryStoresPropertyKeys(QName.createQName(null,
-                                                                          AVMConstants.PROP_SANDBOX_STORE_PREFIX + storeRoot + "-%")).size() / 2;
          summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
                 .append(Utils.getDateFormat(fc).format(new Date(store.getCreateDate())))
                 .append("<p>");
          summary.append(msg.getString(MSG_CREATED_BY)).append(": ")
                 .append(store.getCreator())
                 .append("<p>");
-         summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), users));
+         final int numUsers = this.getRelatedStoreNames(storeId, 
+                                                        AVMConstants.PROP_SANDBOX_AUTHOR_MAIN).size();
+
+         summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), numUsers));
       }
       
       // reset the current path so the context for the Modified File list actions is cleared
       this.currentPath = null;
       
       return summary.toString();
+   }
+
+   /**
+    * Returns the list of store names related to the storeId provided that have 
+    * any of the provided types as store properties.
+    *
+    * @return a list of related store names.
+    */
+   private List<String> getRelatedStoreNames(final String storeId, final QName... types)
+   {
+      QName qn = QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + storeId + "%");
+      final Map<String, Map<QName, PropertyValue>> relatedSandboxes =
+         avmService.queryStoresPropertyKeys(qn);
+      final List<String> result = new LinkedList<String>();
+      for (String storeName : relatedSandboxes.keySet())
+      {
+         for (final QName type : types)
+         {
+            if (this.avmService.getStoreProperty(storeName, type) != null)
+            {
+               result.add(storeName);
+               break;
+            }
+         }
+      }
+      return result;
    }
    
    /**
@@ -779,8 +805,8 @@ public class AVMBrowseBean implements IContextListener
    
    /*package*/ void setupContentAction(final String path, final boolean refresh)
    {
-      if (logger.isDebugEnabled())
-         logger.debug("Setup content action for path: " + path);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Setup content action for path: " + path);
 
       if (path == null && path.length() == 0)
       {

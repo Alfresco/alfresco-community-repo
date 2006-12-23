@@ -91,7 +91,7 @@ public final class SandboxFactory
       
       // tag the store with the store type
       avmService.setStoreProperty(stagingStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_SANDBOX_STAGING_MAIN),
+                                  AVMConstants.PROP_SANDBOX_STAGING_MAIN,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with the DNS name property
@@ -121,7 +121,7 @@ public final class SandboxFactory
       
       // tag the store with the store type
       avmService.setStoreProperty(previewStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_SANDBOX_STAGING_PREVIEW),
+                                  AVMConstants.PROP_SANDBOX_STAGING_PREVIEW,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with the DNS name property
@@ -132,12 +132,12 @@ public final class SandboxFactory
       
       
       // tag all related stores to indicate that they are part of a single sandbox
-      String sandboxIdProp = AVMConstants.PROP_SANDBOXID + GUID.generate();
+      final QName sandboxIdProp = QName.createQName(AVMConstants.PROP_SANDBOXID + GUID.generate());
       avmService.setStoreProperty(stagingStoreName,
-                                  QName.createQName(null, sandboxIdProp),
+                                  sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       avmService.setStoreProperty(previewStoreName,
-                                  QName.createQName(null, sandboxIdProp),
+                                  sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
       if (logger.isDebugEnabled())
@@ -204,13 +204,13 @@ public final class SandboxFactory
       
       // tag the store with the store type
       avmService.setStoreProperty(userStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_MAIN),
+                                  AVMConstants.PROP_SANDBOX_AUTHOR_MAIN,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
          
       // tag the store with the base name of the website so that corresponding
       // staging areas can be found.
       avmService.setStoreProperty(userStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_WEBSITE_NAME),
+                                  AVMConstants.PROP_WEBSITE_NAME,
                                   new PropertyValue(DataTypeDefinition.TEXT, storeId));
          
       // tag the store, oddly enough, with its own store name for querying.
@@ -246,7 +246,7 @@ public final class SandboxFactory
          
       // tag the store with the store type
       avmService.setStoreProperty(previewStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_SANDBOX_AUTHOR_PREVIEW),
+                                  AVMConstants.PROP_SANDBOX_AUTHOR_PREVIEW,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
          
       // tag the store with its own store name for querying.
@@ -262,10 +262,12 @@ public final class SandboxFactory
          
          
       // tag all related stores to indicate that they are part of a single sandbox
-      String sandboxIdProp = AVMConstants.PROP_SANDBOXID + GUID.generate();
-      avmService.setStoreProperty(userStoreName, QName.createQName(null, sandboxIdProp),
+      QName sandboxIdProp = QName.createQName(null, AVMConstants.PROP_SANDBOXID + GUID.generate());
+      avmService.setStoreProperty(userStoreName, 
+                                  sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
-      avmService.setStoreProperty(previewStoreName, QName.createQName(null, sandboxIdProp),
+      avmService.setStoreProperty(previewStoreName,
+                                  sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
          
       if (logger.isDebugEnabled())
@@ -314,22 +316,16 @@ public final class SandboxFactory
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(stagingStoreName), 
                                         workflowMainStoreName + ":/", 
                                         AVMConstants.DIR_APPBASE);
-//      NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
-//      permissionService.setPermission(dirRef, username, role, true);
-//      for (String manager : managers)
-//         {
-//            permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
-//         }
          
       // tag the store with the store type
       avmService.setStoreProperty(workflowMainStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_SANDBOX_WORKFLOW_MAIN),
+                                  AVMConstants.PROP_SANDBOX_WORKFLOW_MAIN,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
          
       // tag the store with the base name of the website so that corresponding
       // staging areas can be found.
       avmService.setStoreProperty(workflowMainStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_WEBSITE_NAME),
+                                  AVMConstants.PROP_WEBSITE_NAME,
                                   new PropertyValue(DataTypeDefinition.TEXT, storeId));
          
       // tag the store, oddly enough, with its own store name for querying.
@@ -355,16 +351,10 @@ public final class SandboxFactory
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(workflowMainStoreName), 
                                         workflowPreviewStoreName + ":/", 
                                         AVMConstants.DIR_APPBASE);
-//      dirRef = AVMNodeConverter.ToNodeRef(-1, path + '/' + AVMConstants.DIR_APPBASE);
-//         permissionService.setPermission(dirRef, username, role, true);
-//         for (String manager : managers)
-//         {
-//            permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
-//         }
          
       // tag the store with the store type
       avmService.setStoreProperty(workflowPreviewStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_SANDBOX_WORKFLOW_PREVIEW),
+                                  AVMConstants.PROP_SANDBOX_WORKFLOW_PREVIEW,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with its own store name for querying.
@@ -381,10 +371,12 @@ public final class SandboxFactory
          
          
       // tag all related stores to indicate that they are part of a single sandbox
-      String sandboxIdProp = AVMConstants.PROP_SANDBOXID + GUID.generate();
-      avmService.setStoreProperty(workflowMainStoreName, QName.createQName(null, sandboxIdProp),
+      final QName sandboxIdProp = QName.createQName(AVMConstants.PROP_SANDBOXID + GUID.generate());
+      avmService.setStoreProperty(workflowMainStoreName, 
+                                  sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
-      avmService.setStoreProperty(workflowPreviewStoreName, QName.createQName(null, sandboxIdProp),
+      avmService.setStoreProperty(workflowPreviewStoreName, 
+                                  sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
       if (logger.isDebugEnabled())

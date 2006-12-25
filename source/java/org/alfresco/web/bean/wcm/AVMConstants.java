@@ -23,11 +23,12 @@ import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -283,12 +284,12 @@ public final class AVMConstants
       {
          throw new IllegalArgumentException("Store name is mandatory.");
       }
-      return storeName + ":/" + DIR_APPBASE;
+      return storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW;
    }
 
    public static String buildSandboxRootPath(final String storeName)
    {
-      return AVMConstants.buildStoreRootPath(storeName) + '/' + DIR_WEBAPPS;
+      return AVMConstants.buildStoreRootPath(storeName) + '/' +  JNDIConstants.DIR_DEFAULT_APPBASE;
    }
    
    public static String buildStoreWebappPath(final String storeName, String webapp)
@@ -367,9 +368,9 @@ public final class AVMConstants
       {
          throw new IllegalArgumentException("Asset path is mandatory.");
       }
-      if (assetPath.startsWith('/' + DIR_APPBASE + '/' + DIR_WEBAPPS))
+      if (assetPath.startsWith(           '/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE ))
       {
-         assetPath = assetPath.substring(('/' + DIR_APPBASE + '/' + DIR_WEBAPPS).length());
+         assetPath = assetPath.substring(('/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE ).length());
       }
       if (assetPath.startsWith('/' + DIR_ROOT))
       {
@@ -541,7 +542,11 @@ public final class AVMConstants
       if (force || requiresVServerUpdate(path))
       {
          VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
-         int webappIndex = path.indexOf('/', path.indexOf(DIR_WEBAPPS) + DIR_WEBAPPS.length() + 1);
+
+         int webappIndex = path.indexOf( '/', 
+                                         path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
+                                                      JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
+
          if (webappIndex != -1)
          {
             path = path.substring(0, webappIndex);
@@ -562,7 +567,9 @@ public final class AVMConstants
       {
          VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
             
-         int webappIndex = path.indexOf('/', path.indexOf(DIR_WEBAPPS) + DIR_WEBAPPS.length() + 1);
+         int webappIndex = path.indexOf( '/', path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
+                                                           JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
+
          if (webappIndex != -1)
          {
             path = path.substring(0, webappIndex);
@@ -586,14 +593,6 @@ public final class AVMConstants
    public final static String STORE_WORKFLOW = "workflow";
    private final static String STORE_PREVIEW = "preview";
    
-   // system directories at the top level of an AVM website
-   //
-   // TODO:  The virtualization server should get these two parameters
-   //        from the Alfresco webapp at registration time.
-   //
-   public final static String DIR_APPBASE = "appBase";
-   public final static String DIR_WEBAPPS = "avm_webapps";
-
    // servlet default webapp
    //    Note: this webapp is mapped to the URL path ""
    public final static String DIR_ROOT = "ROOT";
@@ -629,15 +628,18 @@ public final class AVMConstants
    private final static Pattern STORE_RELATIVE_PATH_PATTERN = 
       Pattern.compile("[^:]+:(.+)");
    private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 
-      Pattern.compile("([^:]+:/" + AVMConstants.DIR_APPBASE +
-                      "/" + AVMConstants.DIR_WEBAPPS + "/([^/]+))(.*)");
+      Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW      +
+                      "/"        + JNDIConstants.DIR_DEFAULT_APPBASE  + "/([^/]+))(.*)");
    private final static Pattern SANDBOX_RELATIVE_PATH_PATTERN = 
-      Pattern.compile("([^:]+:/" + AVMConstants.DIR_APPBASE +
-                      "/" + AVMConstants.DIR_WEBAPPS + ")(.*)");
+      Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW      +
+                             "/" + JNDIConstants.DIR_DEFAULT_APPBASE  + ")(.*)");
    
    // patterns for WEB-INF files that require virtualisation server reload
-   private final static Pattern WEB_INF_PATH_PATTERN = Pattern.compile(
-         ".*:/" + AVMConstants.DIR_APPBASE + "/" + AVMConstants.DIR_WEBAPPS +
-         "/.*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
-         Pattern.CASE_INSENSITIVE);
+   private final static Pattern WEB_INF_PATH_PATTERN = 
+        Pattern.compile( ".*:/"                                     + 
+                           JNDIConstants.DIR_DEFAULT_WWW     + "/"  + 
+                           JNDIConstants.DIR_DEFAULT_APPBASE + "/"  + 
+                           ".*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
+                         Pattern.CASE_INSENSITIVE
+                       );
 }

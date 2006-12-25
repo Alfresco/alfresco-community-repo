@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMDAOs;
@@ -720,7 +721,7 @@ public class SubmitDialog extends BaseDialogBean
     */
    public class ItemWrapper
    {
-      private static final String rootPath = '/' + AVMConstants.DIR_WEBAPPS;
+      private static final String rootPath = '/' + JNDIConstants.DIR_DEFAULT_APPBASE;
       private AVMNodeDescriptor descriptor;
       
       public ItemWrapper(AVMNodeDescriptor descriptor)

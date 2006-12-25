@@ -20,15 +20,15 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.util.GUID;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
@@ -79,15 +79,15 @@ public final class SandboxFactory
       if (logger.isDebugEnabled())
          logger.debug("Created staging sandbox store: " + stagingStoreName);
       
-      // create the system directories 'appBase' and 'avm_webapps'
-      avmService.createDirectory(stagingStoreName + ":/", AVMConstants.DIR_APPBASE);
+      // create the system directories 'www' and 'avm_webapps'
+      avmService.createDirectory(stagingStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(stagingStoreName));
       for (String manager : managers)
       {
          permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
       }
       avmService.createDirectory(AVMConstants.buildStoreRootPath(stagingStoreName), 
-                                 AVMConstants.DIR_WEBAPPS);
+                                 JNDIConstants.DIR_DEFAULT_APPBASE);
       
       // tag the store with the store type
       avmService.setStoreProperty(stagingStoreName,
@@ -108,11 +108,11 @@ public final class SandboxFactory
          logger.debug("Created staging preview sandbox store: " + previewStoreName +
                       " above " + stagingStoreName);
       
-      // create a layered directory pointing to 'appBase' in the staging area
+      // create a layered directory pointing to 'www' in the staging area
 
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(stagingStoreName), 
                                         previewStoreName + ":/", 
-                                        AVMConstants.DIR_APPBASE);
+                                        JNDIConstants.DIR_DEFAULT_WWW);
       dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(previewStoreName));
       for (String manager : managers)
       {
@@ -191,10 +191,10 @@ public final class SandboxFactory
          logger.debug("Created user sandbox store: " + userStoreName +
                       " above staging store " + stagingStoreName);
       
-      // create a layered directory pointing to 'appBase' in the staging area
+      // create a layered directory pointing to 'www' in the staging area
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(stagingStoreName), 
                                         userStoreName + ":/", 
-                                        AVMConstants.DIR_APPBASE);
+                                        JNDIConstants.DIR_DEFAULT_WWW);
       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(userStoreName));
       permissionService.setPermission(dirRef, username, role, true);
       for (String manager : managers)
@@ -233,10 +233,10 @@ public final class SandboxFactory
          logger.debug("Created user preview sandbox store: " + previewStoreName +
                       " above " + userStoreName);
          
-      // create a layered directory pointing to 'appBase' in the user 'main' store
+      // create a layered directory pointing to 'www' in the user 'main' store
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(userStoreName), 
                                         previewStoreName + ":/", 
-                                        AVMConstants.DIR_APPBASE);
+                                        JNDIConstants.DIR_DEFAULT_WWW);
       dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(previewStoreName));
       permissionService.setPermission(dirRef, username, role, true);
       for (String manager : managers)
@@ -312,10 +312,10 @@ public final class SandboxFactory
       if (logger.isDebugEnabled())
          logger.debug("Created workflow sandbox store: " + workflowMainStoreName);
          
-      // create a layered directory pointing to 'appBase' in the staging area
+      // create a layered directory pointing to 'www' in the staging area
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(stagingStoreName), 
                                         workflowMainStoreName + ":/", 
-                                        AVMConstants.DIR_APPBASE);
+                                        JNDIConstants.DIR_DEFAULT_WWW);
          
       // tag the store with the store type
       avmService.setStoreProperty(workflowMainStoreName,
@@ -347,10 +347,10 @@ public final class SandboxFactory
       if (logger.isDebugEnabled())
          logger.debug("Created user sandbox preview store: " + workflowPreviewStoreName);
          
-      // create a layered directory pointing to 'appBase' in the user 'main' store
+      // create a layered directory pointing to 'www' in the user 'main' store
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(workflowMainStoreName), 
                                         workflowPreviewStoreName + ":/", 
-                                        AVMConstants.DIR_APPBASE);
+                                        JNDIConstants.DIR_DEFAULT_WWW);
          
       // tag the store with the store type
       avmService.setStoreProperty(workflowPreviewStoreName,
@@ -389,7 +389,7 @@ public final class SandboxFactory
    
    /**
     * Tag a named store with a DNS path meta-data attribute.
-    * The DNS meta-data attribute is set to the system path 'store:/appBase/avm_webapps'
+    * The DNS meta-data attribute is set to the system path 'store:/www/avm_webapps'
     * 
     * @param store  Name of the store to tag
     */

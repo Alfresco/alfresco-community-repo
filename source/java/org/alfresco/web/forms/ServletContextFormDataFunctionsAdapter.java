@@ -37,12 +37,12 @@ public class ServletContextFormDataFunctionsAdapter
 
    private String toAVMPath(String path)
    {
-      // The real_path will look somethign like this:
-      //   /alfresco.avm/avm.alfresco.localhost/$-1$alfreco-guest-main:/appBase/avm_webapps/my_webapp
+      // The real_path will look something like this:
+      //   /alfresco.avm/avm.alfresco.localhost/$-1$alfreco-guest-main:/www/avm_webapps/my_webapp
       path = this.servletContext.getRealPath(path);
       
       // The avm_path to the root of the context will look something like this:
-      //    alfreco-guest-main:/appBase/avm_webapps/my_webapp
+      //    alfreco-guest-main:/www/avm_webapps/my_webapp
       path = path.substring(path.indexOf('$', path.indexOf('$') + 1)  + 1);
       path = path.replace('\\','/');
       return path;

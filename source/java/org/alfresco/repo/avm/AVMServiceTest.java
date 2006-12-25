@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -391,14 +392,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
-            fService.createDirectory("main:/", "appBase");
-            fService.rename("main:/", "a", "main:/appBase", "a");
-            fService.rename("main:/", "d", "main:/appBase", "d");
+            fService.createDirectory("main:/",        JNDIConstants.DIR_DEFAULT_WWW );
+            fService.rename("main:/", "a", "main:/" + JNDIConstants.DIR_DEFAULT_WWW, "a");
+            fService.rename("main:/", "d", "main:/" + JNDIConstants.DIR_DEFAULT_WWW, "d");
             fService.createSnapshot("main", null, null);
             fService.createStore("source");
-            fService.createLayeredDirectory("main:/appBase", "source:/", "appBase");
-            fService.getFileOutputStream("source:/appBase/a/b/c/foo").close();
-            final ActionImpl action = new ActionImpl(AVMNodeConverter.ToNodeRef(-1, "source:/appBase/a"), 
+            fService.createLayeredDirectory("main:/" + JNDIConstants.DIR_DEFAULT_WWW , "source:/", JNDIConstants.DIR_DEFAULT_WWW );
+            fService.getFileOutputStream("source:/"  + JNDIConstants.DIR_DEFAULT_WWW  + "/a/b/c/foo").close();
+            final ActionImpl action = new ActionImpl(AVMNodeConverter.ToNodeRef(-1, "source:/" +   JNDIConstants.DIR_DEFAULT_WWW  + "/a"), 
                     GUID.generate(),
                     SimpleAVMPromoteAction.NAME);
             action.setParameterValue(SimpleAVMPromoteAction.PARAM_TARGET_STORE, "main");
@@ -407,13 +408,14 @@ public class AVMServiceTest extends AVMServiceTestBase
             {
                 public Object doWork() throws Exception
                 {
-                    promote.execute(action, AVMNodeConverter.ToNodeRef(-1, "source:/appBase/a"));
+                    promote.execute(action, AVMNodeConverter.ToNodeRef(-1, "source:/" + JNDIConstants.DIR_DEFAULT_WWW  + "/a"));
                     return null;
                 }
             };
             TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
                     new TxnWork());
-            assertEquals(0, fSyncService.compare(-1, "source:/appBase", -1, "main:/appBase", null).size());
+            assertEquals(0, fSyncService.compare(-1, "source:/" +  JNDIConstants.DIR_DEFAULT_WWW , 
+                                                 -1, "main:/"    + JNDIConstants.DIR_DEFAULT_WWW, null).size());
         }
         catch (Exception e)
         {
@@ -458,28 +460,28 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             fService.createStore("foo-staging");
-            fService.createDirectory("foo-staging:/", "appBase");
-            fService.createDirectory("foo-staging:/appBase", "a");
-            fService.createDirectory("foo-staging:/appBase/a","b");
-            fService.createDirectory("foo-staging:/appBase/a/b", "c");
-            fService.createFile("foo-staging:/appBase/a/b/c", "foo").close();
-            fService.createFile("foo-staging:/appBase/a/b/c", "bar").close();
+            fService.createDirectory("foo-staging:/",  JNDIConstants.DIR_DEFAULT_WWW );
+            fService.createDirectory("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW,  "a");
+            fService.createDirectory("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a","b");
+            fService.createDirectory("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b", "c");
+            fService.createFile("foo-staging:/"      + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "foo").close();
+            fService.createFile("foo-staging:/"      + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "bar").close();
             fService.createStore("area");
             fService.setStoreProperty("area", QName.createQName(null, ".website.name"),
                                       new PropertyValue(null, "foo"));   
-            fService.createLayeredDirectory("foo-staging:/appBase", "area:/", "appBase");
-            fService.createFile("area:/appBase", "figs").close();
-            fService.getFileOutputStream("area:/appBase/a/b/c/foo").close();
-            fService.removeNode("area:/appBase/a/b/c/bar");
+            fService.createLayeredDirectory("foo-staging:/" +  JNDIConstants.DIR_DEFAULT_WWW , "area:/", JNDIConstants.DIR_DEFAULT_WWW );
+            fService.createFile("area:/" + JNDIConstants.DIR_DEFAULT_WWW, "figs").close();
+            fService.getFileOutputStream("area:/" +  JNDIConstants.DIR_DEFAULT_WWW  + "/a/b/c/foo").close();
+            fService.removeNode("area:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/bar");
             List<AVMDifference> diffs = 
-                fSyncService.compare(-1, "area:/appBase", -1, "foo-staging:/appBase", null);
+                fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, "foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW, null);
             assertEquals(3, diffs.size());
             final SimpleAVMSubmitAction action = (SimpleAVMSubmitAction)fContext.getBean("simple-avm-submit");
             class TxnWork implements TransactionUtil.TransactionWork<Object>
             {
                 public Object doWork() throws Exception
                 {
-                    action.execute(null, AVMNodeConverter.ToNodeRef(-1, "area:/appBase"));
+                    action.execute(null, AVMNodeConverter.ToNodeRef(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW ));
                     return null;
                 }
             };
@@ -487,7 +489,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"), 
                                                      worker);
             diffs = 
-                fSyncService.compare(-1, "area:/appBase", -1, "foo-staging:/appBase", null);
+                fSyncService.compare(-1, "area:/"        + JNDIConstants.DIR_DEFAULT_WWW, 
+                                     -1, "foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW, null);
+
             assertEquals(0, diffs.size());
         }
         catch (Exception e)

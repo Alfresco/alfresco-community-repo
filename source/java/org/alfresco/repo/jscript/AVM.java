@@ -16,9 +16,10 @@
  */
 package org.alfresco.repo.jscript;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.ServiceRegistry;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -97,15 +98,12 @@ public final class AVM extends BaseScriptImplementation implements Scopeable
     
     public static String getWebappsFolderPath()
     {
-        return '/' + DIR_APPBASE + '/' + DIR_WEBAPPS;
+        return '/' + JNDIConstants.DIR_DEFAULT_WWW      + '/' +
+                     JNDIConstants.DIR_DEFAULT_APPBASE;
     }
     
     public static String jsGet_webappsFolderPath()
     {
         return getWebappsFolderPath();
     }
-    
-    // system directories at the top level of an AVM website
-    private final static String DIR_APPBASE = "appBase";
-    private final static String DIR_WEBAPPS = "avm_webapps";
 }

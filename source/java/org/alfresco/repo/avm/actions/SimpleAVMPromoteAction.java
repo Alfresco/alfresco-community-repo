@@ -19,8 +19,9 @@ package org.alfresco.repo.avm.actions;
 
 import java.util.List;
 
-import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -94,8 +95,8 @@ public class SimpleAVMPromoteAction extends ActionExecuterAbstractBase
         // Do the promote.
         fAVMSyncService.update(diffs, null, true, true, false, false, null, null);
         // Flatten the source on top of the destination.
-        fAVMSyncService.flatten(storePath[0] + ":/appBase", 
-                                targetStoreName + ":/appBase");
+        fAVMSyncService.flatten(storePath[0]    + ":/" + JNDIConstants.DIR_DEFAULT_WWW,
+                                targetStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW);
     }
 
     /**

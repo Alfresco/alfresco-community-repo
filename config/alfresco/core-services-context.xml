@@ -82,6 +82,7 @@
          <map>
            <!-- MBeans to register with alfrescoMBeanServer -->
            <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
+           <entry key="Alfresco:Name=FileServerConfig,Type=FileServerConfig" value-ref="FileServerConfig"/>
          </map>
        </property>
     </bean>
@@ -113,6 +114,10 @@
                   value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
     </bean>
 
+	<bean id="FileServerConfig"
+		  class="org.alfresco.filesys.server.config.FileServerConfig">
+		<property name="fileServerConfiguration"><ref bean="fileServerConfiguration"/></property>
+	</bean>
 
     <!-- Datasource bean -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">

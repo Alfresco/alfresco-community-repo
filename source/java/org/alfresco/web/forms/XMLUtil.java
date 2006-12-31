@@ -148,18 +148,18 @@ public class XMLUtil
 
    public static DocumentBuilder getDocumentBuilder(final boolean namespaceAware,
                                                     final boolean validating)
-         try
-         {
-            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(namespaceAware);
-            dbf.setValidating(validating);
-            XMLUtil.documentBuilder = dbf.newDocumentBuilder();
-         }
-         catch (ParserConfigurationException pce)
-         {
-            LOGGER.error(pce);
-         }
+   { 
+      try
+      {
+         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+         dbf.setNamespaceAware(namespaceAware);
+         dbf.setValidating(validating);
+         return dbf.newDocumentBuilder();
       }
-      return XMLUtil.documentBuilder;
+      catch (ParserConfigurationException pce)
+      {
+         LOGGER.error(pce);
+         return null;
+      }
    }
 }

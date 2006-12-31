@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -63,7 +64,9 @@ import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.Rendition;
+import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
@@ -170,13 +173,11 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.formSelectDisabled = false;
       
       // check for a form ID being passed in as a parameter
-      if (this.parameters.get(UIUserSandboxes.PARAM_FORM_ID) != null)
+      if (this.parameters.get(UIUserSandboxes.PARAM_FORM_NAME) != null)
       {
          // it is used to init the dialog to a specific template
-         String webFormId = parameters.get(UIUserSandboxes.PARAM_FORM_ID);
-         NodeRef webFormRef = new NodeRef(Repository.getStoreRef(), webFormId);
-         String formName = (String)this.nodeService.getProperty(webFormRef, WCMAppModel.PROP_FORMNAME);
-         Form form = FormsService.getInstance().getForm(formName);
+         final String formName = parameters.get(UIUserSandboxes.PARAM_FORM_NAME);
+         final Form form = this.avmBrowseBean.getWebProject().getForm(formName);
          if (form != null)
          {
             this.formName = form.getName();
@@ -225,17 +226,13 @@ public class CreateWebContentWizard extends BaseContentWizard
          LOGGER.debug("clearing form instance data");
          if (this.formInstanceData != null)
          {
-            final NodeRef nr = this.formInstanceData.getNodeRef();
-            final String path = AVMNodeConverter.ToAVMVersionPath(nr).getSecond();
-            this.avmService.removeNode(path);
+            this.avmService.removeNode(this.formInstanceData.getPath());
          }
          if (this.renditions != null)
          {
             for (Rendition r : this.renditions)
             {
-               final NodeRef nr = r.getNodeRef();
-               final String path = AVMNodeConverter.ToAVMVersionPath(nr).getSecond();
-               this.avmService.removeNode(path);
+               this.avmService.removeNode(r.getPath());
             }
          }
          this.formInstanceData = null;
@@ -277,7 +274,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                                      AVMDifference.NEWER));
       for (Rendition rendition : this.renditions)
       {
-         final String path = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
+         final String path = rendition.getPath();
          diffList.add(new AVMDifference(-1, path, 
                                         -1, AVMConstants.getCorrespondingPathInMainStore(path),
                                         AVMDifference.NEWER));
@@ -315,48 +312,8 @@ public class CreateWebContentWizard extends BaseContentWizard
       }
       if (this.startWorkflow)
       {
-         WorkflowDefinition wd = null;
-         Map<QName, Serializable> parameters = null;
-         
-         // get the workflow definition and parameters
-         final Node website = this.avmBrowseBean.getWebsite();
-         final List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
-               website.getNodeRef(), WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : webFormRefs)
-         {
-            final String formName = (String)
-            this.nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
-            if (formName.equals(this.getForm().getName()))
-            {
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("loading workflowRefs for " + formName);
-               
-               final List<ChildAssociationRef> workflowRefs = 
-                  this.nodeService.getChildAssocs(ref.getChildRef(),
-                        WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
-                        RegexQNamePattern.MATCH_ALL);
-               if (workflowRefs.size() == 0)
-               {
-                  throw new AlfrescoRuntimeException("no workflow parameters found for form " + formName);
-               }
-               if (workflowRefs.size() > 1)
-               {
-                  throw new AlfrescoRuntimeException("found more than one workflow parameters node for " + formName);
-               }
-               
-               final NodeRef workflowRef = workflowRefs.get(0).getChildRef();
-               final String workflowName = (String)this.nodeService.getProperty(workflowRef, WCMAppModel.PROP_WORKFLOW_NAME);
-               
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("using workflow " + workflowName + " for form " + formName);
-               wd = this.workflowService.getDefinitionByName(workflowName);
-               
-               // deserialize the workflow parameters
-               parameters = (Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(workflowRef);
-               
-               break;
-            }
-         }
+         final WorkflowDefinition wd = this.getForm().getDefaultWorkflow();
+         final Map<QName, Serializable> parameters = this.getForm().getDefaultWorkflowParameters();
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("starting workflow " + wd + " with parameters " + parameters);
@@ -385,11 +342,9 @@ public class CreateWebContentWizard extends BaseContentWizard
                      // collect diffs for form data instance and all renditions
                      for (Rendition rendition : this.getRenditions())
                      {
-                        final String renditionPath = AVMNodeConverter.ToAVMVersionPath(rendition.getNodeRef()).getSecond();
-                        srcPaths.add(AVMConstants.getCorrespondingPath(renditionPath, sandboxName));
+                        srcPaths.add(AVMConstants.getCorrespondingPath(rendition.getPath(), sandboxName));
                      }
-                     final String instancePath = AVMNodeConverter.ToAVMVersionPath(this.formInstanceData.getNodeRef()).getSecond();
-                     srcPaths.add(AVMConstants.getCorrespondingPath(instancePath, sandboxName));
+                     srcPaths.add(AVMConstants.getCorrespondingPath(this.formInstanceData.getPath(), sandboxName));
                   }
                   else
                   {
@@ -454,7 +409,6 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected void saveContent() 
       throws Exception
    {
-      final FormsService fs = FormsService.getInstance();
       // get the parent path of the location to save the content
       String fileName = this.fileName;
       if (LOGGER.isDebugEnabled())
@@ -462,13 +416,16 @@ public class CreateWebContentWizard extends BaseContentWizard
 
       String path = this.avmBrowseBean.getCurrentPath();
       path = AVMConstants.getCorrespondingPathInPreviewStore(path);
-      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
+      final Form form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) 
+                         ? this.getForm()
+                         : null);
+      if (form != null)
       {
-         path = this.getForm().getOutputPathForFormInstanceData(this.instanceDataDocument,
-                                                                fileName,
-                                                                path, 
-                                                                this.avmBrowseBean.getWebapp());
-         this.content = FormsService.getInstance().writeXMLToString(this.instanceDataDocument);
+         path = form.getOutputPathForFormInstanceData(this.instanceDataDocument,
+                                                      fileName,
+                                                      path, 
+                                                      this.avmBrowseBean.getWebapp());
+         this.content = XMLUtil.toString(this.instanceDataDocument);
          final String[] sb = AVMNodeConverter.SplitBase(path);
          path = sb[0];
          fileName = sb[1];
@@ -477,7 +434,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("creating all directories in path " + path);
 
-      fs.makeAllDirectories(path);
+      AVMConstants.makeAllDirectories(path);
 
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("creating file " + fileName + " in " + path);
@@ -492,15 +449,26 @@ public class CreateWebContentWizard extends BaseContentWizard
       
       // add titled aspect for the read/edit properties screens
       final NodeRef formInstanceDataNodeRef = AVMNodeConverter.ToNodeRef(-1, this.createdPath);
-      Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-      titledProps.put(ContentModel.PROP_TITLE, fileName);
-      this.nodeService.addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, titledProps);
+      final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+      props.put(ContentModel.PROP_TITLE, fileName);
+      this.nodeService.addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, props);
 
-      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
+      if (form != null)
       {
-         this.formInstanceData = new FormInstanceDataImpl(formInstanceDataNodeRef);
-         this.getForm().registerFormInstanceData(formInstanceDataNodeRef);
-         this.renditions = FormsService.getInstance().generateRenditions(this.formInstanceData);
+         this.formInstanceData = new FormInstanceDataImpl(formInstanceDataNodeRef)
+         {
+            @Override
+            public Form getForm() { return form; }
+         };
+         props.clear();
+         props.put(WCMAppModel.PROP_PARENT_FORM_NAME, form.getName());
+         this.nodeService.addAspect(formInstanceDataNodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
+
+         this.renditions = new LinkedList<Rendition>();
+         for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
+         {
+            this.renditions.add(ret.render(this.formInstanceData));
+         }
       }
       else
       {
@@ -533,23 +501,11 @@ public class CreateWebContentWizard extends BaseContentWizard
     */
    public List<SelectItem> getFormChoices()
    {
-      final Node website = this.avmBrowseBean.getWebsite();
-      if (website == null)
+      final List<Form> forms = this.avmBrowseBean.getWebProject().getForms();
+      final List<SelectItem> items = new ArrayList<SelectItem>(forms.size());
+      for (final Form f : forms)
       {
-         throw new IllegalStateException("CreateWebContentWizard must be called within a Web Project context!");
-      }
-      final List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
-            website.getNodeRef(), WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
-      final List<SelectItem> items = new ArrayList<SelectItem>(webFormRefs.size());
-      for (ChildAssociationRef ref : webFormRefs)
-      {
-         final String formName = (String)
-            this.nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
-         final Form form = FormsService.getInstance().getForm(formName);
-         if (form != null)
-         {
-            items.add(new SelectItem(formName, form.getTitle()));
-         }
+         items.add(new SelectItem(f.getName(), f.getTitle()));
       }
       
       final QuickSort sorter = new QuickSort(items, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
@@ -613,8 +569,9 @@ public class CreateWebContentWizard extends BaseContentWizard
    
    public Form getForm()
    {
-      final FormsService ts = FormsService.getInstance();
-      return ts.getForm(this.getFormName());
+      return (this.getFormName() != null 
+              ? this.avmBrowseBean.getWebProject().getForm(this.getFormName())
+              : null);
    }
    
    /**
@@ -633,18 +590,17 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       if (this.instanceDataDocument == null)
       {
-         final FormsService fs = FormsService.getInstance();
          final String content = this.getContent();
          try
          {
             this.instanceDataDocument = (content != null 
-                                         ? fs.parseXML(content) 
-                                         : fs.newDocument());
+                                         ? XMLUtil.parse(content) 
+                                         : XMLUtil.newDocument());
          }
          catch (Exception e)
          {
             Utils.addErrorMessage("error parsing document", e);
-            this.instanceDataDocument = fs.newDocument();
+            this.instanceDataDocument = XMLUtil.newDocument();
          }
       }
       return this.instanceDataDocument;

@@ -114,12 +114,12 @@
          <tr>
             <td>
                </f:verbatim>
-               <h:outputText value="#{msg.website_filename_pattern}:"/>
+               <h:outputText value="#{msg.output_path_pattern}:"/>
                <f:verbatim>
             </td>
             <td>
                </f:verbatim>
-                <h:inputText id="filepattern" value="#{DialogManager.bean.filenamePattern}" size="35" maxlength="1024" />
+                <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="35" maxlength="1024" />
                <f:verbatim>
             </td>
          </tr>

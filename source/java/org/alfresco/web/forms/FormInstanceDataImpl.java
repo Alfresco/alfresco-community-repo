@@ -16,27 +16,25 @@
  */
 package org.alfresco.web.forms;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateNode;
-import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
 /**
  * Encapsulation of a rendition.
@@ -53,6 +51,10 @@ public class FormInstanceDataImpl
 
    public FormInstanceDataImpl(final NodeRef nodeRef)
    {
+      if (nodeRef == null)
+      {
+         throw new NullPointerException();
+      }
       this.nodeRef = nodeRef;
    }
 
@@ -79,13 +81,20 @@ public class FormInstanceDataImpl
       return AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
    }
 
+   public Document getDocument()
+      throws IOException, SAXException
+   {
+      return XMLUtil.parse(this.getNodeRef(), 
+                           this.getServiceRegistry().getContentService());
+   }
+
    public Form getForm()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final NodeRef formNodeRef = (NodeRef)
+      final String parentFormName = (String)
          nodeService.getProperty(this.nodeRef, 
-                                 WCMAppModel.PROP_PARENT_FORM);
-      return new FormImpl(formNodeRef);
+                                 WCMAppModel.PROP_PARENT_FORM_NAME);
+      return FormsService.getInstance().getForm(parentFormName);
    }
 
    /** the node ref containing the contents of this rendition */
@@ -102,21 +111,17 @@ public class FormInstanceDataImpl
    public List<Rendition> getRenditions()
    {
       final AVMService avmService = this.getServiceRegistry().getAVMService();
-      final List<Rendition> result = new LinkedList<Rendition>();
-      for (RenderingEngineTemplate ret : this.getForm().getRenderingEngineTemplates())
+      final PropertyValue pv = 
+         avmService.getNodeProperty(-1, this.getPath(), WCMAppModel.PROP_RENDITIONS);
+      final Collection<Serializable> renditionPaths = (pv == null 
+                                                 ? Collections.EMPTY_LIST
+                                                 : pv.getCollection(DataTypeDefinition.TEXT));
+      final String storeName = AVMConstants.getStoreName(this.getPath());
+      final List<Rendition> result = new ArrayList<Rendition>(renditionPaths.size());
+      for (Serializable path : renditionPaths)
       {
-         final String renditionAvmPath = ret.getOutputPathForRendition(this);
-         if (avmService.lookup(-1, renditionAvmPath) == null)
-         {
-            LOGGER.warn("unable to locate rendition " + renditionAvmPath +
-                        " for form instance data " + this.getName());
-         }
-         else
-         {
-            final NodeRef renditionNodeRef = 
-               AVMNodeConverter.ToNodeRef(-1, renditionAvmPath);
-            result.add(new RenditionImpl(renditionNodeRef));
-         }
+         result.add(new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, storeName + ':' + (String)path)));
+         
       }
       return result;
    }

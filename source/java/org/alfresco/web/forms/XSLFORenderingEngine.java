@@ -24,13 +24,13 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
+import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
 /**
  * A rendering engine which uses xsl-fo templates to generate renditions of
@@ -86,35 +86,40 @@ public class XSLFORenderingEngine
       return "fo";
    }
 
-   public void render(final Document xmlContent,
+   public void render(final FormInstanceData formInstanceData,
                       final RenderingEngineTemplate ret,
-                      final Map<String, String> parameters,
-                      final OutputStream out)
+                      final Rendition rendition)
       throws IOException,
-      RenderingEngine.RenderingException
+      RenderingEngine.RenderingException,
+      SAXException
    {
-      Result result = null;
+
       String mimetype = MIME_TYPES.get(ret.getMimetypeForRendition());
       if (mimetype == null)
       {
          throw new RenderingEngine.RenderingException("mimetype " + ret.getMimetypeForRendition() +
                                                       " is not supported by " + this.getName());
       }
+      final OutputStream out = rendition.getOutputStream();
       try
       {
          final FopFactory fopFactory = FopFactory.newInstance();
          final FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
-         final Fop fop = fopFactory.newFop(mimetype, 
-                                           foUserAgent, 
-                                           out);
+         final Fop fop = fopFactory.newFop(mimetype, foUserAgent, out);
          // Resulting SAX events (the generated FO) must be piped through to FOP
-         result = new SAXResult(fop.getDefaultHandler());
+         super.render(new DOMSource(formInstanceData.getDocument()), 
+                      ret, 
+                      this.getStandardParameters(formInstanceData, rendition), 
+                      new SAXResult(fop.getDefaultHandler()));
+
       }
       catch (FOPException fope)
       {
          throw new RenderingEngine.RenderingException(fope);
       }
-         
-      super.render(new DOMSource(xmlContent), ret, parameters, result);
+      finally
+      {
+         out.close();
+      }
    }
 }

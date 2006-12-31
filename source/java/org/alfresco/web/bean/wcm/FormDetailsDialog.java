@@ -50,7 +50,7 @@ public class FormDetailsDialog extends BaseDialogBean
    
    private String title;
    private String description;
-   private String filenamePattern;
+   private String outputPathPattern;
    private String[] workflowSelectedValue;
    
 
@@ -63,7 +63,7 @@ public class FormDetailsDialog extends BaseDialogBean
       super.init(parameters);
       this.title = null;
       this.description = null;
-      this.filenamePattern = null;
+      this.outputPathPattern = null;
       this.workflowSelectedValue = null;
    }
    
@@ -142,21 +142,21 @@ public class FormDetailsDialog extends BaseDialogBean
    /**
     * @return Returns the filename pattern
     */
-   public String getFilenamePattern()
+   public String getOutputPathPattern()
    {
-      if (this.filenamePattern == null)
+      if (this.outputPathPattern == null)
       {
-         this.filenamePattern = getActionForm().getFilenamePattern();
+         this.outputPathPattern = getActionForm().getOutputPathPattern();
       }
-      return this.filenamePattern;
+      return this.outputPathPattern;
    }
 
    /**
     * @param pattern The filename pattern to set.
     */
-   public void setFilenamePattern(String pattern)
+   public void setOutputPathPattern(String pattern)
    {
-      this.filenamePattern = pattern;
+      this.outputPathPattern = pattern;
    }
    
    /**
@@ -225,9 +225,9 @@ public class FormDetailsDialog extends BaseDialogBean
       {
          form.setDescription(this.description);
       }
-      if (this.filenamePattern != null)
+      if (this.outputPathPattern != null)
       {
-         form.setFilenamePattern(this.filenamePattern);
+         form.setOutputPathPattern(this.outputPathPattern);
       }
       if (this.workflowSelectedValue != null && this.workflowSelectedValue.length != 0)
       {

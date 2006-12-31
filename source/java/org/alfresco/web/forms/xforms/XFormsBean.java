@@ -278,7 +278,7 @@ public class XFormsBean
       final ResponseWriter out = context.getResponseWriter();
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
       final Node xformsDocument = chibaBean.getXMLContainer();
-      FormsService.getInstance().writeXML(xformsDocument, out);
+      XMLUtil.print(xformsDocument, out);
    }
 
    /**
@@ -308,7 +308,7 @@ public class XFormsBean
       }
 
       final ResponseWriter out = context.getResponseWriter();
-      FormsService.getInstance().writeXML(this.getEventLog(), out);
+      XMLUtil.print(this.getEventLog(), out);
       out.close();
    }
 
@@ -332,7 +332,7 @@ public class XFormsBean
       chibaBean.updateRepeatIndex(id, index);
 
       final ResponseWriter out = context.getResponseWriter();
-      FormsService.getInstance().writeXML(this.getEventLog(), out);
+      XMLUtil.print(this.getEventLog(), out);
       out.close();
    }
 
@@ -353,7 +353,7 @@ public class XFormsBean
       chibaBean.dispatch(id, DOMEventNames.ACTIVATE);
 
       final ResponseWriter out = context.getResponseWriter();
-      FormsService.getInstance().writeXML(this.getEventLog(), out);
+      XMLUtil.print(this.getEventLog(), out);
       out.close();
    }
 
@@ -368,8 +368,7 @@ public class XFormsBean
          final FacesContext context = FacesContext.getCurrentInstance();
          final HttpServletRequest request = (HttpServletRequest)
             context.getExternalContext().getRequest();
-         final FormsService formsService = FormsService.getInstance();
-         final Document result = formsService.parseXML(request.getInputStream());
+         final Document result = XMLUtil.parse(request.getInputStream());
          final Document instanceData = this.xformsSession.getFormInstanceData();
          Element documentElement = instanceData.getDocumentElement();
          if (documentElement != null)
@@ -383,7 +382,7 @@ public class XFormsBean
          instanceData.appendChild(documentElement);
 
          final ResponseWriter out = context.getResponseWriter();
-         formsService.writeXML(instanceData, out);
+         XMLUtil.print(instanceData, out);
          out.close();
       }
       catch (Throwable t)
@@ -409,7 +408,7 @@ public class XFormsBean
                            chibaBean.getContainer().lookup(toItemId));
 
       final ResponseWriter out = context.getResponseWriter();
-      FormsService.getInstance().writeXML(this.getEventLog(), out);
+      XMLUtil.print(this.getEventLog(), out);
       out.close();
    }
 
@@ -439,8 +438,7 @@ public class XFormsBean
       }
       LOGGER.debug(this + ".getFilePickerData(" + currentPath + ")");
 
-      final FormsService formsService = FormsService.getInstance();
-      final Document result = formsService.newDocument();
+      final Document result = XMLUtil.newDocument();
       final Element filePickerDataElement = result.createElement("file-picker-data");
       result.appendChild(filePickerDataElement);
 
@@ -483,7 +481,7 @@ public class XFormsBean
       }
 
       final ResponseWriter out = facesContext.getResponseWriter();
-      FormsService.getInstance().writeXML(result, out);
+      XMLUtil.print(result, out);
       out.close();
    }
    
@@ -558,8 +556,7 @@ public class XFormsBean
       this.xformsSession.uploads.put(uploadId, uploadNodeRef);
 
       LOGGER.debug("upload complete.  sending response");
-      final FormsService formsService = FormsService.getInstance();
-      final Document result = formsService.newDocument();
+      final Document result = XMLUtil.newDocument();
       final Element htmlEl = result.createElement("html");
       result.appendChild(htmlEl);
       final Element bodyEl = result.createElement("body");
@@ -574,7 +571,7 @@ public class XFormsBean
       scriptEl.appendChild(scriptText);
 
       final ResponseWriter out = facesContext.getResponseWriter();
-      formsService.writeXML(result, out);
+      XMLUtil.print(result, out);
       out.close();
    }
 
@@ -638,8 +635,7 @@ public class XFormsBean
 
    private Node getEventLog()
    {
-      final FormsService formsService = FormsService.getInstance();
-      final Document result = formsService.newDocument();
+      final Document result = XMLUtil.newDocument();
       final Element eventsElement = result.createElement("events");
       result.appendChild(eventsElement);
       for (XMLEvent xfe : this.xformsSession.eventLog)
@@ -680,8 +676,7 @@ public class XFormsBean
 
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("generated event log:\n" + 
-                      formsService.writeXMLToString(result));
+         LOGGER.debug("generated event log:\n" + XMLUtil.toString(result));
       }
       return result;
    }
@@ -740,8 +735,7 @@ public class XFormsBean
                                                             resourceBundle);
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("generated xform: " + 
-                         FormsService.getInstance().writeXMLToString(result));
+            LOGGER.debug("generated xform: " + XMLUtil.toString(result));
          }
          return result;
       }

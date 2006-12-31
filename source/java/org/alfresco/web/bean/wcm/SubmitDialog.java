@@ -168,7 +168,7 @@ public class SubmitDialog extends BaseDialogBean
          NodeRef webFormRef = ref.getChildRef();
          String form = (String)this.nodeService.getProperty(webFormRef, WCMAppModel.PROP_FORMNAME);
          List<ChildAssociationRef> wfRefs = this.nodeService.getChildAssocs(
-               webFormRef, WCMAppModel.TYPE_WORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
+            webFormRef, WCMAppModel.TYPE_WORKFLOW_DEFAULTS, RegexQNamePattern.MATCH_ALL);
          if (wfRefs.size() == 1)
          {
             NodeRef wfDefaultsRef = wfRefs.get(0).getChildRef();

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
 import javax.xml.transform.*;
-import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.logging.Log;
@@ -73,9 +73,6 @@ public class SchemaFormBuilder
    public final static Log LOGGER = 
       LogFactory.getLog(SchemaFormBuilder.class);
 
-   /** XMLNS Namespace declaration. */
-   public static final String XMLNS_NAMESPACE_URI =
-      "http://www.w3.org/2000/xmlns/";
 
    /** Alfresco namespace declaration. */
    private static final String ALFRESCO_NS =
@@ -288,7 +285,7 @@ public class SchemaFormBuilder
 	
       //if target namespace & we use the schema types: add it to form ns declarations
 //	if (this.targetNamespace != null && this.targetNamespace.length() != 0)
-//	    envelopeElement.setAttributeNS(XMLNS_NAMESPACE_URI,
+//	    envelopeElement.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI,
 //					   "xmlns:schema",
 //					   this.targetNamespace);
 
@@ -706,7 +703,7 @@ public class SchemaFormBuilder
       if (annotation == null)
          return null;
       // write annotation to empty doc
-      final Document doc = FormsService.getInstance().newDocument();
+      final Document doc = XMLUtil.newDocument();
       annotation.writeAnnotation(doc, XSAnnotation.W3C_DOM_DOCUMENT);	
       
       final NodeList d = doc.getElementsByTagNameNS(namespace, elementName);
@@ -788,7 +785,7 @@ public class SchemaFormBuilder
             if (LOGGER.isDebugEnabled()) 
             {
                LOGGER.debug("This attribute comes from an extension: recopy form controls. \n Model section: ");
-               LOGGER.debug(FormsService.getInstance().writeXMLToString(modelSection));
+               LOGGER.debug(XMLUtil.toString(modelSection));
             }
 		
             //find the existing bind Id
@@ -1396,7 +1393,7 @@ public class SchemaFormBuilder
                         //
                         if (LOGGER.isDebugEnabled())
                         {
-                           LOGGER.debug(FormsService.getInstance().writeXMLToString(bindElement2));
+                           LOGGER.debug(XMLUtil.toString(bindElement2));
                         }
                         NodeList binds = bindElement2.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "bind");
                         Element thisBind = null;
@@ -1605,7 +1602,7 @@ public class SchemaFormBuilder
                if (LOGGER.isDebugEnabled()) 
                {
                   LOGGER.debug("This element comes from an extension: recopy form controls.\n Model Section=");
-                  LOGGER.debug(FormsService.getInstance().writeXMLToString(modelSection));
+                  LOGGER.debug(XMLUtil.toString(modelSection));
                }
 
                //find the existing bind Id
@@ -2072,7 +2069,7 @@ public class SchemaFormBuilder
 
    private Document createFormTemplate(final String formId)
    {
-      final Document xformsDocument = FormsService.getInstance().newDocument();
+      final Document xformsDocument = XMLUtil.newDocument();
 
       final Element envelopeElement = this.wrapper.createEnvelope(xformsDocument);
       this.addNamespace(envelopeElement, 

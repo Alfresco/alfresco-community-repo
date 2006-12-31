@@ -20,7 +20,7 @@ import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.*;
@@ -216,9 +216,8 @@ public class SchemaUtil
 
          final DOMImplementationLS lsImpl = (DOMImplementationLS)
             registry.getDOMImplementation("XML 1.0 LS 3.0");
-         final FormsService ts = FormsService.getInstance();
          final LSInput in = lsImpl.createLSInput();
-         in.setStringData(ts.writeXMLToString(schemaDocument));
+         in.setStringData(XMLUtil.toString(schemaDocument));
 
          final XSImplementation xsImpl = (XSImplementation)
             registry.getDOMImplementation("XS-Loader");

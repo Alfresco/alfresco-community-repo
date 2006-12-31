@@ -223,10 +223,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
          // create web form with name as per the name of the form object in the DD
          props.put(WCMAppModel.PROP_FORMNAME, form.getName());
          NodeRef formRef = this.nodeService.createNode(nodeRef,
-                  WCMAppModel.ASSOC_WEBFORM,
-                  WCMAppModel.ASSOC_WEBFORM,
-                  WCMAppModel.TYPE_WEBFORM,
-                  props).getChildRef();
+                                                       WCMAppModel.ASSOC_WEBFORM,
+                                                       WCMAppModel.ASSOC_WEBFORM,
+                                                       WCMAppModel.TYPE_WEBFORM,
+                                                       props).getChildRef();
          
          // add title aspect for user defined title and description labels
          props.clear();
@@ -235,11 +235,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.nodeService.addAspect(formRef, ContentModel.ASPECT_TITLED, props);
          
          // add filename pattern aspect if a filename pattern has been applied
-         if (form.getFilenamePattern() != null)
+         if (form.getOutputPathPattern() != null)
          {
             props.clear();
-            props.put(WCMAppModel.PROP_FILENAMEPATTERN, form.getFilenamePattern());
-            this.nodeService.addAspect(formRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
+            props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, form.getOutputPathPattern());
+            this.nodeService.addAspect(formRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
          }
          
          // associate to workflow defaults if any are present
@@ -249,10 +249,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
             props.clear();
             props.put(WCMAppModel.PROP_WORKFLOW_NAME, workflow.getName());
             NodeRef workflowRef = this.nodeService.createNode(formRef,
-                  WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
-                  WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
-                  WCMAppModel.TYPE_WORKFLOWDEFAULTS,
-                  props).getChildRef();
+                                                              WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
+                                                              WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
+                                                              WCMAppModel.TYPE_WORKFLOW_DEFAULTS,
+                                                              props).getChildRef();
             
             // persist workflow default params
             if (workflow.getParams() != null)
@@ -265,19 +265,20 @@ public class CreateWebsiteWizard extends BaseWizardBean
          for (PresentationTemplate template : form.getTemplates())
          {
             props.clear();
-            props.put(WCMAppModel.PROP_ENGINE, template.getRenderingEngineTemplate().getNodeRef());
+            props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
+                      template.getRenderingEngineTemplate().getName());
             NodeRef templateRef = this.nodeService.createNode(formRef,
-                  WCMAppModel.ASSOC_WEBFORMTEMPLATE,
-                  WCMAppModel.ASSOC_WEBFORMTEMPLATE,
-                  WCMAppModel.TYPE_WEBFORMTEMPLATE,
-                  props).getChildRef();
+                                                              WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                                                              WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                                                              WCMAppModel.TYPE_WEBFORMTEMPLATE,
+                                                              props).getChildRef();
             
             // add filename pattern aspect if a filename pattern has been applied
-            if (template.getFilenamePattern() != null)
+            if (template.getOutputPathPattern() != null)
             {
                props.clear();
-               props.put(WCMAppModel.PROP_FILENAMEPATTERN, template.getFilenamePattern());
-               this.nodeService.addAspect(templateRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
+               props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, template.getOutputPathPattern());
+               this.nodeService.addAspect(templateRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
             }
          }
       }
@@ -288,10 +289,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
          props.clear();
          props.put(WCMAppModel.PROP_WORKFLOW_NAME, workflow.getName());
          NodeRef workflowRef = this.nodeService.createNode(nodeRef,
-               WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
-               WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
-               WCMAppModel.TYPE_WEBWORKFLOWDEFAULTS,
-               props).getChildRef();
+                                                           WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
+                                                           WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
+                                                           WCMAppModel.TYPE_WEBWORKFLOWDEFAULTS,
+                                                           props).getChildRef();
          
          // persist workflow default params
          if (workflow.getParams() != null)
@@ -747,7 +748,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private String title;
       private String description;
       private WorkflowWrapper workflow;
-      private String filenamePattern;
+      private String outputPathPattern;
       private List<PresentationTemplate> templates = null;
       
       FormWrapper(Form form)
@@ -808,23 +809,23 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
 
       /**
-       * @return Returns the filename pattern.
+       * @return Returns the output path pattern.
        */
-      public String getFilenamePattern()
+      public String getOutputPathPattern()
       {
-         if (this.filenamePattern == null)
+         if (this.outputPathPattern == null)
          {
-            this.filenamePattern = this.form.getOutputPathPattern();
+            this.outputPathPattern = this.form.getOutputPathPattern();
          }
-         return this.filenamePattern;
+         return this.outputPathPattern;
       }
 
       /**
-       * @param filenamePattern The filename pattern to set.
+       * @param outputPathPattern The output path pattern to set.
        */
-      public void setFilenamePattern(String filenamePattern)
+      public void setOutputPathPattern(String outputPathPattern)
       {
-         this.filenamePattern = filenamePattern;
+         this.outputPathPattern = outputPathPattern;
       }
       
       /**
@@ -872,7 +873,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          String none = '<' + Application.getMessage(FacesContext.getCurrentInstance(), MSG_NONE) + '>';
          return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_FORM_SUMMARY),
                getWorkflow() != null ? this.workflow.title : none,
-               getFilenamePattern() != null ? this.filenamePattern : none,
+               getOutputPathPattern() != null ? this.outputPathPattern : none,
                getTemplates() != null ? this.templates.size() : 0);
       }
    }
@@ -885,17 +886,17 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private RenderingEngineTemplate ret;
       private String title;
       private String description;
-      private String filenamePattern;
+      private String outputPathPattern;
       
       public PresentationTemplate(RenderingEngineTemplate ret)
       {
          this(ret, null);
       }
       
-      public PresentationTemplate(RenderingEngineTemplate ret, String filenamePattern)
+      public PresentationTemplate(RenderingEngineTemplate ret, String outputPathPattern)
       {
          this.ret = ret;
-         this.filenamePattern = filenamePattern;
+         this.outputPathPattern = outputPathPattern;
       }
       
       public RenderingEngineTemplate getRenderingEngineTemplate()
@@ -922,23 +923,23 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       
       /**
-       * @return Returns the filename pattern.
+       * @return Returns the output path pattern.
        */
-      public String getFilenamePattern()
+      public String getOutputPathPattern()
       {
-         if (this.filenamePattern == null)
+         if (this.outputPathPattern == null)
          {
-            this.filenamePattern = ret.getOutputPathPattern();
+            this.outputPathPattern = ret.getOutputPathPattern();
          }
-         return this.filenamePattern;
+         return this.outputPathPattern;
       }
 
       /**
-       * @param filenamePattern The filename pattern to set.
+       * @param outputPathPattern The output path pattern to set.
        */
-      public void setFilenamePattern(String filenamePattern)
+      public void setOutputPathPattern(String outputPathPattern)
       {
-         this.filenamePattern = filenamePattern;
+         this.outputPathPattern = outputPathPattern;
       }
    }
    

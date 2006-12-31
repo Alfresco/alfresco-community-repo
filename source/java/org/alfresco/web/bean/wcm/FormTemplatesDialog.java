@@ -153,7 +153,7 @@ public class FormTemplatesDialog extends BaseDialogBean
       {
          PresentationTemplate template = (PresentationTemplate)this.templateList.get(index).getValue();
          // clone the PresentationTemplate into one the user can modify
-         this.templates.add(new PresentationTemplate(template.getRenderingEngineTemplate(), template.getFilenamePattern()));
+         this.templates.add(new PresentationTemplate(template.getRenderingEngineTemplate(), template.getOutputPathPattern()));
       }
    }
    

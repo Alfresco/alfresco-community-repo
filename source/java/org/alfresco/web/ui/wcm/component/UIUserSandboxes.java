@@ -55,7 +55,9 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.forms.Form;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.PanelGenerator;
@@ -115,7 +117,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    
-   public static final String PARAM_FORM_ID = "form-id";
+   public static final String PARAM_FORM_NAME = "form-name";
    
    private static final String SCRIPT_MULTISELECT =
                         "<script>function _sb_select(obj) {" + 
@@ -148,7 +150,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private String[] checkedItems = null;
    
    /** transient list of available web forms */
-   private List<NodeRef> forms = null;
+   private List<Form> forms = null;
    
    
    // ------------------------------------------------------------------------------
@@ -177,16 +179,17 @@ public class UIUserSandboxes extends SelfRenderingComponent
    
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[7];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.value;
-      values[2] = this.expandedPanels;
-      values[3] = this.userToRowLookup;
-      values[4] = this.rowToUserLookup;
-      values[5] = this.userNodes;
-      values[6] = this.checkedItems;
-      return values;
+      return new Object[]
+      {
+         // standard component attributes are saved by the super class
+         super.saveState(context),
+         this.value,
+         this.expandedPanels,
+         this.userToRowLookup,
+         this.rowToUserLookup,
+         this.userNodes,
+         this.checkedItems
+      };
    }
    
    /**
@@ -710,13 +713,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       // TODO: execute permission evaluations on a per user basis against each form?
       if (this.forms == null)
       {
-         List<ChildAssociationRef> webFormRefs = nodeService.getChildAssocs(
-               websiteRef, WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
-         this.forms = new ArrayList<NodeRef>(webFormRefs.size());
-         for (ChildAssociationRef ref : webFormRefs)
-         {
-            this.forms.add(ref.getChildRef());
-         }
+         this.forms = new WebProject(websiteRef).getForms();
       }
       if (this.forms.size() != 0)
       {
@@ -724,10 +721,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
          
          // output the table of available forms
          // TODO: apply tag style - removed hardcoded
-         out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=1 border=0 width=100%>");
+         out.write("<table class='modifiedItemsList' cellspacing='2' cellpadding='1' border='0' width='100%'>");
          
          // header row
-         out.write("<tr align=left><th>");
+         out.write("<tr align='left'><th>");
          out.write(bundle.getString(MSG_NAME));
          out.write("</th><th>");
          out.write(bundle.getString(MSG_DESCRIPTION));
@@ -735,13 +732,13 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write(bundle.getString(MSG_ACTIONS));
          out.write("</th></tr>");
          
-         for (NodeRef formRef : this.forms)
+         for (Form f : this.forms)
          {
             out.write("<tr><td>");
-            String title = (String)nodeService.getProperty(formRef, ContentModel.PROP_TITLE);
+            String title = (String)f.getTitle();
             out.write(title != null ? title : "");
             out.write("</td><td>");
-            String desc = (String)nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION);
+            String desc = (String)f.getDescription();
             out.write(desc != null ? desc : "");
             out.write("</td><td>");
             // actions
@@ -751,14 +748,21 @@ public class UIUserSandboxes extends SelfRenderingComponent
                // create content action passes the ID of the Form to uses
                Map<String, String> params = new HashMap<String, String>(3, 1.0f);
                // setup a data-binding param for the Form ID
-               params.put(PARAM_FORM_ID, "#{" + REQUEST_FORM_REF + ".id}");
+               params.put(PARAM_FORM_NAME, "#{" + REQUEST_FORM_REF + ".name}");
                params.put("username", username);
                params.put("store", userStorePrefix);
-               action = createAction(fc, userStorePrefix, username, ACT_CREATE_FORM_CONTENT,
-                     "/images/icons/new_content.gif", "#{AVMBrowseBean.createFormContent}", null, null, params);
+               action = createAction(fc, 
+                                     userStorePrefix, 
+                                     username, 
+                                     ACT_CREATE_FORM_CONTENT,
+                                     "/images/icons/new_content.gif", 
+                                     "#{AVMBrowseBean.createFormContent}", 
+                                     null, 
+                                     null, 
+                                     params);
             }
             // set the form-id into the request scope for data binding
-            requestMap.put(REQUEST_FORM_REF, formRef);
+            requestMap.put(REQUEST_FORM_REF, f);
             Utils.encodeRecursive(fc, action);
             requestMap.remove(REQUEST_FORM_REF);
             out.write("</td></tr>");

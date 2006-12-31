@@ -61,13 +61,10 @@ public class FormDataFunctions
       throws IOException,
       SAXException
    {
-      final DocumentBuilder db = this.getDocumentBuilder();
       final InputStream istream = this.avmRemote.getFileInputStream(-1, avmPath); 
-
-      Document result;
       try 
       {
-         return db.parse(istream);
+         return XMLUtil.parse(istream);
       }
       finally
       {
@@ -89,7 +86,6 @@ public class FormDataFunctions
    {
       final Map<String, AVMNodeDescriptor> entries = 
          this.avmRemote.getDirectoryListing(-1, avmPath);
-      final DocumentBuilder db = this.getDocumentBuilder();
       final Map<String, Document> result = new HashMap<String, Document>();
       for (Map.Entry<String, AVMNodeDescriptor> entry : entries.entrySet())
       {
@@ -121,7 +117,7 @@ public class FormDataFunctions
             final InputStream istream = this.avmRemote.getFileInputStream(-1, avmPath + '/' + entryName);
             try
             {
-               result.put(entryName, db.parse(istream));
+               result.put(entryName, XMLUtil.parse(istream));
             }
             finally
             {
@@ -130,24 +126,5 @@ public class FormDataFunctions
          }
       }
       return result;
-   }
-
-   private static DocumentBuilder getDocumentBuilder()
-   {
-      if (FormDataFunctions.documentBuilder == null)
-      {
-         try
-         {
-            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(true);
-            dbf.setValidating(false);
-            FormDataFunctions.documentBuilder = dbf.newDocumentBuilder();
-         }
-         catch (ParserConfigurationException pce)
-         {
-            LOGGER.error(pce);
-         }
-      }
-      return FormDataFunctions.documentBuilder;
    }
 }

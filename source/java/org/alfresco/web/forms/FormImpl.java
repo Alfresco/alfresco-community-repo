@@ -25,7 +25,6 @@ import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
 import java.io.*;
 import java.net.URI;
-import java.io.Serializable;
 import java.util.*;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
@@ -43,19 +42,20 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.forms.xforms.XFormsProcessor;
-import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-class FormImpl 
+public class FormImpl 
     implements Form
 {
    private static final Log LOGGER = LogFactory.getLog(FormImpl.class);
    
    private final NodeRef folderNodeRef;
+   private transient Map<String, RenderingEngineTemplate> renderingEngineTemplates;
 
    private final static LinkedList<FormProcessor> PROCESSORS = 
       new LinkedList<FormProcessor>();
@@ -94,18 +94,47 @@ class FormImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.folderNodeRef,
-                                             WCMAppModel.PROP_OUTPUT_PATH_PATTERN_FORM_INSTANCE_DATA);
+                                             WCMAppModel.PROP_OUTPUT_PATH_PATTERN);
    }
 
    public WorkflowDefinition getDefaultWorkflow()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final String defaultWorkflowName = (String)nodeService.getProperty(this.folderNodeRef,
-                                                                       WCMAppModel.PROP_DEFAULT_WORKFLOW_NAME);
       final WorkflowService workflowService = this.getServiceRegistry().getWorkflowService();
-      return (defaultWorkflowName != null
-              ? workflowService.getDefinitionByName(defaultWorkflowName)
-              : null);
+
+      final NodeRef workflowRef = this.getDefaultWorkflowNodeRef();
+      final String workflowName = 
+         (workflowRef != null 
+          ? (String)nodeService.getProperty(workflowRef, WCMAppModel.PROP_WORKFLOW_NAME)
+          : null);
+               
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("using workflow " + workflowName + " for form " + this.getName());
+
+      return workflowName != null ? workflowService.getDefinitionByName(workflowName) : null;
+   }
+
+   public Map<QName, Serializable> getDefaultWorkflowParameters()
+   {
+      final NodeRef workflowRef = this.getDefaultWorkflowNodeRef();
+      return (Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(workflowRef);
+   }
+
+   protected NodeRef getDefaultWorkflowNodeRef()
+   {
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      final List<ChildAssociationRef> workflowRefs = 
+         nodeService.getChildAssocs(this.folderNodeRef,
+                                    WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
+                                    RegexQNamePattern.MATCH_ALL);
+      if (workflowRefs.size() == 0)
+      {
+         return null;
+      }
+
+      assert workflowRefs.size() == 1 : "found more than one workflow parameters node for " + this.getName();
+
+      return workflowRefs.get(0).getChildRef();
    }
 
    public String getOutputPathForFormInstanceData(final Document formInstanceData,
@@ -144,11 +173,11 @@ class FormImpl
       throws IOException, 
       SAXException
    {
-      final FormsService ts = FormsService.getInstance();
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final NodeRef schemaNodeRef = (NodeRef)nodeService.getProperty(folderNodeRef,
-                                                                     WCMAppModel.PROP_XML_SCHEMA);
-      return ts.parseXML(schemaNodeRef);
+      final NodeRef schemaNodeRef = (NodeRef)
+         nodeService.getProperty(folderNodeRef, WCMAppModel.PROP_XML_SCHEMA);
+      return XMLUtil.parse(schemaNodeRef,
+                           this.getServiceRegistry().getContentService());
    }
 
    public List<FormProcessor> getFormProcessors()
@@ -158,41 +187,30 @@ class FormImpl
 
    public void addRenderingEngineTemplate(final RenderingEngineTemplate ret)
    {
-//      this.renderingEngineTemplates.add(ret);
       throw new UnsupportedOperationException();
    }
 
    public List<RenderingEngineTemplate> getRenderingEngineTemplates()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final List<AssociationRef> refs = nodeService.getTargetAssocs(this.folderNodeRef, 
-                                                                    WCMAppModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
-      final List<RenderingEngineTemplate> result = new ArrayList<RenderingEngineTemplate>(refs.size());
-      for (AssociationRef assoc : refs)
+      if (this.renderingEngineTemplates == null)
       {
-         final NodeRef retNodeRef = assoc.getTargetRef();
-         for (ChildAssociationRef assoc2 : nodeService.getChildAssocs(retNodeRef,
-                                                                      WCMAppModel.ASSOC_RENDITION_PROPERTIES,
-                                                                      RegexQNamePattern.MATCH_ALL))
-         {
-            final NodeRef renditionPropertiesNodeRef = assoc2.getChildRef();
-            
-            final RenderingEngineTemplate ret = 
-               new RenderingEngineTemplateImpl(retNodeRef, renditionPropertiesNodeRef);
-            LOGGER.debug("loaded rendering engine template " + ret);
-            result.add(ret);
-         }
+         this.renderingEngineTemplates = this.loadRenderingEngineTemplates();
       }
-      return result;
+      return Collections.unmodifiableList(new ArrayList(this.renderingEngineTemplates.values()));
    }
 
-   public void registerFormInstanceData(final NodeRef formInstanceDataNodeRef)
+   public RenderingEngineTemplate getRenderingEngineTemplate(final String name)
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(WCMAppModel.PROP_PARENT_FORM, this.folderNodeRef);
-      props.put(WCMAppModel.PROP_PARENT_FORM_NAME, this.getName());
-      nodeService.addAspect(formInstanceDataNodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
+      if (this.renderingEngineTemplates == null)
+      {
+         this.renderingEngineTemplates = this.loadRenderingEngineTemplates();
+      }
+      return this.renderingEngineTemplates.get(name);
+   }
+
+   public NodeRef getNodeRef()
+   {
+      return this.folderNodeRef;
    }
 
    public int hashCode() 
@@ -209,9 +227,33 @@ class FormImpl
               "}");
    }
 
-   private ServiceRegistry getServiceRegistry()
+   protected ServiceRegistry getServiceRegistry()
    {
       final FacesContext fc = FacesContext.getCurrentInstance();
       return Repository.getServiceRegistry(fc);
+   }
+
+   protected Map<String, RenderingEngineTemplate> loadRenderingEngineTemplates()
+   {
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      final List<AssociationRef> refs = nodeService.getTargetAssocs(this.folderNodeRef, 
+                                                                    WCMAppModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
+      final Map<String, RenderingEngineTemplate> result = new HashMap<String, RenderingEngineTemplate>(refs.size(), 1.0f);
+      for (AssociationRef assoc : refs)
+      {
+         final NodeRef retNodeRef = assoc.getTargetRef();
+         for (ChildAssociationRef assoc2 : nodeService.getChildAssocs(retNodeRef,
+                                                                      WCMAppModel.ASSOC_RENDITION_PROPERTIES,
+                                                                      RegexQNamePattern.MATCH_ALL))
+         {
+            final NodeRef renditionPropertiesNodeRef = assoc2.getChildRef();
+            
+            final RenderingEngineTemplate ret = 
+               new RenderingEngineTemplateImpl(retNodeRef, renditionPropertiesNodeRef);
+            LOGGER.debug("loaded rendering engine template " + ret);
+            result.put(ret.getName(), ret);
+         }
+      }
+      return result;
    }
 }

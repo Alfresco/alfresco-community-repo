@@ -16,6 +16,8 @@
  */
 package org.alfresco.web.forms;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -35,6 +37,7 @@ import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.xml.sax.SAXException;
 
 /**
  * Encapsulation of a rendition.
@@ -48,9 +51,14 @@ public class RenditionImpl
    private static final Log LOGGER = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
+   private transient RenderingEngineTemplate renderingEngineTemplate;
 
    public RenditionImpl(final NodeRef nodeRef)
    {
+      if (nodeRef == null)
+      {
+         throw new NullPointerException();
+      }
       this.nodeRef = nodeRef;
    }
 
@@ -97,14 +105,18 @@ public class RenditionImpl
    /** the rendering engine template that generated this rendition */
    public RenderingEngineTemplate getRenderingEngineTemplate()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final NodeRef retNodeRef = (NodeRef)
-         nodeService.getProperty(this.nodeRef, 
-                                 WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
-      final NodeRef rpNodeRef = (NodeRef)
-         nodeService.getProperty(this.nodeRef, 
-                                 WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES);
-      return new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef);
+      if (this.renderingEngineTemplate == null)
+      {
+         final NodeService nodeService = this.getServiceRegistry().getNodeService();
+         final NodeRef retNodeRef = (NodeRef)
+            nodeService.getProperty(this.nodeRef, 
+                                    WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
+         final NodeRef rpNodeRef = (NodeRef)
+            nodeService.getProperty(this.nodeRef, 
+                                    WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES);
+         this.renderingEngineTemplate = new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef);
+      }
+      return this.renderingEngineTemplate;
    }
 
    /** the node ref containing the contents of this rendition */
@@ -126,6 +138,29 @@ public class RenditionImpl
    public String getFileTypeImage()
    {
       return Utils.getFileTypeImage(this.getName(), false);
+   }
+
+   public OutputStream getOutputStream()
+   {
+      return this.getServiceRegistry().getAVMService().getFileOutputStream(this.getPath());
+   }
+
+   public void regenerate()
+      throws IOException,
+      RenderingEngine.RenderingException,
+      SAXException
+   {
+      this.regenerate(this.getPrimaryFormInstanceData());
+   }
+
+   public void regenerate(final FormInstanceData formInstanceData)
+      throws IOException,
+      RenderingEngine.RenderingException,
+      SAXException
+   {
+      final RenderingEngineTemplate ret = this.getRenderingEngineTemplate();
+      final RenderingEngine engine = ret.getRenderingEngine();
+      engine.render(formInstanceData, ret, this);
    }
 
    private ServiceRegistry getServiceRegistry()

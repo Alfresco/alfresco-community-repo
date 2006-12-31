@@ -45,11 +45,12 @@ import org.alfresco.web.bean.CheckinCheckoutBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.forms.RenditionImpl;
+import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -232,11 +233,10 @@ public class AVMEditBean
     */
    public Form getForm()
    {
-      final NodeRef ttNodeRef = (NodeRef)
+      final String formName = (String)
          this.nodeService.getProperty(this.getAvmNode().getNodeRef(), 
-                                      WCMAppModel.PROP_PARENT_FORM);
-      final FormsService ts = FormsService.getInstance();
-      return ts.getForm(ttNodeRef);
+                                      WCMAppModel.PROP_PARENT_FORM_NAME);
+      return this.avmBrowseBean.getWebProject().getForm(formName);
    }
 
    /**
@@ -247,18 +247,17 @@ public class AVMEditBean
    {
       if (this.instanceDataDocument == null)
       {
-         final FormsService fs = FormsService.getInstance();
          final String content = this.getEditorOutput();
          try
          {
             this.instanceDataDocument = (content != null 
-                                         ? fs.parseXML(content) 
-                                         : fs.newDocument());
+                                         ? XMLUtil.parse(content) 
+                                         : XMLUtil.newDocument());
          }
          catch (Exception e)
          {
             Utils.addErrorMessage("error parsing document", e);
-            return fs.newDocument();
+            return XMLUtil.newDocument();
          }
       }
       return this.instanceDataDocument;
@@ -292,21 +291,19 @@ public class AVMEditBean
       this.avmBrowseBean.setupContentAction(event);
       
       // retrieve the content reader for this node
-      NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, getAvmNode().getPath());
-      if (this.nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_RENDITION))
+      String avmPath = getAvmNode().getPath();
+      if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_RENDITION))
       {
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug(avmRef + " is a rendition, editing primary rendition instead");
-         avmRef = new RenditionImpl(avmRef).getPrimaryFormInstanceData().getNodeRef();
+            LOGGER.debug(avmPath + " is a rendition, editing primary rendition instead");
+         avmPath = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, avmPath)).getPrimaryFormInstanceData().getPath();
 
-         final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(avmRef);
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Editing primary form instance data " + p.getSecond() + " version " + p.getFirst());
-         final AVMNode avmNode = new AVMNode(this.avmService.lookup(p.getFirst(), p.getSecond()));
-         this.avmBrowseBean.setAvmActionNode(avmNode);
+            LOGGER.debug("Editing primary form instance data " + avmPath);
+         this.avmBrowseBean.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, avmPath)));
       }
 
-      if (this.nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+      if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          // reset the preview layer
          String storeName = AVMConstants.getStoreName(this.avmBrowseBean.getCurrentPath());
@@ -318,8 +315,8 @@ public class AVMEditBean
       }
 
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Editing AVM node: " + avmRef.toString());
-      ContentReader reader = contentService.getReader(avmRef, ContentModel.PROP_CONTENT);
+         LOGGER.debug("Editing AVM node: " + avmPath);
+      ContentReader reader = this.avmService.getContentReader(-1, avmPath);
       if (reader != null)
       {
          String mimetype = reader.getMimetype();
@@ -335,7 +332,7 @@ public class AVMEditBean
             
             // navigate to appropriate screen
             outcome = ((MimetypeMap.MIMETYPE_XML.equals(mimetype) && 
-                        this.nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+                        this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
                        ? "dialog:editAvmXmlInline"
                        : "dialog:editAvmTextInline");
          }
@@ -389,18 +386,18 @@ public class AVMEditBean
          return null;
       }
       
-      final FormsService formsService = FormsService.getInstance();
-      final NodeRef avmRef = AVMNodeConverter.ToNodeRef(-1, avmNode.getPath());
+      final String avmPath = avmNode.getPath();
+      LOGGER.debug("saving " + avmPath);
       try
       {
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
          tx.begin();
          
          // get an updating writer that we can use to modify the content on the current node
-         ContentWriter writer = this.contentService.getWriter(avmRef, ContentModel.PROP_CONTENT, true);
-         if (nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+         final ContentWriter writer = this.avmService.getContentWriter(avmPath);
+         if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            this.editorOutput = formsService.writeXMLToString(this.instanceDataDocument);
+            this.editorOutput = XMLUtil.toString(this.instanceDataDocument);
          }
          writer.putContent(this.editorOutput);
          
@@ -408,10 +405,27 @@ public class AVMEditBean
          tx.commit();
          
          // regenerate form content
-         if (nodeService.hasAspect(avmRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+         if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            formsService.regenerateRenditions(new FormInstanceDataImpl(avmRef));
+            final FormInstanceData fid = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, avmPath))
+            {
+               @Override
+               public Form getForm() { return AVMEditBean.this.getForm(); }
+            };
+            LOGGER.debug("regenerating renditions of " + fid);
+            for (Rendition rendition : fid.getRenditions())
+            {
+               try
+               {
+                  rendition.regenerate(fid);
+               }
+               catch (Throwable t)
+               {
+                  LOGGER.error(t, t);
+               }
+            }
             final NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
+            LOGGER.debug("updating " + uploadedFiles.length + " uploaded files");
             final List<AVMDifference> diffList = new ArrayList<AVMDifference>(uploadedFiles.length);
             for (NodeRef uploadedFile : uploadedFiles)
             {

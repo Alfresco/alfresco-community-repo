@@ -17,32 +17,21 @@
 package org.alfresco.web.forms;
 
 import freemarker.ext.dom.NodeModel;
-import freemarker.template.SimpleDate;
-import freemarker.template.SimpleHash;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateHashModel;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import freemarker.template.*;
+import java.io.*;
+import java.text.MessageFormat;
+import java.util.*;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateNode;
-import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
@@ -64,6 +53,14 @@ public class RenderingEngineTemplateImpl
    protected RenderingEngineTemplateImpl(final NodeRef nodeRef,
                                          final NodeRef renditionPropertiesNodeRef)
    {
+      if (nodeRef == null)
+      {
+         throw new NullPointerException();
+      }
+      if (renditionPropertiesNodeRef == null)
+      {
+         throw new NullPointerException();
+      }
       this.nodeRef = nodeRef;
       this.renditionPropertiesNodeRef = renditionPropertiesNodeRef;
    }
@@ -91,7 +88,7 @@ public class RenderingEngineTemplateImpl
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.renditionPropertiesNodeRef, 
-                                             WCMAppModel.PROP_OUTPUT_PATH_PATTERN_RENDITION);
+                                             WCMAppModel.PROP_OUTPUT_PATH_PATTERN);
    }
 
    public NodeRef getNodeRef()
@@ -99,6 +96,11 @@ public class RenderingEngineTemplateImpl
       return this.nodeRef;
    }
 
+   public NodeRef getRenditionPropertiesNodeRef()
+   {
+      return this.renditionPropertiesNodeRef;
+   }
+   
    /**
     * Provides an input stream to the rendering engine template.
     * 
@@ -133,15 +135,12 @@ public class RenderingEngineTemplateImpl
     *
     * @return the output path to use for renditions.
     */
-   public String getOutputPathForRendition(final FormInstanceData formInstanceData)
+   public String getOutputPathForRendition(final FormInstanceData formInstanceData /*,final String parentAVMPath */)
    {
       final ServiceRegistry sr = this.getServiceRegistry();
       final NodeService nodeService = sr.getNodeService();
       final AVMService avmService = sr.getAVMService();
 
-      final String outputPathPattern = (String)
-         nodeService.getProperty(this.renditionPropertiesNodeRef, 
-                                 WCMAppModel.PROP_OUTPUT_PATH_PATTERN_RENDITION);
       final String formInstanceDataAVMPath = formInstanceData.getPath();
 
       final Map<String, Object> root = new HashMap<String, Object>();
@@ -161,20 +160,20 @@ public class RenderingEngineTemplateImpl
 
       try
       {
-         final FormsService fs = FormsService.getInstance();
-         root.put("xml", NodeModel.wrap(fs.parseXML(formInstanceData.getNodeRef())));
+         root.put("xml", NodeModel.wrap(formInstanceData.getDocument()));
       }
       catch (Exception e)
       {
          LOGGER.error(e);
       }
 
-      root.put("node", new TemplateNode(formInstanceData.getNodeRef(), sr, null));
+      root.put("node", new TemplateNode(((FormInstanceDataImpl)formInstanceData).getNodeRef(), sr, null));
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
 
       final TemplateService templateService = sr.getTemplateService();
+      final String outputPathPattern = this.getOutputPathPattern();
       String result = templateService.processTemplateString(null, 
-                                                            outputPathPattern, 
+                                                            outputPathPattern,
                                                             new SimpleHash(root));
       final String parentAVMPath = AVMNodeConverter.SplitBase(formInstanceDataAVMPath)[0];
       result = AVMConstants.buildPath(parentAVMPath, 
@@ -196,19 +195,70 @@ public class RenderingEngineTemplateImpl
                                              WCMAppModel.PROP_MIMETYPE_FOR_RENDITION);
    }
 
-   public void registerRendition(final Rendition rendition,
-                                 final FormInstanceData primaryFormInstanceData)
+   /**
+    * Produces a rendition of the provided formInstanceData.
+    */
+   public Rendition render(final FormInstanceData formInstanceData)
+      throws IOException,
+      SAXException,
+      RenderingEngine.RenderingException
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE, this.nodeRef);
-      
-      // extract a store relative path for the primary form instance data
-      String path = primaryFormInstanceData.getPath();
-      path = path.substring(path.indexOf(':') + 1);
-      props.put(WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA, path);
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      final String renditionAvmPath = this.getOutputPathForRendition(formInstanceData);
+      if (avmService.lookup(-1, renditionAvmPath) == null)
+      {
+         final String parentAVMPath = AVMNodeConverter.SplitBase(renditionAvmPath)[0];
+         AVMConstants.makeAllDirectories(parentAVMPath);
+         avmService.createFile(parentAVMPath,
+                               AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Created file node for file: " + renditionAvmPath);
+      }
 
-      nodeService.addAspect(rendition.getNodeRef(), WCMAppModel.ASPECT_RENDITION, props);
+      final Rendition result = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, renditionAvmPath));
+      this.getRenderingEngine().render(formInstanceData, this, result);
+
+      avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+      avmService.addAspect(renditionAvmPath, ContentModel.ASPECT_TITLED);
+      avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
+
+      final Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(5, 1.0f);
+      props.put(WCMAppModel.PROP_PARENT_FORM_NAME, 
+                new PropertyValue(DataTypeDefinition.TEXT, 
+                                  formInstanceData.getForm().getName()));
+      props.put(ContentModel.PROP_TITLE,
+                new PropertyValue(DataTypeDefinition.TEXT,
+                                  AVMNodeConverter.SplitBase(renditionAvmPath)[1]));
+      final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+      props.put(ContentModel.PROP_DESCRIPTION,
+                new PropertyValue(DataTypeDefinition.TEXT,
+                                  MessageFormat.format(bundle.getString("default_rendition_description"), 
+                                                       this.getTitle(),
+                                                       AVMConstants.getSandboxRelativePath(renditionAvmPath))));
+      props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE,
+                new PropertyValue(DataTypeDefinition.NODE_REF,
+                                  this.nodeRef));
+      props.put(WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES,
+                new PropertyValue(DataTypeDefinition.NODE_REF,
+                                  this.renditionPropertiesNodeRef));
+      // extract a store relative path for the primary form instance data
+      props.put(WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA, 
+                new PropertyValue(DataTypeDefinition.TEXT,
+                                  AVMConstants.getStoreRelativePath(formInstanceData.getPath())));
+
+      avmService.setNodeProperties(renditionAvmPath, props);
+      
+      final PropertyValue pv = 
+         avmService.getNodeProperty(-1, formInstanceData.getPath(), WCMAppModel.PROP_RENDITIONS);
+      Collection<Serializable> renditions = (pv == null 
+                                             ? new LinkedList<Serializable>() 
+                                             : pv.getCollection(DataTypeDefinition.TEXT));
+      renditions.add(AVMConstants.getStoreRelativePath(renditionAvmPath));
+      avmService.setNodeProperty(formInstanceData.getPath(), 
+                                 WCMAppModel.PROP_RENDITIONS,
+                                 new PropertyValue(DataTypeDefinition.TEXT,
+                                                   (Serializable)renditions));
+      return result;
    }
 
    private ServiceRegistry getServiceRegistry()

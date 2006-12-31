@@ -54,8 +54,8 @@
       <f:verbatim>${r.name}</f:verbatim>
       <h:outputText value="#{msg.title}:" styleClass="mainSubTitle" />
       <f:verbatim>${r.title}</f:verbatim>
-      <h:outputText value="#{msg.website_filename_pattern}:" styleClass="mainSubTitle" />
-      <f:verbatim>${r.filenamePattern}</f:verbatim>
+      <h:outputText value="#{msg.output_path_pattern}:" styleClass="mainSubTitle" />
+      <f:verbatim>${r.outputPathPattern}</f:verbatim>
       <h:outputText value="#{msg.workflow}:" styleClass="mainSubTitle" />
       <c:if test="${r.workflow != null}">
          <f:verbatim>${r.workflow.title}</f:verbatim>

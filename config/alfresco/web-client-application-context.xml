@@ -49,9 +49,6 @@
       <constructor-arg>
          <ref bean="SearchService" />
       </constructor-arg>
-      <constructor-arg>
-         <ref bean="AVMService" />
-      </constructor-arg>
    </bean>
 
    <!-- NOTE: This references a bean in the repository Spring configuration -->

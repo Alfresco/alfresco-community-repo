@@ -17,6 +17,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +121,7 @@ public class EditFormWizard
       this.nodeService.setProperty(formNodeRef, ContentModel.PROP_TITLE, this.getFormTitle());
       this.nodeService.setProperty(formNodeRef, ContentModel.PROP_DESCRIPTION, this.getFormDescription());
       this.nodeService.setProperty(formNodeRef, 
-                                   WCMAppModel.PROP_OUTPUT_PATH_PATTERN_FORM_INSTANCE_DATA, 
+                                   WCMAppModel.PROP_OUTPUT_PATH_PATTERN, 
                                    this.getOutputPathPatternForFormInstanceData());
       this.nodeService.setProperty(formNodeRef,
                                    WCMAppModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME,
@@ -128,9 +129,26 @@ public class EditFormWizard
       final WorkflowDefinition wd = this.getDefaultWorkflowDefinition();
       if (wd != null)
       {
-         this.nodeService.setProperty(formNodeRef,
-                                      WCMAppModel.PROP_DEFAULT_WORKFLOW_NAME,
-                                      wd.getName());
+         final List<ChildAssociationRef> workflowRefs = 
+            this.nodeService.getChildAssocs(formNodeRef,
+                                            WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
+                                            RegexQNamePattern.MATCH_ALL);
+         if (workflowRefs.size() == 0)
+         {
+            final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+            props.put(WCMAppModel.PROP_WORKFLOW_NAME, wd.getName());
+            this.nodeService.createNode(formNodeRef,
+                                        WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
+                                        WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
+                                        WCMAppModel.TYPE_WORKFLOW_DEFAULTS,
+                                        props);
+         }
+         else
+         {
+            this.nodeService.setProperty(workflowRefs.get(0).getChildRef(),
+                                         WCMAppModel.PROP_WORKFLOW_NAME,
+                                         wd.getName());
+         }              
       }
 
       if (this.getSchemaFile() != null)

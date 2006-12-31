@@ -100,9 +100,6 @@ public class AVMBrowseBean implements IContextListener
    /** Top-level JSF form ID */
    static final String FORM_ID = "browse-website";
    
-   /** Content Manager role name */
-   private static final String ROLE_CONTENT_MANAGER = "ContentManager";
-   
    /** Snapshot date filter selection */
    private String snapshotDateFilter = UISandboxSnapshots.FILTER_DATE_TODAY;
    
@@ -140,6 +137,9 @@ public class AVMBrowseBean implements IContextListener
    /** The last displayed website node id */
    private String lastWebsiteId = null;
    
+   /** The current webProject */
+   private WebProject webProject = null;
+
    /** breadcrumb location */
    private List<IBreadcrumbHandler> location = null;
    
@@ -157,7 +157,6 @@ public class AVMBrowseBean implements IContextListener
    
    /** Action service bean reference */
    protected ActionService actionService;
-   
    
    /**
     * Default Constructor
@@ -236,7 +235,7 @@ public class AVMBrowseBean implements IContextListener
       final ResourceBundle msg = Application.getBundle(fc);
       final String stagingStore = this.getStagingStore();
       final AVMStoreDescriptor store = this.avmService.getStore(stagingStore);
-      final String storeId = (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE);
+      final String storeId = (String)this.getWebProject().getStoreId();
       if (store != null)
       {
          summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
@@ -245,9 +244,7 @@ public class AVMBrowseBean implements IContextListener
          summary.append(msg.getString(MSG_CREATED_BY)).append(": ")
                 .append(store.getCreator())
                 .append("<p>");
-         final int numUsers = this.getRelatedStoreNames(storeId, 
-                                                        AVMConstants.PROP_SANDBOX_AUTHOR_MAIN).size();
-
+         final int numUsers = this.getRelatedStoreNames(storeId, AVMConstants.PROP_SANDBOX_AUTHOR_MAIN).size();
          summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), numUsers));
       }
       
@@ -288,8 +285,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getStagingStore()
    {
-      String storeRoot = (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE);
-      return AVMConstants.buildStagingStoreName(storeRoot);
+      return this.getWebProject().getStagingStore();
    }
    
    /**
@@ -395,7 +391,7 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.webapp == null)
       {
-         this.webapp = (String)getWebsite().getProperties().get(WCMAppModel.PROP_DEFAULTWEBAPP);
+         this.webapp = this.getWebProject().getDefaultWebapp();
       }
       return this.webapp;
    }
@@ -481,13 +477,26 @@ public class AVMBrowseBean implements IContextListener
    public Node getWebsite()
    {
       // check to see if the website we are browsing has changed since the last time
-      if (this.navigator.getCurrentNodeId().equals(this.lastWebsiteId) == false)
+      if (!this.navigator.getCurrentNodeId().equals(this.lastWebsiteId))
       {
          // clear context when we are browsing a new website
          this.lastWebsiteId = this.navigator.getCurrentNodeId();
          this.webapp = null;
+         this.webProject = null;
       }
       return this.navigator.getCurrentNode();
+   }
+
+   /**
+    * @return the web project the view is currently within
+    */
+   public WebProject getWebProject()
+   {
+      if (this.webProject == null)
+      {
+         this.webProject = new WebProject(this.getWebsite().getNodeRef());
+      }
+      return this.webProject;
    }
    
    /**
@@ -584,32 +593,8 @@ public class AVMBrowseBean implements IContextListener
     */
    public boolean getIsManagerRole()
    {
-      boolean isManager = false;
-      
-      User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
-      if (user.isAdmin() == false)
-      {
-         String currentUser = user.getUserName();
-         List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
-               getWebsite().getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : userInfoRefs)
-         {
-            NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-            if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
-            {
-               isManager = true;
-               break;
-            }
-         }
-      }
-      else
-      {
-         isManager = true;
-      }
-      
-      return isManager;
+      final User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
+      return this.getWebProject().isManager(user);
    }
    
    /**
@@ -773,8 +758,7 @@ public class AVMBrowseBean implements IContextListener
       else
       {
          // get the staging store from the current website node
-         setSandbox(AVMConstants.buildStagingStoreName(
-               (String)getWebsite().getProperties().get(WCMAppModel.PROP_AVMSTORE)));
+         setSandbox(this.getStagingStore());
       }
       
       // update UI state ready for return to the previous screen
@@ -943,8 +927,6 @@ public class AVMBrowseBean implements IContextListener
    public void createFormContent(ActionEvent event)
    {
       UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String id = params.get(UIUserSandboxes.PARAM_FORM_ID);
       
       // setup the correct sandbox for the create action
       setupSandboxAction(event);

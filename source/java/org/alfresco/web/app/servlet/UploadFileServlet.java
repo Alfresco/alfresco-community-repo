@@ -31,6 +31,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -111,19 +112,8 @@ public class UploadFileServlet extends BaseServlet
                   }
                   // workaround a bug in IE where the full path is returned
                   // IE is only available for Windows so only check for the Windows path separator
-                  int idx = filename.lastIndexOf('\\');
-                  if (idx == -1)
-                  {
-                     // if there is no windows path separator check for *nix
-                     idx = filename.lastIndexOf('/');
-                  }
-                  
-                  if (idx != -1)
-                  {
-                     filename = filename.substring(idx + File.separator.length());
-                  }
-                  
-                  File tempFile = TempFileProvider.createTempFile("alfresco", ".upload");
+                  filename = FilenameUtils.getName(filename);
+                  final File tempFile = TempFileProvider.createTempFile("alfresco", ".upload");
                   item.write(tempFile);
                   bean.setFile(tempFile);
                   bean.setFileName(filename);
@@ -139,6 +129,10 @@ public class UploadFileServlet extends BaseServlet
 
          session.setAttribute(FileUploadBean.getKey(uploadId), bean);         
 
+         if (bean.getFile() == null)
+         {
+            logger.warn("no file uploaded for upload " + uploadId);
+         }
          if (returnPage == null || returnPage.length() == 0)
          {
             throw new AlfrescoRuntimeException("return-page parameter has not been supplied");

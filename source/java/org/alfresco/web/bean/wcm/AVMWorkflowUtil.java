@@ -112,7 +112,9 @@ public class AVMWorkflowUtil extends WorkflowUtil
          oos.close();
          // write the serialized Map as a binary content stream - like database blob!
          ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
-         ContentWriter writer = cs.getWriter(workflowRef, WCMAppModel.PROP_WORKFLOWDEFAULTS, true);
+         ContentWriter writer = cs.getWriter(workflowRef, 
+                                             WCMAppModel.PROP_WORKFLOW_DEFAULT_PROPERTIES, 
+                                             true);
          writer.setMimetype(MimetypeMap.MIMETYPE_BINARY);
          writer.putContent(new ByteArrayInputStream(baos.toByteArray()));
       }
@@ -136,7 +138,7 @@ public class AVMWorkflowUtil extends WorkflowUtil
          // restore the serialized Map from a binary content stream - like database blob!
          Serializable params = null;
          ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
-         ContentReader reader = cs.getReader(workflowRef, WCMAppModel.PROP_WORKFLOWDEFAULTS);
+         ContentReader reader = cs.getReader(workflowRef, WCMAppModel.PROP_WORKFLOW_DEFAULT_PROPERTIES);
          if (reader != null)
          {
             ObjectInputStream ois = new ObjectInputStream(reader.getContentInputStream());

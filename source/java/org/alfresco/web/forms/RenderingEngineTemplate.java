@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Map;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Describes a template that is used for rendering form instance data.
@@ -52,13 +53,6 @@ public interface RenderingEngineTemplate
    public RenderingEngine getRenderingEngine();
 
    /**
-    * Provides the noderef for this template.
-    *
-    * @return the noderef for this template.
-    */
-   public NodeRef getNodeRef();
-
-   /**
     * Provides an input stream to the rendering engine template.
     * 
     * @return the input stream to the rendering engine template.
@@ -82,6 +76,11 @@ public interface RenderingEngineTemplate
     */
    public String getMimetypeForRendition();
 
-   public void registerRendition(final Rendition rendition, 
-                                 final FormInstanceData primaryFormInstanceData);
+   /**
+    * Produces a rendition of the provided formInstanceData.
+    */
+   public Rendition render(final FormInstanceData formInstanceData)
+      throws IOException,
+      SAXException,
+      RenderingEngine.RenderingException;
 }

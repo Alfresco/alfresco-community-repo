@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Implementation of a form data renderer for processing xml instance data
@@ -69,13 +70,15 @@ public class FreeMarkerRenderingEngine
     * a variable named alfresco at the root.  the alfresco variable contains a hash of 
     * all parameters and all extension functions.
     */
-   public void render(final Document xmlContent,
+   public void render(final FormInstanceData formInstanceData,
                       final RenderingEngineTemplate ret,
-                      final Map<String, String> parameters,
-                      final OutputStream out)
+                      final Rendition rendition)
       throws IOException,
-      RenderingEngine.RenderingException
+      RenderingEngine.RenderingException,
+      SAXException
    {
+      final Map<String, String> parameters = 
+         this.getStandardParameters(formInstanceData, rendition);
 
       final Configuration cfg = new Configuration();
       cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
@@ -85,11 +88,12 @@ public class FreeMarkerRenderingEngine
                                       cfg);
       
       // wrap the xml instance in a model
-      final TemplateHashModel instanceDataModel = NodeModel.wrap(xmlContent);
+      final TemplateHashModel instanceDataModel = NodeModel.wrap(formInstanceData.getDocument());
 
       // build models for each of the extension functions
       final HashMap<String, TemplateMethodModel> methodModels =
          new HashMap<String, TemplateMethodModel>(3, 1.0f);
+
       methodModels.put("parseXMLDocument", new TemplateMethodModel()
       {
          public Object exec(final List args)
@@ -130,9 +134,7 @@ public class FreeMarkerRenderingEngine
                // create a root document for rooting all the results.  we do this
                // so that each document root element has a common parent node
                // and so that xpath axes work properly
-               final FormsService fs = FormsService.getInstance();
-               final DocumentBuilder documentBuilder = fs.getDocumentBuilder();
-               final Document rootNodeDocument = documentBuilder.newDocument();
+               final Document rootNodeDocument = XMLUtil.newDocument();
                final Element rootNodeDocumentEl = 
                   rootNodeDocument.createElementNS(ALFRESCO_NS,
                                                    ALFRESCO_NS_PREFIX + ":file_list");
@@ -213,7 +215,7 @@ public class FreeMarkerRenderingEngine
       };
 
       // process the form
-      final Writer writer = new OutputStreamWriter(out);
+      final Writer writer = new OutputStreamWriter(rendition.getOutputStream());
       try
       {
          t.process(rootModel, writer);
@@ -226,6 +228,7 @@ public class FreeMarkerRenderingEngine
       finally
       {
          writer.flush();
+         writer.close();
       }
    }
 }

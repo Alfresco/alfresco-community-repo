@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Map;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Serializes the xml instance data collected by a form to a writer.
@@ -78,12 +79,10 @@ public interface RenderingEngine
     * @param formInstanceData the xml content to serialize.
     * @param ret the rendering engine template
     * @param form the form that collected the xml content.
-    * @param parameters the set of parameters to the rendering engine
-    * @param out the output stream to serialize to.
+    * @param rendition the rendition to serialize to.
     */
-   public void render(final Document formInstanceData,
+   public void render(final FormInstanceData formInstanceData,
                       final RenderingEngineTemplate ret,
-                      final Map<String, String> parameters,
-                      final OutputStream out)
-      throws IOException, RenderingException;
+                      final Rendition rendition)
+      throws IOException, RenderingException, SAXException;
 }

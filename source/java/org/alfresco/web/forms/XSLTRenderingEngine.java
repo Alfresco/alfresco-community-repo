@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.bean.wcm.AVMConstants;
-import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xalan.extensions.ExpressionContext;
@@ -138,9 +138,7 @@ public class XSLTRenderingEngine
       // create a root document for rooting all the results.  we do this
       // so that each document root element has a common parent node
       // and so that xpath axes work properly
-      final FormsService fs = FormsService.getInstance();
-      final DocumentBuilder documentBuilder = fs.getDocumentBuilder();
-      final Document rootNodeDocument = documentBuilder.newDocument();
+      final Document rootNodeDocument = XMLUtil.newDocument();
       final Element rootNodeDocumentEl = 
          rootNodeDocument.createElementNS(ALFRESCO_NS,
                                           ALFRESCO_NS_PREFIX + ":file_list");
@@ -286,14 +284,25 @@ public class XSLTRenderingEngine
       }
    }
 
-   public void render(final Document formInstanceData,
+   public void render(final FormInstanceData formInstanceData,
                       final RenderingEngineTemplate ret,
-                      final Map<String, String> parameters,
-                      final OutputStream out)
+                      final Rendition rendition)
       throws IOException,
-      RenderingEngine.RenderingException
+      RenderingEngine.RenderingException,
+      SAXException
    {
-      this.render(new DOMSource(formInstanceData), ret, parameters, new StreamResult(out));
+      final OutputStream out = rendition.getOutputStream();
+      try
+      {
+         this.render(new DOMSource(formInstanceData.getDocument()), 
+                     ret, 
+                     this.getStandardParameters(formInstanceData, rendition),
+                     new StreamResult(out));
+      }
+      finally
+      {
+         out.close();
+      }
    }
 
    protected void render(final Source formInstanceDataSource,
@@ -301,15 +310,15 @@ public class XSLTRenderingEngine
                          final Map<String, String> parameters,
                          final Result result)
       throws IOException,
-      RenderingEngine.RenderingException
+      RenderingEngine.RenderingException,
+      SAXException
    {
       System.setProperty("org.apache.xalan.extensions.bsf.BSFManager",
                          BSFManager.class.getName());
-      final FormsService ts = FormsService.getInstance();
       Document xslTemplate = null;
       try
       {
-         xslTemplate = ts.parseXML(ret.getInputStream());
+         xslTemplate = XMLUtil.parse(ret.getInputStream());
       }
       catch (final SAXException sax)
       {
@@ -356,9 +365,9 @@ public class XSLTRenderingEngine
             {
                if (LOGGER.isDebugEnabled())
                   LOGGER.debug("loading " + uri);
-               final Document d = ts.parseXML(uri.toURL().openStream());
+               final Document d = XMLUtil.parse(uri.toURL().openStream());
                if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("loaded " + ts.writeXMLToString(d));
+                  LOGGER.debug("loaded " + XMLUtil.toString(d));
                return new DOMSource(d);
             }
             catch (Exception e)

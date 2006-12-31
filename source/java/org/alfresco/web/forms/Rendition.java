@@ -16,8 +16,11 @@
  */
 package org.alfresco.web.forms;
 
-import org.alfresco.service.cmr.repository.NodeRef;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.xml.sax.SAXException;
 
 /**
  * Encapsulation of a rendition.
@@ -45,9 +48,6 @@ public interface Rendition
    /** the rendering engine template that generated this rendition */
    public RenderingEngineTemplate getRenderingEngineTemplate();
 
-   /** the node ref containing the contents of this rendition */
-   public NodeRef getNodeRef();
-   
    /** the path to the contents of this rendition */
    public String getPath();
 
@@ -56,4 +56,19 @@ public interface Rendition
 
    /** the file type image for the rendition */
    public String getFileTypeImage();
+
+   /** the output stream for the rendition */
+   public OutputStream getOutputStream();
+
+   /** regenerates the contents of this rendition using the primary form instance data */
+   public void regenerate()
+      throws IOException,
+      RenderingEngine.RenderingException,
+      SAXException;
+
+   /** regenerates the contents of this rendition using the provided form instance data*/
+   public void regenerate(final FormInstanceData formInstanceData)
+      throws IOException,
+      RenderingEngine.RenderingException,
+      SAXException;
 }

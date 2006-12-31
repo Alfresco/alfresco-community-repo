@@ -49,8 +49,8 @@
          <f:facet name="header">
             <h:outputText value="#{msg.configure}" />
          </f:facet>
-         <h:outputText value="#{msg.website_filename_pattern}:" style="padding-right:4px" />
-         <h:inputText value="#{row.filenamePattern}" />
+         <h:outputText value="#{msg.output_path_pattern}:" style="padding-right:4px" />
+         <h:inputText value="#{row.outputPathPattern}" />
       </h:column>
       <h:column>
          <a:actionLink actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"

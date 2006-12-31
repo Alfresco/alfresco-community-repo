@@ -58,7 +58,6 @@ public class XFormsProcessor
    public void process(final Session session, final Writer out)
       throws FormProcessor.ProcessingException
    {
-      final FormsService ts = FormsService.getInstance();
       final FacesContext fc = FacesContext.getCurrentInstance();
       //make the XFormsBean available for this session
       final XFormsBean xforms = (XFormsBean)
@@ -79,7 +78,7 @@ public class XFormsProcessor
       }
  
       final String cp = fc.getExternalContext().getRequestContextPath();
-      final Document result = ts.newDocument();
+      final Document result = XMLUtil.newDocument();
 
       // this div is where the ui will write to
       final Element div = result.createElement("div");
@@ -120,6 +119,6 @@ public class XFormsProcessor
          div.appendChild(e);
       }
  
-      ts.writeXML(result, out);
+      XMLUtil.print(result, out);
    }
 }

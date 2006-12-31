@@ -16,8 +16,11 @@
  */
 package org.alfresco.web.forms;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,5 +58,20 @@ public abstract class AbstractRenderingEngine
    protected static FormDataFunctions getFormDataFunctions()
    {
       return new FormDataFunctions(AbstractRenderingEngine.getAVMRemote());
+   }
+
+   protected HashMap<String, String> getStandardParameters(final FormInstanceData formInstanceData,
+                                                           final Rendition rendition)
+   {
+      final String formInstanceDataAvmPath = formInstanceData.getPath();
+      final String renditionAvmPath = rendition.getPath();
+      final HashMap<String, String> parameters = new HashMap<String, String>();      
+      parameters.put("avm_sandbox_url", AVMConstants.buildStoreUrl(formInstanceDataAvmPath));
+      parameters.put("form_instance_data_file_name", AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[1]);
+      parameters.put("rendition_file_name", AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
+      parameters.put("parent_path", AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0]);
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      parameters.put("request_context_path", fc.getExternalContext().getRequestContextPath());
+      return parameters;
    }
 }

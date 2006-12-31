@@ -90,7 +90,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
             FormWrapper form = new FormWrapper(formImpl);
             form.setTitle((String)this.nodeService.getProperty(formRef, ContentModel.PROP_TITLE));
             form.setDescription((String)this.nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION));
-            form.setFilenamePattern((String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_FILENAMEPATTERN));
+            form.setOutputPathPattern((String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_OUTPUT_PATH_PATTERN));
             
             // the single workflow attached to the form 
             List<ChildAssociationRef> workflowRefs = this.nodeService.getChildAssocs(
@@ -118,18 +118,16 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
                formRef, WCMAppModel.ASSOC_WEBFORMTEMPLATE, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef tChildRef : templateRefs)
             {
-               NodeRef templateRef = tChildRef.getChildRef();
-               NodeRef engineRef = (NodeRef)this.nodeService.getProperty(templateRef, WCMAppModel.PROP_ENGINE);
-               for (RenderingEngineTemplate ret : engineTemplates)
+               final NodeRef templateRef = tChildRef.getChildRef();
+               final String renderingEngineTemplateName = (String)
+                  this.nodeService.getProperty(templateRef, 
+                                               WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME);
+               final RenderingEngineTemplate ret = formImpl.getRenderingEngineTemplate(renderingEngineTemplateName);
+               if (ret != null)
                {
-                  if (engineRef.equals(ret.getNodeRef()))
-                  {
-                     String filenamePattern = (String)this.nodeService.getProperty(templateRef,
-                           WCMAppModel.PROP_FILENAMEPATTERN);
-                     PresentationTemplate template = new PresentationTemplate(ret, filenamePattern);
-                     form.addTemplate(template);
-                     break;
-                  }
+                  final String outputPathPattern = (String)
+                     this.nodeService.getProperty(templateRef, WCMAppModel.PROP_OUTPUT_PATH_PATTERN);
+                  form.addTemplate(new PresentationTemplate(ret, outputPathPattern));
                }
             }
             
@@ -149,8 +147,8 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
          {
             WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle(), wfDef.getDescription());
             wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
-            wfWrapper.setFilenamePattern((String)this.nodeService.getProperty(
-                  wfRef, WCMAppModel.PROP_FILENAMEPATTERN));
+            wfWrapper.setFilenamePattern((String)this.nodeService.getProperty(wfRef, 
+                                                                              WCMAppModel.PROP_FILENAMEPATTERN));
             if (wfDef.startTaskDefinition != null)
             {
                wfWrapper.setType(wfDef.startTaskDefinition.metadata.getName());

@@ -39,7 +39,7 @@
                 value="${WizardManager.bean.formInstanceData.name}"
                 image="/images/filetypes32/xml.gif">
       <jsp:attribute name="description">
-        <div>${msg.form}: ${WizardManager.bean.formInstanceData.form.name}</div>
+        <div>${msg.form}: ${WizardManager.bean.form.title}</div>
         <div>${msg.location}: ${WizardManager.bean.formInstanceData.sandboxRelativePath}</div>
       </jsp:attribute>
     </a:listItem>

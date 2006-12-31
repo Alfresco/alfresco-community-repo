@@ -18,6 +18,7 @@ package org.alfresco.web.bean.wcm;
 
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +26,9 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.ServiceRegistry;
@@ -37,6 +40,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
+ * @author Ariel Backenroth
  * @author Kevin Roast
  */
 public final class AVMConstants
@@ -368,9 +372,9 @@ public final class AVMConstants
       {
          throw new IllegalArgumentException("Asset path is mandatory.");
       }
-      if (assetPath.startsWith(           '/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE ))
+      if (assetPath.startsWith('/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
       {
-         assetPath = assetPath.substring(('/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE ).length());
+         assetPath = assetPath.substring(('/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE).length());
       }
       if (assetPath.startsWith('/' + DIR_ROOT))
       {
@@ -517,6 +521,44 @@ public final class AVMConstants
    }
 
    /**
+    * Creates all directories for a path if they do not already exist.
+    */
+   public static void makeAllDirectories(final String avmDirectoryPath)
+   {
+      final ServiceRegistry serviceRegistry =
+         Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      final AVMService avmService = serviceRegistry.getAVMService();
+      // LOGGER.debug("mkdir -p " + avmDirectoryPath);
+      String s = avmDirectoryPath;
+      final Stack<String[]> dirNames = new Stack<String[]>();
+      while (s != null)
+      {
+         try
+         {
+            if (avmService.lookup(-1, s) != null)
+            {
+               // LOGGER.debug("path " + s + " exists");
+               break;
+            }
+         }
+         catch (AVMNotFoundException avmfe)
+         {
+         }
+         final String[] sb = AVMNodeConverter.SplitBase(s);
+         s = sb[0];
+         // LOGGER.debug("pushing " + sb[1]);
+         dirNames.push(sb);
+      }
+
+      while (!dirNames.isEmpty())
+      {
+         final String[] sb = dirNames.pop();
+         // LOGGER.debug("creating " + sb[1] + " in " + sb[0]);
+         avmService.createDirectory(sb[0], sb[1]);
+      }
+   }
+
+   /**
     * @param path    Path to match against
     * 
     * @return true if the path should require a virtualisation server reload, false otherwise
@@ -628,18 +670,16 @@ public final class AVMConstants
    private final static Pattern STORE_RELATIVE_PATH_PATTERN = 
       Pattern.compile("[^:]+:(.+)");
    private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 
-      Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW      +
-                      "/"        + JNDIConstants.DIR_DEFAULT_APPBASE  + "/([^/]+))(.*)");
+      Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
+                      "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/([^/]+))(.*)");
    private final static Pattern SANDBOX_RELATIVE_PATH_PATTERN = 
-      Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW      +
-                             "/" + JNDIConstants.DIR_DEFAULT_APPBASE  + ")(.*)");
+      Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
+                      "/" + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
    
    // patterns for WEB-INF files that require virtualisation server reload
    private final static Pattern WEB_INF_PATH_PATTERN = 
-        Pattern.compile( ".*:/"                                     + 
-                           JNDIConstants.DIR_DEFAULT_WWW     + "/"  + 
-                           JNDIConstants.DIR_DEFAULT_APPBASE + "/"  + 
-                           ".*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
-                         Pattern.CASE_INSENSITIVE
-                       );
+        Pattern.compile(".*:/" + JNDIConstants.DIR_DEFAULT_WWW + 
+                        "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + 
+                        ".*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
+                        Pattern.CASE_INSENSITIVE);
 }

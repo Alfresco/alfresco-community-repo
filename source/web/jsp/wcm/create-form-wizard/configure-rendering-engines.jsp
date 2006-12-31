@@ -105,6 +105,15 @@ else
 		    value="#{WizardManager.bean.renderingEngineChoices}"/>
     </h:selectOneRadio>
 
+    <h:graphicImage id="required-image-name"
+                    value="/images/icons/required_field.gif" alt="Required Field" />
+    <h:outputText id="name-output-text"
+                  value="#{msg.name}:"/>
+    <h:inputText id="name" 
+		 value="#{WizardManager.bean.renderingEngineTemplateName}"
+                 maxlength="1024" 
+		 size="35"/>
+
     <h:outputText id="no_graphic_image_title" value=""/>
     <h:outputText id="title-output-text"
                   value="#{msg.title}:"/>
@@ -161,24 +170,28 @@ else
             <h:outputText id="data-table-name-0" value="#{msg.selected_rendering_engine_templates}" />
          </f:facet>
          <f:verbatim>
-            <span style="float:left">
-               <img src="<%= request.getContextPath() %>/images/icons/template_large.gif"/>
-            </span>
+            <img style="float: left" src="<%= request.getContextPath() %>/images/icons/template_large.gif"/>
          </f:verbatim>
-         <h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
-         <h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
-         <f:verbatim><br></f:verbatim>
-         <h:outputText id="data-table-name-0-name" value="#{msg.file_name}: " />
-         <h:outputText id="data-table-value-0-name" value="#{row.fileName}" />
-         <f:verbatim><br></f:verbatim>
-         <h:outputText id="data-table-name-0-title" value="#{msg.title}: " />
-         <h:outputText id="data-table-value-0-title" value="#{row.title}" />
-         <f:verbatim><br clear="all"></f:verbatim>
-         <h:outputText id="data-table-name-0-mimetype" value="#{msg.mimetype_for_renditions}: " />
-         <h:outputText id="data-table-value-0-mimetype" value="#{row.mimetypeForRendition}" />
-         <f:verbatim><br clear="all"></f:verbatim>
-         <h:outputText id="data-table-name-0-opp" value="#{msg.output_path_pattern}: " />
-         <h:outputText id="data-table-value-0-opp" value="#{row.outputPathPatternForRendition}" />
+         <h:panelGrid id="panel_grid_row"
+                      columns="2" cellpadding="0" cellspacing="1" border="0">
+           <h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
+           <h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
+
+           <h:outputText id="data-table-name-0-filename" value="#{msg.file_name}: " />
+           <h:outputText id="data-table-value-0-filename" value="#{row.fileName}" />
+
+           <h:outputText id="data-table-name-0-name" value="#{msg.name}: " />
+           <h:outputText id="data-table-value-0-name" value="#{row.name}" />
+
+           <h:outputText id="data-table-name-0-title" value="#{msg.title}: " />
+           <h:outputText id="data-table-value-0-title" value="#{row.title}" />
+
+           <h:outputText id="data-table-name-0-mimetype" value="#{msg.mimetype_for_renditions}: " />
+           <h:outputText id="data-table-value-0-mimetype" value="#{row.mimetypeForRendition}" />
+
+           <h:outputText id="data-table-name-0-opp" value="#{msg.output_path_pattern}: " />
+           <h:outputText id="data-table-value-0-opp" value="#{row.outputPathPatternForRendition}" />
+	 </h:panelGrid>
       </h:column>
       <h:column id="data-table-column-5">
         <a:actionLink id="remove-select-rendering-engine-action-link"

@@ -16,9 +16,12 @@
  */
 package org.alfresco.web.forms;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Encapsulation of form instance data.
@@ -47,8 +50,9 @@ public interface FormInstanceData
    /** the url to the asset */
    public String getUrl();
 
-   /** the noderef containing the form instance data */
-   public NodeRef getNodeRef();
+   /** returns the parsed form instance data */
+   public Document getDocument()
+      throws IOException, SAXException;
 
    /** returns all renditions of this form instance data */
    public List<Rendition> getRenditions();

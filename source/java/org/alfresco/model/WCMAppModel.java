@@ -45,12 +45,12 @@ public interface WCMAppModel
     
     // AVM web form template
     static final QName TYPE_WEBFORMTEMPLATE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webformtemplate");
-    static final QName PROP_ENGINE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "engine");
+    static final QName PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "baserenderingenginetemplatename");
     
     // AVM workflow defaults
-    static final QName TYPE_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "workflowdefaults");
+    static final QName TYPE_WORKFLOW_DEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "workflowdefaults");
     static final QName PROP_WORKFLOW_NAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "workflowname");
-    static final QName PROP_WORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "defaults");
+    static final QName PROP_WORKFLOW_DEFAULT_PROPERTIES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "workflowdefaultproperties");
     
     // AVM web workflow defaults
     static final QName TYPE_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webworkflowdefaults");
@@ -61,14 +61,17 @@ public interface WCMAppModel
     // AVM filename pattern aspect
     static final QName ASPECT_FILENAMEPATTERN = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "filenamepattern");
     static final QName PROP_FILENAMEPATTERN = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "filenamepattern");
+
+    // AVM output path pattern aspect
+    static final QName ASPECT_OUTPUT_PATH_PATTERN = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "outputpathpattern");
+    static final QName PROP_OUTPUT_PATH_PATTERN = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "outputpathpattern");
     
     // The XForms data capture form aspect.
     static final QName ASPECT_FORM = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "form");
     static final QName PROP_XML_SCHEMA = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "schema");
     static final QName PROP_XML_SCHEMA_ROOT_ELEMENT_NAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "xmlschemarootelementname");
-    static final QName PROP_OUTPUT_PATH_PATTERN_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "outputpathpatternforminstancedata");
-    static final QName PROP_DEFAULT_WORKFLOW_NAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "defaultworkflowname");
     static final QName ASSOC_RENDERING_ENGINE_TEMPLATES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "renderingenginetemplates");
+    static final QName ASSOC_FORM_WORKFLOW_DEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "formworkflowdefaults");
     
     // An XML to something else tranformer aspect.
     static final QName ASPECT_RENDERING_ENGINE_TEMPLATE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "renderingenginetemplate");
@@ -77,8 +80,8 @@ public interface WCMAppModel
     static final QName ASSOC_RENDITION_PROPERTIES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "renditionproperties");
     
     static final QName ASPECT_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "forminstancedata");
-    static final QName PROP_PARENT_FORM = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "parentform");
     static final QName PROP_PARENT_FORM_NAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "parentformname");
+    static final QName PROP_RENDITIONS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "renditions");
     
     static final QName ASPECT_RENDITION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "rendition");
     static final QName PROP_PARENT_RENDERING_ENGINE_TEMPLATE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "parentrenderingenginetemplate");
@@ -86,6 +89,5 @@ public interface WCMAppModel
     static final QName PROP_PRIMARY_FORM_INSTANCE_DATA = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "primaryforminstancedata");
     
     static final QName TYPE_RENDITION_PROPERTIES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "renditionproperties");
-    static final QName PROP_OUTPUT_PATH_PATTERN_RENDITION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "outputpathpatternrendition");
     static final QName PROP_MIMETYPE_FOR_RENDITION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "mimetypeforrendition");
 }

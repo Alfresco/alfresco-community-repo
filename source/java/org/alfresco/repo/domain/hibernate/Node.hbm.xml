@@ -244,6 +244,21 @@
          )
    </query>
    
+   <query name="node.GetChildAssocsByAll">
+      select
+         assoc
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+      where
+         assoc.parent.id = :parentId and
+         assoc.child.id = :childId and
+         assoc.typeQName = :typeQName and
+         assoc.qname = :qname
+      order by
+         assoc.index,
+         assoc.id
+   </query>
+   
    <query name="node.GetChildAssocs">
       select
          assoc

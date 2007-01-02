@@ -181,7 +181,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
             QName assocQName,
             QName nodeTypeQName) throws InvalidNodeRefException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     
@@ -195,7 +195,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
             QName nodeTypeQName,
             Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     
@@ -204,7 +204,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     
@@ -216,7 +216,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
             QName assocTypeQName,
             QName qname) throws InvalidNodeRefException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     
@@ -225,7 +225,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    public boolean removeChildAssociation(ChildAssociationRef childAssocRef)
+    {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
 
@@ -267,7 +275,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public void addAspect(NodeRef nodeRef, QName aspectRef, Map<QName, Serializable> aspectProperties) throws InvalidNodeRefException, InvalidAspectException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
 
@@ -284,7 +292,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public void removeAspect(NodeRef nodeRef, QName aspectRef) throws InvalidNodeRefException, InvalidAspectException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
 
@@ -347,7 +355,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     
@@ -356,7 +364,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public void setProperty(NodeRef nodeRef, QName qame, Serializable value) throws InvalidNodeRefException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     
@@ -447,7 +455,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
 
@@ -469,7 +477,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException, AssociationExistsException
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     
@@ -478,7 +486,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     
@@ -516,7 +524,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public List<AssociationRef> getSourceAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
     {
-        // This operation is not supported for a verion store
+        // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
     

@@ -85,6 +85,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String UPDATE_SET_CHILD_ASSOC_NAME = "node.updateChildAssocName";
     private static final String QUERY_GET_PRIMARY_CHILD_NODE_STATUSES = "node.GetPrimaryChildNodeStatuses";
     private static final String QUERY_GET_CHILD_ASSOCS = "node.GetChildAssocs";
+    private static final String QUERY_GET_CHILD_ASSOCS_BY_ALL = "node.GetChildAssocsByAll";
     private static final String QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME = "node.GetChildAssocByTypeAndName";
     private static final String QUERY_GET_CHILD_ASSOC_REFS = "node.GetChildAssocRefs";
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME = "node.GetChildAssocRefsByQName";
@@ -758,33 +759,55 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
     
     public ChildAssoc getChildAssoc(
-            Node parentNode,
-            Node childNode,
-            QName assocTypeQName,
-            QName qname)
+            final Node parentNode,
+            final Node childNode,
+            final QName assocTypeQName,
+            final QName qname)
     {
-        ChildAssociationRef childAssocRef = new ChildAssociationRef(
-                assocTypeQName,
-                parentNode.getNodeRef(),
-                qname,
-                childNode.getNodeRef());
-        // get all the parent's child associations
-        Collection<ChildAssoc> assocs = getChildAssocs(parentNode);
-        // hunt down the desired assoc
-        for (ChildAssoc assoc : assocs)
+        HibernateCallback callback = new HibernateCallback()
         {
-            // is it a match?
-            if (!assoc.getChildAssocRef().equals(childAssocRef))    // not a match
+            public Object doInHibernate(Session session)
             {
-                continue;
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS_BY_ALL)
+                    .setLong("parentId", parentNode.getId())
+                    .setLong("childId", childNode.getId())
+                    .setParameter("typeQName", assocTypeQName)
+                    .setParameter("qname", qname);
+                return query.uniqueResult();
             }
-            else
+        };
+        ChildAssoc childAssoc = (ChildAssoc) getHibernateTemplate().execute(callback);
+        return childAssoc;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public boolean deleteChildAssoc(
+            final Node parentNode,
+            final Node childNode,
+            final QName assocTypeQName,
+            final QName qname)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
             {
-                return assoc;
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS_BY_ALL)
+                    .setLong("parentId", parentNode.getId())
+                    .setLong("childId", childNode.getId())
+                    .setParameter("typeQName", assocTypeQName)
+                    .setParameter("qname", qname);
+                return query.list();
             }
+        };
+        List<ChildAssoc> childAssocs = (List<ChildAssoc>) getHibernateTemplate().execute(callback);
+        // Remove each child association with full cascade
+        for (ChildAssoc assoc : childAssocs)
+        {
+            deleteChildAssoc(assoc, true);
         }
-        // not found
-        return null;
+        return (childAssocs.size() > 0);
     }
 
     public ChildAssoc getChildAssoc(final Node parentNode, final QName assocTypeQName, final String childName)

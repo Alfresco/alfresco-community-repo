@@ -314,11 +314,22 @@ public interface NodeService
      * 
      * @param parentRef the parent end of the association
      * @param childRef the child end of the association
-     * @return Returns a collection of deleted entities - both associations and node references.
      * @throws InvalidNodeRefException if the parent or child nodes could not be found
      */
     @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"parentRef", "childRef"})
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException;
+
+    /**
+     * Remove a specific child association.
+     * <p>
+     * The child node will be cascade deleted if the association was the
+     * primary association, i.e. the one with which the child node was created.
+     * 
+     * @param childAssocRef the association to remove
+     * @return Returns <tt>true</tt> if the association existed, otherwise <tt>false</tt>.
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"childAssocRef"})
+    public boolean removeChildAssociation(ChildAssociationRef childAssocRef);
 
     /**
      * @param nodeRef

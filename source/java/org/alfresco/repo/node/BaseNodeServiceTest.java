@@ -816,6 +816,31 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
              // expected
          }
     }
+
+    public void testRemoveSpecificChild() throws Exception
+    {
+        NodeRef parentRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("parent_child"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        ChildAssociationRef pathARef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTAINER);
+        ChildAssociationRef pathBRef = nodeService.addChild(
+                parentRef,
+                pathARef.getChildRef(),
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathB"));
+        
+        // now remove the second association
+        boolean removed = nodeService.removeChildAssociation(pathBRef);
+        assertTrue("Association was not removed", removed);
+        removed = nodeService.removeChildAssociation(pathBRef);
+        assertFalse("Non-existent association was apparently removed", removed);
+    }
     
     public void testRemoveChildByRef() throws Exception
     {

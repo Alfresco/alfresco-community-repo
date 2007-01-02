@@ -886,6 +886,41 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     }
 
     /**
+     * TODO: Check implementation
+     */
+    public boolean removeChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        NodeRef parentRef = childAssocRef.getParentRef();
+        NodeRef childRef = childAssocRef.getChildRef();
+        Pair<Integer, String> parentVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
+        if (parentVersionPath.getFirst() >= 0)
+        {
+            throw new InvalidNodeRefException("Read only store.", parentRef);
+        }
+        Pair<Integer, String> childVersionPath = AVMNodeConverter.ToAVMVersionPath(childRef);
+        if (childVersionPath.getFirst() >= 0)
+        {
+            throw new InvalidNodeRefException("Read only store.", childRef);
+        }
+        String parentPath = parentVersionPath.getSecond();
+        String childPath = childVersionPath.getSecond();
+        String [] childPathBase = AVMNodeConverter.SplitBase(childPath);
+        if (childPathBase[0] == null || !childPathBase[0].equals(parentPath))
+        {
+            return false;
+        }
+        try
+        {
+            fAVMService.removeNode(childPathBase[0], childPathBase[1]);
+            return true;
+        }
+        catch (AVMNotFoundException e)
+        {
+            throw new InvalidNodeRefException("Not found.", childRef);
+        }
+    }
+
+    /**
      * @param nodeRef
      * @return Returns all properties keyed by their qualified name
      * @throws InvalidNodeRefException if the node could not be found

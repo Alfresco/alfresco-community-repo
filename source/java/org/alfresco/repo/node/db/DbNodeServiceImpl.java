@@ -771,6 +771,23 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // done
     }
     
+    public boolean removeChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        Node parentNode = getNodeNotNull(childAssocRef.getParentRef());
+        Node childNode = getNodeNotNull(childAssocRef.getChildRef());
+        QName typeQName = childAssocRef.getTypeQName();
+        QName qname = childAssocRef.getQName();
+        // Delete the association
+        invokeBeforeDeleteChildAssociation(childAssocRef);
+        boolean deleted = nodeDaoService.deleteChildAssoc(parentNode, childNode, typeQName, qname);
+        if (deleted)
+        {
+            invokeOnDeleteChildAssociation(childAssocRef);
+        }
+        // Done
+        return deleted;
+    }
+
     /**
      * Remove properties that should not be persisted as general properties.  Where necessary, the
      * properties are set on the node.

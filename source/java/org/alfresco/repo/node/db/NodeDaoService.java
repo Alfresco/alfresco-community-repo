@@ -190,6 +190,17 @@ public interface NodeDaoService
     public ChildAssoc getChildAssoc(Node parentNode, QName assocTypeQName, String childName);
     
     /**
+     * Deletes an explicit child association.
+     * 
+     * @return Returns <tt>true</tt> if the association was deleted, otherwise <tt>false</tt>
+     */
+    public boolean deleteChildAssoc(
+            final Node parentNode,
+            final Node childNode,
+            final QName assocTypeQName,
+            final QName qname);
+    
+    /**
      * @param assoc the child association to remove
      * @param cascade true if the assoc deletions must cascade to primary child nodes
      */

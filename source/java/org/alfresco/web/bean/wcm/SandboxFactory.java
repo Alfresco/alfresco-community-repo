@@ -67,7 +67,7 @@ public final class SandboxFactory
     * @param storeId    The store name to create the sandbox for
     * @param managers   The list of authorities who have ContentManager role in the website 
     */
-   public static void createStagingSandbox(final String storeId, final List<String> managers)
+   public static SandboxInfo createStagingSandbox(final String storeId, final List<String> managers)
    {
       final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       final AVMService avmService = services.getAVMService();
@@ -145,6 +145,8 @@ public final class SandboxFactory
          dumpStoreProperties(avmService, stagingStoreName);
          dumpStoreProperties(avmService, previewStoreName);
       }
+
+      return new SandboxInfo( new String[] { stagingStoreName, previewStoreName } );
    }
    
    /**
@@ -164,25 +166,28 @@ public final class SandboxFactory
     * @param managers   The list of authorities who have ContentManager role in the website
     * @param username   Username of the user to create the sandbox for
     * @param role       Role permission for the user
+    * @return           Summary information regarding the sandbox
     */
-   public static void createUserSandbox(final String storeId, 
-                                        final List<String> managers, 
-                                        final String username, 
-                                        final String role)
+   public static SandboxInfo createUserSandbox(final String storeId, 
+                                               final List<String> managers,
+                                               final String username, 
+                                               final String role)
    {
       final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       final AVMService avmService = services.getAVMService();
       final PermissionService permissionService = services.getPermissionService();
       
       // create the user 'main' store
-      final String userStoreName = AVMConstants.buildUserMainStoreName(storeId, username);
+      final String userStoreName    = AVMConstants.buildUserMainStoreName(storeId, username);
+      final String previewStoreName = AVMConstants.buildUserPreviewStoreName(storeId, username);
+
       if (avmService.getStore(userStoreName) != null)
       {
          if (logger.isDebugEnabled())
          {
             logger.debug("Not creating as store already exists: " + userStoreName);
          }
-         return;
+         return new SandboxInfo( new String[] { userStoreName, previewStoreName } );
       }
 
       avmService.createStore(userStoreName);
@@ -227,7 +232,6 @@ public final class SandboxFactory
          
          
       // create the user 'preview' store
-      String previewStoreName = AVMConstants.buildUserPreviewStoreName(storeId, username);
       avmService.createStore(previewStoreName);
       if (logger.isDebugEnabled())
          logger.debug("Created user preview sandbox store: " + previewStoreName +
@@ -275,6 +279,7 @@ public final class SandboxFactory
          dumpStoreProperties(avmService, userStoreName);
          dumpStoreProperties(avmService, previewStoreName);
       }
+      return new SandboxInfo( new String[] { userStoreName, previewStoreName } );
    }
    
    /**
@@ -295,7 +300,7 @@ public final class SandboxFactory
     * @param username   Username of the user to create the sandbox for
     * @param role       Role permission for the user
     */
-   public static String createWorkflowSandbox(final String storeId)
+   public static SandboxInfo createWorkflowSandbox(final String storeId)
    {
       final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       final AVMService avmService = services.getAVMService();
@@ -305,86 +310,86 @@ public final class SandboxFactory
 
       // create the user 'main' store
       final String packageName = AVMConstants.STORE_WORKFLOW + "-" + GUID.generate();
-      final String workflowMainStoreName = 
+      final String mainStoreName = 
          AVMConstants.buildWorkflowMainStoreName(storeId, packageName);
       
-      avmService.createStore(workflowMainStoreName);
+      avmService.createStore(mainStoreName);
       if (logger.isDebugEnabled())
-         logger.debug("Created workflow sandbox store: " + workflowMainStoreName);
+         logger.debug("Created workflow sandbox store: " + mainStoreName);
          
       // create a layered directory pointing to 'www' in the staging area
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(stagingStoreName), 
-                                        workflowMainStoreName + ":/", 
+                                        mainStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
          
       // tag the store with the store type
-      avmService.setStoreProperty(workflowMainStoreName,
+      avmService.setStoreProperty(mainStoreName,
                                   AVMConstants.PROP_SANDBOX_WORKFLOW_MAIN,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
          
       // tag the store with the base name of the website so that corresponding
       // staging areas can be found.
-      avmService.setStoreProperty(workflowMainStoreName,
+      avmService.setStoreProperty(mainStoreName,
                                   AVMConstants.PROP_WEBSITE_NAME,
                                   new PropertyValue(DataTypeDefinition.TEXT, storeId));
          
       // tag the store, oddly enough, with its own store name for querying.
       // when will the madness end.
-      avmService.setStoreProperty(workflowMainStoreName,
-                                  QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + workflowMainStoreName),
+      avmService.setStoreProperty(mainStoreName,
+                                  QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName),
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
          
       // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, workflowMainStoreName, storeId, packageName);
+      tagStoreDNSPath(avmService, mainStoreName, storeId, packageName);
          
       // snapshot the store
-      avmService.createSnapshot(workflowMainStoreName, null, null);
+      avmService.createSnapshot(mainStoreName, null, null);
          
       // create the user 'preview' store
-      final String workflowPreviewStoreName = 
+      final String previewStoreName = 
          AVMConstants.buildWorkflowPreviewStoreName(storeId, packageName);
-      avmService.createStore(workflowPreviewStoreName);
+      avmService.createStore(previewStoreName);
       if (logger.isDebugEnabled())
-         logger.debug("Created user sandbox preview store: " + workflowPreviewStoreName);
+         logger.debug("Created user sandbox preview store: " + previewStoreName);
          
       // create a layered directory pointing to 'www' in the user 'main' store
-      avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(workflowMainStoreName), 
-                                        workflowPreviewStoreName + ":/", 
+      avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(mainStoreName), 
+                                        previewStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
          
       // tag the store with the store type
-      avmService.setStoreProperty(workflowPreviewStoreName,
+      avmService.setStoreProperty(previewStoreName,
                                   AVMConstants.PROP_SANDBOX_WORKFLOW_PREVIEW,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
       // tag the store with its own store name for querying.
-      avmService.setStoreProperty(workflowPreviewStoreName,
+      avmService.setStoreProperty(previewStoreName,
                                   QName.createQName(null, 
-                                                    AVMConstants.PROP_SANDBOX_STORE_PREFIX + workflowPreviewStoreName),
+                                                    AVMConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName),
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
          
       // tag the store with the DNS name property
-      tagStoreDNSPath(avmService, workflowPreviewStoreName, storeId, packageName, "preview");
+      tagStoreDNSPath(avmService, previewStoreName, storeId, packageName, "preview");
       
       // snapshot the store
-      avmService.createSnapshot(workflowPreviewStoreName, null, null);
+      avmService.createSnapshot(previewStoreName, null, null);
          
          
       // tag all related stores to indicate that they are part of a single sandbox
       final QName sandboxIdProp = QName.createQName(AVMConstants.PROP_SANDBOXID + GUID.generate());
-      avmService.setStoreProperty(workflowMainStoreName, 
+      avmService.setStoreProperty(mainStoreName, 
                                   sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
-      avmService.setStoreProperty(workflowPreviewStoreName, 
+      avmService.setStoreProperty(previewStoreName, 
                                   sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
       
       if (logger.isDebugEnabled())
       {
-         dumpStoreProperties(avmService, workflowMainStoreName);
-         dumpStoreProperties(avmService, workflowPreviewStoreName);
+         dumpStoreProperties(avmService, mainStoreName);
+         dumpStoreProperties(avmService, previewStoreName);
       }
-      return packageName;
+      return new SandboxInfo( new String[] { mainStoreName, previewStoreName } );
    }
    
    /**

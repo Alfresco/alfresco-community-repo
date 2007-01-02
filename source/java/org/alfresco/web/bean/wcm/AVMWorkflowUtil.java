@@ -72,9 +72,9 @@ public class AVMWorkflowUtil extends WorkflowUtil
                                                final NodeService nodeService)
    {
       // create package paths (layered to user sandbox area as target)
-      final String packageName = SandboxFactory.createWorkflowSandbox(storeId);
-      final String workflowMainStoreName =
-         AVMConstants.buildWorkflowMainStoreName(storeId, packageName);
+
+      SandboxInfo sandboxInfo = SandboxFactory.createWorkflowSandbox(storeId);
+      final String workflowMainStoreName = sandboxInfo.getMainStoreName();
       final String packagesPath = AVMConstants.buildStoreRootPath(workflowMainStoreName);
                     
       final List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());

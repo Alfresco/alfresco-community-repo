@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -150,14 +151,18 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       }
       
       // build the sandboxes now we have the manager list and complete user list
+      List<SandboxInfo> sandboxInfoList = new LinkedList<SandboxInfo>();
+
       for (UserGroupRole userRole : this.userGroupRoles)
       {
          String authority = userRole.getAuthority();
          if (excludeUsers.contains(authority) == false)
          {
-            SandboxFactory.createUserSandbox(
+            SandboxInfo info =
+                SandboxFactory.createUserSandbox(
                   getAvmStore(), this.managers, userRole.getAuthority(), userRole.getRole());
 
+            sandboxInfoList.add( info );
          }
       }
       
@@ -179,12 +184,20 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          }
       }
       
-      // reload virtualisation server for the web project
+      // reload virtualisation server for webapp in this web project
       if (isStandalone())
       {
-         String stagingStore = AVMConstants.buildStagingStoreName(getAvmStore());
-         String path = AVMConstants.buildStoreWebappPath(stagingStore, this.avmBrowseBean.getWebapp());
-         AVMConstants.updateVServerWebapp(path, true);
+         for (SandboxInfo sandboxInfo : sandboxInfoList )
+         {
+             String newlyInvitedStoreName = 
+                AVMConstants.buildStagingStoreName( sandboxInfo.getMainStoreName() );
+
+             String path = 
+                AVMConstants.buildStoreWebappPath( newlyInvitedStoreName,
+                                                   this.avmBrowseBean.getWebapp());
+
+             AVMConstants.updateVServerWebapp(path, true);
+         }
       }
       
       return outcome;

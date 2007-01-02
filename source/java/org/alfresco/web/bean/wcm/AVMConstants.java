@@ -28,11 +28,10 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
@@ -40,6 +39,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
+ * Helper methods and constants related to AVM directories, paths and store name manipulation.
+ * 
  * @author Ariel Backenroth
  * @author Kevin Roast
  */
@@ -81,7 +82,8 @@ public final class AVMConstants
    /**
     * Extracts the store name from the avmpath
     *
-    * @param avmPath an absolute avm pth
+    * @param avmPath an absolute avm path
+    * 
     * @return the store name
     */
    public static String getStoreName(final String avmPath)
@@ -98,6 +100,7 @@ public final class AVMConstants
     * Indicates whether the store name describes a preview store.
     *
     * @param storeName the store name
+    * 
     * @return <tt>true</tt> if the store is a preview store, <tt>false</tt> otherwise.
     */
    public static boolean isPreviewStore(final String storeName)
@@ -105,6 +108,13 @@ public final class AVMConstants
       return storeName.endsWith(AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW);
    }
 
+   /**
+    * Indicates whether the store name describes a workflow store.
+    *
+    * @param storeName the store name
+    * 
+    * @return <tt>true</tt> if the store is a workflow store, <tt>false</tt> otherwise.
+    */
    public static boolean isWorkflowStore(String storeName)
    {
       if (AVMConstants.isPreviewStore(storeName))
@@ -119,6 +129,7 @@ public final class AVMConstants
     * Indicates whether the store name describes a user store.
     *
     * @param storeName the store name
+    * 
     * @return <tt>true</tt> if the store is a user store, <tt>false</tt> otherwise.
     */
    public static boolean isUserStore(String storeName)
@@ -134,6 +145,7 @@ public final class AVMConstants
     * Extracts the username from the store name.
     *
     * @param storeName the store name
+    * 
     * @return the username associated or <tt>null</tt> if this is a staging store.
     */
    public static String getUserName(String storeName)
@@ -152,6 +164,7 @@ public final class AVMConstants
     * Extracts the store id from the store name.
     *
     * @param storeName the store name.
+    * 
     * @return the store id.
     */
    public static String getStoreId(final String storeName)
@@ -166,7 +179,9 @@ public final class AVMConstants
     * Returns the corresponding main store name if this is a preview store name.
     *
     * @param storeName the preview store name.
+    * 
     * @return the corresponding main store name.
+    * 
     * @exception IllegalArgumentException if this is not a preview store name.
     */
    public static String getCorrespondingMainStoreName(final String storeName)
@@ -184,7 +199,9 @@ public final class AVMConstants
     * Returns the corresponding preview store name if this is a main store name.
     *
     * @param storeName the main store name.
+    * 
     * @return the corresponding preview store name.
+    * 
     * @exception IllegalArgumentException if this is not a main store name.
     */
    public static String getCorrespondingPreviewStoreName(final String storeName)
@@ -201,7 +218,9 @@ public final class AVMConstants
     * a main store.
     *
     * @param avmPath an avm path within the main store.
+    * 
     * @return the corresponding path within the preview store.
+    * 
     * @exception IllegalArgumentException if this is not a path within the preview store.
     */
    public static String getCorrespondingPathInMainStore(final String avmPath)
@@ -216,7 +235,9 @@ public final class AVMConstants
     * a main store.
     *
     * @param avmPath an avm path within the main store.
+    * 
     * @return the corresponding path within the preview store.
+    * 
     * @exception IllegalArgumentException if this is not a path within the preview store.
     */
    public static String getCorrespondingPathInPreviewStore(final String avmPath)
@@ -226,11 +247,26 @@ public final class AVMConstants
       return AVMConstants.getCorrespondingPath(avmPath, storeName);
    }
 
+   /**
+    * Returns the corresponding path in the store provided.
+    * 
+    * @param avmPath an avm path
+    * @param otherStore the other store to return the corresponding path for
+    * 
+    * @return the corresponding path within the supplied store
+    */
    public static String getCorrespondingPath(final String avmPath, final String otherStore)
    {
       return (otherStore + ':' + AVMConstants.getStoreRelativePath(avmPath));
    }
    
+   /**
+    * Returns the main staging store name for the specified store id.
+    * 
+    * @param storeId store id to build staging store name for
+    * 
+    * @return main staging store name for the specified store id
+    */
    public static String buildStagingStoreName(final String storeId)
    {
       if (storeId == null || storeId.length() == 0)
@@ -240,14 +276,29 @@ public final class AVMConstants
       return storeId;
    }
    
+   /**
+    * Returns the preview store name for the specified store id.
+    * 
+    * @param storeId store id to build preview store name for
+    * 
+    * @return preview store name for the specified store id
+    */
    public static String buildStagingPreviewStoreName(final String storeId)
    {
       return (AVMConstants.buildStagingStoreName(storeId) + 
               AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW);
    }
    
+   /**
+    * Returns the main store name for a specific username.
+    * 
+    * @param storeId store id to build user store name for
+    * @param username of the user to build store name for
+    * 
+    * @return the main store for the specified user and store id
+    */
    public static String buildUserMainStoreName(final String storeId, 
-                                                  final String username)
+                                               final String username)
    {
       if (username == null || username.length() == 0)
       {
@@ -257,15 +308,31 @@ public final class AVMConstants
               username);
    }
    
+   /**
+    * Returns the preview store name for a specific username.
+    * 
+    * @param storeId store id to build user preview store name for
+    * @param username of the user to build preview store name for
+    * 
+    * @return the preview store for the specified user and store id
+    */
    public static String buildUserPreviewStoreName(final String storeId, 
-                                                     final String username)
+                                                  final String username)
    {
       return (AVMConstants.buildUserMainStoreName(storeId, username) +
               AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW);
    }
 
+   /**
+    * Returns the store name for a specific workflow Id.
+    * 
+    * @param storeId store id to build workflow store name for
+    * @param workflowId of the user to build workflow store name for
+    * 
+    * @return the store for the specified workflow and store ids
+    */
    public static String buildWorkflowMainStoreName(final String storeId, 
-                                                      final String workflowId)
+                                                   final String workflowId)
    {
       if (workflowId == null || workflowId.length() == 0)
       {
@@ -275,13 +342,28 @@ public final class AVMConstants
               workflowId);
    }
 
+   /**
+    * Returns the preview store name for a specific workflow Id.
+    * 
+    * @param storeId store id to build preview workflow store name for
+    * @param workflowId of the user to build preview workflow store name for
+    * 
+    * @return the store for the specified preview workflow and store ids
+    */
    public static String buildWorkflowPreviewStoreName(final String storeId, 
-                                                         final String workflowId)
+                                                      final String workflowId)
    {
       return (AVMConstants.buildWorkflowMainStoreName(storeId, workflowId) +
               AVMConstants.STORE_SEPARATOR + AVMConstants.STORE_PREVIEW);
    }
 
+   /**
+    * Returns the root path for the specified store name
+    * 
+    * @param storeName store to build root path for
+    * 
+    * @return root path for the specified store name
+    */
    public static String buildStoreRootPath(final String storeName)
    {
       if (storeName == null || storeName.length() == 0)
@@ -291,11 +373,26 @@ public final class AVMConstants
       return storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW;
    }
 
+   /**
+    * Returns the root path for the specified sandbox name
+    * 
+    * @param storeName store to build root sandbox path for
+    * 
+    * @return root sandbox path for the specified store name
+    */
    public static String buildSandboxRootPath(final String storeName)
    {
       return AVMConstants.buildStoreRootPath(storeName) + '/' +  JNDIConstants.DIR_DEFAULT_APPBASE;
    }
    
+   /**
+    * Returns the root webapp path for the specified store and webapp name
+    * 
+    * @param storeName store to build root webapp path for
+    * @param webapp webapp folder name
+    * 
+    * @return the root webapp path for the specified store and webapp name
+    */
    public static String buildStoreWebappPath(final String storeName, String webapp)
    {
       if (webapp == null || webapp.length() == 0)
@@ -421,8 +518,7 @@ public final class AVMConstants
                                   final PathRelation relation)
    {
       String parent = parentAVMPath;
-      if (path == null || path.length() == 0 || 
-          ".".equals(path) || "./".equals(path))
+      if (path == null || path.length() == 0 || ".".equals(path) || "./".equals(path))
       {
          return parent;
       }
@@ -627,12 +723,13 @@ public final class AVMConstants
       return (VirtServerRegistry)ac.getBean(BEAN_VIRT_SERVER_REGISTRY);
    }
    
+   
    // Component Separator.
    private static final String STORE_SEPARATOR = "--";
    
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private
-   public final static String STORE_WORKFLOW = "workflow";
+   /*package*/ final static String STORE_WORKFLOW = "workflow";
    private final static String STORE_PREVIEW = "preview";
    
    // servlet default webapp
@@ -641,22 +738,16 @@ public final class AVMConstants
    
    // system property keys for sandbox identification and DNS virtualisation mapping
    public final static String PROP_SANDBOXID = ".sandbox-id.";
-   public final static QName PROP_SANDBOX_STAGING_MAIN = 
-      QName.createQName(null, ".sandbox.staging.main");
-   public final static QName PROP_SANDBOX_STAGING_PREVIEW = 
-      QName.createQName(null, ".sandbox.staging.preview");
-   public final static QName PROP_SANDBOX_AUTHOR_MAIN = 
-      QName.createQName(null, ".sandbox.author.main");
-   public final static QName PROP_SANDBOX_AUTHOR_PREVIEW = 
-      QName.createQName(null, ".sandbox.author.preview");
-   public final static QName PROP_SANDBOX_WORKFLOW_MAIN = 
-      QName.createQName(null, ".sandbox.workflow.main");
-   public final static QName PROP_SANDBOX_WORKFLOW_PREVIEW = 
-      QName.createQName(null, ".sandbox.workflow.preview");
    public final static String PROP_DNS = ".dns.";
-   public final static QName PROP_WEBSITE_NAME = 
-      QName.createQName(null, ".website.name");
    public final static String PROP_SANDBOX_STORE_PREFIX = ".sandbox.store.";
+   public final static QName PROP_SANDBOX_STAGING_MAIN =     QName.createQName(null, ".sandbox.staging.main");
+   public final static QName PROP_SANDBOX_STAGING_PREVIEW =  QName.createQName(null, ".sandbox.staging.preview");
+   public final static QName PROP_SANDBOX_AUTHOR_MAIN =      QName.createQName(null, ".sandbox.author.main");
+   public final static QName PROP_SANDBOX_AUTHOR_PREVIEW =   QName.createQName(null, ".sandbox.author.preview");
+   public final static QName PROP_SANDBOX_WORKFLOW_MAIN =    QName.createQName(null, ".sandbox.workflow.main");
+   public final static QName PROP_SANDBOX_WORKFLOW_PREVIEW = QName.createQName(null, ".sandbox.workflow.preview");
+   public final static QName PROP_WEBSITE_NAME =             QName.createQName(null, ".website.name");
+   
    public final static String SPACE_ICON_WEBSITE = "space-icon-website";
    
    // virtualisation server MBean registry
@@ -669,17 +760,19 @@ public final class AVMConstants
    // pattern for absolute AVM Path
    private final static Pattern STORE_RELATIVE_PATH_PATTERN = 
       Pattern.compile("[^:]+:(.+)");
+   
    private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
                       "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/([^/]+))(.*)");
+   
    private final static Pattern SANDBOX_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
                       "/" + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
    
    // patterns for WEB-INF files that require virtualisation server reload
    private final static Pattern WEB_INF_PATH_PATTERN = 
-        Pattern.compile(".*:/" + JNDIConstants.DIR_DEFAULT_WWW + 
-                        "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + 
-                        ".*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
-                        Pattern.CASE_INSENSITIVE);
+      Pattern.compile(".*:/" + JNDIConstants.DIR_DEFAULT_WWW + 
+                      "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + 
+                      ".*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
+                      Pattern.CASE_INSENSITIVE);
 }

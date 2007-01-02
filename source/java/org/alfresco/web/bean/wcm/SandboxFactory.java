@@ -153,7 +153,7 @@ public final class SandboxFactory
     * Create a user sandbox for the named store.
     * 
     * A user sandbox is comprised of two stores, the first 
-    * named 'storename---username' layered over the staging store with a preview store 
+    * named 'storename--username' layered over the staging store with a preview store 
     * named 'storename--username--preview' layered over the main store.
     * 
     * Various store meta-data properties are set including:
@@ -230,7 +230,7 @@ public final class SandboxFactory
       // snapshot the store
       avmService.createSnapshot(userStoreName, null, null);
          
-         
+      
       // create the user 'preview' store
       avmService.createStore(previewStoreName);
       if (logger.isDebugEnabled())
@@ -263,8 +263,8 @@ public final class SandboxFactory
          
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);
-         
-         
+      
+      
       // tag all related stores to indicate that they are part of a single sandbox
       QName sandboxIdProp = QName.createQName(null, AVMConstants.PROP_SANDBOXID + GUID.generate());
       avmService.setStoreProperty(userStoreName, 
@@ -273,7 +273,7 @@ public final class SandboxFactory
       avmService.setStoreProperty(previewStoreName,
                                   sandboxIdProp,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
-         
+      
       if (logger.isDebugEnabled())
       {
          dumpStoreProperties(avmService, userStoreName);
@@ -286,7 +286,7 @@ public final class SandboxFactory
     * Create a user sandbox for the named store.
     * 
     * A user sandbox is comprised of two stores, the first 
-    * named 'storename---username' layered over the staging store with a preview store 
+    * named 'storename--username' layered over the staging store with a preview store 
     * named 'storename--username--preview' layered over the main store.
     * 
     * Various store meta-data properties are set including:

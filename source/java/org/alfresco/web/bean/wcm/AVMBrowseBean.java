@@ -33,7 +33,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
@@ -43,12 +42,9 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -802,17 +798,16 @@ public class AVMBrowseBean implements IContextListener
          String storeName = AVMConstants.getStoreName(path);
          final String storeId = AVMConstants.getStoreId(storeName);
          final String username = AVMConstants.getUserName(storeName);
-         final boolean preview = AVMConstants.isPreviewStore(storeName);
          if (username == null)
          {
-            storeName = (preview
+            storeName = (AVMConstants.isPreviewStore(storeName)
                          ? AVMConstants.buildStagingPreviewStoreName(storeId)
                          : AVMConstants.buildStagingStoreName(storeId));
             setupSandboxActionImpl(storeName, null, false);
          }
          else
          {
-            storeName = (preview
+            storeName = (AVMConstants.isPreviewStore(storeName)
                          ? AVMConstants.buildUserPreviewStoreName(storeId, username)
                          : AVMConstants.buildUserMainStoreName(storeId, username));
             setupSandboxActionImpl(storeName, username, false);

@@ -256,7 +256,7 @@ public class CreateFormWizard
       if (this.applyDefaultWorkflow)
       {
          props.clear();
-         props.put(WCMAppModel.PROP_WORKFLOW_NAME, this.getDefaultWorkflowName());
+         props.put(WCMAppModel.PROP_WORKFLOW_NAME, this.getDefaultWorkflowName()[0]);
          this.nodeService.createNode(folderInfo.getNodeRef(),
                                      WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
                                      WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,

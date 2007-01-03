@@ -74,23 +74,7 @@
     <!-- The authroity DAO implements an interface extended from the Acegi  -->
     <!-- DAO that supports CRUD.                                            -->
 
-    <bean id="alfDaoImpl" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
-        </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
-        </property>
-        <property name="target">
-            <ref bean="authenticationDao"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-    
+    <alias name="authenticationDao" alias="alfDaoImpl"/>  <!-- TODO: Remove -->
     <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
        <property name="nodeService">
            <ref bean="nodeService" />
@@ -114,7 +98,7 @@
 
     <!-- The DAO also acts as a salt provider.                              -->
     
-    <alias alias="saltSource" name="alfDaoImpl"/>
+    <alias alias="saltSource" name="authenticationDao"/>
 
     <!-- Passwords are encoded using MD4                                    -->
     <!-- This is not ideal and only done to be compatible with NTLM         -->
@@ -122,26 +106,6 @@
 
     <bean id="passwordEncoder" class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl"></bean>
 
-
-    <!-- A transactional wrapper around the implementation.                 -->
-    <!-- TODO: This should be removed.                                      -->              
-
-    <bean id="authenticationService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.service.cmr.security.AuthenticationService</value>
-        </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
-        </property>
-        <property name="target">
-            <ref bean="authenticationServiceImpl" />
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
 
     <!-- The Authentication Service implementation.                         -->
     <!--                                                                    -->
@@ -151,7 +115,8 @@
     <!-- The permissions service is required so that permissions can be     -->
     <!-- cleaned up when a user is deleted.                                 -->
     
-    <bean id="authenticationServiceImpl" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
+    <alias name="authenticationService" alias="authenticationServiceImpl"/>  <!-- TODO: Remove -->
+    <bean id="authenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
         <property name="authenticationDao">
             <ref bean="authenticationDao" />
         </property>
@@ -163,28 +128,10 @@
         </property>
     </bean>
 
-    <!-- A transactional wrapper that should be removed.                    -->
-
-    <bean id="authenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
-        </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
-        </property>
-        <property name="target">
-            <ref bean="authenticationComponentImpl" />
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-
     <!-- The authentication component.                                      -->
 
-    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl">
+    <alias name="authenticationComponent" alias="authenticationComponentImpl"/>  <!-- TODO: Remove -->
+    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl">
         <property name="authenticationDao">
             <ref bean="authenticationDao" />
         </property>
@@ -200,7 +147,6 @@
     <!-- Simple Authentication component that rejects all authentication requests -->
     <!-- Use this defintion for Novell IChain integration.                        -->
     <!-- It should never go to the login screen  so this is not required          -->
-    <!-- (Enterprise version only)                                                -->
     
     <!--
     <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl">

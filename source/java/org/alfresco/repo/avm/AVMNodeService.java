@@ -854,7 +854,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             throw new InvalidNodeRefException("Read only store.", parentRef);
         }
-        Pair<Integer, String> childVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
+        Pair<Integer, String> childVersionPath = AVMNodeConverter.ToAVMVersionPath(childRef);
         if (childVersionPath.getFirst() >= 0)
         {
             throw new InvalidNodeRefException("Read only store.", childRef);

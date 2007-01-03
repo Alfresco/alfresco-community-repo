@@ -19,6 +19,7 @@ package org.alfresco.repo.avm.actions;
 
 import java.util.List;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -138,7 +139,7 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         // Cleanup by flattening the source relative to the destination.
         // This is an ugliness to prevent database write misorderings in flatten.
         AVMDAOs.Instance().fAVMNodeDAO.flush();
-        fAVMSyncService.flatten(storePath[0] + ":/appBase", websiteName + "-staging:/appBase");
+        fAVMSyncService.flatten(storePath[0] + ":/" + JNDIConstants.DIR_DEFAULT_WWW, websiteName + "-staging:/" + JNDIConstants.DIR_DEFAULT_WWW);
     }
 
     /**

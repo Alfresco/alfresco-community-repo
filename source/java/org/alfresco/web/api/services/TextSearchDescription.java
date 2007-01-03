@@ -67,8 +67,8 @@ public class TextSearchDescription extends APIServiceImpl
         "  <ShortName>Alfresco Text Search</ShortName>\n" +
         "  <LongName>Alfresco ${agent.edition} Text Search ${agent.version}</LongName>\n" +
         "  <Description>Search Alfresco \"company home\" using text keywords</Description>\n" +
-        "  <Url type=\"application/atom+xml\" template=\"${request.servicePath}/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;guest={alf:guest?}&amp;format=atom\"/>\n" +
-        "  <Url type=\"text/html\" template=\"${request.servicePath}/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;guest={alf:guest?}\"/>\n" +
+        "  <Url type=\"application/atom+xml\" template=\"${request.servicePath}/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}&amp;format=atom\"/>\n" +
+        "  <Url type=\"text/html\" template=\"${request.servicePath}/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}\"/>\n" +
         "  <Image height=\"16\" width=\"16\" type=\"image/x-icon\">${request.path}/images/logo/AlfrescoLogo16.ico</Image>\n" +
         "</OpenSearchDescription>";
 

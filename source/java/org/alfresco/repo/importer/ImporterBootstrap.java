@@ -443,13 +443,12 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         catch(Throwable e)
         {
             // rollback the transaction
-            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-            try {authenticationComponent.clearCurrentSecurityContext(); } catch (Exception ex) {}
+            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Throwable ex) {}
             throw new AlfrescoRuntimeException("Bootstrap failed", e);
         }
         finally
         {
-            authenticationComponent.clearCurrentSecurityContext();
+            try {authenticationComponent.clearCurrentSecurityContext(); } catch (Throwable ex) {}
         }
     }
     

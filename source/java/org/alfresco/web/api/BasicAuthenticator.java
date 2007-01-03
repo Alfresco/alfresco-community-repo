@@ -54,6 +54,7 @@ public class BasicAuthenticator implements MethodInterceptor
         throws Throwable
     {
         boolean authorized = false;
+        String currentUser = null;
         Object retVal = null;
         Object[] args = invocation.getArguments();
         APIRequest request = (APIRequest)args[0];
@@ -61,6 +62,14 @@ public class BasicAuthenticator implements MethodInterceptor
 
         try
         {
+            //
+            // Determine if user already authenticated
+            //
+            
+            currentUser = AuthenticationUtil.getCurrentUserName();
+            if (logger.isDebugEnabled())
+                logger.debug("Current authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
+            
             //
             // validate credentials
             // 
@@ -75,16 +84,18 @@ public class BasicAuthenticator implements MethodInterceptor
                 logger.debug("Authorization provided (overrides Guest login): " + (authorization != null && authorization.length() > 0));
             }
             
+            // authenticate as guest, if service allows
             if (((authorization == null || authorization.length() == 0) || isGuest)
                     && service.getRequiredAuthentication().equals(APIRequest.RequiredAuthentication.Guest))
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Authenticating as Guest");
 
-                // authenticate as guest, if service allows
                 authenticationService.authenticateAsGuest();
                 authorized = true;
             }
+            
+            // authenticate as specified by HTTP Basic Authentication
             else if (authorization != null && authorization.length() > 0)
             {
                 try
@@ -137,15 +148,15 @@ public class BasicAuthenticator implements MethodInterceptor
             // execute API service or request authorization
             //
             
-            if (logger.isDebugEnabled())
-                logger.debug("Authenticated: " + authorized);
-            
             if (authorized)
             {
                 retVal = invocation.proceed();
             }
             else
             {
+                if (logger.isDebugEnabled())
+                    logger.debug("Requesting authorization credentials");
+                
                 APIResponse response = (APIResponse)args[1];
                 response.setStatus(401);
                 response.setHeader("WWW-Authenticate", "Basic realm=\"Alfresco\"");
@@ -153,12 +164,17 @@ public class BasicAuthenticator implements MethodInterceptor
         }
         finally
         {
-            // clear authentication
-            // TODO: Consider case where authentication is set before this method is called.
-            //       That shouldn't be the case for the web api.
+            // reset authentication
             if (authorized)
             {
                 authenticationService.clearCurrentSecurityContext();
+                if (currentUser != null)
+                {
+                    AuthenticationUtil.setCurrentUser(currentUser);
+                }
+                
+                if (logger.isDebugEnabled())
+                    logger.debug("Authentication reset: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
             }
         }
 

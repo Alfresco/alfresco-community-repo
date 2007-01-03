@@ -14,6 +14,12 @@
       <property name="authenticationService" ref="AuthenticationService" />
    </bean>
 
+   <!--  -->
+   <!--  Web API Service Logger -->
+   <!--  -->
+   
+   <bean id="web.api.ServiceLogger" class="org.alfresco.web.api.ServiceLogger">
+   </bean>
 
    <!--  -->
    <!--  Web API Services -->

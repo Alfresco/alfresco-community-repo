@@ -21,8 +21,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -30,6 +32,7 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -37,7 +40,6 @@ import org.alfresco.util.GUID;
 import org.alfresco.web.api.APIException;
 import org.alfresco.web.api.APIRequest;
 import org.alfresco.web.api.APIResponse;
-import org.alfresco.web.api.APIServlet;
 import org.alfresco.web.api.APIRequest.HttpMethod;
 import org.alfresco.web.api.APIRequest.RequiredAuthentication;
 import org.alfresco.web.ui.common.Utils;
@@ -54,7 +56,7 @@ import org.springframework.context.ApplicationContext;
 public class TextSearch extends APIServiceImpl
 {
     // Logger
-    private static final Log logger = LogFactory.getLog(APIServlet.class);
+    private static final Log logger = LogFactory.getLog(TextSearch.class);
 
     // search parameters 
     // TODO: allow configuration of search store
@@ -128,12 +130,19 @@ public class TextSearch extends APIServiceImpl
         {
             // NOTE: use default itemsPerPage
         }
+        Locale locale = I18NUtil.getLocale();
+        String language = req.getParameter("l");
+        if (language != null && language.length() > 0)
+        {
+            // NOTE: Simple conversion from XML Language Id to Java Locale Id
+            locale = new Locale(language.replace("-", "_"));
+        }
         
         //
         // execute the search
         //
         
-        SearchResult results = search(searchTerms, startPage, itemsPerPage);
+        SearchResult results = search(searchTerms, startPage, itemsPerPage, locale);
         
         //
         // render the results
@@ -166,7 +175,7 @@ public class TextSearch extends APIServiceImpl
      * @param startPage
      * @return
      */
-    private SearchResult search(String searchTerms, int startPage, int itemsPerPage)
+    private SearchResult search(String searchTerms, int startPage, int itemsPerPage, Locale locale)
     {
         SearchResult searchResult = null;
         ResultSet results = null;
@@ -181,13 +190,24 @@ public class TextSearch extends APIServiceImpl
             
             // execute query
             if (logger.isDebugEnabled())
+            {
+                logger.debug("Search parameters: searchTerms=" + searchTerms + ", startPage=" + startPage + ", itemsPerPage=" + itemsPerPage + ", search locale=" + locale.toString());
                 logger.debug("Issuing lucene search: " + query);
-            
-            results = searchService.query(SEARCH_STORE, SearchService.LANGUAGE_LUCENE, query);
+            }
+
+            SearchParameters parameters = new SearchParameters();
+            parameters.addStore(SEARCH_STORE);
+            parameters.setLanguage(SearchService.LANGUAGE_LUCENE);
+            parameters.setQuery(query);
+            if (locale != null)
+            {
+                parameters.addLocale(locale);
+            }
+            results = searchService.query(parameters);
             int totalResults = results.length();
             
             if (logger.isDebugEnabled())
-                logger.debug("Results: " + totalResults + " rows");
+                logger.debug("Results: " + totalResults + " rows (limited: " + results.getResultSetMetaData().getLimitedBy() + ")");
             
             // are we out-of-range
             int totalPages = (totalResults / itemsPerPage);
@@ -200,6 +220,7 @@ public class TextSearch extends APIServiceImpl
             // construct search result
             searchResult = new SearchResult();
             searchResult.setSearchTerms(searchTerms);
+            searchResult.setLocale(locale);
             searchResult.setItemsPerPage(itemsPerPage);
             searchResult.setStartPage(startPage);
             searchResult.setTotalPages(totalPages);
@@ -234,6 +255,7 @@ public class TextSearch extends APIServiceImpl
     {
         private String id;
         private String searchTerms;
+        private Locale locale;
         private int itemsPerPage;
         private int totalPages;
         private int totalResults;
@@ -323,6 +345,24 @@ public class TextSearch extends APIServiceImpl
             this.searchTerms = searchTerms;
         }
 
+        public Locale getLocale()
+        {
+            return locale;
+        }
+        
+        /**
+         * @return XML 1.0 Language Identification
+         */
+        public String getLocaleId()
+        {
+            return locale.toString().replace('_', '-');
+        }
+
+        /*package*/ void setLocale(Locale locale)
+        {
+            this.locale = locale;
+        }
+
         public String getId()
         {
             if (id == null)
@@ -382,17 +422,17 @@ public class TextSearch extends APIServiceImpl
         "  <opensearch:totalResults>${search.totalResults}</opensearch:totalResults>\n" +
         "  <opensearch:startIndex>${search.startIndex}</opensearch:startIndex>\n" +
         "  <opensearch:itemsPerPage>${search.itemsPerPage}</opensearch:itemsPerPage>\n" +
-        "  <opensearch:Query role=\"request\" searchTerms=\"${search.searchTerms}\" startPage=\"${search.startPage}\"/>\n" +
-        "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=html\" type=\"text/html\"/>\n" +
-        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
-        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=1&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <opensearch:Query role=\"request\" searchTerms=\"${search.searchTerms}\" startPage=\"${search.startPage}\" count=\"${search.itemsPerPage}\" language=\"${search.localeId}\"/>\n" +
+        "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=html\" type=\"text/html\"/>\n" +
+        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=1&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "<#if search.startPage &gt; 1>" +
-        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "</#if>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
+        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
         "</#if>" +
-        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.servicePath}/search/text/textsearchdescription.xml\"/>\n" +
         "<#list search.results as row>" +            
         "  <entry>\n" +
@@ -437,15 +477,15 @@ public class TextSearch extends APIServiceImpl
         "      </li>\n" +
         "</#list>" +
         "    </ul>\n" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=1&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">first</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=1&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">first</a>" +
         "<#if search.startPage &gt; 1>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage - 1}&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">previous</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage - 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">previous</a>" +
         "</#if>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage}&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">${search.startPage}</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">${search.startPage}</a>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage + 1}&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">next</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage + 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">next</a>" +
         "</#if>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.totalPages}&c=${search.itemsPerPage}&guest=${request.guest?string(\"true\",\"\")}\">last</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.totalPages}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">last</a>" +
         "  </body>\n" +
         "</html>\n";
 
@@ -461,7 +501,7 @@ public class TextSearch extends APIServiceImpl
              " OR " +
         "</#if>" +
         "</#list>" +
-            ")" +
+            ") " +
             "(" +
         "<#list 1..terms?size as i>" +
               "TEXT:${terms[i - 1]}" +
@@ -503,7 +543,7 @@ public class TextSearch extends APIServiceImpl
      */
     private void test()
     {
-        SearchResult result = search("alfresco tutorial", 1, 5);
+        SearchResult result = search("alfresco tutorial", 1, 5, I18NUtil.getLocale());
 
         Map<String, Object> searchModel = new HashMap<String, Object>(7, 1.0f);
         Map<String, Object> request = new HashMap<String, Object>();

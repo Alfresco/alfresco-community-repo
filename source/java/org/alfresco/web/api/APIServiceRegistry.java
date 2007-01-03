@@ -51,6 +51,7 @@ public class APIServiceRegistry
     {
         // retrieve service authenticator
         MethodInterceptor authenticator = (MethodInterceptor)appContext.getBean("web.api.Authenticator");
+        MethodInterceptor serviceLogger = (MethodInterceptor)appContext.getBean("web.api.ServiceLogger");
 
         // register all API Services
         // NOTE: An API Service is one registered in Spring which is of type APIServiceImpl
@@ -70,19 +71,31 @@ public class APIServiceRegistry
             }
             
             // wrap API Service in appropriate interceptors (e.g. authentication)
-            if (service.getRequiredAuthentication() != APIRequest.RequiredAuthentication.None)
+            if (serviceLogger != null && authenticator != null)
             {
-                if (authenticator == null)
+                ProxyFactory authFactory = new ProxyFactory((APIService)service);
+
+                // authentication
+                if (service.getRequiredAuthentication() != APIRequest.RequiredAuthentication.None)
                 {
-                    throw new APIException("Web API Authenticator not specified");
+                    if (authenticator == null)
+                    {
+                        throw new APIException("Web API Authenticator not specified");
+                    }
+                    RegexpMethodPointcutAdvisor advisor = new RegexpMethodPointcutAdvisor(".*execute", authenticator);
+                    authFactory.addAdvisor(advisor);
+                }
+
+                // logging
+                if (serviceLogger != null)
+                {
+                    RegexpMethodPointcutAdvisor advisor = new RegexpMethodPointcutAdvisor(".*execute", serviceLogger);
+                    authFactory.addAdvisor(advisor);
                 }
                 
-                RegexpMethodPointcutAdvisor advisor = new RegexpMethodPointcutAdvisor(".*execute", authenticator);
-                ProxyFactory authFactory = new ProxyFactory((APIService)service);
-                authFactory.addAdvisor(advisor);
                 service = (APIService)authFactory.getProxy();
             }
-                        
+
             // register service
             methods.add(method);
             uris.add(httpUri);

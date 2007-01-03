@@ -17,6 +17,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +30,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -75,7 +78,8 @@ public class AVMEditBean
    private File file = null;
    private String fileName = null;
    protected FormProcessor.Session formProcessorSession = null;
-   
+   private Form form = null;
+
    /** AVM service bean reference */
    protected AVMService avmService;
 
@@ -233,10 +237,15 @@ public class AVMEditBean
     */
    public Form getForm()
    {
-      final String formName = (String)
-         this.nodeService.getProperty(this.getAvmNode().getNodeRef(), 
-                                      WCMAppModel.PROP_PARENT_FORM_NAME);
-      return this.avmBrowseBean.getWebProject().getForm(formName);
+      if (this.form == null)
+      {
+         final String formName = (String)
+            this.nodeService.getProperty(this.getAvmNode().getNodeRef(), 
+                                         WCMAppModel.PROP_PARENT_FORM_NAME);
+         final WebProject wp = new WebProject(this.getAvmNode().getPath());
+         this.form = wp.getForm(formName);
+      }
+      return this.form;
    }
 
    /**
@@ -296,17 +305,27 @@ public class AVMEditBean
       {
          if (LOGGER.isDebugEnabled())
             LOGGER.debug(avmPath + " is a rendition, editing primary rendition instead");
-         avmPath = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, avmPath)).getPrimaryFormInstanceData().getPath();
-
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Editing primary form instance data " + avmPath);
-         this.avmBrowseBean.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, avmPath)));
+         try
+         {
+            final FormInstanceData fid = 
+               new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, avmPath)).getPrimaryFormInstanceData();
+            avmPath = fid.getPath();
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("Editing primary form instance data " + avmPath);
+            this.avmBrowseBean.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, avmPath)));
+         }
+         catch (FileNotFoundException fnfe)
+         {
+            this.avmService.removeAspect(avmPath, WCMAppModel.ASPECT_RENDITION);
+            this.avmService.removeAspect(avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+            Utils.addErrorMessage(fnfe.getMessage(), fnfe);
+         }
       }
 
       if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          // reset the preview layer
-         String storeName = AVMConstants.getStoreName(this.avmBrowseBean.getCurrentPath());
+         String storeName = AVMConstants.getStoreName(avmPath);
          storeName = AVMConstants.getCorrespondingPreviewStoreName(storeName);
          final String path = AVMConstants.buildStoreRootPath(storeName);
          if (LOGGER.isDebugEnabled())

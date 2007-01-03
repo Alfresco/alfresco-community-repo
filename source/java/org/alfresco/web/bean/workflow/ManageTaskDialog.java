@@ -36,6 +36,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -544,8 +545,7 @@ public class ManageTaskDialog extends BaseDialogBean
                                               WCMModel.PROP_AVM_DIR_INDIRECTION);
                final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
                final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
-               LOGGER.debug("comparing " + packageAvmPath +
-                            " with " + stagingAvmPath);
+               LOGGER.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
                for (AVMDifference d : this.avmSyncService.compare(-1, packageAvmPath,
                                                                   -1, stagingAvmPath,
                                                                   null))
@@ -685,10 +685,18 @@ public class ManageTaskDialog extends BaseDialogBean
    // ------------------------------------------------------------------------------
    // Helper methods
 
-   protected void addAVMNode(AVMNode node)
+   protected void addAVMNode(final AVMNode node)
    {
       LOGGER.debug("adding node  " + node);
       node.getProperties().put("taskId", this.task.id);
+      final ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
+      final String dns = AVMConstants.lookupStoreDNS(AVMConstants.getStoreName(node.getPath()));
+      node.getProperties().put("previewUrl", 
+                               AVMConstants.buildAssetUrl(AVMConstants.getSandboxRelativePath(node.getPath()),
+                                                          config.getWCMDomain(),
+                                                          config.getWCMPort(),
+                                                          dns));
+                                                                        
       this.browseBean.setupCommonBindingProperties(node);
       final String packagePath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
       NodePropertyResolver resolverPath = new NodePropertyResolver()
@@ -714,9 +722,6 @@ public class ManageTaskDialog extends BaseDialogBean
 //      node.remove("path");
 //      node.addPropertyResolver("path", resolverPath);
 //      node.addPropertyResolver("displayPath", resolverPath);
-
-      LOGGER.debug("created mapnode  " + node);
-      
       this.resources.add(node);
    }
    

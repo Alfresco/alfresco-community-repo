@@ -16,10 +16,10 @@
  */
 package org.alfresco.web.forms;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.xml.sax.SAXException;
 
 /**
@@ -43,7 +43,8 @@ public interface Rendition
    public String getSandboxRelativePath();
 
    /** the primary form instance data used to generate this rendition */
-   public FormInstanceData getPrimaryFormInstanceData();
+   public FormInstanceData getPrimaryFormInstanceData()
+      throws FileNotFoundException;
 
    /** the rendering engine template that generated this rendition */
    public RenderingEngineTemplate getRenderingEngineTemplate();

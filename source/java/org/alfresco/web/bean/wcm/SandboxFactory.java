@@ -65,9 +65,12 @@ public final class SandboxFactory
     * Website Name: .website.name = website name
     * 
     * @param storeId    The store name to create the sandbox for
+    * @param webProjectNodeRef The noderef for the webproject.
     * @param managers   The list of authorities who have ContentManager role in the website 
     */
-   public static SandboxInfo createStagingSandbox(final String storeId, final List<String> managers)
+   public static SandboxInfo createStagingSandbox(final String storeId, 
+                                                  final NodeRef webProjectNodeRef,
+                                                  final List<String> managers)
    {
       final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       final AVMService avmService = services.getAVMService();
@@ -93,6 +96,9 @@ public final class SandboxFactory
       avmService.setStoreProperty(stagingStoreName,
                                   AVMConstants.PROP_SANDBOX_STAGING_MAIN,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
+      avmService.setStoreProperty(stagingStoreName,
+                                  AVMConstants.PROP_WEB_PROJECT_NODE_REF,
+                                  new PropertyValue(DataTypeDefinition.NODE_REF, webProjectNodeRef));
       
       // tag the store with the DNS name property
       tagStoreDNSPath(avmService, stagingStoreName, storeId);

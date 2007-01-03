@@ -108,9 +108,6 @@ public class FormImpl
           ? (String)nodeService.getProperty(workflowRef, WCMAppModel.PROP_WORKFLOW_NAME)
           : null);
                
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("using workflow " + workflowName + " for form " + this.getName());
-
       return workflowName != null ? workflowService.getDefinitionByName(workflowName) : null;
    }
 

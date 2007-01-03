@@ -179,9 +179,11 @@
          </action-group>
 
          <action-group id="edit_wcm_package_item_actions">
-            <action idref="file_details" />
             <action idref="edit_file" />
             <action idref="update_file" />
+            <action idref="revert" />
+            <action idref="preview_file" />
+            <action idref="file_details" />
             <action idref="workflow_checkout_doc" />
             <action idref="workflow_checkin_doc" />
             <action idref="workflow_cancelcheckout_doc" />
@@ -211,9 +213,11 @@
          </action-group>
 
          <action-group id="edit_and_remove_wcm_package_item_actions">
-            <action idref="file_details" />
             <action idref="edit_file"/>
             <action idref="update_file" />
+            <action idref="revert" />
+            <action idref="preview_file" />
+            <action idref="file_details" />
             <action idref="workflow_checkout_doc" />
             <action idref="workflow_checkin_doc" />
             <action idref="workflow_cancelcheckout_doc" />

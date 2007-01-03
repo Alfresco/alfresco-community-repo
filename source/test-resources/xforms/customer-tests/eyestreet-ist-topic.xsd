@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:alfresco="http://www.alfresco.org/alfresco"
+    targetNamespace="http://www.alfresco.org/alfresco"
+    elementFormDefault="qualified">
+    <xs:element name="ist-topic">
+        <xs:complexType>
+            <xs:sequence>
+
+                <xs:element name="page_title" type="xs:string"/>
+                <xs:element name="image" type="xs:string"/>
+                <xs:element name="page_intro" type="xs:anyType"/>
+
+                <!-- announcements section title is an image. not text
+                <xs:element name="announcement_title" type="xs:string" default="Announcements" minOccurs="0"/>
+                -->
+                <xs:element name="announcement" minOccurs="1" maxOccurs="3">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="title" type="xs:string" minOccurs="0"/>
+                            <xs:element name="title_link" type="xs:string" minOccurs="0"/>
+                            <xs:element name="content" type="xs:anyType" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="left_column_title" type="xs:string" default="About this Topic"/>
+                <xs:element name="left_column" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="title" type="xs:string" minOccurs="0"/>
+                            <xs:element name="subtitle" type="xs:string" minOccurs="0"/>
+                            <xs:element name="subtitle_link" type="xs:string" minOccurs="0"/>
+                            <xs:element name="content" type="xs:anyType" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="right_column_section_1_title" type="xs:string" default="Documentation"/>
+                <xs:element name="right_column_section_1" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="title" type="xs:string" minOccurs="0"/>
+                            <xs:element name="subtitle" type="xs:string" minOccurs="0"/>
+                            <xs:element name="subtitle_link" type="xs:string" minOccurs="0"/>
+                            <xs:element name="content" type="xs:anyType" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="right_column_section_2_title" type="xs:string" default="Related Services"/>
+                <xs:element name="right_column_section_2" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="title" type="xs:string" minOccurs="0"/>
+                            <xs:element name="subtitle" type="xs:string" minOccurs="0"/>
+                            <xs:element name="subtitle_link" type="xs:string" minOccurs="0"/>
+                            <xs:element name="content" type="xs:anyType" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="right_column_section_3_title" type="xs:string" default="Support Resources"/>
+                <xs:element name="right_column_section_3" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="title" type="xs:string" minOccurs="0"/>
+                            <xs:element name="subtitle" type="xs:string" minOccurs="0"/>
+                            <xs:element name="subtitle_link" type="xs:string" minOccurs="0"/>
+                            <xs:element name="content" type="xs:anyType" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
+

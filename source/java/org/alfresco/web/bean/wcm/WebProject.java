@@ -16,38 +16,40 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import org.alfresco.web.bean.repository.User;
-import java.io.Serializable;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.List;
+import java.io.Serializable;
 import java.util.*;
+import java.util.List;
 import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.forms.xforms.XFormsProcessor;
-import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Provides configured data for a web project.
@@ -165,11 +167,19 @@ public class WebProject
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
 
    private final NodeRef nodeRef;
-   private Map<String, Form> forms;
 
    public WebProject(final NodeRef nodeRef)
    {
       this.nodeRef = nodeRef;
+   }
+
+   public WebProject(final String avmPath)
+   {
+      String stagingStore = AVMConstants.buildStagingStoreName(AVMConstants.getStoreId(AVMConstants.getStoreName(avmPath)));
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      this.nodeRef = (NodeRef)
+         avmService.getStoreProperty(stagingStore, 
+                                     AVMConstants.PROP_WEB_PROJECT_NODE_REF).getValue(DataTypeDefinition.NODE_REF);
    }
 
    /**
@@ -281,24 +291,21 @@ public class WebProject
 
    private Map<String, Form> getFormsImpl()
    {
-      if (this.forms == null)
+      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
+      final NodeService nodeService = serviceRegistry.getNodeService();
+      final List<ChildAssociationRef> formRefs = 
+         nodeService.getChildAssocs(this.nodeRef,
+                                    WCMAppModel.ASSOC_WEBFORM,
+                                    RegexQNamePattern.MATCH_ALL);
+      Map<String, Form> result = new HashMap<String, Form>(formRefs.size(), 1.0f);
+      for (final ChildAssociationRef ref : formRefs)
       {
-         final ServiceRegistry serviceRegistry = this.getServiceRegistry();
-         final NodeService nodeService = serviceRegistry.getNodeService();
-         final List<ChildAssociationRef> formRefs = 
-            nodeService.getChildAssocs(this.nodeRef,
-                                       WCMAppModel.ASSOC_WEBFORM,
-                                       RegexQNamePattern.MATCH_ALL);
-         this.forms = new HashMap<String, Form>(formRefs.size(), 1.0f);
-         for (final ChildAssociationRef ref : formRefs)
-         {
-            final String formName = (String)
-               nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
-            final Form baseForm = FormsService.getInstance().getForm(formName);
-            this.forms.put(formName, new FormWrapper(baseForm, ref.getChildRef()));
-         }
+         final String formName = (String)
+            nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_FORMNAME);
+         final Form baseForm = FormsService.getInstance().getForm(formName);
+         result.put(formName, new FormWrapper(baseForm, ref.getChildRef()));
       }
-      return this.forms;
+      return result;
    }
 
    private ServiceRegistry getServiceRegistry()

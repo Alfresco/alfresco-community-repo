@@ -317,6 +317,12 @@ public class CreateWebContentWizard extends BaseContentWizard
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("starting workflow " + wd + " with parameters " + parameters);
+
+         if (parameters == null)
+         {
+            Utils.addErrorMessage(Application.getMessage(context, "submit_workflow_config_error"));
+            return null;
+         }
          
          // start the workflow to get access to the start task
          WorkflowPath path = this.workflowService.startWorkflow(wd.id, null);

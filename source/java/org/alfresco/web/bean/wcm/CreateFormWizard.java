@@ -588,7 +588,8 @@ public class CreateFormWizard
    {
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("schemaFileValueChanged(" + this.getSchemaFile() + ")");
+         LOGGER.debug("schemaFileValueChanged(" + this.getFileName(FILE_SCHEMA) + "[" +
+                      this.getSchemaFile() + "])");
       }
       if (this.getSchemaFile() != null)
       {
@@ -599,9 +600,9 @@ public class CreateFormWizard
          }
          catch (Exception e)
          {
-            final String msg = "unable to parse " + this.getSchemaFileName();
+            final String msg = "unable to parse " + this.getFileName(FILE_SCHEMA);
             this.removeUploadedSchemaFile();
-            Utils.addErrorMessage(msg, e);
+            Utils.addErrorMessage(msg + ": " + e.getMessage(), e);
          }
       }
       return null;
@@ -822,8 +823,7 @@ public class CreateFormWizard
       }
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("getSchemaRootElementNameChoices(" + this.schema +
-                      ") = " + result.size());
+         LOGGER.debug("getSchemaRootElementNameChoices(" + this.schema + ") = " + result.size());
       }
       return result;
    }

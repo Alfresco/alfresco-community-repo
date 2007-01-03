@@ -16,6 +16,7 @@
  */
 package org.alfresco.web.forms;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.faces.context.FacesContext;
@@ -23,7 +24,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -89,17 +93,21 @@ public class RenditionImpl
    }
 
    public FormInstanceData getPrimaryFormInstanceData()
+      throws FileNotFoundException
    {
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
       final String fidAVMStoreRelativePath = (String)
          nodeService.getProperty(this.nodeRef, 
                                  WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
       String avmStore = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
       avmStore = avmStore.substring(0, avmStore.indexOf(':'));
-      
-      final NodeRef fidNodeRef = 
-         AVMNodeConverter.ToNodeRef(-1, avmStore + ':' + fidAVMStoreRelativePath);
-      return new FormInstanceDataImpl(fidNodeRef);
+      final String path = avmStore + ':' + fidAVMStoreRelativePath;
+      if (avmService.lookup(-1, path) == null)
+      {
+         throw new FileNotFoundException("unable to find primary form instance data " + path);
+      }
+      return new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, path));
    }
 
    /** the rendering engine template that generated this rendition */

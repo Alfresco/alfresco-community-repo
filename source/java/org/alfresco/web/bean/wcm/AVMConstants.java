@@ -740,6 +740,7 @@ public final class AVMConstants
    public final static String PROP_SANDBOXID = ".sandbox-id.";
    public final static String PROP_DNS = ".dns.";
    public final static String PROP_SANDBOX_STORE_PREFIX = ".sandbox.store.";
+   public final static QName PROP_WEB_PROJECT_NODE_REF =     QName.createQName(null, ".web_project.noderef");
    public final static QName PROP_SANDBOX_STAGING_MAIN =     QName.createQName(null, ".sandbox.staging.main");
    public final static QName PROP_SANDBOX_STAGING_PREVIEW =  QName.createQName(null, ".sandbox.staging.preview");
    public final static QName PROP_SANDBOX_AUTHOR_MAIN =      QName.createQName(null, ".sandbox.author.main");

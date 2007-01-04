@@ -34,9 +34,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
-import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.bean.wcm.AVMNode;
-import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -126,7 +124,14 @@ public class ManageTaskDialog extends BaseDialogBean
          {
             LOGGER.debug("Task: " + this.task);
             LOGGER.debug("Trasient node: " + this.taskNode);
-            LOGGER.debug("Workflow package: " + this.workflowPackage );
+            Boolean isSystemPackage = (Boolean)
+               this.nodeService.getProperty(this.workflowPackage,
+                                            WorkflowModel.PROP_IS_SYSTEM_PACKAGE);
+            LOGGER.debug("Workflow package: " + this.workflowPackage + 
+                         " system package: " + isSystemPackage);
+            boolean isWCMWorkflow = 
+               this.task.properties.get(AVMWorkflowUtil.PROP_FROM_PATH) != null;
+            LOGGER.debug("is wcm workflow: " + isWCMWorkflow);
          }
       }
    }
@@ -537,8 +542,7 @@ public class ManageTaskDialog extends BaseDialogBean
             tx = Repository.getUserTransaction(context, true);
             tx.begin();
 
-            if ((Boolean)this.nodeService.getProperty(this.workflowPackage,
-                                                      WorkflowModel.PROP_IS_SYSTEM_PACKAGE))
+            if (this.task.properties.get(AVMWorkflowUtil.PROP_FROM_PATH) != null)
             {
                final NodeRef stagingNodeRef = (NodeRef)
                   this.nodeService.getProperty(this.workflowPackage,
@@ -689,39 +693,9 @@ public class ManageTaskDialog extends BaseDialogBean
    {
       LOGGER.debug("adding node  " + node);
       node.getProperties().put("taskId", this.task.id);
-      final ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      final String dns = AVMConstants.lookupStoreDNS(AVMConstants.getStoreName(node.getPath()));
-      node.getProperties().put("previewUrl", 
-                               AVMConstants.buildAssetUrl(AVMConstants.getSandboxRelativePath(node.getPath()),
-                                                          config.getWCMDomain(),
-                                                          config.getWCMPort(),
-                                                          dns));
-                                                                        
       this.browseBean.setupCommonBindingProperties(node);
-      final String packagePath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
-      NodePropertyResolver resolverPath = new NodePropertyResolver()
-      {
-         public Object get(Node node)
-         {
-            Path result = new Path();
-            String s = node.getPath();
-            s = s.substring(packagePath.length());
-            for (final String s2 : s.split("/"))
-            {
-               if (s2.length() != 0)
-               {
-                  result.append(new Path.Element() 
-                  {
-                     public String getElementString() { return s2; }
-                  });
-               }
-            }
-            return result;
-         }
-      };
-//      node.remove("path");
-//      node.addPropertyResolver("path", resolverPath);
-//      node.addPropertyResolver("displayPath", resolverPath);
+      node.addPropertyResolver("path", AVMNode.RESOLVER_SANDBOX_RELATIVE_PATH);
+      node.addPropertyResolver("previewUrl", AVMNode.RESOLVER_PREVIEW_URL);
       this.resources.add(node);
    }
    

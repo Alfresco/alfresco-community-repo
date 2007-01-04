@@ -306,28 +306,32 @@
          <wizard name="createWebContent" managed-bean="CreateWebContentWizard"
                  title-id="create_web_content_title" description-id="create_web_content_desc"
                  icon="/images/icons/new_content_large.gif">
-            <step name="details" title-id="details" description-id="create_content_step1_desc">
+            <step name="details" 
+		  title-id="create_web_content_details_title" 
+		  description-id="create_content_step1_desc">
                <page path="/jsp/wcm/create-web-content-wizard/details.jsp" 
-                     title-id="create_content_step1_title"
+                     title-id="create_web_content_details_step_title"
                      description-id="create_content_step1_desc"
                      instruction-id="default_instruction" />
             </step>
-            <step name="content" title-id="enter_content" description-id="create_content_step2_desc">
+            <step name="content" 
+		  title-id="create_web_content_enter_content_title" 
+		  description-id="create_content_step2_desc">
                <condition if="#{CreateWebContentWizard.mimeType == 'text/html'}">
                   <page path="/jsp/wcm/create-web-content-wizard/create-html.jsp"
-                        title-id="create_content_step2_title"
+                        title-id="create_web_content_enter_content_step_title"
                         description-id="create_content_step2_desc"
                         instruction-id="default_instruction" />
                </condition>
                <condition if="#{CreateWebContentWizard.mimeType == 'text/xml'}">
                   <page path="/jsp/wcm/create-web-content-wizard/create-xml.jsp"
-                        title-id="create_content_step2_title"
+                        title-id="create_web_content_enter_content_step_title"
                         description-id="create_content_step2_desc"
                         instruction-id="default_instruction" />
                </condition>
                <!-- Default to the inline text editor -->
                <page path="/jsp/wcm/create-web-content-wizard/create-text.jsp"
-                     title-id="create_content_step2_title"
+                     title-id="create_web_content_enter_content_step_title"
                      description-id="create_content_step2_desc"
                      instruction-id="default_instruction" />
             </step>
@@ -352,7 +356,7 @@
             <step name="form_details" title-id="create_form_form_details_title" 
                   description-id="create_form_form_details_desc">
                <page path="/jsp/wcm/create-form-wizard/details.jsp" 
-                     title-id="create_form_form_details_title"
+                     title-id="create_form_form_details_step_title"
                      description-id="create_form_form_details_desc"
                      instruction-id="default_instruction" />
             </step>
@@ -360,7 +364,7 @@
                   title-id="create_form_configure_rendering_engine_templates_title" 
                   description-id="create_form_configure_rendering_engine_templates_desc">
                <page path="/jsp/wcm/create-form-wizard/configure-rendering-engines.jsp"
-                     title-id="create_form_configure_rendering_engine_templates_title"
+                     title-id="create_form_configure_rendering_engine_templates_step_title"
                      description-id="create_form_configure_rendering_engine_templates_desc"
                      instruction-id="default_instruction" />
             </step>
@@ -368,7 +372,7 @@
                   title-id="create_form_select_default_workflow_title" 
                   description-id="create_form_select_default_workflow_desc">
                <page path="/jsp/wcm/create-form-wizard/select-default-workflow.jsp"
-                     title-id="create_form_select_default_workflow_title"
+                     title-id="create_form_select_default_workflow_step_title"
                      description-id="create_form_select_default_workflow_desc"
                      instruction-id="default_instruction" />
             </step>
@@ -387,7 +391,7 @@
             <step name="form_details" title-id="create_form_form_details_title" 
                   description-id="create_form_form_details_desc">
                <page path="/jsp/wcm/create-form-wizard/details.jsp" 
-                     title-id="create_form_form_details_title"
+                     title-id="create_form_form_details_step_title"
                      description-id="create_form_form_details_desc"
                      instruction-id="default_instruction" />
             </step>
@@ -395,7 +399,7 @@
                   title-id="create_form_configure_rendering_engine_templates_title" 
                   description-id="create_form_configure_rendering_engine_templates_desc">
                <page path="/jsp/wcm/create-form-wizard/configure-rendering-engines.jsp"
-                     title-id="create_form_configure_rendering_engine_templates_title"
+                     title-id="create_form_configure_rendering_engine_templates_step_title"
                      description-id="create_form_configure_rendering_engine_templates_desc"
                      instruction-id="default_instruction" />
             </step>
@@ -403,7 +407,7 @@
                   title-id="create_form_select_default_workflow_title" 
                   description-id="create_form_select_default_workflow_desc">
                <page path="/jsp/wcm/create-form-wizard/select-default-workflow.jsp"
-                     title-id="create_form_select_default_workflow_title"
+                     title-id="create_form_select_default_workflow_step_title"
                      description-id="create_form_select_default_workflow_desc"
                      instruction-id="default_instruction" />
             </step>

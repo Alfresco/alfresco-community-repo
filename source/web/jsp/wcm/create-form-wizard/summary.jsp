@@ -36,11 +36,20 @@
                 activeSelect="true" 
                 style="width:100%" 
                 itemStyleClass="selectListItem">
-    <a:listItem label="${WizardManager.bean.formTitle}"
+    <a:listItem label="${msg.name}: ${WizardManager.bean.formTitle}"
                 value="${WizardManager.bean.formName}"
                 image="/images/icons/webform_large.gif">
       <jsp:attribute name="description">
-        <div>${msg.description}: ${WizardManager.bean.formDescription}</div>
+        <div>${msg.description}:
+	<c:choose>
+	  <c:when test="${empty WizardManager.bean.formDescription}">
+	    &lt;${msg.value_not_set}&gt;
+	  </c:when>
+	  <c:otherwise>
+	    ${WizardManager.bean.formDescription}
+	  </c:otherwise>
+	</c:choose>
+	</div>
         <div>${msg.schema_root_element_name}: ${WizardManager.bean.schemaRootElementName}</div>
         <div>${msg.output_path_pattern}: ${WizardManager.bean.outputPathPatternForFormInstanceData}</div>
       </jsp:attribute>
@@ -60,11 +69,20 @@
                 style="width:100%" 
                 itemStyleClass="selectListItem">
     <c:forEach items="${WizardManager.bean.renderingEngineTemplates}" var="ret">
-      <a:listItem label="${ret.title}"
-                  value="${ret.fileName}"
+      <a:listItem label="${msg.name}: ${ret.title}"
+                  value="${ret.name}"
                   image="/images/icons/template_large.gif">
         <jsp:attribute name="description">
-          <div>${msg.description}: ${ret.description}</div>
+          <div>${msg.description}:
+	    <c:choose>
+	      <c:when test="${empty ret.description}">
+		&lt;${msg.value_not_set}&gt;
+	      </c:when>
+	      <c:otherwise>
+		${ret.description}
+	      </c:otherwise>
+	    </c:choose>
+	  </div>
           <div>${msg.rendering_engine_type}: ${ret.renderingEngine.name}</div>
           <div>${msg.output_path_pattern}: ${ret.outputPathPatternForRendition}</div>
           <div>${msg.mimetype_for_renditions}: ${ret.mimetypeForRendition}</div>

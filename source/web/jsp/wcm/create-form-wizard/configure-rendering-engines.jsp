@@ -29,13 +29,13 @@
   <script type="text/javascript">
     function upload_file(el)
     {
-       el.form.method = "post";
-       el.form.enctype = "multipart/form-data";
-       // for IE
-       el.form.encoding = "multipart/form-data";
-       el.form.action = "<%= request.getContextPath() %>/uploadFileServlet";
-       el.form.submit();
-       return false;
+    el.form.method = "post";
+    el.form.enctype = "multipart/form-data";
+    // for IE
+    el.form.encoding = "multipart/form-data";
+    el.form.action = "<%= request.getContextPath() %>/uploadFileServlet";
+    el.form.submit();
+    return false;
     }
   </script>
 </f:verbatim>
@@ -54,37 +54,37 @@
     <h:outputText id="output_text_rendering_engine_template_file"
                   value="#{msg.rendering_engine_template_file}:"/>
     <h:column id="column_pt">
-<%
-final FileUploadBean upload = (FileUploadBean)
-   session.getAttribute(FileUploadBean.getKey(CreateFormWizard.FILE_RENDERING_ENGINE_TEMPLATE));
-if (upload == null || upload.getFile() == null)
-{
-%>
+      <%
+         final FileUploadBean upload = (FileUploadBean)
+         session.getAttribute(FileUploadBean.getKey(CreateFormWizard.FILE_RENDERING_ENGINE_TEMPLATE));
+         if (upload == null || upload.getFile() == null)
+         {
+         %>
 
       <f:verbatim>
 	<input type="hidden" name="upload-id" value="<%= CreateFormWizard.FILE_RENDERING_ENGINE_TEMPLATE %>"/>
 	<input type="hidden" name="return-page" value="<%= request.getContextPath() %>/faces<%= request.getServletPath() %>"/>
 	<input id="wizard:wizard-body:file-input" type="file" size="35" name="alfFileInput" onchange="javascript:upload_file(this)"/>
       </f:verbatim>
-<%
-} 
-else 
-{
-%>
-    <h:outputText id="rendering-engine-template-file-name"
-                  value="#{WizardManager.bean.renderingEngineTemplateFileName}"/>
-    <h:outputText id="output_text_rendering_engine_template_space"
-                  value="&nbsp;"
-		  escape="false"/>
-    <a:actionLink id="action_link_remove_rendering_engine_template"
-		  image="/images/icons/delete.gif" 
-                  value="#{msg.remove}" 
-                  action="#{WizardManager.bean.removeUploadedRenderingEngineTemplateFile}"
-                  showLink="false" 
-		  target="top"/>
-<%
-}
-%>
+      <%
+         } 
+         else 
+         {
+         %>
+      <h:outputText id="rendering-engine-template-file-name"
+                    value="#{WizardManager.bean.renderingEngineTemplateFileName}"/>
+      <h:outputText id="output_text_rendering_engine_template_space"
+                    value="&nbsp;"
+		    escape="false"/>
+      <a:actionLink id="action_link_remove_rendering_engine_template"
+		    image="/images/icons/delete.gif" 
+                    value="#{msg.remove}" 
+                    action="#{WizardManager.bean.removeUploadedRenderingEngineTemplateFile}"
+                    showLink="false" 
+		    target="top"/>
+      <%
+         }
+         %>
     </h:column>
   </h:panelGrid>
 
@@ -101,8 +101,8 @@ else
                   value="#{msg.rendering_engine}:"/>
     <h:selectOneRadio id="rendering-engine" 
 		      value="#{WizardManager.bean.renderingEngineName}">
-     <f:selectItems id="rendering-engine-choices"
-		    value="#{WizardManager.bean.renderingEngineChoices}"/>
+      <f:selectItems id="rendering-engine-choices"
+		     value="#{WizardManager.bean.renderingEngineChoices}"/>
     </h:selectOneRadio>
 
     <h:graphicImage id="required-image-name"
@@ -166,37 +166,40 @@ else
                  cellspacing="0" cellpadding="4" width="100%"
                  rendered="#{WizardManager.bean.renderingEngineTemplatesDataModel.rowCount != 0}">
       <h:column id="data-table-column-0">
-         <f:facet name="header">
-            <h:outputText id="data-table-name-0" value="#{msg.selected_rendering_engine_templates}" />
-         </f:facet>
-         <f:verbatim>
-            <img style="float: left" src="<%= request.getContextPath() %>/images/icons/template_large.gif"/>
-         </f:verbatim>
-         <h:panelGrid id="panel_grid_row"
-                      columns="2" cellpadding="0" cellspacing="1" border="0">
-           <h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
-           <h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
+        <f:facet name="header">
+          <h:outputText id="data-table-name-0" value="#{msg.selected_rendering_engine_templates}" />
+        </f:facet>
+        <f:verbatim>
+          <img style="float: left" src="<%= request.getContextPath() %>/images/icons/template_large.gif"/>
+        </f:verbatim>
+        <h:panelGrid id="panel_grid_row"
+                     columns="2" cellpadding="0" cellspacing="1" border="0">
+          <h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
+          <h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
 
-           <h:outputText id="data-table-name-0-filename" value="#{msg.file_name}: " />
-           <h:outputText id="data-table-value-0-filename" value="#{row.fileName}" />
+          <h:outputText id="data-table-name-0-name" value="#{msg.name}: " />
+          <h:outputText id="data-table-value-0-name" value="#{row.name}" />
 
-           <h:outputText id="data-table-name-0-name" value="#{msg.name}: " />
-           <h:outputText id="data-table-value-0-name" value="#{row.name}" />
+          <h:outputText id="data-table-name-0-title" value="#{msg.title}: " />
+          <h:outputText id="data-table-value-0-title" value="#{row.title}" />
 
-           <h:outputText id="data-table-name-0-title" value="#{msg.title}: " />
-           <h:outputText id="data-table-value-0-title" value="#{row.title}" />
+          <h:outputText id="data-table-name-0-description" value="#{msg.description}: " />
+          <h:outputText id="data-table-value-0-description-empty" 
+                        rendered="#{empty row.description}" value="<#{msg.value_not_set}>" />
+          <h:outputText id="data-table-value-0-description-not-empty" 
+                        rendered="#{!empty row.description}" value="#{row.description}" />
 
-           <h:outputText id="data-table-name-0-mimetype" value="#{msg.mimetype_for_renditions}: " />
-           <h:outputText id="data-table-value-0-mimetype" value="#{row.mimetypeForRendition}" />
+          <h:outputText id="data-table-name-0-mimetype" value="#{msg.mimetype_for_renditions}: " />
+          <h:outputText id="data-table-value-0-mimetype" value="#{row.mimetypeForRendition}" />
 
-           <h:outputText id="data-table-name-0-opp" value="#{msg.output_path_pattern}: " />
-           <h:outputText id="data-table-value-0-opp" value="#{row.outputPathPatternForRendition}" />
-	 </h:panelGrid>
+          <h:outputText id="data-table-name-0-opp" value="#{msg.output_path_pattern}: " />
+          <h:outputText id="data-table-value-0-opp" value="#{row.outputPathPatternForRendition}" />
+	</h:panelGrid>
       </h:column>
       <h:column id="data-table-column-5">
         <a:actionLink id="remove-select-rendering-engine-action-link"
 		      actionListener="#{WizardManager.bean.removeSelectedRenderingEngineTemplate}" 
-	         image="/images/icons/delete.gif" value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+	              image="/images/icons/delete.gif" value="#{msg.remove}" showLink="false" style="padding-left:6px" />
       </h:column>
     </h:dataTable>
     

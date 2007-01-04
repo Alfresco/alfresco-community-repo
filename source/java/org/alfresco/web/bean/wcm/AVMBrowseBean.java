@@ -89,7 +89,7 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_SUBMIT_SUCCESS = "submit_success";
    private static final String MSG_SUBMITALL_SUCCESS = "submitall_success";
    private static final String MSG_SUBMITSELECTED_SUCCESS = "submitselected_success";
-   
+
    /** Component id the status messages are tied too */
    static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
    
@@ -629,15 +629,11 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         String dns = AVMConstants.lookupStoreDNS(getSandbox());
          int rootPathIndex = AVMConstants.buildSandboxRootPath(getSandbox()).length();
          
          Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(-1, getCurrentPath());
          this.files = new ArrayList<Map>(nodes.size());
          this.folders = new ArrayList<Map>(nodes.size());
-         ClientConfigElement config = Application.getClientConfig(context);
-         String wcmDomain = config.getWCMDomain();
-         String wcmPort = config.getWCMPort();
          for (String name : nodes.keySet())
          {
             AVMNodeDescriptor avmRef = nodes.get(name);
@@ -661,9 +657,7 @@ public class AVMBrowseBean implements IContextListener
             }
             
             // common properties
-            String assetPath = path.substring(rootPathIndex);
-            String previewUrl = AVMConstants.buildAssetUrl(assetPath, wcmDomain, wcmPort, dns);
-            node.getProperties().put("previewUrl", previewUrl);
+            node.addPropertyResolver("previewUrl", AVMNode.RESOLVER_PREVIEW_URL);
          }
          
          // commit the transaction

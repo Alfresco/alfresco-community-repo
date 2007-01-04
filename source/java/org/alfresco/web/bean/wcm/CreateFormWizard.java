@@ -86,7 +86,6 @@ public class CreateFormWizard
    public class RenderingEngineTemplateData
       implements Serializable
    {
-      private final String fileName;
       private final NodeRef nodeRef;
       private final File file;
       private final String name;
@@ -100,7 +99,6 @@ public class CreateFormWizard
       {
          this.file = null;
          this.nodeRef = ((RenderingEngineTemplateImpl)ret).getNodeRef();
-         this.fileName = ret.getName();
          this.name = ret.getName();
          this.title = ret.getTitle();
          this.description = ret.getDescription();
@@ -109,8 +107,7 @@ public class CreateFormWizard
          this.renderingEngine = ret.getRenderingEngine();
       }
 
-      public RenderingEngineTemplateData(final String fileName, 
-                                         final File file,
+      public RenderingEngineTemplateData(final File file,
                                          final String name,
                                          final String title,
                                          final String description,
@@ -119,7 +116,6 @@ public class CreateFormWizard
                                          final RenderingEngine renderingEngine)
       {
          this.nodeRef = null;
-         this.fileName = fileName;
          this.file = file;
          this.name = name;
          this.title = title;
@@ -139,11 +135,6 @@ public class CreateFormWizard
          return this.mimetypeForRendition;
       }
       
-      public String getFileName()
-      {
-         return this.fileName;
-      }
-
       public File getFile()
       {
          return this.file;
@@ -177,7 +168,7 @@ public class CreateFormWizard
       public String toString()
       {
          return (this.getClass().getName() + "{" +
-                 "fileName: " + this.getFileName() + "," +
+                 "name: " + this.getName() + "," +
                  "mimetypeForRendition: " + this.getMimetypeForRendition() + "," +
                  "outputPathPatternForRendition: " + this.getOutputPathPatternForRendition() + "," +
                  "renderingEngine: " + this.getRenderingEngine().getName() + 
@@ -529,8 +520,7 @@ public class CreateFormWizard
          }
       }
       final RenderingEngineTemplateData data = 
-         this.new RenderingEngineTemplateData(this.getRenderingEngineTemplateFileName(),
-                                              this.getRenderingEngineTemplateFile(),
+         this.new RenderingEngineTemplateData(this.getRenderingEngineTemplateFile(),
                                               this.getRenderingEngineTemplateName(),
                                               this.getRenderingEngineTemplateTitle(),
                                               this.getRenderingEngineTemplateDescription(),
@@ -726,35 +716,6 @@ public class CreateFormWizard
        
        return this.mimetypeChoices;
    }
-
-   private FileUploadBean getFileUploadBean(final String id)
-   {
-      final FacesContext ctx = FacesContext.getCurrentInstance();
-      final Map sessionMap = ctx.getExternalContext().getSessionMap();
-      return (FileUploadBean)sessionMap.get(FileUploadBean.getKey(id));
-   }
-   
-   /**
-    * @return Returns the name of the file
-    */
-   private String getFileName(final String id)
-   {
-      // try and retrieve the file and filename from the file upload bean
-      // representing the file we previously uploaded.
-      final FileUploadBean fileBean = this.getFileUploadBean(id);
-      return fileBean == null ? null : fileBean.getFileName();
-   }
-   
-   /**
-    * @return Returns the schema file or <tt>null</tt>
-    */
-   private File getFile(final String id)
-   {
-      // try and retrieve the file and filename from the file upload bean
-      // representing the file we previously uploaded.
-      final FileUploadBean fileBean = this.getFileUploadBean(id);
-      return fileBean != null ? fileBean.getFile() : null;
-   }
    
    /**
     * @return Returns the schema file or <tt>null</tt>
@@ -927,7 +888,7 @@ public class CreateFormWizard
    public String getRenderingEngineTemplateName()
    {
       return (this.renderingEngineTemplateName == null && this.getRenderingEngineTemplateFileName() != null
-              ? FilenameUtils.removeExtension(this.getRenderingEngineTemplateFileName())
+              ? this.getRenderingEngineTemplateFileName()
               : this.renderingEngineTemplateName);
    }
    /**
@@ -1056,13 +1017,42 @@ public class CreateFormWizard
    protected void clearUpload(final String id)
    {
       // remove the file upload bean from the session
-      FacesContext ctx = FacesContext.getCurrentInstance();
-      FileUploadBean fileBean =
-         (FileUploadBean)ctx.getExternalContext().getSessionMap().get(FileUploadBean.getKey(id));
+      final FacesContext ctx = FacesContext.getCurrentInstance();
+      FileUploadBean fileBean = (FileUploadBean)
+         ctx.getExternalContext().getSessionMap().get(FileUploadBean.getKey(id));
       if (fileBean != null)
       {
          fileBean.setFile(null);
          fileBean.setFileName(null);
       }
+   }
+
+   private FileUploadBean getFileUploadBean(final String id)
+   {
+      final FacesContext ctx = FacesContext.getCurrentInstance();
+      final Map sessionMap = ctx.getExternalContext().getSessionMap();
+      return (FileUploadBean)sessionMap.get(FileUploadBean.getKey(id));
+   }
+   
+   /**
+    * @return Returns the name of the file
+    */
+   private String getFileName(final String id)
+   {
+      // try and retrieve the file and filename from the file upload bean
+      // representing the file we previously uploaded.
+      final FileUploadBean fileBean = this.getFileUploadBean(id);
+      return fileBean == null ? null : fileBean.getFileName();
+   }
+   
+   /**
+    * @return Returns the schema file or <tt>null</tt>
+    */
+   private File getFile(final String id)
+   {
+      // try and retrieve the file and filename from the file upload bean
+      // representing the file we previously uploaded.
+      final FileUploadBean fileBean = this.getFileUploadBean(id);
+      return fileBean != null ? fileBean.getFile() : null;
    }
 }

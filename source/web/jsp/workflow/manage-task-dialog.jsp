@@ -62,8 +62,6 @@
       </a:column>
       
       <%-- Path column --%>
-<%--
-XXXarielb need to uncomment this once i figure out how to deal with paths...
       <a:column id="col3" style="padding:2px;text-align:left">
          <f:facet name="header">
             <a:sortLink id="col3-sort" label="#{msg.path}" value="path" styleClass="header"/>
@@ -71,7 +69,7 @@ XXXarielb need to uncomment this once i figure out how to deal with paths...
          <r:nodePath id="col3-path" value="#{r.path}" action="dialog:close:browse" 
                      actionListener="#{BrowseBean.clickSpacePath}" />
       </a:column>
---%>
+
       <%-- Created Date column --%>
       <a:column id="col4" style="padding:2px;text-align:left">
          <f:facet name="header">

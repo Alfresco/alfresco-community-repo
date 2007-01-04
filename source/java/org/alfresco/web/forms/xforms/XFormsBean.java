@@ -42,6 +42,7 @@ import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.Utils;
 
@@ -426,12 +427,12 @@ public class XFormsBean
       String currentPath = (String)requestParameters.get("currentPath");
       if (currentPath == null)
       {
-         currentPath = this.avmBrowseBean.getCurrentPath();
+         currentPath = this.getCurrentAVMPath();
       }
       else
       {
          final String previewStorePath = 
-            AVMConstants.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
+            AVMConstants.getCorrespondingPathInPreviewStore(this.getCurrentAVMPath());
          currentPath = AVMConstants.buildPath(previewStorePath,
                                               currentPath,
                                               AVMConstants.PathRelation.WEBAPP_RELATIVE);
@@ -449,7 +450,7 @@ public class XFormsBean
          final Element errorElement = result.createElement("error");
          errorElement.appendChild(result.createTextNode("Path " + currentPath + " not found"));
          filePickerDataElement.appendChild(errorElement);
-         currentPath = this.avmBrowseBean.getCurrentPath();
+         currentPath = this.getCurrentAVMPath();
       }
       else if (! currentNode.isDirectory())
       {
@@ -515,7 +516,7 @@ public class XFormsBean
          else if (item.isFormField() && item.getFieldName().equals("currentPath"))
          {
             final String previewStorePath = 
-               AVMConstants.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
+               AVMConstants.getCorrespondingPathInPreviewStore(this.getCurrentAVMPath());
             currentPath = AVMConstants.buildPath(previewStorePath,
                                                  item.getString(),
                                                  AVMConstants.PathRelation.WEBAPP_RELATIVE);
@@ -709,7 +710,7 @@ public class XFormsBean
    private Document getXFormsDocument()
       throws FormBuilderException
    {
-      final String cwdAVMPath = this.avmBrowseBean.getCurrentPath();
+      final String cwdAVMPath = this.getCurrentAVMPath();
 
       if (LOGGER.isDebugEnabled())
       {
@@ -747,5 +748,12 @@ public class XFormsBean
       {
          throw new FormBuilderException(saxe);
       }
+   }
+
+   private String getCurrentAVMPath()
+   {
+      final AVMNode node = this.avmBrowseBean.getAvmActionNode();
+      final String result = node.getPath();
+      return node.isDirectory() ? result : AVMNodeConverter.SplitBase(result)[0];
    }
 }

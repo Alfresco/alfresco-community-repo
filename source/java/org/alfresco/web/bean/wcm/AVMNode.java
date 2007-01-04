@@ -19,13 +19,18 @@ package org.alfresco.web.bean.wcm;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.NodePropertyResolver;
+import org.alfresco.web.config.ClientConfigElement;
 
 /**
  * Node class representing an AVM specific Node.
@@ -37,8 +42,57 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class AVMNode extends Node implements Map<String, Object>
 {
+
+   public final static NodePropertyResolver RESOLVER_PREVIEW_URL =
+      new NodePropertyResolver()
+      {
+         public Object get(final Node node)
+         {
+            if (! (node instanceof AVMNode))
+            {
+               return null;
+            }
+            final ClientConfigElement config = 
+               Application.getClientConfig(FacesContext.getCurrentInstance());
+            final String dns = 
+               AVMConstants.lookupStoreDNS(AVMConstants.getStoreName(node.getPath()));
+            return AVMConstants.buildAssetUrl(AVMConstants.getSandboxRelativePath(node.getPath()),
+                                              config.getWCMDomain(),
+                                              config.getWCMPort(),
+                                              dns);
+         }
+      };
+
+   public final static NodePropertyResolver RESOLVER_SANDBOX_RELATIVE_PATH =
+      new NodePropertyResolver()
+      {
+         public Object get(final Node node)
+         {
+            if (! (node instanceof AVMNode))
+            {
+               return null;
+            }
+            String s = node.getPath();
+            s = AVMConstants.getSandboxRelativePath(s);
+            final Path result = new Path();
+            final String[] parts = s.split("/");
+            for (int i = 1; i < parts.length; i++)
+            {
+               if (parts[i].length() != 0)
+               {
+                  final String s2 = parts[i];
+                  result.append(new Path.Element() 
+                  {
+                     public String getElementString() { return s2; }
+                  });
+               }
+            }
+            return result;
+         }
+      };
+
+
    private AVMNodeDescriptor avmRef;
-   private String path;
    private int version;
    private boolean deleted = false;
    
@@ -48,13 +102,12 @@ public class AVMNode extends Node implements Map<String, Object>
     * 
     * @param avmRef     The AVMNodeDescriptor that describes this node
     */
-   public AVMNode(AVMNodeDescriptor avmRef)
+   public AVMNode(final AVMNodeDescriptor avmRef)
    {
       super(AVMNodeConverter.ToNodeRef(-1, avmRef.getPath()));
       this.avmRef = avmRef;
       this.version = -1;      // TODO: always -1 for now...
-      this.path = avmRef.getPath();
-      this.id = this.path;
+      this.id = avmRef.getPath();
    }
    
    /**
@@ -69,17 +122,19 @@ public class AVMNode extends Node implements Map<String, Object>
       this.deleted = deleted;
    }
    
-   public final String getPath()
+   @Override
+   public String getPath()
    {
-      return this.path;
+      return this.avmRef.getPath();
    }
-   
-   public final int getVersion()
+
+   public int getVersion()
    {
       return this.version;
    }
    
-   public final String getName()
+   @Override
+   public String getName()
    {
       return this.avmRef.getName();
    }
@@ -97,13 +152,13 @@ public class AVMNode extends Node implements Map<String, Object>
    /**
     * @return All the properties known about this node.
     */
-   public final Map<String, Object> getProperties()
+   public Map<String, Object> getProperties()
    {
-      if (this.propsRetrieved == false)
+      if (!this.propsRetrieved)
       {
-         if (this.deleted == false)
+         if (!this.deleted)
          {
-            Map<QName, PropertyValue> props = getServiceRegistry().getAVMService().getNodeProperties(this.version, this.path);
+            Map<QName, PropertyValue> props = getServiceRegistry().getAVMService().getNodeProperties(this.version, this.id);
             for (QName qname: props.keySet())
             {
                PropertyValue propValue = props.get(qname);
@@ -111,8 +166,7 @@ public class AVMNode extends Node implements Map<String, Object>
             }
          }
          
-         this.properties.put("id", this.path);
-         this.properties.put("path", this.path);
+         this.properties.put("id", this.id);
          this.properties.put("size", this.avmRef.getLength());
          this.properties.put("name", this.avmRef.getName());
          this.properties.put("created", this.avmRef.getCreateDate());

@@ -62,6 +62,7 @@ import org.w3c.dom.Document;
 /**
  * Bean backing the edit pages for a AVM node content.
  * 
+ * @author Ariel Backenroth
  * @author Kevin Roast
  */
 public class AVMEditBean

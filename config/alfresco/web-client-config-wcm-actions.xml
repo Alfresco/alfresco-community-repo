@@ -13,7 +13,7 @@
             <image>/images/icons/edit_icon.gif</image>
             <action-listener>#{AVMEditBean.setupEditAction}</action-listener>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -28,7 +28,7 @@
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:deleteAvmFile</action>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -43,7 +43,7 @@
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:deleteAvmFileBrowse</action>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -58,7 +58,7 @@
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:deleteAvmFolder</action>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -73,7 +73,7 @@
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:deleteAvmFolderBrowse</action>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -88,7 +88,7 @@
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:submitSandboxItems</action>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -102,7 +102,7 @@
             <image>/images/icons/revert.gif</image>
             <action-listener>#{AVMBrowseBean.revertNode}</action-listener>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -185,7 +185,7 @@
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:updateAvmFile</action>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -199,7 +199,7 @@
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:showFileDetails</action>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          
@@ -213,7 +213,7 @@
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
             <action>dialog:showFolderDetails</action>
             <params>
-               <param name="id">#{actionContext.path}</param>
+               <param name="id">#{actionContext.id}</param>
             </params>
          </action>
          

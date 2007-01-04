@@ -80,6 +80,12 @@
             <ref bean="ServiceRegistry"/>
         </property>
     </bean> 
+
+    <bean id="scriptBehaviour" abstract="true">
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
     
      <bean id="avmScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.AVM">
         <property name="scriptName">

@@ -130,6 +130,23 @@
 
     <!-- The authentication component.                                      -->
 
+    <bean id="AuthenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="target">
+            <ref bean="authenticationComponent" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
     <alias name="authenticationComponent" alias="authenticationComponentImpl"/>  <!-- TODO: Remove -->
     <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl">
         <property name="authenticationDao">

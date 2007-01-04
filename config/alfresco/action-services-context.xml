@@ -28,7 +28,7 @@
     		<ref bean="transactionComponent"/>
     	</property>
     	<property name="authenticationComponent">
-    		<ref bean="authenticationComponent"/>
+    		<ref bean="AuthenticationComponent"/>
     	</property>
     </bean>
 

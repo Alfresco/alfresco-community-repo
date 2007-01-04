@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.zip.ZipException;
@@ -37,7 +36,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
@@ -52,9 +50,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.FileUploadBean;
-import org.alfresco.web.bean.NavigationBean;
-import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.tools.zip.ZipEntry;
@@ -78,7 +75,6 @@ public class ImportWebsiteDialog
    
    protected FileFolderService fileFolderService;
    protected ContentService contentService;
-   protected NavigationBean navigationBean;
    protected AVMBrowseBean avmBrowseBean;
    protected AVMService avmService;
    protected NodeService nodeService;
@@ -98,14 +94,6 @@ public class ImportWebsiteDialog
    public void setFileFolderService(FileFolderService fileFolderService)
    {
       this.fileFolderService = fileFolderService;
-   }
-   
-   /**
-    * @param navigationBean      The NavigationBean to set.
-    */
-   public void setNavigationBean(NavigationBean navigationBean)
-   {
-      this.navigationBean = navigationBean;
    }
    
    /**
@@ -207,37 +195,24 @@ public class ImportWebsiteDialog
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
-            // TODO: explicit permission check for WRITE on website node for this user
+            // get the AVM path that will contain the imported content
+            String rootPath = this.avmBrowseBean.getCurrentPath();
             
-            // import the content into the appropriate store for the website
-            Node website = this.navigationBean.getCurrentNode();
-            String storeRoot = (String)website.getProperties().get(WCMAppModel.PROP_AVMSTORE);
-            String webapp = this.avmBrowseBean.getWebapp();
-            if (storeRoot != null && webapp != null)
-            {
-               String store = AVMConstants.buildStagingStoreName(storeRoot);
-               if (this.avmService.getStore(store) != null)
-               {
-                  // get the path to the root webapp import area of the store
-                  String rootPath = AVMConstants.buildStoreWebappPath(store, webapp);
-                  
-                  // convert the AVM path to a NodeRef so we can use the NodeService to perform import
-                  NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
-                  processZipImport(this.file, importRef);
-                  
-                  // After an import it's a good idea to snapshot the staging store
-                  this.avmService.createSnapshot(store, "Import of file: " + this.fileName, null);
-                  
-                  // Reload virtualisation server as required
-                  AVMConstants.updateVServerWebapp(rootPath, true);
-               }
-            }
-            else
-            {
-               throw new IllegalStateException("Unable to find root store/webapp property for website!");
-            }
+            // convert the AVM path to a NodeRef so we can use the NodeService to perform import
+            NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
+            processZipImport(this.file, importRef);
+            
+            // After a bulk import it's a good idea to snapshot the store
+            this.avmService.createSnapshot(
+                  AVMConstants.getStoreName(rootPath),
+                  "Import of file: " + this.fileName, null);
+            
+            // Reload virtualisation server as required
+            AVMConstants.updateVServerWebapp(rootPath, true);
             
             tx.commit();
+            
+            UIContextService.getInstance(context).notifyBeans();
             
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }

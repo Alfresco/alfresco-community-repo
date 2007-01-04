@@ -2289,10 +2289,6 @@
          <value>#{ContentService}</value>
       </managed-property>
       <managed-property>
-         <property-name>navigationBean</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
          <property-name>avmService</property-name>
          <value>#{AVMService}</value>
       </managed-property>

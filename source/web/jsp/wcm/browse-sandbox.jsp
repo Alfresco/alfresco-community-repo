@@ -78,7 +78,7 @@
                               <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.sandboxPreviewUrl}" target="new" />
                            </td>
                            <r:permissionEvaluator value="#{AVMBrowseBean.currentPathNode}" allow="CreateChildren" id="eval1">
-                           <td style="padding-left:4px" width=80>
+                           <td style="padding-left:4px;white-space:nowrap" width=80>
                               <%-- Create actions menu --%>
                               <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                  <r:actions id="acts_create" value="avm_create_menu" context="#{AVMBrowseBean.currentPathNode}" />

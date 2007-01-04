@@ -74,7 +74,7 @@
                               <div class="mainSubText"><h:outputText value="#{msg.website_info}" id="msg3" /></div>
                               <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
                            </td>
-                           <td align=right>
+                           <td align="right" style="white-space:nowrap" width=150>
                               <nobr>
                               <%-- More actions menu --%>
                               <a:menu id="actions-menu" itemSpacing="4" label="#{msg.actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
@@ -82,14 +82,6 @@
                               </a:menu>
                               </nobr>
                            </td>
-                           <a:panel id="import-panel" rendered="#{AVMBrowseBean.isManagerRole}">
-                           <td align=right width=160>
-                              <nobr>
-                              <%-- Import website content action --%>
-                              <a:actionLink value="#{msg.import_website_content}" image="/images/icons/import_website.gif" padding="2" action="dialog:importContent" actionListener="#{ImportWebsiteDialog.start}" />
-                              </nobr>
-                           </td>
-                           </a:panel>
                         </tr>
                      </table>
                      

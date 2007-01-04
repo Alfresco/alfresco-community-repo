@@ -163,6 +163,17 @@
             <action-listener>#{AddAvmContentDialog.start}</action-listener>
          </action>
          
+         <!-- Bulk Import -->
+         <action id="bulk_import">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <label-id>import_website_content</label-id>
+            <image>/images/icons/import_website.gif</image>
+            <action>dialog:importContent</action>
+            <action-listener>#{ImportWebsiteDialog.start}</action-listener>
+         </action>
+         
          <!-- Update document -->
          <action id="update_file">
             <permissions>
@@ -289,6 +300,7 @@
             <action idref="add_content" />
             <action idref="create_avm_content" />
             <action idref="create_folder" />
+            <action idref="bulk_import" />
          </action-group>
          
          <!-- Actions for the More Actions menu in the sandbox browse screen -->

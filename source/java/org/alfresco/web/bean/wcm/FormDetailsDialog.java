@@ -188,9 +188,8 @@ public class FormDetailsDialog extends BaseDialogBean
     */
    public List<UIListItem> getWorkflowList()
    {
-      // TODO: add list of workflows from config
-      // @see org.alfresco.web.wcm.CreateWebsiteWizard#getWorkflowList()
-      List<WorkflowDefinition> workflowDefs =  this.workflowService.getDefinitions();
+      // get list of workflows from config definitions
+      List<WorkflowDefinition> workflowDefs = AVMWorkflowUtil.getConfiguredWorkflows();
       List<UIListItem> items = new ArrayList<UIListItem>(workflowDefs.size());
       for (WorkflowDefinition workflowDef : workflowDefs)
       {

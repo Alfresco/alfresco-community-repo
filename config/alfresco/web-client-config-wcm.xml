@@ -1,0 +1,15 @@
+<alfresco-config>
+
+   <config>
+   
+      <wcm>
+         <!-- Comma separated list of the workflows to display in the Create Web Form and
+              Create Web Project wizards. The Name identifers of the workflows should be specified. -->
+         <workflows>
+            wcmwf:submit
+         </workflows>
+      </wcm>
+   
+   </config>
+
+</alfresco-config>

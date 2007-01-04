@@ -23,10 +23,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -42,12 +45,16 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * AVM Specific workflow related helper methods.
@@ -57,11 +64,16 @@ import org.alfresco.web.bean.workflow.WorkflowUtil;
  */
 public class AVMWorkflowUtil extends WorkflowUtil
 {
+   private static final Log logger = LogFactory.getLog(AVMWorkflowUtil.class);
+   
    // Common workflow definitions
    private static final String WCM_WORKFLOW_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmworkflow/1.0";
    public static final QName PROP_FROM_PATH = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "fromPath");
    public static final QName PROP_LABEL = QName.createQName(WCM_WORKFLOW_MODEL_1_0_URI, "label");
 
+   // cached configured lists
+   private static List<WorkflowDefinition> configuredWorkflowDefs = null;
+   
    public static NodeRef createWorkflowPackage(final List<String> srcPaths,
                                                final String storeId,
                                                final WorkflowPath path,
@@ -155,5 +167,51 @@ public class AVMWorkflowUtil extends WorkflowUtil
       {
          throw new AlfrescoRuntimeException("Unable to deserialize workflow default parameters: " + classErr.getMessage());
       }
+   }
+   
+   /**
+    * @return the list of WorkflowDefinition objects as configured in the wcm/workflows client config.
+    */
+   public static List<WorkflowDefinition> getConfiguredWorkflows()
+   {
+      if (configuredWorkflowDefs == null)
+      {
+         FacesContext fc = FacesContext.getCurrentInstance();
+         List<WorkflowDefinition> defs = Collections.<WorkflowDefinition>emptyList();
+         ConfigElement config = Application.getConfigService(fc).getGlobalConfig().getConfigElement("wcm");
+         if (config != null)
+         {
+            ConfigElement workflowConfig = config.getChild("workflows");
+            if (workflowConfig != null)
+            {
+               WorkflowService service = Repository.getServiceRegistry(fc).getWorkflowService();
+               StringTokenizer t = new StringTokenizer(workflowConfig.getValue().trim(), ", ");
+               defs = new ArrayList<WorkflowDefinition>(t.countTokens());
+               while (t.hasMoreTokens())
+               {
+                  String wfName = t.nextToken();
+                  WorkflowDefinition def = service.getDefinitionByName("jbpm$" + wfName);
+                  if (def != null)
+                  {
+                     defs.add(def);
+                  }
+                  else
+                  {
+                     logger.warn("WARNING: Cannot find WCM workflow def for configured definition name: " + wfName); 
+                  }
+               }
+            }
+            else
+            {
+               logger.warn("WARNING: Unable to find WCM 'workflows' config element definition.");
+            }
+         }
+         else
+         {
+            logger.warn("WARNING: Unable to find 'wcm' config element definition.");
+         }
+         configuredWorkflowDefs = defs;
+      }
+      return configuredWorkflowDefs;
    }
 }

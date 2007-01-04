@@ -19,19 +19,26 @@ package org.alfresco.web.bean.wcm;
 import java.io.File;
 import java.io.Serializable;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
-import org.alfresco.error.AlfrescoRuntimeException;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -44,15 +51,22 @@ import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.RenderingEngine;
+import org.alfresco.web.forms.RenderingEngineTemplate;
+import org.alfresco.web.forms.RenderingEngineTemplateImpl;
+import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.forms.xforms.SchemaUtil;
-import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xerces.xs.*;
-import org.apache.commons.io.FilenameUtils;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSNamedMap;
 import org.w3c.dom.Document;
 
 /**
@@ -989,9 +1003,8 @@ public class CreateFormWizard
    {
       if (this.defaultWorkflowChoices == null)
       {
-         // TODO: add list of workflows from config
-         // @see org.alfresco.web.wcm.FormDetailsDialog#getWorkflowList()
-         final List<WorkflowDefinition> workflowDefs = this.workflowService.getDefinitions();
+         // get list of workflows from config definitions
+         final List<WorkflowDefinition> workflowDefs = AVMWorkflowUtil.getConfiguredWorkflows();
          this.defaultWorkflowChoices = new ArrayList<UIListItem>(workflowDefs.size() + 1);
          
          for (WorkflowDefinition workflowDef : workflowDefs)

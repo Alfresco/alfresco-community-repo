@@ -39,9 +39,8 @@
          <fileset dir="${dir.common.lib}/jmagick" includes="*.jar" />
          <fileset dir="${dir.common.lib}/commons" includes="*.jar" />
          <fileset dir="${dir.common.lib}/jgroups" includes="*.jar" />
-         <fileset dir="${dir.common.lib}/swarmcache" includes="*.jar" />
          <fileset dir="${dir.common.lib}/jbpm" includes="*.jar" />
-	 <fileset dir="${dir.common.lib}/fop" includes="*.jar"/>
+         <fileset dir="${dir.common.lib}/fop" includes="*.jar"/>
          <fileset dir="${dir.project.core}/build/dist" includes="${dir.name.core}.jar" />
          <fileset dir="${dir.project.repository}/build/dist" includes="${dir.name.repository}.jar" />
          <fileset dir="${dir.project.mbeans}/build/dist" includes="alfresco-${dir.name.mbeans}.jar" />

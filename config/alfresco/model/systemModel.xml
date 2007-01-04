@@ -1,138 +1,138 @@
 <model name="sys:systemmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
-	<description>Alfresco Repository System Definitions</description>
-	<author>Alfresco</author>
-	<published>2005-09-29</published>
-	<version>1.0</version>
+   <description>Alfresco Repository System Definitions</description>
+   <author>Alfresco</author>
+   <published>2005-09-29</published>
+   <version>1.0</version>
 
-	<imports>
-		<import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
-	</imports>
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+   </imports>
 
-	<namespaces>
-		<namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
-	</namespaces>
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </namespaces>
 
-	<types>
+   <types>
 
-		<type name="sys:base">
-			<title>Base</title>
-			<mandatory-aspects>
-				<aspect>sys:referenceable</aspect>
-			</mandatory-aspects>
-		</type>
+      <type name="sys:base">
+         <title>Base</title>
+         <mandatory-aspects>
+            <aspect>sys:referenceable</aspect>
+         </mandatory-aspects>
+      </type>
 
-		<type name="sys:descriptor">
-		   <title>Descriptor</title>
-			<parent>sys:base</parent>
-			<properties>
-				<property name="sys:versionMajor">
-					<type>d:text</type>
-					<mandatory enforced="true">true</mandatory>
-				</property>
-				<property name="sys:versionMinor">
-					<type>d:text</type>
-					<mandatory enforced="true">true</mandatory>
-				</property>
-				<property name="sys:versionRevision">
-					<type>d:text</type>
-					<mandatory enforced="true">true</mandatory>
-				</property>
-				<property name="sys:versionLabel">
-					<type>d:text</type>
-				</property>
+      <type name="sys:descriptor">
+         <title>Descriptor</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="sys:versionMajor">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:versionMinor">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:versionRevision">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:versionLabel">
+               <type>d:text</type>
+            </property>
             <property name="sys:versionBuild">
                <type>d:text</type>
             </property>
-				<property name="sys:versionSchema">
-					<type>d:int</type>
-					<mandatory enforced="true">true</mandatory>
-					<default>0</default>
-				</property>
-				<property name="sys:versionEdition">
-					<type>d:any</type>
-					<multiple>true</multiple>
-				</property>					
-				<property name="sys:versionProperties">
-					<type>d:content</type>
-					<multiple>false</multiple>
-				</property>					
-			</properties>
-        </type>		
+            <property name="sys:versionSchema">
+               <type>d:int</type>
+               <mandatory enforced="true">true</mandatory>
+               <default>0</default>
+            </property>
+            <property name="sys:versionEdition">
+               <type>d:any</type>
+               <multiple>true</multiple>
+            </property>               
+            <property name="sys:versionProperties">
+               <type>d:content</type>
+               <multiple>false</multiple>
+            </property>               
+         </properties>
+      </type>      
 
-		<type name="sys:container">
-			<title>Container</title>
-			<parent>sys:base</parent>
-			<associations>
-				<child-association name="sys:children">
-                    <source>
-                        <mandatory>false</mandatory>
-                        <many>true</many>
-                    </source>
-					<target>
-						<class>sys:base</class>
-                        <mandatory>false</mandatory>
-                        <many>true</many>
-					</target>
-				</child-association>
-			</associations>
-		</type>
+      <type name="sys:container">
+         <title>Container</title>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="sys:children">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
 
-		<type name="sys:store_root">
-			<title>Store Root</title>
-			<parent>sys:container</parent>
-			<mandatory-aspects>
-				<aspect>sys:aspect_root</aspect>
-			</mandatory-aspects>
-		</type>
+      <type name="sys:store_root">
+         <title>Store Root</title>
+         <parent>sys:container</parent>
+         <mandatory-aspects>
+            <aspect>sys:aspect_root</aspect>
+         </mandatory-aspects>
+      </type>
 
-		<type name="sys:reference">
-			<title>Reference</title>
-			<parent>sys:base</parent>
-			<properties>
-				<property name="sys:reference">
-					<type>d:noderef</type>
-					<mandatory enforced="true">true</mandatory>
-				</property>
-			</properties>
-		</type>
-		
-	</types>
+      <type name="sys:reference">
+         <title>Reference</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="sys:reference">
+               <type>d:noderef</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+      </type>
+      
+   </types>
 
 
-	<aspects>
+   <aspects>
 
-		<aspect name="sys:aspect_root">
-			<title>Root</title>
-		</aspect>
+      <aspect name="sys:aspect_root">
+         <title>Root</title>
+      </aspect>
 
-		<!-- aspect to store the fundamental node identifiers -->
-		<aspect name="sys:referenceable">
-			<title>Referenceable</title>
-			<properties>
-				<property name="sys:store-protocol">
-					<type>d:text</type>
-					<mandatory enforced="true">true</mandatory>
-				</property>
-				<property name="sys:store-identifier">
-					<type>d:text</type>
-					<mandatory enforced="true">true</mandatory>
-				</property>
-				<property name="sys:node-uuid">
-					<type>d:text</type>
-					<mandatory enforced="true">true</mandatory>
-				</property>
-				<property name="sys:node-dbid">
-					<type>d:long</type>
-					<mandatory enforced="true">true</mandatory>
-				</property>
-			</properties>
-		</aspect>
+      <!-- aspect to store the fundamental node identifiers -->
+      <aspect name="sys:referenceable">
+         <title>Referenceable</title>
+         <properties>
+            <property name="sys:store-protocol">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:store-identifier">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:node-uuid">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="sys:node-dbid">
+               <type>d:long</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+      </aspect>
 
-		<!-- aspect to tag incomplete nodes -->
-		<aspect name="sys:incomplete">
-			<title>Incomplete</title>
-		</aspect>
+      <!-- aspect to tag incomplete nodes -->
+      <aspect name="sys:incomplete">
+         <title>Incomplete</title>
+      </aspect>
       
       <!-- aspect to tag temporary nodes -->
       <aspect name="sys:temporary">
@@ -206,6 +206,6 @@
          </properties>
       </aspect>
 
-	</aspects>
+   </aspects>
 
 </model>

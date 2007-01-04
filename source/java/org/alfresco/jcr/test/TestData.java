@@ -23,6 +23,8 @@ import java.util.Properties;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -58,24 +60,32 @@ public class TestData
      * @param applicationContext
      * @param workspaceName
      */
-    public static void generateTestData(ApplicationContext applicationContext, String workspaceName)
+    public static void generateTestData(final ApplicationContext applicationContext, String workspaceName)
     {
+        final ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        TransactionWork<Object> createUserWork = new TransactionWork<Object>()
         {
-            // Bootstrap Users
-            MutableAuthenticationDao authDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
-            if (authDAO.userExists("superuser") == false)
+            public Object doWork() throws Exception
             {
-                authDAO.createUser("superuser", "".toCharArray());
+                // Bootstrap Users
+                MutableAuthenticationDao authDAO = (MutableAuthenticationDao) applicationContext.getBean("alfDaoImpl");
+                if (authDAO.userExists("superuser") == false)
+                {
+                    authDAO.createUser("superuser", "".toCharArray());
+                }
+                if (authDAO.userExists("user") == false)
+                {
+                    authDAO.createUser("user", "".toCharArray());
+                }
+                if (authDAO.userExists("anonymous") == false)
+                {
+                    authDAO.createUser("anonymous", "".toCharArray());
+                }
+                return null;
             }
-            if (authDAO.userExists("user") == false)
-            {
-                authDAO.createUser("user", "".toCharArray());
-            }
-            if (authDAO.userExists("anonymous") == false)
-            {
-                authDAO.createUser("anonymous", "".toCharArray());
-            }
-        }
+        };
+        TransactionUtil.executeInUserTransaction(transactionService, createUserWork);
 
         try
         {

@@ -447,7 +447,7 @@ public class AVMRepository
             {
                 dstNode = new PlainFileNodeImpl((PlainFileNode)srcNode, dstRepo);
             }
-            dstNode.setVersionID(dstRepo.getNextVersionID());
+            // dstNode.setVersionID(dstRepo.getNextVersionID());
             dstNode.setAncestor(srcNode);
             dirNode.putChild(name, dstNode);
             dirNode.updateModTime();
@@ -682,7 +682,7 @@ public class AVMRepository
             }
             srcDir.removeChild(sPath, srcName);
             srcDir.updateModTime();
-            dstNode.setVersionID(dstRepo.getNextVersionID());
+            // dstNode.setVersionID(dstRepo.getNextVersionID());
             if (child != null)
             {
                 dstNode.setAncestor(child);

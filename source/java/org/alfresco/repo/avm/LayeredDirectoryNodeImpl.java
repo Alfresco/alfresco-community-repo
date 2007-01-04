@@ -81,6 +81,14 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fIndirection = indirection;
         fPrimaryIndirection = true;
         fOpacity = false;
+        if (toCopy != null)
+        {
+            setVersionID(toCopy.getVersionID() + 1);
+        }
+        else
+        {
+            setVersionID(1);
+        }
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         if (toCopy != null)
@@ -113,6 +121,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                                                          child.getChild());
             AVMDAOs.Instance().fChildEntryDAO.save(newChild);
         }
+        setVersionID(other.getVersionID() + 1);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
@@ -148,6 +157,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 AVMDAOs.Instance().fChildEntryDAO.save(newChild);
             }
         }
+        setVersionID(other.getVersionID() + 1);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
@@ -172,6 +182,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fPrimaryIndirection = true;
         fLayerID = -1;
         fOpacity = false;
+        setVersionID(dir.getVersionID() + 1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(dir);

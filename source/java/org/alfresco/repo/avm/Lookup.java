@@ -280,7 +280,7 @@ class Lookup
         if (fNeedsCopying)
         {
             node = node.copy(this);
-            node.setVersionID(fAVMStore.getNextVersionID());
+            // node.setVersionID(fAVMStore.getNextVersionID());
             fComponents.get(fPosition).setNode(node);
             if (fPosition == 0)
             {

@@ -72,6 +72,35 @@ import org.alfresco.util.Pair;
 public class AVMServiceTest extends AVMServiceTestBase
 {
     /**
+     * Test version numbering.
+     */
+    public void testVersionNumbering()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/b/c/foo");
+            assertEquals(2, desc.getVersionID());
+            desc = fService.lookup(-1, "main:/a/b");
+            assertEquals(2, desc.getVersionID());
+            fService.createSnapshot("main", null, null);
+            fService.createLayeredDirectory("main:/a", "main:/", "layer");
+            fService.createSnapshot("main", null, null);
+            fService.getFileOutputStream("main:/layer/b/c/bar").close();
+            desc = fService.lookup(-1, "main:/layer/b/c/bar");
+            assertEquals(2, desc.getVersionID());
+            desc = fService.lookup(-1, "main:/layer/b/c");
+            assertEquals(3, desc.getVersionID());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
+    /**
      * Test relinking of nodes to history.
      */
     public void testHistoryRelink()

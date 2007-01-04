@@ -73,7 +73,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     public PlainFileNodeImpl(AVMStore store)
     {
         super(store.getAVMRepository().issueID(), store);
-        // AVMContext.fgInstance.fAVMNodeDAO.flush();
+        setVersionID(1);        
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
     }
@@ -90,6 +90,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         // The null is OK because the Lookup argument is only use by
         // layered files.
         setContentData(other.getContentData(null));
+        setVersionID(other.getVersionID() + 1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
@@ -97,6 +98,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         copyACLs(other);
     }
 
+    // TODO Is there a reason for passing all these parameters instead
+    // of just the LayeredFileNode?
     /**
      * Construct a new one. This is called when a LayeredFileNode
      * is copied.
@@ -109,11 +112,13 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                              ContentData content,
                              Map<QName, PropertyValue> props,
                              List<AVMAspectName> aspects,
-                             DbAccessControlList acl)
+                             DbAccessControlList acl,
+                             int versionID)
     {
         super(store.getAVMRepository().issueID(), store);
         setContentData(content);
         setBasicAttributes(attrs);
+        setVersionID(versionID + 1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         setProperties(props);

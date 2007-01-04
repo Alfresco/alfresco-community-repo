@@ -44,6 +44,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public PlainDirectoryNodeImpl(AVMStore store)
     {
         super(store.getAVMRepository().issueID(), store);
+        setVersionID(1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
     }
@@ -73,6 +74,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                                                      child.getChild());
             AVMDAOs.Instance().fChildEntryDAO.save(newChild);
         }
+        setVersionID(other.getVersionID() + 1);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);

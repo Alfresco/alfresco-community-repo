@@ -232,7 +232,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             newDir = new PlainDirectoryNodeImpl(this);
         }
-        newDir.setVersionID(getNextVersionID());
+        // newDir.setVersionID(getNextVersionID());
         if (child != null)
         {
             newDir.setAncestor(child);
@@ -282,7 +282,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.updateModTime();
         dir.putChild(name, newDir);
-        newDir.setVersionID(getNextVersionID());
+        // newDir.setVersionID(getNextVersionID());
     }
 
     /**
@@ -305,7 +305,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMExistsException("Child exists: " + name);
         }
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
-        file.setVersionID(getNextVersionID());
+        // file.setVersionID(getNextVersionID());
         dir.updateModTime();
         dir.putChild(name, file);
         if (child != null)
@@ -340,7 +340,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMExistsException("Child exists: " + name);
         }
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
-        file.setVersionID(getNextVersionID());
+        // file.setVersionID(getNextVersionID());
         dir.updateModTime();
         dir.putChild(name, file);
         if (child != null)
@@ -383,7 +383,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         dir.updateModTime();
         dir.putChild(name, newFile);
-        newFile.setVersionID(getNextVersionID());
+        // newFile.setVersionID(getNextVersionID());
     }
 
     /**

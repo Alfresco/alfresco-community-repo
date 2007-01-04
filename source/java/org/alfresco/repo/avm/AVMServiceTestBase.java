@@ -76,7 +76,7 @@ public class AVMServiceTestBase extends TestCase
             fService = (AVMService)fContext.getBean("AVMService");
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
-            AuthenticationService authService = (AuthenticationService)fContext.getBean("authenticationService");
+            AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
             authService.authenticate("admin", "admin".toCharArray());
             CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");
             cstl.addCallback(

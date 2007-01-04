@@ -324,7 +324,7 @@
     <!-- The AuthenticationService exported as an RMI service. -->
 	<bean id="rmiAuthenticationService" class="org.springframework.remoting.rmi.RmiServiceExporter">
 		<property name="service">
-			<ref bean="authenticationService"/>
+			<ref bean="AuthenticationService"/>
 		</property>
 		<property name="serviceInterface">
 			<value>org.alfresco.service.cmr.security.AuthenticationService</value>

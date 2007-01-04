@@ -41,7 +41,6 @@ import org.alfresco.repo.avm.actions.SimpleAVMPromoteAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -3229,8 +3228,8 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             PermissionService perm = (PermissionService)fContext.getBean("PermissionService");
-            AuthenticationComponent ac = (AuthenticationComponent)fContext.getBean("authenticationComponent");
-            ac.authenticate("admin", "admin".toCharArray());
+            // AuthenticationService ac = (AuthenticationService)fContext.getBean("AuthenticationService");
+            // ac.authenticate("admin", "admin".toCharArray());
             perm.setPermission(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"), 
                                PermissionService.ADMINISTRATOR_AUTHORITY,
                                PermissionService.ALL_PERMISSIONS,
@@ -3261,8 +3260,8 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             FileFolderService ffs = (FileFolderService)fContext.getBean("FileFolderService");
-            AuthenticationComponent ac = (AuthenticationComponent)fContext.getBean("authenticationComponent");
-            ac.authenticate("admin", "admin".toCharArray());
+            // AuthenticationComponent ac = (AuthenticationComponent)fContext.getBean("authenticationComponent");
+            // ac.authenticate("admin", "admin".toCharArray());
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/"), 
                     "banana", WCMModel.TYPE_AVM_PLAIN_CONTENT) != null);
             assertTrue(ffs.create(AVMNodeConverter.ToNodeRef(-1, "main://"), 

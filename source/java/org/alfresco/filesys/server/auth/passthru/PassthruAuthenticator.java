@@ -242,6 +242,8 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
 	                        if (logger.isDebugEnabled())
 	                            logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
                         }
+                        else if ( logger.isDebugEnabled())
+                        	logger.debug("Failed to find person matching user " + username);
                     }
                     finally
                     {

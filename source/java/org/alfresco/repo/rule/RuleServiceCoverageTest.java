@@ -53,6 +53,7 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -151,7 +152,15 @@ public class RuleServiceCoverageTest extends TestCase
         
         //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         //authenticationComponent.setSystemUserAsCurrentUser();
-        authenticationComponent.setCurrentUser("admin");
+        TransactionWork<Object> setUserWork = new TransactionWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                authenticationComponent.setCurrentUser("admin");
+                return null;
+            }
+        };
+        TransactionUtil.executeInUserTransaction(transactionService, setUserWork);
             
         this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);

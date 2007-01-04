@@ -23,14 +23,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 
 /**
- * An iterable result set from a searcher query. TODO: Expose meta data and XML
+ * An iterable result set from a searcher query.<b/>
+ * Implementations must implement the indexes as zero-based.<b/>
+ * TODO: Expose meta data and XML
  * 
  * @author andyh
  * 
  */
-public interface ResultSet extends Iterable<ResultSetRow> // Specfic iterator
-                                                            // over
-                                                            // ResultSetRows
+public interface ResultSet extends Iterable<ResultSetRow> // Specfic iterator over ResultSetRows
 {
     /**
      * Get the relative paths to all the elements contained in this result set
@@ -61,37 +61,26 @@ public interface ResultSet extends Iterable<ResultSetRow> // Specfic iterator
     
     /**
      * Get a row from the result set by row index, starting at 0.
-     * 
-     * @param i
-     * @return
      */
     ResultSetRow getRow(int i);
     
     /**
      * Get a list of all the node refs in the result set
-     * @return
      */
     List<NodeRef> getNodeRefs();
     
     /**
      * Get a list of all the child associations in the results set.
-     * 
-     * @return
      */
     List<ChildAssociationRef> getChildAssocRefs();
     
     /**
      * Get the child assoc ref for a particular row.
-     * 
-     * @param n
-     * @return
      */
     ChildAssociationRef getChildAssocRef(int n);
     
     /**
      * Get the meta data for the results set.
-     * 
-     * @return
      */
     ResultSetMetaData getResultSetMetaData();
 }

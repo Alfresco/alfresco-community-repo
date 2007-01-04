@@ -218,15 +218,27 @@
       </type>
       
       <!-- Multilingual -->
+      <type name="cm:mlRoot">
+         <title>Multilingual Root</title>
+         <parent>sys:container</parent>
+         <associations>
+            <child-association name="cm:mlContainer">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:mlContainer</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </type>
+      
       <type name="cm:mlContainer">
          <title>Multilingual Container</title>
-         <parent>sys:base</parent>
-         <properties>
-            <property name="cm:mlEditionLabel">
-               <title>Edition Label</title>
-               <type>d:text</type>
-            </property>
-         </properties>
+         <parent>sys:container</parent>
          <associations>
             <child-association name="cm:mlChild">
                <source>
@@ -234,12 +246,15 @@
                   <many>false</many>
                </source>
                <target>
-                  <class>sys:localized</class>
+                  <class>cm:mlDocument</class>
                   <mandatory>true</mandatory>
                   <many>true</many>
                </target>
             </child-association>
          </associations>
+         <mandatory-aspects>
+            <aspect>cm:versionable</aspect>
+         </mandatory-aspects>
       </type>
             
    </types>
@@ -692,6 +707,14 @@
                <mandatory>true</mandatory>
             </property>
          </properties>
+      </aspect>
+            
+      <aspect name="cm:mlDocument">
+         <title>Multilingual Document</title>
+         <mandatory-aspects>
+            <aspect>sys:localized</aspect>
+            <aspect>cm:versionable</aspect>
+         </mandatory-aspects>
       </aspect>
             
    </aspects>

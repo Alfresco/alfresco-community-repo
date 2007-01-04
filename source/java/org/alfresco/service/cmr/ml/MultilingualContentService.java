@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006 Alfresco, Inc.
+ * Copyright (C) 2007 Alfresco, Inc.
  *
  * Licensed under the Mozilla Public License version 1.1 
  * with a permitted attribution clause. You may obtain a
@@ -31,38 +31,41 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface MultilingualContentService
 {
     /**
-     * Rename an existing <b>cm:translation</b> by adding locale suffixes to the base name.
+     * Rename an existing <b>sys:localized</b> by adding locale suffixes to the base name.
      * Where there are name clashes with existing documents, a numerical naming scheme will be
      * adopted.
      *
-     * @param translationNodeRef       An existing <b>cm:translation</b>
+     * @param localizedNodeRef          An existing <b>sys:localized</b>
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef"})
-    void renameWithMLExtension(NodeRef translationNodeRef);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"localizedNodeRef"})
+    void renameWithMLExtension(NodeRef localizedNodeRef);
 
     /**
-     * Make an existing document translatable.  If it is already translatable, then nothing is done.
+     * Make an existing document into a translation by adding the <b>cm:mlDocument</b> aspect and
+     * creating a <b>cm:mlContainer</b> parent.  If it is already a translation, then nothing is done.
      *
-     * @param contentNodeRef           An existing <b>cm:content</b>
-     * @return                         Returns the <b>cm:mlContainer</b> translation parent
+     * @param contentNodeRef            An existing <b>cm:content</b>
+     * @return                          Returns the <b>cm:mlContainer</b> translation parent
+     * 
+     * @see org.alfresco.model.ContentModel#ASPECT_MULTILINGUAL_DOCUMENT
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"contentNodeRef", "locale"})
-    NodeRef makeTranslatable(NodeRef contentNodeRef, Locale locale);
+    NodeRef makeTranslation(NodeRef contentNodeRef, Locale locale);
 
     /**
      * Make a translation out of an existing document.  The necessary translation structures will be created
      * as necessary.
      *
-     * @param newTranslationNodeRef    An existing <b>cm:content</b>
-     * @param translationOfNodeRef     An existing <b>cm:translation</b> or <b>cm:mlContainer</b>
-     * @return                         Returns the <b>cm:mlContainer</b> translation parent
+     * @param newTranslationNodeRef     An existing <b>cm:content</b>
+     * @param translationOfNodeRef      An existing <b>cm:mlDocument</b> or <b>cm:mlContainer</b>
+     * @return                          Returns the <b>cm:mlContainer</b> translation parent
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"newTranslationNodeRef", "translationOfNodeRef", "locale"})
     NodeRef addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale);
 
     /**
      *
-     * @return                         Returns the <b>cm:mlContainer</b> translation parent
+     * @return                          Returns the <b>cm:mlContainer</b> translation parent
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef"})
     NodeRef getTranslationContainer(NodeRef translationNodeRef);
@@ -70,10 +73,10 @@ public interface MultilingualContentService
     /**
      * Create a new edition of an existing <b>cm:mlContainer</b>.
      *
-     * @param mlContainerNodeRef       An existing <b>cm:mlContainer</b>
-     * @param translationNodeRef       The specific <b>cm:translation</b> to use as the starting point
-     *                                 of the new edition.
-     * @return                         Returns the <b>cm:mlContainer</b>
+     * @param mlContainerNodeRef        An existing <b>cm:mlContainer</b>
+     * @param translationNodeRef        The specific <b>cm:mlDocument</b> to use as the starting point
+     *                                  of the new edition.
+     * @return                          Returns the <b>cm:mlContainer</b>
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef", "translationNodeRef"})
     NodeRef createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef);

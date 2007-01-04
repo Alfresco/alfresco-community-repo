@@ -2,7 +2,9 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    
+   
+   <!-- File/folder specific service -->
+   
    <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init">
       <property name="namespaceService"><ref bean="namespaceService" /></property>
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
@@ -36,6 +38,12 @@
             <value><![CDATA[\~.*]]></value>
          </list>
       </property>
+   </bean>
+   
+   <!-- Multilingual specific service -->
+   <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >
+      <property name="nodeService"><ref bean="NodeService" /></property>
+      <property name="searchService"><ref bean="SearchService" /></property>
    </bean>
 
 </beans>

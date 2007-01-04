@@ -43,7 +43,7 @@ public interface ContentModel
     // tag for temporary nodes
     static final QName ASPECT_TEMPORARY = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "temporary");
     
-    // tag for temporary nodes
+    // tag for localized nodes
     static final QName ASPECT_LOCALIZED = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "localized");
     static final QName PROP_LOCALE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "locale");
     
@@ -200,6 +200,10 @@ public interface ContentModel
     static final QName ASPECT_REFERENCES_NODE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "referencesnode");
     static final QName PROP_NODE_REF = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "noderef");
     
+    // Multilingual Type
+    static final QName TYPE_MULTILINGUAL_CONTAINER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlContainer");
+    static final QName ASSOC_MULTILINGUAL_CHILD = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlChild");
+    static final QName ASPECT_MULTILINGUAL_DOCUMENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlDocument");
 
     //
     // User Model Definitions

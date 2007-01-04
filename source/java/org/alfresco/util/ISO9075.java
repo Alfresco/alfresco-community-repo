@@ -23,7 +23,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-import com.sun.org.apache.xerces.internal.util.XMLChar;
+import org.apache.xerces.util.XMLChar;
 
 /**
  * Support for the ISO 9075 encoding of XML element names.

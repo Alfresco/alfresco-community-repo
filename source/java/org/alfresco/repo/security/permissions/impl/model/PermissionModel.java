@@ -925,6 +925,20 @@ public class PermissionModel implements ModelDAO, InitializingBean
         {
             for (PermissionGroup pg : ps.getPermissionGroups())
             {
+            	  permissionGroupMap.put(pg, pg);
+            	  permissionReferenceMap.put(pg.toString(), pg);
+            }
+            for (Permission p : ps.getPermissions())
+            {
+            	permissionReferenceMap.put(p.toString(), p);
+                permissionMap.put(p, p);
+            }
+        }
+        
+        for (PermissionSet ps : permissionSets.values())
+        {
+            for (PermissionGroup pg : ps.getPermissionGroups())
+            {
                 if (uniqueMap.containsKey(pg.getName()) && !excluded.contains(pg.getName()))
                 {
                     PermissionReference value = uniqueMap.get(pg.getName());
@@ -938,8 +952,6 @@ public class PermissionModel implements ModelDAO, InitializingBean
                 {
                     uniqueMap.put(pg.getName(), getBasePermissionGroup(pg));
                 }
-                permissionReferenceMap.put(pg.toString(), pg);
-                permissionGroupMap.put(pg, pg);
             }
             for (Permission p : ps.getPermissions())
             {
@@ -956,8 +968,6 @@ public class PermissionModel implements ModelDAO, InitializingBean
                 {
                     uniqueMap.put(p.getName(), p);
                 }
-                permissionReferenceMap.put(p.toString(), p);
-                permissionMap.put(p, p);
             }
         }
         // Add all permissions to the unique list

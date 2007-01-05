@@ -58,6 +58,7 @@ import org.alfresco.filesys.netbios.RFCNetBIOSProtocol;
 import org.alfresco.filesys.netbios.win32.Win32NetBIOS;
 import org.alfresco.filesys.server.NetworkServer;
 import org.alfresco.filesys.server.NetworkServerList;
+import org.alfresco.filesys.server.auth.AlfrescoRpcAuthenticator;
 import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.auth.acl.ACLParseException;
 import org.alfresco.filesys.server.auth.acl.AccessControl;
@@ -75,8 +76,8 @@ import org.alfresco.filesys.server.core.SharedDeviceList;
 import org.alfresco.filesys.server.filesys.DefaultShareMapper;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-//import org.alfresco.filesys.server.oncrpc.DefaultRpcAuthenticator;
-//import org.alfresco.filesys.server.oncrpc.RpcAuthenticator;
+import org.alfresco.filesys.server.oncrpc.DefaultRpcAuthenticator;
+import org.alfresco.filesys.server.oncrpc.RpcAuthenticator;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.TcpipSMB;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
@@ -357,7 +358,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
 
 	//  RPC authenticator implementation
 
-//	private RpcAuthenticator m_rpcAuthenticator;
+	private RpcAuthenticator m_rpcAuthenticator;
     
     // --------------------------------------------------------------------------------
     // Global server configuration
@@ -1699,7 +1700,6 @@ public class ServerConfiguration extends AbstractLifecycleBean
      */
     private final void processNFSServerConfig(Config config)
     {
-/**    	
         // If the configuration section is not valid then NFS is disabled
         
         if ( config == null)
@@ -1856,8 +1856,26 @@ public class ServerConfiguration extends AbstractLifecycleBean
 		
 		// Create the RPC authenticator
 		
-		m_rpcAuthenticator = new DefaultRpcAuthenticator();
-**/
+		elem = config.getConfigElement("rpcAuthenticator");
+		if ( elem != null)
+		{
+			// Create the RPC authenticator
+			
+			m_rpcAuthenticator = new AlfrescoRpcAuthenticator();
+			
+			try
+			{
+				// Initialize the RPC authenticator
+				
+				m_rpcAuthenticator.initialize( this, elem);
+			}
+			catch (InvalidConfigurationException ex)
+			{
+				throw new AlfrescoRuntimeException( ex.getMessage());
+			}
+		}
+		else
+			throw new AlfrescoRuntimeException("RPC authenticator configuration missing, require user mappings");
     }
     
     /**
@@ -2181,8 +2199,8 @@ public class ServerConfiguration extends AbstractLifecycleBean
             {
                 // Check if the appropriate authentication component type is configured
                 
-                if ( ntlmMode != NTLMMode.NONE)
-                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator (can only be used with LDAP/JAAS auth component)");
+//                if ( ntlmMode != NTLMMode.NONE)
+//                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator (can only be used with LDAP/JAAS auth component)");
                 
                 // Load the passthru authenticator dynamically
                 
@@ -3845,12 +3863,11 @@ public class ServerConfiguration extends AbstractLifecycleBean
 	 *
 	 * @return RpcAuthenticator
 	 */
-/**
     public final RpcAuthenticator getRpcAuthenticator()
 	{
 		return m_rpcAuthenticator;
 	}
-**/
+
     /**
      * Close the server configuration, used to close various components that are shared between protocol
      * handlers.

@@ -27,6 +27,7 @@ import org.alfresco.filesys.server.auth.AuthContext;
 import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.server.core.SharedDeviceList;
+import org.alfresco.filesys.server.filesys.FilesysTransaction;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
@@ -64,7 +65,6 @@ public abstract class SrvSession
     // Debug flags for this session
 
     private int m_debug;
-    private String m_dbgPrefix;
 
     // Session shutdown flag
 
@@ -92,8 +92,10 @@ public abstract class SrvSession
     
     // Active transaction and read/write flag
     
-    private UserTransaction m_transaction;
-    private boolean m_readOnlyTrans;
+    private ThreadLocal<FilesysTransaction> m_tx = new ThreadLocal<FilesysTransaction>();
+    
+//    UserTransaction m_transaction;
+//    private boolean m_readOnlyTrans;
     
     // Request and transaction counts
     
@@ -374,16 +376,6 @@ public abstract class SrvSession
     }
 
     /**
-     * Set the debug output prefix for this session
-     * 
-     * @param prefix String
-     */
-    public final void setDebugPrefix(String prefix)
-    {
-        m_dbgPrefix = prefix;
-    }
-
-    /**
      * Set the logged on/validated status for the session
      * 
      * @param loggedOn boolean
@@ -507,22 +499,34 @@ public abstract class SrvSession
     {
         boolean created = false;
         
+        // Get the filesystem transaction
+        
+        FilesysTransaction filesysTx = m_tx.get();
+        if ( filesysTx == null)
+        {
+        	filesysTx = new FilesysTransaction();
+        	m_tx.set( filesysTx);
+        }
+        
         // If there is an active transaction check that it is the required type
 
-        if ( m_transaction != null)
+        if ( filesysTx.hasTransaction())
         {
+        	// Get the active transaction
+        	
+            UserTransaction tx = filesysTx.getTransaction();
+            
             // Check if the current transaction is marked for rollback
             
             try
             {
-                
-                if ( m_transaction.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
-                     m_transaction.getStatus() == Status.STATUS_ROLLEDBACK ||
-                     m_transaction.getStatus() == Status.STATUS_ROLLING_BACK)
+                if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
+                     tx.getStatus() == Status.STATUS_ROLLEDBACK ||
+                     tx.getStatus() == Status.STATUS_ROLLING_BACK)
                 {
                     //  Rollback the current transaction
                     
-                    m_transaction.rollback();
+                    tx.rollback();
                 }
             }
             catch ( SystemException ex)
@@ -531,13 +535,13 @@ public abstract class SrvSession
             
             // Check if the transaction is a write transaction, if write has been requested
             
-            if ( readOnly == false && m_readOnlyTrans == true)
+            if ( readOnly == false && filesysTx.isReadOnly() == true)
             {
                 // Commit the read-only transaction
                 
                 try
                 {
-                    m_transaction.commit();
+                    tx.commit();
                     m_transConvCount++;
                 }
                 catch ( Exception ex)
@@ -548,24 +552,25 @@ public abstract class SrvSession
                 {
                     // Clear the active transaction
 
-                    m_transaction = null;
+                    filesysTx.clearTransaction();
                 }
             }
         }
         
         // Create the transaction
         
-        if ( m_transaction == null)
+        if ( filesysTx.hasTransaction() == false)
         {
             try
             {
-                m_transaction = transService.getUserTransaction(readOnly);
-                m_transaction.begin();
+                UserTransaction userTrans = transService.getUserTransaction(readOnly);
+                userTrans.begin();
                 
                 created = true;
+
+                // Store the transaction
                 
-                m_readOnlyTrans = readOnly;
-                
+                filesysTx.setTransaction( userTrans, readOnly);
                 m_transCount++;
             }
             catch (Exception ex)
@@ -585,25 +590,33 @@ public abstract class SrvSession
     public final void endTransaction()
         throws AlfrescoRuntimeException
     {
+        // Get the filesystem transaction
+        
+        FilesysTransaction filesysTx = m_tx.get();
+
         // Check if there is an active transaction
         
-        if ( m_transaction != null)
+        if ( filesysTx != null && filesysTx.hasTransaction())
         {
+        	// Get the active transaction
+        	
+            UserTransaction tx = filesysTx.getTransaction();
+            
             try
             {
                 // Commit or rollback the transaction
                 
-                if ( m_transaction.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+                if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
                 {
                     // Transaction is marked for rollback
                     
-                    m_transaction.rollback();
+                    tx.rollback();
                 }
                 else
                 {
                     // Commit the transaction
                     
-                    m_transaction.commit();
+                    tx.commit();
                 }
             }
             catch ( Exception ex)
@@ -614,7 +627,7 @@ public abstract class SrvSession
             {
                 // Clear the current transaction
                 
-                m_transaction = null;
+                filesysTx.clearTransaction();
         }
     }
     
@@ -626,7 +639,12 @@ public abstract class SrvSession
      */
     public final boolean hasUserTransaction()
     {
-        return m_transaction != null ? true : false;
+        // Get the filesystem transaction
+        
+        FilesysTransaction filesysTx = m_tx.get();
+        if ( filesysTx != null)
+        	return filesysTx.hasTransaction();
+        return false;
     }
     
     /**
@@ -636,8 +654,17 @@ public abstract class SrvSession
      */
     public final UserTransaction getUserTransaction()
     {
-        UserTransaction trans = m_transaction;
-        m_transaction = null;
-        return trans;
+        // Get the filesystem transaction
+
+    	UserTransaction userTrans = null;
+        FilesysTransaction filesysTx = m_tx.get();
+        
+        if ( filesysTx != null)
+        {
+	        userTrans = filesysTx.getTransaction();
+	        filesysTx.clearTransaction();
+        }
+        
+        return userTrans;
     }
 }

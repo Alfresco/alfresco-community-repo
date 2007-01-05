@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -279,8 +280,50 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return mlContainerNodeRef;
     }
 
-    public NodeRef createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef)
+    public void createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef)
     {
-        throw new UnsupportedOperationException();
+        // Ensure that the translation given is one of the children
+        getOrCreateMLContainer(translationNodeRef, false);
+        // Get all the container's children
+        List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(
+                mlContainerNodeRef,
+                ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                RegexQNamePattern.MATCH_ALL);
+        // Version the container and all its children
+        versionService.createVersion(mlContainerNodeRef, null, true);
+        // Remove all the child documents apart from the given node
+        boolean found = false;
+        for (ChildAssociationRef childAssoc : childAssocRefs)
+        {
+            NodeRef documentNodeRef = childAssoc.getChildRef();
+            // Is this the node to keep?
+            if (documentNodeRef.equals(translationNodeRef))
+            {
+                // It is, so keep it
+                found = true;
+                continue;
+            }
+            // Delete it
+            nodeService.deleteNode(documentNodeRef);
+        }
+        // Check that we left a document
+        if (!found)
+        {
+            throw new AlfrescoRuntimeException(
+                    "The translation provided is not a child of the multilingual container: \n" +
+                    "   Container:   " + mlContainerNodeRef + "\n" +
+                    "   Translation: " + translationNodeRef);
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            // Get the version information
+            Version mlContainerVersion = versionService.getCurrentVersion(mlContainerNodeRef);
+            String mlContainerVersionLabel = mlContainerVersion.getVersionLabel();
+            logger.debug(
+                    "Versioned multilingual container: \n" +
+                    "   Container:       " + mlContainerNodeRef + "\n" +
+                    "   Current Version: " + mlContainerVersionLabel);
+        }
     }
 }

@@ -44,6 +44,7 @@
    <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >
       <property name="nodeService"><ref bean="NodeService" /></property>
       <property name="searchService"><ref bean="SearchService" /></property>
+      <property name="versionService"><ref bean="VersionService" /></property>
    </bean>
 
 </beans>

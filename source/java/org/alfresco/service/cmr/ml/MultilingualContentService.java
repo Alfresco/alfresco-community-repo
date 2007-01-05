@@ -75,9 +75,8 @@ public interface MultilingualContentService
      *
      * @param mlContainerNodeRef        An existing <b>cm:mlContainer</b>
      * @param translationNodeRef        The specific <b>cm:mlDocument</b> to use as the starting point
-     *                                  of the new edition.
-     * @return                          Returns the <b>cm:mlContainer</b>
+     *                                  of the new edition.  All other translations will be removed.
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef", "translationNodeRef"})
-    NodeRef createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef);
+    void createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef);
 }

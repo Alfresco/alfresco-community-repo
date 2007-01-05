@@ -178,8 +178,7 @@ public class CreateFormWizard
 
    /////////////////////////////////////////////////////////////////////////////
    
-   public static final String FILE_RENDERING_ENGINE_TEMPLATE = 
-      "rendering-engine-template";
+   public static final String FILE_RENDERING_ENGINE_TEMPLATE = "rendering-engine-template";
 
    public static final String FILE_SCHEMA = "schema";
 
@@ -285,9 +284,10 @@ public class CreateFormWizard
    protected void saveRenderingEngineTemplate(final RenderingEngineTemplateData retd,
                                               final NodeRef formNodeRef)
    {
-      LOGGER.debug("adding rendering engine template " + retd + 
-                   " to form " + this.getFormName());
-
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("adding rendering engine template " + retd + 
+                      " to form " + this.getFormName());
+      
       NodeRef renderingEngineTemplateNodeRef = 
          this.fileFolderService.searchSimple(formNodeRef, retd.getName());
       final HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
@@ -339,7 +339,8 @@ public class CreateFormWizard
                                     props);
       }
 
-      LOGGER.debug("adding rendition properties to " + renderingEngineTemplateNodeRef);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("adding rendition properties to " + renderingEngineTemplateNodeRef);
       props.clear();
       props.put(WCMAppModel.PROP_MIMETYPE_FOR_RENDITION, 
                 retd.getMimetypeForRendition());

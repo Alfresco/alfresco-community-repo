@@ -59,7 +59,7 @@
       </h:column>
       <h:column>
          <f:facet name="header">
-            <h:outputText value="#{msg.configure}" />
+            <h:outputText value="#{msg.actions}" />
          </f:facet>
          <h:panelGroup rendered="#{WizardManager.bean.editMode == false}">
             <h:commandButton id="cmd1-1" value="#{msg.form_template_details}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />

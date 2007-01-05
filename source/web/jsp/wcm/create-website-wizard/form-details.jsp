@@ -119,7 +119,7 @@
             </td>
             <td>
                </f:verbatim>
-                <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="35" maxlength="1024" />
+                <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="65" maxlength="1024" />
                <f:verbatim>
             </td>
          </tr>

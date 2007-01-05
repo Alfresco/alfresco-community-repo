@@ -71,7 +71,7 @@ public class TextSearch extends APIServiceImpl
     {
         public String resolveImagePathForName(String filename, boolean small)
         {
-            return Utils.getFileTypeImage(getServletContext(), filename, small);
+            return Utils.getFileTypeImage(getAPIContext(), filename, small);
         }
     };
 

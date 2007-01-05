@@ -18,8 +18,6 @@ package org.alfresco.web.api;
 
 import java.io.IOException;
 
-import javax.servlet.ServletContext;
-
 /**
  * API Service
  * 
@@ -27,13 +25,6 @@ import javax.servlet.ServletContext;
  */
 public interface APIService
 {
-
-    /**
-     * Initialise the Service
-     * 
-     * @param context
-     */
-    public void init(ServletContext context);
 
     /**
      * Gets the name of this service

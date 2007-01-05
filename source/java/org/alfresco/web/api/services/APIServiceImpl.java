@@ -26,6 +26,7 @@ import javax.servlet.ServletContext;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.web.api.APIContextAware;
 import org.alfresco.web.api.APIRequest;
 import org.alfresco.web.api.APIResponse;
 import org.alfresco.web.api.APIService;
@@ -37,7 +38,7 @@ import org.springframework.beans.factory.BeanNameAware;
  *
  * @author davidc
  */
-public abstract class APIServiceImpl implements BeanNameAware, APIService 
+public abstract class APIServiceImpl implements BeanNameAware, APIService, APIContextAware 
 {
     private String name;
     private String uri;
@@ -60,6 +61,14 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService
         this.name = name;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.api.APIContextAware#setAPIContext(javax.servlet.ServletContext)
+     */
+    public void setAPIContext(ServletContext context)
+    {
+        this.context = context;
+    }
+    
     /**
      * @param serviceRegistry 
      */
@@ -84,14 +93,6 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService
         this.descriptorService = descriptorService;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#init(javax.servlet.ServletContext)
-     */
-    public void init(ServletContext context)
-    {
-        this.context = context;
-    }
-
     /**
      * Sets the Http URI
      * 
@@ -130,7 +131,7 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService
     /**
      * @return descriptorService
      */
-    protected ServletContext getServletContext()
+    protected ServletContext getAPIContext()
     {
         return context;
     }

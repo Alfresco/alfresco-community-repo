@@ -8,11 +8,17 @@
    <!--  -->   
 
    <!--  TODO: For now, experiment with HTTP Basic Authentication -->
-   <alias alias="web.api.Authenticator" name="web.api.BasicAuthenticator" />
+   <!--  <alias alias="web.api.Authenticator" name="web.api.BasicAuthenticator" /> -->
+   <alias alias="web.api.Authenticator" name="web.api.AlfWebClientAuthenticator" />
+
+   <bean id="web.api.AlfWebClientAuthenticator" class="org.alfresco.web.api.AlfWebClientAuthenticator">
+      <property name="authenticationService" ref="AuthenticationService" />
+   </bean>
    
    <bean id="web.api.BasicAuthenticator" class="org.alfresco.web.api.BasicAuthenticator">
       <property name="authenticationService" ref="AuthenticationService" />
    </bean>
+
 
    <!--  -->
    <!--  Web API Service Logger -->

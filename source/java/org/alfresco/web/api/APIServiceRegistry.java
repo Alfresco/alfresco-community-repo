@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.RegexpMethodPointcutAdvisor;
@@ -47,7 +45,7 @@ public class APIServiceRegistry
      * 
      * @param context
      */
-    public APIServiceRegistry(ServletContext servletContext, ApplicationContext appContext)
+    public APIServiceRegistry(ApplicationContext appContext)
     {
         // retrieve service authenticator
         MethodInterceptor authenticator = (MethodInterceptor)appContext.getBean("web.api.Authenticator");
@@ -60,7 +58,6 @@ public class APIServiceRegistry
         {
             // retrieve service
             APIService service = apiService.getValue();
-            service.init(servletContext);
             
             // retrieve http method
             APIRequest.HttpMethod method = service.getHttpMethod();

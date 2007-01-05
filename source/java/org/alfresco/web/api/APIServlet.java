@@ -17,7 +17,9 @@
 package org.alfresco.web.api;
 
 import java.io.IOException;
+import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,7 +54,8 @@ public class APIServlet extends BaseServlet
 
         // Retrieve all web api services and index by http url & http method
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        apiServiceRegistry = new APIServiceRegistry(getServletContext(), context);
+        initContext(context);
+        apiServiceRegistry = new APIServiceRegistry(context);
     }
 
 
@@ -109,4 +112,19 @@ public class APIServlet extends BaseServlet
         }
     }
 
+    /**
+     * Initialise any API beans that require a servlet context
+     * 
+     * @param appContext  application context
+     */
+    private void initContext(ApplicationContext appContext)
+    {
+        ServletContext servletContext = getServletContext();
+        Map<String, APIContextAware> contextAwareMap = appContext.getBeansOfType(APIContextAware.class, false, false);
+        for (APIContextAware contextAware: contextAwareMap.values())
+        {
+            contextAware.setAPIContext(servletContext);
+        }
+    }
+    
 }

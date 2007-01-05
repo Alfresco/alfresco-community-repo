@@ -119,6 +119,10 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
             return CifsAuthenticator.AUTH_ALLOW;
         }
 
+    	// Start a transaction
+    	
+    	sess.beginReadTransaction( m_transactionService);
+    	
         // Check if the client is already authenticated, and it is not a null logon
         
         if ( client.getAuthenticationToken() != null && client.getLogonType() != ClientInfo.LogonNull)
@@ -207,59 +211,33 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
                 }
                 else
                 {
-                    // Wrap the service calls in a transaction
-                    
-                    UserTransaction tx = m_transactionService.getUserTransaction( true);
-                    
-                    try
-                    {
-                        // Start the transaction
-                        
-                        tx.begin();
-                        
-                        // Map the passthru username to an Alfresco person
-    
-                        String username = client.getUserName();
-                        String personName = m_personService.getUserIdentifier( username);
-                        
-                        if ( personName != null)
-                        {
-                        	// Use the person name as the current user
-                        	
-                            m_authComponent.setCurrentUser(personName);
-                            
-                            // DEBUG
-                            
-                            if ( logger.isDebugEnabled())
-                                logger.debug("Setting current user using person " + personName + " (username " + username + ")");
+                    // Map the passthru username to an Alfresco person
 
-	                        // Allow the user full access to the server
-	
-	                        authSts = CifsAuthenticator.AUTH_ALLOW;
-	
-	                        // Debug
-	
-	                        if (logger.isDebugEnabled())
-	                            logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
-                        }
-                        else if ( logger.isDebugEnabled())
-                        	logger.debug("Failed to find person matching user " + username);
-                    }
-                    finally
+                    String username = client.getUserName();
+                    String personName = m_personService.getUserIdentifier( username);
+                    
+                    if ( personName != null)
                     {
-                        // Commit the transaction
+                    	// Use the person name as the current user
+                    	
+                        m_authComponent.setCurrentUser(personName);
                         
-                        if ( tx != null)
-                        {
-                            try {
-                                tx.commit();
-                            }
-                            catch (Exception ex)
-                            {
-                                // Sink it
-                            }
-                        }
+                        // DEBUG
+                        
+                        if ( logger.isDebugEnabled())
+                            logger.debug("Setting current user using person " + personName + " (username " + username + ")");
+
+                        // Allow the user full access to the server
+
+                        authSts = CifsAuthenticator.AUTH_ALLOW;
+
+                        // Debug
+
+                        if (logger.isDebugEnabled())
+                            logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
                     }
+                    else if ( logger.isDebugEnabled())
+                    	logger.debug("Failed to find person matching user " + username);
                 }
             }
             catch (Exception ex)

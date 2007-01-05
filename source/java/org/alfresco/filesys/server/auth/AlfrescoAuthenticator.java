@@ -250,6 +250,10 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
      */
     private final int doMD4UserAuthentication(ClientInfo client, SrvSession sess, int alg)
     {
+    	// Start a transaction
+    	
+    	sess.beginReadTransaction( m_transactionService);
+    	
         // Get the stored MD4 hashed password for the user, or null if the user does not exist
         
         String md4hash = m_authComponent.getMD4HashedPassword(client.getUserName());
@@ -352,6 +356,10 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
      */
     private final int doPassthruUserAuthentication(ClientInfo client, SrvSession sess, int alg)
     {
+    	// Start a transaction
+    	
+    	sess.beginReadTransaction( m_transactionService);
+    	
         // Get the authentication token for the session
 
         NTLMPassthruToken authToken = (NTLMPassthruToken) sess.getAuthenticationToken();

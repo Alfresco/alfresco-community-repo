@@ -1161,6 +1161,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
                 
                 negTokenTarg = new NegTokenTarg( SPNEGO.AcceptCompleted, OID.KERBEROS5, krbDetails.getResponseToken());
                 
+            	// Start a transaction
+            	
+            	sess.beginReadTransaction( m_transactionService);
+            	
                 // Setup the Acegi authenticated user
                 
                 m_authComponent.setCurrentUser( mapUserNameToPerson(krbDetails.getUserName()));
@@ -1350,6 +1354,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
         }
         
+    	// Start a transaction
+    	
+    	sess.beginReadTransaction( m_transactionService);
+    	
         // Check if we are using local MD4 password hashes or passthru authentication
         
         if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
@@ -1474,7 +1482,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
         Type2NTLMMessage type2Msg = (Type2NTLMMessage) sess.getSetupObject( client.getProcessId());
         sess.removeSetupObject( client.getProcessId());
         
-        // Check if we are using local MD4 password hashes or passthru authentication
+    	// Start a transaction
+    	
+    	sess.beginReadTransaction( m_transactionService);
+
+    	// Check if we are using local MD4 password hashes or passthru authentication
         
         if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
@@ -1591,6 +1603,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
     private final void doNTLMv2Logon(SMBSrvSession sess, ClientInfo client)
         throws SMBSrvException
     {
+    	// Start a transaction
+    	
+    	sess.beginReadTransaction( m_transactionService);
+    	
         // Check if we are using local MD4 password hashes or passthru authentication
         
         if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
@@ -1718,6 +1734,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
        
         Type2NTLMMessage type2Msg = (Type2NTLMMessage) sess.getSetupObject( client.getProcessId());
         sess.removeSetupObject( client.getProcessId());
+
+        // Start a transaction
+    	
+    	sess.beginReadTransaction( m_transactionService);
        
         // Check if we are using local MD4 password hashes or passthru authentication
        

@@ -248,10 +248,10 @@ public class LoginBean
          throws ValidatorException
    {
       String name = (String) value;
-      if (name.length() < 3 || name.length() > 32)
+      if (name.length() < 2 || name.length() > 32)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_USERNAME_LENGTH),
-               new Object[]{3, 32});
+               new Object[]{2, 32});
          throw new ValidatorException(new FacesMessage(err));
       }
       if (name.indexOf('\'') != -1 || name.indexOf('"') != -1 || name.indexOf('\\') != -1)

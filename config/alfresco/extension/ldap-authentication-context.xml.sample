@@ -3,24 +3,14 @@
 
 <beans>
     
-    <!-- DAO that rejects changes - LDAP is read only at the moment -->
+    <!-- DAO that rejects changes - LDAP is read only at the moment. It does allow users to be deleted with out warnings from the UI. -->
     
-    <bean id="alfDaoImpl" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
+    <bean name="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao" >
+        <property name="allowDeleteUser">
+            <value>true</value>
         </property>
-  		<property name="transactionManager">
-   			<ref bean="transactionManager" />
-  		</property>
-  		<property name="target">
-   			<bean class="org.alfresco.repo.security.authentication.ntlm.NullMutableAuthenticationDao" />
-  		</property>
-  		<property name="transactionAttributes">
-    		<props>
-      			<prop key="*">${server.transaction.mode.default}</prop>
-    		</props>
-  		</property>
- 	</bean>
+    </bean>    
+   
 
     <!-- LDAP authentication configuration -->
     
@@ -32,7 +22,7 @@
     
     -->
     
-    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.ldap.LDAPAuthenticationComponentImpl">
+    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ldap.LDAPAuthenticationComponentImpl">
         <property name="LDAPInitialDirContextFactory">
             <ref bean="ldapInitialDirContextFactory"/>
         </property>
@@ -165,14 +155,6 @@
         </property>
         
         <!--
-        The path to the location of a space to use as the default home folder.
-        This folder should be readable by all users, or a group to which all imported users belong.
-        -->
-        <property name="defaultHomeFolder">
-            <value>/app:company_home</value>
-        </property>
-        
-        <!--
         This property defines a mapping between attributes held on LDAP user objects and
         the properties of user objects held in the repository. The key is the QName of an attribute in
         the repository, the value is the attribute name from the user/inetOrgPerson/.. object in the
@@ -203,6 +185,19 @@
                     <!-- OpenLDAP: "o" -->
                     <!-- Active Directory: "???" -->
                     <value>o</value>
+                </entry>
+                <!-- Always use the default -->
+                <entry key="cm:homeFolderProvider">
+                    <null/>
+                </entry>
+            </map>
+        </property>
+        <!-- Set a default home folder provider -->
+        <!-- Defaults only apply for values above -->
+        <property name="attributeDefaults">
+            <map>
+                <entry key="cm:homeFolderProvider">
+                    <value>personalHomeFolderProvider</value>
                 </entry>
             </map>
         </property>
@@ -317,9 +312,9 @@
                 </property>
             </bean>
         </property>
-        <!-- Start after 30 seconds of starting the repository -->
+        <!-- Start after 5 minutes of starting the repository -->
         <property name="startDelay">
-            <value>30000</value>
+            <value>300000</value>
         </property>
         <!-- Repeat every hour -->
         <property name="repeatInterval">
@@ -347,9 +342,9 @@
                 </property>
             </bean>
         </property>
-        <!-- Start after 30 seconds of starting the repository -->
+        <!-- Start after 5 minutes of starting the repository -->
         <property name="startDelay">
-            <value>30000</value>
+            <value>300000</value>
         </property>
         <!-- Repeat every hour -->
         <property name="repeatInterval">
@@ -366,7 +361,7 @@
     
     <bean id="ldapPeopleImport" class="org.alfresco.repo.importer.ExportSourceImporter">
         <property name="importerService">
-            <ref bean="importerComponent"/>
+            <ref bean="importerComponentWithBehaviour"/>
         </property>
         <property name="transactionService">
             <ref bean="transactionComponent"/>
@@ -414,7 +409,7 @@
     
     <bean id="ldapGroupImport" class="org.alfresco.repo.importer.ExportSourceImporter">
         <property name="importerService">
-            <ref bean="importerComponent"/>
+            <ref bean="importerComponentWithBehaviour"/>
         </property>
         <property name="transactionService">
             <ref bean="transactionComponent"/>

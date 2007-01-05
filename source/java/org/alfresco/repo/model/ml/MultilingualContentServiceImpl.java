@@ -129,9 +129,11 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
      * <b>cm:mlDocument</b> already applied.
      * 
      * @param mlDocumentNodeRef an existing <b>cm:mlDocument</b>
+     * @param allowCreate <tt>true</tt> if a <b>cm:mlContainer</b> must be created if on doesn't exist,
+     *      otherwise <tt>false</tt> if a parent <b>cm:mlContainer</b> is expected to exist.
      * @return Returns the <b>cm:mlContainer</b> parent
      */
-    private NodeRef getOrCreateMLContainer(NodeRef mlDocumentNodeRef)
+    private NodeRef getOrCreateMLContainer(NodeRef mlDocumentNodeRef, boolean allowCreate)
     {
         if (!nodeService.hasAspect(mlDocumentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
         {
@@ -147,16 +149,22 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                 RegexQNamePattern.MATCH_ALL);
         if (parentAssocRefs.size() == 0)
         {
-            // Create a ML container
-            mlContainerNodeRef = makeMLContainer();
-            createAssociation = true;
+            if (allowCreate)
+            {
+                // Create a ML container
+                mlContainerNodeRef = makeMLContainer();
+                createAssociation = true;
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("No multilingual container exists for document node: " + mlDocumentNodeRef);
+            }
         }
         else if (parentAssocRefs.size() == 1)
         {
             // Just get it
             ChildAssociationRef toKeepAssocRef = parentAssocRefs.get(0);
             mlContainerNodeRef = toKeepAssocRef.getParentRef();
-            createAssociation = true;
         }
         else if (parentAssocRefs.size() > 1)
         {
@@ -189,7 +197,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return mlContainerNodeRef;
     }
 
-    public NodeRef makeTranslation(NodeRef contentNodeRef, Locale locale)
+    private NodeRef makeTranslationImpl(NodeRef mlContainerNodeRef, NodeRef contentNodeRef, Locale locale)
     {
         // Add the aspect using the given locale, of necessary
         if (!nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
@@ -203,20 +211,72 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             // The aspect is present, so just ensure that the locale is correct
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_LOCALE, locale);
         }
-        // Get or create the container
-        NodeRef mlContainerNodeRef = getOrCreateMLContainer(contentNodeRef);
+        // Do we make use of an existing container?
+        if (mlContainerNodeRef == null)
+        {
+            // Make one
+            mlContainerNodeRef = getOrCreateMLContainer(contentNodeRef, true);
+        }
+        else
+        {
+            // Use the existing container
+            nodeService.addChild(
+                    mlContainerNodeRef,
+                    contentNodeRef,
+                    ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                    QNAME_ML_TRANSLATION);
+        }
         // done
+        return mlContainerNodeRef;
+    }
+
+    public NodeRef makeTranslation(NodeRef contentNodeRef, Locale locale)
+    {
+        NodeRef mlContainerNodeRef = makeTranslationImpl(null, contentNodeRef, locale);
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Made a translation: \n" +
+                    "   content:   " + contentNodeRef + "\n" +
+                    "   locale:    " + locale + "\n" +
+                    "   container: " + mlContainerNodeRef);
+        }
         return mlContainerNodeRef;
     }
 
     public NodeRef addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale)
     {
-        throw new UnsupportedOperationException();
+        NodeRef mlContainerNodeRef = null;
+        // Were we given the translation or the container
+        QName typeQName = nodeService.getType(translationOfNodeRef);
+        if (typeQName.equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+        {
+            // We have the container
+            mlContainerNodeRef = translationOfNodeRef;
+        }
+        else
+        {
+            // Get the container
+            mlContainerNodeRef = getOrCreateMLContainer(translationOfNodeRef, false);
+        }
+        // Use the existing container to make the new content into a translation
+        makeTranslationImpl(mlContainerNodeRef, newTranslationNodeRef, locale);
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Added a translation: \n" +
+                    "   Translation of:  " + translationOfNodeRef + " of type " + typeQName + "\n" +
+                    "   New translation: " + newTranslationNodeRef + "\n" +
+                    "   Locale:          " + locale);
+        }
+        return mlContainerNodeRef;
     }
 
     public NodeRef getTranslationContainer(NodeRef translationNodeRef)
     {
-        throw new UnsupportedOperationException();
+        NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
+        // done
+        return mlContainerNodeRef;
     }
 
     public NodeRef createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef)

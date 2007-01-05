@@ -127,5 +127,46 @@ public class MultilingualContentServiceImplTest extends TestCase
         NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(contentNodeRef, Locale.CHINESE);
         // Check it
         assertNotNull("Container not created", mlContainerNodeRef);
+        // Check the container child count
+        int childCount = nodeService.getChildAssocs(mlContainerNodeRef).size();
+        assertEquals("Incorrect number of child nodes", 1, childCount);
+    }
+    
+    public void testAddTranslationUsingContainer() throws Exception
+    {
+        // Make a container with a single translation
+        NodeRef chineseContentNodeRef = createContent();
+        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        // Create some more content
+        NodeRef frenchContentNodeRef = createContent();
+        // Make this a translation of the Chinese
+        NodeRef newMLContainerNodeRef = multilingualContentService.addTranslation(
+                frenchContentNodeRef,
+                mlContainerNodeRef,
+                Locale.FRENCH);
+        // Make sure that the original container was used
+        assertEquals("Existing container should have been used", mlContainerNodeRef, newMLContainerNodeRef);
+        // Check the container child count
+        int childCount = nodeService.getChildAssocs(mlContainerNodeRef).size();
+        assertEquals("Incorrect number of child nodes", 2, childCount);
+    }
+    
+    public void testAddTranslationUsingContent() throws Exception
+    {
+        // Make a container with a single translation
+        NodeRef chineseContentNodeRef = createContent();
+        NodeRef mlContainerNodeRef = multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
+        // Create some more content
+        NodeRef frenchContentNodeRef = createContent();
+        // Make this a translation of the Chinese
+        NodeRef newMLContainerNodeRef = multilingualContentService.addTranslation(
+                frenchContentNodeRef,
+                chineseContentNodeRef,
+                Locale.FRENCH);
+        // Make sure that the original container was used
+        assertEquals("Existing container should have been used", mlContainerNodeRef, newMLContainerNodeRef);
+        // Check the container child count
+        int childCount = nodeService.getChildAssocs(mlContainerNodeRef).size();
+        assertEquals("Incorrect number of child nodes", 2, childCount);
     }
 }

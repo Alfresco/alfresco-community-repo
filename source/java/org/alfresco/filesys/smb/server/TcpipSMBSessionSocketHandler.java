@@ -88,7 +88,6 @@ public class TcpipSMBSessionSocketHandler extends SessionSocketHandler
                     SMBSrvSession srvSess = new SMBSrvSession(pktHandler, getServer());
                     srvSess.setSessionId(getNextSessionId());
                     srvSess.setUniqueId(pktHandler.getShortName() + srvSess.getSessionId());
-                    srvSess.setDebugPrefix("[" + pktHandler.getShortName() + srvSess.getSessionId() + "] ");
 
                     // Add the session to the active session list
 

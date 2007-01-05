@@ -451,7 +451,6 @@ public class FTPNetworkServer extends NetworkFileServer implements Runnable
                 FTPSrvSession srvSess = new FTPSrvSession(sessSock, this);
                 srvSess.setSessionId(getNextSessionId());
                 srvSess.setUniqueId("FTP" + srvSess.getSessionId());
-                srvSess.setDebugPrefix("[FTP" + srvSess.getSessionId() + "] ");
 
                 // Initialize the root path for the new session, if configured
 

@@ -18,6 +18,7 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.query.PathQuery;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -59,6 +61,8 @@ public class LuceneQueryParser extends QueryParser
 
     private SearchParameters searchParameters;
 
+    private LuceneConfig config;
+
     /**
      * Parses a query string, returning a {@link org.apache.lucene.search.Query}.
      * 
@@ -68,12 +72,13 @@ public class LuceneQueryParser extends QueryParser
      *            the default field for query terms.
      * @param analyzer
      *            used to find terms in the query text.
+     * @param config
      * @throws ParseException
      *             if the parsing fails
      */
     static public Query parse(String query, String field, Analyzer analyzer,
             NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService,
-            Operator defaultOperator, SearchParameters searchParameters) throws ParseException
+            Operator defaultOperator, SearchParameters searchParameters, LuceneConfig config) throws ParseException
     {
         if (s_logger.isDebugEnabled())
         {
@@ -84,6 +89,7 @@ public class LuceneQueryParser extends QueryParser
         parser.setNamespacePrefixResolver(namespacePrefixResolver);
         parser.setDictionaryService(dictionaryService);
         parser.setSearchParameters(searchParameters);
+        parser.setLuceneConfig(config);
         // TODO: Apply locale contstraints at the top level if required for the non ML doc types.
         Query result = parser.parse(query);
         if (s_logger.isDebugEnabled())
@@ -91,6 +97,11 @@ public class LuceneQueryParser extends QueryParser
             s_logger.debug("Query " + query + "                             is\n\t" + result.toString());
         }
         return result;
+    }
+
+    private void setLuceneConfig(LuceneConfig config)
+    {
+        this.config = config;
     }
 
     private void setSearchParameters(SearchParameters searchParameters)
@@ -158,7 +169,10 @@ public class LuceneQueryParser extends QueryParser
                     {
                         // The super implementation will create phrase queries etc if required
                         Query part = getFieldQuery("@" + qname.toString(), queryText);
-                        query.add(part, Occur.SHOULD);
+                        if (part != null)
+                        {
+                            query.add(part, Occur.SHOULD);
+                        }
                     }
                     return query;
                 }
@@ -168,7 +182,10 @@ public class LuceneQueryParser extends QueryParser
                     for (String fieldName : text)
                     {
                         Query part = getFieldQuery(fieldName, queryText);
-                        query.add(part, Occur.SHOULD);
+                        if (part != null)
+                        {
+                            query.add(part, Occur.SHOULD);
+                        }
                     }
                     return query;
                 }
@@ -251,7 +268,10 @@ public class LuceneQueryParser extends QueryParser
                 for (QName qname : subclasses)
                 {
                     TermQuery termQuery = new TermQuery(new Term(field, qname.toString()));
-                    booleanQuery.add(termQuery, Occur.SHOULD);
+                    if (termQuery != null)
+                    {
+                        booleanQuery.add(termQuery, Occur.SHOULD);
+                    }
                 }
                 return booleanQuery;
             }
@@ -333,7 +353,10 @@ public class LuceneQueryParser extends QueryParser
                 for (QName qname : subclasses)
                 {
                     TermQuery termQuery = new TermQuery(new Term(field, qname.toString()));
-                    booleanQuery.add(termQuery, Occur.SHOULD);
+                    if (termQuery != null)
+                    {
+                        booleanQuery.add(termQuery, Occur.SHOULD);
+                    }
                 }
                 return booleanQuery;
             }
@@ -369,7 +392,8 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.startsWith("@"))
             {
-                return attributeQueryBuilder(field, queryText, new FieldQuery());
+                Query query = attributeQueryBuilder(field, queryText, new FieldQuery());
+                return query;
             }
             else if (field.equals("ALL"))
             {
@@ -414,9 +438,12 @@ public class LuceneQueryParser extends QueryParser
                     QName container = pd.getContainerClass().getName();
                     BooleanQuery query = new BooleanQuery();
                     Query typeQuery = getFieldQuery("TYPE", container.toString());
-                    query.add(typeQuery, Occur.MUST);
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
-                    query.add(presenceQuery, Occur.MUST_NOT);
+                    if ((typeQuery != null) && (presenceQuery != null))
+                    {
+                        query.add(typeQuery, Occur.MUST);
+                        query.add(presenceQuery, Occur.MUST_NOT);
+                    }
                     return query;
                 }
                 else
@@ -435,9 +462,12 @@ public class LuceneQueryParser extends QueryParser
                     QName container = pd.getContainerClass().getName();
                     BooleanQuery query = new BooleanQuery();
                     Query typeQuery = getFieldQuery("TYPE", container.toString());
-                    query.add(typeQuery, Occur.MUST);
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
-                    query.add(presenceQuery, Occur.MUST);
+                    if ((typeQuery != null) && (presenceQuery != null))
+                    {
+                        query.add(typeQuery, Occur.MUST);
+                        query.add(presenceQuery, Occur.MUST);
+                    }
                     return query;
                 }
                 else
@@ -455,7 +485,10 @@ public class LuceneQueryParser extends QueryParser
                 {
                     // The super implementation will create phrase queries etc if required
                     Query part = getFieldQuery("@" + qname.toString(), queryText);
-                    query.add(part, Occur.SHOULD);
+                    if (part != null)
+                    {
+                        query.add(part, Occur.SHOULD);
+                    }
                 }
                 return query;
             }
@@ -585,7 +618,10 @@ public class LuceneQueryParser extends QueryParser
             {
                 // The super implementation will create phrase queries etc if required
                 Query part = getPrefixQuery("@" + qname.toString(), termStr);
-                query.add(part, Occur.SHOULD);
+                if (part != null)
+                {
+                    query.add(part, Occur.SHOULD);
+                }
             }
             return query;
         }
@@ -611,7 +647,10 @@ public class LuceneQueryParser extends QueryParser
             {
                 // The super implementation will create phrase queries etc if required
                 Query part = getWildcardQuery("@" + qname.toString(), termStr);
-                query.add(part, Occur.SHOULD);
+                if (part != null)
+                {
+                    query.add(part, Occur.SHOULD);
+                }
             }
             return query;
         }
@@ -637,7 +676,10 @@ public class LuceneQueryParser extends QueryParser
             {
                 // The super implementation will create phrase queries etc if required
                 Query part = getFuzzyQuery("@" + qname.toString(), termStr, minSimilarity);
-                query.add(part, Occur.SHOULD);
+                if (part != null)
+                {
+                    query.add(part, Occur.SHOULD);
+                }
             }
             return query;
         }
@@ -772,7 +814,10 @@ public class LuceneQueryParser extends QueryParser
                 StringBuilder builder = new StringBuilder(queryText.length() + 10);
                 builder.append("\u0000").append(locale.toString()).append("\u0000").append(queryText);
                 Query subQuery = subQueryBuilder.getQuery(expandedFieldName, builder.toString());
-                booleanQuery.add(subQuery, Occur.SHOULD);
+                if (subQuery != null)
+                {
+                    booleanQuery.add(subQuery, Occur.SHOULD);
+                }
             }
             return booleanQuery;
         }
@@ -781,21 +826,62 @@ public class LuceneQueryParser extends QueryParser
         {
             // Build a sub query for each locale and or the results together -
             // - add an explicit condition for the locale
-            BooleanQuery booleanQuery = new BooleanQuery();
+
+            MLAnalysisMode analysisMode = searchParameters.getMlAnalaysisMode() == null ? config
+                    .getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode();
+
+            if (analysisMode.includesAll())
+            {
+                return subQueryBuilder.getQuery(expandedFieldName, queryText);
+            }
+
             List<Locale> locales = searchParameters.getLocales();
+            List<Locale> expandedLocales = new ArrayList<Locale>();
             for (Locale locale : (((locales == null) || (locales.size() == 0)) ? Collections.singletonList(I18NUtil
                     .getLocale()) : locales))
             {
-                BooleanQuery subQuery = new BooleanQuery();
-                Query contentQuery = subQueryBuilder.getQuery(expandedFieldName, queryText);
-                subQuery.add(contentQuery, Occur.MUST);
-                StringBuilder builder = new StringBuilder();
-                builder.append(expandedFieldName).append(".locale");
-                Query localeQuery = getFieldQuery(builder.toString(), locale.toString());
-                subQuery.add(localeQuery, Occur.MUST);
-                booleanQuery.add(subQuery, Occur.SHOULD);
+                expandedLocales.addAll(MLAnalysisMode.getLocales(analysisMode, locale, true));
             }
-            return booleanQuery;
+
+            if (expandedLocales.size() > 0)
+            {
+                BooleanQuery booleanQuery = new BooleanQuery();
+                Query contentQuery = subQueryBuilder.getQuery(expandedFieldName, queryText);
+                if (contentQuery != null)
+                {
+                    booleanQuery.add(contentQuery, Occur.MUST);
+                    BooleanQuery subQuery = new BooleanQuery();
+                    for (Locale locale : (expandedLocales))
+                    {
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(expandedFieldName).append(".locale");
+                        String localeString = locale.toString();
+                        if (localeString.indexOf("*") == -1)
+                        {
+                            Query localeQuery = getFieldQuery(builder.toString(), localeString);
+                            if (localeQuery != null)
+                            {
+                                subQuery.add(localeQuery, Occur.SHOULD);
+                            }
+                        }
+                        else
+                        {
+                            Query localeQuery = getWildcardQuery(builder.toString(), localeString);
+                            if (localeQuery != null)
+                            {
+                                subQuery.add(localeQuery, Occur.SHOULD);
+                            }
+                        }
+                    }
+                    booleanQuery.add(subQuery, Occur.MUST);
+                }
+                return booleanQuery;
+            }
+            else
+            {
+                return subQueryBuilder.getQuery(expandedFieldName, queryText);
+            }
+
         }
         else
         {

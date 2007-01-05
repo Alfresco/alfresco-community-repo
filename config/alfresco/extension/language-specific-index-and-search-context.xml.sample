@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- This config will index tokens for all language searches and base language searches -->
+    <!-- By default the serach will only find ML docs and content in the correct language -->
+    <!-- ONLY USE THIS FOR CLEAN INSTALLATIONS UNTIL THERE IS A FIX TO SET LOCALE FOR ALL CONTENT -->
+    <!--  - or old content will be indexed with no locale and you will not find it  ... 
+    
+    <!-- See MLAnalysisMode for all the available options -->
+    
+    <bean id="luceneIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcherFactory2">
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nameSpaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="luceneFullTextSearchIndexer">
+            <ref bean="LuceneFullTextSearchIndexer" />
+        </property>
+        <property name="indexRootLocation">
+            <value>${dir.indexes}</value>
+        </property>
+        <property name="contentService">
+            <ref bean="contentService" />
+        </property>
+        <property name="queryRegister">
+            <ref bean="queryRegisterComponent" />
+        </property>
+        <property name="maxAtomicTransformationTime">
+            <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
+        </property>
+        <property name="queryMaxClauses">
+            <value>${lucene.query.maxClauses}</value>
+        </property>
+        <property name="indexerBatchSize">
+            <value>${lucene.indexer.batchSize}</value>
+        </property>
+        <property name="lockDirectory">
+            <value>${dir.indexes.lock}</value>
+        </property>
+        <property name="indexerMaxFieldLength">
+            <value>${lucene.indexer.maxFieldLength}</value>
+        </property>
+        <property name="writeLockTimeout">
+            <value>${lucene.write.lock.timeout}</value>
+        </property>
+        <property name="commitLockTimeout">
+            <value>${lucene.commit.lock.timeout}</value>
+        </property>
+        <property name="lockPollInterval">
+            <value>${lucene.lock.poll.interval}</value>
+        </property>
+		 <property name="defaultMLIndexAnalysisMode">
+            <value>EXACT_LANGUAGE_AND_ALL</value>
+        </property>
+		<property name="defaultMLSearchAnalysisMode">
+            <value>EXACT_LANGUAGE</value>
+        </property>
+        
+    </bean>
+   
+    
+   
+    
+</beans>

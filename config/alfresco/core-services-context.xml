@@ -385,6 +385,12 @@
         <property name="lockPollInterval">
             <value>${lucene.lock.poll.interval}</value>
         </property>
+		 <property name="defaultMLIndexAnalysisMode">
+            <value>EXACT_LANGUAGE_AND_ALL</value>
+        </property>
+		<property name="defaultMLSearchAnalysisMode">
+            <value>EXACT_LANGUAGE_AND_ALL</value>
+        </property>
         
     </bean>
 

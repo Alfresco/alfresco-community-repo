@@ -3,6 +3,7 @@ package org.alfresco.repo.search.impl.lucene.analysis;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
@@ -38,91 +39,20 @@ public class MLTokenDuplicator extends Tokenizer
         this.source = source;
         this.locale = locale;
 
-        boolean l = locale.getLanguage().length() != 0;
-        boolean c = locale.getCountry().length() != 0;
-        boolean v = locale.getVariant().length() != 0;
-
-        prefixes = new HashSet<String>(4);
-        if (mlAnalaysisMode.includesAll())
+        Collection<Locale> locales = MLAnalysisMode.getLocales(mlAnalaysisMode, locale, false);
+        prefixes = new HashSet<String>(locales.size());
+        for(Locale toAdd : locales)
         {
-            prefixes.add("");
-        }
-
-        if (mlAnalaysisMode.includesExact())
-        {
-            StringBuffer result = new StringBuffer();
-            result.append("{").append(locale.toString()).append("}");
-            prefixes.add(result.toString());
-        }
-
-        if (mlAnalaysisMode.includesContaining())
-        {
-            if (v)
+            String localeString = toAdd.toString();
+            if(localeString.length() == 0)
             {
-                Locale noVarient = new Locale(locale.getLanguage(), locale.getCountry(), "");
-                StringBuffer result = new StringBuffer();
-                result.append("{").append(noVarient.toString()).append("}");
-                prefixes.add(result.toString());
-
-                Locale noCountry = new Locale(locale.getLanguage(), "", "");
-                result = new StringBuffer();
-                result.append("{").append(noCountry.toString()).append("}");
-                prefixes.add(result.toString());
+                prefixes.add("");
             }
-            if (c)
+            else
             {
-                Locale noCountry = new Locale(locale.getLanguage(), "", "");
-                StringBuffer result = new StringBuffer();
-                result.append("{").append(noCountry.toString()).append("}");
-                prefixes.add(result.toString());
-            }
-        }
-
-        if (mlAnalaysisMode.includesContained())
-        {
-            // varients have not contained
-            if (!v)
-            {
-                if (!c)
-                {
-                    if (!l)
-                    {
-                        // All
-                        for (Locale toAdd : Locale.getAvailableLocales())
-                        {
-                            StringBuffer result = new StringBuffer();
-                            result.append("{").append(toAdd.toString()).append("}");
-                            prefixes.add(result.toString());
-                        }
-                    }
-                    else
-                    {
-                        // All that match language
-                        for (Locale toAdd : Locale.getAvailableLocales())
-                        {
-                            if (locale.getLanguage().equals(toAdd.getLanguage()))
-                            {
-                                StringBuffer result = new StringBuffer();
-                                result.append("{").append(toAdd.toString()).append("}");
-                                prefixes.add(result.toString());
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // All that match language and country
-                    for (Locale toAdd : Locale.getAvailableLocales())
-                    {
-                        if ((locale.getLanguage().equals(toAdd.getLanguage()))
-                                && (locale.getCountry().equals(toAdd.getCountry())))
-                        {
-                            StringBuffer result = new StringBuffer();
-                            result.append("{").append(toAdd.toString()).append("}");
-                            prefixes.add(result.toString());
-                        }
-                    }
-                }
+                StringBuilder builder = new StringBuilder(16);
+                builder.append("{").append(localeString).append("}");
+                prefixes.add(builder.toString());
             }
         }
         if(s_logger.isDebugEnabled())

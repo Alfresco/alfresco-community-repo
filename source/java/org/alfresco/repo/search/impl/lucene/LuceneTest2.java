@@ -2543,6 +2543,14 @@ public class LuceneTest2 extends TestCase
 
         // Test stop words are equivalent
 
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"the\"", null, null);
+        assertEquals(0, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"and\"", null, null);
+        assertEquals(0, results.length());
+        results.close();
+        
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"over the lazy\"", null, null);
         assertEquals(1, results.length());
         results.close();
@@ -2685,11 +2693,41 @@ public class LuceneTest2 extends TestCase
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
+
+        // locale serach in en_US for en_UK
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("d\\:content:\"fox\"");
+        sp.addLocale(Locale.US);
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
         
         // Direct ML tests
 
         QName mlQName = QName.createQName(TEST_NAMESPACE, "ml");
 
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setMlAnalaysisMode(MLAnalysisMode.ALL_ONLY);
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":and");
+        results = searcher.query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
+
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setMlAnalaysisMode(MLAnalysisMode.ALL_ONLY);
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":\"and\"");
+        results = searcher.query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");

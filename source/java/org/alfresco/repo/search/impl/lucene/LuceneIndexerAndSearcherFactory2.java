@@ -131,9 +131,9 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
 
     private String lockDirectory;
 
-    private MLAnalysisMode defaultMLIndexAnalysisMode = MLAnalysisMode.LOCALE_AND_ALL;
+    private MLAnalysisMode defaultMLIndexAnalysisMode = MLAnalysisMode.EXACT_LANGUAGE_AND_ALL;
 
-    private MLAnalysisMode defaultMLSearchAnalysisMode = MLAnalysisMode.LOCALE_AND_ALL_CONTAINING_LOCALES_AND_ALL;
+    private MLAnalysisMode defaultMLSearchAnalysisMode = MLAnalysisMode.EXACT_LANGUAGE_AND_ALL;
 
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
@@ -1170,9 +1170,10 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
         return defaultMLIndexAnalysisMode;
     }
 
-    public void  setDefaultMLIndexAnalysisMode(String mode)
+    public void  setDefaultMLIndexAnalysisMode(MLAnalysisMode mode)
     {
-        defaultMLIndexAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
+        //defaultMLIndexAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
+        defaultMLIndexAnalysisMode = mode;
     }
     
     public MLAnalysisMode getDefaultMLSearchAnalysisMode()
@@ -1180,9 +1181,10 @@ public class LuceneIndexerAndSearcherFactory2 implements LuceneIndexerAndSearche
        return defaultMLSearchAnalysisMode;
     }
     
-    public void  setDefaultMLSearchAnalysisMode(String mode)
+    public void  setDefaultMLSearchAnalysisMode(MLAnalysisMode mode)
     {
-        defaultMLSearchAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
+        //defaultMLSearchAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
+        defaultMLSearchAnalysisMode = mode;
     }
     
     

@@ -752,7 +752,12 @@ public class XFormsBean
 
    private String getCurrentAVMPath()
    {
-      final AVMNode node = this.avmBrowseBean.getAvmActionNode();
+      AVMNode node = this.avmBrowseBean.getAvmActionNode();
+      if (node == null)
+      {
+         return this.avmBrowseBean.getCurrentPath();
+      }
+
       final String result = node.getPath();
       return node.isDirectory() ? result : AVMNodeConverter.SplitBase(result)[0];
    }

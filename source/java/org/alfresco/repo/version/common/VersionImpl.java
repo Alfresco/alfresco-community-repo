@@ -80,6 +80,13 @@ public class VersionImpl implements Version
     }
     
 
+    @Override
+    public String toString()
+    {
+        return versionProperties.toString();
+    }
+
+
     /**
      * Helper method to get the created date from the version property data.
      * 

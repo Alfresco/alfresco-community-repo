@@ -112,8 +112,8 @@
                   </td>
                   <td>
                      <%-- language selection drop-down --%>
-                     <h:selectOneMenu id="language" value="#{LoginBean.language}" style="width:150px" onchange="document.forms['loginForm'].submit(); return true;">
-                        <f:selectItems value="#{LoginBean.languages}" />
+                     <h:selectOneMenu id="language" value="#{UserPreferencesBean.language}" style="width:150px" onchange="document.forms['loginForm'].submit(); return true;">
+                        <f:selectItems value="#{UserPreferencesBean.languages}" />
                      </h:selectOneMenu>
                   </td>
                </tr>

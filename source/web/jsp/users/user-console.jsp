@@ -153,6 +153,28 @@
                                           </h:selectOneMenu>
                                        </td>
                                     </tr>
+                                    <tr>
+                                       <td>
+                                          <h:outputText value="#{msg.interface_language}" />:&nbsp;
+                                       </td>
+                                       <td>
+                                          <%-- Interface Language drop-down selector --%>
+                                          <h:selectOneMenu id="language" value="#{UserPreferencesBean.language}" onchange="document.forms['user-console'].submit(); return true;">
+                                             <f:selectItems value="#{UserPreferencesBean.languages}" />
+                                          </h:selectOneMenu>
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td>
+                                          <h:outputText value="#{msg.content_language_filter}" />:&nbsp;
+                                       </td>
+                                       <td>
+                                          <%-- Content Language Filter drop-down selector --%>
+                                          <h:selectOneMenu id="content-filter-language" value="#{UserPreferencesBean.contentFilterLanguage}" onchange="document.forms['user-console'].submit(); return true;">
+                                             <f:selectItems value="#{UserPreferencesBean.contentFilterLanguages}" />
+                                          </h:selectOneMenu>
+                                       </td>
+                                    </tr>
                                  </table>
                               </a:panel>
                            </td>

@@ -18,18 +18,14 @@ package org.alfresco.web.bean;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.alfresco.config.Config;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -42,7 +38,6 @@ import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.config.LanguagesConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -164,62 +159,6 @@ public class LoginBean
    public String getPassword()
    {
       return this.password;
-   }
-
-   /**
-    * @return the available languages
-    */
-   public SelectItem[] getLanguages()
-   {
-      Config config = Application.getConfigService(FacesContext.getCurrentInstance()).getConfig("Languages");
-      LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
-            LanguagesConfigElement.CONFIG_ELEMENT_ID);
-      
-      List<String> languages = langConfig.getLanguages();
-      SelectItem[] items = new SelectItem[languages.size()];
-      int count = 0;
-      for (String locale : languages)
-      {
-         // get label associated to the locale
-         String label = langConfig.getLabelForLanguage(locale);
-
-         // set default selection
-         if (count == 0 && this.language == null)
-         {
-            // first try to get the language that the current user is using
-            Locale lastLocale = Application.getLanguage(FacesContext.getCurrentInstance());
-            if (lastLocale != null)
-            {
-               this.language = lastLocale.toString();
-            }
-            // else we default to the first item in the list
-            else
-            {
-               this.language = locale;
-            }
-         }
-         
-         items[count++] = new SelectItem(locale, label);
-      }
-      
-      return items;
-   }
-
-   /**
-    * @return Returns the language selection.
-    */
-   public String getLanguage()
-   {
-      return this.language;
-   }
-
-   /**
-    * @param language       The language selection to set.
-    */
-   public void setLanguage(String language)
-   {
-      this.language = language;
-      Application.setLanguage(FacesContext.getCurrentInstance(), this.language);
    }
 
 
@@ -419,9 +358,10 @@ public class LoginBean
       session.put(AuthenticationHelper.SESSION_INVALIDATED, true);
       
       // set language to last used
-      if (this.language != null && this.language.length() != 0)
+      String language = preferences.getLanguage();
+      if (language != null && language.length() != 0)
       {
-         Application.setLanguage(context, this.language);
+         Application.setLanguage(context, language);
       }
       
       return externalAuth ? "logout" : "relogin";
@@ -450,9 +390,6 @@ public class LoginBean
 
    /** password */
    private String password = null;
-
-   /** language locale selection */
-   private String language = null;
 
    /** PersonService bean reference */
    protected PersonService personService;

@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.portlet.PortletContext;
@@ -33,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.config.ConfigService;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
@@ -495,7 +495,7 @@ public class Application
    @SuppressWarnings("unchecked")
    public static void setLanguage(FacesContext context, String code)
    {
-      Locale locale = parseLocale(code);
+      Locale locale = I18NUtil.parseLocale(code);
       
       // set locale for JSF framework usage
       context.getViewRoot().setLocale(locale);
@@ -515,36 +515,10 @@ public class Application
     */
    public static void setLanguage(HttpSession session, String code)
    {
-      Locale locale = parseLocale(code);
+      Locale locale = I18NUtil.parseLocale(code);
       
       session.setAttribute(LOCALE, locale);
       session.removeAttribute(MESSAGE_BUNDLE);
-   }
-   
-   /**
-    * @param code    Locale code (java format with underscores) to parse
-    * @return Locale object or default if unable to parse
-    */
-   private static Locale parseLocale(String code)
-   {
-      Locale locale = Locale.getDefault();
-      
-      StringTokenizer t = new StringTokenizer(code, "_");
-      int tokens = t.countTokens();
-      if (tokens == 1)
-      {
-         locale = new Locale(code);
-      }
-      else if (tokens == 2)
-      {
-         locale = new Locale(t.nextToken(), t.nextToken());
-      }
-      else if (tokens == 3)
-      {
-         locale = new Locale(t.nextToken(), t.nextToken(), t.nextToken());
-      }
-      
-      return locale;
    }
    
    /**

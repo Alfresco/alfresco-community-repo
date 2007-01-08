@@ -354,7 +354,7 @@
                                        <f:facet name="header">
                                           <h:outputText value="#{msg.actions}"/>
                                        </f:facet>
-                                       <a:actionLink id="view-link" value="View" href="#{r.url}" target="new" />
+                                       <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
                                     </a:column>
               
                                     <a:dataPager styleClass="pager" />

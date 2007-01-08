@@ -117,9 +117,12 @@
                               <td align=left width=32><a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" /></td>
                               <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
                               <td align=right>
-                                 <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" showLink="false" href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
-                                 <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:snapshotSandbox" />
-                                 <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" showLink="false" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
+                                 <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
+                                 &nbsp;&nbsp;
+                                 <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
+                                 <%-- Disabled action for GA
+                                 <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:snapshotSandbox" />
+                                 --%>
                               </td>
                            </tr>
                            <tr>

@@ -169,6 +169,50 @@
                                  </table>
                               </a:panel>
                               
+                              <div style="padding:4px"></div>
+                              
+                              <a:panel label="#{msg.version_history}" id="version-history-panel" progressive="true"
+                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       expanded='#{FileDetailsBean.panels["version-history-panel"]}' expandedActionListener="#{FileDetailsBean.expandPanel}">
+                                 
+                                 <a:richList id="version-history-list" viewMode="details" value="#{FileDetailsBean.versionHistory}" 
+                                             var="r" styleClass="recordSet" headerStyleClass="recordSetHeader" 
+                                             rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%" 
+                                             pageSize="10" initialSortColumn="version" initialSortDescending="true">
+                                    
+                                    <%-- Primary column --%>
+                                    <a:column id="col1" primary="true" width="100" style="padding:2px;text-align:left">
+                                       <f:facet name="header">
+                                          <a:sortLink label="#{msg.version}" value="version" styleClass="header"/>
+                                       </f:facet>
+                                       <a:actionLink id="label" value="#{r.version}" href="#{r.url}" target="new" />
+                                    </a:column>
+                                    
+                                    <%-- Modified Date column --%>
+                                    <a:column id="col2" style="text-align:left; white-space:nowrap">
+                                       <f:facet name="header">
+                                          <a:sortLink label="#{msg.modified_date}" value="modifiedDate" styleClass="header"/>
+                                       </f:facet>
+                                       <h:outputText id="date" value="#{r.modifiedDate}">
+                                          <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
+                                       </h:outputText>
+                                    </a:column>
+                                    
+                                    <%-- actions --%>
+                                    <a:column id="col3" style="text-align: left">
+                                       <f:facet name="header">
+                                          <h:outputText value="#{msg.actions}"/>
+                                       </f:facet>
+                                       <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
+                                       <a:actionLink id="revert-link" value="#{msg.revert}" style="padding-left:4px" actionListener="#{FileDetailsBean.revertNode}">
+                                          <f:param name="version" value="#{r.strVersion}" />
+                                       </a:actionLink>
+                                    </a:column>
+              
+                                    <a:dataPager styleClass="pager" />
+                                 </a:richList>
+                              </a:panel>
+                              
                            </td>
                            
                            <td valign="top">

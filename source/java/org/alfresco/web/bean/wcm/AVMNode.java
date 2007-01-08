@@ -127,7 +127,12 @@ public class AVMNode extends Node implements Map<String, Object>
    {
       return this.avmRef.getPath();
    }
-
+   
+   public final AVMNodeDescriptor getDescriptor()
+   {
+      return avmRef;
+   }
+   
    public int getVersion()
    {
       return this.version;

@@ -324,9 +324,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("<table cellspacing=2 cellpadding=2 border=0 width=100%><tr><td>");
                   // show the icon for the sandbox as a clickable browse link image
                   // this is currently identical to the sandbox_browse action as below
-                  Utils.encodeRecursive(context, aquireAction(
+                  UIActionLink browseAction = aquireAction(
                         context, mainStore, username, ACT_SANDBOX_ICON, WebResources.IMAGE_USERSANDBOX_32,
-                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
+                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox");
+                  browseAction.setShowLink(false);
+                  Utils.encodeRecursive(context, browseAction);
                   out.write("</td><td width=100%>");
                   out.write("<b>");
                   out.write(bundle.getString(MSG_USERNAME));
@@ -337,6 +339,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(")</td><td><nobr>");
                   
                   // direct actions for a sandbox
+                  Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif",
+                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
+                  out.write("&nbsp;&nbsp;");
+                  
                   String websiteUrl = AVMConstants.buildWebappUrl(mainStore, getWebapp());
                   Map requestMap = context.getExternalContext().getRequestMap();
                   requestMap.put(REQUEST_PREVIEW_REF, websiteUrl);
@@ -349,24 +356,20 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif",
                         "#{AVMBrowseBean.setupAllItemsAction}", "dialog:submitSandboxItems"));
-                  out.write("&nbsp;");
+                  out.write("&nbsp;&nbsp;");
                   
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert_all.gif",
                         "#{AVMBrowseBean.setupAllItemsAction}", "dialog:revertAllItems"));
-                  out.write("&nbsp;");
+                  out.write("&nbsp;&nbsp;");
                   
                   if (isManager)
                   {
                      Utils.encodeRecursive(context, aquireAction(
                            context, mainStore, username, ACT_REMOVE_SANDBOX, "/images/icons/delete_sandbox.gif",
                            "#{AVMBrowseBean.setupSandboxAction}", "dialog:deleteSandbox"));
-                     out.write("&nbsp;");
                   }
                   
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif",
-                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
                   out.write("</nobr></td></tr>");
                   
                   // modified items panel
@@ -674,11 +677,11 @@ public class UIUserSandboxes extends SelfRenderingComponent
          // output multi-select actions for this user
          out.write("<tr><td colspan=8>");
          out.write(bundle.getString(MSG_SELECTED));
-         out.write(":&nbsp;");
+         out.write(":&nbsp;&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
                fc, userStore, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
                "#{AVMBrowseBean.setupSandboxAction}", "dialog:submitSandboxItems"));
-         out.write("&nbsp;");
+         out.write("&nbsp;&nbsp;");
          Utils.encodeRecursive(fc, aquireAction(
                fc, userStore, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
                "#{AVMBrowseBean.setupSandboxAction}", "dialog:revertSelectedItems"));
@@ -925,7 +928,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       control.setRendererType(UIActions.RENDERER_ACTIONLINK);
       control.setId(id);
       control.setValue(Application.getMessage(fc, name));
-      control.setShowLink(icon != null ? false : true);
+      //control.setShowLink(icon != null ? false : true);
       control.setImage(icon);
       
       if (actionListener != null)

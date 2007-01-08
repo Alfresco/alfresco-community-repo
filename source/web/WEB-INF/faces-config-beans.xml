@@ -2601,6 +2601,10 @@
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
       </managed-property>
+      <managed-property>
+         <property-name>actionService</property-name>
+         <value>#{ActionService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

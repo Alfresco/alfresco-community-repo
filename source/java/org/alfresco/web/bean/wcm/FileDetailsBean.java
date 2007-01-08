@@ -16,11 +16,31 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
+import javax.transaction.UserTransaction;
+
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.actions.AVMRevertToVersionAction;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.util.Pair;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.data.UIRichList;
 
 /**
  * Backing bean for File Details page.
@@ -29,6 +49,36 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class FileDetailsBean extends AVMDetailsBean
 {
+   /** Action service bean reference */
+   private ActionService actionService;
+   
+   
+   // ------------------------------------------------------------------------------
+   // Construction 
+   
+   /**
+    * Default constructor
+    */
+   public FileDetailsBean()
+   {
+      super();
+      
+      // initial state of some panels that don't use the default
+      panels.put("version-history-panel", false);
+   }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Bean getters and setters
+   
+   /**
+    * @param actionService    The actionService to set.
+    */
+   public void setActionService(ActionService actionService)
+   {
+      this.actionService = actionService;
+   }
+   
    /**
     * @see org.alfresco.web.bean.wcm.AVMDetailsBean#getAvmNode()
     */
@@ -91,5 +141,82 @@ public class FileDetailsBean extends AVMDetailsBean
    protected List<AVMNode> getNodes()
    {
       return (List)this.avmBrowseBean.getFiles();
+   }
+   
+   /**
+    * @return version history list for a node
+    */
+   public List<Map<String, Object>> getVersionHistory()
+   {
+      AVMNode avmNode = getAvmNode();
+      List<AVMNodeDescriptor> history = this.avmService.getHistory(avmNode.getDescriptor(), -1);
+      List<Map<String, Object>> wrappers = new ArrayList<Map<String, Object>>(history.size());
+      for (AVMNodeDescriptor record : history)
+      {
+         Map<String, Object> wrapper = new HashMap<String, Object>(4, 1.0f);
+         wrapper.put("version", record.getVersionID());
+         wrapper.put("strVersion", Integer.toString(record.getVersionID()));
+         wrapper.put("modifiedDate", new Date(record.getModDate()));
+         List<Pair<Integer, String>> paths = this.avmService.getPaths(record);
+         if (paths.size() != 0)
+         {
+            // display the first path as any will show the same content
+            Pair<Integer, String> path = paths.get(0);
+            wrapper.put("url", DownloadContentServlet.generateBrowserURL(
+                        AVMNodeConverter.ToNodeRef(path.getFirst(), path.getSecond()), avmNode.getName()));
+         }
+         wrappers.add(wrapper);
+      }
+      return wrappers;
+   }
+   
+   /**
+    * Revert a node back to a previous version
+    */
+   public void revertNode(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      int version = Integer.parseInt(params.get("version"));
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, false);
+         tx.begin();
+         
+         Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+         List<AVMNodeDescriptor> history = this.avmService.getHistory(getAvmNode().getDescriptor(), -1);
+         // the history list should contain the version ID we are looking for
+         for (AVMNodeDescriptor record : history)
+         {
+            if (record.getVersionID() == version)
+            {
+               // the action expects the HEAD revision as the noderef and
+               // the to-revert param as the previous version to revert to
+               Action action = this.actionService.createAction(AVMRevertToVersionAction.NAME, args);
+               args.put(AVMRevertToVersionAction.TOREVERT, record);
+               this.actionService.executeAction(action, getAvmNode().getNodeRef());
+               
+               // clear the version history list after a revert ready for refresh
+               UIRichList versionList = (UIRichList)link.findComponent("version-history-list");
+               versionList.setValue(null);
+               
+               // reset the action node reference as the version ID has changed
+               avmBrowseBean.setAvmActionNode(new AVMNode(avmService.lookup(-1, getAvmNode().getPath())));
+               break;
+            }
+         }
+         
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         err.printStackTrace(System.err);
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
    }
 }

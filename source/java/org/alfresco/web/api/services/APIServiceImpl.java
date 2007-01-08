@@ -23,6 +23,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.alfresco.repo.template.ISO8601DateFormatMethod;
+import org.alfresco.repo.template.UrlEncodeMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -170,6 +172,8 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService, APICo
     protected Map<String, Object> createTemplateModel(APIRequest req, APIResponse res)
     {
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+        model.put("xmldate", new ISO8601DateFormatMethod());
+        model.put("urlencode", new UrlEncodeMethod());
         model.put("date", new Date());
         model.put("agent", descriptorService.getServerDescriptor());
         model.put("request", req);

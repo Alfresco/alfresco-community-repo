@@ -25,6 +25,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.template.ISO8601DateFormatMethod;
+import org.alfresco.repo.template.UrlEncodeMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -407,13 +409,11 @@ public class TextSearch extends APIServiceImpl
     
     // TODO: place into accessible file
     private final static String ATOM_TEMPLATE = 
-        "<#assign dateformat=\"yyyy-MM-dd\">" +
-        "<#assign timeformat=\"HH:mm:sszzz\">" +
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:opensearch=\"http://a9.com/-/spec/opensearch/1.1/\" xmlns:relevance=\"http://a9.com/-/opensearch/extensions/relevance/1.0/\">\n" +
         "  <generator version=\"${agent.version}\">Alfresco (${agent.edition})</generator>\n" +
         "  <title>Alfresco Search: ${search.searchTerms}</title>\n" + 
-        "  <updated>${date?string(dateformat)}T${date?string(timeformat)}</updated>\n" +
+        "  <updated>${xmldate(date)}</updated>\n" +
         "  <icon>${request.path}/images/logo/AlfrescoLogo16.ico</icon>\n" +
         "  <author>\n" + 
         "    <name><#if request.authenticatedUsername?exists>${request.authenticatedUsername}<#else>unknown</#if></name>\n" +
@@ -423,24 +423,24 @@ public class TextSearch extends APIServiceImpl
         "  <opensearch:startIndex>${search.startIndex}</opensearch:startIndex>\n" +
         "  <opensearch:itemsPerPage>${search.itemsPerPage}</opensearch:itemsPerPage>\n" +
         "  <opensearch:Query role=\"request\" searchTerms=\"${search.searchTerms}\" startPage=\"${search.startPage}\" count=\"${search.itemsPerPage}\" language=\"${search.localeId}\"/>\n" +
-        "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=html\" type=\"text/html\"/>\n" +
-        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
-        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=1&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=html\" type=\"text/html\"/>\n" +
+        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=1&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "<#if search.startPage &gt; 1>" +
-        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "</#if>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
+        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
         "</#if>" +
-        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${search.searchTerms}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
         "  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.servicePath}/search/text/textsearchdescription.xml\"/>\n" +
         "<#list search.results as row>" +            
         "  <entry>\n" +
         "    <title>${row.name}</title>\n" +
         "    <link href=\"${request.path}${row.url}\"/>\n" +
-        "    <icon>${request.path}${row.icon16}\"</icon>\n" +  // TODO: Standard for entry icons?
+        "    <icon>${request.path}${row.icon16}</icon>\n" +  // TODO: Standard for entry icons?
         "    <id>urn:uuid:${row.id}</id>\n" +
-        "    <updated>${row.properties.modified?string(dateformat)}T${row.properties.modified?string(timeformat)}</updated>\n" +
+        "    <updated>${xmldate(row.properties.modified)}</updated>\n" +
         "    <summary>${row.properties.description}</summary>\n" +
         "    <author>\n" + 
         "      <name>${row.properties.creator}</name>\n" +
@@ -477,15 +477,15 @@ public class TextSearch extends APIServiceImpl
         "      </li>\n" +
         "</#list>" +
         "    </ul>\n" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=1&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">first</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=1&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">first</a>" +
         "<#if search.startPage &gt; 1>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage - 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">previous</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=${search.startPage - 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">previous</a>" +
         "</#if>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">${search.startPage}</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=${search.startPage}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">${search.startPage}</a>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.startPage + 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">next</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=${search.startPage + 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">next</a>" +
         "</#if>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${search.searchTerms}&p=${search.totalPages}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">last</a>" +
+        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=${search.totalPages}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">last</a>" +
         "  </body>\n" +
         "</html>\n";
 
@@ -550,6 +550,8 @@ public class TextSearch extends APIServiceImpl
         request.put("servicePath", "http://localhost:8080/alfresco/service");
         request.put("path", "http://localhost:8080/alfresco");
         request.put("guest", false);
+        searchModel.put("xmldate", new ISO8601DateFormatMethod());
+        searchModel.put("urlencode", new UrlEncodeMethod());
         searchModel.put("date", new Date());
         searchModel.put("agent", getDescriptorService().getServerDescriptor());
         searchModel.put("request", request);

@@ -6,6 +6,7 @@ package org.alfresco.repo.avm.actions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -62,31 +63,20 @@ public class AVMRevertToVersionAction extends ActionExecuterAbstractBase
     {
         Pair<Integer, String> versionPath = 
             AVMNodeConverter.ToAVMVersionPath(actionedUponNodeRef);
-        String [] storePath = versionPath.getSecond().split(":");
-        String store = storePath[0];
         AVMNodeDescriptor toRevert = 
             (AVMNodeDescriptor)action.getParameterValue(TOREVERT);
         List<Pair<Integer, String>> paths = fAVMService.getPaths(toRevert);
-        Pair<Integer, String> found = new Pair<Integer, String>(Integer.MAX_VALUE, "");
-        for (Pair<Integer, String> path : paths)
+        if (paths.size() == 0)
         {
-            if (!path.getSecond().startsWith(store + ':'))
-            {
-                continue;
-            }
-            if (path.getFirst() < found.getFirst())
-            {
-                found = path;
-            }
+            fgLogger.error("Unable to find path for: " + toRevert);
+            throw new AlfrescoRuntimeException("Could not find path for: " + toRevert);
         }
-        // TODO I believe that this should always have found not
-        // the initial found. Must confirm.
-        AVMDifference diff = new AVMDifference(found.getFirst(), found.getSecond(),
+        AVMDifference diff = new AVMDifference(paths.get(0).getFirst(), paths.get(0).getSecond(),
                                                -1, versionPath.getSecond(),
                                                AVMDifference.NEWER);
         List<AVMDifference> diffs = new ArrayList<AVMDifference>(1);
         diffs.add(diff);
-        String message = "Reverted " + versionPath.getSecond() + " to version in snapshot " + found.getFirst() + ".";
+        String message = "Reverted " + versionPath.getSecond() + " to version in snapshot " + paths.get(0).getFirst() + ".";
         fAVMSyncService.update(diffs, null, false, false, true, true, "Reverted", message);
     }
 

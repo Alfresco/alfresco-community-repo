@@ -76,8 +76,6 @@
       <!-- the list of available language files -->
       <languages>
          <language locale="en_US">English</language>
-         <language locale="fr_FR">French</language>
-         <language locale="jp_JP">Japanese</language>
       </languages>
    </config>
    

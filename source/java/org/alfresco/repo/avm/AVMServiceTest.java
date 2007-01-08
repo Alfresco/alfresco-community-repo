@@ -36,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.avm.actions.AVMRevertListAction;
+import org.alfresco.repo.avm.actions.AVMRevertToVersionAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.avm.actions.SimpleAVMPromoteAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
@@ -71,6 +72,52 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Test the revert to version action.
+     */
+    public void testRevertToVersionAction()
+    {
+        try
+        {
+            setupBasicTree();
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", "v1", null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", "v2", null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", "v3", null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", "v4", null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            fService.createSnapshot("main", "v5", null);
+            fService.getFileOutputStream("main:/a/b/c/foo").close();
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/b/c/foo");
+            List<AVMNodeDescriptor> history = fService.getHistory(desc, 100);
+            AVMNodeDescriptor toRevert = history.get(3);
+            final ActionImpl action = new ActionImpl(null,
+                                                     GUID.generate(),
+                                                     AVMRevertToVersionAction.NAME);
+            action.setParameterValue(AVMRevertToVersionAction.TOREVERT, toRevert);
+            final AVMRevertToVersionAction revert = (AVMRevertToVersionAction)fContext.getBean("avm-revert-to-version");
+            class TxnWork implements TransactionUtil.TransactionWork<Object>
+            {
+                public Object doWork() throws Exception
+                {
+                    revert.execute(action, AVMNodeConverter.ToNodeRef(-1, "main:/a/b/c/foo"));
+                    return null;
+                }
+            };
+            TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
+                    new TxnWork());
+            assertEquals(toRevert.getId(), fService.lookup(-1, "main:/a/b/c/foo").getId());            
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
     /**
      * Test version numbering.
      */
@@ -333,15 +380,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             final ActionImpl action = new ActionImpl(null,
                                                      GUID.generate(),
                                                      AVMRevertListAction.NAME);
-            List<Pair<Integer, String>> versionPaths = 
-                new ArrayList<Pair<Integer, String>>();
-            versionPaths.add(new Pair<Integer, String>(-1, "area:/a/b"));
+            List<String> paths = 
+                new ArrayList<String>();
+            paths.add("area:/a/b");
             action.setParameterValue(AVMRevertListAction.PARAM_VERSION, fService.getLatestSnapshotID("area"));
-            action.setParameterValue(AVMRevertListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-            action.setParameterValue(AVMRevertListAction.PARAM_FLATTEN, true);
-            action.setParameterValue(AVMRevertListAction.PARAM_STORE, "area");
-            action.setParameterValue(AVMRevertListAction.PARAM_STAGING, "main");
-            action.setParameterValue(AVMRevertListAction.PARAM_FLATTEN_PATH, "/a");
+            action.setParameterValue(AVMRevertListAction.PARAM_NODE_LIST, (Serializable)paths);
             final AVMRevertListAction revert = (AVMRevertListAction)fContext.getBean("avm-revert-list");
             class TxnWork implements TransactionUtil.TransactionWork<Object>
             {

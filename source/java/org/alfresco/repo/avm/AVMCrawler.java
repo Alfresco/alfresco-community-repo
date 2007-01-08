@@ -120,7 +120,7 @@ class AVMCrawler implements Runnable
         {
             List<AVMStoreDescriptor> reps = fService.getStores();
             fOpCount++;
-            AVMStoreDescriptor repDesc = reps.get(fRandom.nextInt(reps.size()));
+            AVMStoreDescriptor repDesc = reps.get(fRandom.nextInt(12));
             Map<String, AVMNodeDescriptor> rootListing = fService.getDirectoryListing(-1, repDesc.getName() + ":/");
             fOpCount++;
             // Get all the directories in the root.

@@ -484,7 +484,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
         SortedMap<String, AVMNodeDescriptor> results = new TreeMap<String, AVMNodeDescriptor>();
         for (String name : listing.keySet())
         {
-            AVMNode child = listing.get(name);
+            // TODO consider doing this at a lower level.
+            AVMNode child = AVMNodeUnwrapper.Unwrap(listing.get(name));
             AVMNodeDescriptor desc = child.getDescriptor(lPath, name);
             results.put(name, desc);
         }

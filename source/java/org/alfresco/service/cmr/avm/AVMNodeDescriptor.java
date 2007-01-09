@@ -411,7 +411,7 @@ public class AVMNodeDescriptor implements Serializable
             case AVMNodeType.PLAIN_FILE :
                 return "[PF:" + fID + "]";
             case AVMNodeType.PLAIN_DIRECTORY :
-                return "[PD:" + fID + "]";
+                return "[PD:" + fID + ":" + fPath + "]";
             case AVMNodeType.LAYERED_FILE :
                 return "[LF:" + fID + ":" + fIndirection + "]";
             case AVMNodeType.LAYERED_DIRECTORY :

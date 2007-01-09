@@ -89,6 +89,18 @@ public class AVMSyncServiceImpl implements AVMSyncService
                                        int dstVersion, String dstPath,
                                        NameMatcher excluder)
     {
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug(srcPath + " : " + dstPath);
+            try
+            {
+                throw new Exception();
+            }
+            catch (Exception e)
+            {
+                fgLogger.debug("Stack Trace: ", e);
+            }
+        }
         if (srcPath == null || dstPath == null)
         {
             throw new AVMBadArgumentException("Illegal null path.");
@@ -318,6 +330,17 @@ public class AVMSyncServiceImpl implements AVMSyncService
                        NameMatcher excluder, boolean ignoreConflicts, boolean ignoreOlder,
                        boolean overrideConflicts, boolean overrideOlder, String tag, String description)
     {
+        if (fgLogger.isDebugEnabled())
+        {
+            try
+            {
+                throw new Exception("Stack Trace.");
+            }
+            catch (Exception e)
+            {
+                fgLogger.debug("Stack trace: ", e);
+            }
+        }
         Map<String, Integer> storeVersions = new HashMap<String, Integer>();
         Set<String> destStores = new HashSet<String>();
         for (AVMDifference diff : diffList)
@@ -330,6 +353,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             if (!diff.isValid())
             {
                 throw new AVMSyncException("Malformed AVMDifference.");
+            }
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug("update: " + diff);
             }
             // Snapshot the source if needed.
             int version = diff.getSourceVersion();
@@ -656,6 +683,18 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             throw new AVMNotFoundException("Not found: " + underlyingPath);
         }
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug("flatten: " + layerNode + " " + underlyingNode);
+            try
+            {
+                throw new Exception("Stack Trace:");
+            }
+            catch (Exception e)
+            {
+                fgLogger.debug("Stack Trace: ", e);
+            }
+        }
         flatten(layerNode, underlyingNode);
     }
     
@@ -666,6 +705,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private boolean flatten(AVMNodeDescriptor layer, AVMNodeDescriptor underlying)
     {
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug("flatten: " + layer + " " + underlying);
+        }
         if (!layer.isLayeredDirectory())
         {
             return false;

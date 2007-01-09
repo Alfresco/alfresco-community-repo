@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +39,8 @@ import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -67,7 +70,7 @@ public class TemplateNode implements Serializable
     private static Log logger = LogFactory.getLog(TemplateNode.class);
     
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
-    private final static String CONTENT_DEFAULT_URL = "/download/direct/{0}/{1}/{2}/{3}";
+    protected final static String CONTENT_DEFAULT_URL = "/download/direct/{0}/{1}/{2}/{3}";
     private final static String CONTENT_PROP_URL    = "/download/direct/{0}/{1}/{2}/{3}?property={4}";
     private final static String FOLDER_BROWSE_URL   = "/navigate/browse/{0}/{1}/{2}";
     
@@ -84,7 +87,7 @@ public class TemplateNode implements Serializable
     private String path;
     private String id;
     private Set<QName> aspects = null;
-    private QNameMap<String, Object> properties;
+    private QNameMap<String, Serializable> properties;
     private List<String> permissions = null;
     private boolean propsRetrieved = false;
     protected ServiceRegistry services = null;
@@ -126,7 +129,7 @@ public class TemplateNode implements Serializable
         this.services = services;
         this.imageResolver = resolver;
         
-        this.properties = new QNameMap<String, Object>(this.services.getNamespaceService());
+        this.properties = new QNameMap<String, Serializable>(this.services.getNamespaceService());
     }
     
     
@@ -239,7 +242,7 @@ public class TemplateNode implements Serializable
     /**
      * @return All the properties known about this node.
      */
-    public Map<String, Object> getProperties()
+    public Map<String, Serializable> getProperties()
     {
         if (this.propsRetrieved == false)
         {
@@ -267,6 +270,34 @@ public class TemplateNode implements Serializable
         }
         
         return this.properties;
+    }
+    
+    /**
+     * @return a list of objects representing the version history of this node.
+     *         @see VersionHistoryNode
+     */
+    public List<VersionHistoryNode> getVersionHistory()
+    {
+        List<VersionHistoryNode> records = Collections.<VersionHistoryNode>emptyList();
+        
+        if (this.getAspects().contains(ContentModel.ASPECT_VERSIONABLE))
+        {
+            VersionHistory history = this.services.getVersionService().getVersionHistory(this.nodeRef);
+            if (history != null)
+            {
+                records = new ArrayList<VersionHistoryNode>(8);
+                for (Version version : history.getAllVersions())
+                {
+                    // create a wrapper for the version information
+                    VersionHistoryNode record = new VersionHistoryNode(version, this);
+                    
+                    // add the client side version to the list
+                    records.add(record);
+                }
+            }
+        }
+        
+        return records;
     }
     
     /**
@@ -415,9 +446,8 @@ public class TemplateNode implements Serializable
      */
     public String getContent()
     {
-        ContentService contentService = this.services.getContentService();
-        ContentReader reader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
-        return (reader != null && reader.exists()) ? reader.getContentString() : "";
+        TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
+        return content != null ? content.getContent() : "";
     }
     
     /**
@@ -430,25 +460,25 @@ public class TemplateNode implements Serializable
     {
         if (getIsDocument() == true)
         {
-           try
-           {
-               return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] {
-                       nodeRef.getStoreRef().getProtocol(),
-                       nodeRef.getStoreRef().getIdentifier(),
-                       nodeRef.getId(),
-                       StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
-           }
-           catch (UnsupportedEncodingException err)
-           {
-               throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
-           }
+            try
+            {
+                return MessageFormat.format(CONTENT_DEFAULT_URL, new Object[] {
+                        nodeRef.getStoreRef().getProtocol(),
+                        nodeRef.getStoreRef().getIdentifier(),
+                        nodeRef.getId(),
+                        StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
+            }
+            catch (UnsupportedEncodingException err)
+            {
+                throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
+            }
         }
         else
         {
-           return MessageFormat.format(FOLDER_BROWSE_URL, new Object[] {
-                       nodeRef.getStoreRef().getProtocol(),
-                       nodeRef.getStoreRef().getIdentifier(),
-                       nodeRef.getId() } );
+            return MessageFormat.format(FOLDER_BROWSE_URL, new Object[] {
+                    nodeRef.getStoreRef().getProtocol(),
+                    nodeRef.getStoreRef().getIdentifier(),
+                    nodeRef.getId() } );
         }
     }
     

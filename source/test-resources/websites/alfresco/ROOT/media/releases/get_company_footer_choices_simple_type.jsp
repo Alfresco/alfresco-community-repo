@@ -52,7 +52,7 @@ which wants to update the list of available company footers dynamically.
   </xs:schema>
   -->
   <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-             xmlns:alfresco="http://www.alfresco.org/alfresco"
+             xmlns:alf="http://www.alfresco.org"
   	     elementFormDefault="qualified">
     <xs:simpleType name="company_footer_choices">
       <xs:restriction base="xs:string">
@@ -65,7 +65,7 @@ which wants to update the list of available company footers dynamically.
   	      <xs:annotation>
 	        <xs:appinfo>
 		  <!-- this produces the label displayed in the combobox within the press release form -->
-                  <alfresco:label><c:out value="${companyFooter.name}"/></alfresco:label>
+                  <alf:label><c:out value="${companyFooter.name}"/></alf:label>
 		</xs:appinfo>
               </xs:annotation>
             </jsp:body>

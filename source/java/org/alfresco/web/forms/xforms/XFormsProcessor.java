@@ -20,6 +20,7 @@ import java.io.*;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.forms.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.chiba.xml.ns.NamespaceConstants;
 import org.chiba.xml.xforms.exception.XFormsException;
 
 public class XFormsProcessor
@@ -35,6 +37,26 @@ public class XFormsProcessor
 {
 
    private static final Log LOGGER = LogFactory.getLog(XFormsProcessor.class); 
+
+   private final static String[][] JS_NAMESPACES = 
+   {
+      { "xforms", NamespaceConstants.XFORMS_NS, NamespaceConstants.XFORMS_PREFIX },
+      { "xhtml", NamespaceConstants.XHTML_NS, NamespaceConstants.XHTML_PREFIX },
+      { "chiba", NamespaceConstants.CHIBA_NS, NamespaceConstants.CHIBA_PREFIX },
+      { "alfresco", NamespaceService.ALFRESCO_URI, NamespaceService.ALFRESCO_PREFIX }
+   };
+   
+   private final String[] JS_SCRIPTS = 
+   {
+      "/scripts/tiny_mce/" + (LOGGER.isDebugEnabled() 
+                              ? "tiny_mce_src.js" 
+                              : "tiny_mce.js"),
+      "/scripts/ajax/dojo/" + (LOGGER.isDebugEnabled() 
+                               ? "dojo.js.uncompressed.js" 
+                               : "dojo.js"),
+      "/scripts/ajax/xforms.js"
+   };
+
 
    public XFormsProcessor()
    {
@@ -77,44 +99,51 @@ public class XFormsProcessor
          throw new ProcessingException(xfe);
       }
  
-      final String cp = fc.getExternalContext().getRequestContextPath();
+      final String contextPath = fc.getExternalContext().getRequestContextPath();
       final Document result = XMLUtil.newDocument();
+      final String xformsUIDivId = "alfresco-xforms-ui";
 
       // this div is where the ui will write to
       final Element div = result.createElement("div");
-      div.setAttribute("id", "alfresco-xforms-ui");
+      div.setAttribute("id", xformsUIDivId);
       result.appendChild(div);
       
       Element e = result.createElement("link");
       e.setAttribute("rel", "stylesheet");
       e.setAttribute("type", "text/css");
-      e.setAttribute("href", cp + "/css/xforms.css");
+      e.setAttribute("href", contextPath + "/css/xforms.css");
       div.appendChild(e);      
 
       // a script with config information and globals.
       e = result.createElement("script");
       e.setAttribute("type", "text/javascript");
-      e.appendChild(result.createTextNode("\ndjConfig = { isDebug: " + LOGGER.isDebugEnabled() +
-                                          " };\n" +
-                                          "var WEBAPP_CONTEXT = \"" + cp + "\";\n"));
+      final StringBuilder js = new StringBuilder("\ndjConfig = {isDebug:" + LOGGER.isDebugEnabled() + "};\n");
+      js.append("var alfresco_xforms_constants = {};\n");
+      js.append("alfresco_xforms_constants.WEBAPP_CONTEXT = '").
+         append(contextPath).
+         append("';\n");
+      js.append("alfresco_xforms_constants.XFORMS_UI_DIV_ID = '").
+         append(xformsUIDivId).
+         append("';\n");
+      for (String[] ns : JS_NAMESPACES)
+      {
+         js.append("alfresco_xforms_constants.").
+            append(ns[0].toUpperCase()).
+            append("_NS = '").append(ns[1]).append("';\n");
+         js.append("alfresco_xforms_constants.").
+            append(ns[0].toUpperCase()). 
+            append("_PREFIX = '").append(ns[2]).append("';\n");
+      }
+      e.appendChild(result.createTextNode(js.toString()));
+
       div.appendChild(e);
-      final String[] scripts = 
-         {
-            "/scripts/tiny_mce/" + (LOGGER.isDebugEnabled() 
-                                    ? "tiny_mce_src.js" 
-                                    : "tiny_mce.js"),
-	    "/scripts/ajax/dojo/" + (LOGGER.isDebugEnabled() 
-                                     ? "dojo.js.uncompressed.js" 
-                                     : "dojo.js"),
-	    "/scripts/ajax/xforms.js"
-         };
 	    
       // include all our scripts, order is significant
-      for (int i = 0; i < scripts.length; i++)
+      for (final String script : JS_SCRIPTS)
       {
          e = result.createElement("script");
          e.setAttribute("type", "text/javascript");
-         e.setAttribute("src", cp + scripts[i]);
+         e.setAttribute("src", contextPath + script);
          e.appendChild(result.createTextNode("\n"));
          div.appendChild(e);
       }

@@ -29,7 +29,7 @@ public class FormProcessorTag extends BaseComponentTag
 {
    
    private String formInstanceData;
-   private String templateType;
+   private String form;
    private String formProcessorSession;
 
    /**
@@ -61,10 +61,10 @@ public class FormProcessorTag extends BaseComponentTag
          final ValueBinding vb = app.createValueBinding(this.formInstanceData);
          component.setValueBinding("formInstanceData", vb);
       }
-      if (this.templateType != null)
+      if (this.form != null)
       {
-         assert this.isValueReference(this.templateType);
-         final ValueBinding vb = app.createValueBinding(this.templateType);
+         assert this.isValueReference(this.form);
+         final ValueBinding vb = app.createValueBinding(this.form);
          component.setValueBinding("form", vb);
       }
       if (this.formProcessorSession != null)
@@ -82,7 +82,7 @@ public class FormProcessorTag extends BaseComponentTag
    {
       super.release();
       this.formInstanceData = null;
-      this.templateType = null;
+      this.form = null;
       this.formProcessorSession = null;
    }
    
@@ -99,11 +99,11 @@ public class FormProcessorTag extends BaseComponentTag
    /**
     * Sets the tempalte type
     *
-    * @param templateType the tempalteType for the processor.
+    * @param form the tempalteType for the processor.
     */
-   public void setForm(final String templateType)
+   public void setForm(final String form)
    {
-      this.templateType = templateType;
+      this.form = form;
    }
 
    /**

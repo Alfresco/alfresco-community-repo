@@ -629,3 +629,19 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    width: 220px;
    overflow: auto;
 }
+
+.panelGridRequiredImageColumn
+{
+  width: 20px;
+}
+
+.panelGridLabelColumn
+{
+  white-space: nowrap;
+  width: 25%;
+}
+
+.panelGridValueColumn
+{
+  width: 100%;
+}

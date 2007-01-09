@@ -19,16 +19,15 @@ package org.alfresco.web.forms;
 import freemarker.ext.dom.NodeModel;
 import freemarker.template.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,25 +43,16 @@ import org.xml.sax.SAXException;
  * @author Ariel Backenroth
  */
 public class FreeMarkerRenderingEngine
-   extends AbstractRenderingEngine
+   implements RenderingEngine
 {
 
    private static final Log LOGGER = LogFactory.getLog(FreeMarkerRenderingEngine.class);
 
-   public FreeMarkerRenderingEngine()
-   {
-      super();
-   }
+   public FreeMarkerRenderingEngine() { }
 
-   public String getName()
-   {
-      return "FreeMarker";
-   }
+   public String getName() { return "FreeMarker"; }
 
-   public String getDefaultTemplateFileExtension() 
-   {
-      return "ftl";
-   }
+   public String getDefaultTemplateFileExtension() { return "ftl"; }
 
    /**
     * Renders the rendition using the configured freemarker template.  This
@@ -70,15 +60,13 @@ public class FreeMarkerRenderingEngine
     * a variable named alfresco at the root.  the alfresco variable contains a hash of 
     * all parameters and all extension functions.
     */
-   public void render(final FormInstanceData formInstanceData,
+   public void render(final Map<QName, Object> model,
                       final RenderingEngineTemplate ret,
-                      final Rendition rendition)
+                      final OutputStream out)
       throws IOException,
       RenderingEngine.RenderingException,
       SAXException
    {
-      final Map<String, String> parameters = 
-         this.getStandardParameters(formInstanceData, rendition);
 
       final Configuration cfg = new Configuration();
       cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
@@ -86,139 +74,12 @@ public class FreeMarkerRenderingEngine
       final Template t = new Template("freemarker_template", 
                                       new InputStreamReader(ret.getInputStream()),
                                       cfg);
+      final TemplateHashModel rootModel = this.convertModel(model);
       
-      // wrap the xml instance in a model
-      final TemplateHashModel instanceDataModel = NodeModel.wrap(formInstanceData.getDocument());
-
-      // build models for each of the extension functions
-      final HashMap<String, TemplateMethodModel> methodModels =
-         new HashMap<String, TemplateMethodModel>(3, 1.0f);
-
-      methodModels.put("parseXMLDocument", new TemplateMethodModel()
-      {
-         public Object exec(final List args)
-            throws TemplateModelException
-         {
-            try 
-            {
-               final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
-               final String path = 
-                  AVMConstants.buildPath(parameters.get("parent_path"), 
-                                         (String)args.get(0),
-                                         AVMConstants.PathRelation.WEBAPP_RELATIVE);
-               final Document d = ef.parseXMLDocument(path);
-               return d != null ? d.getDocumentElement() : null;
-            }
-            catch (Exception e)
-            {
-               throw new TemplateModelException(e);
-            }
-         }
-      });
-
-      methodModels.put("parseXMLDocuments", new TemplateMethodModel()
-      {
-         public Object exec(final List args)
-            throws TemplateModelException
-         {
-            try 
-            {
-               final FormDataFunctions ef = FreeMarkerRenderingEngine.getFormDataFunctions();
-               final String path = 
-                  AVMConstants.buildPath(parameters.get("parent_path"), 
-                                         args.size() == 1 ? "" : (String)args.get(1),
-                                         AVMConstants.PathRelation.WEBAPP_RELATIVE);
-               final Map<String, Document> resultMap = ef.parseXMLDocuments((String)args.get(0), path);
-               LOGGER.debug("received " + resultMap.size() + " documents in " + path);
-
-               // create a root document for rooting all the results.  we do this
-               // so that each document root element has a common parent node
-               // and so that xpath axes work properly
-               final Document rootNodeDocument = XMLUtil.newDocument();
-               final Element rootNodeDocumentEl = 
-                  rootNodeDocument.createElementNS(ALFRESCO_NS,
-                                                   ALFRESCO_NS_PREFIX + ":file_list");
-               rootNodeDocumentEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
-               rootNodeDocument.appendChild(rootNodeDocumentEl);
-               
-               final List<NodeModel> result = new ArrayList<NodeModel>(resultMap.size());
-               for (Map.Entry<String, Document> e : resultMap.entrySet())
-               {
-                  final Element documentEl = e.getValue().getDocumentElement();
-                  documentEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
-                  documentEl.setAttributeNS(ALFRESCO_NS, 
-                                            ALFRESCO_NS_PREFIX + ":file_name", 
-                                            e.getKey());
-                  final Node n = rootNodeDocument.importNode(documentEl, true);
-                  rootNodeDocumentEl.appendChild(n);
-                  result.add(NodeModel.wrap(n));
-               }
-               return result;
-            }
-            catch (Exception e)
-            {
-               throw new TemplateModelException(e);
-            }
-         }
-      });
-
-      // for debugging
-      methodModels.put("_getAVMPath", new TemplateMethodModel()
-      {
-         public Object exec(final List args)
-            throws TemplateModelException
-         {
-            try 
-            {
-               return AVMConstants.buildPath(parameters.get("parent_path"), 
-                                             (String)args.get(0),
-                                             AVMConstants.PathRelation.WEBAPP_RELATIVE);
-            }
-            catch (Exception e)
-            {
-               throw new TemplateModelException(e);
-            }
-         }
-      });
-
-      // build a wrapper for the parameters.  this also wraps the extension functions
-      // so they appear in the namespace alfresco.
-      final TemplateHashModel parameterModel = new SimpleHash(parameters)
-      {
-
-         public TemplateModel get(final String key)
-            throws TemplateModelException
-         {
-            return (methodModels.containsKey(key)
-                    ? methodModels.get(key)
-                    : super.get(key));
-         }
-      };
-      
-      // build the root model.  anything not in the falsey alfresco namespace will be 
-      // retrieved from the xml file in order to make it behave as close as possible to
-      // the xsl environment
-      final TemplateHashModel rootModel = new TemplateHashModel()
-      {
-         public TemplateModel get(final String key)
-            throws TemplateModelException
-         {
-            return (ALFRESCO_NS_PREFIX.equals(key) 
-                    ? parameterModel 
-                    : instanceDataModel.get(key));
-         }
-
-         public boolean isEmpty()
-         {
-            return false;
-         }
-      };
-
       // process the form
-      final Writer writer = new OutputStreamWriter(rendition.getOutputStream());
       try
       {
-         t.process(rootModel, writer);
+         t.process(rootModel, new OutputStreamWriter(out));
       }
       catch (final TemplateException te)
       {
@@ -227,8 +88,158 @@ public class FreeMarkerRenderingEngine
       }
       finally
       {
-         writer.flush();
-         writer.close();
+         out.flush();
+         out.close();
+      }
+   }
+
+   private TemplateHashModel convertModel(final Map<QName, Object> model)
+   {
+      final List<TemplateHashModel> rootModelObjects = new LinkedList<TemplateHashModel>();
+      final SimpleHash result = new SimpleHash()
+      {
+         public TemplateModel get(final String key)
+            throws TemplateModelException
+         {
+            TemplateModel result = super.get(key);
+            if (result == null)
+            {
+               for (TemplateHashModel m : rootModelObjects)
+               {
+                  result = m.get(key);
+                  if (result != null)
+                  {
+                     break;
+                  }
+               }
+            }
+            return result;
+         }
+      };
+      for (final Map.Entry<QName, Object> entry : model.entrySet())
+      {
+         final QName qn = entry.getKey();
+         if (qn.equals(RenderingEngine.ROOT_NAMESPACE))
+         {
+            final TemplateModel m = this.convertValue(entry.getValue());
+            if (m instanceof TemplateHashModel)
+            {
+               rootModelObjects.add((TemplateHashModel)m);
+            }
+            else
+            {
+               throw new IllegalArgumentException("root namespace values must be convertable to " + TemplateHashModel.class.getName() +
+                                                  ". converted " + entry.getValue().getClass().getName() +
+                                                  " to " + m.getClass().getName() + ".");
+            }
+         }
+         else
+         {
+            final String[] splitQName = QName.splitPrefixedQName(qn.toPrefixString());
+            final String variableName = splitQName[1];
+
+            //insert
+            if (NamespaceService.DEFAULT_PREFIX.equals(splitQName[0]))
+            {
+               result.put(variableName, this.convertValue(entry.getValue()));
+            }
+            else
+            {
+               SimpleHash prefixModel = null;
+               final String prefix = splitQName[0];
+               try
+               {
+                  try
+                  {
+                     prefixModel = (SimpleHash)result.get(prefix);
+                  }
+                  catch (ClassCastException cce)
+                  {
+                     throw new ClassCastException("expected value of " + prefix +
+                                                  " to be a " + SimpleHash.class.getName() + 
+                                                  ".  found a " + result.get(prefix).getClass().getName());
+                  }
+               }
+               catch (TemplateModelException tme)
+               {
+               }
+               if (prefixModel == null)
+               {
+                  prefixModel = new SimpleHash();
+                  result.put(prefix, prefixModel);
+               }
+
+               prefixModel.put(variableName, 
+                               this.convertValue(entry.getValue()));
+            }
+         }
+      }
+      return result;
+   }
+            
+   private TemplateModel convertValue(final Object value)
+   {
+      LOGGER.debug("converting value " + value);
+      if (value == null)
+      {
+         return null;
+      }
+      else if (value.getClass().isArray())
+      {
+         final Object[] array = (Object[])value;
+         LOGGER.debug("converting array of " + array.getClass().getComponentType() +
+                      " size " + array.length);
+         final SimpleSequence result = new SimpleSequence();
+         for (int i = 0; i < array.length; i++)
+         {
+            result.add(this.convertValue(array[i]));
+         }
+         return result;
+      }
+      else if (value instanceof String)
+      {
+         return new SimpleScalar((String)value);
+      }
+      else if (value instanceof Number)
+      {
+         return new SimpleNumber((Number)value);
+      }
+      else if (value instanceof Boolean)
+      {
+         return (Boolean)value ? TemplateBooleanModel.TRUE : TemplateBooleanModel.FALSE;
+      }
+      else if (value instanceof Document)
+      {
+         return NodeModel.wrap((Document)value);
+      }
+      else if (value instanceof Node)
+      {
+         return NodeModel.wrap((Node)value);
+      }
+      else if (value instanceof RenderingEngine.TemplateProcessorMethod)
+      {
+         return new TemplateMethodModel()
+         {
+            public Object exec(final List args)
+               throws TemplateModelException
+            {
+               try
+               {
+                  LOGGER.debug("invoking template processor method " + value +
+                               " with " + args.size() + " arguments");
+                  final Object result = ((TemplateProcessorMethod)value).exec(args.toArray(new Object[args.size()]));
+                  return FreeMarkerRenderingEngine.this.convertValue(result);
+               }
+               catch (Exception e)
+               {
+                  throw new TemplateModelException(e);
+               }
+            }
+         };
+      }
+      else
+      {
+         throw new IllegalArgumentException("unable to convert value " + value.getClass().getName());
       }
    }
 }

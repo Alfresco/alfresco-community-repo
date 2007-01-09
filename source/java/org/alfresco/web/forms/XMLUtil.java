@@ -43,6 +43,7 @@ import org.xml.sax.SAXException;
  */
 public class XMLUtil
 {   
+
    private static final Log LOGGER = LogFactory.getLog(XMLUtil.class);
 
    private static DocumentBuilder documentBuilder;

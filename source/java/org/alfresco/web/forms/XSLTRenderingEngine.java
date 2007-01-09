@@ -35,13 +35,17 @@ import javax.xml.transform.stream.StreamSource;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xpath.objects.XObject;
-import org.apache.xml.utils.QName;
+import org.apache.xml.dtm.ref.DTMNodeProxy;
+import org.apache.xml.utils.Constants;
+//import org.apache.xml.utils.QName;
 import org.w3c.dom.*;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
@@ -55,187 +59,176 @@ import org.apache.bsf.BSFManager;
  * @author Ariel Backenroth
  */
 public class XSLTRenderingEngine
-   extends AbstractRenderingEngine
+   implements RenderingEngine
 {
 
-   private static final Log LOGGER = LogFactory.getLog(XSLTRenderingEngine.class);
+   /////////////////////////////////////////////////////////////////////////////
 
-   public XSLTRenderingEngine()
+   public static class ProcessorMethodInvoker
    {
-      super();
-   }
+      private final static HashMap<String, TemplateProcessorMethod> PROCESSOR_METHODS =
+         new HashMap<String, TemplateProcessorMethod>();
+         
+      public ProcessorMethodInvoker() { }
 
-   public String getName()
-   {
-      return "XSLT";
-   }
-
-   public String getDefaultTemplateFileExtension() 
-   {
-      return "xsl";
-   }
-
-   protected static String toAVMPath(final ExpressionContext ec, String path)
-      throws TransformerException
-   {
-      final XObject o = ec.getVariableOrParam(new QName(ALFRESCO_NS, ALFRESCO_NS_PREFIX, "parent_path"));
-      return o == null ? null : AVMConstants.buildPath(o.toString(), 
-                                                       path,
-                                                       AVMConstants.PathRelation.WEBAPP_RELATIVE);
-   }
-
-   /**
-    * Adapter function used by the xsl tempalte to retrieve an xml asset at the given
-    * path.
-    *
-    * @return the document element for the xml asset at the given path.
-    */
-   public static Node parseXMLDocument(final ExpressionContext ec, final String path)
-      throws TransformerException,
-      IOException,
-      SAXException
-   {
-      final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
-      final Document d = ef.parseXMLDocument(XSLTRenderingEngine.toAVMPath(ec, path));
-      return d != null ? d.getDocumentElement() : null;
-   }
-
-   /**
-    * Adapter function used by the xsl tempalte to retrieve a xml assets in the
-    * current directory.
-    */
-   public static NodeIterator parseXMLDocuments(final ExpressionContext ec, 
-                                                final String formName)
-      throws TransformerException,
-      IOException,
-      SAXException
-   {
-      return XSLTRenderingEngine.parseXMLDocuments(ec, formName, "");
-   }
-
-   /**
-    * Adapter function used by the xsl tempalte to retrieve a xml assets at 
-    * the given path.
-    *
-    * @return an iterator of the document elements for each of the xml
-    * assets at the given path.  In order to enable xpath expressions to
-    * properly access siblings, each root element is rooted at a node named
-    * file-list in the alfresco namespace.
-    */
-   public static NodeIterator parseXMLDocuments(final ExpressionContext ec, 
-                                                final String formName, 
-                                                String path)
-      throws TransformerException,
-      IOException,
-      SAXException
-   {
-      final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
-      path = XSLTRenderingEngine.toAVMPath(ec, path);
-      final Map<String, Document> resultMap = ef.parseXMLDocuments(formName, path);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("received " + resultMap.size() + " documents in " + path);
-
-      // create a root document for rooting all the results.  we do this
-      // so that each document root element has a common parent node
-      // and so that xpath axes work properly
-      final Document rootNodeDocument = XMLUtil.newDocument();
-      final Element rootNodeDocumentEl = 
-         rootNodeDocument.createElementNS(ALFRESCO_NS,
-                                          ALFRESCO_NS_PREFIX + ":file_list");
-      rootNodeDocumentEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
-      rootNodeDocument.appendChild(rootNodeDocumentEl);
-
-      final List<Node> documents = new ArrayList<Node>(resultMap.size());
-      for (Map.Entry<String, Document> mapEntry : resultMap.entrySet())
+      private Object[] convertArguments(final Object[] arguments)
       {
-         final Element documentEl = mapEntry.getValue().getDocumentElement();
-         documentEl.setAttributeNS(ALFRESCO_NS, 
-                                   ALFRESCO_NS_PREFIX + ":file_name", 
-                                   mapEntry.getKey());
-         final Node n = rootNodeDocument.importNode(documentEl, true);
-         documents.add(n);
-         rootNodeDocumentEl.appendChild(n);
+         final List result = new LinkedList();
+         for (int i = 0; i < arguments.length; i++)
+         {
+            LOGGER.debug("args[" + i + "] = " + arguments[i] + 
+                         "(" + (arguments[i] != null 
+                                ? arguments[i].getClass().getName() 
+                                : "null") + ")");
+            if (arguments[i] == null ||
+                arguments[i] instanceof String ||
+                arguments[i] instanceof Number)
+            {
+               result.add(arguments[i]);
+            }
+            else if (arguments[i] instanceof DTMNodeProxy)
+            {
+               result.add(((DTMNodeProxy)arguments[i]).getStringValue());
+            }
+            else if (arguments[i] instanceof Node)
+            {
+               LOGGER.debug("node type is " + ((Node)arguments[i]).getNodeType() +
+                            " content " + ((Node)arguments[i]).getTextContent());
+               result.add(((Node)arguments[i]).getNodeValue());
+            }
+            else if (arguments[i] instanceof NodeIterator)
+            {
+               Node n = ((NodeIterator)arguments[i]).nextNode();
+               while (n != null)
+               {
+                  LOGGER.debug("iterated to node " + n + " type " + n.getNodeType() +
+                               " value " + n.getNodeValue() +
+                               " tc " + n.getTextContent() +
+                               " nn " + n.getNodeName() +
+                               " sv " + ((org.apache.xml.dtm.ref.DTMNodeProxy)n).getStringValue());
+                  if (n instanceof DTMNodeProxy)
+                  {
+                     result.add(((DTMNodeProxy)n).getStringValue());
+                  }
+                  else
+                  {
+                     result.add(n);
+                  }
+                  n = ((NodeIterator)arguments[i]).nextNode();
+               }
+            }
+            else
+            {
+               throw new IllegalArgumentException("unable to convert argument " + arguments[i]);
+            }
+         }
+         
+         return result.toArray(new Object[result.size()]);
       }
 
-      return new NodeIterator()
+      public Object invokeMethod(final String id, Object[] arguments)
+         throws Exception
       {
-         private int index = 0;
-         private boolean detached = false;
-         
-         public void detach() 
-         { 
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("detaching NodeIterator");
-            resultMap.clear(); 
-            documents.clear();
-            this.detached = true;
-         }
-         
-         public boolean getExpandEntityReferences() 
-         { 
-            return true; 
+         if (!PROCESSOR_METHODS.containsKey(id))
+         {
+            throw new NullPointerException("unable to find method " + id);
          }
 
-         public NodeFilter getFilter() 
-         { 
-            return new NodeFilter()
+         final TemplateProcessorMethod method = PROCESSOR_METHODS.get(id);
+         arguments = this.convertArguments(arguments);
+         LOGGER.debug("invoking " + id + " with " + arguments.length);
+
+         Object result = method.exec(arguments);
+         LOGGER.debug(id + " returned a " + result);
+         if (result == null)
+         {
+            return null;
+         }
+         else if (result.getClass().isArray() &&
+                  Node.class.isAssignableFrom(result.getClass().getComponentType()))
+         {
+            LOGGER.debug("converting " + result + " to a node iterator");
+            final Node[] array = (Node[])result;
+            return new NodeIterator()
             {
-               public short acceptNode(final Node n)
+               private int index = 0;
+               private boolean detached = false;
+               
+               public void detach() 
+               { 
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("detaching NodeIterator");
+                  this.detached = true;
+               }
+               
+               public boolean getExpandEntityReferences() { return true; }
+               public int getWhatToShow() { return NodeFilter.SHOW_ALL; }
+               
+               public Node getRoot()
                {
-                  return NodeFilter.FILTER_ACCEPT;
+                  return (array.length == 0 
+                          ? null 
+                          : array[0].getOwnerDocument().getDocumentElement());
+               }
+
+               public NodeFilter getFilter() 
+               { 
+                  return new NodeFilter()
+                  {
+                     public short acceptNode(final Node n)
+                     {
+                        return NodeFilter.FILTER_ACCEPT;
+                     }
+                  };
+               }
+               
+               public Node nextNode()
+                  throws DOMException
+               {
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("NodeIterator.nextNode(" + index + ")");
+                  if (this.detached)
+                     throw new DOMException(DOMException.INVALID_STATE_ERR, null);
+                  return index == array.length ? null : array[index++];
+               }
+               
+               public Node previousNode()
+                  throws DOMException
+               {
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("NodeIterator.previousNode(" + index + ")");
+                  if (this.detached)
+                     throw new DOMException(DOMException.INVALID_STATE_ERR, null);
+                  return index == -1 ? null : array[index--];
                }
             };
          }
-
-         public Node getRoot()
+         else if (result instanceof String ||
+                  result instanceof Number ||
+                  result instanceof Node)
          {
-            return rootNodeDocumentEl;
+            LOGGER.debug("returning " + result + " as is");
+            return result;
          }
-
-         public int getWhatToShow()
+         else
          {
-            return NodeFilter.SHOW_ALL;
+            throw new IllegalArgumentException("unable to convert " + result.getClass().getName());
          }
-
-         public Node nextNode()
-            throws DOMException
-         {
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("NodeIterator.nextNode(" + index + ")");
-            if (this.detached)
-               throw new DOMException(DOMException.INVALID_STATE_ERR, null);
-            if (index == documents.size())
-               return null;
-            return documents.get(index++);
-         }
-
-         public Node previousNode()
-            throws DOMException
-         {
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("NodeIterator.previousNode(" + index + ")");
-            if (this.detached)
-               throw new DOMException(DOMException.INVALID_STATE_ERR, null);
-            if (index == -1)
-               return null;
-            return documents.get(index--);
-         }
-      };
+      }
    }
 
-   /**
-    * for debugging only.  provides the absolute avm path for the given
-    * path.
-    */
-   public static String _getAVMPath(final ExpressionContext ec, 
-                                    final String path)
-      throws TransformerException,
-      IOException,
-      SAXException
-   {
-      final FormDataFunctions ef = XSLTRenderingEngine.getFormDataFunctions();
-      return XSLTRenderingEngine.toAVMPath(ec, path);
-   }
+   /////////////////////////////////////////////////////////////////////////////
+
+   private static final Log LOGGER = LogFactory.getLog(XSLTRenderingEngine.class);
+
+   public static final QName PROP_URI_RESOLVER_BASE_URI = 
+      QName.createQName(NamespaceService.ALFRESCO_URI, "xslt_resolver_base_uri");
+
+   public XSLTRenderingEngine() { }
+
+   public String getName() { return "XSLT"; }
+
+   public String getDefaultTemplateFileExtension() { return "xsl"; }
 
    /**
     * Adds a script element to the xsl which makes static methods on this
@@ -243,22 +236,75 @@ public class XSLTRenderingEngine
     *
     * @param xslTemplate the xsl template
     */
-   protected void addScript(final Document xslTemplate)
+   protected List<String> addScripts(final Map<QName, Object> model,
+                                     final Document xslTemplate)
    {
+      final Map<QName, List<Map.Entry<QName, Object>>> methods = 
+         new HashMap<QName, List<Map.Entry<QName, Object>>>();
+      for (final Map.Entry<QName, Object> entry : model.entrySet())
+      {
+         if (entry.getValue() instanceof TemplateProcessorMethod)
+         {
+            final String prefix = QName.splitPrefixedQName(entry.getKey().toPrefixString())[0];
+            final QName qn = QName.createQName(entry.getKey().getNamespaceURI(),
+                                               prefix);
+            if (!methods.containsKey(qn))
+            {
+               methods.put(qn, new LinkedList());
+            }
+            methods.get(qn).add(entry);
+         }
+      }
+
       final Element docEl = xslTemplate.getDocumentElement();
-      final String XALAN_NS = "http://xml.apache.org/xalan";
+      final String XALAN_NS = Constants.S_BUILTIN_EXTENSIONS_URL;
       final String XALAN_NS_PREFIX = "xalan";
       docEl.setAttribute("xmlns:" + XALAN_NS_PREFIX, XALAN_NS);
-      docEl.setAttribute("xmlns:" + ALFRESCO_NS_PREFIX, ALFRESCO_NS); 
-      
-      final Element compEl = xslTemplate.createElementNS(XALAN_NS, XALAN_NS_PREFIX + ":component");
-      compEl.setAttribute("prefix", "alfresco");
-      docEl.appendChild(compEl);
 
-      final Element scriptEl = xslTemplate.createElementNS(XALAN_NS, XALAN_NS_PREFIX + ":script");
-      scriptEl.setAttribute("lang", "javaclass");
-      scriptEl.setAttribute("src", XALAN_NS_PREFIX + "://" + this.getClass().getName());
-      compEl.appendChild(scriptEl);
+      final List<String> result = new LinkedList<String>();
+      for (QName ns : methods.keySet())
+      {
+         final String prefix = ns.getLocalName();
+         docEl.setAttribute("xmlns:" + prefix, ns.getNamespaceURI()); 
+
+         final Element compEl = xslTemplate.createElementNS(XALAN_NS, 
+                                                            XALAN_NS_PREFIX + ":component");
+         compEl.setAttribute("prefix", prefix);
+         docEl.appendChild(compEl);
+         String functionNames = null;
+         final Element scriptEl = xslTemplate.createElementNS(XALAN_NS, 
+                                                              XALAN_NS_PREFIX + ":script");
+         scriptEl.setAttribute("lang", "javascript");
+         final StringBuilder js = 
+            new StringBuilder("var _xsltp_invoke = java.lang.Class.forName('" + ProcessorMethodInvoker.class.getName() + 
+                              "').newInstance();\n" +
+                              "function _xsltp_to_java_array(js_array) {\n" +
+                              "var java_array = java.lang.reflect.Array.newInstance(java.lang.Object, js_array.length);\n" +
+                              "for (var i = 0; i < js_array.length; i++) { java_array[i] = js_array[i]; }\n" +
+                              "return java_array; }\n");
+         for (final Map.Entry<QName, Object> entry : methods.get(ns))
+         {
+            if (functionNames == null)
+            {
+               functionNames = entry.getKey().getLocalName();
+            }
+            else
+            {
+               functionNames += " " + entry.getKey().getLocalName();
+            }
+            final String id = entry.getKey().getLocalName() + entry.getValue().hashCode();
+            js.append("function " + entry.getKey().getLocalName() + 
+                      "() { return _xsltp_invoke.invokeMethod('" + id +
+                      "', _xsltp_to_java_array(arguments)); }\n");
+            ProcessorMethodInvoker.PROCESSOR_METHODS.put(id, (TemplateProcessorMethod)entry.getValue());
+            result.add(id);
+         }
+         LOGGER.debug("generated JavaScript bindings:\n" + js);
+         scriptEl.appendChild(xslTemplate.createTextNode(js.toString()));
+         compEl.setAttribute("functions", functionNames);
+         compEl.appendChild(scriptEl);
+      }
+      return result;
    }
 
    /**
@@ -268,47 +314,58 @@ public class XSLTRenderingEngine
     * @param parameters the variables to place within the xsl template
     * @param xslTemplate the xsl template
     */
-   protected void addParameters(final Map<String, String> parameters,
-                              final Document xslTemplate)
+   protected void addParameters(final Map<QName, Object> model,
+                                final Document xslTemplate)
    {
       final Element docEl = xslTemplate.getDocumentElement();
       final String XSL_NS = docEl.getNamespaceURI();
       final String XSL_NS_PREFIX = docEl.getPrefix();
       
-      for (Map.Entry<String, String> e : parameters.entrySet())
+      for (Map.Entry<QName, Object> e : model.entrySet())
       {
+         if (RenderingEngine.ROOT_NAMESPACE.equals(e.getKey()))
+         {
+            continue;
+         }
          final Element el = xslTemplate.createElementNS(XSL_NS, XSL_NS_PREFIX + ":variable");
-         el.setAttribute("name", ALFRESCO_NS_PREFIX + ':' + e.getKey());
-         el.appendChild(xslTemplate.createTextNode(e.getValue()));
-         docEl.insertBefore(el, docEl.getFirstChild());
+         el.setAttribute("name",  e.getKey().toPrefixString());
+         final Object o = e.getValue();
+         if (o instanceof String || o instanceof Number || o instanceof Boolean)
+         {
+            el.appendChild(xslTemplate.createTextNode(o.toString()));
+            docEl.insertBefore(el, docEl.getFirstChild());
+         }
       }
    }
+   
+   protected Source getXMLSource(final Map<QName, Object> model)
+   {
+      if (!model.containsKey(RenderingEngine.ROOT_NAMESPACE))
+      {
+         return null;
+      }
+      final Object o = model.get(RenderingEngine.ROOT_NAMESPACE);
+      if (!(o instanceof Document))
+      {
+         throw new IllegalArgumentException("expected root namespace object to be a  " + Document.class.getName() +
+                                            ".  found a " + o.getClass().getName());
+      }
+      return new DOMSource((Document)o);
+   }
 
-   public void render(final FormInstanceData formInstanceData,
+   public void render(final Map<QName, Object> model,
                       final RenderingEngineTemplate ret,
-                      final Rendition rendition)
+                      final OutputStream out)
       throws IOException,
       RenderingEngine.RenderingException,
       SAXException
    {
-      final OutputStream out = rendition.getOutputStream();
-      try
-      {
-         this.render(new DOMSource(formInstanceData.getDocument()), 
-                     ret, 
-                     this.getStandardParameters(formInstanceData, rendition),
-                     new StreamResult(out));
-      }
-      finally
-      {
-         out.close();
-      }
+      this.render(model, ret, new StreamResult(out));
    }
 
-   protected void render(final Source formInstanceDataSource,
-                         final RenderingEngineTemplate ret,
-                         final Map<String, String> parameters,
-                         final Result result)
+   public void render(final Map<QName, Object> model,
+                      final RenderingEngineTemplate ret,
+                      final Result result)
       throws IOException,
       RenderingEngine.RenderingException,
       SAXException
@@ -324,8 +381,10 @@ public class XSLTRenderingEngine
       {
          throw new RenderingEngine.RenderingException(sax);
       }
-      this.addScript(xslTemplate);
-      this.addParameters(parameters, xslTemplate);
+      this.addScripts(model, xslTemplate);
+      this.addParameters(model, xslTemplate);
+
+      Source xmlSource = this.getXMLSource(model);
 
       Transformer t = null;
       try 
@@ -344,21 +403,25 @@ public class XSLTRenderingEngine
       // web application
       t.setURIResolver(new URIResolver()
       {
-         public Source resolve(final String href, final String base)
+         public Source resolve(final String href, String base)
             throws TransformerException
          {
-            // XXXarielb - dirty - fix this
-            final String sandBoxUrl = (String)parameters.get("avm_sandbox_url");
-
+            LOGGER.debug("request to resolve href " + href +
+                         " using base " + base);
+            if (model.containsKey(PROP_URI_RESOLVER_BASE_URI))
+            {
+               base = (String)model.get(PROP_URI_RESOLVER_BASE_URI);
+               LOGGER.debug("overriding base with " + base);
+            }
+               
             URI uri = null;
             try
             {
-               uri = new URI(sandBoxUrl + href);
+               uri = new URI(base + href);
             }
             catch (URISyntaxException e)
             {
-               throw new TransformerException("unable to create uri " + 
-                                              sandBoxUrl + href, 
+               throw new TransformerException("unable to create uri " + base + href, 
                                               e);
             }
             try
@@ -379,11 +442,16 @@ public class XSLTRenderingEngine
 
       try
       {
-         t.transform(formInstanceDataSource, result);
+         t.transform(xmlSource, result);
       }
-      catch (TransformerException e)
+      catch (TransformerException te)
       {
-         LOGGER.error(e.getMessageAndLocation());
+         LOGGER.error(te.getMessageAndLocation());
+         throw new RenderingEngine.RenderingException(te);
+      }
+      catch (Exception e)
+      {
+         LOGGER.error("unexpected error " + e);
          throw new RenderingEngine.RenderingException(e);
       }
    }

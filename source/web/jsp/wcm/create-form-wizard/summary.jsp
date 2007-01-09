@@ -43,7 +43,7 @@
         <div>${msg.description}:
 	<c:choose>
 	  <c:when test="${empty WizardManager.bean.formDescription}">
-	    &lt;${msg.value_not_set}&gt;
+	    <span style="font-style:italic">${msg.description_not_set}</span>
 	  </c:when>
 	  <c:otherwise>
 	    ${WizardManager.bean.formDescription}
@@ -76,7 +76,7 @@
           <div>${msg.description}:
 	    <c:choose>
 	      <c:when test="${empty ret.description}">
-		&lt;${msg.value_not_set}&gt;
+		<span style="font-style:italic">${msg.description_not_set}</span>
 	      </c:when>
 	      <c:otherwise>
 		${ret.description}

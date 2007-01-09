@@ -114,8 +114,8 @@ public class FormInstanceDataImpl
       final PropertyValue pv = 
          avmService.getNodeProperty(-1, this.getPath(), WCMAppModel.PROP_RENDITIONS);
       final Collection<Serializable> renditionPaths = (pv == null 
-                                                 ? Collections.EMPTY_LIST
-                                                 : pv.getCollection(DataTypeDefinition.TEXT));
+                                                       ? Collections.EMPTY_LIST
+                                                       : pv.getCollection(DataTypeDefinition.TEXT));
       final String storeName = AVMConstants.getStoreName(this.getPath());
       final List<Rendition> result = new ArrayList<Rendition>(renditionPaths.size());
       for (Serializable path : renditionPaths)

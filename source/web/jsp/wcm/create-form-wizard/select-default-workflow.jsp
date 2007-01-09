@@ -21,7 +21,7 @@
 <script type="text/javascript">
 function apply_default_workflow_changed(value)
 {
-document.getElementById("wizard:wizard-body:sdw-pg-2").style.display = value == 'true' ? "block" : "none";
+  document.getElementById("wizard:wizard-body:sdw-pg-2").style.display = value == 'true' ? "block" : "none";
 }
 </script>
 <h:panelGroup id="sdw-pg-1">
@@ -37,12 +37,13 @@ document.getElementById("wizard:wizard-body:sdw-pg-2").style.display = value == 
     <f:selectItem id="sdw-apply-defalt-workflow-no-item"
 		  itemLabel="#{msg.no_not_now}" itemValue="false" value="false"/>
   </h:selectOneRadio>
+  <f:verbatim><div style="margin-top:10px">&nbsp;</div></f:verbatim>
   <h:panelGroup id="sdw-pg-2" style="#{WizardManager.bean.applyDefaultWorkflow?'display:block':'display:none'}">
     <h:outputText id="sdw-select-workflow" 
   		value="#{msg.create_form_select_default_workflow_select_workflow}:" 
   		escape="false" />
     <f:verbatim><div id="workflow-list-div"
-  		   style="margin:5px 0px;height:108px;*height:112px;width:100%;overflow:auto" class="selectListTable"></f:verbatim>
+  		     style="margin:5px 0px;height:108px;*height:112px;width:100%;overflow:auto" class="selectListTable"></f:verbatim>
     <a:selectList id="workflow-list" 
   		  multiSelect="false" 
   		  style="width:100%" 

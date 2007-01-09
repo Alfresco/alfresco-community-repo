@@ -22,6 +22,7 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.fop.apps.FOPException;
@@ -86,9 +87,10 @@ public class XSLFORenderingEngine
       return "fo";
    }
 
-   public void render(final FormInstanceData formInstanceData,
+   @Override
+   public void render(final Map<QName, Object> model,
                       final RenderingEngineTemplate ret,
-                      final Rendition rendition)
+                      final OutputStream out)
       throws IOException,
       RenderingEngine.RenderingException,
       SAXException
@@ -100,16 +102,14 @@ public class XSLFORenderingEngine
          throw new RenderingEngine.RenderingException("mimetype " + ret.getMimetypeForRendition() +
                                                       " is not supported by " + this.getName());
       }
-      final OutputStream out = rendition.getOutputStream();
       try
       {
          final FopFactory fopFactory = FopFactory.newInstance();
          final FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
          final Fop fop = fopFactory.newFop(mimetype, foUserAgent, out);
          // Resulting SAX events (the generated FO) must be piped through to FOP
-         super.render(new DOMSource(formInstanceData.getDocument()), 
+         super.render(model,
                       ret, 
-                      this.getStandardParameters(formInstanceData, rendition), 
                       new SAXResult(fop.getDefaultHandler()));
 
       }

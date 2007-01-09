@@ -501,6 +501,11 @@ public class CreateFormWizard
    public void addSelectedRenderingEngineTemplate(final ActionEvent event)
    {
       final String name = this.getRenderingEngineTemplateName();
+      if (name == null || name.length() == 0)
+      {
+         Utils.addErrorMessage("Please provide a name for the rendering engine template");
+         return;
+      }
       final String opp = this.getOutputPathPatternForRendition();
       final String mimetype = this.getMimetypeForRendition();
       for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)

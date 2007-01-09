@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
 import javax.xml.transform.*;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
@@ -70,16 +71,7 @@ public class SchemaFormBuilder
 
    /////////////////////////////////////////////////////////////////////////////
 
-   public final static Log LOGGER = 
-      LogFactory.getLog(SchemaFormBuilder.class);
-
-
-   /** Alfresco namespace declaration. */
-   private static final String ALFRESCO_NS =
-      "http://www.alfresco.org/alfresco";
-
-   /** Alfresco prefix */
-   private static final String ALFRESCO_PREFIX = "alfresco";
+   private final static Log LOGGER = LogFactory.getLog(SchemaFormBuilder.class);
 
    private static final String PROPERTY_PREFIX =
       "http://www.chiba.org/properties/schemaFormBuilder/";
@@ -433,10 +425,12 @@ public class SchemaFormBuilder
    {
       final JXPathContext prototypeContext = 
          JXPathContext.newContext(prototypeDocumentElement);
-      prototypeContext.registerNamespace("alfresco", SchemaFormBuilder.ALFRESCO_NS);
+      prototypeContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX, 
+                                         NamespaceService.ALFRESCO_URI);
       final JXPathContext instanceContext = 
          JXPathContext.newContext(instanceDocumentElement);
-      instanceContext.registerNamespace("alfresco", SchemaFormBuilder.ALFRESCO_NS);
+      instanceContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX, 
+                                        NamespaceService.ALFRESCO_URI);
       
       class PrototypeInsertionData 
       {
@@ -457,7 +451,7 @@ public class SchemaFormBuilder
          new LinkedList<PrototypeInsertionData>();
 
       final Iterator it = 
-         prototypeContext.iteratePointers("//*[@" + SchemaFormBuilder.ALFRESCO_PREFIX + 
+         prototypeContext.iteratePointers("//*[@" + NamespaceService.ALFRESCO_PREFIX + 
                                           ":prototype='true']");
       while (it.hasNext())
       {
@@ -528,11 +522,11 @@ public class SchemaFormBuilder
       {
          for (Element e : l)
          {
-            if (e.hasAttributeNS(SchemaFormBuilder.ALFRESCO_NS, "prototype"))
+            if (e.hasAttributeNS(NamespaceService.ALFRESCO_URI, "prototype"))
             {
-               assert "true".equals(e.getAttributeNS(SchemaFormBuilder.ALFRESCO_NS, 
+               assert "true".equals(e.getAttributeNS(NamespaceService.ALFRESCO_URI, 
                                                      "prototype"));
-               e.removeAttributeNS(SchemaFormBuilder.ALFRESCO_NS, "prototype");
+               e.removeAttributeNS(NamespaceService.ALFRESCO_URI, "prototype");
 
                if (l.getLast().equals(e))
                {
@@ -1687,8 +1681,8 @@ public class SchemaFormBuilder
                      final Element e = (Element)newDefaultInstanceElement.cloneNode(true);
                      if (i == elementOccurs.minimum)
                      {
-                        e.setAttributeNS(SchemaFormBuilder.ALFRESCO_NS, 
-                                         SchemaFormBuilder.ALFRESCO_PREFIX + ":prototype", 
+                        e.setAttributeNS(NamespaceService.ALFRESCO_URI, 
+                                         NamespaceService.ALFRESCO_PREFIX + ":prototype", 
                                          "true");
                      }
                      defaultInstanceElement.appendChild(e);
@@ -1990,7 +1984,7 @@ public class SchemaFormBuilder
       formControl.appendChild(alertElement);
       this.setXFormsId(alertElement);
 
-      String alert = SchemaFormBuilder.extractPropertyFromAnnotation(ALFRESCO_NS,
+      String alert = SchemaFormBuilder.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
                                                                      "alert",
                                                                      this.getAnnotation(owner),
                                                                      resourceBundle);
@@ -2082,8 +2076,8 @@ public class SchemaFormBuilder
                         NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX, 
                         NamespaceConstants.XMLSCHEMA_INSTANCE_NS);
       this.addNamespace(envelopeElement, 
-                        SchemaFormBuilder.ALFRESCO_PREFIX, 
-                        SchemaFormBuilder.ALFRESCO_NS);
+                        NamespaceService.ALFRESCO_PREFIX, 
+                        NamespaceService.ALFRESCO_URI);
 
       //base
       if (this.base != null && this.base.length() != 0)
@@ -2150,7 +2144,7 @@ public class SchemaFormBuilder
                                final XSAnnotation annotation,
                                final ResourceBundle resourceBundle)
    {
-      final String s = SchemaFormBuilder.extractPropertyFromAnnotation(ALFRESCO_NS, 
+      final String s = SchemaFormBuilder.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI, 
                                                                        "label", 
                                                                        annotation, 
                                                                        resourceBundle);
@@ -2540,7 +2534,7 @@ public class SchemaFormBuilder
       final XSAnnotation annotation = this.getAnnotation(node);
       if (annotation == null)
          return null;
-      final String s = this.extractPropertyFromAnnotation(ALFRESCO_NS, 
+      final String s = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI, 
                                                           "hint", 
                                                           annotation,
                                                           resourceBundle);
@@ -2666,16 +2660,16 @@ public class SchemaFormBuilder
       {
          //if 0 or 1 -> no constraint (managed by "required")
          minConstraint = "count(.) >= " + o.minimum;
-         bindElement.setAttributeNS(ALFRESCO_NS,
-                                    ALFRESCO_PREFIX + ":minimum",
+         bindElement.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                    NamespaceService.ALFRESCO_PREFIX + ":minimum",
                                     String.valueOf(o.minimum));
       }
       if (o.maximum > 1) 
       {
          //if 1 or unbounded -> no constraint
          maxConstraint = "count(.) <= " + o.maximum;
-         bindElement.setAttributeNS(ALFRESCO_NS,
-                                    ALFRESCO_PREFIX + ":maximum",
+         bindElement.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                    NamespaceService.ALFRESCO_PREFIX + ":maximum",
                                     String.valueOf(o.maximum));
       }
 

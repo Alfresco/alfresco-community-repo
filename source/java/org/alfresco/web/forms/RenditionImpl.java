@@ -161,14 +161,13 @@ public class RenditionImpl
       this.regenerate(this.getPrimaryFormInstanceData());
    }
 
+   @Deprecated
    public void regenerate(final FormInstanceData formInstanceData)
       throws IOException,
       RenderingEngine.RenderingException,
       SAXException
    {
-      final RenderingEngineTemplate ret = this.getRenderingEngineTemplate();
-      final RenderingEngine engine = ret.getRenderingEngine();
-      engine.render(formInstanceData, ret, this);
+      this.getRenderingEngineTemplate().render(formInstanceData, this);
    }
 
    private ServiceRegistry getServiceRegistry()

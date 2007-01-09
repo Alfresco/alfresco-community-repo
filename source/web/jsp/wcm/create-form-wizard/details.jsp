@@ -94,8 +94,12 @@
 		escape="false" />
   
   <h:panelGrid id="schema_panel_grid"
-               columns="3" cellpadding="3" cellspacing="3" border="0" width="100%">
-
+               columns="3" 
+	       cellpadding="3" 
+	       cellspacing="3" 
+	       border="0" 
+	       width="100%"
+	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
     <h:graphicImage id="graphic_image_schema"
                     value="/images/icons/required_field.gif" alt="Required Field" />
     <h:outputText id="output_text_schema"
@@ -144,7 +148,12 @@
   <h:outputText id="step-2-text" value="2. #{msg.create_form_form_details_step2_desc}" escape="false" />
   
   <h:panelGrid id="details_panel_grid"
-               columns="3" cellpadding="3" cellspacing="3" border="0" width="100%">
+               columns="3"
+	       cellpadding="3" 
+	       cellspacing="3" 
+	       border="0" 
+	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
+	       width="100%">
   
     <h:graphicImage id="graphic_image_name" 
 		    value="/images/icons/required_field.gif" 

@@ -17,6 +17,7 @@
 package org.alfresco.web.forms;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -56,6 +57,18 @@ public interface RenderingEngine
 
    /////////////////////////////////////////////////////////////////////////////
 
+   public interface TemplateProcessorMethod
+      extends Serializable
+   {
+      public Object exec(final Object[] arguments)
+         throws Exception;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
+   public final static QName ROOT_NAMESPACE =
+      QName.createQName(null, "root_namespace");
+
    /**
     * Returns the rendering engines name.
     *
@@ -81,8 +94,8 @@ public interface RenderingEngine
     * @param form the form that collected the xml content.
     * @param rendition the rendition to serialize to.
     */
-   public void render(final FormInstanceData formInstanceData,
+   public void render(final Map<QName, Object> model,
                       final RenderingEngineTemplate ret,
-                      final Rendition rendition)
+                      final OutputStream out)
       throws IOException, RenderingException, SAXException;
 }

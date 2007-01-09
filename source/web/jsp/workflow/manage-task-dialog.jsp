@@ -98,6 +98,7 @@
          <r:actions id="col6-actions" value="#{DialogManager.bean.packageItemActionGroup}" 
                     context="#{r}" showLink="false" styleClass="inlineAction" />
       </a:column>
+      <a:dataPager styleClass="pager" />
    </a:richList>
 
    <h:panelGrid id="package-actions-group" columns="1" styleClass="paddingRow">

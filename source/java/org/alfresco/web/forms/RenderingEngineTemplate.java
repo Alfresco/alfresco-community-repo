@@ -78,8 +78,25 @@ public interface RenderingEngineTemplate
 
    /**
     * Produces a rendition of the provided formInstanceData.
+    *
+    * @param formInstanceData the form instance data for which to produce
+    * the rendition.
     */
    public Rendition render(final FormInstanceData formInstanceData)
+      throws IOException,
+      SAXException,
+      RenderingEngine.RenderingException;
+
+   /**
+    * Produces a rendition of the provided formInstanceData to an existing
+    * rendition.
+    *
+    * @param formInstanceData the form instance data for which to produce
+    * the rendition.
+    * @param rendition the rendition to rerender
+    */
+   public void render(final FormInstanceData formInstanceData,
+                      final Rendition rendition)
       throws IOException,
       SAXException,
       RenderingEngine.RenderingException;

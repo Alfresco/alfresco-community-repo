@@ -30,14 +30,18 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.*;
+import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.jsf.FacesContextUtils;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
+
 
 /**
  * Implementation of a rendering engine template
@@ -101,11 +105,6 @@ public class RenderingEngineTemplateImpl
       return this.renditionPropertiesNodeRef;
    }
    
-   /**
-    * Provides an input stream to the rendering engine template.
-    * 
-    * @return the input stream to the rendering engine template.
-    */
    public InputStream getInputStream()
       throws IOException
    {
@@ -131,7 +130,8 @@ public class RenderingEngineTemplateImpl
    }
 
    /**
-    * Returns the output path to use for renditions.
+    * Generates an output path for the rendition by compiling the output path pattern
+    * as a freemarker template.
     *
     * @return the output path to use for renditions.
     */
@@ -183,11 +183,6 @@ public class RenderingEngineTemplateImpl
       return result;
    }
 
-   /**
-    * Returns the mime type to use for generated assets.
-    *
-    * @return the mime type to use for generated assets.
-    */
    public String getMimetypeForRendition()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
@@ -195,9 +190,6 @@ public class RenderingEngineTemplateImpl
                                              WCMAppModel.PROP_MIMETYPE_FOR_RENDITION);
    }
 
-   /**
-    * Produces a rendition of the provided formInstanceData.
-    */
    public Rendition render(final FormInstanceData formInstanceData)
       throws IOException,
       SAXException,
@@ -213,14 +205,44 @@ public class RenderingEngineTemplateImpl
                                AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + renditionAvmPath);
+         avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+         avmService.addAspect(renditionAvmPath, ContentModel.ASPECT_TITLED);
+         avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
+
+         final PropertyValue pv = 
+            avmService.getNodeProperty(-1, formInstanceData.getPath(), WCMAppModel.PROP_RENDITIONS);
+         final Collection<Serializable> renditions = (pv == null 
+                                                      ? new HashSet<Serializable>() 
+                                                      : pv.getCollection(DataTypeDefinition.TEXT));
+         renditions.add(AVMConstants.getStoreRelativePath(renditionAvmPath));
+         avmService.setNodeProperty(formInstanceData.getPath(), 
+                                    WCMAppModel.PROP_RENDITIONS,
+                                    new PropertyValue(DataTypeDefinition.TEXT,
+                                                      (Serializable)renditions));
       }
 
       final Rendition result = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, renditionAvmPath));
-      this.getRenderingEngine().render(formInstanceData, this, result);
+      this.render(formInstanceData, result);
+      return result;
+   }
 
-      avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
-      avmService.addAspect(renditionAvmPath, ContentModel.ASPECT_TITLED);
-      avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
+   public void render(final FormInstanceData formInstanceData,
+                      final Rendition rendition)
+      throws IOException,
+      SAXException,
+      RenderingEngine.RenderingException
+   {
+      final OutputStream out = rendition.getOutputStream();
+      try
+      {
+         this.getRenderingEngine().render(this.buildModel(formInstanceData, rendition), 
+                                          this, 
+                                          out);
+      }
+      finally
+      {
+         out.close();
+      }
 
       final Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(5, 1.0f);
       props.put(WCMAppModel.PROP_PARENT_FORM_NAME, 
@@ -228,13 +250,13 @@ public class RenderingEngineTemplateImpl
                                   formInstanceData.getForm().getName()));
       props.put(ContentModel.PROP_TITLE,
                 new PropertyValue(DataTypeDefinition.TEXT,
-                                  AVMNodeConverter.SplitBase(renditionAvmPath)[1]));
+                                  AVMNodeConverter.SplitBase(rendition.getPath())[1]));
       final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
       props.put(ContentModel.PROP_DESCRIPTION,
                 new PropertyValue(DataTypeDefinition.TEXT,
                                   MessageFormat.format(bundle.getString("default_rendition_description"), 
                                                        this.getTitle(),
-                                                       AVMConstants.getSandboxRelativePath(renditionAvmPath))));
+                                                       AVMConstants.getSandboxRelativePath(rendition.getPath()))));
       props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE,
                 new PropertyValue(DataTypeDefinition.NODE_REF,
                                   this.nodeRef));
@@ -246,19 +268,187 @@ public class RenderingEngineTemplateImpl
                 new PropertyValue(DataTypeDefinition.TEXT,
                                   AVMConstants.getStoreRelativePath(formInstanceData.getPath())));
 
-      avmService.setNodeProperties(renditionAvmPath, props);
-      
-      final PropertyValue pv = 
-         avmService.getNodeProperty(-1, formInstanceData.getPath(), WCMAppModel.PROP_RENDITIONS);
-      Collection<Serializable> renditions = (pv == null 
-                                             ? new LinkedList<Serializable>() 
-                                             : pv.getCollection(DataTypeDefinition.TEXT));
-      renditions.add(AVMConstants.getStoreRelativePath(renditionAvmPath));
-      avmService.setNodeProperty(formInstanceData.getPath(), 
-                                 WCMAppModel.PROP_RENDITIONS,
-                                 new PropertyValue(DataTypeDefinition.TEXT,
-                                                   (Serializable)renditions));
-      return result;
+      final AVMService avmService = this.getServiceRegistry().getAVMService();
+      avmService.setNodeProperties(rendition.getPath(), props);
+   }
+
+   /**
+    * Builds the model to pass to the rendering engine.
+    */
+   protected Map<QName, Object> buildModel(final FormInstanceData formInstanceData,
+                                           final Rendition rendition)
+      throws IOException,
+      SAXException
+   {
+      final DynamicNamespacePrefixResolver namespacePrefixResolver = 
+         new DynamicNamespacePrefixResolver();
+      namespacePrefixResolver.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
+                                                NamespaceService.ALFRESCO_URI);
+
+      final String formInstanceDataAvmPath = formInstanceData.getPath();
+      final String renditionAvmPath = rendition.getPath();
+      final String parentPath = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0];
+      final String sandboxUrl = AVMConstants.buildStoreUrl(formInstanceDataAvmPath);
+      final HashMap<QName, Object> model = new HashMap<QName, Object>();
+      // add simple scalar parameters
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "avm_sandbox_url",
+                                  namespacePrefixResolver), 
+                sandboxUrl);
+      model.put(XSLTRenderingEngine.PROP_URI_RESOLVER_BASE_URI,
+                sandboxUrl);
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "form_instance_data_file_name",
+                                  namespacePrefixResolver),
+                AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[1]);
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "rendition_file_name",
+                                  namespacePrefixResolver),
+                AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "parent_path",
+                                  namespacePrefixResolver),
+                parentPath);
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "request_context_path",
+                                  namespacePrefixResolver),
+                fc.getExternalContext().getRequestContextPath());
+
+      // add methods
+      final FormDataFunctions fdf = this.getFormDataFunctions();
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "parseXMLDocument",
+                                  namespacePrefixResolver),
+                new RenderingEngine.TemplateProcessorMethod()
+                {
+                   public Object exec(final Object[] arguments)
+                      throws IOException,
+                      SAXException
+                   {
+                      if (arguments.length != 1)
+                      {
+                         throw new IllegalArgumentException("expected 1 argument to parseXMLDocument.  got " +
+                                                            arguments.length);
+
+                      }
+                      if (! (arguments[0] instanceof String))
+                      {
+                         throw new ClassCastException("expected arguments[0] to be a " + String.class.getName() +
+                                                      ".  got a " + arguments[0].getClass().getName() + ".");
+                      }
+                      String path = (String)arguments[0];
+                      path = AVMConstants.buildPath(parentPath,
+                                                    path,
+                                                    AVMConstants.PathRelation.WEBAPP_RELATIVE);
+                      LOGGER.debug("tpm_parseXMLDocument('" + path + 
+                                   "'), parentPath = " + parentPath);
+                      final Document d = fdf.parseXMLDocument(path);
+                      return d != null ? d.getDocumentElement() : null;
+                   }
+                });
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "parseXMLDocuments",
+                                  namespacePrefixResolver),
+                new RenderingEngine.TemplateProcessorMethod()
+                {
+                   public Object exec(final Object[] arguments)
+                      throws IOException,
+                      SAXException
+                   {
+                      if (arguments.length > 1)
+                      {
+                         throw new IllegalArgumentException("expected zero or one arguments to parseXMLDocuments.  got " +
+                                                            arguments.length);
+                      }
+                      if (! (arguments[0] instanceof String))
+                      {
+                         throw new ClassCastException("expected arguments[0] to be a " + String.class.getName() +
+                                                      ".  got a " + arguments[0].getClass().getName() + ".");
+                      }
+
+                      if (arguments.length == 2 && ! (arguments[1] instanceof String))
+                      {
+                         throw new ClassCastException("expected arguments[1] to be a " + String.class.getName() +
+                                                      ".  got a " + arguments[1].getClass().getName() + ".");
+                      }
+                      
+                      String path = arguments.length == 2 ? (String)arguments[1] : "";
+                      path = AVMConstants.buildPath(parentPath,
+                                                    path,
+                                                    AVMConstants.PathRelation.WEBAPP_RELATIVE);
+                      final String formName = (String)arguments[0];
+                      LOGGER.debug("tpm_parseXMLDocuments('" + formName + "','" + path + 
+                                   "'), parentPath = " + parentPath);
+                      final Map<String, Document> resultMap = fdf.parseXMLDocuments(formName, path);
+                      LOGGER.debug("received " + resultMap.size() + 
+                                   " documents in " + path +
+                                   " with form name " + formName);
+
+                      // create a root document for rooting all the results.  we do this
+                      // so that each document root element has a common parent node
+                      // and so that xpath axes work properly
+                      final Document rootNodeDocument = XMLUtil.newDocument();
+                      final Element rootNodeDocumentEl = 
+                         rootNodeDocument.createElementNS(NamespaceService.ALFRESCO_URI,
+                                                          NamespaceService.ALFRESCO_PREFIX + ":file_list");
+                      rootNodeDocumentEl.setAttribute("xmlns:" + NamespaceService.ALFRESCO_PREFIX, 
+                                                      NamespaceService.ALFRESCO_URI); 
+                      rootNodeDocument.appendChild(rootNodeDocumentEl);
+               
+                      final List<Node> result = new ArrayList<Node>(resultMap.size());
+                      for (Map.Entry<String, Document> e : resultMap.entrySet())
+                      {
+                         final Element documentEl = e.getValue().getDocumentElement();
+                         documentEl.setAttribute("xmlns:" + NamespaceService.ALFRESCO_PREFIX, 
+                                                 NamespaceService.ALFRESCO_URI); 
+                         documentEl.setAttributeNS(NamespaceService.ALFRESCO_URI, 
+                                                   NamespaceService.ALFRESCO_PREFIX + ":file_name", 
+                                                   e.getKey());
+                         final Node n = rootNodeDocument.importNode(documentEl, true);
+                         rootNodeDocumentEl.appendChild(n);
+                         result.add(n);
+                      }
+                      return result.toArray(new Node[result.size()]);
+                   }
+                });
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "_getAVMPath",
+                                  namespacePrefixResolver),
+                new RenderingEngine.TemplateProcessorMethod()
+                {
+                   public Object exec(final Object[] arguments)
+                   {
+                      if (arguments.length != 1)
+                      {
+                         throw new IllegalArgumentException("expected one argument to _getAVMPath.  got " + 
+                                                            arguments.length);
+                      }
+                      if (! (arguments[0] instanceof String))
+                      {
+                         throw new ClassCastException("expected arguments[0] to be a " + String.class.getName() +
+                                                      ".  got a " + arguments[0].getClass().getName() + ".");
+                      }
+
+                      final String path = (String)arguments[0];
+                      LOGGER.debug("tpm_getAVMPAth('" + path + "'), parentPath = " + parentPath);
+                      return AVMConstants.buildPath(parentPath,
+                                                    path,
+                                                    AVMConstants.PathRelation.WEBAPP_RELATIVE);
+                   }
+                });
+
+      // add the xml document
+      model.put(RenderingEngine.ROOT_NAMESPACE, formInstanceData.getDocument());
+      return model;
+   }
+
+   protected static FormDataFunctions getFormDataFunctions()
+   {
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      final WebApplicationContext wac = 
+         FacesContextUtils.getRequiredWebApplicationContext(fc);
+      return new FormDataFunctions((AVMRemote)wac.getBean("avmRemote"));
    }
 
    private ServiceRegistry getServiceRegistry()

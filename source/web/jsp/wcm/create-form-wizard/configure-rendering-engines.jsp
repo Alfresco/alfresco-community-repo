@@ -48,6 +48,7 @@
 		escape="false" />
   <h:panelGrid id="panel_grid_3"
                columns="3" cellpadding="3" cellspacing="3" border="0"
+	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
                width="100%">
     <h:graphicImage id="required_image_rendering_engine_template_file"
                     value="/images/icons/required_field.gif" alt="Required Field" />
@@ -93,6 +94,7 @@
 		escape="false" />
   <h:panelGrid id="panel_grid_specify_details"
                columns="3" cellpadding="3" cellspacing="3" border="0"
+	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
                width="100%">
 
     <h:graphicImage id="required-image-rendering-engine"
@@ -173,19 +175,19 @@
           <img style="float: left" src="<%= request.getContextPath() %>/images/icons/template_large.gif"/>
         </f:verbatim>
         <h:panelGrid id="panel_grid_row"
-                     columns="2" cellpadding="0" cellspacing="1" border="0">
-          <h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
-          <h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
-
+                     columns="2" cellspacing="1" border="0">
           <h:outputText id="data-table-name-0-name" value="#{msg.name}: " />
           <h:outputText id="data-table-value-0-name" value="#{row.name}" />
+
+          <h:outputText id="data-table-name-0-type" value="#{msg.type}: " />
+          <h:outputText id="data-table-value-0-type" value="#{row.renderingEngine.name}" />
 
           <h:outputText id="data-table-name-0-title" value="#{msg.title}: " />
           <h:outputText id="data-table-value-0-title" value="#{row.title}" />
 
           <h:outputText id="data-table-name-0-description" value="#{msg.description}: " />
-          <h:outputText id="data-table-value-0-description-empty" 
-                        rendered="#{empty row.description}" value="<#{msg.value_not_set}>" />
+          <h:outputText id="data-table-value-0-description-empty" style="font-style:italic"
+                        rendered="#{empty row.description}" value="#{msg.description_not_set}" />
           <h:outputText id="data-table-value-0-description-not-empty" 
                         rendered="#{!empty row.description}" value="#{row.description}" />
 

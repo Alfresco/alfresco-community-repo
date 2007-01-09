@@ -240,11 +240,17 @@ public class AVMEditBean
    {
       if (this.form == null)
       {
-         final String formName = (String)
-            this.nodeService.getProperty(this.getAvmNode().getNodeRef(), 
-                                         WCMAppModel.PROP_PARENT_FORM_NAME);
+         final PropertyValue pv = 
+            this.avmService.getNodeProperty(-1, 
+                                            this.getAvmNode().getPath(), 
+                                            WCMAppModel.PROP_PARENT_FORM_NAME);
+         
+         final String formName = (String)pv.getValue(DataTypeDefinition.TEXT);
          final WebProject wp = new WebProject(this.getAvmNode().getPath());
          this.form = wp.getForm(formName);
+         LOGGER.debug("loaded form " + this.form + 
+                      ", form name " + formName +
+                      ", for " + this.getAvmNode().getPath());
       }
       return this.form;
    }
@@ -441,7 +447,10 @@ public class AVMEditBean
                }
                catch (Throwable t)
                {
-                  LOGGER.error(t, t);
+                  LOGGER.error("error regenerating " + rendition.getName() + 
+                               ": " + t.getMessage(), t);
+                  Utils.addErrorMessage("error regenerating " + rendition.getName() + 
+                                        ": " + t.getMessage(), t);
                }
             }
             final NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
@@ -539,6 +548,7 @@ public class AVMEditBean
       setEditorOutput(null);
       this.instanceDataDocument = null;
       this.formProcessorSession = null;
+      this.form = null;
    }
    
    /**

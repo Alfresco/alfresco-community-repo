@@ -41,6 +41,8 @@ import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.ui.common.Utils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Backing bean for the Edit Form wizard.
@@ -50,6 +52,7 @@ import org.alfresco.web.ui.common.Utils;
 public class EditFormWizard 
    extends CreateFormWizard
 {
+   private final static Log LOGGER = LogFactory.getLog(EditFormWizard.class);
 
    private List<RenderingEngineTemplateData> removedRenderingEngineTemplates;
 
@@ -97,6 +100,10 @@ public class EditFormWizard
       {
          this.defaultWorkflowName = wf.getName();
       }
+      else
+      {
+         this.applyDefaultWorkflow = false;
+      }
       this.setOutputPathPatternForFormInstanceData(form.getOutputPathPattern());
 
       for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
@@ -127,29 +134,36 @@ public class EditFormWizard
                                    WCMAppModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME,
                                    this.getSchemaRootElementName());
       final WorkflowDefinition wd = this.getDefaultWorkflowDefinition();
-      if (wd != null)
+      final List<ChildAssociationRef> workflowRefs = 
+         this.nodeService.getChildAssocs(formNodeRef,
+                                         WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
+                                         RegexQNamePattern.MATCH_ALL);
+
+      if (wd != null && workflowRefs.size() == 0)
       {
-         final List<ChildAssociationRef> workflowRefs = 
-            this.nodeService.getChildAssocs(formNodeRef,
-                                            WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
-                                            RegexQNamePattern.MATCH_ALL);
-         if (workflowRefs.size() == 0)
-         {
-            final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-            props.put(WCMAppModel.PROP_WORKFLOW_NAME, wd.getName());
-            this.nodeService.createNode(formNodeRef,
-                                        WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
-                                        WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
-                                        WCMAppModel.TYPE_WORKFLOW_DEFAULTS,
-                                        props);
-         }
-         else
-         {
-            this.nodeService.setProperty(workflowRefs.get(0).getChildRef(),
-                                         WCMAppModel.PROP_WORKFLOW_NAME,
-                                         wd.getName());
-         }              
+         LOGGER.debug("adding workflow definition " + wd.getName() + 
+                      " to form " + this.getFormName());
+         final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+         props.put(WCMAppModel.PROP_WORKFLOW_NAME, wd.getName());
+         this.nodeService.createNode(formNodeRef,
+                                     WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
+                                     WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
+                                     WCMAppModel.TYPE_WORKFLOW_DEFAULTS,
+                                     props);
       }
+      else if (wd != null && workflowRefs.size() == 1)
+      {
+         LOGGER.debug("setting workflow definition " + wd.getName() + 
+                      " to form " + this.getFormName());
+         this.nodeService.setProperty(workflowRefs.get(0).getChildRef(),
+                                      WCMAppModel.PROP_WORKFLOW_NAME,
+                                      wd.getName());
+      }              
+      else if (wd == null && workflowRefs.size() == 1)
+      {
+         LOGGER.debug("removing workflow definitions from form " + this.getFormName());
+         this.nodeService.removeChild(formNodeRef, workflowRefs.get(0).getChildRef());
+      }         
 
       if (this.getSchemaFile() != null)
       {

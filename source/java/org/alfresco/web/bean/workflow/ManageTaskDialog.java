@@ -28,6 +28,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
@@ -691,11 +692,15 @@ public class ManageTaskDialog extends BaseDialogBean
 
    protected void addAVMNode(final AVMNode node)
    {
-      LOGGER.debug("adding node  " + node);
       node.getProperties().put("taskId", this.task.id);
-      this.browseBean.setupCommonBindingProperties(node);
       node.addPropertyResolver("path", AVMNode.RESOLVER_SANDBOX_RELATIVE_PATH);
       node.addPropertyResolver("previewUrl", AVMNode.RESOLVER_PREVIEW_URL);
+      node.addPropertyResolver("fileType16", AVMNode.RESOLVER_FILE_TYPE_16);
+      node.addPropertyResolver("size", this.browseBean.resolverSize);
+      if (!node.isDirectory())
+      {
+         node.addPropertyResolver("url", this.browseBean.resolverUrl);
+      }
       this.resources.add(node);
    }
    

@@ -87,6 +87,8 @@
 	font-weight: bold;
 	margin: 2px 5%;
 	text-align: center;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .xformsFilePickerHeader

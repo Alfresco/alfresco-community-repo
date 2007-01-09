@@ -27,7 +27,7 @@
   <xs:complexType name="multi-input">
     <xs:sequence>
       <xs:element name="string" type="xs:string"/>
-      <xs:element name="int" type="xs:anyType"/>
+      <xs:element name="any" type="xs:anyType"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="repeat-components">

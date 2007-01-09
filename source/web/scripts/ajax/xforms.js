@@ -235,6 +235,8 @@ dojo.declare("alfresco.xforms.Widget",
                {
                  dojo.debug("destroying " + this.id);
                },
+               _handlePrepareForMove: function() {},
+               _handleMoveComplete: function() {},
                getRepeatIndices: function()
                {
                  function RepeatIndexData(repeat, index)
@@ -424,28 +426,48 @@ dojo.declare("alfresco.xforms.TextArea",
              {
                initializer: function(xform, xformsNode) 
                {
-//           this.inherited("initializer", [ xform, xformsNode ]);
                },
                render: function(attach_point)
                {
                  attach_point.appendChild(this.domNode);
                  dojo.html.prependClass(this.domNode, "xformsTextArea");
-                 this.domNode.innerHTML = this.getInitialValue() || "";
-                 tinyMCE.addMCEControl(this.domNode, this.id);
-
-                 var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
-                 editorDocument.widget = this;
-                 tinyMCE.addEvent(editorDocument, "blur", this._tinyMCE_blurHandler);
-                 this.widget = this.domNode;
+                 this.widget = document.createElement("div");
+                 this.domNode.appendChild(this.widget);
+                 dojo.html.prependClass(this.widget, "xformsTextArea");
+                 this.widget.innerHTML = this.getInitialValue() || "";
+                 if (!this.isReadonly())
+                 {
+                   this._createTinyMCE();
+                 }
                },
                setValue: function(value)
                {
-                 tinyMCE.selectedInstance = tinyMCE.getInstanceById(this.id);
-                 tinyMCE.setContent(value);
+                 if (this.isReadonly())
+                 {
+                   this.widget.innerHTML = value;
+                 }
+                 else
+                 {
+                   tinyMCE.selectedInstance = tinyMCE.getInstanceById(this.id);
+                   tinyMCE.setContent(value);
+                 }
                },
                getValue: function()
                {
-                 return tinyMCE.getContent(this.id);
+                 return this.isReadonly() ? this.widget.innerHTML : tinyMCE.getContent(this.id);
+               },
+               setReadonly: function(readonly)
+               {
+                 this.inherited("setReadonly", [ readonly ]);
+                 var mce = tinyMCE.getInstanceById(this.id);
+                 if (readonly && mce)
+                 {
+                   this._removeTinyMCE();
+                 }
+                 else if (!readonly && !mce && this.widget)
+                 {
+                   this._createTinyMCE();
+                 }
                },
                _tinyMCE_blurHandler: function(event)
                {
@@ -455,8 +477,32 @@ dojo.declare("alfresco.xforms.TextArea",
                _destroy: function()
                {
                  this.inherited("_destroy", []);
-                 dojo.debug("removing mce control " + this.id);
+                 if (!this.isReadonly())
+                 {
+                   dojo.debug("removing mce control " + this.id);
+                   tinyMCE.removeMCEControl(this.id);
+                 }
+               },
+               _handlePrepareForMove: function()
+               {
+                 this._removeTinyMCE();
+               },
+               _handleMoveComplete: function()
+               {
+                 this._createTinyMCE();
+               },
+               _removeTinyMCE: function()
+               {
+                 var value = tinyMCE.getContent(this.id);
                  tinyMCE.removeMCEControl(this.id);
+               },
+               _createTinyMCE:function()
+               {
+                 tinyMCE.addMCEControl(this.widget, this.id);
+                 
+                 var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
+                 editorDocument.widget = this;
+                 tinyMCE.addEvent(editorDocument, "blur", this._tinyMCE_blurHandler);
                }
              });
 
@@ -465,7 +511,6 @@ dojo.declare("alfresco.xforms.AbstractSelectWidget",
              {
                initializer: function(xform, xformsNode) 
                {
-//           this.inherited("initializer", [ xform, xformsNode ]);
                },
                getValues: function()
                {
@@ -900,6 +945,30 @@ dojo.declare("alfresco.xforms.Group",
                    this.children[i]._destroy();
                  }
                },
+               _handlePrepareForMove: function()
+               {
+                 this.inherited("_handlePrepareForMove", [ ]);
+                 for (var i = 0; i < this.children.length; i++)
+                 {
+                   this.children[i]._handlePrepareForMove();
+                 }
+               },
+               _handleMoveComplete: function()
+               {
+                 this.inherited("_handleMoveComplete", [ ]);
+                 for (var i = 0; i < this.children.length; i++)
+                 {
+                   this.children[i]._handleMoveComplete();
+                 }
+               },
+               setReadonly: function(readonly)
+               {
+                 this.inherited("setReadonly", [ readonly ]);
+                 for (var i = 0; i < this.children.length; i++)
+                 {
+                   this.children[i].setReadonly(readonly);
+                 }
+               },
                render: function(attach_point)
                {
                  this.domNode.widget = this;
@@ -1114,6 +1183,12 @@ dojo.declare("alfresco.xforms.Repeat",
                  this.inherited("_updateDisplay", []);
                  for (var i = 0; i < this.children.length; i++)
                  {
+                   if (dojo.html.hasClass(this.children[i].domContainer,
+                                          "xformsRow" + (i % 2 ? "Odd" : "Even")))
+                   {
+                     dojo.html.removeClass(this.children[i].domContainer,
+                                           "xformsRow" + (i % 2 ? "Odd" : "Even"));
+                   }
                    dojo.html.addClass(this.children[i].domContainer, 
                                       "xformsRow" + (i % 2 ? "Even" : "Odd")); 
                  }
@@ -1218,12 +1293,14 @@ dojo.declare("alfresco.xforms.Repeat",
                             ", " + toIndex + ")");
                  var fromChild = this.getChildAt(fromIndex);
                  var toChild = this.getChildAt(toIndex);
-               
+                 fromChild._handlePrepareForMove();
+                 toChild._handlePrepareForMove();
                  var swapNode = document.createElement("div");
                  this.domNode.childContainerNode.replaceChild(swapNode, fromChild.domContainer);
                  this.domNode.childContainerNode.replaceChild(fromChild.domContainer, toChild.domContainer);
                  this.domNode.childContainerNode.replaceChild(toChild.domContainer, swapNode);
-                 
+                 fromChild._handleMoveComplete();
+                 toChild._handleMoveComplete();
                  this.children[fromIndex] = toChild;
                  this.children[toIndex] = fromChild;
                  this._selectedIndex = toIndex;
@@ -2610,8 +2687,7 @@ _showAddContentPanel: function(addContentLink, currentPath)
 },
 _upload_completeHandler: function(fileName, webappRelativePath)
 {
-  this._showStatus("Successfully uploaded " + fileName +
-                   " into " + webappRelativePath);
+  this._showStatus("Successfully uploaded " + fileName + "."); // " into " + webappRelativePath);
   this._navigateToNode(webappRelativePath);
 },
 _closeParentPathMenu: function()

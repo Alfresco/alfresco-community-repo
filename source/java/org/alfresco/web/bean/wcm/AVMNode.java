@@ -28,9 +28,11 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Node class representing an AVM specific Node.
@@ -88,6 +90,26 @@ public class AVMNode extends Node implements Map<String, Object>
                }
             }
             return result;
+         }
+      };
+
+   public final static NodePropertyResolver RESOLVER_FILE_TYPE_16 =
+      new NodePropertyResolver()
+      {
+         public Object get(final Node node)
+         {
+            if (! (node instanceof AVMNode))
+            {
+               return null;
+            }
+            if (((AVMNode)node).isDirectory())
+            {
+               return "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
+            }
+            else
+            {
+               return Utils.getFileTypeImage(node.getName(), true);
+            }
          }
       };
 

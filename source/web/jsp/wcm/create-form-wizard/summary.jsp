@@ -63,11 +63,15 @@
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0">
+  <h:outputText rendered="#{empty WizardManager.bean.renderingEngineTemplates}"
+		value="#{msg.no_selected_items}"/>
+
   <a:selectList id="rendering-engine-template-list" 
                 multiSelect="false"
                 activeSelect="true" 
                 style="width:100%" 
                 itemStyleClass="selectListItem">
+
     <c:forEach items="${WizardManager.bean.renderingEngineTemplates}" var="ret">
       <a:listItem label="${msg.name}: ${ret.title}"
                   value="${ret.name}"
@@ -98,19 +102,17 @@
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
-  <h:outputText value="#{msg.apply_default_workflow}:"/>
-  <c:choose>
-    <c:when test="${WizardManager.bean.defaultWorkflowDefinition != null}">
-      <h:outputText value="#{msg.yes}"/>
-    </c:when>
-    <c:otherwise>
-      <h:outputText value="#{msg.no}"/>
-    </c:otherwise>
-  </c:choose>
-  <c:if test="${WizardManager.bean.defaultWorkflowDefinition != null}">
-    <h:outputText value="#{msg.name}:"/>
-    <h:outputText value="#{WizardManager.bean.defaultWorkflowDefinition.title}"/>
-    <h:outputText value="#{msg.description}:"/>
-    <h:outputText value="#{WizardManager.bean.defaultWorkflowDefinition.description}"/>
-  </c:if>
+  <h:outputText value="#{msg.no_selected_items}" 
+		rendered="#{WizardManager.bean.defaultWorkflowDefinition == null}"/>
+  <a:selectList id="workflow-list" 
+		rendered="#{WizardManager.bean.defaultWorkflowDefinition != null}"
+                multiSelect="false"
+                activeSelect="true" 
+                style="width:100%" 
+                itemStyleClass="selectListItem">
+    <a:listItem label="${msg.name}: ${WizardManager.bean.defaultWorkflowDefinition.title}"
+                value="${WizardManager.bean.defaultWorkflowDefinition.name}"
+		description="${msg.description}: ${WizardManager.bean.defaultWorkflowDefinition.description}"
+                image="/images/icons/workflow_large.gif"/>
+  </a:selectList>
 </h:panelGrid>

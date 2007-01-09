@@ -22,6 +22,7 @@ import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.TemplateNode.TemplateContentData;
@@ -43,6 +44,7 @@ public class VersionHistoryNode implements Serializable
     private boolean propsRetrieved = false;
     private Version version;
     private TemplateNode parent;
+    private Set<QName> aspects = null;
     
     /**
      * Constructor
@@ -182,6 +184,50 @@ public class VersionHistoryNode implements Serializable
         }
         
         return this.properties;
+    }
+    
+    /**
+     * @return The list of aspects applied to this node
+     */
+    public Set<QName> getAspects()
+    {
+        if (this.aspects == null)
+        {
+            this.aspects = parent.services.getNodeService().getAspects(this.version.getFrozenStateNodeRef());
+        }
+        
+        return this.aspects;
+    }
+    
+    /**
+     * @param aspect The aspect name to test for
+     * 
+     * @return true if the node has the aspect false otherwise
+     */
+    public boolean hasAspect(String aspect)
+    {
+        if (this.aspects == null)
+        {
+            getAspects();
+        }
+        
+        if (aspect.startsWith(parent.NAMESPACE_BEGIN))
+        {
+            return aspects.contains((QName.createQName(aspect)));
+        }
+        else
+        {
+            boolean found = false;
+            for (QName qname : this.aspects)
+            {
+                if (qname.toPrefixString(parent.services.getNamespaceService()).equals(aspect))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
     }
     
     

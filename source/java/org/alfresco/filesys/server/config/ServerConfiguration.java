@@ -579,6 +579,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
         // Create the configuration context
 
         ConfigLookupContext configCtx = new ConfigLookupContext(ConfigArea);
+        configCtx.setIncludeGlobalSection( false);
 
         // Set the platform type
 
@@ -684,7 +685,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
         	try
 	        {
 	            // Process the NFS server configuration
-	
+
 	            config = configService.getConfig(ConfigNFS, configCtx);
 	            processNFSServerConfig(config);
 	            
@@ -696,7 +697,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
         	{
 	            // Configuration error
         		
-	            logger.error("FTP server configuration error, " + ex.getMessage(), ex);
+	            logger.error("NFS server configuration error, " + ex.getMessage(), ex);
         	}        		
     	}
         else
@@ -745,7 +746,8 @@ public class ServerConfiguration extends AbstractLifecycleBean
     {
         // If the configuration section is not valid then CIFS is disabled
         
-        if ( config == null || config.getConfigElements().isEmpty())
+        if ( config == null || config.getConfigElements().isEmpty() ||
+        		config.getConfigElement( "disableCIFS") != null)
         {
             setSMBServerEnabled(false);
             return;
@@ -1512,7 +1514,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
     {
         // If the configuration section is not valid then FTP is disabled
         
-        if ( config == null)
+        if ( config == null || config.getConfigElement( "disableFTP") != null)
         {
             setFTPServerEnabled(false);
             return;
@@ -1702,7 +1704,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
     {
         // If the configuration section is not valid then NFS is disabled
         
-        if ( config == null)
+        if ( config == null || config.getConfigElement( "disableNFS") != null)
         {
             setNFSServerEnabled(false);
             return;
@@ -2199,8 +2201,8 @@ public class ServerConfiguration extends AbstractLifecycleBean
             {
                 // Check if the appropriate authentication component type is configured
                 
-//                if ( ntlmMode != NTLMMode.NONE)
-//                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator (can only be used with LDAP/JAAS auth component)");
+                if ( ntlmMode != NTLMMode.NONE)
+                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator (can only be used with LDAP/JAAS auth component)");
                 
                 // Load the passthru authenticator dynamically
                 

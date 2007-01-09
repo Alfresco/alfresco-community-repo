@@ -29,6 +29,10 @@
 <!--      <debug flags="File,Search,Error,Directory,Info,DataPort"/> -->
    </config>
    
+   <config evaluator="string-compare" condition="NFS Server">
+	   <disableNFS/>
+   </config>
+	
    <config evaluator="string-compare" condition="Filesystems">
 	  <filesystems>
          <filesystem name="Alfresco">

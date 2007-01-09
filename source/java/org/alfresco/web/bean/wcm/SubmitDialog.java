@@ -240,7 +240,7 @@ public class SubmitDialog extends BaseDialogBean
                      // add submission parameters
                      params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
                      params.put(AVMWorkflowUtil.PROP_LABEL, getLabel());
-                     params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getSandbox()));
+                     params.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildStoreRootPath(this.avmBrowseBean.getSandbox()));
                       
                      // update start task with submit parameters
                      this.workflowService.updateTask(startTask.id, params, null, null);

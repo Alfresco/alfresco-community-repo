@@ -18,6 +18,7 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,9 +29,9 @@ import java.util.Set;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
@@ -104,18 +105,22 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          // invited users and the power user who is executing the create web project wizard 
          boolean foundCurrentUser = false;
          String currentUser = Application.getCurrentUser(context).getUserName();
+         
          for (UserGroupRole userRole : this.userGroupRoles)
          {
-            String authority = userRole.getAuthority();
-            if (currentUser.equals(authority))
+            for (String userAuth : findNestedUserAuthorities(userRole.getAuthority()))
             {
-               foundCurrentUser = true;
-            }
-            if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
-            {
-               this.managers.add(authority);
+               if (currentUser.equals(userAuth))
+               {
+                  foundCurrentUser = true;
+               }
+               if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
+               {
+                  this.managers.add(userAuth);
+               }
             }
          }
+         
          if (foundCurrentUser == false)
          {
             this.userGroupRoles.add(new UserGroupRole(currentUser, SandboxFactory.ROLE_CONTENT_MANAGER, null));
@@ -128,11 +133,15 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          // so retrieve the list of managers from the existing users and the selected invitees
          for (UserGroupRole userRole : this.userGroupRoles)
          {
-            if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
+            for (String userAuth : findNestedUserAuthorities(userRole.getAuthority()))
             {
-               this.managers.add(userRole.getAuthority());
+               if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
+               {
+                  this.managers.add(userAuth);
+               }
             }
          }
+         
          List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
             getNode().getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
@@ -140,67 +149,98 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             NodeRef userInfoRef = ref.getChildRef();
             String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
             String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+            
             if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userrole) &&
                 this.managers.contains(username) == false)
             {
                this.managers.add(username);
             }
+            
             // add each existing user to the exclude this - we cannot add them more than once!
             excludeUsers.add(username);
          }
       }
       
       // build the sandboxes now we have the manager list and complete user list
+      // and create an association to a node to represent each invited user
       List<SandboxInfo> sandboxInfoList = new LinkedList<SandboxInfo>();
-
       for (UserGroupRole userRole : this.userGroupRoles)
       {
-         String authority = userRole.getAuthority();
-         if (excludeUsers.contains(authority) == false)
+         for (String userAuth : findNestedUserAuthorities(userRole.getAuthority()))
          {
-            SandboxInfo info =
-                SandboxFactory.createUserSandbox(
-                  getAvmStore(), this.managers, userRole.getAuthority(), userRole.getRole());
-
-            sandboxInfoList.add( info );
-         }
-      }
-      
-      // save the list of invited users against the store
-      for (UserGroupRole userRole : this.userGroupRoles)
-      {
-         String authority = userRole.getAuthority();
-         if (excludeUsers.contains(authority) == false)
-         {
-            // create an app:webuser instance for each authority and assoc to the website node
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-            props.put(WCMAppModel.PROP_WEBUSERNAME, authority);
-            props.put(WCMAppModel.PROP_WEBUSERROLE, userRole.getRole());
-            this.nodeService.createNode(getNode().getNodeRef(),
-                  WCMAppModel.ASSOC_WEBUSER,
-                  WCMAppModel.ASSOC_WEBUSER,
-                  WCMAppModel.TYPE_WEBUSER,
-                  props);
+            if (excludeUsers.contains(userAuth) == false)
+            {
+               SandboxInfo info = SandboxFactory.createUserSandbox(
+                     getAvmStore(), this.managers, userAuth, userRole.getRole());
+               
+               sandboxInfoList.add(info);
+               
+               // create an app:webuser instance for each authority and assoc to the website node
+               Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+               props.put(WCMAppModel.PROP_WEBUSERNAME, userAuth);
+               props.put(WCMAppModel.PROP_WEBUSERROLE, userRole.getRole());
+               this.nodeService.createNode(getNode().getNodeRef(),
+                     WCMAppModel.ASSOC_WEBUSER,
+                     WCMAppModel.ASSOC_WEBUSER,
+                     WCMAppModel.TYPE_WEBUSER,
+                     props);
+            }
          }
       }
       
       // reload virtualisation server for webapp in this web project
       if (isStandalone())
       {
-         for (SandboxInfo sandboxInfo : sandboxInfoList )
+         for (SandboxInfo sandboxInfo : sandboxInfoList)
          {
-             String newlyInvitedStoreName = 
-                AVMConstants.buildStagingStoreName( sandboxInfo.getMainStoreName() );
-
-             String path = 
-                AVMConstants.buildStoreWebappPath( newlyInvitedStoreName,
-                                                   this.avmBrowseBean.getWebapp());
-
+             String newlyInvitedStoreName = AVMConstants.buildStagingStoreName(sandboxInfo.getMainStoreName());
+             String path = AVMConstants.buildStoreWebappPath(newlyInvitedStoreName, this.avmBrowseBean.getWebapp());
              AVMConstants.updateVServerWebapp(path, true);
          }
       }
       
       return outcome;
+   }
+
+   /**
+    * Find all nested user authorities contained with an authority
+    * 
+    * @param authority     The authority to search, USER authorities are returned immediately, GROUP authorites
+    *                      are recursively scanned for contained USER authorities.
+    * 
+    * @return a Set of USER authorities
+    */
+   private Set<String> findNestedUserAuthorities(String authority)
+   {
+      Set<String> users;
+      
+      AuthorityType authType = AuthorityType.getAuthorityType(authority);
+      if (authType.equals(AuthorityType.USER))
+      {
+         users = new HashSet<String>(1, 1.0f);
+         if (this.personService.personExists(authority) == true)
+         {
+            users.add(authority); 
+         }
+      }
+      else if (authType.equals(AuthorityType.GROUP))
+      {
+         // walk each member of the group
+         users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+         for (String userAuth : users)
+         {
+            if (this.personService.personExists(userAuth) == false)
+            {
+               users.remove(authType);
+            }
+         }
+      }
+      else
+      {
+         users = Collections.<String>emptySet();
+      }
+      
+      return users;
    }
    
    /**

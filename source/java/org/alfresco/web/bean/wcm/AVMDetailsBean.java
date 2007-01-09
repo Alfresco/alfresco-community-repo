@@ -186,7 +186,7 @@ public abstract class AVMDetailsBean
             // reset - it does not know when the item has changed etc.
             for (int i=0; i<nodes.size(); i++)
             {
-               if (path.equals(nodes.get(i).get("path")) == true)
+               if (path.equals(nodes.get(i).get("id")) == true)
                {
                   AVMNode next;
                   // found our item - navigate to next
@@ -225,7 +225,7 @@ public abstract class AVMDetailsBean
             // see above
             for (int i=0; i<nodes.size(); i++)
             {
-               if (path.equals(nodes.get(i).get("path")) == true)
+               if (path.equals(nodes.get(i).get("id")) == true)
                {
                   AVMNode previous;
                   // found our item - navigate to previous

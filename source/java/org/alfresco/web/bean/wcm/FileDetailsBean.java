@@ -153,7 +153,8 @@ public class FileDetailsBean extends AVMDetailsBean
       List<Map<String, Object>> wrappers = new ArrayList<Map<String, Object>>(history.size());
       for (AVMNodeDescriptor record : history)
       {
-         Map<String, Object> wrapper = new HashMap<String, Object>(4, 1.0f);
+         Map<String, Object> wrapper = new HashMap<String, Object>(8, 1.0f);
+         
          wrapper.put("version", record.getVersionID());
          wrapper.put("strVersion", Integer.toString(record.getVersionID()));
          wrapper.put("modifiedDate", new Date(record.getModDate()));
@@ -165,6 +166,8 @@ public class FileDetailsBean extends AVMDetailsBean
             wrapper.put("url", DownloadContentServlet.generateBrowserURL(
                         AVMNodeConverter.ToNodeRef(path.getFirst(), path.getSecond()), avmNode.getName()));
          }
+         wrapper.put("fileType16", Utils.getFileTypeImage(avmNode.getName(), true));
+         
          wrappers.add(wrapper);
       }
       return wrappers;

@@ -60,10 +60,10 @@
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px">
-   <h:outputText value="#{msg.submit_comment}"/>
+   <h:outputText value="#{msg.submit_comment}:"/>
    <h:inputText id="comment" value="#{DialogManager.bean.comment}" maxlength="1024" size="35"
         onkeyup="javascript:checkButtonState();" />
-   <h:outputText value="#{msg.submit_snapshotlabel}"/>
+   <h:outputText value="#{msg.submit_snapshotlabel}:"/>
    <h:inputText id="label" value="#{DialogManager.bean.label}" maxlength="1024" size="35"
         onkeyup="javascript:checkButtonState();" />
 </h:panelGrid>

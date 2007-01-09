@@ -66,7 +66,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
    
    private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
    
-   private static final String MSG_LABEL = "label";
+   private static final String MSG_LABEL = "name";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_DATE = "date";
    private static final String MSG_USERNAME = "username";
@@ -204,8 +204,10 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             versions = avmService.getStoreVersions(sandbox, fromDate, toDate);
          }
          Map requestMap = context.getExternalContext().getRequestMap();
-         for (VersionDescriptor item : versions)
+         for (int i=versions.size() - 1; i >= 0; i--) // reverse order
          {
+            VersionDescriptor item = versions.get(i);
+            
             // only display snapshots with a valid tag - others are system generated snapshots
             if (item.getTag() != null && item.getVersionID() != 0)
             {

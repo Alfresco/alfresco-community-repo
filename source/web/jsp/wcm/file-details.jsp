@@ -203,12 +203,12 @@
                                        <f:facet name="header">
                                           <h:outputText value="#{msg.actions}"/>
                                        </f:facet>
-                                       <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
-                                       <a:actionLink id="revert-link" value="#{msg.revert}" style="padding-left:4px" actionListener="#{FileDetailsBean.revertNode}">
+                                       <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" image="#{r.fileType16}" style="padding-right:8px" />
+                                       <a:actionLink id="revert-link" value="#{msg.revert}" actionListener="#{FileDetailsBean.revertNode}" action="dialog:close" image="/images/icons/revert.gif">
                                           <f:param name="version" value="#{r.strVersion}" />
                                        </a:actionLink>
                                     </a:column>
-              
+                                    
                                     <a:dataPager styleClass="pager" />
                                  </a:richList>
                               </a:panel>

@@ -151,33 +151,8 @@ public class ActionLinkRenderer extends BaseRenderer
             }
             linkBuf.append(href);
             
-            // append arguments if specified
-            Map<String, String> actionParams = getParameterComponents(link);
-            if (actionParams != null)
-            {
-               boolean first = (href.indexOf('?') == -1);
-               for (String name : actionParams.keySet())
-               {
-                  String paramValue = actionParams.get(name);
-                  if (first)
-                  {
-                     linkBuf.append('?');
-                     first = false;
-                  }
-                  else
-                  {
-                     linkBuf.append('&');
-                  }
-                  try
-                  {
-                     linkBuf.append(name).append("=").append(URLEncoder.encode(paramValue, "UTF-8"));
-                  }
-                  catch (UnsupportedEncodingException err)
-                  {
-                     // if this happens we have bigger problems than a missing URL parameter...!
-                  }
-               }
-            }
+            // append the href params if any are present
+            renderHrefParams(link, linkBuf, href);
             
             linkBuf.append('"');
             
@@ -287,6 +262,42 @@ public class ActionLinkRenderer extends BaseRenderer
       
       return linkHtml;
    }
+
+   /**
+    * @param link
+    * @param linkBuf
+    * @param href
+    */
+   private void renderHrefParams(UIActionLink link, StringBuilder linkBuf, String href)
+   {
+      // append arguments if specified
+      Map<String, String> actionParams = getParameterComponents(link);
+      if (actionParams != null)
+      {
+         boolean first = (href.indexOf('?') == -1);
+         for (String name : actionParams.keySet())
+         {
+            String paramValue = actionParams.get(name);
+            if (first)
+            {
+               linkBuf.append('?');
+               first = false;
+            }
+            else
+            {
+               linkBuf.append('&');
+            }
+            try
+            {
+               linkBuf.append(name).append("=").append(URLEncoder.encode(paramValue, "UTF-8"));
+            }
+            catch (UnsupportedEncodingException err)
+            {
+               // if this happens we have bigger problems than a missing URL parameter...!
+            }
+         }
+      }
+   }
    
    /**
     * Render ActionLink as menu image and item link
@@ -339,8 +350,12 @@ public class ActionLinkRenderer extends BaseRenderer
                href = context.getExternalContext().getRequestContextPath() + href;
             }
             buf.append("<a href=\"")
-               .append(href)
-               .append('"');
+               .append(href);
+            
+            // append the href params if any are present
+            renderHrefParams(link, buf, href);
+            
+            buf.append('"');
             
             // output href 'target' attribute if supplied
             if (link.getTarget() != null)

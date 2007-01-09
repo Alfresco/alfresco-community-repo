@@ -17,8 +17,10 @@
 package org.alfresco.repo.model.ml;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -212,11 +214,16 @@ public class MultilingualContentServiceImplTest extends TestCase
         
         // Now be sure that we can get the required information using the version service
         VersionHistory mlContainerVersionHistory = versionService.getVersionHistory(mlContainerNodeRef);
-        Version mlContainerRootVersion = mlContainerVersionHistory.getRootVersion();
-        NodeRef mlContainerRootVersionNodeRef = mlContainerRootVersion.getVersionedNodeRef();
-        // Get the root version's children
-        List<ChildAssociationRef> mlContainerRootVersionChildren = nodeService.getChildAssocs(mlContainerRootVersionNodeRef);
-        // Check them
-//        assertEquals("Incorrect number of child nodes for root version", 3, mlContainerRootVersionChildren.size());
+        Collection<Version> mlContainerVersions = mlContainerVersionHistory.getAllVersions();
+        // Loop through and get all the children of each version
+        for (Version mlContainerVersion : mlContainerVersions)
+        {
+            NodeRef versionedMLContainerNodeRef = mlContainerVersion.getFrozenStateNodeRef();
+            // Get all the children
+            Map<Locale, NodeRef> translationsByLocale = multilingualContentService.getTranslations(
+                    versionedMLContainerNodeRef);
+            // Count the children
+            int count = translationsByLocale.size();
+        }
     }
 }

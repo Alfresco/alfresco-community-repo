@@ -16,10 +16,15 @@
  */
 package org.alfresco.service.cmr.ml;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -79,4 +84,31 @@ public interface MultilingualContentService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef", "translationNodeRef"})
     void createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef);
+
+    /**
+     * Gets the set of sibling translations associated with the given <b>cm:mlDocument</b> or
+     * <b>cm:mlContainer</b>.
+     * 
+     * @param translationOfNodeRef      An existing <b>cm:mlDocument</b> or <b>cm:mlContainer</b>
+     * @return                          Returns a map of translation nodes keyed by locale
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationOfNodeRef"})
+    Map<Locale, NodeRef> getTranslations(NodeRef translationOfNodeRef);
+    
+    /**
+     * Given a <b>cm:mlDocument</b>, this method attempts to find the best translation for the given
+     * locale.  If there is not even a
+     * {@link org.alfresco.i18n.I18NUtil#getNearestLocale(Locale, Set) partial match}, then <tt>null</tt>
+     * is returned.
+     * 
+     * @param translationNodeRef        the <b>cm:mlDocument</b>
+     * @param locale                    the target locale
+     * @return Returns                  Returns the best match for the locale, or <tt>null</tt> if there
+     *                                  is no near match.
+     * 
+     * @see #getTranslations(NodeRef)
+     * @see org.alfresco.i18n.I18NUtil#getNearestLocale(Locale, Set)
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef", "locale"})
+    NodeRef getTranslationForLocale(NodeRef translationNodeRef, Locale locale);
 }

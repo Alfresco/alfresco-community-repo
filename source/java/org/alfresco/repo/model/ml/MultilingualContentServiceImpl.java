@@ -16,10 +16,14 @@
  */
 package org.alfresco.repo.model.ml;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -231,6 +235,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return mlContainerNodeRef;
     }
 
+    /** @inheritDoc */
     public NodeRef makeTranslation(NodeRef contentNodeRef, Locale locale)
     {
         NodeRef mlContainerNodeRef = makeTranslationImpl(null, contentNodeRef, locale);
@@ -244,7 +249,8 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         }
         return mlContainerNodeRef;
     }
-
+    
+    /** @inheritDoc */
     public NodeRef addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale)
     {
         NodeRef mlContainerNodeRef = null;
@@ -273,6 +279,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return mlContainerNodeRef;
     }
 
+    /** @inheritDoc */
     public NodeRef getTranslationContainer(NodeRef translationNodeRef)
     {
         NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
@@ -280,6 +287,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         return mlContainerNodeRef;
     }
 
+    /** @inheritDoc */
     public void createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef)
     {
         // Ensure that the translation given is one of the children
@@ -325,5 +333,69 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                     "   Container:       " + mlContainerNodeRef + "\n" +
                     "   Current Version: " + mlContainerVersionLabel);
         }
+    }
+
+    /** @inheritDoc */
+    public Map<Locale, NodeRef> getTranslations(NodeRef translationOfNodeRef)
+    {
+        NodeRef mlContainerNodeRef = null;
+        // Were we given the translation or the container
+        QName typeQName = nodeService.getType(translationOfNodeRef);
+        if (typeQName.equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+        {
+            // We have the container
+            mlContainerNodeRef = translationOfNodeRef;
+        }
+        else
+        {
+            // Get the container
+            mlContainerNodeRef = getOrCreateMLContainer(translationOfNodeRef, false);
+        }
+        // Get all the children
+        List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(
+                mlContainerNodeRef,
+                ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                RegexQNamePattern.MATCH_ALL);
+        // Iterate over them and build the map
+        Map<Locale, NodeRef> nodeRefsByLocale = new HashMap<Locale, NodeRef>(13);
+        for (ChildAssociationRef assocRef : assocRefs)
+        {
+            NodeRef nodeRef = assocRef.getChildRef();
+            // Get the locale
+            Locale locale = (Locale) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
+            // Map it
+            nodeRefsByLocale.put(locale, nodeRef);
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Found all translations: \n" +
+                    "   Node: " + translationOfNodeRef + " (type " + typeQName + ")\n" +
+                    "   Map: " + nodeRefsByLocale);
+        }
+        return nodeRefsByLocale;
+    }
+
+    /** @inheritDoc */
+    public NodeRef getTranslationForLocale(NodeRef translationNodeRef, Locale locale)
+    {
+        // Get the container
+        getOrCreateMLContainer(translationNodeRef, false);
+        // Get all the translations
+        Map<Locale, NodeRef> nodeRefsByLocale = getTranslations(translationNodeRef);
+        // Get the closest matching locale
+        Set<Locale> locales = nodeRefsByLocale.keySet();
+        Locale nearestLocale = I18NUtil.getNearestLocale(locale, locales);
+        NodeRef nearestNodeRef = nodeRefsByLocale.get(nearestLocale);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Found nearest locale: \n" +
+                    "   Given node:   " + translationNodeRef + "\n" +
+                    "   Given locale: " + locale + "\n" +
+                    "   Found node:   " + nearestNodeRef + "\n" +
+                    "   Found locale: " + nearestLocale);
+        }
+        return nearestNodeRef;
     }
 }

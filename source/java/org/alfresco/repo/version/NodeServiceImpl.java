@@ -422,25 +422,28 @@ public class NodeServiceImpl implements NodeService, VersionModel
             NodeRef childRef = childAssocRef.getChildRef();
             NodeRef referencedNode = (NodeRef)this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE); 
             
-            // get the qualified name of the frozen child association and filter out unwanted names
-            QName qName = (QName)this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_QNAME);
-            
-            if (qnamePattern.isMatch(qName) == true)
-            {               
-                // Retrieve the isPrimary and nthSibling values of the forzen child association
-                QName assocType = (QName)this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_TYPE_QNAME);
-                boolean isPrimary = ((Boolean)this.dbNodeService.getProperty(childRef, PROP_QNAME_IS_PRIMARY)).booleanValue();
-                int nthSibling = ((Integer)this.dbNodeService.getProperty(childRef, PROP_QNAME_NTH_SIBLING)).intValue();
+            if (this.dbNodeService.exists(referencedNode) == true)
+            {
+                // get the qualified name of the frozen child association and filter out unwanted names
+                QName qName = (QName)this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_QNAME);
                 
-                // Build a child assoc ref to add to the returned list
-                ChildAssociationRef newChildAssocRef = new ChildAssociationRef(
-                        assocType,
-                        nodeRef, 
-                        qName, 
-                        referencedNode, 
-                        isPrimary, 
-                        nthSibling);
-                result.add(newChildAssocRef);
+                if (qnamePattern.isMatch(qName) == true)
+                {               
+                    // Retrieve the isPrimary and nthSibling values of the forzen child association
+                    QName assocType = (QName)this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_TYPE_QNAME);
+                    boolean isPrimary = ((Boolean)this.dbNodeService.getProperty(childRef, PROP_QNAME_IS_PRIMARY)).booleanValue();
+                    int nthSibling = ((Integer)this.dbNodeService.getProperty(childRef, PROP_QNAME_NTH_SIBLING)).intValue();
+                    
+                    // Build a child assoc ref to add to the returned list
+                    ChildAssociationRef newChildAssocRef = new ChildAssociationRef(
+                            assocType,
+                            nodeRef, 
+                            qName, 
+                            referencedNode, 
+                            isPrimary, 
+                            nthSibling);
+                    result.add(newChildAssocRef);
+                }
             }
         }
         
@@ -506,13 +509,16 @@ public class NodeServiceImpl implements NodeService, VersionModel
             NodeRef childRef = childAssocRef.getChildRef();
             NodeRef referencedNode = (NodeRef)this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE); 
             
-            // get the qualified type name of the frozen child association and filter out unwanted names
-            QName qName = (QName)this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_TYPE_QNAME);
-            
-            if (qnamePattern.isMatch(qName) == true)
-            {               
-                AssociationRef newAssocRef = new AssociationRef(sourceRef, qName, referencedNode);
-                result.add(newAssocRef);
+            if (this.dbNodeService.exists(referencedNode) == true)
+            {
+                // get the qualified type name of the frozen child association and filter out unwanted names
+                QName qName = (QName)this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_TYPE_QNAME);
+                
+                if (qnamePattern.isMatch(qName) == true)
+                {               
+                    AssociationRef newAssocRef = new AssociationRef(sourceRef, qName, referencedNode);
+                    result.add(newAssocRef);
+                }
             }
         }
         

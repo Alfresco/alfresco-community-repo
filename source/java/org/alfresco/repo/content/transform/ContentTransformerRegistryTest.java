@@ -160,7 +160,7 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     {
         AbstractContentTransformer dummyTransformer = new DummyTransformer(
                 mimetypeMap,
-               dummyRegistry,
+                dummyRegistry,
                 MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL,
                 1.0, 12345);
         // set an explicit transformation

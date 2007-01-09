@@ -26,7 +26,7 @@ function handle_upload_helper(fileInputElement,
   form.enctype = "multipart/form-data";
   form.target = iframe.name;
   form.action = contextPath + "/uploadFileServlet";
-  form.appendChild(fileInputElement.cloneNode(true));
+  form.appendChild(fileInputElement);
 
   var id = document.createElement("input");
   id.type = "hidden";

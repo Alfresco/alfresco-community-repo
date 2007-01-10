@@ -49,6 +49,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley
  */
+
 public class SearcherComponentTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

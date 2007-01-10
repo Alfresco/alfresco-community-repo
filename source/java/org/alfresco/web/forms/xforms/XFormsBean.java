@@ -320,18 +320,20 @@ public class XFormsBean
     * @param value the new value
     * @return the list of events that may result through this action
     */
-   public void setRepeatIndex() 
+   public void setRepeatIndeces() 
       throws XFormsException, IOException
    {
       final FacesContext context = FacesContext.getCurrentInstance();
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
-      final String id = (String)requestParameters.get("id");
-      final int index = Integer.parseInt((String)requestParameters.get("index"));
-
-      LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
-      final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      chibaBean.updateRepeatIndex(id, index);
-
+      final String repeatIds = (String)requestParameters.get("repeatIds");
+      LOGGER.debug(this + ".setRepeatIndeces(" + repeatIds + ")");
+      for (String id : repeatIds.split(","))
+      {
+         final int index = Integer.parseInt((String)requestParameters.get(id));
+         LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
+         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+         chibaBean.updateRepeatIndex(id, index);
+      }
       final ResponseWriter out = context.getResponseWriter();
       XMLUtil.print(this.getEventLog(), out);
       out.close();

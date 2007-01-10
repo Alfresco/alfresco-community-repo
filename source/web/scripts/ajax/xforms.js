@@ -239,23 +239,14 @@ dojo.declare("alfresco.xforms.Widget",
                _handleMoveComplete: function() {},
                getRepeatIndices: function()
                {
-                 function RepeatIndexData(repeat, index)
-                 {
-                   this.repeat = repeat;
-                   this.index = index;
-                   this.toString = function()
-                   {
-                     return "{" + this.repeat.id + " = " + this.index + "}";
-                   };
-                 }
                  var result = [];
                  var w = this;
                  while (w.parent)
                  {
                    if (w.parent instanceof alfresco.xforms.Repeat)
                    {
-                     result.push(new RepeatIndexData(w.parent,
-                                                     w.parent.getChildIndex(w)));
+                     result.push(new alfresco.xforms.RepeatIndexData(w.parent,
+                                                                     w.parent.getChildIndex(w)));
                    }
                    w = w.parent;
                  }
@@ -426,6 +417,7 @@ dojo.declare("alfresco.xforms.TextArea",
              {
                initializer: function(xform, xformsNode) 
                {
+                 this.focused = false;
                },
                render: function(attach_point)
                {
@@ -473,6 +465,32 @@ dojo.declare("alfresco.xforms.TextArea",
                {
                  var widget = event.target.widget;
                  widget.xform.setXFormsValue(widget.id, widget.getValue());
+                 this.focused = false;
+               },
+               _tinyMCE_focusHandler: function(event)
+               {
+                 var widget = event.target.widget;
+                 var repeatIndices = widget.getRepeatIndices();
+                 if (repeatIndices.length != 0 && !this.focused)
+                 {
+                   var r = repeatIndices[repeatIndices.length - 1].repeat;
+                   var p = widget;
+                   while (p && p.parent != r)
+                   {
+                     if (p.parent instanceof alfresco.xforms.Repeat)
+                     {
+                       throw new Error("unexpected parent repeat " + p.parent.id);
+                     }
+                     p = p.parent;
+                   }
+                   if (!p)
+                   {
+                     throw new Error("unable to find parent repeat " + r.id +
+                                     " of " + widget.id);
+                   }
+                   repeatIndices[repeatIndices.length - 1].repeat.setFocusedChild(p);
+                 }
+                 this.focused = true;
                },
                _destroy: function()
                {
@@ -503,6 +521,7 @@ dojo.declare("alfresco.xforms.TextArea",
                  var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
                  editorDocument.widget = this;
                  tinyMCE.addEvent(editorDocument, "blur", this._tinyMCE_blurHandler);
+                 tinyMCE.addEvent(editorDocument, "focus", this._tinyMCE_focusHandler);
                }
              });
 
@@ -1069,6 +1088,16 @@ dojo.declare("alfresco.xforms.Group",
                }
              });
 
+alfresco.xforms.RepeatIndexData = function(repeat, index)
+{
+  this.repeat = repeat;
+  this.index = index;
+  this.toString = function()
+  {
+    return "{" + this.repeat.id + " = " + this.index + "}";
+  };
+}
+
 dojo.declare("alfresco.xforms.Repeat",
              alfresco.xforms.Group,
              {
@@ -1321,9 +1350,13 @@ dojo.declare("alfresco.xforms.Repeat",
                },
                setFocusedChild: function(child)
                {
+                 var repeatIndices = this.getRepeatIndices();
                  if (!child)
-                   this.xform.setRepeatIndex(this.id, 0);
-                 else
+                 {
+                   repeatIndices.push(new alfresco.xforms.RepeatIndexData(this, 0));
+                   this.xform.setRepeatIndeces(repeatIndices);
+                 }
+                 else 
                  {
                    var index = this.getChildIndex(child);
                    if (index < 0)
@@ -1334,8 +1367,11 @@ dojo.declare("alfresco.xforms.Repeat",
                    if (this.getSelectedIndex() == -1 && index == 0)
                      this.handleIndexChanged(0);
                    else
+                   {
+                     repeatIndices.push(new alfresco.xforms.RepeatIndexData(this, index));
                      // xforms repeat indexes are 1-based
-                     this.xform.setRepeatIndex(this.id, index + 1);
+                     this.xform.setRepeatIndeces(repeatIndices);
+                   }
                  }
                },
                render: function(attach_point)
@@ -1782,12 +1818,20 @@ dojo.declare("alfresco.xforms.XForm",
                  }
                  return result;
                },
-               setRepeatIndex: function(id, index)
+               setRepeatIndeces: function(repeatIndeces)
                {
-                 dojo.debug("setting repeat index " + index + " on " + id);
+                 dojo.debug("setting repeat indeces [" + repeatIndeces.join(", ") + "]");
+                 var params = { };
+                 params["repeatIds"] = [];
+                 for (var i = 0; i < repeatIndeces.length; i++)
+                 {
+                   params.repeatIds.push(repeatIndeces[i].repeat.id);
+                   params[repeatIndeces[i].repeat.id] = repeatIndeces[i].index + 1;
+                 }
+                 params.repeatIds = params.repeatIds.join(",");
                  var req = create_ajax_request(this,
-                                               "setRepeatIndex",
-                                               { id: id, index: index },
+                                               "setRepeatIndeces",
+                                               params,
                                                function(type, data, evt)
                                                {
                                                  this.target._handleEventLog(data.documentElement);

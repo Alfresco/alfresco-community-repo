@@ -125,7 +125,7 @@
             </td>
             <td>
                </f:verbatim>
-               <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="65" maxlength="1024" />
+               <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="70" maxlength="1024" />
                <h:graphicImage value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />
                <f:verbatim>
             </td>
@@ -163,8 +163,8 @@
                </f:verbatim>
                <%-- Workflow selection list - scrollable DIV area --%>
                <h:panelGroup>
-                  <f:verbatim><div style="height:108px;*height:112px;width:300px;overflow:auto" class='selectListTable'></f:verbatim>
-                  <a:selectList id="workflow-list" multiSelect="false" style="width:276px" itemStyleClass="selectListItem"
+                  <f:verbatim><div style="height:144px;*height:148px;width:100%;overflow:auto" class='selectListTable'></f:verbatim>
+                  <a:selectList id="workflow-list" multiSelect="false" style="width:100%" itemStyleClass="selectListItem"
                         value="#{DialogManager.bean.workflowSelectedValue}">
                      <a:listItems value="#{DialogManager.bean.workflowList}" />
                   </a:selectList>

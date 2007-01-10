@@ -43,7 +43,7 @@ function apply_default_workflow_changed(value)
   		value="#{msg.create_form_select_default_workflow_select_workflow}:" 
   		escape="false" />
     <f:verbatim><div id="workflow-list-div"
-  		     style="margin:5px 0px;height:108px;*height:112px;width:100%;overflow:auto" class="selectListTable"></f:verbatim>
+  		     style="margin:5px 0px;height:144px;*height:148px;width:100%;overflow:auto" class="selectListTable"></f:verbatim>
     <a:selectList id="workflow-list" 
   		  multiSelect="false" 
   		  style="width:100%" 

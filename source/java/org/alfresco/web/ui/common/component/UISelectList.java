@@ -387,7 +387,7 @@ public class UISelectList extends UIInput implements NamingContainer
       
       // label and description text
       String description = item.getDescription();
-      out.write("<td");
+      out.write("<td width=100%");
       Utils.outputAttribute(out, getAttributes().get("itemStyle"), "style");
       Utils.outputAttribute(out, getAttributes().get("itemStyleClass"), "class");
       out.write("><div style='padding:2px'>");

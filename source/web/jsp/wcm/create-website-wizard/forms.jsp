@@ -26,8 +26,8 @@
    <%-- Form selection list - scrollable DIV area --%>
    <h:outputText styleClass="mainSubText" value="#{msg.website_select_form}:" />
    <h:panelGroup>
-      <f:verbatim><div style="height:108px;*height:112px;width:300px;overflow:auto" class='selectListTable'></f:verbatim>
-      <a:selectList id="form-list" activeSelect="true" style="width:276px" itemStyleClass="selectListItem">
+      <f:verbatim><div style="height:144px;*height:148px;width:100%;overflow:auto" class='selectListTable'></f:verbatim>
+      <a:selectList id="form-list" activeSelect="true" style="width:100%" itemStyleClass="selectListItem">
          <a:listItems value="#{WizardManager.bean.formsList}" />
          <h:commandButton value="#{msg.add_to_list_button}" styleClass="dialogControls" actionListener="#{WizardManager.bean.addForm}" />
       </a:selectList>

@@ -49,10 +49,9 @@
             </h:column>
             <h:column>
                <f:facet name="header">
-                  <h:outputText value="#{msg.configure}" />
+                  <h:outputText value="#{msg.output_path_pattern}" />
                </f:facet>
-               <h:outputText value="#{msg.output_path_pattern}:" style="padding-right:4px" />
-               <h:inputText value="#{row.outputPathPattern}" size="65" maxlength="1024" />
+               <h:inputText value="#{row.outputPathPattern}" size="70" maxlength="1024" />
             </h:column>
             <h:column>
                <a:actionLink actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"

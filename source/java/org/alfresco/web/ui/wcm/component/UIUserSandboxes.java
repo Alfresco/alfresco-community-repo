@@ -743,7 +743,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
             out.write("</td><td>");
             String desc = (String)f.getDescription();
             out.write(desc != null ? desc : "");
-            out.write("</td><td>");
+            out.write("</td><td><nobr>");
             // actions
             UIActionLink action = findAction(ACT_CREATE_FORM_CONTENT, userStorePrefix);
             if (action == null)
@@ -768,7 +768,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
             requestMap.put(REQUEST_FORM_REF, f);
             Utils.encodeRecursive(fc, action);
             requestMap.remove(REQUEST_FORM_REF);
-            out.write("</td></tr>");
+            out.write("</nobr></td></tr>");
          }
          
          out.write("</table>");

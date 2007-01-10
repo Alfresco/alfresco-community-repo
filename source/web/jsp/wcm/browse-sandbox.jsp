@@ -141,13 +141,13 @@
                               </a:actionLink>
                            </a:column>
                            
-                           <%-- Description column --%>
+                           <%-- Description column
                            <a:column id="col4" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col4-sort" label="#{msg.description}" value="description" styleClass="header"/>
                               </f:facet>
                               <h:outputText id="col4-txt" value="#{r.description}" />
-                           </a:column>
+                           </a:column>--%>
                            
                            <%-- Creator column --%>
                            <a:column id="col5" style="text-align:left">
@@ -160,17 +160,25 @@
                            <%-- Created Date column --%>
                            <a:column id="col6" style="text-align:left">
                               <f:facet name="header">
-                                 <a:sortLink id="col6-sort" label="#{msg.created}" value="created" styleClass="header"/>
+                                 <a:sortLink id="col6-sort" label="#{msg.created_date}" value="created" styleClass="header"/>
                               </f:facet>
                               <h:outputText id="col6-txt" value="#{r.created}">
                                  <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
                               </h:outputText>
                            </a:column>
                            
+                           <%-- Modifier column --%>
+                           <a:column id="col6_1" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col6_1-sort" label="#{msg.modifier}" value="modifier" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col6_1-txt" value="#{r.modifier}" />
+                           </a:column>
+                           
                            <%-- Modified Date column --%>
                            <a:column id="col7" style="text-align:left">
                               <f:facet name="header">
-                                 <a:sortLink id="col7-sort" label="#{msg.modified}" value="modified" styleClass="header"/>
+                                 <a:sortLink id="col7-sort" label="#{msg.modified_date}" value="modified" styleClass="header"/>
                               </f:facet>
                               <h:outputText id="col7-txt" value="#{r.modified}">
                                  <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
@@ -219,13 +227,13 @@
                               <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
                            </a:column>
                            
-                           <%-- Description column --%>
+                           <%-- Description column
                            <a:column id="col13" style="text-align:left">
                               <f:facet name="header">
                                  <a:sortLink id="col13-sort" label="#{msg.description}" value="description" styleClass="header"/>
                               </f:facet>
                               <h:outputText id="col13-txt" value="#{r.description}" />
-                           </a:column>
+                           </a:column> --%>
                            
                            <%-- Size column --%>
                            <a:column id="col15" style="text-align:left">
@@ -248,17 +256,25 @@
                            <%-- Created Date column --%>
                            <a:column id="col16" style="text-align:left">
                               <f:facet name="header">
-                                 <a:sortLink id="col16-sort" label="#{msg.created}" value="created" styleClass="header"/>
+                                 <a:sortLink id="col16-sort" label="#{msg.created_date}" value="created" styleClass="header"/>
                               </f:facet>
                               <h:outputText id="col16-txt" value="#{r.created}">
                                  <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
                               </h:outputText>
                            </a:column>
                            
+                           <%-- Modifier column --%>
+                           <a:column id="col13" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col13-sort" label="#{msg.modifier}" value="modifier" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col13-txt" value="#{r.modifier}" />
+                           </a:column>
+                           
                            <%-- Modified Date column --%>
                            <a:column id="col17" style="text-align:left">
                               <f:facet name="header">
-                                 <a:sortLink id="col17-sort" label="#{msg.modified}" value="modified" styleClass="header"/>
+                                 <a:sortLink id="col17-sort" label="#{msg.modified_date}" value="modified" styleClass="header"/>
                               </f:facet>
                               <h:outputText id="col17-txt" value="#{r.modified}">
                                  <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />

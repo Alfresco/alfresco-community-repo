@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:pooledtasks">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="wf:submitParallelReviewTask" swimlane="initiator" />
+        <transition name="" to="review" />
+    </start-state>
+
+    <swimlane name="reviewer">
+        <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+           <pooledactors>#{bpm_assignees}</pooledactors>
+        </assignment>
+    </swimlane>
+
+    <task-node name="review">
+        <task name="wf:reviewTask" swimlane="reviewer"/>
+        <transition name="" to="end" />
+    </task-node>
+
+    <end-state name="end" />
+
+</process-definition>

@@ -82,6 +82,7 @@ import org.jbpm.jpdl.par.ProcessArchive;
 import org.jbpm.jpdl.xml.JpdlXmlReader;
 import org.jbpm.jpdl.xml.Problem;
 import org.jbpm.taskmgmt.def.Task;
+import org.jbpm.taskmgmt.exe.PooledActor;
 import org.jbpm.taskmgmt.exe.TaskInstance;
 import org.springframework.util.StringUtils;
 import org.springmodules.workflow.jbpm31.JbpmCallback;
@@ -1369,9 +1370,9 @@ public class JBPMEngine extends BPMEngine
         if (pooledActors != null)
         {
             List<NodeRef> pooledNodeRefs = new ArrayList<NodeRef>(pooledActors.size());
-            for (String pooledActor : (Set<String>)pooledActors)
+            for (PooledActor pooledActor : (Set<PooledActor>)pooledActors)
             {
-                NodeRef pooledNodeRef = mapNameToAuthority(pooledActor);
+                NodeRef pooledNodeRef = mapNameToAuthority(pooledActor.getActorId());
                 if (pooledNodeRef != null)
                 {
                     pooledNodeRefs.add(pooledNodeRef);
@@ -1746,7 +1747,7 @@ public class JBPMEngine extends BPMEngine
             if (isMany)
             {
                 // convert single node ref to list of node refs
-                JBPMNodeList values = new JBPMNodeList(); 
+                JBPMNodeList values = new JBPMNodeList(serviceRegistry); 
                 values.add(new JBPMNode((NodeRef)value, serviceRegistry));
                 value = (Serializable)values;
             }
@@ -1759,7 +1760,7 @@ public class JBPMEngine extends BPMEngine
         {
             if (isMany)
             {
-                JBPMNodeList values = new JBPMNodeList();
+                JBPMNodeList values = new JBPMNodeList(serviceRegistry);
                 for (NodeRef nodeRef : (List<NodeRef>)value)
                 {
                     values.add(new JBPMNode(nodeRef, serviceRegistry));

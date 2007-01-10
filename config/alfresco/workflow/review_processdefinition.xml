@@ -10,7 +10,9 @@
     </start-state>
 
     <swimlane name="reviewer">
-        <assignment actor-id="#{bpm_assignee.properties['cm:userName']}" />
+        <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+            <actor>#{bpm_assignee}</actor>
+        </assignment>    
     </swimlane>
 
     <task-node name="review">

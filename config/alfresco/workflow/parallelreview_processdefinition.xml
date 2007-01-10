@@ -27,13 +27,9 @@
 
     <task-node name="review">
         <task name="wf:reviewTask">
-            <event type="task-create">
-               <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-                   <script>
-                      taskInstance.actorId = reviewer.properties.userName;
-                   </script>
-                </action>
-            </event>
+            <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+               <actor>#{reviewer}</actor>
+            </assignment>
         </task>
         <transition name="reject" to="endreview" />
         <transition name="approve" to="endreview">

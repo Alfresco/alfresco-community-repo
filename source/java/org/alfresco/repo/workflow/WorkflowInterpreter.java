@@ -443,6 +443,17 @@ public class WorkflowInterpreter
                         out.println("id: " + task.id + " , name " + task.name + " , properties: " + task.properties.size() + " , workflow: " + task.path.instance.id + " , path: " + task.path.id);
                     }
                 }
+                
+                else if (command[2].equals("pooled"))
+                {
+                    out.println(AuthenticationUtil.getCurrentUserName() + ":");
+                    List<WorkflowTask> tasks = workflowService.getPooledTasks(AuthenticationUtil.getCurrentUserName());
+                    for (WorkflowTask task : tasks)
+                    {
+                        out.println("id: " + task.id + " , name " + task.name + " , properties: " + task.properties.size() + " , workflow: " + task.path.instance.id + " , path: " + task.path.id);
+                    }
+                }
+
                 else
                 {
                     return "Syntax Error.\n";

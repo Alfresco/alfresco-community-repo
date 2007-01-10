@@ -55,13 +55,9 @@
 
     <task-node name="serialreview">
         <task name="wcmwf:reviewTask">
-           <event type="task-create">
-               <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-                 <script>
-                    taskInstance.actorId = bpm_assignees.get(wcmwf_approveCnt).properties.userName;
-                 </script>
-              </action>
-           </event>
+           <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+              <actor>#{bpm_assignees.get(wcmwf_approveCnt)}</actor>
+           </assignment>
         </task>
 
         <transition name="reject" to="endreview" />
@@ -90,13 +86,9 @@
 
     <task-node name="parallelreview">
         <task name="wcmwf:reviewTask">
-            <event type="task-create">
-               <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-                   <script>
-                      taskInstance.actorId = reviewer.properties["cm:userName"];
-                   </script>
-                </action>
-            </event>
+           <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+              <actor>#{reviewer}</actor>
+           </assignment>
         </task>
         <transition name="reject" to="joinparallelreview" />
         <transition name="approve" to="joinparallelreview">

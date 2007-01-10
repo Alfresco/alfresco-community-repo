@@ -83,7 +83,7 @@ public class NodeListConverter extends SerializableToByteArrayConverter
             BeanFactoryReference factory = jbpmFactoryLocator.useBeanFactory(null);
             ServiceRegistry serviceRegistry = (ServiceRegistry)factory.getFactory().getBean(ServiceRegistry.SERVICE_REGISTRY);
             
-            JBPMNodeList nodes = new JBPMNodeList();
+            JBPMNodeList nodes = new JBPMNodeList(serviceRegistry);
             for (NodeRef nodeRef : nodeRefs)
             {
                 nodes.add(new JBPMNode(nodeRef, serviceRegistry));

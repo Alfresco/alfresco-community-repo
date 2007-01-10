@@ -65,7 +65,7 @@ Produces an html rendition of a press release
 	    <xsl:for-each select="/pr:press_release/pr:include_company_footer">
               <xsl:variable name="cf-id"><xsl:value-of select="."/></xsl:variable>
 	      <!-- load the xml document for the company footer using a built in FormDataFunction -->
-	      <xsl:variable name="cf" select="alfresco:parseXMLDocument($cf-id)"/>
+	      <xsl:variable name="cf" select="alf:parseXMLDocument($cf-id)"/>
               <h2>About <xsl:value-of select="$cf/pr:name"/></h2>
 	      <xsl:for-each select="$cf/pr:body">
 		<p><xsl:value-of select="." disable-output-escaping="yes"/></p>
@@ -79,7 +79,7 @@ Produces an html rendition of a press release
 	    <!-- END MAIN CONTENT -->
 	    <xsl:element name="a">
 	      <xsl:attribute name="href">
-		<xsl:value-of select="fn:replaceAll(string($alfresco:form_instance_data_file_name), '.xml', '.txt')"/>
+		<xsl:value-of select="fn:replaceAll(string($alf:form_instance_data_file_name), '.xml', '.txt')"/>
 	      </xsl:attribute>
 	      <xsl:text>view plain text version</xsl:text>
 	    </xsl:element>
@@ -97,7 +97,7 @@ Produces an html rendition of a press release
 			    select="/pr:press_release/pr:title"/>
 	      <!-- load all press releases into a variable by calling into a form data function -->
 	      <xsl:variable name="all_press_releases" 
-			    select="alfresco:parseXMLDocuments('press-release')"/>
+			    select="alf:parseXMLDocuments('press-release')"/>
 	      <ul>
 		<!-- select a unique set of categories for the first level navigation -->
 		<xsl:for-each select="$all_press_releases[not(pr:category=preceding-sibling::pr:press_release/pr:category)]">
@@ -117,7 +117,7 @@ Produces an html rendition of a press release
 				  <xsl:attribute name="style">font-weight:bold;</xsl:attribute>
 				</xsl:if>
 				<xsl:attribute name="href">
-				  <xsl:value-of select="fn:replaceAll(string(@alfresco:file_name), '.xml', '.html')"/>
+				  <xsl:value-of select="fn:replaceAll(string(@alf:file_name), '.xml', '.html')"/>
 				</xsl:attribute>
 				<xsl:value-of select="pr:title"/>
 			      </xsl:element>
@@ -132,7 +132,7 @@ Produces an html rendition of a press release
 			-->
 			<xsl:element name="a">
 			  <xsl:attribute name="href">
-			    <xsl:value-of select="fn:replaceAll(string(@alfresco:file_name), '.xml', '.html')"/>
+			    <xsl:value-of select="fn:replaceAll(string(@alf:file_name), '.xml', '.html')"/>
 			  </xsl:attribute>
 			  <xsl:value-of select="pr:category"/>
 			</xsl:element>

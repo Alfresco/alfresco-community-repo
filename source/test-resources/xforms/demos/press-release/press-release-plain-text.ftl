@@ -16,7 +16,7 @@ ${press_release.location}--${press_release.launch_date}--
 ${body?trim}
 </#list>
 <#list press_release.include_company_footer as cf>
-<#assign cf_document=alfresco.parseXMLDocument(cf)>
+<#assign cf_document=alf.parseXMLDocument(cf)>
 
 <@show_heading heading="About ${cf_document.name}"/>
   <#list cf_document.body as body>

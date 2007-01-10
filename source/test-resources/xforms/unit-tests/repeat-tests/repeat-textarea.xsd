@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:element name="repeat-textarea">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="zero-to-one" type="xs:anyType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="one-to-one" type="xs:anyType" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="one-to-inf" type="xs:anyType" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="zero-to-inf" type="xs:anyType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

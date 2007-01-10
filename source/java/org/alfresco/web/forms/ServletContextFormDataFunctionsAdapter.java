@@ -17,6 +17,7 @@
 package org.alfresco.web.forms;
 
 import org.alfresco.jndi.AVMFileDirContext;
+import org.alfresco.util.JNDIPath;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import javax.servlet.ServletContext;
@@ -39,13 +40,22 @@ public class ServletContextFormDataFunctionsAdapter
    {
       // The real_path will look something like this:
       //   /alfresco.avm/avm.alfresco.localhost/$-1$alfreco-guest-main:/www/avm_webapps/my_webapp
+      System.err.println("looking up real path for " + path);
       path = this.servletContext.getRealPath(path);
-      
-      // The avm_path to the root of the context will look something like this:
-      //    alfreco-guest-main:/www/avm_webapps/my_webapp
-      path = path.substring(path.indexOf('$', path.indexOf('$') + 1)  + 1);
-      path = path.replace('\\','/');
-      return path;
+      System.err.println("got real path " + path);
+      try
+      {
+         final JNDIPath jndiPath = new JNDIPath(AVMFileDirContext.getAVMFileDirAppBase(), path);
+         // The avm_path to the root of the context will look something like this:
+         //    alfreco-guest-main:/www/avm_webapps/my_webapp
+         
+         return jndiPath.getAvmPath();
+      }
+      catch (Exception e)
+      {
+         System.err.println(e.getMessage());
+         return path;
+      }
    }
 
    public Document parseXMLDocument(final String path)

@@ -9,7 +9,7 @@ function toggleOutputPathPatternHelpVisible()
 <div>An output path pattern is a <a style="color:blue;" href="http://freemarker.sourceforge.net">FreeMarker</a> expression which is used to specify the path to use when saving a generated asset using variable substitution when creating web content.</div>
 <br/>
 <div style="font-weight: bold">Guidelines</div>
-<div>Output path patterns beginning with a leading slash (such as <tt>/${webapp}/content/${name}.xml</tt>) will produce paths rooted at the sandbox.  Those not begining with a leading slash will produce paths relative to the current working directory when the create web content wizard is invoked.</div>
+<div>Output path patterns beginning with a leading slash (such as <tt>/&#36;{webapp}/content/&#36;{name}.xml</tt>) will produce paths rooted at the sandbox.  Those not begining with a leading slash will produce paths relative to the current working directory when the create web content wizard is invoked.</div>
 <br/>
 <div style="font-weight: bold">Variables</div>
 <table border="0" cellspacing="1" cellpadding="1">

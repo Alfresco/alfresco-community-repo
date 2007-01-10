@@ -93,8 +93,8 @@
 		value="2. #{msg.create_form_configure_rendering_engine_templates_step2_desc}" 
 		escape="false" />
   <h:panelGrid id="panel_grid_specify_details"
-               columns="3" cellpadding="3" cellspacing="3" border="0"
-	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
+               columns="4" cellpadding="3" cellspacing="3" border="0"
+	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn,panelGridRequiredImageColumn">
                width="100%">
 
     <h:graphicImage id="required-image-rendering-engine"
@@ -106,6 +106,7 @@
       <f:selectItems id="rendering-engine-choices"
 		     value="#{WizardManager.bean.renderingEngineChoices}"/>
     </h:selectOneRadio>
+    <h:column id="rendering-engine-help"/>
 
     <h:graphicImage id="required-image-name"
                     value="/images/icons/required_field.gif" alt="Required Field" />
@@ -115,6 +116,7 @@
 		 value="#{WizardManager.bean.renderingEngineTemplateName}"
                  maxlength="1024" 
 		 size="35"/>
+    <h:column id="name-help"/>
 
     <h:outputText id="no_graphic_image_title" value=""/>
     <h:outputText id="title-output-text"
@@ -123,6 +125,7 @@
 		 value="#{WizardManager.bean.renderingEngineTemplateTitle}"
                  maxlength="1024" 
 		 size="35"/>
+    <h:column id="title-help"/>
 
     <h:outputText id="no_graphic_image_description" value=""/>
     <h:outputText id="description-output-text"
@@ -131,6 +134,7 @@
 		 value="#{WizardManager.bean.renderingEngineTemplateDescription}"
                  maxlength="1024" 
 		 style="width:100%"/>
+    <h:column id="description-help"/>
 
     <h:graphicImage id="required-image-mimetype"
                     value="/images/icons/required_field.gif" alt="Required Field" />
@@ -142,6 +146,7 @@
       <f:selectItems id="mimetype-choices"
 		     value="#{WizardManager.bean.mimeTypeChoices}" />
     </h:selectOneMenu>
+    <h:column id="mimetype-help"/>
 
     <h:graphicImage id="required-image-output-path-pattern"
                     value="/images/icons/required_field.gif" alt="Required Field" />
@@ -150,6 +155,17 @@
     <h:inputText id="output-path-pattern" 
 		 value="#{WizardManager.bean.outputPathPatternForRendition}"
 		 style="width:100%;"/>
+    <h:graphicImage id="graphic_image__output_path_pattern_help"
+		    value="/images/icons/Help_icon.gif" 
+		    onclick="javascript:toggleOutputPathPatternHelpVisible()"
+		    alt="Required Field" />
+
+    <h:column id="output_path_pattern_help_empty_col_1"/>
+    <h:column id="output_path_pattern_help_empty_col_2"/>
+    <f:verbatim>
+      <jsp:directive.include file="/jsp/wcm/output_path_pattern_help.jsp"/>
+    </f:verbatim>
+    <h:column id="output_path_pattern_help_empty_col_3"/>
   </h:panelGrid>
 
   <h:panelGroup id="step-3-panel-group" styleClass="mainSubText">

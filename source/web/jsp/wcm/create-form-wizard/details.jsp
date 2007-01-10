@@ -129,8 +129,7 @@
 		    target="top"/>
     </h:column>
     
-    <h:outputText id="no_graphic_image_root_element_name"
-		  value=""/>
+    <h:column id="no_graphic_image_root_element_name"/>
     <h:outputText id="output_text_root_element_name" value="#{msg.schema_root_element_name}:"/>
     <h:selectOneMenu id="schema-root-element-name" 
 		     style="width:100%;"
@@ -148,11 +147,11 @@
   <h:outputText id="step-2-text" value="2. #{msg.create_form_form_details_step2_desc}" escape="false" />
   
   <h:panelGrid id="details_panel_grid"
-               columns="3"
+               columns="4"
 	       cellpadding="3" 
 	       cellspacing="3" 
 	       border="0" 
-	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
+	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn,panelGridRequiredImageColumn">
 	       width="100%">
   
     <h:graphicImage id="graphic_image_name" 
@@ -163,20 +162,23 @@
 		 value="#{WizardManager.bean.formName}"
                  maxlength="1024" 
 		 size="35"/>
+    <h:column id="no_graphic_image_name_help"/>
     
-    <h:outputText id="no_graphic_image_title" value=""/>
+    <h:column id="no_graphic_image_title"/>
     <h:outputText id="output_text_title" value="#{msg.title}:"/>
     <h:inputText id="form-title" 
 		 value="#{WizardManager.bean.formTitle}" 
                  maxlength="1024" 
 		 size="35"/>
+    <h:column id="no_graphic_image_title_help"/>
     
-    <h:outputText id="no_graphic_image_description" value=""/>
+    <h:column id="no_graphic_image_description"/>
     <h:outputText id="output_text_description" value="#{msg.description}:"/>
     <h:inputText id="form-description" 
 		 value="#{WizardManager.bean.formDescription}" 
                  maxlength="1024" 
 		 style="width:100%"/>
+    <h:outputText id="no_graphic_image_description_help" value=""/>
     
     <h:graphicImage id="graphic_image_form_instance_data_output_path_pattern" 
 		    value="/images/icons/required_field.gif" 
@@ -186,5 +188,17 @@
     <h:inputText id="form_instance_data_output_path_pattern" 
 		 value="#{WizardManager.bean.outputPathPatternForFormInstanceData}" 
 		 style="width:100%"/>
+    <h:graphicImage id="graphic_image_form_instance_data_output_path_pattern_help"
+		    value="/images/icons/Help_icon.gif" 
+		    onclick="javascript:toggleOutputPathPatternHelpVisible()"
+		    alt="Required Field" />
+
+    <h:column id="output_path_pattern_help_empty_col_1"/>
+    <h:column id="output_path_pattern_help_empty_col_2"/>
+    <f:verbatim>
+      <jsp:directive.include file="/jsp/wcm/output_path_pattern_help.jsp"/>
+    </f:verbatim>
+    <h:column id="output_path_pattern_help_empty_col_3"/>
+
   </h:panelGrid>
 </h:panelGrid>

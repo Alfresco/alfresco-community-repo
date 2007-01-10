@@ -51,7 +51,7 @@
 	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
                width="100%">
     <h:graphicImage id="required_image_rendering_engine_template_file"
-                    value="/images/icons/required_field.gif" alt="Required Field" />
+                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
     <h:outputText id="output_text_rendering_engine_template_file"
                   value="#{msg.rendering_engine_template_file}:"/>
     <h:column id="column_pt">
@@ -98,7 +98,7 @@
                width="100%">
 
     <h:graphicImage id="required-image-rendering-engine"
-                    value="/images/icons/required_field.gif" alt="Required Field" />
+                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
     <h:outputText id="rendering-engine-output-text"
                   value="#{msg.rendering_engine}:"/>
     <h:selectOneRadio id="rendering-engine" 
@@ -109,7 +109,7 @@
     <h:column id="rendering-engine-help"/>
 
     <h:graphicImage id="required-image-name"
-                    value="/images/icons/required_field.gif" alt="Required Field" />
+                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
     <h:outputText id="name-output-text"
                   value="#{msg.name}:"/>
     <h:inputText id="name" 
@@ -137,7 +137,7 @@
     <h:column id="description-help"/>
 
     <h:graphicImage id="required-image-mimetype"
-                    value="/images/icons/required_field.gif" alt="Required Field" />
+                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
     <h:outputText id="mimetype-output-text"
 		  value="#{msg.mimetype_for_renditions}:"/>
     <h:selectOneMenu id="mimetype"
@@ -149,21 +149,20 @@
     <h:column id="mimetype-help"/>
 
     <h:graphicImage id="required-image-output-path-pattern"
-                    value="/images/icons/required_field.gif" alt="Required Field" />
+                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
     <h:outputText id="output-path-pattern-output-text"
                   value="#{msg.output_path_pattern}:"/>
     <h:inputText id="output-path-pattern" 
 		 value="#{WizardManager.bean.outputPathPatternForRendition}"
 		 style="width:100%;"/>
-    <h:graphicImage id="graphic_image__output_path_pattern_help"
-		    value="/images/icons/Help_icon.gif" 
-		    onclick="javascript:toggleOutputPathPatternHelpVisible()"
-		    alt="Required Field" />
+    <h:graphicImage id="graphic_image_output_path_pattern_help"
+		    value="/images/icons/Help_icon.gif" style="cursor:help"
+		    onclick="javascript:toggleOutputPathPatternHelp()" />
 
     <h:column id="output_path_pattern_help_empty_col_1"/>
     <h:column id="output_path_pattern_help_empty_col_2"/>
     <f:verbatim>
-      <jsp:directive.include file="/jsp/wcm/output_path_pattern_help.jsp"/>
+      <jsp:directive.include file="/jsp/wcm/output-path-pattern-help.jsp"/>
     </f:verbatim>
     <h:column id="output_path_pattern_help_empty_col_3"/>
   </h:panelGrid>

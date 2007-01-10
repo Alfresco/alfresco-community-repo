@@ -50,7 +50,7 @@
 </h:panelGrid>
 
 <h:panelGrid columns="3" cellpadding="3" cellspacing="3" border="0">
-   <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.snapshot_label}:"/>
    <h:inputText id="label" value="#{DialogManager.bean.label}" 
                 maxlength="256" size="35" 

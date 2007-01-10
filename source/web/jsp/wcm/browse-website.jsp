@@ -100,13 +100,14 @@
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
-                     <%-- Current Webapp selection --%>
-                     <h:outputText value="#{msg.webapp_current}" styleClass="mainSubTitle" />:&nbsp;
-                     <h:selectOneMenu value="#{AVMBrowseBean.webapp}" onchange="document.forms['website'].submit(); return true;">
-                        <f:selectItems value="#{AVMBrowseBean.webapps}" />
-                     </h:selectOneMenu>
-                     
-                     <div style="padding:4px"></div>
+                     <%-- Current Webapp selection - only displayed if >1 webapps are present --%>
+                     <h:panelGroup rendered="#{AVMBrowseBean.webappsSize > 1}">
+                        <h:outputText value="#{msg.webapp_current}:&nbsp;" styleClass="mainSubTitle" escape="false" />
+                        <h:selectOneMenu value="#{AVMBrowseBean.webapp}" onchange="document.forms['website'].submit(); return true;">
+                           <f:selectItems value="#{AVMBrowseBean.webapps}" />
+                        </h:selectOneMenu>
+                        <f:verbatim><div style="padding:4px"></div></f:verbatim>
+                     </h:panelGroup>
                      
                      <a:panel id="staging-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
                         

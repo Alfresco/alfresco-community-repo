@@ -193,7 +193,7 @@ if (dialog != null && dialog.getFileName() != null)
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
                                     <td align="middle">
-                                       <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+                                       <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
                                     </td>
                                     <td>
                                        <h:outputText id="text5" value="#{msg.name}:" />

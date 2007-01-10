@@ -83,7 +83,7 @@
              columns="1" cellpadding="2" 
 	     style="padding-top: 4px; padding-bottom: 4px;"
              width="100%" rowClasses="wizardSectionHeading">
-   <h:outputText id="panel_grid_1_output_text_1"
+   <h:outputText id="panel_grid_1_out_1"
                  value="&nbsp;#{msg.general_properties}" escape="false" />
 </h:panelGrid>
 
@@ -100,9 +100,9 @@
 	       border="0" 
 	       width="100%"
 	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
-    <h:graphicImage id="graphic_image_schema"
-                    value="/images/icons/required_field.gif" alt="Required Field" />
-    <h:outputText id="output_text_schema"
+    <h:graphicImage id="img_schema"
+                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+    <h:outputText id="out_schema"
                   value="#{msg.schema}:"/>
     <h:column id="column_schema_empty"
 	      rendered="#{empty WizardManager.bean.schemaFileName}">
@@ -116,9 +116,9 @@
     </h:column>
     <h:column id="column_schema_not_empty"
 	      rendered="#{!empty WizardManager.bean.schemaFileName}">
-      <h:outputText id="output_text_schema_name"
+      <h:outputText id="out_schema_name"
                     value="#{WizardManager.bean.schemaFileName}"/>
-      <h:outputText id="output_text_schema_space"
+      <h:outputText id="out_schema_space"
                     value="&nbsp;"
 		    escape="false"/>
       <a:actionLink id="action_link_remove_schema"
@@ -129,8 +129,8 @@
 		    target="top"/>
     </h:column>
     
-    <h:column id="no_graphic_image_root_element_name"/>
-    <h:outputText id="output_text_root_element_name" value="#{msg.schema_root_element_name}:"/>
+    <h:column id="no_img_root_element_name"/>
+    <h:outputText id="out_root_element_name" value="#{msg.schema_root_element_name}:"/>
     <h:selectOneMenu id="schema-root-element-name" 
 		     style="width:100%;"
                      value="#{WizardManager.bean.schemaRootElementName}"
@@ -154,49 +154,48 @@
 	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn,panelGridRequiredImageColumn">
 	       width="100%">
   
-    <h:graphicImage id="graphic_image_name" 
+    <h:graphicImage id="img_name" 
 		    value="/images/icons/required_field.gif" 
-		    alt="Required Field" />
-    <h:outputText id="output_text_name" value="#{msg.name}:"/>
+		    alt="#{msg.required_field}" />
+    <h:outputText id="out_name" value="#{msg.name}:"/>
     <h:inputText id="form-name" 
 		 value="#{WizardManager.bean.formName}"
                  maxlength="1024" 
 		 size="35"/>
-    <h:column id="no_graphic_image_name_help"/>
+    <h:column id="no_img_name_help"/>
     
-    <h:column id="no_graphic_image_title"/>
-    <h:outputText id="output_text_title" value="#{msg.title}:"/>
+    <h:column id="no_img_title"/>
+    <h:outputText id="out_title" value="#{msg.title}:"/>
     <h:inputText id="form-title" 
 		 value="#{WizardManager.bean.formTitle}" 
                  maxlength="1024" 
 		 size="35"/>
-    <h:column id="no_graphic_image_title_help"/>
+    <h:column id="no_img_title_help"/>
     
-    <h:column id="no_graphic_image_description"/>
-    <h:outputText id="output_text_description" value="#{msg.description}:"/>
+    <h:column id="no_img_description"/>
+    <h:outputText id="out_description" value="#{msg.description}:"/>
     <h:inputText id="form-description" 
 		 value="#{WizardManager.bean.formDescription}" 
                  maxlength="1024" 
 		 style="width:100%"/>
-    <h:outputText id="no_graphic_image_description_help" value=""/>
+    <h:outputText id="no_img_description_help" value=""/>
     
-    <h:graphicImage id="graphic_image_form_instance_data_output_path_pattern" 
+    <h:graphicImage id="img_form_instance_data_output_path_pattern" 
 		    value="/images/icons/required_field.gif" 
-		    alt="Required Field" />
-    <h:outputText id="output_text_form_instance_data_output_path_pattern" 
+		    alt="#{msg.required_field}" />
+    <h:outputText id="out_form_instance_data_output_path_pattern" 
 		  value="#{msg.output_path_pattern}:"/>
     <h:inputText id="form_instance_data_output_path_pattern" 
 		 value="#{WizardManager.bean.outputPathPatternForFormInstanceData}" 
 		 style="width:100%"/>
-    <h:graphicImage id="graphic_image_form_instance_data_output_path_pattern_help"
-		    value="/images/icons/Help_icon.gif" 
-		    onclick="javascript:toggleOutputPathPatternHelpVisible()"
-		    alt="Required Field" />
+    <h:graphicImage id="img_form_instance_data_output_path_pattern_help"
+		    value="/images/icons/Help_icon.gif" style="cursor:help"
+		    onclick="javascript:toggleOutputPathPatternHelp()" />
 
     <h:column id="output_path_pattern_help_empty_col_1"/>
     <h:column id="output_path_pattern_help_empty_col_2"/>
     <f:verbatim>
-      <jsp:directive.include file="/jsp/wcm/output_path_pattern_help.jsp"/>
+      <jsp:directive.include file="/jsp/wcm/output-path-pattern-help.jsp"/>
     </f:verbatim>
     <h:column id="output_path_pattern_help_empty_col_3"/>
 

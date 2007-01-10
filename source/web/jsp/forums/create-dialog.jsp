@@ -75,7 +75,7 @@
    <tr>
       <td align="middle">
          </f:verbatim>
-         <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+         <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
          <f:verbatim>
       </td>
       <td>

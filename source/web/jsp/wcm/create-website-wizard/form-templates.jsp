@@ -34,29 +34,37 @@
    
    <f:verbatim><div style='padding:4px'></div></f:verbatim>
    <h:outputText styleClass="mainSubText" value="#{msg.website_selected_templates}:" />
-   <h:dataTable value="#{DialogManager.bean.templatesDataModel}" var="row" 
-                rowClasses="selectedItemsRow,selectedItemsRowAlt"
-                styleClass="selectedItems" headerClass="selectedItemsHeader"
-                cellspacing="0" cellpadding="4" 
-                rendered="#{DialogManager.bean.templatesDataModel.rowCount != 0}">
-      <h:column>
-         <f:facet name="header">
-            <h:outputText value="#{msg.name}" />
-         </f:facet>
-         <h:outputText value="#{row.title}" />
-      </h:column>
-      <h:column>
-         <f:facet name="header">
-            <h:outputText value="#{msg.configure}" />
-         </f:facet>
-         <h:outputText value="#{msg.output_path_pattern}:" style="padding-right:4px" />
-         <h:inputText value="#{row.outputPathPattern}" size="65" maxlength="1024" />
-      </h:column>
-      <h:column>
-         <a:actionLink actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"
-                       value="#{msg.remove}" showLink="false" style="padding-left:6px" />
-      </h:column>
-   </h:dataTable>
+   
+   <h:panelGroup rendered="#{DialogManager.bean.templatesDataModel.rowCount != 0}">
+      <h:panelGrid columns="2" cellspacing="2">
+         <h:dataTable value="#{DialogManager.bean.templatesDataModel}" var="row" 
+                      rowClasses="selectedItemsRow,selectedItemsRowAlt"
+                      styleClass="selectedItems" headerClass="selectedItemsHeader"
+                      cellspacing="0" cellpadding="4">
+            <h:column>
+               <f:facet name="header">
+                  <h:outputText value="#{msg.name}" />
+               </f:facet>
+               <h:outputText value="#{row.title}" />
+            </h:column>
+            <h:column>
+               <f:facet name="header">
+                  <h:outputText value="#{msg.configure}" />
+               </f:facet>
+               <h:outputText value="#{msg.output_path_pattern}:" style="padding-right:4px" />
+               <h:inputText value="#{row.outputPathPattern}" size="65" maxlength="1024" />
+            </h:column>
+            <h:column>
+               <a:actionLink actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"
+                             value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+            </h:column>
+         </h:dataTable>
+         <h:graphicImage value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />
+      </h:panelGrid>
+      <f:verbatim>
+         <jsp:directive.include file="/jsp/wcm/output-path-pattern-help.jsp"/>
+      </f:verbatim>
+   </h:panelGroup>
    
    <a:panel id="no-items" rendered="#{DialogManager.bean.templatesDataModel.rowCount == 0}">
       <h:panelGrid columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
@@ -64,4 +72,5 @@
          <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />
       </h:panelGrid>
    </a:panel>
+   
 </h:panelGrid>

@@ -72,7 +72,7 @@
 </h:panelGrid>
 
 <h:panelGrid columns="3" cellpadding="3" cellspacing="3" border="0">
-   <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.name}:"/>
    <h:inputText id="file-name" value="#{WizardManager.bean.fileName}" 
                 maxlength="1024" size="35" 

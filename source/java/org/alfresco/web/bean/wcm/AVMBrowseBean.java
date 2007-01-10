@@ -108,6 +108,9 @@ public class AVMBrowseBean implements IContextListener
    /** Current webapp context for actions and sandbox view */
    private String webapp;
    
+   /** List of top-level webapp directories for the current web project */
+   private List<SelectItem> webapps;
+   
    /** Sandbox title message */
    private String sandboxTitle = null;
    
@@ -405,14 +408,26 @@ public class AVMBrowseBean implements IContextListener
     */
    public List<SelectItem> getWebapps()
    {
-      String path = AVMConstants.buildSandboxRootPath(getStagingStore());
-      Map<String, AVMNodeDescriptor> folders = this.avmService.getDirectoryListing(-1, path);
-      List<SelectItem> webapps = new ArrayList<SelectItem>(folders.size());
-      for (AVMNodeDescriptor node : folders.values())
+      if (this.webapps == null)
       {
-         webapps.add(new SelectItem(node.getName(), node.getName()));
+         String path = AVMConstants.buildSandboxRootPath(getStagingStore());
+         Map<String, AVMNodeDescriptor> folders = this.avmService.getDirectoryListing(-1, path);
+         List<SelectItem> webapps = new ArrayList<SelectItem>(folders.size());
+         for (AVMNodeDescriptor node : folders.values())
+         {
+            webapps.add(new SelectItem(node.getName(), node.getName()));
+         }
+         this.webapps = webapps;
       }
-      return webapps;
+      return this.webapps;
+   }
+   
+   /**
+    * @return count of the root webapps in the current web project
+    */
+   public int getWebappsSize()
+   {
+      return getWebapps().size();
    }
 
    /**
@@ -478,6 +493,7 @@ public class AVMBrowseBean implements IContextListener
          // clear context when we are browsing a new website
          this.lastWebsiteId = this.navigator.getCurrentNodeId();
          this.webapp = null;
+         this.webapps = null;
          this.webProject = null;
       }
       return this.navigator.getCurrentNode();
@@ -987,6 +1003,9 @@ public class AVMBrowseBean implements IContextListener
       
       this.files = null;
       this.folders = null;
+      
+      // clear webapp listing as we may have returned from the Create Webapp dialog
+      this.webapps = null;
    }
    
    /**

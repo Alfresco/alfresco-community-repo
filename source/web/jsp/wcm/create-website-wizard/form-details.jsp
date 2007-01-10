@@ -53,16 +53,18 @@
       <f:verbatim>
       <table cellpadding="3" cellspacing="2" border="0" width="100%">
          <tr>
-            <td colspan="3" class="wizardSectionHeading">
+            <td class="wizardSectionHeading">
                </f:verbatim>
                <h:outputText value="#{msg.properties}"/>
                <f:verbatim>
             </td>
          </tr>
+      </table>
+      <table cellpadding="3" cellspacing="2" border="0">
          <tr>
-            <td align="middle">
+            <td align="left" width=16>
                </f:verbatim>
-               <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+               <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
                <f:verbatim>
             </td>
             <td>
@@ -98,29 +100,40 @@
       <f:verbatim>
       <table cellpadding="3" cellspacing="2" border="0" width="100%">
          <tr>
-            <td colspan="2" class="wizardSectionHeading">
+            <td class="wizardSectionHeading">
                </f:verbatim>
                <h:outputText value="#{msg.website_save_location}"/>
                <f:verbatim>
             </td>
          </tr>
          <tr>
-            <td colspan="2">
+            <td>
                </f:verbatim>
                <h:outputText value="#{msg.website_save_location_info}:" />
                <f:verbatim>
             </td>
          </tr>
+      </table>
+      <table cellpadding="3" cellspacing="2" border="0">
          <tr>
             <td>
+               <nobr>
                </f:verbatim>
                <h:outputText value="#{msg.output_path_pattern}:"/>
                <f:verbatim>
+               </nobr>
             </td>
             <td>
                </f:verbatim>
-                <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="65" maxlength="1024" />
+               <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="65" maxlength="1024" />
+               <h:graphicImage value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />
                <f:verbatim>
+            </td>
+         </tr>
+         <tr>
+            <td></td>
+            <td>
+               <jsp:directive.include file="/jsp/wcm/output-path-pattern-help.jsp"/>
             </td>
          </tr>
       </table>

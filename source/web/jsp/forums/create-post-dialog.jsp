@@ -24,7 +24,7 @@
    <h:outputText value="#{msg.message}" />
    <h:panelGrid cellpadding="2" cellspacing="6" border="0" columns="3" 
                 columnClasses="alignTop, alignTop, alignTop">
-      <h:graphicImage value="/images/icons/required_field.gif" alt="Required Field" />
+      <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
       <h:outputText value="#{msg.message}:" />
       <h:inputTextarea id="message" value="#{DialogManager.bean.content}" rows="6" cols="70" 
                           onkeyup="checkButtonState();" onchange="checkButtonState();" />

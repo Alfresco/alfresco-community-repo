@@ -175,6 +175,10 @@ ok> show my completed
 
     List tasks completed by the currently selected user. 
 
+ok> show my pooled
+
+    List tasks in a pool for the currently selected user.
+    
 ok> show tasks [<pathId>] 
 
     List tasks associated with the specified workflow <pathId>.  If <pathId> is 

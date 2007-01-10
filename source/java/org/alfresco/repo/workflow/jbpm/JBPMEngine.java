@@ -1747,7 +1747,7 @@ public class JBPMEngine extends BPMEngine
             if (isMany)
             {
                 // convert single node ref to list of node refs
-                JBPMNodeList values = new JBPMNodeList(serviceRegistry); 
+                JBPMNodeList values = new JBPMNodeList(); 
                 values.add(new JBPMNode((NodeRef)value, serviceRegistry));
                 value = (Serializable)values;
             }
@@ -1760,7 +1760,7 @@ public class JBPMEngine extends BPMEngine
         {
             if (isMany)
             {
-                JBPMNodeList values = new JBPMNodeList(serviceRegistry);
+                JBPMNodeList values = new JBPMNodeList();
                 for (NodeRef nodeRef : (List<NodeRef>)value)
                 {
                     values.add(new JBPMNode(nodeRef, serviceRegistry));

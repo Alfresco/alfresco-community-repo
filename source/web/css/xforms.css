@@ -78,6 +78,7 @@
 .xformsFilePicker
 {
 	width: 100%;
+	max-width: 400px;
 }
 
 .xformsFilePickerStatus
@@ -94,11 +95,11 @@
 .xformsFilePickerHeader
 {
 	position: relative;
-	width: 100%;
 	height: 30px;
 	line-height: 30px;
-	background-color: lightgrey;
 	padding-left: 2px;
+	background-color: #e3effa;
+	border: 1px solid #67a4e6;
 }
 
 .xformsFilePickerHeaderMenuTrigger
@@ -111,10 +112,19 @@
 
 .xformsFilePickerFooter
 {
-	background-color: lightgrey;
 	text-align: center;
 	height: 30px;
 	line-height: 30px;
+	background-color: #e3effa;
+	border: 1px solid #67a4e6;
+}
+
+.xformsFilePickerFileList
+{
+	overflow-y: auto;
+	background-color: white;
+	border-left: 1px solid #67a4e6;
+	border-right: 1px solid #67a4e6;
 }
 
 .xformsFilePickerRow
@@ -126,21 +136,18 @@
 
 .xformsFilePickerAddContent
 {
-	background-color: lightgrey;
-	position: absolute;
-	left: 10%;
-	right: 10%;
-	width: 80%;
-	margin-left: 4px;
-	line-height: 20px;
+	background-color: #ffffcc;
+	position: relative;
+	height: 30px;
+	line-height: 30px;
 }
 
 .xformsFilePickerParentPathMenu
 {
 	position: absolute;
-	background-color: lightgrey;
+	background-color: #fefefe;
 	border-style: outset;
-	border-width: 1px;
+	border: 1px solid #67a4e6;
 	line-height: 20px;
 	min-width: 100px;
 }

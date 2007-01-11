@@ -2428,9 +2428,9 @@ _showPicker: function(data)
   dojo.html.setClass(headerDiv, "xformsFilePickerHeader");
   this.node.appendChild(headerDiv);
   headerDiv.appendChild(d.createTextNode("In: "));
-
   this.headerMenuTriggerLink = d.createElement("a");
   this.headerMenuTriggerLink.filePickerWidget = this;
+  this.headerMenuTriggerLink.style.textDecoration = "none";
   this.headerMenuTriggerLink.setAttribute("href", "javascript:void(0)");
   this.headerMenuTriggerLink.setAttribute("webappRelativePath", currentPath);
   dojo.html.setClass(this.headerMenuTriggerLink, "xformsFilePickerHeaderMenuTrigger");
@@ -2440,6 +2440,7 @@ _showPicker: function(data)
                      "onmouseover",
                      function(event)
                      {
+                       event.currentTarget.style.backgroundColor = "#fefefe";
                        event.currentTarget.style.borderStyle = "inset";
                      });
   dojo.event.connect(this.headerMenuTriggerLink,
@@ -2449,6 +2450,8 @@ _showPicker: function(data)
                        var w = event.currentTarget.filePickerWidget;
                        if (!w.parentPathMenu)
                        {
+                         event.currentTarget.style.backgroundColor = 
+                           event.currentTarget.parentNode.style.backgroundColor;
                          event.currentTarget.style.borderStyle = "solid";
                        }
                      });
@@ -2539,6 +2542,7 @@ _showPicker: function(data)
   headerDiv.appendChild(headerRightDiv);
 
   this.contentDiv = d.createElement("div");
+  dojo.html.setClass(this.contentDiv, "xformsFilePickerFileList");
   this.node.appendChild(this.contentDiv);
 
   var footerDiv = d.createElement("div");
@@ -2563,7 +2567,7 @@ _showPicker: function(data)
                                   (this.statusDiv ? this.statusDiv.offsetHeight : 0) -
                                   footerDiv.offsetHeight -
                                   headerDiv.offsetHeight - 10) + "px";
-  this.contentDiv.style.overflowY = "auto";
+//  this.contentDiv.style.overflowY = "auto";
   var childNodes = data.getElementsByTagName("child-node");
   for (var i = 0; i < childNodes.length; i++)
   {
@@ -2652,26 +2656,34 @@ _showAddContentPanel: function(addContentLink, currentPath)
 {
   var d = this.node.ownerDocument;
   this.addContentDiv = d.createElement("div");
-  this.contentDiv.style.opacity = .3;
   dojo.html.setClass(this.addContentDiv, "xformsFilePickerAddContent");
-  this.node.insertBefore(this.addContentDiv, this.contentDiv);
 
+  if (this.contentDiv.firstChild)
+  {
+    this.contentDiv.insertBefore(this.addContentDiv, this.contentDiv.firstChild);
+  }
+  else
+  {
+    this.contentDiv.appendChild(this.addContentDiv);
+  }
   var e = d.createElement("div");
   e.style.marginLeft = "4px";
   this.addContentDiv.appendChild(e);
-  e.appendChild(d.createTextNode("Upload a file to " + currentPath + " :"));
+  e.appendChild(d.createTextNode("Upload: "));
 
   var fileInputDiv = d.createElement("div");
   this.addContentDiv.appendChild(fileInputDiv);
-  fileInput = d.createElement("input");
+  var fileInput = d.createElement("input");
   fileInput.type = "file";
   fileInput.widget = this;
   fileInput.name = this.node.getAttribute("id") + "_file_input";
   fileInput.size = "35";
   fileInput.setAttribute("webappRelativePath", currentPath);
   fileInputDiv.appendChild(fileInput);
+  fileInputDiv.style.position = "absolute";
+  fileInputDiv.style.right = "10px";
+  fileInputDiv.style.top = (.5 * this.addContentDiv.offsetHeight) - (.5 * fileInputDiv.offsetHeight) + "px";
 
-  fileInput.style.margin = "4px 4px";
   dojo.event.connect(fileInput, 
                      "onchange", 
                      function(event)
@@ -2758,6 +2770,12 @@ _openParentPathMenu: function(target, path)
     parentNodes = path.split("/");
     parentNodes[0] = "/";
   }
+  
+  var pathTextDiv = d.createElement("div");
+  pathTextDiv.style.fontWeight = "bold";
+  pathTextDiv.style.paddingLeft = "5px";
+  pathTextDiv.appendChild(d.createTextNode("Path"));
+  this.parentPathMenu.appendChild(pathTextDiv);
   var currentPathNodes = [];
   for (var i = 0; i < parentNodes.length; i++)
   {
@@ -2770,13 +2788,9 @@ _openParentPathMenu: function(target, path)
     parentNodeDiv.setAttribute("webappRelativePath", path);
     this.parentPathMenu.appendChild(parentNodeDiv);
     parentNodeDiv.style.display = "block";
-    parentNodeDiv.style.paddingLeft = i * 16 + "px";
-    parentNodeDiv.style.border = "1px solid lightgrey";
+    parentNodeDiv.style.paddingLeft = (i * 16) + parseInt(pathTextDiv.style.paddingLeft) + "px";
+    parentNodeDiv.style.paddingRight = parseInt(pathTextDiv.style.paddingLeft) + "px";
     parentNodeDiv.style.whiteSpace = "nowrap";
-    if (i == parentNodes.length - 1)
-    {
-      parentNodeDiv.style.fontWeight = "bold";
-    }
 
     var parentNodeImage = d.createElement("img");
     parentNodeImage.align = "absmiddle";
@@ -2785,18 +2799,6 @@ _openParentPathMenu: function(target, path)
     parentNodeImage.setAttribute("src", alfresco_xforms_constants.WEBAPP_CONTEXT + "/images/icons/space_small.gif");
     parentNodeDiv.appendChild(parentNodeImage);
     parentNodeDiv.appendChild(d.createTextNode(path));
-    dojo.event.connect(parentNodeDiv,
-                       "onmouseover",
-                       function(event)
-                       {
-                         event.currentTarget.style.borderStyle = "inset";
-                       });
-    dojo.event.connect(parentNodeDiv,
-                       "onmouseout",
-                       function(event)
-                       {
-                         event.currentTarget.style.borderStyle = "solid";
-                       });
     dojo.event.connect(parentNodeDiv,
                        "onclick",
                        function(event)

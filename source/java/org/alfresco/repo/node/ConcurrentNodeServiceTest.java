@@ -40,7 +40,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.apache.lucene.index.IndexWriter;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -145,6 +144,7 @@ public class ConcurrentNodeServiceTest extends TestCase
             try
             {
                 runner.join();
+                System.out.println("Query thread has waited for " + runner.getName());
             }
             catch (InterruptedException e)
             {
@@ -152,6 +152,9 @@ public class ConcurrentNodeServiceTest extends TestCase
             }
         }
 
+        // Make sure there is no pending commit we just hit
+        Thread.sleep(20000);
+        
         SearchService searcher = (SearchService) ctx.getBean(ServiceRegistry.SEARCH_SERVICE.getLocalName());
         assertEquals(2 * ((count * repeats) + 1), searcher.selectNodes(rootNodeRef, "/*", null,
                 getNamespacePrefixReolsver(""), false).size());
@@ -185,6 +188,7 @@ public class ConcurrentNodeServiceTest extends TestCase
             
             if (waiter != null)
             {
+                System.out.println("Starting " + waiter.getName());
                 waiter.start();
             }
             try
@@ -207,9 +211,11 @@ public class ConcurrentNodeServiceTest extends TestCase
                 try
                 {
                     waiter.join();
+                    System.out.println("Thread " + this.getName() + " has waited for " +(waiter == null ? "null" : waiter.getName()));
                 }
                 catch (InterruptedException e)
                 {
+                    System.err.println(e);
                 }
             }
         }

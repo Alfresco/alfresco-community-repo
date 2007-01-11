@@ -16,6 +16,9 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import net.sf.acegisecurity.AuthenticationManager;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -66,7 +69,15 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
         {
-            throw new AuthenticationException(ae.getMessage(), ae);
+            // This is a bit gross, I admit, but when LDAP is 
+            // configured ae, above, is non-serializable and breaks
+            // remote authentication.
+            StringWriter sw = new StringWriter();
+            PrintWriter out = new PrintWriter(sw);
+            out.println(ae.toString());
+            ae.printStackTrace(out);
+            out.close();
+            throw new AuthenticationException(sw.toString());
         }
     }
 

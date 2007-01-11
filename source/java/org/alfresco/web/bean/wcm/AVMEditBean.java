@@ -292,6 +292,11 @@ public class AVMEditBean
     */
    public void setFormProcessorSession(final FormProcessor.Session formProcessorSession)
    {
+      if (this.formProcessorSession != null &&
+          this.formProcessorSession != formProcessorSession)
+      {
+         this.formProcessorSession.destroy();
+      }
       this.formProcessorSession = formProcessorSession;
    }
 
@@ -354,8 +359,11 @@ public class AVMEditBean
              MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
          {
             // make content available to the editing screen
-            setEditorOutput(reader.getContentString());
-            
+            this.setEditorOutput(reader.getContentString());
+            this.setFormProcessorSession(null);
+            this.instanceDataDocument = null;
+            this.form = null;
+
             // navigate to appropriate screen
             outcome = ((MimetypeMap.MIMETYPE_XML.equals(mimetype) && 
                         this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
@@ -546,8 +554,8 @@ public class AVMEditBean
       clearUpload();
       setDocumentContent(null);
       setEditorOutput(null);
+      this.setFormProcessorSession(null);
       this.instanceDataDocument = null;
-      this.formProcessorSession = null;
       this.form = null;
    }
    

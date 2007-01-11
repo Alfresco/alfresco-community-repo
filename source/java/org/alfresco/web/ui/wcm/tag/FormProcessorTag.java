@@ -25,12 +25,12 @@ import org.alfresco.web.ui.common.tag.BaseComponentTag;
 /**
  * @author Ariel Backenroth
  */
-public class FormProcessorTag extends BaseComponentTag
+public class FormProcessorTag 
+   extends BaseComponentTag
 {
-   
-   private String formInstanceData;
-   private String form;
-   private String formProcessorSession;
+   private String formInstanceData = null;
+   private String form = null;
+   private String formProcessorSession = null;
 
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()

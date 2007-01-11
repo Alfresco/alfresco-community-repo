@@ -25,18 +25,21 @@ import javax.faces.el.ValueBinding;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 
 /**
  * @author Ariel Backenroth
  */
-public class UIFormProcessor extends SelfRenderingComponent
+public class UIFormProcessor 
+   extends SelfRenderingComponent
 {
-   private Document formInstanceData = null;
-   
-   private Form form = null;
-   private FormProcessor.Session formProcessorSession;
+   private static final Log LOGGER = LogFactory.getLog(UIFormProcessor.class);
 
+   private Document formInstanceData = null;
+   private Form form = null;
+   private FormProcessor.Session formProcessorSession = null;
    
    // ------------------------------------------------------------------------------
    // Component implementation
@@ -61,14 +64,14 @@ public class UIFormProcessor extends SelfRenderingComponent
    
    public Object saveState(FacesContext context)
    {
-      final Object values[] = {
+      return new Object[] 
+      {
          // standard component attributes are saved by the super class
          super.saveState(context),
          this.formInstanceData,
          this.form,
          this.formProcessorSession
       };
-      return values;
    }
 
    /**
@@ -86,21 +89,23 @@ public class UIFormProcessor extends SelfRenderingComponent
       final ResponseWriter out = context.getResponseWriter();
       final Form form = this.getForm();
       final FormProcessor fp = form.getFormProcessors().get(0);
+      final FormProcessor.Session fps = this.getFormProcessorSession();
+      final Document fid = this.getFormInstanceData();
       try
       {
-         if (this.getFormProcessorSession() != null &&
-             this.getFormProcessorSession().getForm().equals(this.getForm()))
+         if (fps != null && fps.getFormInstanceData().equals(fid))
          {
-            fp.process(this.getFormProcessorSession(), out);
+            LOGGER.debug("reusing form processor session " + fps);
+            fp.process(this.formProcessorSession, out);
          }
          else
          {
-            if (this.getFormProcessorSession() != null)
+            if (fps != null)
             {
-               this.getFormProcessorSession().destroy();
                this.setFormProcessorSession(null);
             }
-            this.setFormProcessorSession(fp.process(this.getFormInstanceData(),
+            LOGGER.debug("creating a new session for " + fid);
+            this.setFormProcessorSession(fp.process(fid,
                                                     form,
                                                     out));
          }
@@ -127,7 +132,6 @@ public class UIFormProcessor extends SelfRenderingComponent
       {
          this.formInstanceData = (Document)vb.getValue(getFacesContext());
       }
-      
       return this.formInstanceData;
    }
    
@@ -153,7 +157,6 @@ public class UIFormProcessor extends SelfRenderingComponent
       {
          this.form = (Form)vb.getValue(getFacesContext());
       }
-      
       return this.form;
    }
    
@@ -180,7 +183,7 @@ public class UIFormProcessor extends SelfRenderingComponent
          this.formProcessorSession = (FormProcessor.Session)
             vb.getValue(getFacesContext());
       }
-      
+      LOGGER.debug("getFormProcessorSession() = " + this.formProcessorSession);      
       return this.formProcessorSession;
    }
 
@@ -191,11 +194,15 @@ public class UIFormProcessor extends SelfRenderingComponent
     */
    public void setFormProcessorSession(final FormProcessor.Session formProcessorSession)
    {
+      if (formProcessorSession == null && this.formProcessorSession != null)
+      {
+         this.formProcessorSession.destroy();
+      }
+      this.formProcessorSession = formProcessorSession;
       final ValueBinding vb = this.getValueBinding("formProcessorSession");
       if (vb != null)
       {
          vb.setValue(getFacesContext(), formProcessorSession);
       }
-      this.formProcessorSession = formProcessorSession;
    }
 }

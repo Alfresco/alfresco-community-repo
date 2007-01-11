@@ -62,8 +62,10 @@ import org.chiba.xml.xforms.XFormsElement;
 import org.chiba.xml.xforms.connector.http.AbstractHTTPConnector;
 import org.chiba.xml.xforms.core.Instance;
 import org.chiba.xml.xforms.core.ModelItem;
+import org.chiba.xml.xforms.core.Model;
+import org.chiba.xml.xforms.core.UpdateHandler;
 import org.chiba.xml.xforms.exception.XFormsException;
-import org.chiba.xml.xforms.ui.BoundElement;
+import org.chiba.xml.xforms.ui.RepeatItem;
 import org.chiba.xml.xforms.ui.Upload;
 import org.chiba.xml.ns.NamespaceConstants;
 import org.springframework.util.FileCopyUtils;
@@ -211,8 +213,9 @@ public class XFormsBean
       {
          public void handleEvent(final Event e)
          {
-            XFormsBean.LOGGER.debug("received event " + e);
-            XFormsBean.this.xformsSession.eventLog.add((XMLEvent)e);
+            final XMLEvent xmle = (XMLEvent)e;
+            XFormsBean.LOGGER.debug("received event " + xmle.getType() + ": " + xmle);
+            XFormsBean.this.xformsSession.eventLog.add(xmle);
          }
       };
       // interaction events my occur during init so we have to register before
@@ -407,8 +410,8 @@ public class XFormsBean
       final String toItemId = (String)requestParameters.get("toItemId");
       LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      this.swapRepeatItems(chibaBean.getContainer().lookup(fromItemId), 
-                           chibaBean.getContainer().lookup(toItemId));
+      this.swapRepeatItems((RepeatItem)chibaBean.getContainer().lookup(fromItemId), 
+                           (RepeatItem)chibaBean.getContainer().lookup(toItemId));
 
       final ResponseWriter out = context.getResponseWriter();
       XMLUtil.print(this.getEventLog(), out);
@@ -578,39 +581,59 @@ public class XFormsBean
       out.close();
    }
 
-   private void swapRepeatItems(final XFormsElement from,
-                                final XFormsElement to)
+   private void swapRepeatItems(final RepeatItem from,
+                                final RepeatItem to)
+      throws XFormsException
    {
       LOGGER.debug("swapping repeat item " + from + " with " + to);
 
-      if (from instanceof BoundElement && to instanceof BoundElement)
+      LOGGER.debug("from instance id  " + from.getInstanceId());
+      final Model model = from.getModel();
+      final Instance instance = model.getInstance(from.getInstanceId());
+      assert instance == to.getModel().getInstance(to.getInstanceId());
+      final String fromLocationPath = from.getLocationPath();
+      final String toLocationPath = to.getLocationPath();
+      
+      if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("from instance id  " + ((BoundElement)from).getInstanceId());
-         final Instance instance = from.getModel().getInstance(((BoundElement)from).getInstanceId());
-         assert instance == to.getModel().getInstance(((BoundElement)to).getInstanceId());
+         LOGGER.debug("from {id: " + from.getId() + ",position: " + from.getPosition() +
+                      "} " + fromLocationPath + 
+                      "=" + instance.getModelItem(fromLocationPath).getValue());
+         LOGGER.debug("to {id:" + to.getId() + ",position: " + to.getPosition() +
+                      "} " + toLocationPath + 
+                      "=" + instance.getModelItem(toLocationPath).getValue());
+      }
 
-         final String fromLocationPath = ((BoundElement)from).getLocationPath();
-         final ModelItem fromModelItem = instance.getModelItem(fromLocationPath);
+      String beforeLocation = toLocationPath;
+      if (from.getPosition() < to.getPosition())
+      {
+         final RepeatItem beforeItem = to.getRepeat().getRepeatItem(to.getPosition() + 1);
+         beforeLocation = (beforeItem != null
+                           ? beforeItem.getLocationPath()
+                           : to.getRepeat().getLocationPath().replaceAll("\\[position\\(\\)[\\s]*!=[\\s]*last\\(\\)]$",
+                                                                         "[position()=last()]"));
+      }
+      LOGGER.debug("inserting node before " + beforeLocation);
+      instance.insertNode(fromLocationPath, beforeLocation);
 
-         final String toLocationPath = ((BoundElement)to).getLocationPath();
-         final ModelItem toModelItem = instance.getModelItem(toLocationPath);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REBUILD, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.RECALCULATE, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REVALIDATE, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REFRESH, null);
 
-         LOGGER.debug("from[" + from.getId() + "] " + fromLocationPath + "=" + fromModelItem.getValue());
-         LOGGER.debug("to[" + to.getId() + "] " + toLocationPath + "=" + toModelItem.getValue());
+      LOGGER.debug("deleting from " + from.getLocationPath());
+      // need to reload from location path since it has moved
+      instance.deleteNode(from.getLocationPath());
 
-         final Node fromNode = (Node)fromModelItem.getNode();
-         final Node toNode = (Node)toModelItem.getNode();
-         Node swapNode = fromNode;
-         fromModelItem.setNode(toNode);
-         toModelItem.setNode(swapNode);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REBUILD, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.RECALCULATE, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REVALIDATE, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REFRESH, null);
 
-         final Node parentNode = fromNode.getParentNode();
-         assert parentNode.equals(toNode.getParentNode());
-
-         swapNode = parentNode.getOwnerDocument().createTextNode("swap");
-         parentNode.replaceChild(swapNode, fromNode);
-         parentNode.replaceChild(fromNode, toNode);
-         parentNode.replaceChild(toNode, swapNode);
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("swapped model data, instance data after manipulation:\n " + 
+                      XMLUtil.toString(instance.getInstanceDocument()));
       }
    }
 

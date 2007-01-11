@@ -235,8 +235,6 @@ dojo.declare("alfresco.xforms.Widget",
                {
                  dojo.debug("destroying " + this.id);
                },
-               _handlePrepareForMove: function() {},
-               _handleMoveComplete: function() {},
                getRepeatIndices: function()
                {
                  var result = [];
@@ -500,14 +498,6 @@ dojo.declare("alfresco.xforms.TextArea",
                    dojo.debug("removing mce control " + this.id);
                    tinyMCE.removeMCEControl(this.id);
                  }
-               },
-               _handlePrepareForMove: function()
-               {
-                 this._removeTinyMCE();
-               },
-               _handleMoveComplete: function()
-               {
-                 this._createTinyMCE();
                },
                _removeTinyMCE: function()
                {
@@ -964,22 +954,6 @@ dojo.declare("alfresco.xforms.Group",
                    this.children[i]._destroy();
                  }
                },
-               _handlePrepareForMove: function()
-               {
-                 this.inherited("_handlePrepareForMove", [ ]);
-                 for (var i = 0; i < this.children.length; i++)
-                 {
-                   this.children[i]._handlePrepareForMove();
-                 }
-               },
-               _handleMoveComplete: function()
-               {
-                 this.inherited("_handleMoveComplete", [ ]);
-                 for (var i = 0; i < this.children.length; i++)
-                 {
-                   this.children[i]._handleMoveComplete();
-                 }
-               },
                setReadonly: function(readonly)
                {
                  this.inherited("setReadonly", [ readonly ]);
@@ -1322,19 +1296,6 @@ dojo.declare("alfresco.xforms.Repeat",
                             ", " + toIndex + ")");
                  var fromChild = this.getChildAt(fromIndex);
                  var toChild = this.getChildAt(toIndex);
-                 fromChild._handlePrepareForMove();
-                 toChild._handlePrepareForMove();
-                 var swapNode = document.createElement("div");
-                 this.domNode.childContainerNode.replaceChild(swapNode, fromChild.domContainer);
-                 this.domNode.childContainerNode.replaceChild(fromChild.domContainer, toChild.domContainer);
-                 this.domNode.childContainerNode.replaceChild(toChild.domContainer, swapNode);
-                 fromChild._handleMoveComplete();
-                 toChild._handleMoveComplete();
-                 this.children[fromIndex] = toChild;
-                 this.children[toIndex] = fromChild;
-                 this._selectedIndex = toIndex;
-                 this._updateDisplay();
-
                  var req = create_ajax_request(this.xform,
                                                "swapRepeatItems",
                                                {
@@ -1347,6 +1308,13 @@ dojo.declare("alfresco.xforms.Repeat",
                                                  this.target._handleEventLog(data.documentElement)
                                                });
                  send_ajax_request(req);
+                 var anim = dojo.lfx.html.fadeOut(fromChild.domContainer, 500);
+                 anim.onEnd = function()
+                   {
+                     fromChild.domContainer.style.display = "none";
+                   };
+                 anim.play();
+
                },
                setFocusedChild: function(child)
                {
@@ -1481,7 +1449,6 @@ dojo.declare("alfresco.xforms.Trigger",
              {
                initializer: function(xform, xformsNode) 
                {
-//           this.inherited("initializer", [ xform, xformsNode ]);
                },
                isValidForSubmit: function()
                {
@@ -1502,17 +1469,11 @@ dojo.declare("alfresco.xforms.Trigger",
                },
                getAction: function()
                {
-                 for (var i = 0; i < this.xformsNode.childNodes.length; i++)
-                 {
-                   var c = this.xformsNode.childNodes[i];
-                   if (c.nodeType != dojo.dom.ELEMENT_NODE)
-                     continue;
-                   if (c.nodeName == alfresco_xforms_constants.XFORMS_PREFIX + ":label" ||
-                       c.nodeName == alfresco_xforms_constants.XFORMS_PREFIX + ":alert")
-                     continue;
-                   return new alfresco.xforms.XFormsAction(this.xform, c);
-                 }
-                 throw new Error("unable to find action node for " + this.id);
+                 var action = _getElementsByTagNameNS(this.xformsNode, 
+                                                      alfresco_xforms_constants.XFORMS_NS,
+                                                      alfresco_xforms_constants.XFORMS_PREFIX,
+                                                      "action")[0];
+                 return new alfresco.xforms.XFormsAction(this.xform, dojo.dom.firstElement(action));
                },
                _clickHandler: function(event)
                {
@@ -1525,7 +1486,6 @@ dojo.declare("alfresco.xforms.Submit",
              {
                initializer: function(xform, xformsNode) 
                {
-//           this.inherited("initializer", [ xform, xformsNode ]);
                  var submit_buttons = _xforms_getSubmitButtons();
                  for (var i = 0; i < submit_buttons.length; i++)
                  {

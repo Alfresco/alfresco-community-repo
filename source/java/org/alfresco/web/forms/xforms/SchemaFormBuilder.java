@@ -2821,7 +2821,7 @@ public class SchemaFormBuilder
                                           final String id,
                                           final String bindId,
                                           final String label,
-                                          final Element action)
+                                          final Element... actions)
    {
       final Element trigger =
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
@@ -2845,10 +2845,13 @@ public class SchemaFormBuilder
       final Element actionWrapper =
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                         NamespaceConstants.XFORMS_PREFIX + ":action");
-      actionWrapper.appendChild(action);
-      trigger.appendChild(action);
-      this.setXFormsId(action);
+      trigger.appendChild(actionWrapper);
 
+      for (final Element action : actions)
+      {
+         actionWrapper.appendChild(action);
+         this.setXFormsId(action);
+      }
       return trigger;
    }
 				  
@@ -2863,7 +2866,6 @@ public class SchemaFormBuilder
    {
       //xforms:at = xforms:index from the "id" attribute on the repeat element
       //trigger insert
-
       Element action =
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                         NamespaceConstants.XFORMS_PREFIX + ":insert");

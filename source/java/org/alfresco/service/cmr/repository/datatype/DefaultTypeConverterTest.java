@@ -19,7 +19,9 @@ package org.alfresco.service.cmr.repository.datatype;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import junit.framework.TestCase;
@@ -111,7 +113,16 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Double.valueOf("123.123"), DefaultTypeConverter.INSTANCE.convert(Double.class, "123.123"));
         assertEquals(new BigInteger("1234567890123456789"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, "1234567890123456789"));
         assertEquals(new BigDecimal("12345678901234567890.12345678901234567890"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, "12345678901234567890.12345678901234567890"));
-        assertEquals("2004-03-12T00:00:00.000Z", ISO8601DateFormat.format(DefaultTypeConverter.INSTANCE.convert(Date.class, "2004-03-12T00:00:00.000Z")));
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.set(Calendar.YEAR, 2004);
+        cal.set(Calendar.MONTH, 3);
+        cal.set(Calendar.DAY_OF_MONTH, 12);
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        String isoDate = ISO8601DateFormat.format(cal.getTime());
+        assertEquals(isoDate, ISO8601DateFormat.format(DefaultTypeConverter.INSTANCE.convert(Date.class, isoDate)));
         assertEquals(new Duration("P25D"), DefaultTypeConverter.INSTANCE.convert(Duration.class, "P25D"));
         assertEquals("woof", DefaultTypeConverter.INSTANCE.convert(String.class, "woof"));
         

@@ -103,48 +103,90 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
     
     public void testLuceneDateRangeFunction()
     {
-        String template = "${luceneDateRange(\"2000-01-01T00:00:00.000Z\", \"P1D\")}";
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.set(Calendar.YEAR, 2001);
+        cal.set(Calendar.MONTH, 1);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        String isoStartDate = ISO8601DateFormat.format(cal.getTime());
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        String isoEndDate = ISO8601DateFormat.format(cal.getTime());
+        String template = "${luceneDateRange(\""+isoStartDate+"\", \"P1D\")}";
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-        assertEquals(result, "[2000-01-01T00:00:00.000Z TO 2000-01-02T00:00:00.000Z]");
+        assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
     }
     
-    public void testLuceneDateRangeFunctionToAdte()
+    public void testLuceneDateRangeFunctionToDate()
     {
-        String template = "${luceneDateRange(\"2000-01-01T00:00:00.000Z\", \"2000-01-05T00:00:00.000Z\")}";
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.set(Calendar.YEAR, 2001);
+        cal.set(Calendar.MONTH, 1);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        String isoStartDate = ISO8601DateFormat.format(cal.getTime());
+        cal.add(Calendar.DAY_OF_MONTH, 4);
+        String isoEndDate = ISO8601DateFormat.format(cal.getTime());
+        String template = "${luceneDateRange(\""+isoStartDate+"\", \""+isoEndDate+"\")}";
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-        assertEquals(result, "[2000-01-01T00:00:00.000Z TO 2000-01-05T00:00:00.000Z]");
+        assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
     }
     
     public void testLuceneDateRangeFunctionTodayPlus4()
     {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(new Date());
+        //cal.set(Calendar.AM_PM, Calendar.AM);
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        String isoStartDate = ISO8601DateFormat.format(cal.getTime());
+        cal.add(Calendar.DAY_OF_MONTH, 4);
+        String isoEndDate = ISO8601DateFormat.format(cal.getTime());
         String template = "${luceneDateRange(today, \"P4D\")}";
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
         assertNotNull(result);
-        assertEquals(result, "["+ISO8601DateFormat.format(today) + " TO " + ISO8601DateFormat.format(Duration.add(today, new Duration("P4D"))) + "]");
+        assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
     }
     
     public void testLuceneDateRangeFunctionTodayMinus4()
     {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(new Date());
+        //cal.set(Calendar.AM_PM, Calendar.AM);
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        String isoStartDate = ISO8601DateFormat.format(cal.getTime());
+        cal.add(Calendar.DAY_OF_MONTH, -4);
+        String isoEndDate = ISO8601DateFormat.format(cal.getTime());
         String template = "${luceneDateRange(today, \"-P4D\")}";
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-        assertEquals(result, "["+ ISO8601DateFormat.format(Duration.add(today, new Duration("-P4D"))) + " TO " + ISO8601DateFormat.format(today) + "]");
+        assertEquals(result, "["+isoEndDate+" TO "+isoStartDate+"]");
     }
     
     
     public void testLuceneDateRangeFunctionTodayToday()
     {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(new Date());
+        //cal.set(Calendar.AM_PM, Calendar.AM);
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        String isoStartDate = ISO8601DateFormat.format(cal.getTime());
         String template = "${luceneDateRange(today, today)}";
         FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
-        assertEquals(result, "["+ISO8601DateFormat.format(today) + " TO " + ISO8601DateFormat.format(today) + "]");
+        assertEquals(result, "["+isoStartDate+" TO "+isoStartDate+"]");
     }
 }

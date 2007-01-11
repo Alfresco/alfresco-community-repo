@@ -1474,18 +1474,16 @@ public class SchemaFormBuilder
                                        pathToRoot);
 
             modelSection.appendChild(bindElement);
-            if (typeName != null)
-            {
-               this.startBindElement(bindElement, 
-                                     schema, 
-                                     controlType, 
-                                     null, 
-                                     pathToRoot, 
-                                     SchemaUtil.getOccurance(elementDecl));
-            }
+            LOGGER.debug("adding bind for control " + controlType +
+                         " type " + typeName +
+                         " path to root " + pathToRoot);
+            this.startBindElement(bindElement, 
+                                  schema, 
+                                  controlType, 
+                                  null, 
+                                  pathToRoot, 
+                                  SchemaUtil.getOccurance(elementDecl));
          } 
-
-         //addComplexType(xForm,modelSection, formSection,(ComplexType)controlType,elementDecl,pathToRoot, relative);
          this.addComplexType(xForm,
                              modelSection,
                              defaultInstanceElement,
@@ -2616,7 +2614,9 @@ public class SchemaFormBuilder
 
       String nodeset = pathToRoot;
       if (o.isRepeated())
+      {
           nodeset = pathToRoot + "[position() != last()]";
+      }
 
       bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                  NamespaceConstants.XFORMS_PREFIX + ":nodeset",
@@ -2629,9 +2629,11 @@ public class SchemaFormBuilder
                                                   schema, 
                                                   controlType);
          if (typeName != null && typeName.length() != 0)
+         {
             bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                        NamespaceConstants.XFORMS_PREFIX + ":type",
                                        typeName);
+         }
       }
 
       final short constraintType = 
@@ -2647,9 +2649,12 @@ public class SchemaFormBuilder
                                  NamespaceConstants.XFORMS_PREFIX + ":readonly",
                                  (constraintType == XSConstants.VC_FIXED) + "()");
 
-      bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                 NamespaceConstants.XFORMS_PREFIX + ":required",
-                                 (o.minimum != 0) + "()");
+      if (controlType instanceof XSSimpleTypeDefinition)
+      {
+         bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                    NamespaceConstants.XFORMS_PREFIX + ":required",
+                                    (o.minimum != 0) + "()");
+      }
 	
       //no more minOccurs & maxOccurs element: add a constraint if maxOccurs>1:
       //count(.) <= maxOccurs && count(.) >= minOccurs

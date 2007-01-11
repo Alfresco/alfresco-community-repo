@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alfresco="http://www.alfresco.org/alfresco"
+           targetNamespace="http://www.alfresco.org/alfresco"
+           elementFormDefault="qualified">
+    <xs:element name="footer">
+  	<xs:complexType>
+  		<xs:sequence>
+  		  	<xs:element name="footer-images" minOccurs="1" maxOccurs="10">
+  		  	  <xs:complexType name="imagelink">
+			    <xs:sequence>
+			      <xs:element name="image" type="xs:string"/>
+			      <xs:element name="url" type="xs:string"/>
+			      <xs:element name="image-alt" type="xs:string"/>
+			      <xs:element name="image-width" type="xs:string"/>
+			      <xs:element name="image-height" type="xs:string"/>
+			    </xs:sequence>
+				</xs:complexType>
+  		  	</xs:element>
+
+  		  	<xs:element name="footer-text" type="xs:anyType" />
+  		</xs:sequence>
+  	</xs:complexType>
+  </xs:element>
+</xs:schema>
+

@@ -216,7 +216,7 @@
       <h:column id="data-table-column-5">
         <a:actionLink id="remove-select-rendering-engine-action-link"
 		      actionListener="#{WizardManager.bean.removeSelectedRenderingEngineTemplate}" 
-	              image="/images/icons/delete.gif" value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+	              image="/images/icons/delete.gif" value="#{msg.remove}" showLink="false" style="padding:4px" />
       </h:column>
     </h:dataTable>
     

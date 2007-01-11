@@ -74,20 +74,20 @@
             </td>
             <td>
                </f:verbatim>
-               <h:inputText id="title" value="#{DialogManager.bean.title}" size="35" maxlength="1024" onkeyup="javascript:checkButtonState();" />
+               <h:inputText id="title" value="#{DialogManager.bean.title}" size="45" maxlength="1024" onkeyup="javascript:checkButtonState();" />
                <f:verbatim>
             </td>
          </tr>
          <tr>
             <td></td>
-            <td>
+            <td valign="top">
                </f:verbatim>
                <h:outputText value="#{msg.description}:"/>
                <f:verbatim>
             </td>
             <td>
                </f:verbatim>
-               <h:inputText id="description" value="#{DialogManager.bean.description}" size="35" maxlength="1024" />
+               <h:inputTextarea id="description" value="#{DialogManager.bean.description}" rows="3" cols="42" />
                <f:verbatim>
             </td>
          </tr>

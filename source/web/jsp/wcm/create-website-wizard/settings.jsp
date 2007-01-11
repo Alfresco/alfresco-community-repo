@@ -40,7 +40,7 @@
    <h:dataTable value="#{WizardManager.bean.workflowsDataModel}" var="row" 
                 rowClasses="selectedItemsRow,selectedItemsRowAlt"
                 styleClass="selectedItems" headerClass="selectedItemsHeader"
-                cellspacing="0" cellpadding="4" 
+                cellspacing="0" cellpadding="4" width="100%"
                 rendered="#{WizardManager.bean.workflowsDataModel.rowCount != 0}">
       <h:column>
          <f:facet name="header">
@@ -61,12 +61,13 @@
       </h:column>
       <h:column>
          <a:actionLink actionListener="#{WizardManager.bean.removeWorkflow}" image="/images/icons/delete.gif"
-                       value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+                       value="#{msg.remove}" showLink="false" style="padding:4px" />
       </h:column>
    </h:dataTable>
    
    <a:panel id="no-items" rendered="#{WizardManager.bean.workflowsDataModel.rowCount == 0}">
-      <h:panelGrid columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
+      <h:panelGrid columns="1" cellpadding="2" width="100%"
+            styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
          <h:outputText id="no-items-name" value="#{msg.name}" />
          <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />
       </h:panelGrid>

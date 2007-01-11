@@ -35,6 +35,6 @@
    
    <h:panelGrid columns="2" cellpadding="2" cellspacing="2" style="margin-left:16px">
       <h:outputText value="&nbsp;#{msg.website_filename_match}" escape="false" />
-      <h:inputText value="#{DialogManager.bean.filenamePattern}" />
+      <h:inputText value="#{DialogManager.bean.filenamePattern}" size="70" />
    </h:panelGrid>
 </h:panelGroup>

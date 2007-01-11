@@ -48,7 +48,7 @@ License.
          </h:column>
          <h:column>
             <a:actionLink actionListener="#{InviteWebsiteUsersWizard.removeSelection}" image="/images/icons/delete.gif"
-                          value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+                          value="#{msg.remove}" showLink="false" style="padding:4px" />
          </h:column>
       </h:dataTable>
       

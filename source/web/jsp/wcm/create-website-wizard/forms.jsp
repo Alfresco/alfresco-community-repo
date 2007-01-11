@@ -37,49 +37,66 @@
    
    <%-- Selected Form table, with configuration buttons and info text --%>
    <f:verbatim><div style='padding:4px'></div></f:verbatim>
-   <h:outputText styleClass="mainSubText" value="#{msg.website_selected_forms}:" />
    <h:dataTable value="#{WizardManager.bean.formsDataModel}" var="row" 
                 rowClasses="selectedItemsRow,selectedItemsRowAlt"
                 styleClass="selectedItems" headerClass="selectedItemsHeader"
-                cellspacing="0" cellpadding="4" 
+                cellspacing="0" cellpadding="4" width="100%"
                 rendered="#{WizardManager.bean.formsDataModel.rowCount != 0}">
       <h:column>
          <f:facet name="header">
-            <h:outputText value="#{msg.name}" />
+            <h:outputText value="#{msg.website_selected_forms}" />
          </f:facet>
-         <h:outputText value="#{row.title}" />
-         <h:graphicImage url="/images/icons/warning.gif" style="padding:2px" width="16" height="16"
-               rendered="#{row.workflow != null && row.workflow.params == null}" title="#{msg.workflow_not_configured}" />
-      </h:column>
-      <h:column>
-         <f:facet name="header">
-            <h:outputText value="#{msg.details}" />
-         </f:facet>
-         <h:outputText value="#{row.details}" />
+         <f:verbatim>
+            <img style="float:left" src="<%=request.getContextPath()%>/images/icons/webform_large.gif" />
+         </f:verbatim>
+         <h:panelGrid columns="2" cellspacing="1">
+            <h:outputText value="#{msg.name}: " />
+            <h:outputText value="#{row.title}" />
+            
+            <h:outputText value="#{msg.description}: " />
+            <h:outputText style="font-style:italic" rendered="#{empty row.description}" value="#{msg.description_not_set}" />
+            <h:outputText rendered="#{!empty row.description}" value="#{row.description}" />
+            
+            <h:outputText value="#{msg.workflow}: " />
+            <h:outputText rendered="#{row.workflow != null}" value="#{row.workflow.title}" />
+            <h:panelGroup rendered="#{row.workflow == null}">
+               <h:outputText value="#{msg.workflow_not_set}" />
+               <h:graphicImage url="/images/icons/warning.gif" style="padding:2px" width="16" height="16"
+                  rendered="#{row.workflow != null && row.workflow.params == null}" title="#{msg.workflow_not_configured}" />
+            </h:panelGroup>
+            
+            <h:outputText value="#{msg.output_path_pattern}: " />
+            <h:outputText value="#{row.outputPathPattern}" />
+            
+            <h:outputText value="#{msg.rendering_engines_selected}: " />
+            <h:outputText rendered="#{row.templates == null}" value="0" />
+            <h:outputText rendered="#{row.templates != null}" value="#{row.templatesSize}" />
+         </h:panelGrid>
       </h:column>
       <h:column>
          <f:facet name="header">
             <h:outputText value="#{msg.actions}" />
          </f:facet>
-         <h:panelGroup rendered="#{WizardManager.bean.editMode == false}">
-            <h:commandButton id="cmd1-1" value="#{msg.form_template_details}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
-            <h:commandButton id="cmd1-2" value="#{msg.form_template_conf_workflow}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" disabled="#{row.workflow == null}" />
-            <h:commandButton id="cmd1-3" value="#{msg.form_template_select_templates}" style="margin:2px" styleClass="dialogControls" action="dialog:formTemplateTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
-         </h:panelGroup>
-         <h:panelGroup rendered="#{WizardManager.bean.editMode == true}">
-            <h:commandButton id="cmd2-1" value="#{msg.form_template_details}" style="margin:2px" styleClass="dialogControls" action="dialog:editFormTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
-            <h:commandButton id="cmd2-2" value="#{msg.form_template_conf_workflow}" style="margin:2px" styleClass="dialogControls" action="dialog:editFormTemplateWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" disabled="#{row.workflow == null}" />
-            <h:commandButton id="cmd2-3" value="#{msg.form_template_select_templates}" style="margin:2px" styleClass="dialogControls" action="dialog:editFormTemplateTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
-         </h:panelGroup>
+         <h:panelGrid columns="1" cellspacing="2" rendered="#{WizardManager.bean.editMode == false}">
+            <h:commandButton id="cmd1-1" value="#{msg.form_template_details}" styleClass="dialogControls" action="dialog:formTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
+            <h:commandButton id="cmd1-2" value="#{msg.form_template_conf_workflow}" styleClass="dialogControls" action="dialog:formTemplateWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" disabled="#{row.workflow == null}" />
+            <h:commandButton id="cmd1-3" value="#{msg.form_template_select_templates}" styleClass="dialogControls" action="dialog:formTemplateTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
+         </h:panelGrid>
+         <h:panelGrid columns="1" cellspacing="2" rendered="#{WizardManager.bean.editMode == true}">
+            <h:commandButton id="cmd2-1" value="#{msg.form_template_details}" styleClass="dialogControls" action="dialog:editFormTemplateDetails" actionListener="#{WizardManager.bean.setupFormAction}" />
+            <h:commandButton id="cmd2-2" value="#{msg.form_template_conf_workflow}" styleClass="dialogControls" action="dialog:editFormTemplateWorkflow" actionListener="#{WizardManager.bean.setupFormAction}" disabled="#{row.workflow == null}" />
+            <h:commandButton id="cmd2-3" value="#{msg.form_template_select_templates}" styleClass="dialogControls" action="dialog:editFormTemplateTemplates" actionListener="#{WizardManager.bean.setupFormAction}" />
+         </h:panelGrid>
       </h:column>
       <h:column>
          <a:actionLink actionListener="#{WizardManager.bean.removeForm}" image="/images/icons/delete.gif"
-                       value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+                       value="#{msg.remove}" showLink="false" style="padding:4px" />
       </h:column>
    </h:dataTable>
    
    <a:panel id="no-items" rendered="#{WizardManager.bean.formsDataModel.rowCount == 0}">
-      <h:panelGrid columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
+      <h:panelGrid width="100%" columns="1" cellpadding="2"
+            styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
          <h:outputText id="no-items-name" value="#{msg.name}" />
          <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />
       </h:panelGrid>

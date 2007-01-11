@@ -133,7 +133,7 @@ public class FormTemplatesDialog extends BaseDialogBean
          PresentationTemplate wrapper = new PresentationTemplate(engine);
          UIListItem item = new UIListItem();
          item.setValue(wrapper);
-         item.setLabel(wrapper.getTitle());
+         item.setLabel(wrapper.getTitle() + " (" + engine.getMimetypeForRendition() + ")");
          item.setDescription(wrapper.getDescription());
          item.setImage(WebResources.IMAGE_TEMPLATE_32);
          items.add(item);

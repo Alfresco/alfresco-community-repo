@@ -17,7 +17,6 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,7 +66,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_NAME = "name";
    private static final String MSG_USERROLES = "create_website_summary_users";
-   private static final String MSG_FORM_SUMMARY = "website_form_summary";
    private static final String MSG_NONE = "workflow_not_set";
    
    private static final String COMPONENT_FORMLIST = "form-list";
@@ -844,6 +842,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
          return this.templates;
       }
       
+      public int getTemplatesSize()
+      {
+         return getTemplates() != null ? getTemplates().size() : 0;
+      }
+      
       /**
        * @param template   to add to the list of PresentationTemplate
        */
@@ -862,18 +865,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
       public void setTemplates(List<PresentationTemplate> templates)
       {
          this.templates = templates;
-      }
-
-      /**
-       * @return Human readable summary of the configuration for this form
-       */
-      public String getDetails()
-      {
-         String none = '<' + Application.getMessage(FacesContext.getCurrentInstance(), MSG_NONE) + '>';
-         return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_FORM_SUMMARY),
-               getWorkflow() != null ? this.workflow.title : none,
-               getOutputPathPattern() != null ? this.outputPathPattern : none,
-               getTemplates() != null ? this.templates.size() : 0);
       }
    }
    

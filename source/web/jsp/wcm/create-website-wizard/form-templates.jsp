@@ -36,15 +36,20 @@
    <h:outputText styleClass="mainSubText" value="#{msg.website_selected_templates}:" />
    
    <h:panelGroup rendered="#{DialogManager.bean.templatesDataModel.rowCount != 0}">
-      <h:panelGrid columns="2" cellspacing="2">
+      <h:panelGrid columns="2" cellspacing="2" width="100%">
          <h:dataTable value="#{DialogManager.bean.templatesDataModel}" var="row" 
                       rowClasses="selectedItemsRow,selectedItemsRowAlt"
                       styleClass="selectedItems" headerClass="selectedItemsHeader"
-                      cellspacing="0" cellpadding="4">
+                      cellspacing="0" cellpadding="4" width="100%">
             <h:column>
                <f:facet name="header">
                   <h:outputText value="#{msg.name}" />
                </f:facet>
+               <f:verbatim>
+                  <img style="float:left" src="<%=request.getContextPath()%>/images/icons/template_large.gif" />
+               </f:verbatim>
+            </h:column>
+            <h:column>
                <h:outputText value="#{row.title}" />
             </h:column>
             <h:column>
@@ -55,7 +60,7 @@
             </h:column>
             <h:column>
                <a:actionLink actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"
-                             value="#{msg.remove}" showLink="false" style="padding-left:6px" />
+                             value="#{msg.remove}" showLink="false" style="padding:4px" />
             </h:column>
          </h:dataTable>
          <h:graphicImage value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />
@@ -66,7 +71,8 @@
    </h:panelGroup>
    
    <a:panel id="no-items" rendered="#{DialogManager.bean.templatesDataModel.rowCount == 0}">
-      <h:panelGrid columns="1" cellpadding="2" styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
+      <h:panelGrid width="100%" columns="1" cellpadding="2"
+            styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
          <h:outputText id="no-items-name" value="#{msg.name}" />
          <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />
       </h:panelGrid>

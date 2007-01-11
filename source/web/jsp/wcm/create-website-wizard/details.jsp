@@ -94,7 +94,7 @@
       </td>
       <td width="85%">
          </f:verbatim>
-         <h:inputText id="name" value="#{WizardManager.bean.name}" size="35" maxlength="1024"
+         <h:inputText id="name" value="#{WizardManager.bean.name}" size="45" maxlength="1024"
                       onkeyup="javascript:checkButtonState();" />
          <f:verbatim>
       </td>
@@ -112,7 +112,7 @@
       </td>
       <td width="85%">
          </f:verbatim>
-         <h:inputText id="dnsname" value="#{WizardManager.bean.dnsName}" size="35" maxlength="64"
+         <h:inputText id="dnsname" value="#{WizardManager.bean.dnsName}" size="45" maxlength="64"
                onkeyup="javascript:checkButtonState();" disabled="#{WizardManager.bean.editMode}" />
          <f:verbatim>
       </td>
@@ -126,7 +126,7 @@
       </td>
       <td width="85%">
          </f:verbatim>
-         <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="35" maxlength="256" disabled="true" />
+         <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="45" maxlength="256" disabled="true" />
          <f:verbatim>
       </td>
    </tr>
@@ -139,20 +139,20 @@
       </td>
       <td>
          </f:verbatim>
-         <h:inputText id="title" value="#{WizardManager.bean.title}" size="35" maxlength="1024" />
+         <h:inputText id="title" value="#{WizardManager.bean.title}" size="45" maxlength="1024" />
          <f:verbatim>
       </td>
    </tr>
    <tr>
       <td></td>
-      <td>
+      <td valign="top">
          </f:verbatim>
          <h:outputText value="#{msg.description}:"/>
          <f:verbatim>
       </td>
       <td>
          </f:verbatim>
-         <h:inputText id="description" value="#{WizardManager.bean.description}" size="35" maxlength="1024" />
+         <h:inputTextarea id="description" value="#{WizardManager.bean.description}" rows="3" cols="42" />
          <f:verbatim>
       </td>
    </tr>

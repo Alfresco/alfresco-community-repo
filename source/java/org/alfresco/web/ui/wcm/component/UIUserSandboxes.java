@@ -108,6 +108,8 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String MSG_ACTIONS = "actions";
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
    private static final String MSG_SELECTED = "selected";
+   private static final String MSG_NO_MODIFIED_ITEMS = "sandbox_no_modified_items";
+   private static final String MSG_NO_WEB_FORMS = "sandbox_no_web_forms";
    
    /** Content Manager role name */
    private static final String ROLE_CONTENT_MANAGER = "ContentManager";
@@ -491,25 +493,25 @@ public class UIUserSandboxes extends SelfRenderingComponent
       String stagingStore = AVMConstants.buildStagingStoreName(storeRoot);
       String stagingStorePath = AVMConstants.buildStoreWebappPath(stagingStore, getWebapp());
       
-      // info we need to calculate preview paths for assets
-      String dns = AVMConstants.lookupStoreDNS(userStore);
-      int rootPathIndex = AVMConstants.buildSandboxRootPath(userStore).length();
-      ClientConfigElement config = Application.getClientConfig(fc);
-      
-      // get the UIActions component responsible for rendering context related user actions
-      // TODO: we may need a component per user instance? (or use evaluators for roles...)
-      UIActions uiFileActions = aquireUIActions(ACTIONS_FILE, userStore);
-      UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER, userStore);
-      UIActions uiDeletedActions = aquireUIActions(ACTIONS_DELETED, userStore);
-      
-      String id = getClientId(fc);
-      
       // use the sync service to get the list of diffs between the stores
       NameMatcher matcher = (NameMatcher)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean(
             "globalPathExcluder");
       List<AVMDifference> diffs = avmSyncService.compare(-1, userStorePath, -1, stagingStorePath, matcher);
       if (diffs.size() != 0)
       {
+         // info we need to calculate preview paths for assets
+         String dns = AVMConstants.lookupStoreDNS(userStore);
+         int rootPathIndex = AVMConstants.buildSandboxRootPath(userStore).length();
+         ClientConfigElement config = Application.getClientConfig(fc);
+         
+         // get the UIActions component responsible for rendering context related user actions
+         // TODO: we may need a component per user instance? (or use evaluators for roles...)
+         UIActions uiFileActions = aquireUIActions(ACTIONS_FILE, userStore);
+         UIActions uiFolderActions = aquireUIActions(ACTIONS_FOLDER, userStore);
+         UIActions uiDeletedActions = aquireUIActions(ACTIONS_DELETED, userStore);
+         
+         String id = getClientId(fc);
+         
          // store lookup of username to list of modified nodes
          List<AVMNodeDescriptor> nodes = new ArrayList<AVMNodeDescriptor>(diffs.size());
          this.userNodes.put(username, nodes);
@@ -692,7 +694,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
       }
       else
       {
-         // TODO: output "no modified files found" message
+         // output "no modified files found" message
+         out.write("<div style='padding-left:16px'><i>");
+         out.write(bundle.getString(MSG_NO_MODIFIED_ITEMS));
+         out.write("</i></div>");
       }
    }
    
@@ -718,10 +723,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
       {
          this.forms = new WebProject(websiteRef).getForms();
       }
+      
+      ResourceBundle bundle = Application.getBundle(fc);
       if (this.forms.size() != 0)
       {
-         ResourceBundle bundle = Application.getBundle(fc);
-         
          // output the table of available forms
          // TODO: apply tag style - removed hardcoded
          out.write("<table class='modifiedItemsList' cellspacing='2' cellpadding='1' border='0' width='100%'>");
@@ -772,6 +777,13 @@ public class UIUserSandboxes extends SelfRenderingComponent
          }
          
          out.write("</table>");
+      }
+      else
+      {
+         // output "no web forms" message
+         out.write("<div style='padding-left:16px'><i>");
+         out.write(bundle.getString(MSG_NO_WEB_FORMS));
+         out.write("</i></div>");
       }
    }
    

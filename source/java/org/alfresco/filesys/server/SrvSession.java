@@ -529,7 +529,7 @@ public abstract class SrvSession
                     tx.rollback();
                 }
             }
-            catch ( SystemException ex)
+            catch ( Exception ex)
             {
             }
             

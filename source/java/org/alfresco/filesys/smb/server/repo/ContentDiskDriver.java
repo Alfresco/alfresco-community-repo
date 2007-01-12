@@ -26,6 +26,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
+import org.alfresco.filesys.avm.AVMNetworkFile;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
@@ -682,6 +683,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 }
             }
 
+            // Set the file id for the file using the relative path
+            
+            if ( finfo != null)
+            	finfo.setFileId( path.hashCode());
+            
             // Return the file information
             
             return finfo;
@@ -748,13 +754,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // If the state table is available see if we can speed up the search using either cached
             // file information or find the folder node to be searched without having to walk the path
 
-            String[] paths = null;
+            String[] paths = FileName.splitPath(searchPath);
             
             if ( ctx.hasStateTable())
             {
                 // See if the folder to be searched has a file state, we can avoid having to walk the path
                 
-                paths = FileName.splitPath(searchPath);
                 if ( paths[0] != null && paths[0].length() > 1)
                 {
                     // Find the node ref for the folder being searched
@@ -842,7 +847,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Build the search context to store the results
             
-            SearchContext searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList);
+            SearchContext searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0]);
             
             // Debug
             
@@ -1199,6 +1204,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             NetworkFile netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
             
+            // Generate a file id for the file
+            
+            if ( netFile != null)
+            	netFile.setFileId( params.getPath().hashCode());
+            
             // Create a file state for the open file
             
             if ( ctx.hasStateTable())
@@ -1315,8 +1325,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, true);
             
-            // create the network file
+            // Create the network file
+            
             NetworkFile netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
+            
+            // Generate a file id for the file
+            
+            if ( netFile != null)
+            	netFile.setFileId( params.getPath().hashCode());
             
             // Add a file state for the new file/folder
             
@@ -2027,6 +2043,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         if(file.isDirectory())
             throw new AccessDeniedException();
             
+    	// If the content channel is not open for the file then start a transaction
+    	
+        if ( file instanceof ContentNetworkFile)
+        {
+	    	ContentNetworkFile contentFile = (ContentNetworkFile) file;
+	    	
+	    	if ( contentFile.hasContent() == false)
+	    		sess.beginReadTransaction( transactionService);
+        }
+        
         // Read a block of data from the file
         
         int count = file.readFile(buffer, size, bufferPosition, fileOffset);
@@ -2064,7 +2090,21 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public long seekFile(SrvSession sess, TreeConnection tree, NetworkFile file, long pos, int typ) throws IOException
     {
-        throw new UnsupportedOperationException("Unsupported: " + file + " (seek)");
+  	  	// Check if the file is a directory
+    	
+		if ( file.isDirectory())
+			throw new AccessDeniedException();
+      
+    	// If the content channel is not open for the file then start a transaction
+    	
+    	ContentNetworkFile contentFile = (ContentNetworkFile) file;
+    	
+    	if ( contentFile.hasContent() == false)
+    		sess.beginReadTransaction( transactionService);
+    	
+		// Set the file position
+
+		return file.seekFile(pos, typ);
     }
 
     /**
@@ -2083,7 +2123,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     public int writeFile(SrvSession sess, TreeConnection tree, NetworkFile file,
             byte[] buffer, int bufferOffset, int size, long fileOffset) throws IOException
     {
-        // Write to the file
+    	// If the content channel is not open for the file then start a transaction
+    	
+    	if ( file instanceof ContentNetworkFile)
+    	{
+	    	ContentNetworkFile contentFile = (ContentNetworkFile) file;
+	    	
+	    	if ( contentFile.hasContent() == false)
+	    		sess.beginWriteTransaction( transactionService);
+    	}
+    	
+    	// Write to the file
         
         file.writeFile(buffer, size, bufferOffset, fileOffset);
         

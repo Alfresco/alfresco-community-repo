@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 import org.alfresco.filesys.server.filesys.FileInfo;
+import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.server.pseudo.PseudoFile;
 import org.alfresco.filesys.server.pseudo.PseudoFileList;
@@ -51,6 +52,10 @@ public class ContentSearchContext extends SearchContext
     
     private int resumeId;
     
+    // Relative path being searched
+    
+    private String m_relPath;
+    
     /**
      * Class constructor
      * 
@@ -58,18 +63,24 @@ public class ContentSearchContext extends SearchContext
      * @param results List of file/folder nodes that match the search pattern
      * @param searchStr Search path
      * @param pseudoList List of pseudo files to be blended into the returned list of files
+     * @param relPath Relative path being searched
      */
     protected ContentSearchContext(
             CifsHelper cifsHelper,
             List<NodeRef> results,
             String searchStr,
-            PseudoFileList pseudoList)
+            PseudoFileList pseudoList,
+            String relPath)
     {
         super();
         super.setSearchString(searchStr);
         this.cifsHelper = cifsHelper;
         this.results    = results;
         this.pseudoList = pseudoList;
+
+		m_relPath = relPath;
+		if ( m_relPath != null && m_relPath.endsWith( FileName.DOS_SEPERATOR_STR) == false)
+			m_relPath = m_relPath + FileName.DOS_SEPERATOR_STR;
     }
     
     /**
@@ -147,6 +158,16 @@ public class ContentSearchContext extends SearchContext
                     
                     info.copyFrom( pinfo);
                     
+                	// Generate a file id for the current file
+                	
+                    if ( info != null && info.getFileId() == -1)
+                    {
+	                	StringBuilder pathStr = new StringBuilder( m_relPath);
+	                	pathStr.append ( info.getFileName());
+	                	
+	                	info.setFileId( pathStr.toString().hashCode());
+                    }
+                    
                     // Check if we have finished with the pseudo file list, switch to the normal file list
                     
                     if ( index == (pseudoList.numberOfFiles() - 1))
@@ -175,7 +196,14 @@ public class ContentSearchContext extends SearchContext
             FileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
             info.copyFrom(nextInfo);
             
-            // Indicate that the file information is valid
+        	// Generate a file id for the current file
+        	
+        	StringBuilder pathStr = new StringBuilder( m_relPath);
+        	pathStr.append ( info.getFileName());
+        	
+        	info.setFileId( pathStr.toString().hashCode());
+
+        	// Indicate that the file information is valid
             
             return true;
         }

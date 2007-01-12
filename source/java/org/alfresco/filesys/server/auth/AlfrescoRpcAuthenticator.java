@@ -28,6 +28,7 @@ import org.alfresco.filesys.server.oncrpc.Rpc;
 import org.alfresco.filesys.server.oncrpc.RpcAuthenticationException;
 import org.alfresco.filesys.server.oncrpc.RpcAuthenticator;
 import org.alfresco.filesys.server.oncrpc.RpcPacket;
+import org.alfresco.filesys.server.oncrpc.nfs.NFS;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -91,6 +92,14 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
 			if ( logger.isDebugEnabled())
 				logger.debug( "RpcAuth: Type=Unix uid=" + uid + ", gid=" + gid);
 			
+			// Check that there is a user name mapping for the uid/gid
+			
+			Integer idKey = new Integer((gid << 16) + uid);
+			String userName = m_idMap.get( idKey);
+			
+			if ( userName == null)
+				throw new RpcAuthenticationException( NFS.StsAccess);
+			
 			// Check if the Unix authentication session table is valid
 
 			sessKey = new Long((((long) rpc.getClientAddress().hashCode()) << 32) + (gid << 16) + uid);
@@ -142,7 +151,8 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
 	 * @param rpc RpcPacket
 	 * @return ClientInfo
 	 */
-	public ClientInfo getRpcClientInformation(Object sessKey, RpcPacket rpc) {
+	public ClientInfo getRpcClientInformation(Object sessKey, RpcPacket rpc)
+	{
 
 		// Create a client information object to hold the client details
 
@@ -197,7 +207,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
 				cInfo.setClientAddress( clientAddr);
 				cInfo.setUid( uid);
 				cInfo.setGid( gid);
-				
+
 				cInfo.setGroupsList(groups);
 			}
 			
@@ -240,7 +250,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
 
     	// Check the account type and setup the authentication context
     	
-    	if ( client == null || client.isNullSession() || client.hasAuthenticationToken() == false)
+    	if ( client == null || client.isNullSession())
     	{
     		// Clear the authentication, null user should not be allowed to do any service calls
     		

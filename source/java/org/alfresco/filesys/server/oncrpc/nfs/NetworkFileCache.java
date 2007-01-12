@@ -17,11 +17,12 @@
 package org.alfresco.filesys.server.oncrpc.nfs;
 
 import java.util.*;
-import java.io.*;
 
+import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.server.oncrpc.RpcAuthenticator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,7 +41,7 @@ public class NetworkFileCache {
 	
 	// Default file timeout
 
-	public static final long DefaultFileTimeout = 5000L; // 5 seconds
+	public static final long DefaultFileTimeout = 5000L;	// 5 seconds
 
 	// Network file cache, key is the file id
 
@@ -50,6 +51,10 @@ public class NetworkFileCache {
 
 	private FileExpiry m_expiryThread;
 
+	// RPC authenticator
+	
+	private RpcAuthenticator m_rpcAuthenticator;
+	
 	// File timeout
 
 	private long m_fileTmo = DefaultFileTimeout;
@@ -74,18 +79,23 @@ public class NetworkFileCache {
 		// File timeout
 
 		private long m_timeout;
+		
+		// Session that last accessed the file
+		
+		private SrvSession m_sess;
 
 		/**
 		 * Class constructor
 		 * 
-		 * @param file
-		 *            NetworkFile
-		 * @param conn
-		 *            TreeConnection
+		 * @param file NetworkFile
+		 * @param conn TreeConnection
+		 * @param sess SrvSession
 		 */
-		public FileEntry(NetworkFile file, TreeConnection conn) {
+		public FileEntry(NetworkFile file, TreeConnection conn, SrvSession sess) {
 			m_file = file;
 			m_conn = conn;
+			setSession(sess);
+			
 			updateTimeout();
 		}
 
@@ -117,6 +127,16 @@ public class NetworkFileCache {
 		}
 
 		/**
+		 * Get the session that last accessed the file
+		 * 
+		 * @return SrvSession
+		 */
+		public final SrvSession getSession()
+		{
+			return m_sess;
+		}
+		
+		/**
 		 * Update the file timeout
 		 */
 		public final void updateTimeout() {
@@ -131,6 +151,16 @@ public class NetworkFileCache {
 		 */
 		public final void updateTimeout(long tmo) {
 			m_timeout = tmo;
+		}
+		
+		/**
+		 * Set the session that last accessed the file
+		 * 
+		 * @param sess SrvSession
+		 */
+		public final void setSession( SrvSession sess)
+		{
+			m_sess = sess;
 		}
 	};
 
@@ -242,22 +272,31 @@ public class NetworkFileCache {
 
 								try {
 
+									// Set the current user using the session that last accessed the file
+									
+									if ( m_rpcAuthenticator != null)
+										m_rpcAuthenticator.setCurrentUser( fentry.getSession(), fentry.getSession().getClientInformation());
+									
 									// Get the disk interface
 
-									DiskInterface disk = (DiskInterface) fentry
-											.getConnection().getInterface();
+									DiskInterface disk = (DiskInterface) fentry.getConnection().getInterface();
 
 									// Close the file
 
-									disk.closeFile(null,
-											fentry.getConnection(), netFile);
-								} catch (IOException ex) {
+									disk.closeFile( fentry.getSession(), fentry.getConnection(), netFile);
+
+									// Commit any transactions
+									
+									fentry.getSession().endTransaction();
+									
+									// DEBUG
+
+									if (logger.isDebugEnabled())
+										logger.debug("NFSFileExpiry: Closed file=" + fentry.getFile().getFullName() + ", fid=" + fileId);
 								}
-
-								// DEBUG
-
-								if (logger.isDebugEnabled())
-									logger.debug("NFSFileExpiry: Closed file=" + fentry.getFile().getFullName() + ", fid=" + fileId);
+								catch (Exception ex) {
+									logger.error( "File expiry exception", ex);
+								}
 							}
 						}
 					}
@@ -293,10 +332,10 @@ public class NetworkFileCache {
 	/**
 	 * Class constructor
 	 * 
-	 * @param name
-	 *            String
+	 * @param name String
+	 * @param rpcAuth RpcAuthenticator
 	 */
-	public NetworkFileCache(String name) {
+	public NetworkFileCache(String name, RpcAuthenticator rpcAuth) {
 
 		// Create the file cache
 
@@ -305,6 +344,10 @@ public class NetworkFileCache {
 		// Start the file expiry thread
 
 		m_expiryThread = new FileExpiry(DefaultFileTimeout / 4, name);
+		
+		// Set the RPC authenticator
+		
+		m_rpcAuthenticator = rpcAuth;
 	}
 
 	/**
@@ -319,16 +362,22 @@ public class NetworkFileCache {
 	/**
 	 * Add a file to the cache
 	 * 
-	 * @param file
-	 *            NetworkFile
-	 * @param conn
-	 *            TreeConnection
+	 * @param file NetworkFile
+	 * @param conn TreeConnection
+	 * @param sess SrvSession
 	 */
-	public synchronized final void addFile(NetworkFile file, TreeConnection conn) {
+	public synchronized final void addFile(NetworkFile file, TreeConnection conn, SrvSession sess) {
+
+		// Add the file id mapping
+		
 		synchronized (m_fileCache) {
-			m_fileCache.put(new Integer(file.getFileId()), new FileEntry(file,
-					conn));
+			m_fileCache.put(new Integer(file.getFileId()), new FileEntry(file, conn, sess));
 		}
+		
+		// DEBUG
+		
+		if ( logger.isDebugEnabled())
+			logger.debug("Added file " + file.getName() + ", fid=" + file.getFileId());
 	}
 
 	/**
@@ -350,11 +399,11 @@ public class NetworkFileCache {
 	/**
 	 * Find a file via the file id
 	 * 
-	 * @param id
-	 *            int
+	 * @param id int
+	 * @param sess SrvSession
 	 * @return NetworkFile
 	 */
-	public synchronized final NetworkFile findFile(int id) {
+	public synchronized final NetworkFile findFile(int id, SrvSession sess) {
 
 		// Create the search key
 
@@ -372,6 +421,8 @@ public class NetworkFileCache {
 			// Update the file timeout and return the file
 
 			fentry.updateTimeout();
+			fentry.setSession(sess);
+			
 			return fentry.getFile();
 		}
 

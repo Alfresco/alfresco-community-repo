@@ -1778,8 +1778,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 
 			// Get the disk interface from the disk driver
 
-			DiskInterface disk = (DiskInterface) conn.getSharedDevice()
-					.getInterface();
+			DiskInterface disk = (DiskInterface) conn.getSharedDevice().getInterface();
 
 			// Get the pre-operation state for the parent directory
 
@@ -1846,8 +1845,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 					if (finfo.isDirectory())
 						packDirectoryHandle(shareId, finfo.getFileId(), rpc);
 					else
-						packFileHandle(shareId, getFileIdForHandle(handle),
-								finfo.getFileId(), rpc);
+						packFileHandle(shareId, getFileIdForHandle(handle),	finfo.getFileId(), rpc);
 
 					// Pack the file attributes
 
@@ -1856,19 +1854,17 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 					// Add a cache entry for the path
 
 					ShareDetails details = m_shareDetails.findDetails(shareId);
-					details.getFileIdCache().addPath(finfo.getFileId(),
-							filePath);
+					details.getFileIdCache().addPath(finfo.getFileId(), filePath);
 
 					// Add a cache entry for the network file
 
-					sess.getFileCache().addFile(netFile, conn);
+					sess.getFileCache().addFile(netFile, conn, sess);
 
 					// Pack the wcc data structure for the directory
 
 					packPreOpAttr(sess, preInfo, rpc);
 
-					FileInfo postInfo = disk.getFileInformation(sess, conn,
-							path);
+					FileInfo postInfo = disk.getFileInformation(sess, conn, path);
 					packPostOpAttr(sess, postInfo, shareId, rpc);
 
 					// DEBUG
@@ -1879,8 +1875,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 
 					// Notify change listeners that a new file has been created
 
-					DiskDeviceContext diskCtx = (DiskDeviceContext) conn
-							.getContext();
+					DiskDeviceContext diskCtx = (DiskDeviceContext) conn.getContext();
 
 					if (diskCtx.hasChangeHandler())
 						diskCtx.getChangeHandler().notifyFileChanged( NotifyChange.ActionAdded, filePath);
@@ -2320,14 +2315,13 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 
 					// Add a cache entry for the network file
 
-					sess.getFileCache().addFile(netFile, conn);
+					sess.getFileCache().addFile(netFile, conn, sess);
 
 					// Pack the wcc data structure for the directory
 
 					packPreOpAttr(sess, preInfo, rpc);
 
-					FileInfo postInfo = disk.getFileInformation(sess, conn,
-							path);
+					FileInfo postInfo = disk.getFileInformation(sess, conn, path);
 					packPostOpAttr(sess, postInfo, shareId, rpc);
 
 					// DEBUG
@@ -3036,7 +3030,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 
 			// Generate the search path
 
-			String searchPath = generatePath(path, "*.*");
+			String searchPath = generatePath(path, "*");
 
 			// DEBUG
 
@@ -4611,8 +4605,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 	 * @exception StaleHandleException
 	 *                If the file id cannot be converted to a path
 	 */
-	protected final NetworkFile getNetworkFileForHandle(NFSSrvSession sess,
-			byte[] handle, TreeConnection conn, boolean readOnly)
+	protected final NetworkFile getNetworkFileForHandle(NFSSrvSession sess, byte[] handle, TreeConnection conn, boolean readOnly)
 			throws BadHandleException, StaleHandleException {
 
 		// Check if the handle is a file handle
@@ -4633,7 +4626,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 
 			// Check the file cache, file may already be open
 
-			file = fileCache.findFile(fileId);
+			file = fileCache.findFile(fileId, sess);
 			if (file == null) {
 
 				// Get the path for the file
@@ -4656,7 +4649,7 @@ public class NFSServer extends RpcNetworkServer implements RpcProcessor {
 					// Add the file to the active file cache
 
 					if (file != null)
-						fileCache.addFile(file, conn);
+						fileCache.addFile(file, conn, sess);
 				}
 				catch (AccessDeniedException ex) {
 					if (hasDebug())

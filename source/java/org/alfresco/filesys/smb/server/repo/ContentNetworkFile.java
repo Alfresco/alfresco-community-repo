@@ -27,11 +27,10 @@ import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.NetworkFile;
+import org.alfresco.filesys.smb.SeekType;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.repo.transaction.TransactionUtil;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -59,11 +58,17 @@ public class ContentNetworkFile extends NetworkFile
     private NodeService nodeService;
     private ContentService contentService;
     private NodeRef nodeRef;
-    /** keeps track of the read/write access */
+    
+    // File channel to file content
+    
     private FileChannel channel;
-    /** the original content opened */
+    
+    // File content
+    
     private ContentAccessor content;
-    /** keeps track of any writes */
+    
+    // Indicate if file has been written to or truncated/resized
+    
     private boolean modified;
     
     // Flag to indicate if the file channel is writable
@@ -86,9 +91,12 @@ public class ContentNetworkFile extends NetworkFile
         // Check write access
         // TODO: Check access writes and compare to write requirements
         
-        // create the file
+        // Create the file
+        
         ContentNetworkFile netFile = new ContentNetworkFile(transactionService, nodeService, contentService, nodeRef, path);
-        // set relevant parameters
+        
+        // Set relevant parameters
+        
         if (params.isReadOnlyAccess())
         {
             netFile.setGrantedAccess(NetworkFile.READONLY);
@@ -98,7 +106,8 @@ public class ContentNetworkFile extends NetworkFile
             netFile.setGrantedAccess(NetworkFile.READWRITE);
         }
         
-        // check the type
+        // Check the type
+        
         FileInfo fileInfo;
         try
         {
@@ -108,6 +117,7 @@ public class ContentNetworkFile extends NetworkFile
         {
             throw new AlfrescoRuntimeException("File not found when creating network file: " + nodeRef, e);
         }
+        
         if (fileInfo.isDirectory())
         {
             netFile.setAttributes(FileAttribute.Directory);
@@ -139,14 +149,13 @@ public class ContentNetworkFile extends NetworkFile
         if ( netFile.isReadOnly())
             netFile.setGrantedAccess(NetworkFile.READONLY);
         
-        // done
+        // DEBUG
+        
         if (logger.isDebugEnabled())
-        {
-            logger.debug("Created network file: \n" +
-                    "   node: " + nodeRef + "\n" +
-                    "   param: " + params + "\n" +
-                    "   netfile: " + netFile);
-        }
+            logger.debug("Create file node=" + nodeRef + ", param=" + params + ", netfile=" + netFile);
+
+        // Return the network file
+        
         return netFile;
     }
 
@@ -181,16 +190,19 @@ public class ContentNetworkFile extends NetworkFile
      */
     public String toString()
     {
-        StringBuilder sb = new StringBuilder(50);
-        sb.append("ContentNetworkFile:")
-          .append("[ node=").append(nodeRef)
-          .append(", channel=").append(channel)
-          .append(writableChannel ? "(Write)" : "(Read)")
-          .append(", writable=").append(isWritable())
-          .append(", content=").append(content)
-          .append(", modified=").append(modified)
-          .append("]");
-        return sb.toString();
+        StringBuilder str = new StringBuilder();
+        
+        str.append( "[");
+        str.append( nodeRef.getId());
+        str.append( ",channel=");
+        str.append( channel);
+        if ( channel != null)
+        	str.append( writableChannel ? "(Write)" : "(Read)");
+        if ( modified)
+        	str.append( ",modified");
+        str.append( "]");
+
+        return str.toString();
     }
     
     /**
@@ -211,7 +223,8 @@ public class ContentNetworkFile extends NetworkFile
      */
     private boolean isWritable()
     {
-        // check that we are allowed to write
+        // Check that we are allowed to write
+    	
         int access = getGrantedAccess();
         return (access == NetworkFile.READWRITE || access == NetworkFile.WRITEONLY);
     }
@@ -241,8 +254,11 @@ public class ContentNetworkFile extends NetworkFile
      * @see NetworkFile#WRITEONLY
      * @see NetworkFile#READWRITE
      */
-    private synchronized void openContent(boolean write, boolean trunc) throws AccessDeniedException, AlfrescoRuntimeException
+    private void openContent(boolean write, boolean trunc)
+    	throws AccessDeniedException, AlfrescoRuntimeException
     {
+    	// Check if the file is a directory
+    	
         if (isDirectory())
         {
             throw new AlfrescoRuntimeException("Unable to open channel for a directory network file: " + this);
@@ -271,11 +287,13 @@ public class ContentNetworkFile extends NetworkFile
         }
         else if (channel != null)
         {
-            // already have channel open
+            // Already have channel open
+        	
             return;
         }
         
-        // we need to create the channel
+        // We need to create the channel
+        
         if (write && !isWritable())
         {
             throw new AccessDeniedException("The network file was created for read-only: " + this);
@@ -284,6 +302,8 @@ public class ContentNetworkFile extends NetworkFile
         content = null;
         if (write)
         {
+        	// Get a writeable channel to the content
+        	
             content = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, false);
             
             // Indicate that we have a writable channel to the file
@@ -296,8 +316,12 @@ public class ContentNetworkFile extends NetworkFile
         }
         else
         {
+        	// Get a read-only channel to the content
+        	
             content = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-            // ensure that the content we are going to read is valid
+            
+            // Ensure that the content we are going to read is valid
+            
             content = FileContentReader.getSafeContentReader(
                     (ContentReader) content,
                     I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
@@ -307,7 +331,8 @@ public class ContentNetworkFile extends NetworkFile
             
             writableChannel = false;
             
-            // get the read-only channel
+            // Get the read-only channel
+            
             channel = ((ContentReader) content).getFileChannel();
         }
     }
@@ -317,48 +342,44 @@ public class ContentNetworkFile extends NetworkFile
      * 
      * @exception IOException
      */
-    public synchronized void closeFile() throws IOException
+    public void closeFile()
+    	throws IOException
     {
-        if (isDirectory())              // ignore if this is a directory
+    	// Check if this is a directory
+    	
+        if (isDirectory())
         {
+        	// Nothing to do
+        	
             return;
         }
-        else if (channel == null)       // ignore if the channel hasn't been opened
+        else if (channel == null)
         {
+        	// File was not read/written so channel was not opened
+        	
             return;
         }
         
+        // Check if the file has been modified
         
-        if (modified)              // file was modified
+        if (modified)
         {
-            // execute the close (with possible replication listeners, etc) and the
-            // node update in the same transaction.  A transaction will be started
-            // by the nodeService anyway, so it is merely widening the transaction
-            // boundaries.
-            TransactionWork<Object> closeWork = new TransactionWork<Object>()
-            {
-                public Object doWork() throws Exception
-                {
-                    // close the channel
-                    // close it
-                    channel.close();
-                    channel = null;
-                    // update node properties
-                    ContentData contentData = content.getContentData();
-                    nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
-                    // done
-                    return null;
-                }
-            };
-            TransactionUtil.executeInUserTransaction(transactionService, closeWork);
+            // Close the channel
+        	
+            channel.close();
+            channel = null;
+            
+            // Update node properties
+            
+            ContentData contentData = content.getContentData();
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
         }
         else
         {
-            // close it - it was not modified
+            // Close it - it was not modified
+        	
             channel.close();
             channel = null;
-            // no transaction used here.  Any listener operations against this (now unused) content
-            // are irrelevant.
         }
     }
 
@@ -368,7 +389,8 @@ public class ContentNetworkFile extends NetworkFile
      * @param size long
      * @exception IOException
      */
-    public synchronized void truncateFile(long size) throws IOException
+    public void truncateFile(long size)
+    	throws IOException
     {
         // If the content data channel has not been opened yet and the requested size is zero
         // then this is an open for overwrite so the existing content data is not copied
@@ -394,14 +416,10 @@ public class ContentNetworkFile extends NetworkFile
         
         modified = true;
         
-        // Debug
+        // DEBUG
         
         if (logger.isDebugEnabled())
-        {
-            logger.debug("Truncated channel: " +
-                    "   net file: " + this + "\n" +
-                    "   size: " + size);
-        }
+            logger.debug("Truncate file=" + this + ", size=" + size);
     }
 
     /**
@@ -413,7 +431,8 @@ public class ContentNetworkFile extends NetworkFile
      * @param fileOff long
      * @exception IOException
      */
-    public synchronized void writeFile(byte[] buffer, int length, int position, long fileOffset) throws IOException
+    public void writeFile(byte[] buffer, int length, int position, long fileOffset)
+    	throws IOException
     {
         // Open the channel for writing
         
@@ -435,11 +454,7 @@ public class ContentNetworkFile extends NetworkFile
         // DEBUG
         
         if (logger.isDebugEnabled())
-        {
-            logger.debug("Wrote to channel: " +
-                    "   net file: " + this + "\n" +
-                    "   written: " + count);
-        }
+            logger.debug("Write file=" + this + ", size=" + count);
     }
 
     /**
@@ -452,53 +467,119 @@ public class ContentNetworkFile extends NetworkFile
      * @return Length of data read.
      * @exception IOException
      */
-    public synchronized int readFile(byte[] buffer, int length, int position, long fileOffset) throws IOException
+    public int readFile(byte[] buffer, int length, int position, long fileOffset)
+    	throws IOException
     {
         // Open the channel for reading
         
         openContent(false, false);
         
-        // read from the channel
+        // Read from the channel
+        
         ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, position, length);
         int count = channel.read(byteBuffer, fileOffset);
         if (count < 0)
         {
             count = 0;  // doesn't obey the same rules, i.e. just returns the bytes read
         }
-        // done
+        
+        // DEBUG
+        
         if (logger.isDebugEnabled())
-        {
-            logger.debug("Read from channel: " +
-                    "   net file: " + this + "\n" +
-                    "   read: " + count);
-        }
+            logger.debug("Read file=" + this + " read=" + count);
+        
+        // Return the actual count of bytes read
+        
         return count;
     }
     
+    /**
+     * Open the file
+     * 
+     * @param createFlag boolean
+     * @exception IOException
+     */
     @Override
-    public synchronized void openFile(boolean createFlag) throws IOException
+    public void openFile(boolean createFlag)
+    	throws IOException
     {
-        throw new UnsupportedOperationException();
+    	// Wait for read/write before opening the content channel
     }
 
+    /**
+     * Seek to a new position in the file
+     * 
+     * @param pos long
+     * @param typ int
+     * @return long
+     */
     @Override
-    public synchronized long seekFile(long pos, int typ) throws IOException
+    public long seekFile(long pos, int typ)
+    	throws IOException
     {
-        throw new UnsupportedOperationException();
-    }
+        //  Open the file, if not already open
 
-    @Override
-    public synchronized void flushFile() throws IOException
-    {
-        // open the channel for writing
-        openContent(true, false);
-        // flush the channel - metadata flushing is not important
-        channel.force(false);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Flushed channel: " +
-                    "   net file: " + this);
+        openContent( false, false);
+
+        //  Check if the current file position is the required file position
+
+        long curPos = channel.position();
+        
+        switch (typ) {
+
+          //  From start of file
+
+          case SeekType.StartOfFile :
+            if (curPos != pos)
+              channel.position( pos);
+            break;
+
+            //  From current position
+
+          case SeekType.CurrentPos :
+            channel.position( curPos + pos);
+            break;
+
+            //  From end of file
+
+          case SeekType.EndOfFile :
+            {
+              long newPos = channel.size() + pos;
+              channel.position(newPos);
+            }
+            break;
         }
+
+        // DEBUG
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Seek file=" + this + ", pos=" + pos + ", type=" + typ);
+
+        //  Return the new file position
+
+        return channel.position();
+    }
+
+    /**
+     * Flush and buffered data for this file
+     * 
+     * @exception IOException
+     */
+    @Override
+    public void flushFile()
+    	throws IOException
+    {
+        // Open the channel for writing
+    	
+        openContent(true, false);
+        
+        // Flush the channel - metadata flushing is not important
+        
+        channel.force(false);
+        
+        // DEBUG
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Flush file=" + this);
     }
 }

@@ -133,7 +133,7 @@ public class NFSSrvSession extends SrvSession {
 	public final NetworkFileCache getFileCache()
 	{
 		if (m_fileCache == null)
-			m_fileCache = new NetworkFileCache(getUniqueId());
+			m_fileCache = new NetworkFileCache(getUniqueId(), getNFSServer().getRpcAuthenticator());
 		return m_fileCache;
 	}
 

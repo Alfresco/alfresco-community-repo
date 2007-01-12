@@ -579,7 +579,6 @@ public class ServerConfiguration extends AbstractLifecycleBean
         // Create the configuration context
 
         ConfigLookupContext configCtx = new ConfigLookupContext(ConfigArea);
-        configCtx.setIncludeGlobalSection( false);
 
         // Set the platform type
 

@@ -162,6 +162,11 @@ public class TextSearch extends APIServiceImpl
                 contentType = APIResponse.ATOM_TYPE;
                 template = ATOM_TEMPLATE;
             }
+            else if (format.equals("xml"))
+            {
+                contentType = APIResponse.XML_TYPE;
+                template = ATOM_TEMPLATE;
+            }
         }
         
         Map<String, Object> model = createTemplateModel(req, res);

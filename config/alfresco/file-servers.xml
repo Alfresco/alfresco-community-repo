@@ -1,6 +1,7 @@
 <alfresco-config area="file-servers">
 
    <config evaluator="string-compare" condition="CIFS Server">
+	  <serverEnable enabled="true"/>
       <host name="${localname}_A"/>
       <comment>Alfresco CIFS Server</comment>
 
@@ -26,15 +27,18 @@
    </config>
 
    <config evaluator="string-compare" condition="FTP Server">
+	  <serverEnable enabled="true"/>
 <!--      <debug flags="File,Search,Error,Directory,Info,DataPort"/> -->
    </config>
    
    <config evaluator="string-compare" condition="NFS Server">
-	   <disableNFS/>
+	  <serverEnable enabled="false"/>
    </config>
 	
    <config evaluator="string-compare" condition="Filesystems">
 	  <filesystems>
+		  
+		 <!-- Alfresco repository access shared filesystem -->
          <filesystem name="Alfresco">
             <store>workspace://SpacesStore</store>
             <rootPath>/app:company_home</rootPath>
@@ -111,6 +115,12 @@
             </accessControl>
 -->
          </filesystem>
+		  
+		 <!-- AVM virtualization view of all stores/versions for WCM -->
+         <avmfilesystem name="AVM">
+            <virtualView/>
+         </avmfilesystem>
+		  
       </filesystems>
    </config>
 

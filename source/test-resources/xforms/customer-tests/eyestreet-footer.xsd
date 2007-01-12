@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	   xmlns:alfresco="http://www.alfresco.org/alfresco"
-           targetNamespace="http://www.alfresco.org/alfresco"
+	   xmlns:eyestreet="http://www.eyestreet.com/eyestreet"
+           targetNamespace="http://www.eyestreet.com/eyestreet"
            elementFormDefault="qualified">
     <xs:element name="footer">
   	<xs:complexType>
   		<xs:sequence>
   		  	<xs:element name="footer-images" minOccurs="1" maxOccurs="10">
-  		  	  <xs:complexType name="imagelink">
+  		  	  <xs:complexType>
 			    <xs:sequence>
 			      <xs:element name="image" type="xs:string"/>
 			      <xs:element name="url" type="xs:string"/>

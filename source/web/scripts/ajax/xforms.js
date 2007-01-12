@@ -1487,30 +1487,40 @@ dojo.declare("alfresco.xforms.Submit",
              {
                initializer: function(xform, xformsNode) 
                {
-                 var submit_buttons = _xforms_getSubmitButtons();
+                 var submit_buttons = (this.id == "submit" 
+                                       ? _xforms_getSubmitButtons()
+                                       : (this.id == "save-draft"
+                                          ? _xforms_getSaveDraftButtons()
+                                          : null));
+                 if (submit_buttons == null)
+                 {
+                   throw new Error("unknown submit button " + this.id);
+                 }
                  for (var i = 0; i < submit_buttons.length; i++)
                  {
                    dojo.debug("adding submit handler for " + submit_buttons[i].getAttribute('id'));
-                   submit_buttons[i].xform = this.xform;
+                   submit_buttons[i].widget = this;
                    dojo.event.browser.addListener(submit_buttons[i], 
                                                   "onclick", 
                                                   function(event)
                                                   {
-                                                    var xform = event.target.xform;
-                                                    if (!xform.submitWidget.done)
+                                                    var xform = event.target.widget.xform;
+                                                    if (xform.submitWidget && xform.submitWidget.done)
+                                                    {
+                                                      dojo.debug("done - doing base click on " + xform.submitWidget.currentButton.id);
+                                                      xform.submitWidget.currentButton = null;
+                                                      xform.submitWidget = null;
+                                                      return true;
+                                                    }
+                                                    else
                                                     {
                                                       dojo.debug("triggering submit from handler " + event.target.id);
                                                       dojo.event.browser.stopEvent(event);
                                                       _hide_errors();
+                                                      xform.submitWidget = event.target.widget;
                                                       xform.submitWidget.currentButton = event.target;
                                                       xform.submitWidget.widget.buttonClick(); 
                                                       return false;
-                                                    }
-                                                    else
-                                                    {
-                                                      dojo.debug("done - doing base click on " + xform.submitWidget.currentButton.id);
-                                                      xform.submitWidget.currentButton = null;
-                                                      return true;
                                                     }
                                                   },
                                                   false);
@@ -1519,7 +1529,6 @@ dojo.declare("alfresco.xforms.Submit",
                render: function(attach_point)
                {
                  this.inherited("render", [ attach_point ]);
-                 this.xform.submitWidget = this;
                },
                _clickHandler: function(event)
                {
@@ -1975,6 +1984,7 @@ dojo.declare("alfresco.xforms.XForm",
                    }
                    case "xforms-submit-error":
                    {
+                     this.submitWidget = null;
                      var invalid = this.rootWidget.getWidgetsInvalidForSubmit();
                      _show_error(document.createTextNode("Please provide values for all required fields."));
                      var error_list = document.createElement("ul");
@@ -2156,8 +2166,8 @@ function _evaluateXPath(xpath, contextNode, result_type)
   if (xmlDocument.evaluate)
   {
     var nsResolver = (xmlDocument.createNSResolver 
-                      ? xmlDocument.createNSResolver(xmlDocument.documentElement) :
-                      null);
+                      ? xmlDocument.createNSResolver(xmlDocument.documentElement) 
+                      : null);
     result = xmlDocument.evaluate(xpath, 
                                   contextNode, 
                                   nsResolver, 

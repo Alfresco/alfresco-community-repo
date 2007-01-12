@@ -224,6 +224,15 @@ public class FormImpl
               "}");
    }
 
+   public boolean equals(final Object other)
+   {
+      if (other == null || !(other instanceof FormImpl))
+      {
+         return false;
+      }
+      return this.getNodeRef().equals(((FormImpl)other).getNodeRef());
+   }
+
    protected ServiceRegistry getServiceRegistry()
    {
       final FacesContext fc = FacesContext.getCurrentInstance();

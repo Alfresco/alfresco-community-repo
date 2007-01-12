@@ -26,6 +26,10 @@ function _xforms_getSubmitButtons()
   return [ document.getElementById("wizard:next-button"),
            document.getElementById("wizard:finish-button") ];
 }
+function _xforms_getSaveDraftButtons()
+{
+  return [ document.getElementById("wizard:back-button") ];
+}
 </script>
 <wcm:formProcessor id="form-data-renderer"
 		   formProcessorSession="#{WizardManager.bean.formProcessorSession}" 

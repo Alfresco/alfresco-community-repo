@@ -142,7 +142,6 @@ public class SchemaFormBuilder
    private final String action;
    private final SubmitMethod submitMethod;
    private final String base;
-   protected WrapperElementsBuilder wrapper = new XHTMLWrapperElementsBuilder();
 
    /**
     * generic counter -> replaced by an hashMap with:
@@ -167,22 +166,17 @@ public class SchemaFormBuilder
    /**
     * Creates a new SchemaFormBuilder object.
     *
-    * @param rootElementName    _UNDOCUMENTED_
-    * @param instanceSource _UNDOCUMENTED_
     * @param action         _UNDOCUMENTED_
     * @param submitMethod   _UNDOCUMENTED_
-    * @param wrapper        _UNDOCUMENTED_
     */
    public SchemaFormBuilder(final String action,
                             final SubmitMethod submitMethod,
-                            final WrapperElementsBuilder wrapper,
                             final String base) 
    {
       reset();
 
       this.action = action;
       this.submitMethod = submitMethod;
-      this.wrapper = wrapper;
       this.base = base;
    }
 
@@ -250,18 +244,19 @@ public class SchemaFormBuilder
       //refCounter = 0;
       this.counter.clear();
 	
-      final Document xForm = this.createFormTemplate(rootElementName);
+      final Document xformsDocument = this.createFormTemplate(rootElementName);
 	
       //find form element: last element created
       final Element formSection = (Element)
-         xForm.getDocumentElement().getLastChild();
+         xformsDocument.getDocumentElement().getLastChild();
       final Element modelSection = (Element)
-         xForm.getDocumentElement().getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "model").item(0);
+         xformsDocument.getDocumentElement().getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, 
+                                                                    "model").item(0);
 	
       //add XMLSchema if we use schema types
       modelSection.setAttributeNS(NamespaceConstants.XFORMS_NS, "schema", "#schema-1");
       final Element importedSchemaDocumentElement = (Element)
-         xForm.importNode(schemaDocument.getDocumentElement(), true);
+         xformsDocument.importNode(schemaDocument.getDocumentElement(), true);
       importedSchemaDocumentElement.setAttributeNS(null, "id", "schema-1");
 
       modelSection.appendChild(importedSchemaDocumentElement);
@@ -282,50 +277,55 @@ public class SchemaFormBuilder
 //					   this.targetNamespace);
 
 
-      //TODO: WARNING: in Xerces 2.6.1, parameters are switched !!! (name, namespace)
-      //XSElementDeclaration rootElementDecl =schema.getElementDeclaration(this.targetNamespace, _rootElementName);
-      XSElementDeclaration rootElementDecl = 
+      final XSElementDeclaration rootElementDecl = 
          schema.getElementDeclaration(rootElementName, this.targetNamespace);
-	
       if (rootElementDecl == null) 
       {
-         //Debug
-         rootElementDecl = schema.getElementDeclaration(this.targetNamespace,  
-                                                        rootElementName);
-         if (rootElementDecl != null && LOGGER.isDebugEnabled())
-            LOGGER.debug("getElementDeclaration: inversed parameters OK !!!");
-	    
          throw new FormBuilderException("Invalid root element tag name ["
                                         + rootElementName
                                         + ", targetNamespace="
                                         + this.targetNamespace
                                         + "]");
       }
-      rootElementName = this.getElementName(rootElementDecl, xForm);
+
+      rootElementName = this.getElementName(rootElementDecl, xformsDocument);
       final Element instanceElement = 
-         xForm.createElementNS(NamespaceConstants.XFORMS_NS, 
-                               NamespaceConstants.XFORMS_PREFIX + ":instance");
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
+                                        NamespaceConstants.XFORMS_PREFIX + ":instance");
       modelSection.appendChild(instanceElement);
       this.setXFormsId(instanceElement);
 
-      final Element defaultInstanceDocumentElement = xForm.createElement(rootElementName);
+      final Element defaultInstanceDocumentElement = xformsDocument.createElement(rootElementName);
       this.addNamespace(defaultInstanceDocumentElement, 
                         NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX, 
                         NamespaceConstants.XMLSCHEMA_INSTANCE_NS);
-	
+      if (this.targetNamespace != null)
+      {
+         this.addNamespace(defaultInstanceDocumentElement,
+                           schemaDocument.lookupPrefix(this.targetNamespace),
+                           this.targetNamespace);
+         this.addNamespace(xformsDocument.getDocumentElement(),
+                           schemaDocument.lookupPrefix(this.targetNamespace),
+                           this.targetNamespace);
+      }
+
       Element importedInstanceDocumentElement = null;
       if (instanceDocument == null || instanceDocument.getDocumentElement() == null)
+      {
          instanceElement.appendChild(defaultInstanceDocumentElement);
+      }
       else
       {
          Element instanceDocumentElement = instanceDocument.getDocumentElement();
          if (!instanceDocumentElement.getNodeName().equals(rootElementName))
+         {
             throw new IllegalArgumentException("instance document root tag name invalid.  " +
                                                "expected " + rootElementName +
                                                ", got " + instanceDocumentElement.getNodeName());
+         }
          LOGGER.debug("importing rootElement from other document");
          importedInstanceDocumentElement = (Element)
-            xForm.importNode(instanceDocumentElement, true);
+            xformsDocument.importNode(instanceDocumentElement, true);
          //add XMLSchema instance NS
          this.addNamespace(importedInstanceDocumentElement, 
                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX, 
@@ -333,21 +333,21 @@ public class SchemaFormBuilder
          instanceElement.appendChild(importedInstanceDocumentElement);
 
          final Element prototypeInstanceElement = 
-            xForm.createElementNS(NamespaceConstants.XFORMS_NS, 
-                                  NamespaceConstants.XFORMS_PREFIX + ":instance");
+            xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
+                                           NamespaceConstants.XFORMS_PREFIX + ":instance");
          modelSection.appendChild(prototypeInstanceElement);
          this.setXFormsId(prototypeInstanceElement, "instance_prototype");
          prototypeInstanceElement.appendChild(defaultInstanceDocumentElement);
       }
 
-      Element formContentWrapper = this.wrapper.createGroupContentWrapper(formSection);
-      this.addElement(xForm,
+      Element formContentWrapper = formSection;
+      this.addElement(xformsDocument,
                       modelSection,
                       defaultInstanceDocumentElement,
                       formContentWrapper,
                       schema,
                       rootElementDecl,
-                      "/" + getElementName(rootElementDecl, xForm),
+                      "/" + getElementName(rootElementDecl, xformsDocument),
                       resourceBundle);
       if (importedInstanceDocumentElement != null)
       {
@@ -355,50 +355,16 @@ public class SchemaFormBuilder
                                    defaultInstanceDocumentElement);
       }
 
-      Element submitInfoElement = 
-         xForm.createElementNS(NamespaceConstants.XFORMS_NS,
-                               NamespaceConstants.XFORMS_PREFIX + ":submission");
-      modelSection.appendChild(submitInfoElement);
-
-      //submitInfoElement.setAttributeNS(NamespaceConstants.XFORMS_NS,NamespaceConstants.XFORMS_PREFIX + ":id","save");
-      String submissionId = this.setXFormsId(submitInfoElement);
-
-      //action
-      submitInfoElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                       NamespaceConstants.XFORMS_PREFIX + ":action",
-                                       this.action == null ? "" : this.base + this.action);
-
-      //method
-      submitInfoElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                       NamespaceConstants.XFORMS_PREFIX + ":method",
-                                       (this.submitMethod != null
-                                        ? this.submitMethod
-                                        :  SchemaFormBuilder.SubmitMethod.POST).toString());
-
-      final Element submitButton =
-         xForm.createElementNS(NamespaceConstants.XFORMS_NS, NamespaceConstants.XFORMS_PREFIX + ":submit");
-      final Element submitControlWrapper = this.wrapper.createControlsWrapper(submitButton);
-      formContentWrapper.appendChild(submitControlWrapper);
-      submitButton.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                  NamespaceConstants.XFORMS_PREFIX + ":submission",
-                                  submissionId);
-      this.setXFormsId(submitButton);
-
-      final Element submitButtonCaption = 
-         xForm.createElementNS(NamespaceConstants.XFORMS_NS,
-                               NamespaceConstants.XFORMS_PREFIX + ":label");
-      submitButton.appendChild(submitButtonCaption);
-      submitButtonCaption.appendChild(xForm.createTextNode("Submit"));
-      this.setXFormsId(submitButtonCaption);
-      this.createTriggersForRepeats(xForm);
+      this.createSubmitElements(xformsDocument, modelSection, formContentWrapper);
+      this.createTriggersForRepeats(xformsDocument);
 
       final Comment comment = 
-         xForm.createComment("This XForm was generated by " + this.getClass().getName() + 
-                             " on " + (new Date()) + " from the '" + rootElementName + 
-                             "' element of the '" + this.targetNamespace + "' XML Schema.");
-      xForm.getDocumentElement().insertBefore(comment, 
-                                              xForm.getDocumentElement().getFirstChild());
-      return xForm;
+         xformsDocument.createComment("This XForm was generated by " + this.getClass().getName() + 
+                                      " on " + (new Date()) + " from the '" + rootElementName + 
+                                      "' element of the '" + this.targetNamespace + "' XML Schema.");
+      xformsDocument.getDocumentElement().insertBefore(comment, 
+                                                       xformsDocument.getDocumentElement().getFirstChild());
+      return xformsDocument;
    }
 
    /**
@@ -888,8 +854,9 @@ public class SchemaFormBuilder
       Element groupWrapper = groupElement;
 	
       if (groupElement != modelSection) 
-         groupWrapper = this.wrapper.createGroupContentWrapper(groupElement);
-	
+      {
+         groupWrapper = groupElement;
+      }	
       final SchemaUtil.Occurance o = SchemaUtil.getOccurance(owner);
       final Element repeatSection = this.addRepeatIfNecessary(xForm,
                                                               modelSection,
@@ -902,7 +869,7 @@ public class SchemaFormBuilder
       if (repeatSection != groupWrapper) 
       { 
          // we have a repeat
-         repeatContentWrapper = this.wrapper.createGroupContentWrapper(repeatSection);
+         repeatContentWrapper = repeatSection;
          relative = true;
       }
 	
@@ -1278,11 +1245,8 @@ public class SchemaFormBuilder
                                                 constraint);
                   }
 
-                  Element choicesControlWrapper = this.wrapper.createControlsWrapper(choices);
-                  control.appendChild(choicesControlWrapper);
-			
-                  Element controlWrapper = this.wrapper.createControlsWrapper(control);
-                  formSection.appendChild(controlWrapper);
+                  control.appendChild(choices);
+                  formSection.appendChild(control);
 			
                   /////////////////                                      ///////////////
                   // add content to select1
@@ -1322,9 +1286,7 @@ public class SchemaFormBuilder
                                                                 NamespaceConstants.XFORMS_PREFIX + ":switch");
                   this.setXFormsId(switchElement);
 			
-                  Element switchControlWrapper =
-                     this.wrapper.createControlsWrapper(switchElement);
-                  formSection.appendChild(switchControlWrapper);
+                  formSection.appendChild(switchElement);
                   //formSection.appendChild(switchElement);
 			
                   /////////////// add this type //////////////
@@ -1539,8 +1501,7 @@ public class SchemaFormBuilder
          //selector -> no more needed?
          //this.addSelector(xForm, repeatSection);
          //group wrapper
-         repeatContentWrapper =
-            this.wrapper.createGroupContentWrapper(repeatSection);
+         repeatContentWrapper = repeatSection;
       }
 
       if (LOGGER.isDebugEnabled())
@@ -1758,9 +1719,7 @@ public class SchemaFormBuilder
                                    NamespaceConstants.XFORMS_PREFIX + ":appearance",
                                    "full");
 
-      final Element controlWrapper =
-         this.wrapper.createControlsWrapper(repeatSection);
-      formSection.appendChild(controlWrapper);
+      formSection.appendChild(repeatSection);
 
       //add a group inside the repeat?
       final Element group = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
@@ -1812,9 +1771,7 @@ public class SchemaFormBuilder
                                                        (XSElementDeclaration)owner,
                                                        resourceBundle);
          //set content
-         formSection = (groupElement == modelSection
-                        ? groupElement
-                        : this.wrapper.createGroupContentWrapper(groupElement));
+         formSection = groupElement;
       }
 
       //eventual repeat
@@ -1832,7 +1789,7 @@ public class SchemaFormBuilder
       if (repeatSection != formSection) 
       {
          //content of repeat
-         contentWrapper = this.wrapper.createGroupContentWrapper(repeatSection);
+         contentWrapper = repeatSection;
 
          //if there is a repeat -> create another bind with "."
          Element bindElement2 =
@@ -1860,7 +1817,7 @@ public class SchemaFormBuilder
                                                          bindElement,
                                                          o,
                                                          resourceBundle);
-      contentWrapper.appendChild(this.wrapper.createControlsWrapper(formControl));
+      contentWrapper.appendChild(formControl);
 
       // if this is a repeatable then set ref to point to current element
       // not sure if this is a workaround or this is just the way XForms works...
@@ -1878,9 +1835,6 @@ public class SchemaFormBuilder
       //if (repeatSection != formSection)
       //this.addSelector(xForm, (Element) formControl.getParentNode());
       //
-      // TODO: Generate help message based on datatype and restrictions
-      this.endFormControl(formControl, controlType, o);
-      this.endBindElement(bindElement);
    }
 
    private void addSimpleType(final Document xForm,
@@ -1966,7 +1920,6 @@ public class SchemaFormBuilder
                                                        (XSSimpleTypeDefinition)controlType);
       }
 
-      this.startFormControl(formControl, controlType);
       formControl.setAttributeNS(NamespaceConstants.XFORMS_NS, 
                                  NamespaceConstants.XFORMS_PREFIX + ":bind", 
                                  bindId);
@@ -2063,7 +2016,14 @@ public class SchemaFormBuilder
    {
       final Document xformsDocument = XMLUtil.newDocument();
 
-      final Element envelopeElement = this.wrapper.createEnvelope(xformsDocument);
+      final Element envelopeElement = xformsDocument.createElementNS(NamespaceConstants.XHTML_NS, 
+                                                                     NamespaceConstants.XHTML_PREFIX + ":html");
+      xformsDocument.appendChild(envelopeElement);
+
+      //set namespace attribute
+      this.addNamespace(envelopeElement,
+                        NamespaceConstants.XHTML_PREFIX,
+                        NamespaceConstants.XHTML_NS);
       this.addNamespace(envelopeElement, 
                         NamespaceConstants.XFORMS_PREFIX, 
                         NamespaceConstants.XFORMS_NS);
@@ -2079,22 +2039,27 @@ public class SchemaFormBuilder
 
       //base
       if (this.base != null && this.base.length() != 0)
+      {
          envelopeElement.setAttributeNS(NamespaceConstants.XML_NS, 
                                         NamespaceConstants.XML_PREFIX + ":base", 
                                         this.base);
+      }
 
       //model element
       Element modelElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
                                                             NamespaceConstants.XFORMS_PREFIX + ":model");
       this.setXFormsId(modelElement);
-      Element modelWrapper = this.wrapper.createModelWrapper(modelElement);
+      Element modelWrapper = xformsDocument.createElementNS(NamespaceConstants.XHTML_NS,
+                                                            NamespaceConstants.XHTML_PREFIX + ":head");
+      modelWrapper.appendChild(modelElement);
       envelopeElement.appendChild(modelWrapper);
 
       //form control wrapper -> created by wrapper
       //Element formWrapper = xformsDocument.createElement("body");
       //envelopeElement.appendChild(formWrapper);
-      Element formWrapper = this.wrapper.createFormWrapper(envelopeElement);
-
+      Element formWrapper = xformsDocument.createElementNS(NamespaceConstants.XHTML_NS, 
+                                                           NamespaceConstants.XHTML_PREFIX + ":body");
+      envelopeElement.appendChild(formWrapper);
       return xformsDocument;
    }
 
@@ -2108,26 +2073,17 @@ public class SchemaFormBuilder
       Element groupElement =
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
                                         NamespaceConstants.XFORMS_PREFIX + ":group");
-      groupElement = startFormGroup(groupElement, owner);
-
-      if (groupElement == null)
-         groupElement = modelSection;
-      else
-      {
-         this.setXFormsId(groupElement);
-
-         Element controlsWrapper = this.wrapper.createControlsWrapper(groupElement);
-
-         //groupElement = (Element) formSection.appendChild(groupElement);
-         formSection.appendChild(controlsWrapper);
-
-         Element captionElement =
-            xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                           NamespaceConstants.XFORMS_PREFIX + ":label");
-         groupElement.appendChild(captionElement);
-         this.setXFormsId(captionElement);
-         captionElement.appendChild(xformsDocument.createTextNode(this.createCaption(owner, resourceBundle)));
-      }
+      this.setXFormsId(groupElement);
+      
+      //groupElement = (Element) formSection.appendChild(groupElement);
+      formSection.appendChild(groupElement);
+      
+      Element captionElement =
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                        NamespaceConstants.XFORMS_PREFIX + ":label");
+      groupElement.appendChild(captionElement);
+      this.setXFormsId(captionElement);
+      captionElement.appendChild(xformsDocument.createTextNode(this.createCaption(owner, resourceBundle)));
       return groupElement;
    }
 
@@ -2558,31 +2514,6 @@ public class SchemaFormBuilder
    }
 
    /**
-    * This method is invoked after the form builder is finished creating and processing
-    * a bind element. Implementations may choose to use this method to add/inspect/modify
-    * the bindElement prior to the builder moving onto the next bind element.
-    *
-    * @param bindElement The bind element being processed.
-    */
-   public void endBindElement(Element bindElement) 
-   {
-   }
-
-   /**
-    * This method is invoked after the form builder is finished creating and processing
-    * a form control. Implementations may choose to use this method to add/inspect/modify
-    * the controlElement prior to the builder moving onto the next control.
-    *
-    * @param controlElement The form control element that was created.
-    * @param controlType    The XML Schema type for which <b>controlElement</b> was created.
-    */
-   public void endFormControl(Element controlElement,
-                              XSTypeDefinition controlType,
-                              SchemaUtil.Occurance occurs)
-   {
-   }
-
-   /**
     * This method is invoked after an xforms:bind element is created for the specified SimpleType.
     * The implementation is responsible for setting setting any/all bind attributes
     * except for <b>id</b> and <b>ref</b> - these have been automatically set
@@ -2691,43 +2622,6 @@ public class SchemaFormBuilder
    }
 
    /**
-    * This method is invoked after the form builder creates a form control
-    * via a createControlForXXX() method but prior to decorating the form control
-    * with common attributes such as a caption, hint, help text elements,
-    * bind attributes, etc.
-    * The returned element is used in the XForm in place of controlElement.
-    * Implementations may choose to use this method to substitute controlElement
-    * with a different element, or perform any other processing on controlElement
-    * prior to it being added to the form.
-    *
-    * @param controlElement The form control element that was created.
-    * @param controlType    The XML Schema type for which <b>controlElement</b> was created.
-    * @return The Element to use in the XForm - controlElement or a replacement.
-    */
-   public Element startFormControl(Element controlElement,
-                                   XSTypeDefinition controlType) 
-   {
-      return controlElement;
-   }
-
-   /**
-    * This method is invoked after an xforms:group element is created for the specified
-    * ElementDecl. A group is created whenever an element is encountered in the XML Schema
-    * that contains other elements and attributes (complex types or mixed content types).
-    * The caller automatically adds the returned element to the XForm.
-    *
-    * @param groupElement  The groupElement being processed.
-    * @param schemaElement The schemaElement for the group.
-    * @return The group Element to use in the XForm - groupElement or a replacement. If a null
-    *         value is returned, the group is not created.
-    */
-   public Element startFormGroup(Element groupElement,
-                                 XSElementDeclaration schemaElement) 
-   {
-      return groupElement;
-   }
-
-   /**
     * Get a fully qualified name for this element, and eventually declares a new prefix for the namespace if
     * it was not declared before
     *
@@ -2766,10 +2660,14 @@ public class SchemaFormBuilder
                              final String nsPrefix,
                              final String ns)
    {
+      
       if (!e.hasAttributeNS(NamespaceConstants.XMLNS_NS, nsPrefix))
+      {
+         LOGGER.debug("adding namespace " + ns + " to " + e.getNodeType() + "(" + e.getNodeName() + ")");
          e.setAttributeNS(NamespaceConstants.XMLNS_NS, 
                           NamespaceConstants.XMLNS_PREFIX + ':' + nsPrefix, 
                           ns);
+      }
    }
 
    private void createTriggersForRepeats(final Document xformsDocument)
@@ -2929,27 +2827,79 @@ public class SchemaFormBuilder
 
       final Element formSection = (Element)xformsDocument.getDocumentElement().getLastChild();
       //add the triggers
-      final Element wrapper_triggers =
-         this.wrapper.createControlsWrapper(trigger_insert_before);
+      formSection.appendChild(trigger_insert_before);
+      formSection.appendChild(trigger_insert_after);
+      formSection.appendChild(trigger_delete);
+   }
 
-      if (wrapper_triggers == trigger_insert_before) 
-      {
-         //no wrapper
-         formSection.appendChild(trigger_insert_before);
-         formSection.appendChild(trigger_insert_after);
-         formSection.appendChild(trigger_delete);
-      } 
-      else 
-      {
-         formSection.appendChild(wrapper_triggers);
-         final Element insert_parent = (Element)trigger_insert_before.getParentNode();
+   private Element createSubmissionElement(final Document xformDocument,
+                                           final String id,
+                                           final boolean validate)
+   {
+      final Element result = xformDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                           NamespaceConstants.XFORMS_PREFIX + ":submission");
+      
+      this.setXFormsId(result, id);
 
-         if (insert_parent != null)
-         {
-            insert_parent.appendChild(trigger_insert_after);
-            insert_parent.appendChild(trigger_delete);
-         }
-      }
+      result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                            NamespaceConstants.XFORMS_PREFIX + ":validate",
+                            validate ? "true" : "false");
+
+      result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                            NamespaceConstants.XFORMS_PREFIX + ":action",
+                            this.action == null ? "" : this.base + this.action);
+
+      result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                            NamespaceConstants.XFORMS_PREFIX + ":method",
+                            (this.submitMethod != null
+                             ? this.submitMethod
+                             :  SchemaFormBuilder.SubmitMethod.POST).toString());
+      return result;
+   }
+
+   private Element createSubmitControl(final Document xformsDocument,
+                                       final Element submission,
+                                       final String id,
+                                       final String label)
+   {
+      final Element result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
+                                                            NamespaceConstants.XFORMS_PREFIX + ":submit");
+      result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                            NamespaceConstants.XFORMS_PREFIX + ":submission",
+                            submission.getAttributeNS(null, "id"));
+      this.setXFormsId(result, id);
+
+      final Element caption = 
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                        NamespaceConstants.XFORMS_PREFIX + ":label");
+      result.appendChild(caption);
+      caption.appendChild(xformsDocument.createTextNode(label));
+      this.setXFormsId(caption);
+      return result;
+   }
+
+   private void createSubmitElements(final Document xformsDocument,
+                                     final Element modelSection,
+                                     final Element formSection)
+   {
+
+      Element submission = this.createSubmissionElement(xformsDocument, "submission-validate", true);
+      modelSection.appendChild(submission);
+
+      Element submit = this.createSubmitControl(xformsDocument,
+                                                submission,
+                                                "submit",
+                                                "Submit");
+      formSection.appendChild(submit);
+
+      submission = this.createSubmissionElement(xformsDocument, "submission-draft", false);
+      modelSection.appendChild(submission);
+
+      submit = this.createSubmitControl(xformsDocument,
+                                        submission,
+                                        "save-draft",
+                                        "Save Draft");
+      formSection.appendChild(submit);
    }
 
    private Element createXFormsItem(final Document xformsDocument,

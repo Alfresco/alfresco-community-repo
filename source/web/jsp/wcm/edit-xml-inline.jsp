@@ -31,6 +31,11 @@ function _xforms_getSubmitButtons()
 {
   return [ document.getElementById("edit-file:save-button") ];
 }
+
+function _xforms_getSaveDraftButtons()
+{
+  return [];
+}
 </script>
 
 <f:view>

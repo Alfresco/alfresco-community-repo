@@ -91,9 +91,12 @@ public class UIFormProcessor
       final FormProcessor fp = form.getFormProcessors().get(0);
       final FormProcessor.Session fps = this.getFormProcessorSession();
       final Document fid = this.getFormInstanceData();
+
       try
       {
-         if (fps != null && fps.getFormInstanceData().equals(fid))
+         if (fps != null && 
+             fps.getForm().equals(form) && 
+             fps.getFormInstanceData().equals(fid))
          {
             LOGGER.debug("reusing form processor session " + fps);
             fp.process(this.formProcessorSession, out);
@@ -103,6 +106,8 @@ public class UIFormProcessor
             if (fps != null)
             {
                this.setFormProcessorSession(null);
+               LOGGER.debug("clearing form instance data " + fid);
+               fid.removeChild(fid.getDocumentElement());
             }
             LOGGER.debug("creating a new session for " + fid);
             this.setFormProcessorSession(fp.process(fid,
@@ -196,6 +201,7 @@ public class UIFormProcessor
    {
       if (formProcessorSession == null && this.formProcessorSession != null)
       {
+         LOGGER.debug("destroying old session " + this.formProcessorSession);
          this.formProcessorSession.destroy();
       }
       this.formProcessorSession = formProcessorSession;

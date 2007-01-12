@@ -112,7 +112,6 @@ public class XFormsBean
          this.schemaFormBuilder = 
             new SchemaFormBuilder("/ajax/invoke/XFormsBean.handleAction",
                                   SchemaFormBuilder.SubmitMethod.POST,
-                                  new XHTMLWrapperElementsBuilder(),
                                   baseUrl);
       }
 

@@ -628,7 +628,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
 	
 	            // Log the successful startup
 	            
-	            logger.info("CIFS server started");
+	            logger.info("CIFS server " + (isSMBServerEnabled() ? "" : "NOT ") + "started");
 	        }
 	        catch (UnsatisfiedLinkError ex)
 	        {
@@ -670,7 +670,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
 	            
 	            // Log the successful startup
 	            
-	            logger.info("FTP server started");
+	            logger.info("FTP server " + (isFTPServerEnabled() ? "" : "NOT ") + "started");
 	        }
         	catch (Exception ex)
         	{
@@ -690,7 +690,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
 	            
 	            // Log the successful startup
 	            
-	            logger.info("NFS server started");
+	            logger.info("NFS server " + (isNFSServerEnabled() ? "" : "NOT ") + "started");
 	        }
         	catch (Exception ex)
         	{
@@ -745,19 +745,33 @@ public class ServerConfiguration extends AbstractLifecycleBean
     {
         // If the configuration section is not valid then CIFS is disabled
         
-        if ( config == null || config.getConfigElements().isEmpty() ||
-        		config.getConfigElement( "disableCIFS") != null)
+        if ( config == null)
         {
             setSMBServerEnabled(false);
             return;
         }
             
+        // Check if the server has been disabled
+        
+        ConfigElement elem = config.getConfigElement( "serverEnable");
+        if ( elem != null)
+        {
+        	// Check for the enabled attribute
+        	
+        	String srvEnable = elem.getAttribute( "enabled");
+        	if ( srvEnable != null && srvEnable.equalsIgnoreCase( "false"))
+        	{
+                setSMBServerEnabled(false);
+                return;
+        	}
+        }
+
         // Get the network broadcast address
         //
         // Note: We need to set this first as the call to getLocalDomainName() may use a NetBIOS
         // name lookup, so the broadcast mask must be set before then.
 
-        ConfigElement elem = config.getConfigElement("broadcast");
+        elem = config.getConfigElement("broadcast");
         if (elem != null)
         {
 
@@ -1513,15 +1527,30 @@ public class ServerConfiguration extends AbstractLifecycleBean
     {
         // If the configuration section is not valid then FTP is disabled
         
-        if ( config == null || config.getConfigElement( "disableFTP") != null)
+        if ( config == null)
         {
             setFTPServerEnabled(false);
             return;
         }
             
+        // Check if the server has been disabled
+        
+        ConfigElement elem = config.getConfigElement( "serverEnable");
+        if ( elem != null)
+        {
+        	// Check for the enabled attribute
+        	
+        	String srvEnable = elem.getAttribute( "enabled");
+        	if ( srvEnable != null && srvEnable.equalsIgnoreCase( "false"))
+        	{
+                setFTPServerEnabled(false);
+                return;
+        	}
+        }
+
         //  Check for a bind address
         
-        ConfigElement elem = config.getConfigElement("bindto");
+        elem = config.getConfigElement("bindto");
         if ( elem != null) {
         
             //  Validate the bind address
@@ -1703,20 +1732,35 @@ public class ServerConfiguration extends AbstractLifecycleBean
     {
         // If the configuration section is not valid then NFS is disabled
         
-        if ( config == null || config.getConfigElement( "disableNFS") != null)
+        if ( config == null)
         {
             setNFSServerEnabled(false);
             return;
         }
 
-		//	Check if the port mapper is enabled
+        // Check if the server has been disabled
+        
+        ConfigElement elem = config.getConfigElement( "serverEnable");
+        if ( elem != null)
+        {
+        	// Check for the enabled attribute
+        	
+        	String srvEnable = elem.getAttribute( "enabled");
+        	if ( srvEnable != null && srvEnable.equalsIgnoreCase( "false"))
+        	{
+                setNFSServerEnabled(false);
+                return;
+        	}
+        }
+
+        //	Check if the port mapper is enabled
 		
 		if ( config.getConfigElement("enablePortMapper") != null)
 			m_nfsPortMapper = true;
 
 		//	Check for the thread pool size
 		
-		ConfigElement elem = config.getConfigElement("ThreadPool");
+		elem = config.getConfigElement("ThreadPool");
 		
 		if ( elem != null) {
 

@@ -284,6 +284,14 @@
         </constructor-arg>
     </bean>
 
+    <!-- NFS Server -->
+    
+    <bean id="nfsServer" class="org.alfresco.filesys.NFSServer" destroy-method="stopServer">
+        <constructor-arg>
+           <ref local="fileServerConfiguration"/>
+        </constructor-arg>
+    </bean>
+
 	<!-- Startup Message -->
 
     <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">

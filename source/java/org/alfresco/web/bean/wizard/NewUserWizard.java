@@ -102,6 +102,9 @@ public class NewUserWizard extends AbstractWizardBean
 
    /** ref to the company home space folder */
    private NodeRef companyHomeSpaceRef = null;
+
+   /** ref to the default home location */
+   private NodeRef defaultHomeSpaceRef;
    
    
    /**
@@ -160,7 +163,7 @@ public class NewUserWizard extends AbstractWizardBean
       this.email = "";
       this.companyId = "";
       this.homeSpaceName = "";
-      this.homeSpaceLocation = getCompanyHomeSpace();
+      this.homeSpaceLocation = getDefaultHomeSpace();
    }
 
    /**
@@ -394,7 +397,8 @@ public class NewUserWizard extends AbstractWizardBean
                {
                   if (currentHomeSpaceLocation.equals(this.homeSpaceLocation) == false &&
                       oldHomeFolderRef.equals(this.homeSpaceLocation) == false &&
-                      currentHomeSpaceLocation.equals(getCompanyHomeSpace()) == false)
+                      currentHomeSpaceLocation.equals(getCompanyHomeSpace()) == false &&
+                      currentHomeSpaceLocation.equals(getDefaultHomeSpace()) == false)
                   {
                      moveHomeSpace = true;
                   }
@@ -845,6 +849,29 @@ public class NewUserWizard extends AbstractWizardBean
       return this.companyHomeSpaceRef;
    }
 
+   private NodeRef getDefaultHomeSpace()
+   {
+      if (this.defaultHomeSpaceRef == null)
+      {
+         String defaultHomeSpacePath = Application.getClientConfig(FacesContext.getCurrentInstance()).getDefaultHomeSpacePath();
+         
+         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
+         List<NodeRef> nodes = this.searchService.selectNodes(rootNodeRef, defaultHomeSpacePath, null, this.namespaceService,
+               false);
+         
+         if (nodes.size() == 0)
+         {
+            throw new IllegalStateException("Unable to find company home space path: " + defaultHomeSpacePath);
+         }
+         
+         this.defaultHomeSpaceRef = nodes.get(0);
+      }
+      
+      return this.defaultHomeSpaceRef;
+   }
+   
+  
+   
    /**
     * Create the specified home space if it does not exist, and return the ID
     * 

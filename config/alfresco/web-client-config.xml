@@ -50,6 +50,10 @@
          <!-- Limit search results within selectors, -1 for unlimited. -->
          <selectors-search-max-results>500</selectors-search-max-results>
          
+		  <!-- The path to starting point when creating/finding home folders for new users in the UI -->
+		  <default-home-space-path>/app:company_home/app:user_homes</default-home-space-path>
+			  
+		  
          <!-- The default permissions to apply to a new users Home Space when first created -->
          <!-- this permission is for other users attempting to access that Home Space -->
          <!-- generally set to "Consumer" or empty value to indicate a private hidden space. -->

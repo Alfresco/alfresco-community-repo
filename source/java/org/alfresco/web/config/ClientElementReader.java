@@ -42,6 +42,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_SHELFVISIBLE = "shelf-visible";
    public static final String ELEMENT_AJAX_ENABLED = "ajax-enabled";
    public static final String ELEMENT_INITIALLOCATION = "initial-location";
+   public static final String ELEMENT_DEFAULTHOMESPACEPATH = "default-home-space-path";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -160,6 +161,13 @@ public class ClientElementReader implements ConfigElementReader
          if (initialLocation != null)
          {
             configElement.setInitialLocation(initialLocation.getTextTrim());
+         }
+         
+         // get the default home space path
+         Element defaultHomeSpacePath = element.element(ELEMENT_DEFAULTHOMESPACEPATH);
+         if (defaultHomeSpacePath != null)
+         {
+            configElement.setDefaultHomeSpacePath(defaultHomeSpacePath.getTextTrim());
          }
       }
       

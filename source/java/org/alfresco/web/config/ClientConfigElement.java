@@ -58,6 +58,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String initialLocation = "myalfresco";
    private ExpiringValueCache<String> wcmDomain = new ExpiringValueCache(1000*10L);
    private ExpiringValueCache<String> wcmPort = new ExpiringValueCache(1000*10L);
+   private String defaultHomeSpacePath = "/app:company_home";
    
    /**
     * Default Constructor
@@ -378,13 +379,29 @@ public class ClientConfigElement extends ConfigElementAdapter
    {
       return this.homeSpacePermission;
    }
-
+   
    /**
     * @param homeSpacePermission The default Home Space permission to set.
     */
    /*package*/ void setHomeSpacePermission(String homeSpacePermission)
    {
       this.homeSpacePermission = homeSpacePermission;
+   }
+
+   /**
+    * @return Returns the default Home Space path.
+    */
+   public String getDefaultHomeSpacePath()
+   {
+      return this.defaultHomeSpacePath;
+   }
+   
+   /**
+    * @param defaultHomeSpacePath The default Home Space path to set.
+    */
+   /*package*/ void setDefaultHomeSpacePath(String defaultHomeSpacePath)
+   {
+      this.defaultHomeSpacePath = defaultHomeSpacePath;
    }
    
    /**

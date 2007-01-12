@@ -1004,17 +1004,29 @@ public class ImporterComponent
                 searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
                 searchParameters.setQuery("PATH:\"" + importedRef + "\"");
                 searchParameters.excludeDataInTheCurrentTransaction((binding == null) ? true : !binding.allowReferenceWithinTransaction());
-                ResultSet resultSet = searchService.query(searchParameters);
+                ResultSet resultSet = null;
                 try
                 {
+                    resultSet = searchService.query(searchParameters);
                     if (resultSet.length() > 0)
                     {
                         nodeRef = resultSet.getNodeRef(0);
                     }
                 }
+                catch(UnsupportedOperationException e)
+                {
+                    List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
+                    if (nodeRefs.size() > 0)
+                    {
+                        nodeRef = nodeRefs.get(0);
+                    }
+                }
                 finally
                 {
-                    resultSet.close();
+                    if (resultSet != null)
+                    {
+                        resultSet.close();
+                    }
                 }
             }
             else

@@ -549,17 +549,22 @@
     <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="resourceBundles">
         <property name="models">
             <list>
+                <!-- System models  -->
                 <value>alfresco/model/dictionaryModel.xml</value>
                 <value>alfresco/model/systemModel.xml</value>
+                <value>org/alfresco/repo/security/authentication/userModel.xml</value>
+
+                <!-- Content models -->
                 <value>alfresco/model/contentModel.xml</value>
                 <value>alfresco/model/bpmModel.xml</value>
                 <value>alfresco/model/wcmModel.xml</value>
+                <value>alfresco/model/forumModel.xml</value>
+
+                <!-- Content models -->
                 <value>alfresco/model/applicationModel.xml</value>
                 <value>alfresco/model/wcmAppModel.xml</value>
-                <value>alfresco/model/forumModel.xml</value>
                 
                 <!-- Implementation models -->
-                <value>org/alfresco/repo/security/authentication/userModel.xml</value>
                 <value>org/alfresco/repo/action/actionModel.xml</value>
                 <value>org/alfresco/repo/rule/ruleModel.xml</value>
                 <value>org/alfresco/repo/version/version_model.xml</value>

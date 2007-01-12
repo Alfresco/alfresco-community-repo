@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:grouptasks">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="wf:submitGroupReviewTask" swimlane="initiator" />
+        <transition name="" to="review" />
+        <transition name="parallel" to="parallel" />
+    </start-state>
+
+    <swimlane name="reviewer">
+        <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+           <pooledactors>#{bpm_groupAssignee}</pooledactors>
+        </assignment>
+    </swimlane>
+
+    <task-node name="review">
+        <task name="wf:reviewTask" swimlane="reviewer"/>
+        <transition name="" to="end" />
+    </task-node>
+
+    <node name="parallel">
+        <action class="org.alfresco.repo.workflow.jbpm.ForEachFork">
+            <foreach>#{people.getMembers(bpm_groupAssignee)}</foreach>
+            <var>reviewer</var>
+        </action>
+        <transition name="review" to="parallelreview" />
+    </node>
+
+    <task-node name="parallelreview">
+        <task name="wf:reviewTask">
+            <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+               <actor>#{reviewer}</actor>
+            </assignment>
+        </task>
+        <transition name="" to="endparallel" />
+    </task-node>
+
+    <join name="endparallel">
+        <transition to="end" />
+    </join>
+
+    <end-state name="end" />
+
+</process-definition>

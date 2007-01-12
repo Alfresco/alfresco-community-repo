@@ -38,6 +38,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -46,6 +48,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
+import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -54,6 +57,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
@@ -70,6 +74,8 @@ public class WorkflowInterpreter
     private WorkflowService workflowService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
+    private TransactionService transactionService;
+    private AuthorityDAO authorityDAO;
     private AVMService avmService;
     private AVMSyncService avmSyncService;
     private PersonService personService;
@@ -168,6 +174,22 @@ public class WorkflowInterpreter
     }
 
     /**
+     * @param transactionService  transactionService
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    /**
+     * @param authorityDAO  authorityDAO
+     */
+    public void setAuthorityDAO(AuthorityDAO authorityDAO)
+    {
+        this.authorityDAO = authorityDAO;
+    }
+
+    /**
      * @param fileFolderService  fileFolderService
      */
     public void setFileFolderService(FileFolderService fileFolderService)
@@ -220,7 +242,13 @@ public class WorkflowInterpreter
         {
             public String doWork() throws Exception
             {
-                return executeCommand(line);
+                return TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<String>()
+                {
+                    public String doWork() throws Exception
+                    {
+                        return executeCommand(line);
+                    }
+                });
             }
         }, username);
     }
@@ -882,6 +910,45 @@ public class WorkflowInterpreter
                     }
                     out.println("set var " + qname + " = " + vars.get(qname));
                 }
+                else if (command[2].equals("group"))
+                {
+                    boolean multi = false;
+                    if (command[1].endsWith("*"))
+                    {
+                        command[1] = command[1].substring(0, command[1].length() -1);
+                        multi = true;
+                    }
+                    QName qname = QName.createQName(command[1], namespaceService);
+                    String[] strValues = command[3].split(",");
+                    if (!multi && strValues.length > 1)
+                    {
+                        return "Syntax Error.\n";
+                    }
+                    if (!multi)
+                    {
+                        NodeRef auth = authorityDAO.getAuthorityNodeRefOrNull(strValues[0]);
+                        if (auth == null)
+                        {
+                            throw new WorkflowException("Group " + strValues[0] + " does not exist.");
+                        }
+                        vars.put(qname, auth);
+                    }
+                    else
+                    {
+                        List<NodeRef> values = new ArrayList<NodeRef>();
+                        for (String strValue : strValues)
+                        {
+                            NodeRef auth = authorityDAO.getAuthorityNodeRefOrNull(strValue);
+                            if (auth == null)
+                            {
+                                throw new WorkflowException("Group " + strValue + " does not exist.");
+                            }
+                            values.add(auth);
+                        }
+                        vars.put(qname, (Serializable)values);
+                    }
+                    out.println("set var " + qname + " = " + vars.get(qname));
+                }
                 else if (command[2].equals("avmpackage"))
                 {
                 	// lookup source folder of changes
@@ -979,5 +1046,5 @@ public class WorkflowInterpreter
     {
         return username;
     }
-        
+
 }

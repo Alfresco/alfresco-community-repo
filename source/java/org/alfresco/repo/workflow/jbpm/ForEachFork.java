@@ -20,27 +20,37 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.dom4j.Element;
-import org.jbpm.graph.def.ActionHandler;
 import org.jbpm.graph.def.Node;
 import org.jbpm.graph.def.Transition;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.instantiation.FieldInstantiator;
-import org.jbpm.jpdl.el.impl.JbpmExpressionEvaluator;
+import org.springframework.beans.factory.BeanFactory;
 
 
 /**
  * For each "item in collection", create a fork.
  */
-public class ForEachFork implements ActionHandler
+public class ForEachFork extends JBPMSpringActionHandler
 {
     private static final long serialVersionUID = 4643103713602441652L;
+    private ServiceRegistry services;
     
     private Element foreach;
     private String var;
 
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
+     */
+    @Override
+    protected void initialiseHandler(BeanFactory factory)
+    {
+        services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
+    }
     
     /**
      * Create a new child token for each item in list.
@@ -68,7 +78,8 @@ public class ForEachFork implements ActionHandler
         {
             if (forEachCollStr.startsWith("#{"))
             {
-                Object eval = JbpmExpressionEvaluator.evaluate(forEachCollStr, executionContext);
+                String expression = forEachCollStr.substring(2, forEachCollStr.length() -1);
+                Object eval = AlfrescoJavaScript.executeScript(executionContext, services, expression, null);
                 if (eval == null)
                 {
                     throw new WorkflowException("forEach expression '" + forEachCollStr + "' evaluates to null");
@@ -85,11 +96,23 @@ public class ForEachFork implements ActionHandler
                     }
                 }
                 
+                // expression evaluates to Node array
+                else if (eval instanceof org.alfresco.repo.jscript.Node[])
+                {
+                    org.alfresco.repo.jscript.Node[] nodes = (org.alfresco.repo.jscript.Node[])eval;
+                    forEachColl = new ArrayList(nodes.length);
+                    for (org.alfresco.repo.jscript.Node node : nodes)
+                    {
+                        forEachColl.add(new JBPMNode(node.getNodeRef(), services));
+                    }
+                }
+                
                 // expression evaluates to collection
                 else if (eval instanceof Collection)
                 {
                     forEachColl = (List)eval;
                 }
+                
             }
         }
         else

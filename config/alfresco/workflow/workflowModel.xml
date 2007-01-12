@@ -24,6 +24,13 @@
          </mandatory-aspects>
       </type>
 
+      <type name="wf:submitGroupReviewTask">
+         <parent>bpm:startTask</parent>
+         <mandatory-aspects>
+            <aspect>bpm:groupAssignee</aspect>
+         </mandatory-aspects>
+      </type>
+
       <type name="wf:submitParallelReviewTask">
          <parent>bpm:startTask</parent>
          <properties>

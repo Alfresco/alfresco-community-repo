@@ -56,7 +56,6 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     private static final long serialVersionUID = -2908748080671212745L;
     
     private static JpdlXmlReader jpdlReader = new JpdlXmlReader((InputSource)null);
-    private ScriptService scriptService;
     private ServiceRegistry services;
     private Element script;
     
@@ -67,7 +66,6 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     @Override
     protected void initialiseHandler(BeanFactory factory)
     {
-        scriptService = (ScriptService)factory.getBean(ServiceRegistry.SCRIPT_SERVICE.getLocalName());
         services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
     }
 
@@ -116,9 +114,8 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
             expression = expressionElement.getTextTrim();
         }
 
-        // construct script arguments and execute
-        Map<String, Object> inputMap = createInputMap(executionContext, variableAccesses);
-        Object result = scriptService.executeScriptString(expression, inputMap);
+        // execute
+        Object result = executeScript(executionContext, services, expression, variableAccesses);
 
         // map script return variable to process context
         VariableAccess returnVariable = getWritableVariable(variableAccesses);
@@ -130,6 +127,24 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         }
     }
 
+    
+    /**
+     * Execute a script
+     * 
+     * @param context  jBPM execution context
+     * @param services  Alfresco service registry
+     * @param expression  script to execute
+     * @param variableAccesses  (optional) list of jBPM variables to map into script (all, if not supplied)
+     * @return  script result
+     */
+    public static Object executeScript(ExecutionContext context, ServiceRegistry services, String expression, List<VariableAccess> variableAccesses)
+    {
+        Map<String, Object> inputMap = createInputMap(context, services, variableAccesses);
+        ScriptService scriptService = services.getScriptService();
+        Object result = scriptService.executeScriptString(expression, inputMap);
+        return result;
+    }
+    
 
     /**
      * Construct map of arguments to pass to script
@@ -141,7 +156,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      * @return  the map of script arguments
      */
     @SuppressWarnings("unchecked")
-    public Map<String, Object> createInputMap(ExecutionContext executionContext, List<VariableAccess> variableAccesses)
+    private static Map<String, Object> createInputMap(ExecutionContext executionContext, ServiceRegistry services, List<VariableAccess> variableAccesses)
     {
         Map<String, Object> inputMap = new HashMap<String, Object>();
 
@@ -216,7 +231,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      * @param variableAccesses  the variables configuration
      * @return  true => there are variables to read
      */
-    private boolean hasReadableVariable(List<VariableAccess> variableAccesses)
+    private static boolean hasReadableVariable(List<VariableAccess> variableAccesses)
     {
         if (variableAccesses != null)
         {
@@ -238,7 +253,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      * @param variableAccesses  the variables configuration
      * @return  true => there is a variable to write
      */
-    private VariableAccess getWritableVariable(List<VariableAccess> variableAccesses)
+    private static VariableAccess getWritableVariable(List<VariableAccess> variableAccesses)
     {
         if (variableAccesses != null)
         {

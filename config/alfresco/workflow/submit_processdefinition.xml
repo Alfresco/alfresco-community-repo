@@ -56,7 +56,7 @@
     <task-node name="serialreview">
         <task name="wcmwf:reviewTask">
            <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
-              <actor>#{bpm_assignees[wcmwf_approveCnt]}</actor>
+              <actor>#{bpm_assignees.get(wcmwf_approveCnt)}</actor>
            </assignment>
         </task>
 

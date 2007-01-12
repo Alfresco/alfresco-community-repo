@@ -12,6 +12,8 @@
         <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
         <!-- Import Alfresco Content Domain Model Definitions -->
         <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+        <!-- Import User Model Definitions -->
+        <import uri="http://www.alfresco.org/model/user/1.0" prefix="usr"/>
     </imports>
 
     <namespaces>
@@ -304,6 +306,29 @@
                         <class>cm:person</class>
                         <mandatory>true</mandatory>
                         <many>true</many>
+                    </target>
+                </association>
+
+            </associations>
+        </aspect>
+
+        <!--                          -->
+        <!--  Single Group Assignee   -->
+        <!--                          -->
+
+        <aspect name="bpm:groupAssignee">
+            <associations>
+
+                <association name="bpm:groupAssignee">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <!-- TODO: Refactor when group is pulled into content model -->
+                        <class>usr:authorityContainer</class>
+                        <mandatory>true</mandatory>
+                        <many>false</many>
                     </target>
                 </association>
 

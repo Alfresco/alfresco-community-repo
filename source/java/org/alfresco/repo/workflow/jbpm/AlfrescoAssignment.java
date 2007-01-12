@@ -17,14 +17,20 @@
 package org.alfresco.repo.workflow.jbpm;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.jscript.Node;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.dom4j.Element;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.jpdl.el.impl.JbpmExpressionEvaluator;
 import org.jbpm.taskmgmt.def.AssignmentHandler;
 import org.jbpm.taskmgmt.exe.Assignable;
+import org.springframework.beans.factory.BeanFactory;
 
 
 /**
@@ -33,12 +39,23 @@ import org.jbpm.taskmgmt.exe.Assignable;
  * 
  * @author davidc
  */
-public class AlfrescoAssignment implements AssignmentHandler
+public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
 {
     private static final long serialVersionUID = 1025667849552265719L;
+    private ServiceRegistry services;
 
     private Element actor;
     private Element pooledactors;
+
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
+     */
+    @Override
+    protected void initialiseHandler(BeanFactory factory)
+    {
+        services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
+    }
 
     
     /* (non-Javadoc)
@@ -63,7 +80,8 @@ public class AlfrescoAssignment implements AssignmentHandler
             {
                 if (actorValStr.startsWith("#{"))
                 {
-                    Object eval = JbpmExpressionEvaluator.evaluate(actorValStr, executionContext);
+                    String expression = actorValStr.substring(2, actorValStr.length() -1);
+                    Object eval = AlfrescoJavaScript.executeScript(executionContext, services, expression, null);
                     if (eval == null)
                     {
                         throw new WorkflowException("actor expression '" + actorValStr + "' evaluates to null");
@@ -73,9 +91,9 @@ public class AlfrescoAssignment implements AssignmentHandler
                     {
                         assignedActor = (String)eval;
                     }
-                    else if (eval instanceof JBPMNode)
+                    else if (eval instanceof Node)
                     {
-                        JBPMNode node = (JBPMNode)eval;
+                        Node node = (Node)eval;
                         if (!node.getType().equals(ContentModel.TYPE_PERSON))
                         {
                             throw new WorkflowException("actor expression does not evaluate to a person");
@@ -106,48 +124,51 @@ public class AlfrescoAssignment implements AssignmentHandler
             {
                 if (pooledactorValStr.startsWith("#{"))
                 {
-                    Object eval = JbpmExpressionEvaluator.evaluate(pooledactorValStr, executionContext);
+                    String expression = pooledactorValStr.substring(2, pooledactorValStr.length() -1);
+                    Object eval = AlfrescoJavaScript.executeScript(executionContext, services, expression, null);
                     if (eval == null)
                     {
                         throw new WorkflowException("pooledactors expression '" + pooledactorValStr + "' evaluates to null");
                     }
     
-                    if (eval instanceof Collection)
+                    if (eval instanceof Node[])
                     {
-                        Collection coll = (Collection)eval;
-                        assignedPooledActors = new String[coll.size()];
+                        Node[] nodes = (Node[])eval;
+                        assignedPooledActors = new String[nodes.length];
                         
                         int i = 0;
-                        for (Object obj : coll)
+                        for (Node node : (Node[])nodes)
                         {
-                            if (!(obj instanceof JBPMNode))
+                            if (node.getType().equals(ContentModel.TYPE_PERSON))
                             {
-                                throw new WorkflowException("pooledactors does not refer to a collection of people");
+                                assignedPooledActors[i++] = (String)node.getProperties().get(ContentModel.PROP_USERNAME);
                             }
-                            JBPMNode node = (JBPMNode)obj;
-                            if (!node.getType().equals(ContentModel.TYPE_PERSON))
+                            else if (node.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
                             {
-                                throw new WorkflowException("pooledactors expression does not evaluate to a collection of people");
+                                assignedPooledActors[i++] = (String)node.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
                             }
-                            assignedPooledActors[i++] = (String)node.getProperties().get(ContentModel.PROP_USERNAME);
+                            else
+                            {
+                                throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
+                            }
                         }
                     }
-                    else if (eval instanceof JBPMNode)
+                    else if (eval instanceof Node)
                     {
-                        JBPMNode node = (JBPMNode)eval;
+                        assignedPooledActors = new String[1];
+                        Node node = (Node)eval;
                         if (node.getType().equals(ContentModel.TYPE_PERSON))
                         {
                             assignedPooledActors[0] = (String)node.getProperties().get(ContentModel.PROP_USERNAME);
                         }
-                        // TODO: Support Group
+                        else if (node.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+                        {
+                            assignedPooledActors[0] = (String)node.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+                        }
                         else
                         {
-                            throw new WorkflowException("pooledactors expression does not evaluate to a collection of people");
+                            throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
                         }
-                    }
-                    else
-                    {
-                        throw new WorkflowException("pooledactor expression does not evaluate to a group or collection of people");
                     }
                 }
                 else

@@ -91,6 +91,18 @@ ok> var <varName>[*] person <varValue>
     
     var bpm:assignee* person admin,fred 
 
+ok> var <varName>[*] group <varValue> 
+
+    Define or update a (usr:authorityContainer) node ref variable. 
+
+    <varName> variable name 
+    [*] if specified, define a collection 
+    <varValue> variable value (comma-seperate to specify a list of values) 
+
+    e.g. 
+    
+    var bpm:groupAssignee group GROUP_Engineering
+
 ok> var <varName> package <itemCount>
 
     Define or update a (bpm:workflowPackage) node ref variable.

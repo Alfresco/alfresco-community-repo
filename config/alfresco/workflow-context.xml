@@ -34,6 +34,8 @@
       <property name="nodeService" ref="NodeService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="personService" ref="PersonService"/>
+      <property name="authorityDAO" ref="authorityDAO"/>
+      <property name="transactionService" ref="transactionComponent"/>
       <property name="fileFolderService" ref="FileFolderService"/>
    </bean>
 
@@ -87,6 +89,8 @@
       <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="personService" ref="personService"/>
+      <property name="authorityService" ref="authorityService"/>
+      <property name="authorityDAO" ref="authorityDAO"/>
       <property name="serviceRegistry" ref="ServiceRegistry"/>
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>

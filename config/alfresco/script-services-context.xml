@@ -70,6 +70,9 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
+        <property name="authorityDAO">
+            <ref bean="authorityDAO"/>
+        </property>
     </bean>    
 
     <bean id="sessionScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Session">

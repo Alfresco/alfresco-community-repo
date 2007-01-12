@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.workflow.BPMEngine;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
@@ -49,6 +51,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
@@ -108,6 +112,8 @@ public class JBPMEngine extends BPMEngine
     protected NodeService nodeService;
     protected ServiceRegistry serviceRegistry;
     protected PersonService personService;
+    protected AuthorityService authorityService;
+    protected AuthorityDAO authorityDAO;
     protected JbpmTemplate jbpmTemplate;
     
     // Company Home
@@ -183,6 +189,26 @@ public class JBPMEngine extends BPMEngine
         this.personService = personService;
     }
     
+    /**
+     * Sets the Authority Service
+     * 
+     * @param authorityService
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    /**
+     * Sets the Authority DAO
+     * 
+     * @param authorityDAO
+     */
+    public void setAuthorityDAO(AuthorityDAO authorityDAO)
+    {
+        this.authorityDAO = authorityDAO;
+    }
+
     /**
      * Sets the Service Registry
      *  
@@ -459,7 +485,7 @@ public class JBPMEngine extends BPMEngine
                     processContext.setVariable("cancelled", false);
                     NodeRef companyHome = getCompanyHome();
                     processContext.setVariable("companyhome", new JBPMNode(companyHome, serviceRegistry));
-                    NodeRef initiatorPerson = mapNameToAuthority(currentUserName);
+                    NodeRef initiatorPerson = mapNameToPerson(currentUserName);
                     if (initiatorPerson != null)
                     {
                         processContext.setVariable("initiator", new JBPMNode(initiatorPerson, serviceRegistry));
@@ -831,9 +857,17 @@ public class JBPMEngine extends BPMEngine
             {
                 public List<WorkflowTask> doInJbpm(JbpmContext context)
                 {
-                    // retrieve pooled tasks for specified authorities
+                    // flatten authorities to include all parent authorities
+                    Set<String> flattenedAuthorities = new HashSet<String>();
+                    for (String authority : authorities)
+                    {
+                        Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, authority, false);
+                        flattenedAuthorities.addAll(parents);
+                    }
+                    
+                    // retrieve pooled tasks for all flattened authorities
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
-                    List<TaskInstance> tasks = taskSession.findPooledTaskInstances(authorities);
+                    List<TaskInstance> tasks = taskSession.findPooledTaskInstances(new ArrayList(flattenedAuthorities));
                     List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
                     for (TaskInstance task : tasks)
                     {
@@ -1281,7 +1315,7 @@ public class JBPMEngine extends BPMEngine
     }
 
     /**
-     * Sets Properties of Task
+     * Gets Properties of Task
      * 
      * @param instance  task instance
      * @param properties  properties to set
@@ -1778,12 +1812,12 @@ public class JBPMEngine extends BPMEngine
     }
     
     /**
-     * Convert authority name to an Alfresco Authority
+     * Convert person name to an Alfresco Person
      * 
-     * @param names  the authority names to convert
-     * @return  the Alfresco authorities
+     * @param names  the person name to convert
+     * @return  the Alfresco person
      */
-    private NodeRef mapNameToAuthority(String name)
+    private NodeRef mapNameToPerson(String name)
     {
         NodeRef authority = null;
         if (name != null)
@@ -1797,6 +1831,26 @@ public class JBPMEngine extends BPMEngine
         return authority;
     }
 
+    /**
+     * Convert authority name to an Alfresco Authority
+     * 
+     * @param names  the authority names to convert
+     * @return  the Alfresco authorities
+     */
+    private NodeRef mapNameToAuthority(String name)
+    {
+        NodeRef authority = null;
+        if (name != null)
+        {
+            // TODO: Should this be an exception?
+            if (authorityDAO.authorityExists(name))
+            {
+                authority = authorityDAO.getAuthorityNodeRefOrNull(name);
+            }
+        }
+        return authority;
+    }
+    
     /**
      * Map jBPM variable name to QName
      * 

@@ -3,7 +3,9 @@ var _uploads = [];
 function handle_upload_helper(fileInputElement,
                               uploadId,
                               callback,
-                              contextPath)
+                              contextPath,
+                              actionUrl,
+                              params)
 {
   var id = fileInputElement.getAttribute("name");
   var d = fileInputElement.ownerDocument;
@@ -20,12 +22,15 @@ function handle_upload_helper(fileInputElement,
 
   var form = d.createElement("form");
   d.body.appendChild(form);
+  form.id = id + "_upload_form";
+  form.name = form.id;
   form.style.display = "none";
   form.method = "post";
   form.encoding = "multipart/form-data";
   form.enctype = "multipart/form-data";
   form.target = iframe.name;
-  form.action = contextPath + "/uploadFileServlet";
+  actionUrl = actionUrl || "/uploadFileServlet";
+  form.action = contextPath + actionUrl;
   form.appendChild(fileInputElement);
 
   var id = document.createElement("input");
@@ -34,17 +39,31 @@ function handle_upload_helper(fileInputElement,
   id.name = "upload-id";
   id.value = uploadId;
 
+  for (var i in params)
+  {
+    var p = document.createElement("input");
+    p.type = "hidden";
+    form.appendChild(p);
+    id.name = i;
+    id.value = params[i];
+  }
+
   var rp = document.createElement("input");
   rp.type = "hidden";
   form.appendChild(rp);
   rp.name = "return-page";
-  rp.value = "javascript:window.parent.upload_complete_helper('" + uploadId + "')";
+  rp.value = "javascript:window.parent.upload_complete_helper('" + uploadId + 
+    "',{error: '${_UPLOAD_ERROR}', fileTypeImage: '${_FILE_TYPE_IMAGE}'})";
 
   form.submit();
 }
 
-function upload_complete_helper(id)
+function upload_complete_helper(id, args)
 {
   var upload = _uploads[id];
-  upload.callback(id, upload.path, upload.path.replace(/.*[\/\\]([^\/\\]+)/, "$1"));
+  upload.callback(id, 
+                  upload.path, 
+                  upload.path.replace(/.*[\/\\]([^\/\\]+)/, "$1"),
+                  args.fileTypeImage,
+                  args.error != "${_UPLOAD_ERROR}" ? args.error : null);
 }

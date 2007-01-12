@@ -350,6 +350,12 @@ public class CreateWebContentWizard extends BaseContentWizard
                      {
                         srcPaths.add(AVMConstants.getCorrespondingPath(rendition.getPath(), sandboxName));
                      }
+                     for (NodeRef uploadedFile : uploadedFiles)
+                     {
+                        final String uploadPath = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
+                        srcPaths.add(AVMConstants.getCorrespondingPath(uploadPath, sandboxName));
+                     }
+
                      srcPaths.add(AVMConstants.getCorrespondingPath(this.formInstanceData.getPath(), sandboxName));
                   }
                   else
@@ -358,6 +364,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                      srcPaths.add(AVMConstants.getCorrespondingPath(this.createdPath, sandboxName));
                   }
 
+                  LOGGER.debug("creating workflow package with " + srcPaths.size() + " files");
                   final NodeRef packageNodeRef = 
                      AVMWorkflowUtil.createWorkflowPackage(srcPaths,
                                                            storeId,

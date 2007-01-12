@@ -29,8 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -46,6 +48,7 @@ import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.ui.common.Utils;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -97,7 +100,7 @@ public class XFormsBean
 
       private ChibaBean chibaBean;
       private final SchemaFormBuilder schemaFormBuilder;
-      private final HashMap<String, NodeRef> uploads = new HashMap<String, NodeRef>();
+      private final Set<NodeRef> uploads = new HashSet<NodeRef>();
       private final List<XMLEvent> eventLog = new LinkedList<XMLEvent>();
 
       public XFormsSession(final Document formInstanceData,
@@ -113,9 +116,14 @@ public class XFormsBean
                                   baseUrl);
       }
 
+      public void addUpload(final NodeRef nr)
+      {
+         this.uploads.add(nr);
+      }
+
       public NodeRef[] getUploadedFiles()
       {
-         return (NodeRef[])this.uploads.values().toArray(new NodeRef[0]);
+         return (NodeRef[])this.uploads.toArray(new NodeRef[0]);
       }
 
       public void destroy()
@@ -172,14 +180,6 @@ public class XFormsBean
       this.avmBrowseBean = avmBrowseBean;
    }
    
-   /**
-    * @param nodeService the nodeService to set.
-    */
-   public void setNodeService(final NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
-
    /**
     * @param avmService the avmService to set.
     */
@@ -509,14 +509,20 @@ public class XFormsBean
       String uploadId = null;
       String currentPath = null;
       String filename = null;
+      String returnPage = null;
       InputStream fileInputStream = null;
       for (FileItem item : fileItems)
       {
          LOGGER.debug("item = " + item);
-         if (item.isFormField() && item.getFieldName().equals("id"))
+         if (item.isFormField() && item.getFieldName().equals("upload-id"))
          {
             uploadId = item.getString();
             LOGGER.debug("uploadId is " + uploadId);
+         }
+         if (item.isFormField() && item.getFieldName().equals("return-page"))
+         {
+            returnPage = item.getString();
+            LOGGER.debug("returnPage is " + returnPage);
          }
          else if (item.isFormField() && item.getFieldName().equals("currentPath"))
          {
@@ -529,39 +535,37 @@ public class XFormsBean
          }
          else
          {
-            filename = item.getName();
-            int idx = filename.lastIndexOf('\\');
-            if (idx == -1)
-            {
-               idx = filename.lastIndexOf('/');
-            }
-            if (idx != -1)
-            {
-               filename = filename.substring(idx + File.separator.length());
-            }
+            filename = FilenameUtils.getName(item.getName());
             fileInputStream = item.getInputStream();
-            LOGGER.debug("parsed file " + filename);
+            LOGGER.debug("uploading file " + filename);
          }
       }
 
       LOGGER.debug("saving file " + filename + " to " + currentPath);
       
-      FileCopyUtils.copy(fileInputStream, 
-                         this.avmService.createFile(currentPath, filename));
+      try
+      {
+         FileCopyUtils.copy(fileInputStream, 
+                            this.avmService.createFile(currentPath, filename));
+         final Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(2, 1.0f);
+         props.put(ContentModel.PROP_TITLE, new PropertyValue(DataTypeDefinition.TEXT, filename));
+         props.put(ContentModel.PROP_DESCRIPTION, 
+                   new PropertyValue(DataTypeDefinition.TEXT,
+                                     "Uploaded for form " + this.xformsSession.getForm().getName()));
+         this.avmService.setNodeProperties(currentPath + "/" + filename, props);
+         this.avmService.addAspect(currentPath + "/" + filename, ContentModel.ASPECT_TITLED); 
+         
+         this.xformsSession.addUpload(AVMNodeConverter.ToNodeRef(-1, currentPath + "/" + filename));
+         returnPage = returnPage.replace("${_FILE_TYPE_IMAGE}",
+                                         Utils.getFileTypeImage(facesContext, filename, true));
+      }
+      catch (Exception e)
+      {
+         LOGGER.debug(e.getMessage(), e);
+         returnPage = returnPage.replace("${_UPLOAD_ERROR}", e.getMessage());
+      }
 
-      final NodeRef uploadNodeRef = 
-         AVMNodeConverter.ToNodeRef(-1, currentPath + "/" + filename);
-      final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-      props.put(ContentModel.PROP_TITLE, filename);
-      props.put(ContentModel.PROP_DESCRIPTION, 
-                "Uploaded for form " + this.xformsSession.getForm().getName());
-      this.nodeService.addAspect(uploadNodeRef, 
-                                 ContentModel.ASPECT_TITLED, 
-                                 props);
-
-      this.xformsSession.uploads.put(uploadId, uploadNodeRef);
-
-      LOGGER.debug("upload complete.  sending response");
+      LOGGER.debug("upload complete.  sending response: " + returnPage);
       final Document result = XMLUtil.newDocument();
       final Element htmlEl = result.createElement("html");
       result.appendChild(htmlEl);
@@ -571,9 +575,7 @@ public class XFormsBean
       final Element scriptEl = result.createElement("script");
       bodyEl.appendChild(scriptEl);
       scriptEl.setAttribute("type", "text/javascript");
-      final Node scriptText = 
-         result.createTextNode("window.parent.FilePickerWidget." +
-                               "_upload_completeHandler('" + uploadId + "');");
+      final Node scriptText = result.createTextNode(returnPage);
       scriptEl.appendChild(scriptText);
 
       final ResponseWriter out = facesContext.getResponseWriter();

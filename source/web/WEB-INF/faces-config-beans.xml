@@ -3159,10 +3159,6 @@
          <value>#{AVMService}</value>
       </managed-property>
       <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
       </managed-property>

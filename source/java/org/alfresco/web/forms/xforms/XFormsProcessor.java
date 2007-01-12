@@ -54,7 +54,8 @@ public class XFormsProcessor
       "/scripts/ajax/dojo/" + (LOGGER.isDebugEnabled() 
                                ? "dojo.js.uncompressed.js" 
                                : "dojo.js"),
-      "/scripts/ajax/xforms.js"
+      "/scripts/ajax/xforms.js",
+      "/scripts/upload_helper.js",
    };
 
 

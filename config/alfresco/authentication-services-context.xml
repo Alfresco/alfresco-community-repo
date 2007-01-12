@@ -314,6 +314,34 @@
             </set>
         </property>
     </bean>
+	
+	<bean name="userHomesHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider">
+        <property name="serviceRegistry">
+		    <ref bean="ServiceRegistry" />
+		</property>
+        <property name="path">
+           <value>/${spaces.company_home.childname}/${spaces.user_homes.childname}</value>
+        </property>
+        <property name="storeUrl">
+           <value>${spaces.store}</value>
+        </property>
+        <property name="homeFolderManager">
+			<ref bean="homeFolderManager" />
+		</property>
+        <property name="inheritsPermissionsOnCreate">
+            <value>false</value>
+        </property>
+        <property name="ownerPemissionsToSetOnCreate">
+            <set>
+                <value>All</value>
+            </set>
+        </property>
+        <property name="userPemissions">
+            <set>
+                <value>All</value>
+            </set>
+        </property>
+    </bean>
     
     
     <!-- The ticket component.                                              -->

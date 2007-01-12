@@ -204,7 +204,6 @@ public class ConcurrentNodeServiceTest extends TestCase
             catch (Exception e)
             {
                 e.printStackTrace();
-                System.exit(12);
             }
             if (waiter != null)
             {

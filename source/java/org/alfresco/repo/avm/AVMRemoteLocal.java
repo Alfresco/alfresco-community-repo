@@ -447,4 +447,36 @@ public class AVMRemoteLocal implements AVMRemote
     {
         fService.renameStore(sourceName, destName);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#addAspect(java.lang.String, org.alfresco.service.namespace.QName)
+     */
+    public void addAspect(String path, QName aspectName) 
+    {
+        fService.addAspect(path, aspectName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#getAspects(int, java.lang.String)
+     */
+    public List<QName> getAspects(int version, String path) 
+    {
+        return fService.getAspects(version, path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#hasAspect(int, java.lang.String, org.alfresco.service.namespace.QName)
+     */
+    public boolean hasAspect(int version, String path, QName aspectName) 
+    {
+        return fService.hasAspect(version, path, aspectName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#removeAspect(java.lang.String, org.alfresco.service.namespace.QName)
+     */
+    public void removeAspect(String path, QName aspectName) 
+    {
+        fService.removeAspect(path, aspectName);
+    }
 }

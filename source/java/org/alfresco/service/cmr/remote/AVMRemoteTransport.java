@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
@@ -424,4 +426,39 @@ public interface AVMRemoteTransport
      * @param destName The new name.
      */
     public void renameStore(String ticket, String sourceName, String destName);
+    /**
+     * Add an aspect to an AVM node.
+     * @param path The path to the node.
+     * @param aspectName The QName of the aspect.
+     * @throws AVMNotFoundException
+     * @throws AVMExistsException
+     */
+    public void addAspect(String ticket, String path, QName aspectName);
+    
+    /**
+     * Get all the aspects on an AVM node.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @return A List of the QNames of the aspects.
+     * @throws AVMNotFoundException   
+     */
+    public List<QName> getAspects(String ticket, int version, String path);
+    
+    /**
+     * Remove an aspect and its properties from a node.
+     * @param path The path to the node.
+     * @param aspectName The name of the aspect.
+     * @throws AVMNotFoundException
+     */
+    public void removeAspect(String ticket, String path, QName aspectName);
+    
+    /**
+     * Does a node have a particular aspect.
+     * @param version The version to look under.
+     * @param path The path to the node.
+     * @param aspectName The aspect name to check.
+     * @return Whether the given node has the given aspect.
+     * @throws AVMNotFoundException
+     */
+    public boolean hasAspect(String ticket, int version, String path, QName aspectName);
 }

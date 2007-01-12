@@ -963,4 +963,40 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
         fAuthService.validate(ticket);
         fAVMService.renameStore(sourceName, destName);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#addAspect(java.lang.String, java.lang.String, org.alfresco.service.namespace.QName)
+     */
+    public void addAspect(String ticket, String path, QName aspectName) 
+    {
+        fAuthService.validate(ticket);
+        fAVMService.addAspect(path, aspectName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#getAspects(java.lang.String, int, java.lang.String)
+     */
+    public List<QName> getAspects(String ticket, int version, String path) 
+    {
+        fAuthService.validate(ticket);
+        return fAVMService.getAspects(version, path);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#hasAspect(java.lang.String, int, java.lang.String, org.alfresco.service.namespace.QName)
+     */
+    public boolean hasAspect(String ticket, int version, String path, QName aspectName) 
+    {
+        fAuthService.validate(ticket);
+        return fAVMService.hasAspect(version, path, aspectName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#removeAspect(java.lang.String, java.lang.String, org.alfresco.service.namespace.QName)
+     */
+    public void removeAspect(String ticket, String path, QName aspectName) 
+    {
+        fAuthService.validate(ticket);
+        fAVMService.removeAspect(path, aspectName);
+    }
 }

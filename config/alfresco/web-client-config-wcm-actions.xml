@@ -80,7 +80,7 @@
          <!-- Submit AVM node -->
          <action id="submit">
             <permissions>
-               <permission allow="true">Read</permission>
+               <permission allow="true">Write</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>submit</label-id>
@@ -95,7 +95,7 @@
          <!-- Revert AVM node -->
          <action id="revert">
             <permissions>
-               <permission allow="true">Read</permission>
+               <permission allow="true">Write</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <label-id>revert</label-id>

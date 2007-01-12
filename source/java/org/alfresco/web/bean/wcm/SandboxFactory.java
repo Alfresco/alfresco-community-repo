@@ -20,15 +20,16 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.util.GUID;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
@@ -42,8 +43,6 @@ import org.apache.commons.logging.LogFactory;
 public final class SandboxFactory
 {
    private static Log logger = LogFactory.getLog(SandboxFactory.class);
-   
-   public static final String ROLE_CONTENT_MANAGER = "ContentManager";
    
    /**
     * Private constructor
@@ -64,13 +63,11 @@ public final class SandboxFactory
     * DNS: .dns.<store> = <path-to-webapps-root>
     * Website Name: .website.name = website name
     * 
-    * @param storeId    The store name to create the sandbox for
-    * @param webProjectNodeRef The noderef for the webproject.
-    * @param managers   The list of authorities who have ContentManager role in the website 
+    * @param storeId             The store name to create the sandbox for
+    * @param webProjectNodeRef   The noderef for the webproject.
     */
    public static SandboxInfo createStagingSandbox(final String storeId, 
-                                                  final NodeRef webProjectNodeRef,
-                                                  final List<String> managers)
+                                                  final NodeRef webProjectNodeRef)
    {
       final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       final AVMService avmService = services.getAVMService();
@@ -84,11 +81,10 @@ public final class SandboxFactory
       
       // create the system directories 'www' and 'avm_webapps'
       avmService.createDirectory(stagingStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
+      // apply READ permissions for all users
       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(stagingStoreName));
-      for (String manager : managers)
-      {
-         permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
-      }
+      permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+      
       avmService.createDirectory(AVMConstants.buildStoreRootPath(stagingStoreName), 
                                  JNDIConstants.DIR_DEFAULT_APPBASE);
       
@@ -115,15 +111,12 @@ public final class SandboxFactory
                       " above " + stagingStoreName);
       
       // create a layered directory pointing to 'www' in the staging area
-
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(stagingStoreName), 
                                         previewStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
+      // apply READ permissions for all users
       dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(previewStoreName));
-      for (String manager : managers)
-      {
-         permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
-      }
+      permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
       
       // tag the store with the store type
       avmService.setStoreProperty(previewStoreName,
@@ -186,7 +179,7 @@ public final class SandboxFactory
       // create the user 'main' store
       final String userStoreName    = AVMConstants.buildUserMainStoreName(storeId, username);
       final String previewStoreName = AVMConstants.buildUserPreviewStoreName(storeId, username);
-
+      
       if (avmService.getStore(userStoreName) != null)
       {
          if (logger.isDebugEnabled())
@@ -195,7 +188,7 @@ public final class SandboxFactory
          }
          return new SandboxInfo( new String[] { userStoreName, previewStoreName } );
       }
-
+      
       avmService.createStore(userStoreName);
       final String stagingStoreName = AVMConstants.buildStagingStoreName(storeId);
       if (logger.isDebugEnabled())
@@ -207,23 +200,26 @@ public final class SandboxFactory
                                         userStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(userStoreName));
+      // apply the user role permissions to the sandbox
       permissionService.setPermission(dirRef, username, role, true);
+      permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+      // apply the manager role permission for each manager in the web project
       for (String manager : managers)
       {
-         permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
+         permissionService.setPermission(dirRef, manager, AVMConstants.ROLE_CONTENT_MANAGER, true);
       }
       
       // tag the store with the store type
       avmService.setStoreProperty(userStoreName,
                                   AVMConstants.PROP_SANDBOX_AUTHOR_MAIN,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
-         
+      
       // tag the store with the base name of the website so that corresponding
       // staging areas can be found.
       avmService.setStoreProperty(userStoreName,
                                   AVMConstants.PROP_WEBSITE_NAME,
                                   new PropertyValue(DataTypeDefinition.TEXT, storeId));
-         
+      
       // tag the store, oddly enough, with its own store name for querying.
       // when will the madness end.
       avmService.setStoreProperty(userStoreName,
@@ -232,33 +228,36 @@ public final class SandboxFactory
          
       // tag the store with the DNS name property
       tagStoreDNSPath(avmService, userStoreName, storeId, username);
-         
+      
       // snapshot the store
       avmService.createSnapshot(userStoreName, null, null);
-         
+      
       
       // create the user 'preview' store
       avmService.createStore(previewStoreName);
       if (logger.isDebugEnabled())
          logger.debug("Created user preview sandbox store: " + previewStoreName +
                       " above " + userStoreName);
-         
+      
       // create a layered directory pointing to 'www' in the user 'main' store
       avmService.createLayeredDirectory(AVMConstants.buildStoreRootPath(userStoreName), 
                                         previewStoreName + ":/", 
                                         JNDIConstants.DIR_DEFAULT_WWW);
       dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(previewStoreName));
+      // apply the user role permissions to the sandbox
       permissionService.setPermission(dirRef, username, role, true);
+      permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+      // apply the manager role permission for each manager in the web project
       for (String manager : managers)
       {
-         permissionService.setPermission(dirRef, manager, ROLE_CONTENT_MANAGER, true);
+         permissionService.setPermission(dirRef, manager, AVMConstants.ROLE_CONTENT_MANAGER, true);
       }
-         
+      
       // tag the store with the store type
       avmService.setStoreProperty(previewStoreName,
                                   AVMConstants.PROP_SANDBOX_AUTHOR_PREVIEW,
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
-         
+      
       // tag the store with its own store name for querying.
       avmService.setStoreProperty(previewStoreName,
                                   QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName),
@@ -266,7 +265,7 @@ public final class SandboxFactory
          
       // tag the store with the DNS name property
       tagStoreDNSPath(avmService, previewStoreName, storeId, username, "preview");
-         
+      
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);
       
@@ -289,11 +288,7 @@ public final class SandboxFactory
    }
    
    /**
-    * Create a user sandbox for the named store.
-    * 
-    * A user sandbox is comprised of two stores, the first 
-    * named 'storename--username' layered over the staging store with a preview store 
-    * named 'storename--username--preview' layered over the main store.
+    * Create a workflow sandbox for the named store.
     * 
     * Various store meta-data properties are set including:
     * Identifier for store-types: .sandbox.author.main and .sandbox.author.preview

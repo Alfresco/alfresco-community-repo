@@ -114,7 +114,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
                {
                   foundCurrentUser = true;
                }
-               if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
+               if (AVMConstants.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
                {
                   this.managers.add(userAuth);
                }
@@ -123,7 +123,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          
          if (foundCurrentUser == false)
          {
-            this.userGroupRoles.add(new UserGroupRole(currentUser, SandboxFactory.ROLE_CONTENT_MANAGER, null));
+            this.userGroupRoles.add(new UserGroupRole(currentUser, AVMConstants.ROLE_CONTENT_MANAGER, null));
             this.managers.add(currentUser);
          }
       }
@@ -135,7 +135,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          {
             for (String userAuth : findNestedUserAuthorities(userRole.getAuthority()))
             {
-               if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
+               if (AVMConstants.ROLE_CONTENT_MANAGER.equals(userRole.getRole()))
                {
                   this.managers.add(userAuth);
                }
@@ -150,7 +150,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
             String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             
-            if (SandboxFactory.ROLE_CONTENT_MANAGER.equals(userrole) &&
+            if (AVMConstants.ROLE_CONTENT_MANAGER.equals(userrole) &&
                 this.managers.contains(username) == false)
             {
                this.managers.add(username);
@@ -266,7 +266,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       if (foundCurrentUser == false)
       {
          buf.append(buildLabelForUserAuthorityRole(
-               currentUser, SandboxFactory.ROLE_CONTENT_MANAGER));
+               currentUser, AVMConstants.ROLE_CONTENT_MANAGER));
       }
       
       return buildSummary(

@@ -163,9 +163,6 @@ public class WebProject
 
    /////////////////////////////////////////////////////////////////////////////
 
-   /** Content Manager role name */
-   private static final String ROLE_CONTENT_MANAGER = "ContentManager";
-
    private final NodeRef nodeRef;
 
    public WebProject(final NodeRef nodeRef)
@@ -268,7 +265,7 @@ public class WebProject
          final NodeRef userInfoRef = ref.getChildRef();
          final String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
          final String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-         if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
+         if (currentUser.equals(username) && AVMConstants.ROLE_CONTENT_MANAGER.equals(userrole))
          {
             return true;
          }

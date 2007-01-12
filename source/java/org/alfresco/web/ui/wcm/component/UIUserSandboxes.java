@@ -34,7 +34,6 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -52,7 +51,6 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.WebProject;
@@ -110,9 +108,6 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String MSG_SELECTED = "selected";
    private static final String MSG_NO_MODIFIED_ITEMS = "sandbox_no_modified_items";
    private static final String MSG_NO_WEB_FORMS = "sandbox_no_web_forms";
-   
-   /** Content Manager role name */
-   private static final String ROLE_CONTENT_MANAGER = "ContentManager";
    
    private static final String REQUEST_FORM_REF = "formref";
    private static final String REQUEST_PREVIEW_REF = "prevhref";
@@ -266,7 +261,6 @@ public class UIUserSandboxes extends SelfRenderingComponent
       ResourceBundle bundle = Application.getBundle(context);
       AVMService avmService = getAVMService(context);
       NodeService nodeService = getNodeService(context);
-      PermissionService permissionService = getPermissionService(context);
       UserTransaction tx = null;
       try
       {
@@ -280,8 +274,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
          }
          String storeRoot = (String)nodeService.getProperty(websiteRef, WCMAppModel.PROP_AVMSTORE);
          
-         // find out if this user is a Content Manager
-         boolean isManager = isManagerRole(context, nodeService, websiteRef);
+         // find out the current user role in the web project
+         String currentUserName = Application.getCurrentUser(context).getUserName();
+         String currentUserRole = getWebProjectUserRole(currentUserName, nodeService, websiteRef);
          
          // get the list of users who have a sandbox in the website
          int index = 0;
@@ -305,10 +300,10 @@ public class UIUserSandboxes extends SelfRenderingComponent
             {
                // check the permissions on this store for the current user
                if (logger.isDebugEnabled())
-                     logger.debug("Checking user permissions for store: " + mainStore);
-               if (permissionService.hasPermission(
-                     AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(mainStore)),
-                     PermissionService.READ) == AccessStatus.ALLOWED)
+                     logger.debug("Checking user role to view store: " + mainStore);
+               if (currentUserName.equals(username) ||
+                   AVMConstants.ROLE_CONTENT_MANAGER.equals(currentUserRole) ||
+                   AVMConstants.ROLE_CONTENT_PUBLISHER.equals(currentUserRole))
                {
                   if (logger.isDebugEnabled())
                      logger.debug("Building sandbox view for user store: " + mainStore);
@@ -365,7 +360,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                         "#{AVMBrowseBean.setupAllItemsAction}", "dialog:revertAllItems"));
                   out.write("&nbsp;&nbsp;");
                   
-                  if (isManager)
+                  if (AVMConstants.ROLE_CONTENT_MANAGER.equals(currentUserRole))
                   {
                      Utils.encodeRecursive(context, aquireAction(
                            context, mainStore, username, ACT_REMOVE_SANDBOX, "/images/icons/delete_sandbox.gif",
@@ -440,30 +435,27 @@ public class UIUserSandboxes extends SelfRenderingComponent
    }
 
    /**
-    * @return true if the current user is a Content Manager, false otherwise
+    * @return the role of this user in the current Web Project, or null for no assigned role
     */
-   private static boolean isManagerRole(FacesContext context, NodeService nodeService, NodeRef websiteRef)
+   private static String getWebProjectUserRole(String currentUser, NodeService nodeService, NodeRef websiteRef)
    {
-      User user = Application.getCurrentUser(context);
-      boolean isManager = user.isAdmin();
-      if (isManager == false)
+      String userrole = null;
+      
+      List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+            websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+      for (ChildAssociationRef ref : userInfoRefs)
       {
-         String currentUser = user.getUserName();
-         List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-               websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : userInfoRefs)
+         NodeRef userInfoRef = ref.getChildRef();
+         String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+         String role = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+         if (currentUser.equals(username))
          {
-            NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-            if (currentUser.equals(username) && ROLE_CONTENT_MANAGER.equals(userrole))
-            {
-               isManager = true;
-               break;
-            }
+            userrole = role;
+            break;
          }
       }
-      return isManager;
+      
+      return userrole;
    }
    
    /**
@@ -483,6 +475,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    {
       AVMSyncService avmSyncService = getAVMSyncService(fc);
       AVMService avmService = getAVMService(fc);
+      PermissionService permissionService = getPermissionService(fc);
       
       DateFormat df = Utils.getDateTimeFormat(fc);
       ResourceBundle bundle = Application.getBundle(fc);
@@ -680,13 +673,18 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write("<tr><td colspan=8>");
          out.write(bundle.getString(MSG_SELECTED));
          out.write(":&nbsp;&nbsp;");
-         Utils.encodeRecursive(fc, aquireAction(
-               fc, userStore, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
-               "#{AVMBrowseBean.setupSandboxAction}", "dialog:submitSandboxItems"));
-         out.write("&nbsp;&nbsp;");
-         Utils.encodeRecursive(fc, aquireAction(
-               fc, userStore, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
-               "#{AVMBrowseBean.setupSandboxAction}", "dialog:revertSelectedItems"));
+         if (permissionService.hasPermission(
+               AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(userStore)),
+               PermissionService.WRITE) == AccessStatus.ALLOWED)
+         {
+            Utils.encodeRecursive(fc, aquireAction(
+                  fc, userStore, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
+                  "#{AVMBrowseBean.setupSandboxAction}", "dialog:submitSandboxItems"));
+            out.write("&nbsp;&nbsp;");
+            Utils.encodeRecursive(fc, aquireAction(
+                  fc, userStore, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
+                  "#{AVMBrowseBean.setupSandboxAction}", "dialog:revertSelectedItems"));
+         }
          out.write("</td></tr>");
          
          // end table

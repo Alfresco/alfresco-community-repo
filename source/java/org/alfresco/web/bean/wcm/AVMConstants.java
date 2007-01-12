@@ -751,6 +751,10 @@ public final class AVMConstants
    
    public final static String SPACE_ICON_WEBSITE = "space-icon-website";
    
+   // web user role permissions
+   public final static String ROLE_CONTENT_MANAGER    = "ContentManager";
+   public final static String ROLE_CONTENT_PUBLISHER  = "ContentPublisher";
+   
    // virtualisation server MBean registry
    private static final String BEAN_VIRT_SERVER_REGISTRY = "VirtServerRegistry";
    

@@ -182,14 +182,13 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (outcome != null)
       {
          // create the AVM staging store to represent the newly created location website
-         SandboxFactory.createStagingSandbox(avmStore, nodeRef, wiz.getManagers());
+         SandboxFactory.createStagingSandbox(avmStore, nodeRef);
          
          // create the default webapp folder under the hidden system folders
          final String stagingStore = AVMConstants.buildStagingStoreName(avmStore);
          final String stagingStoreRoot = AVMConstants.buildSandboxRootPath(stagingStore);
          this.avmService.createDirectory(stagingStoreRoot, webapp);
-         this.avmService.addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot,
-                                                                  webapp),
+         this.avmService.addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot, webapp),
                                    WCMAppModel.ASPECT_WEBAPP);
          
          // set the property on the node to reference the root AVM store
@@ -453,7 +452,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (foundCurrentUser == false)
       {
          buf.append(getInviteUsersWizard().buildLabelForUserAuthorityRole(
-               currentUser, SandboxFactory.ROLE_CONTENT_MANAGER));
+               currentUser, AVMConstants.ROLE_CONTENT_MANAGER));
       }
       
       return buildSummary(

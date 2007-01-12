@@ -154,19 +154,16 @@ public class TextSearch extends APIServiceImpl
         String template = HTML_TEMPLATE;
 
         // TODO: data-drive this
-        String format = req.getParameter("format");
-        if (format != null)
+        String format = req.getFormat();
+        if (format.equals("atom"))
         {
-            if (format.equals("atom"))
-            {
-                contentType = APIResponse.ATOM_TYPE;
-                template = ATOM_TEMPLATE;
-            }
-            else if (format.equals("xml"))
-            {
-                contentType = APIResponse.XML_TYPE;
-                template = ATOM_TEMPLATE;
-            }
+            contentType = APIResponse.ATOM_TYPE;
+            template = ATOM_TEMPLATE;
+        }
+        else if (format.equals("xml"))
+        {
+            contentType = APIResponse.XML_TYPE;
+            template = ATOM_TEMPLATE;
         }
         
         Map<String, Object> model = createTemplateModel(req, res);
@@ -429,15 +426,15 @@ public class TextSearch extends APIServiceImpl
         "  <opensearch:itemsPerPage>${search.itemsPerPage}</opensearch:itemsPerPage>\n" +
         "  <opensearch:Query role=\"request\" searchTerms=\"${search.searchTerms}\" startPage=\"${search.startPage}\" count=\"${search.itemsPerPage}\" language=\"${search.localeId}\"/>\n" +
         "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=html\" type=\"text/html\"/>\n" +
-        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
-        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=1&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=1&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" +
         "<#if search.startPage &gt; 1>" +
-        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" +
         "</#if>" +
         "<#if search.startPage &lt; search.totalPages>" +
-        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" + 
+        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" + 
         "</#if>" +
-        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=atom\" type=\"application/atom+xml\"/>\n" +
+        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" +
         "  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.servicePath}/search/text/textsearchdescription.xml\"/>\n" +
         "<#list search.results as row>" +            
         "  <entry>\n" +
@@ -555,6 +552,7 @@ public class TextSearch extends APIServiceImpl
         request.put("servicePath", "http://localhost:8080/alfresco/service");
         request.put("path", "http://localhost:8080/alfresco");
         request.put("guest", false);
+        request.put("format", "xml");
         searchModel.put("xmldate", new ISO8601DateFormatMethod());
         searchModel.put("urlencode", new UrlEncodeMethod());
         searchModel.put("date", new Date());

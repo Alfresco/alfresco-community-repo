@@ -110,4 +110,15 @@ public class APIRequest extends HttpServletRequestWrapper
         return Boolean.valueOf(getParameter("guest"));
     }
     
+    /**
+     * Get Requested Format
+     * 
+     * @return  content type requested
+     */
+    public String getFormat()
+    {
+        String format = getParameter("format");
+        return (format == null || format.length() == 0) ? "" : format;
+    }
+    
 }

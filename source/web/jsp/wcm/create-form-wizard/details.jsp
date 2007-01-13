@@ -70,7 +70,6 @@
      schema_file_input.form.submit();
    }
 </script>
-
 </f:verbatim>
 
 <h:inputText id="schema-file" 
@@ -94,25 +93,23 @@
 		escape="false" />
   
   <h:panelGrid id="schema_panel_grid"
-               columns="3" 
+               columns="4" 
 	       cellpadding="3" 
 	       cellspacing="3" 
 	       border="0" 
 	       width="100%"
-	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
+	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn,panelGridRequiredImageColumn">
     <h:graphicImage id="img_schema"
                     value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
     <h:outputText id="out_schema"
                   value="#{msg.schema}:"/>
     <h:column id="column_schema_empty"
 	      rendered="#{empty WizardManager.bean.schemaFileName}">
-      <f:verbatim>
-        <input id="wizard:wizard-body:file-input" 
-	       type="file" 
-	       size="35" 
-	       name="alfFileInput" 
-	       onchange="javascript:handle_upload(this)"/>
-      </f:verbatim>
+      <f:verbatim><input id="wizard:wizard-body:file-input" 
+			 type="file" 
+			 size="35" 
+			 name="alfFileInput" 
+			 onchange="javascript:handle_upload(this)"/></f:verbatim>
     </h:column>
     <h:column id="column_schema_not_empty"
 	      rendered="#{!empty WizardManager.bean.schemaFileName}">
@@ -128,6 +125,7 @@
                     showLink="false" 
 		    target="top"/>
     </h:column>
+    <h:column id="no_img_schema_help"/>
     
     <h:column id="no_img_root_element_name"/>
     <h:outputText id="out_root_element_name" value="#{msg.schema_root_element_name}:"/>
@@ -141,7 +139,9 @@
     <h:outputText id="schema-root-element-name-no-choices" 
 		  rendered="#{empty WizardManager.bean.schemaRootElementNameChoices}"
 		  value="#{msg.create_form_form_details_no_schema_selected}"/>
-
+    <%-- we need to include this invisible image in order to get the column to size correctly --%>
+    <h:graphicImage id="invisilbe_img_schema_root_element_name_choices_help"
+		    value="/images/icons/Help_icon.gif" style="cursor:help; visibility: hidden;"/>
   </h:panelGrid>
 
   <h:outputText id="step-2-text" value="2. #{msg.create_form_form_details_step2_desc}" escape="false" />

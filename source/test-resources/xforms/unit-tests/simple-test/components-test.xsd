@@ -1,41 +1,41 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	   xmlns:alfresco="http://www.alfresco.org/alfresco"
+	   xmlns:alf="http://www.alfresco.org"
 	   elementFormDefault="qualified">
   <xs:simpleType name="five_string_values">
     <xs:restriction base="xs:string">
-      <xs:enumeration id="five_string_values_one" value="one">
+      <xs:enumeration value="one">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>${components-test.five_string_values.one}</alfresco:label>
+	    <alf:label>${components-test.five_string_values.one}</alf:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="two">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>${components-test.five_string_values.two}</alfresco:label>
+	    <alf:label>${components-test.five_string_values.two}</alf:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="three">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>${components-test.five_string_values.three}</alfresco:label>
+	    <alf:label>${components-test.five_string_values.three}</alf:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="four">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>${components-test.five_string_values.four}</alfresco:label>
+	    <alf:label>${components-test.five_string_values.four}</alf:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="five">
 	<xs:annotation>
 	  <xs:appinfo>
-	    <alfresco:label>${components-test.five_string_values.five}</alfresco:label>
+	    <alf:label>${components-test.five_string_values.five}</alf:label>
 	  </xs:appinfo>
 	</xs:annotation>
       </xs:enumeration>
@@ -72,16 +72,16 @@
 	<xs:element name="required_textfield" type="xs:string" minOccurs="1" maxOccurs="1">
 	  <xs:annotation>
 	    <xs:appinfo>
-	      <alfresco:label>${components-test.required_textfield.label}</alfresco:label>
-	      <alfresco:alert>${components-test.required_textfield.alert}</alfresco:alert>
+	      <alf:label>${components-test.required_textfield.label}</alf:label>
+	      <alf:alert>${components-test.required_textfield.alert}</alf:alert>
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>
 	<xs:element name="optional_textfield" type="xs:string" minOccurs="0" maxOccurs="1">
 	  <xs:annotation>
 	    <xs:appinfo>
-	      <alfresco:label>${components-test.optional_textfield.label}</alfresco:label>
-	      <alfresco:alert>${components-test.optional_textfield.alert}</alfresco:alert>
+	      <alf:label>${components-test.optional_textfield.label}</alf:label>
+	      <alf:alert>${components-test.optional_textfield.alert}</alf:alert>
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>
@@ -110,8 +110,8 @@
 	<xs:element name="list_of_ten_select_three" type="ten_number_list_select_three">
 	  <xs:annotation>
 	    <xs:appinfo>
-	      <alfresco:label>${components-test.list_of_ten_select_three.label}</alfresco:label>
-	      <alfresco:alert>${components-test.list_of_ten_select_three.alert}</alfresco:alert>
+	      <alf:label>${components-test.list_of_ten_select_three.label}</alf:label>
+	      <alf:alert>${components-test.list_of_ten_select_three.alert}</alf:alert>
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>

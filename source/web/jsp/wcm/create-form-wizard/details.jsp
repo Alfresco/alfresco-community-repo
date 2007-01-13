@@ -140,7 +140,7 @@
 		  rendered="#{empty WizardManager.bean.schemaRootElementNameChoices}"
 		  value="#{msg.create_form_form_details_no_schema_selected}"/>
     <%-- we need to include this invisible image in order to get the column to size correctly --%>
-    <h:graphicImage id="invisilbe_img_schema_root_element_name_choices_help"
+    <h:graphicImage id="invisible_img_schema_root_element_name_choices_help"
 		    value="/images/icons/Help_icon.gif" style="cursor:help; visibility: hidden;"/>
   </h:panelGrid>
 

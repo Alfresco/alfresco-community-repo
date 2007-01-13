@@ -26,19 +26,33 @@
 <jsp:directive.page isELIgnored="false"/>
 
 <f:verbatim>
+  <script type="text/javascript" 
+	src="<%=request.getContextPath()%>/scripts/upload_helper.js">
+  </script>
   <script type="text/javascript">
-    function upload_file(el)
-    {
-    el.form.method = "post";
-    el.form.enctype = "multipart/form-data";
-    // for IE
-    el.form.encoding = "multipart/form-data";
-    el.form.action = "<%= request.getContextPath() %>/uploadFileServlet";
-    el.form.submit();
-    return false;
-    }
+  function handle_upload(target)
+  {
+    handle_upload_helper(target, 
+                         "<%= CreateFormWizard.FILE_RENDERING_ENGINE_TEMPLATE %>", 
+                         upload_complete,
+                         "<%= request.getContextPath() %>")
+  }
+
+  function upload_complete(id, path, filename)
+  {
+    var rendering_engine_template_file_input = 
+      document.getElementById("wizard:wizard-body:rendering-engine-template-file");
+    rendering_engine_template_file_input.value = filename;
+    rendering_engine_template_file_input.form.submit();
+  }
   </script>
 </f:verbatim>
+
+<h:inputText id="rendering-engine-template-file" 
+	     value="#{WizardManager.bean.renderingEngineTemplateFileName}" 
+	     immediate="true"
+	     style="display:none;"
+	     valueChangeListener="#{WizardManager.bean.renderingEngineTemplateFileValueChanged}"/>
 
 <h:panelGrid id="general-properties-panel-grid" 
 	     columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
@@ -47,31 +61,24 @@
 		value="1. #{msg.create_form_configure_rendering_engine_templates_step1_desc}" 
 		escape="false" />
   <h:panelGrid id="panel_grid_3"
-               columns="3" cellpadding="3" cellspacing="3" border="0"
+               columns="4" cellpadding="3" cellspacing="3" border="0"
 	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
                width="100%">
     <h:graphicImage id="required_image_rendering_engine_template_file"
                     value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
     <h:outputText id="output_text_rendering_engine_template_file"
                   value="#{msg.rendering_engine_template_file}:"/>
-    <h:column id="column_pt">
-      <%
-         final FileUploadBean upload = (FileUploadBean)
-         session.getAttribute(FileUploadBean.getKey(CreateFormWizard.FILE_RENDERING_ENGINE_TEMPLATE));
-         if (upload == null || upload.getFile() == null)
-         {
-         %>
-
-      <f:verbatim>
-	<input type="hidden" name="upload-id" value="<%= CreateFormWizard.FILE_RENDERING_ENGINE_TEMPLATE %>"/>
-	<input type="hidden" name="return-page" value="<%= request.getContextPath() %>/faces<%= request.getServletPath() %>"/>
-	<input id="wizard:wizard-body:file-input" type="file" size="35" name="alfFileInput" onchange="javascript:upload_file(this)"/>
-      </f:verbatim>
-      <%
-         } 
-         else 
-         {
-         %>
+    <h:column id="column_rendering_engine_template_file_empty"
+	      rendered="#{empty WizardManager.bean.renderingEngineTemplateFileName}">
+      <f:verbatim><input id="wizard:wizard-body:file-input" 
+			 type="file" 
+			 size="35" 
+			 name="alfFileInput" 
+			 onchange="javascript:handle_upload(this)"/></f:verbatim>
+      
+    </h:column>
+    <h:column id="column_rendering_engine_template_file_not_empty"
+	      rendered="#{!empty WizardManager.bean.renderingEngineTemplateFileName}">
       <h:outputText id="rendering-engine-template-file-name"
                     value="#{WizardManager.bean.renderingEngineTemplateFileName}"/>
       <h:outputText id="output_text_rendering_engine_template_space"
@@ -83,10 +90,10 @@
                     action="#{WizardManager.bean.removeUploadedRenderingEngineTemplateFile}"
                     showLink="false" 
 		    target="top"/>
-      <%
-         }
-         %>
     </h:column>
+    <%-- we need to include this invisible image in order to get the column to size correctly --%>
+    <h:graphicImage id="invisible_img_rendering_engine_template_file_help"
+		    value="/images/icons/Help_icon.gif" style="cursor:help; visibility: hidden;"/>
   </h:panelGrid>
 
   <h:outputText id="step-2-text" 

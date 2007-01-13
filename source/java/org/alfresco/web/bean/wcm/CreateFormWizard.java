@@ -201,6 +201,7 @@ public class CreateFormWizard
    private String formTitle = null;
    private String formDescription = null;
    private String outputPathPatternForFormInstanceData = null;
+   private String renderingEngineTemplateFileName = null;
    private String renderingEngineTemplateName = null;
    private String renderingEngineTemplateTitle = null;
    private String renderingEngineTemplateDescription = null;
@@ -370,6 +371,7 @@ public class CreateFormWizard
       this.formName = null;
       this.formTitle = null;
       this.formDescription = null;
+      this.renderingEngineTemplateFileName = null;
       this.renderingEngineTemplateName = null;
       this.renderingEngineTemplateTitle = null;
       this.renderingEngineTemplateDescription = null; 
@@ -538,6 +540,7 @@ public class CreateFormWizard
       this.renderingEngine = null;
       this.outputPathPatternForRendition = null;
       this.mimetypeForRendition = null;
+      this.renderingEngineTemplateFileName = null;
       this.renderingEngineTemplateName = null;
       this.renderingEngineTemplateTitle = null;
       this.renderingEngineTemplateDescription = null;
@@ -598,8 +601,8 @@ public class CreateFormWizard
    {
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("schemaFileValueChanged(" + this.getFileName(FILE_SCHEMA) + "[" +
-                      this.getSchemaFile() + "])");
+         LOGGER.debug("schemaFileValueChanged(" + this.getFileName(FILE_SCHEMA) + 
+                      "[" + this.getSchemaFile() + "])");
       }
       if (this.getSchemaFile() != null)
       {
@@ -614,6 +617,19 @@ public class CreateFormWizard
             this.removeUploadedSchemaFile();
             Utils.addErrorMessage(msg + ": " + e.getMessage(), e);
          }
+      }
+      return null;
+   }
+
+   /**
+    * Action handler called when a rendering engine template file has been uploaded.
+    */
+   public String renderingEngineTemplateFileValueChanged(final ValueChangeEvent vce)
+   {
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("renderingEngineTemplateFileValueChanged(" + this.getFileName(FILE_RENDERING_ENGINE_TEMPLATE) + 
+                      "[" + this.getRenderingEngineTemplateFile() + "])");
       }
       return null;
    }
@@ -748,17 +764,27 @@ public class CreateFormWizard
    {
       return this.schemaFileName;
    }
-   
    /**
-    * @return Returns the schema file or <tt>null</tt>
+    * Sets the rendering engine template file name
     */
-   public String getRenderingEngineTemplateFileName()
+   public void setRenderingEngineTemplateFileName(final String renderingEngineTemplateFileName)
    {
-      return this.getFileName(FILE_RENDERING_ENGINE_TEMPLATE);
+      this.renderingEngineTemplateFileName = 
+         (renderingEngineTemplateFileName != null && renderingEngineTemplateFileName.length() != 0
+          ? renderingEngineTemplateFileName
+          : null);
    }
    
    /**
-    * @return Returns the rendering engine file or <tt>null</tt>
+    * @return Returns the rendering engine template file name or <tt>null</tt>
+    */
+   public String getRenderingEngineTemplateFileName()
+   {
+      return this.renderingEngineTemplateFileName;
+   }
+   
+   /**
+    * @return Returns the rendering engine template file or <tt>null</tt>
     */
    public File getRenderingEngineTemplateFile()
    {
@@ -826,6 +852,7 @@ public class CreateFormWizard
               ? FilenameUtils.removeExtension(this.getSchemaFileName())
               : this.formName);
    }
+
    /**
     * @return Returns the output path for form instance data.
     */
@@ -885,7 +912,10 @@ public class CreateFormWizard
     */
    public void setRenderingEngineTemplateName(final String renderingEngineTemplateName)
    {
-      this.renderingEngineTemplateName = renderingEngineTemplateName;
+      this.renderingEngineTemplateName = 
+         (renderingEngineTemplateName != null && renderingEngineTemplateName.length() != 0
+          ? renderingEngineTemplateName
+          : null);
    }
 
    /**
@@ -897,12 +927,16 @@ public class CreateFormWizard
               ? this.getRenderingEngineTemplateFileName()
               : this.renderingEngineTemplateName);
    }
+
    /**
     * Sets the title for this renderingEngineTemplate.
     */
    public void setRenderingEngineTemplateTitle(final String renderingEngineTemplateTitle)
    {
-      this.renderingEngineTemplateTitle = renderingEngineTemplateTitle;
+      this.renderingEngineTemplateTitle = 
+         (renderingEngineTemplateTitle != null && renderingEngineTemplateTitle.length() != 0
+          ? renderingEngineTemplateTitle
+          : null);
    }
 
    /**
@@ -931,6 +965,9 @@ public class CreateFormWizard
       return this.renderingEngineTemplateDescription;
    }
 
+   /**
+    * @return the default workflow
+    */
    public WorkflowDefinition getDefaultWorkflowDefinition()
    {
       return (this.defaultWorkflowName == null || !this.applyDefaultWorkflow
@@ -938,12 +975,18 @@ public class CreateFormWizard
               : this.workflowService.getDefinitionByName(this.defaultWorkflowName));
    }
 
+   /**
+    * Sets the default workflow name
+    */
    public void setDefaultWorkflowName(final String[] defaultWorkflowName)
    {
       assert defaultWorkflowName.length == 1;
       this.defaultWorkflowName = defaultWorkflowName[0];
    }
 
+   /**
+    * Returns the default workflow name
+    */
    public String[] getDefaultWorkflowName()
    {
       if (this.defaultWorkflowName == null && this.getDefaultWorkflowChoices().size() != 0)
@@ -953,11 +996,17 @@ public class CreateFormWizard
       return new String[] { this.defaultWorkflowName };
    }
 
+   /**
+    * Indicates whether or not to configure a default workflow
+    */
    public void setApplyDefaultWorkflow(final boolean applyDefaultWorkflow)
    {
       this.applyDefaultWorkflow = applyDefaultWorkflow;
    }
 
+   /**
+    * @return whether or not to configure a default workflow
+    */
    public boolean getApplyDefaultWorkflow()
    {
       return this.applyDefaultWorkflow;
@@ -1033,6 +1082,11 @@ public class CreateFormWizard
       }
    }
 
+   /**
+    * Gets the file upload bean given with the given id.
+    *
+    * @return a file upload bean or <tt>null</tt>
+    */
    private FileUploadBean getFileUploadBean(final String id)
    {
       final FacesContext ctx = FacesContext.getCurrentInstance();

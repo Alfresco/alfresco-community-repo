@@ -548,14 +548,12 @@ dojo.declare("alfresco.xforms.AbstractSelectWidget",
                      valid = _evaluateXPath(binding.constraint, value, XPathResult.BOOLEAN_TYPE);
                    }
                    dojo.debug("valid " + dojo.dom.textContent(value) + "? " + valid);
-                   if (valid)
-                   {
-                     result.push({ 
-                       id: value.getAttribute("id"), 
-                       label: dojo.dom.textContent(label),
-                       value: dojo.dom.textContent(value)
-                     });
-                   }
+                   result.push({ 
+                     id: value.getAttribute("id"), 
+                     label: valid ? dojo.dom.textContent(label) : "",
+                     value: valid ? dojo.dom.textContent(value) : "xxx",
+                     valid: valid
+                   });
                  }
                  return result;
                }
@@ -566,7 +564,6 @@ dojo.declare("alfresco.xforms.Select",
              {
                initializer: function(xform, xformsNode) 
                {
-//           this.inherited("initializer", [ xform, xformsNode ]);
                },
                render: function(attach_point)
                {
@@ -662,7 +659,6 @@ dojo.declare("alfresco.xforms.Select1",
              {
                initializer: function(xform, xformsNode) 
                {
-//           this.inherited("initializer", [ xform, xformsNode ]);
                },
                render: function(attach_point)
                {
@@ -707,6 +703,11 @@ dojo.declare("alfresco.xforms.Select1",
                    attach_point.appendChild(this.widget);
                    for (var i = 0; i < values.length; i++)
                    {
+                     if (initial_value && !values[i].valid)
+                     {
+                       // skip the invalid value if we have a default value
+                       continue;
+                     }
                      var option = document.createElement("option");
                      this.widget.appendChild(option);
                      option.appendChild(document.createTextNode(values[i].label));
@@ -789,24 +790,9 @@ dojo.declare("alfresco.xforms.Group",
                {
                  this.children = [];
                  dojo.html.removeClass(this.domNode, "xformsItem");
-                 this.showHeader = false;
-               },
-               setShowHeader: function(showHeader)
-               {
-                 if (showHeader == this.showHeader)
-                 {
-                   return;
-                 }
-
-                 this.showHeader = showHeader;
-                 if (this.showHeader && this.groupHeaderNode.style.display == "none")
-                 {
-                   this.groupHeaderNode.style.display = "block";
-                 }
-                 if (!this.showHeader && this.groupHeaderNode.style.display == "block")
-                 {
-                   this.groupHeaderNode.style.display = "none";
-                 }
+                 this.showHeader = 
+                   (this.xformsNode.getAttribute("appearance") != "repeated" &&
+                    this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":appearance") != "repeated");
                },
                getWidgetsInvalidForSubmit: function()
                {
@@ -947,6 +933,8 @@ dojo.declare("alfresco.xforms.Group",
 
                  return child;
                },
+               _childAdded: function(child) { },
+               _childRemoved: function(child) { },
                _destroy: function()
                {
                  this.inherited("_destroy", []);
@@ -977,11 +965,12 @@ dojo.declare("alfresco.xforms.Group",
                    this.domNode.appendChild(idNode);
                  }
 
+                 this.showHeader = this.showHeader && this.parent != null;
                  this.groupHeaderNode = document.createElement("div");
                  this.groupHeaderNode.id = this.id + "-groupHeaderNode";
                  this.domNode.appendChild(this.groupHeaderNode);
                  dojo.html.setClass(this.groupHeaderNode, "xformsGroupHeader");
-                 this.groupHeaderNode.style.display = "none";
+                 this.groupHeaderNode.style.display = this.showHeader ? "block" : "none";
 
                  this.toggleExpandedImage = document.createElement("img");
                  this.groupHeaderNode.appendChild(this.toggleExpandedImage);
@@ -1042,24 +1031,6 @@ dojo.declare("alfresco.xforms.Group",
                  {
                    this.children[i].hideAlert();
                  }
-               },
-               _childAdded: function(child)
-               {
-                 var hasNonGroupChildren = false;
-                 for (var i in this.children)
-                 {
-                   if (!(this.children[i] instanceof alfresco.xforms.Group))
-                   {
-                     hasNonGroupChildren = true;
-                     break;
-                   }
-                 }
-                 this.setShowHeader(hasNonGroupChildren &&
-                                    this.children.length != 1 &&
-                                    this.parent != null);
-               },
-               _childRemoved: function(child)
-               {
                }
              });
 

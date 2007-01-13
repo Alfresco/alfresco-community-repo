@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified">
+  <xs:simpleType name="restricted_integer">
+    <xs:restriction>
+      <xs:union>
+	<xs:simpleType base="xs:integer">
+	  <xs:maxInclusive value="10"/>
+	  <xs:minInclusive value="-10"/>
+	</xs:simpleType>
+	<xs:simpleType base="xs:string">
+	  <xs:length value="0"/>
+	</xs:simpleType>
+      </xs:union>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="integer-test">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="integer">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element name="elements">
+		<xs:complexType>
+		  <xs:sequence>
+		    <xs:element name="required">
+		      <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="has_default" 
+				      type="xs:integer"
+				      minOccurs="1"
+				      maxOccurs="1"
+				      default="11"/>
+			  <xs:element name="no_default" 
+				      minOccurs="1"
+				      maxOccurs="1"
+				      type="xs:integer"/>
+			</xs:sequence>
+		      </xs:complexType>
+		    </xs:element>
+		    <xs:element name="optional">
+		      <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="has_default" 
+				      type="xs:integer"
+				      minOccurs="0"
+				      maxOccurs="1"
+				      default="11"/>
+			  <xs:element name="no_default" 
+				      minOccurs="0"
+				      maxOccurs="1"
+				      type="xs:integer"/>
+			</xs:sequence>
+		      </xs:complexType>
+		    </xs:element>
+		  </xs:sequence>
+		</xs:complexType>
+	      </xs:element>
+	      <xs:element name="attributes">
+		<xs:complexType>
+		  <xs:sequence>
+		    <xs:element name="required">
+		      <xs:complexType>
+			<xs:attribute name="has_default" 
+				      type="xs:integer"
+				      use="required"
+				      default="11"/>
+			<xs:attribute name="no_default" 
+				      use="required"
+				      type="xs:integer"/>
+		      </xs:complexType>
+		    </xs:element>
+		    <xs:element name="optional">
+		      <xs:complexType>
+			<xs:attribute name="has_default" 
+				      type="xs:integer"
+				      use="optional"
+				      default="11"/>
+			<xs:attribute name="no_default" 
+				      use="optional"
+				      type="xs:integer"/>
+		      </xs:complexType>
+		    </xs:element>
+		  </xs:sequence>
+		</xs:complexType>
+	      </xs:element>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+	<xs:element name="integer_restricted">
+	  <xs:annotation>
+	    <xs:appinfo>
+	      <alf:label>Integer Restricted -10 to 10</alf:label>
+	    </xs:appinfo>
+	  </xs:annotation>
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element name="elements">
+		<xs:complexType>
+		  <xs:sequence>
+		    <xs:element name="required">
+		      <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="has_default" 
+				      type="restricted_integer"
+				      minOccurs="1"
+				      maxOccurs="1"
+				      default="5"/>
+			  <xs:element name="no_default" 
+				      minOccurs="1"
+				      maxOccurs="1"
+				      type="restricted_integer"/>
+			</xs:sequence>
+		      </xs:complexType>
+		    </xs:element>
+		    <xs:element name="optional">
+		      <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="has_default" 
+				      type="restricted_integer"
+				      minOccurs="0"
+				      maxOccurs="1"
+				      default="5"/>
+			  <xs:element name="no_default" 
+				      minOccurs="0"
+				      maxOccurs="1"
+				      type="restricted_integer"/>
+			</xs:sequence>
+		      </xs:complexType>
+		    </xs:element>
+		  </xs:sequence>
+		</xs:complexType>
+	      </xs:element>
+	      <xs:element name="attributes">
+		<xs:complexType>
+		  <xs:sequence>
+		    <xs:element name="required">
+		      <xs:complexType>
+			<xs:attribute name="has_default" 
+				      type="restricted_integer"
+				      use="required"
+				      default="5"/>
+			<xs:attribute name="no_default" 
+				      use="required"
+				      type="restricted_integer"/>
+		      </xs:complexType>
+		    </xs:element>
+		    <xs:element name="optional">
+		      <xs:complexType>
+			<xs:attribute name="has_default" 
+				      type="restricted_integer"
+				      use="optional"
+				      default="5"/>
+			<xs:attribute name="no_default" 
+				      use="optional"
+				      type="restricted_integer"/>
+		      </xs:complexType>
+		    </xs:element>
+		  </xs:sequence>
+		</xs:complexType>
+	      </xs:element>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

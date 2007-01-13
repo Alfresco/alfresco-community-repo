@@ -723,11 +723,14 @@ public class SchemaFormBuilder
                                 final String pathToRoot,
                                 final boolean checkIfExtension,
                                 final ResourceBundle resourceBundle)
+      throws FormBuilderException
    {
       XSObjectList attrUses = controlType.getAttributeUses();
 
       if (attrUses == null)
+      {
          return;
+      }
       for (int i = 0; i < attrUses.getLength(); i++) 
       {
          final XSAttributeUse currentAttributeUse = (XSAttributeUse)attrUses.item(i);
@@ -771,41 +774,56 @@ public class SchemaFormBuilder
             {
                if (LOGGER.isDebugEnabled())
                   LOGGER.debug("bindId found: " + bindId);
-		    
+               
                JXPathContext context = JXPathContext.newContext(formSection.getOwnerDocument());
                final Pointer pointer = 
                   context.getPointer("//*[@" + NamespaceConstants.XFORMS_PREFIX + ":bind='" + bindId + "']");
                if (pointer != null)
+               {
                   control = (Element)pointer.getNode();
+               }
             }
-		
+            
             //copy it
             if (control == null)
+            {
                LOGGER.warn("Corresponding control not found");
+            }
             else 
             {
                Element newControl = (Element) control.cloneNode(true);
                //set new Ids to XForm elements
                this.resetXFormIds(newControl);
-		    
+               
                formSection.appendChild(newControl);
             }
          } 
          else 
          {
-            defaultInstanceElement.setAttributeNS(this.targetNamespace,
-                                                  // XXXarielb - i probably need the prefix here i.e. "alf:" + attributeName
-                                                  attributeName,
-                                                  (currentAttributeUse.getConstraintType() == XSConstants.VC_NONE
-                                                   ? null
-                                                   : currentAttributeUse.getConstraintValue()));
             final String newPathToRoot =
                (pathToRoot == null || pathToRoot.length() == 0
                 ? "@" + currentAttribute.getName()
                 : (pathToRoot.endsWith("/")
                    ? pathToRoot + "@" + currentAttribute.getName()
                    : pathToRoot + "/@" + currentAttribute.getName()));
-		
+
+            LOGGER.debug("adding attribute " + attributeName +
+                         " at " + newPathToRoot);
+            try
+            {
+               final String defaultValue = (currentAttributeUse.getConstraintType() == XSConstants.VC_NONE
+                                            ? null
+                                            : currentAttributeUse.getConstraintValue());
+               defaultInstanceElement.setAttributeNS(this.targetNamespace,
+                                                     // XXXarielb - i probably need the prefix here i.e. "alf:" + attributeName
+                                                     attributeName,
+                                                     defaultValue);
+            }
+            catch (Exception e)
+            {
+               throw new FormBuilderException("error retrieving default value for attribute " + 
+                                              attributeName + " at " + newPathToRoot, e);
+            }
             this.addSimpleType(xForm,
                                modelSection,
                                formSection,
@@ -829,6 +847,7 @@ public class SchemaFormBuilder
                                boolean relative,
                                final boolean checkIfExtension,
                                final ResourceBundle resourceBundle)
+      throws FormBuilderException
    {
       if (controlType == null) 
       {
@@ -846,37 +865,32 @@ public class SchemaFormBuilder
 
       // add a group node and recurse
       //
-      Element groupElement = this.createGroup(xForm, 
-                                              modelSection, 
-                                              formSection, 
-                                              owner,
-                                              resourceBundle);
-      Element groupWrapper = groupElement;
-	
-      if (groupElement != modelSection) 
-      {
-         groupWrapper = groupElement;
-      }	
+      final Element groupElement = this.createGroup(xForm, 
+                                                    modelSection, 
+                                                    formSection, 
+                                                    owner,
+                                                    resourceBundle);
       final SchemaUtil.Occurance o = SchemaUtil.getOccurance(owner);
       final Element repeatSection = this.addRepeatIfNecessary(xForm,
                                                               modelSection,
-                                                              groupWrapper,
+                                                              groupElement,
                                                               controlType,
                                                               o,
                                                               pathToRoot);
-      Element repeatContentWrapper = repeatSection;
-	
-      if (repeatSection != groupWrapper) 
+      if (repeatSection != groupElement) 
       { 
+         groupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                     NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                                     "repeated");
+
          // we have a repeat
-         repeatContentWrapper = repeatSection;
          relative = true;
       }
 	
       this.addComplexTypeChildren(xForm,
                                   modelSection,
                                   defaultInstanceElement,
-                                  repeatContentWrapper,
+                                  repeatSection,
                                   schema,
                                   controlType,
                                   owner,
@@ -897,6 +911,7 @@ public class SchemaFormBuilder
                                        final boolean relative,
                                        final boolean checkIfExtension,
                                        final ResourceBundle resourceBundle)
+      throws FormBuilderException
    {
 
       if (controlType == null)
@@ -1015,6 +1030,7 @@ public class SchemaFormBuilder
                            final XSElementDeclaration elementDecl,
                            final String pathToRoot,
                            final ResourceBundle resourceBundle) 
+      throws FormBuilderException
    {
       XSTypeDefinition controlType = elementDecl.getTypeDefinition();
       if (controlType == null) 
@@ -1483,17 +1499,19 @@ public class SchemaFormBuilder
                          final SchemaUtil.Occurance o,
                          final boolean checkIfExtension,
                          final ResourceBundle resourceBundle)
+      throws FormBuilderException
    {
       if (group == null) 
+      {
          return;
+      }
 
-      final Element repeatSection = 
-         this.addRepeatIfNecessary(xForm,
-                                   modelSection,
-                                   formSection,
-                                   owner.getTypeDefinition(),
-                                   o,
-                                   pathToRoot);
+      final Element repeatSection = this.addRepeatIfNecessary(xForm,
+                                                              modelSection,
+                                                              formSection,
+                                                              owner.getTypeDefinition(),
+                                                              o,
+                                                              pathToRoot);
       Element repeatContentWrapper = repeatSection;
 	
       if (repeatSection != formSection) 
@@ -1629,12 +1647,11 @@ public class SchemaFormBuilder
                             " default instance element for " + elementName +
                             " at path " + path);
                // update the default instance
-               if (elementOccurs.maximum == 1)
+               if (elementOccurs.isRepeated())
                {
-                  defaultInstanceElement.appendChild(newDefaultInstanceElement.cloneNode(true));
-               }
-               else
-               {
+                  LOGGER.debug("adding " + (elementOccurs.minimum + 1) + 
+                               " default instance elements for " + elementName +
+                               " at path " + path);
                   for (int i = 0; i < elementOccurs.minimum + 1; i++)
                   {
                      final Element e = (Element)newDefaultInstanceElement.cloneNode(true);
@@ -1646,6 +1663,18 @@ public class SchemaFormBuilder
                      }
                      defaultInstanceElement.appendChild(e);
                   }
+               }
+               else 
+               {
+                  LOGGER.debug("adding one default instance element for " + elementName +
+                               " at path " + path);
+                  if (elementOccurs.minimum == 0)
+                  {
+                     newDefaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
+                                                              NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil",
+                                                              "true");
+                  }
+                  defaultInstanceElement.appendChild(newDefaultInstanceElement);
                }
             }
          } 
@@ -1671,13 +1700,16 @@ public class SchemaFormBuilder
    {
 
       // add xforms:repeat section if this element re-occurs
-      //
       if (o.maximum == 1) 
+      {
          return formSection;
+      }
 
       if (LOGGER.isDebugEnabled())
+      {
          LOGGER.debug("AddRepeatIfNecessary for multiple element for type " + 
                       controlType.getName() + ", maxOccurs=" + o.maximum);
+      }
 	
       final Element repeatSection = 
          xForm.createElementNS(NamespaceConstants.XFORMS_NS, 
@@ -1724,6 +1756,10 @@ public class SchemaFormBuilder
       //add a group inside the repeat?
       final Element group = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
                                                   NamespaceConstants.XFORMS_PREFIX + ":group");
+
+      group.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                           NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                           "repeated");
       this.setXFormsId(group);
       repeatSection.appendChild(group);
       return group;
@@ -1770,6 +1806,10 @@ public class SchemaFormBuilder
                                                        formSection, 
                                                        (XSElementDeclaration)owner,
                                                        resourceBundle);
+         groupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                     NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                                     "repeated");
+
          //set content
          formSection = groupElement;
       }

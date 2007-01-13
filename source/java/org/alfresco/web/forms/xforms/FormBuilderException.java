@@ -51,4 +51,15 @@ public class FormBuilderException
     {
 	super(x);
     }
+
+    /**
+     * Constructs an instance of <code>FormBuilderException</code> with the specified root exception.
+     *
+     * @param msg the detail message.
+     * @param x The root exception.
+     */
+   public FormBuilderException(String msg, Exception x) 
+    {
+       super(msg, x);
+    }
 }

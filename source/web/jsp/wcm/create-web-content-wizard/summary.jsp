@@ -29,18 +29,23 @@
   <h:outputText value="&nbsp;#{msg.create_web_content_summary_content_details}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%">
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
   <a:selectList id="form-instance-data-list" 
                 multiSelect="false"
                 activeSelect="true" 
                 style="width:100%" 
-                itemStyleClass="selectListItem">
-    <a:listItem label="${WizardManager.bean.formInstanceData.name}"
+		itemStyle="vertical-align: top; margin-right: 5px;">
+    <a:listItem label="<b>${WizardManager.bean.formInstanceData.name}<b/>"
                 value="${WizardManager.bean.formInstanceData.name}"
                 image="/images/filetypes32/xml.gif">
       <jsp:attribute name="description">
-        <div>${msg.form}: ${WizardManager.bean.form.title}</div>
-        <div>${msg.location}: ${WizardManager.bean.formInstanceData.sandboxRelativePath}</div>
+	<table width="100%" cellspacing="0" cellpadding="0" border="0">
+	  <colgroup><col width="25%"/><col width="75%"/></colgroup>
+	  <tbody>
+            <tr><td>${msg.form}:</td><td>${WizardManager.bean.form.title}</td></tr>
+            <tr><td>${msg.location}:</td><td>${WizardManager.bean.formInstanceData.sandboxRelativePath}</td></tr>
+	  </tbody>
+	</table>
       </jsp:attribute>
     </a:listItem>
   </a:selectList>
@@ -52,18 +57,18 @@
   <h:outputText value="&nbsp;#{msg.create_web_content_summary_rendition_details}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%"
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%"
 	     rendered="#{!empty WizardManager.bean.renditions}">
   <a:selectList id="rendition-list" 
 		multiSelect="false"
 		activeSelect="true" 
 		style="width:100%" 
-		itemStyleClass="selectListItem">
+		itemStyle="vertical-align: top; margin-right: 5px;">
     <c:forEach items="${WizardManager.bean.renditions}" 
 	       var="rendition" 
 	       varStatus="status">
       <a:listItem id="listItem${status.index}"
-		  label="${rendition.name}"
+		  label="<b>${rendition.name}</b>"
 		  value="${rendition.name}"
                   image="${rendition.fileTypeImage}">
 	<jsp:attribute name="description">
@@ -95,13 +100,13 @@
   <h:outputText value="&nbsp;#{msg.create_web_content_summary_uploaded_files_details}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%"
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%"
 	     rendered="#{!empty WizardManager.bean.uploadedFiles}">
   <a:selectList id="uploaded-file-list" 
 		multiSelect="false"
 		activeSelect="true" 
 		style="width:100%" 
-		itemStyleClass="selectListItem">
+		itemStyle="vertical-align: top; margin-right: 5px;">
     <a:listItems value="#{WizardManager.bean.uploadedFiles}"/>
   </a:selectList>
 </h:panelGrid>

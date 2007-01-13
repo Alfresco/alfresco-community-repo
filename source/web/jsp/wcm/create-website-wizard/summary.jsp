@@ -30,17 +30,37 @@
    <h:outputText value="&nbsp;#{msg.general_properties}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" style="margin-left:16px" styleClass="summary">
-   <h:outputText value="#{msg.name}:" styleClass="mainSubTitle" />
-   <h:outputText value="#{WizardManager.bean.name}"/>
-   <h:outputText value="#{msg.website_dnsname}:" styleClass="mainSubTitle" />
-   <h:outputText value="#{WizardManager.bean.dnsName}"/>
-   <h:outputText value="#{msg.website_webapp}:" styleClass="mainSubTitle" />
-   <h:outputText value="#{WizardManager.bean.webapp}"/>
-   <h:outputText value="#{msg.title}:" styleClass="mainSubTitle" />
-   <h:outputText value="#{WizardManager.bean.title}"/>
-   <h:outputText value="#{msg.description}:" styleClass="mainSubTitle" />
-   <h:outputText value="#{WizardManager.bean.description}"/>
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
+  <a:selectList id="webproject-list" 
+                multiSelect="false"
+                activeSelect="true" 
+                style="width:100%;"
+		itemStyle="vertical-align: top; margin-right: 5px;">
+    <a:listItem label="<b>${WizardManager.bean.name}</b>"
+                value="${WizardManager.bean.name}"
+                image="/images/icons/website_large.gif">
+      <jsp:attribute name="description">
+	<table width="100%" cellspacing="0" cellpadding="0" border="0">
+	  <colgroup><col width="25%"/><col width="75%"/></colgroup>
+	  <tbody>
+            <tr><td>${msg.website_dnsname}:</td><td> ${WizardManager.bean.dnsName}</td></tr>
+            <tr><td>${msg.website_webapp}:</td><td> ${WizardManager.bean.webapp}</td></tr>
+            <tr><td>${msg.title}:</td><td> ${WizardManager.bean.title}</td></tr>
+            <tr><td>${msg.description}:</td>
+	      <td>
+		<c:choose>
+		  <c:when test="${empty WizardManager.bean.description}">
+		    <span style="font-style:italic">${msg.description_not_set}</span>
+		  </c:when>
+		  <c:otherwise>${WizardManager.bean.description}</c:otherwise>
+		</c:choose>
+	      </td>
+	    </tr>
+	  </tbody>
+	</table>
+      </jsp:attribute>
+    </a:listItem>
+  </a:selectList>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"
@@ -48,24 +68,50 @@
    <h:outputText value="&nbsp;#{msg.website_web_content_forms}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" style="margin-left:16px" styleClass="summary">
-   <c:forEach items="${WizardManager.bean.forms}" var="r">
-      <h:outputText value="#{msg.name}:" styleClass="mainSubTitle" />
-      <f:verbatim>${r.name}</f:verbatim>
-      <h:outputText value="#{msg.title}:" styleClass="mainSubTitle" />
-      <f:verbatim>${r.title}</f:verbatim>
-      <h:outputText value="#{msg.output_path_pattern}:" styleClass="mainSubTitle" />
-      <f:verbatim>${r.outputPathPattern}</f:verbatim>
-      <h:outputText value="#{msg.workflow}:" styleClass="mainSubTitle" />
-      <c:if test="${r.workflow != null}">
-         <f:verbatim>${r.workflow.title}</f:verbatim>
-      </c:if>
-      <c:if test="${r.workflow == null}">
-         <f:verbatim>${msg.none}</f:verbatim>
-      </c:if>
-      <f:verbatim />
-      <f:verbatim />
-   </c:forEach>
+<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%">
+  <h:outputText rendered="#{empty WizardManager.bean.forms}"
+		value="#{msg.no_selected_items}"/>
+  <a:selectList id="form-list" 
+                multiSelect="false"
+                activeSelect="true" 
+                style="width:100%;"
+		itemStyle="vertical-align: top; margin-right: 5px;">
+    <c:forEach items="${WizardManager.bean.forms}" var="r">
+      <a:listItem label="<b>${r.name}</b>"
+                  value="${r.name}"
+                  image="/images/icons/webform_large.gif">
+	<jsp:attribute name="description">
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+	    <colgroup><col width="25%"/><col width="75%"/></colgroup>
+	    <tbody>
+              <tr><td>${msg.name}:</td><td> ${r.name}</td></tr>
+              <tr><td>${msg.title}:</td><td> ${r.title}</td></tr>
+              <tr><td>${msg.output_path_pattern}:</td><td> ${r.outputPathPattern}</td></tr>
+              <tr><td>${msg.description}:</td>
+		<td>
+		  <c:choose>
+		    <c:when test="${empty WizardManager.bean.description}">
+		      <span style="font-style:italic">${msg.description_not_set}</span>
+		    </c:when>
+		    <c:otherwise>${r.description}</c:otherwise>
+		  </c:choose>
+		</td>
+              <tr><td>${msg.workflow}:</td>
+		<td>
+		  <c:choose>
+		    <c:when test="${r.workflow == null}">
+		      <span style="font-style:italic">${msg.none}</span>
+		    </c:when>
+		    <c:otherwise>{r.workflow.title}</c:otherwise>
+		  </c:choose>
+		</td>
+	      </tr>
+	    </tbody>
+	  </table>
+	</jsp:attribute>
+      </a:listItem>
+    </c:forEach>
+  </a:selectList>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:16px;padding-bottom:4px;"
@@ -73,17 +119,39 @@
    <h:outputText value="&nbsp;#{msg.website_selected_workflows}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" style="margin-left:16px" styleClass="summary">
-   <c:forEach items="${WizardManager.bean.workflows}" var="r">
-      <h:outputText value="#{msg.name}:" styleClass="mainSubTitle" />
-      <f:verbatim>${r.title}</f:verbatim>
-      <h:outputText value="#{msg.description}:" styleClass="mainSubTitle" />
-      <f:verbatim>${r.description}</f:verbatim>
-      <h:outputText value="#{msg.website_filename_pattern}:" styleClass="mainSubTitle" />
-      <f:verbatim>${r.filenamePattern}</f:verbatim>
-      <f:verbatim />
-      <f:verbatim />
-   </c:forEach>
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
+  <h:outputText rendered="#{empty WizardManager.bean.workflows}"
+		value="#{msg.no_selected_items}"/>
+  <a:selectList id="workflow-list" 
+                multiSelect="false"
+                activeSelect="true" 
+                style="width:100%;"
+		itemStyle="vertical-align: top; margin-right: 5px;">
+    <c:forEach items="${WizardManager.bean.workflows}" var="r">
+      <a:listItem label="<b>${r.title}</b>"
+                  value="${r.name}"
+                  image="/images/icons/workflow_large.gif">
+	<jsp:attribute name="description">
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+	    <colgroup><col width="25%"/><col width="75%"/></colgroup>
+	    <tbody>
+              <tr><td>${msg.description}:</td>
+		<td>
+		  <c:choose>
+		    <c:when test="${empty r.description}">
+		      <span style="font-style:italic">${msg.description_not_set}</span>
+		    </c:when>
+		    <c:otherwise>${r.description}</c:otherwise>
+		  </c:choose>
+		</td>
+	      </tr>
+              <tr><td>${msg.website_filename_pattern}:</td><td> ${r.filenamePattern}</td></tr>
+	    </tbody>
+	  </table>
+	</jsp:attribute>
+      </a:listItem>
+    </c:forEach>
+  </a:selectList>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:16px"
@@ -91,6 +159,27 @@
    <h:outputText value="&nbsp;#{msg.create_website_summary_users}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" style="margin-left:12px">
-   <h:outputText value="#{WizardManager.bean.summary}" escape="false" />
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" 
+	     width="100%"
+	     style="margin-left:12px">
+  <a:selectList id="users-list" 
+                multiSelect="false"
+                activeSelect="true" 
+                style="width:100%;"
+		itemStyle="vertical-align: top; margin-right: 5px;">
+    <c:forEach items="${WizardManager.bean.invitedUsers}" var="r">
+      <a:listItem label="<b>${r.name}</b>"
+                  value="${r.name}"
+                  image="/images/icons/user_large.gif">
+	<jsp:attribute name="description">
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+	    <colgroup><col width="25%"/><col width="75%"/></colgroup>
+	    <tbody>
+              <tr><td>${msg.roles}:</td><td> ${r.role}</td></tr>
+	    </tbody>
+	  </table>
+	</jsp:attribute>
+      </a:listItem>
+    </c:forEach>
+  </a:selectList>
 </h:panelGrid>

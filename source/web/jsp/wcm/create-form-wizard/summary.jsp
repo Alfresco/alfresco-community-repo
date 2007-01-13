@@ -30,28 +30,33 @@
   <h:outputText value="&nbsp;#{msg.general_properties}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
   <a:selectList id="form-list" 
                 multiSelect="false"
                 activeSelect="true" 
-                style="width:100%" 
-                itemStyleClass="selectListItem">
-    <a:listItem label="${msg.name}: ${WizardManager.bean.formTitle}"
+                style="width:100%"
+		itemStyle="vertical-align: top; margin-right: 5px;">
+    <a:listItem label="<b>${WizardManager.bean.formTitle}</b>"
                 value="${WizardManager.bean.formName}"
                 image="/images/icons/webform_large.gif">
       <jsp:attribute name="description">
-        <div>${msg.description}:
-	<c:choose>
-	  <c:when test="${empty WizardManager.bean.formDescription}">
-	    <span style="font-style:italic">${msg.description_not_set}</span>
-	  </c:when>
-	  <c:otherwise>
-	    ${WizardManager.bean.formDescription}
-	  </c:otherwise>
-	</c:choose>
-	</div>
-        <div>${msg.schema_root_element_name}: ${WizardManager.bean.schemaRootElementName}</div>
-        <div>${msg.output_path_pattern}: ${WizardManager.bean.outputPathPatternForFormInstanceData}</div>
+	<table width="100%" cellspacing="0" cellpadding="0" border="0">
+	  <colgroup><col width="25%"/><col width="75%"/></colgroup>
+	  <tbody>
+            <tr><td>${msg.description}:</td>
+	      <td>
+		<c:choose>
+		  <c:when test="${empty WizardManager.bean.formDescription}">
+		    <span style="font-style:italic">${msg.description_not_set}</span>
+		  </c:when>
+		  <c:otherwise>${WizardManager.bean.formDescription}</c:otherwise>
+		</c:choose>
+	      </td>
+	    </tr>
+            <tr><td>${msg.schema_root_element_name}:</td><td>${WizardManager.bean.schemaRootElementName}</td></tr>
+            <tr><td>${msg.output_path_pattern}:</td><td>${WizardManager.bean.outputPathPatternForFormInstanceData}</td></tr>
+	  </tbody>
+	</table>
       </jsp:attribute>
     </a:listItem>
   </a:selectList>
@@ -62,34 +67,38 @@
   <h:outputText value="&nbsp;#{msg.rendering_engine_templates}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0">
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
   <h:outputText rendered="#{empty WizardManager.bean.renderingEngineTemplates}"
 		value="#{msg.no_selected_items}"/>
 
   <a:selectList id="rendering-engine-template-list" 
                 multiSelect="false"
+		itemStyle="vertical-align: top; margin-right: 5px;"
                 activeSelect="true" 
-                style="width:100%" 
-                itemStyleClass="selectListItem">
-
+                style="width:100%">
     <c:forEach items="${WizardManager.bean.renderingEngineTemplates}" var="ret">
-      <a:listItem label="${msg.name}: ${ret.title}"
+      <a:listItem label="<b>${ret.title}</b>"
                   value="${ret.name}"
                   image="/images/icons/template_large.gif">
         <jsp:attribute name="description">
-          <div>${msg.description}:
-	    <c:choose>
-	      <c:when test="${empty ret.description}">
-		<span style="font-style:italic">${msg.description_not_set}</span>
-	      </c:when>
-	      <c:otherwise>
-		${ret.description}
-	      </c:otherwise>
-	    </c:choose>
-	  </div>
-          <div>${msg.rendering_engine_type}: ${ret.renderingEngine.name}</div>
-          <div>${msg.output_path_pattern}: ${ret.outputPathPatternForRendition}</div>
-          <div>${msg.mimetype_for_renditions}: ${ret.mimetypeForRendition}</div>
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+	    <colgroup><col width="25%"/><col width="75%"/></colgroup>
+	    <tbody>
+              <tr><td>${msg.description}:</td>
+		<td>
+		  <c:choose>
+		    <c:when test="${empty ret.description}">
+		      <span style="font-style:italic">${msg.description_not_set}</span>
+		    </c:when>
+		    <c:otherwise>${ret.description}</c:otherwise>
+		  </c:choose>
+		</td>
+	      </tr>
+              <tr><td>${msg.rendering_engine_type}:</td><td>${ret.renderingEngine.name}</td></tr>
+              <tr><td>${msg.output_path_pattern}:</td><td>${ret.outputPathPatternForRendition}</td></tr>
+              <tr><td>${msg.mimetype_for_renditions}:</td><td>${ret.mimetypeForRendition}</td></tr>
+	    </tbody>
+	  </table>
         </jsp:attribute>
       </a:listItem>
     </c:forEach>
@@ -101,18 +110,35 @@
   <h:outputText value="&nbsp;#{msg.default_workflow}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0">
+<h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
   <h:outputText value="#{msg.no_selected_items}" 
 		rendered="#{WizardManager.bean.defaultWorkflowDefinition == null}"/>
   <a:selectList id="workflow-list" 
 		rendered="#{WizardManager.bean.defaultWorkflowDefinition != null}"
                 multiSelect="false"
                 activeSelect="true" 
-                style="width:100%" 
-                itemStyleClass="selectListItem">
-    <a:listItem label="${msg.name}: ${WizardManager.bean.defaultWorkflowDefinition.title}"
+		itemStyle="vertical-align: top; margin-right: 5px;"
+                style="width:100%">
+    <a:listItem label="<b>${WizardManager.bean.defaultWorkflowDefinition.title}</b>"
                 value="${WizardManager.bean.defaultWorkflowDefinition.name}"
-		description="${msg.description}: ${WizardManager.bean.defaultWorkflowDefinition.description}"
-                image="/images/icons/workflow_large.gif"/>
+                image="/images/icons/workflow_large.gif">
+      <jsp:attribute name="description">
+	<table width="100%" cellspacing="0" cellpadding="0" border="0">
+	  <colgroup><col width="25%"/><col width="75%"/></colgroup>
+	  <tbody>
+            <tr><td>${msg.description}:</td>
+	      <td>
+		<c:choose>
+		  <c:when test="${empty WizardManager.bean.defaultWorkflowDefinition.description}">
+		    <span style="font-style:italic">${msg.description_not_set}</span>
+		  </c:when>
+		  <c:otherwise>${WizardManager.bean.defaultWorkflowDefinition.description}</c:otherwise>
+		</c:choose>
+	      </td>
+	    </tr>
+	  </tbody>
+	</table>
+      </jsp:attribute>
+    </a:listItem>
   </a:selectList>
 </h:panelGrid>

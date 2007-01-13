@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,9 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -89,6 +93,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    
    protected AVMService avmService;
    protected WorkflowService workflowService;
+   protected PersonService personService;
    
    /** datamodel for table of selected forms */
    protected DataModel formsDataModel = null;
@@ -327,6 +332,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.workflowService = workflowService;
    }
 
+   /**
+    * @param personService  The PersonService to set.
+    */
+   public void setPersonService(PersonService personService)
+   {
+      this.personService = personService;
+   }
+
    
    // ------------------------------------------------------------------------------
    // Bean getters and setters
@@ -460,6 +473,29 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new String[] {buf.toString()});
    }
    
+   public List<UserWrapper> getInvitedUsers()
+   {
+
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      List<UserGroupRole> invitedUserRoles = (List<UserGroupRole>)
+         getInviteUsersWizard().getUserRolesDataModel().getWrappedData();
+      List<UserWrapper> result = new LinkedList<UserWrapper>();
+      String currentUser = Application.getCurrentUser(fc).getUserName();
+      boolean foundCurrentUser = false;
+      for (UserGroupRole userRole : invitedUserRoles)
+      {
+         if (currentUser.equals(userRole.getAuthority()))
+         {
+            foundCurrentUser = true;
+         }
+         result.add(new UserWrapper(userRole.getAuthority(), userRole.getRole()));
+      }
+      if (foundCurrentUser == false)
+      {
+         result.add(new UserWrapper(currentUser, AVMConstants.ROLE_CONTENT_MANAGER));
+      }
+      return result;      
+   }
    
    // ------------------------------------------------------------------------------
    // Define Web Content Workflows page
@@ -735,6 +771,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
    // ------------------------------------------------------------------------------
    // Inner classes
    
+   /////////////////////////////////////////////////////////////////////////////
+
    /**
     * Wrapper class for a configurable template Form instance
     */
@@ -867,6 +905,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
    }
    
+   /////////////////////////////////////////////////////////////////////////////
+
    /**
     * Class to represent a single configured Presentation Template instance
     */
@@ -931,6 +971,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.outputPathPattern = outputPathPattern;
       }
    }
+
+   /////////////////////////////////////////////////////////////////////////////
    
    /**
     * Class to represent a single configured Workflow instance
@@ -1031,4 +1073,37 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.type = type;
       }
    }
+
+   /////////////////////////////////////////////////////////////////////////////
+
+   public class UserWrapper
+   {
+      private final String name, role;
+      
+      public UserWrapper(final String authority, final String role)
+      {
+         
+         if (AuthorityType.getAuthorityType(authority) == AuthorityType.USER ||
+             AuthorityType.getAuthorityType(authority) == AuthorityType.GUEST)
+         {
+            final NodeRef ref = 
+               CreateWebsiteWizard.this.personService.getPerson(authority);
+            final String firstName = (String)
+               CreateWebsiteWizard.this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
+            final String lastName = (String)
+               CreateWebsiteWizard.this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
+            this.name = firstName + (lastName != null ? " " + lastName : "");
+         }
+         else
+         {
+            this.name = authority.substring(PermissionService.GROUP_PREFIX.length());
+         }
+         this.role = Application.getMessage(FacesContext.getCurrentInstance(), role);
+      }
+
+      public String getName() { return this.name; }
+      public String getRole() { return this.role; }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
 }

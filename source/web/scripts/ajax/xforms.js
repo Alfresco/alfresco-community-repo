@@ -1553,7 +1553,9 @@ dojo.declare("alfresco.xforms.XFormsEvent",
                {
                  var targetDomNode = document.getElementById(this.targetId + "-content");
                  if (!targetDomNode)
+                 {
                    throw new Error("unable to find node " + this.targetId + "-content");
+                 }
                  return targetDomNode.widget;
                }
              });
@@ -1567,10 +1569,10 @@ dojo.declare("alfresco.xforms.Binding",
                  this.readonly =  this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":readonly");
                  this.required =  this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":required");
                  this.nodeset =  this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":nodeset");
-                 this._type = (this.xformsNode.hasAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":type")
+                 this._type = (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":type")
                                ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":type")
                                : null);
-                 this.constraint =  (this.xformsNode.hasAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
+                 this.constraint =  (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
                                      ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
                                      : null);
                  this.maximum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":maximum"));
@@ -1586,9 +1588,11 @@ dojo.declare("alfresco.xforms.Binding",
                },
                toString: function()
                {
-                 return ("{id:" + this.id + 
-                         ",type:" + this.getType() + 
-                         ",nodeset:" + this.nodeset + "}");
+                 return ("{id: " + this.id + 
+                         ",type: " + this.getType() + 
+                         ",required: " + this.required +
+                         ",readonly: " + this.readonly +
+                         ",nodeset: " + this.nodeset + "}");
                }
              });
 
@@ -1806,7 +1810,7 @@ dojo.declare("alfresco.xforms.XForm",
                },
                _handleEventLog: function(events)
                {
-                 var prototypeClone = null;
+                 var prototypeClones = [];
                  for (var i = 0; i < events.childNodes.length; i++)
                  {
                    if (events.childNodes[i].nodeType != dojo.dom.ELEMENT_NODE)
@@ -1864,8 +1868,8 @@ dojo.declare("alfresco.xforms.XForm",
                      {
                        dojo.debug("cloning prototype " + originalId);
                        var prototypeNode = _findElementById(this.xformsNode, originalId);
-                       clone = prototypeNode.cloneNode(true);
-                       var clone = prototypeNode.ownerDocument.createElement(alfresco_xforms_constants.XFORMS_PREFIX + ":group");
+                       //clone = prototypeNode.cloneNode(true);
+                       clone = prototypeNode.ownerDocument.createElement(alfresco_xforms_constants.XFORMS_PREFIX + ":group");
                        clone.setAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":appearance", "repeated");
                        for (var j = 0; j < prototypeNode.childNodes.length; j++)
                        {
@@ -1873,8 +1877,18 @@ dojo.declare("alfresco.xforms.XForm",
                        }
                        clone.setAttribute("id", prototypeId);
                      }
-                     clone.parentClone = prototypeClone;
-                     prototypeClone = clone;
+
+                     if (clone == null)
+                     {
+                       throw new Error("unable to clone prototype " + prototypeId);
+                     }
+
+                     dojo.debug("created clone " + clone.getAttribute("id") + 
+                                " nodeName " + clone.nodeName +
+                                " parentClone " + (prototypeClones.length != 0 
+                                                   ? prototypeClones.peek().getAttribute("id") 
+                                                   : null));
+                     prototypeClones.push(clone);
                      break;
                    }
                    case "chiba-id-generated":
@@ -1882,16 +1896,16 @@ dojo.declare("alfresco.xforms.XForm",
                      var originalId = xfe.properties["originalId"];
                
                      dojo.debug("handleIdGenerated(" + xfe.targetId + ", " + originalId + ")");
-                     var node = _findElementById(prototypeClone, originalId);
+                     var node = _findElementById(prototypeClones.peek(), originalId);
                      if (!node)
                        throw new Error("unable to find " + originalId + 
                                        " in clone " + dojo.dom.innerXML(clone));
                      dojo.debug("applying id " + xfe.targetId + 
                                 " to " + node.nodeName + "(" + originalId + ")");
                      node.setAttribute("id", xfe.targetId);
-                     if (prototypeClone.parentClone)
+                     if (prototypeClones.length != 1)
                      {
-                       var e = _findElementById(prototypeClone.parentClone, originalId);
+                       var e = _findElementById(prototypeClones[prototypeClones.length - 2], originalId);
                        if (e)
                        {
                          e.setAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":prototype", "true");
@@ -1903,15 +1917,18 @@ dojo.declare("alfresco.xforms.XForm",
                    {
                      var position = Number(xfe.properties["position"]) - 1;
                      var originalId = xfe.properties["originalId"];
-                     var clone = prototypeClone;
-                     prototypeClone = clone.parentClone;
-                     if (prototypeClone)
+                     var clone = prototypeClones.pop();
+                     if (prototypeClones.length != 0)
                      {
-                       var parentRepeat = _findElementById(prototypeClone, xfe.targetId);
+                       dojo.debug("using parentClone " + prototypeClones.peek().getAttribute("id") + 
+                                  " of " + clone.getAttribute("id"));
+                       var parentRepeat = _findElementById(prototypeClones.peek(), xfe.targetId);
                        parentRepeat.appendChild(clone);
                      }
                      else
                      {
+                       dojo.debug("no parentClone found, directly insert " + clone.getAttribute("id") +
+                                  " on " + xfe.targetId);
                        xfe.getTarget().handleItemInserted(clone, position);
                      }
                      break;
@@ -1999,6 +2016,15 @@ function _findElementById(node, id)
     }
   }
   return null;
+}
+
+function _hasAttribute(node, name)
+{
+  return (node == null
+          ? false
+          : (node.hasAttribute
+             ? node.hasAttribute(name)
+             : node.getAttribute(name) != null));
 }
 
 function create_ajax_request(target, serverMethod, methodArgs, load, error)
@@ -2127,6 +2153,8 @@ function _getElementsByTagNameNS(parentNode, ns, nsPrefix, tagName)
           : parentNode.getElementsByTagName(nsPrefix + ":" + tagName));
 }
 
+// xpath wrapper
+
 function _evaluateXPath(xpath, contextNode, result_type)
 {
   var xmlDocument = contextNode.ownerDocument;
@@ -2201,6 +2229,14 @@ if (!Array.prototype.indexOf)
         return i;
     }
     return -1;
+  }
+}
+
+if (!Array.prototype.peek)
+{
+  Array.prototype.peek = function(o)
+  {
+    return this[this.length - 1];
   }
 }
 

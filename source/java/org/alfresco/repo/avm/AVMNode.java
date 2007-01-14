@@ -34,6 +34,12 @@ public interface AVMNode
      * @param ancestor The ancestor to set.
      */
     public void setAncestor(AVMNode ancestor);
+    
+    /**
+     * Change the ancestor of a node.
+     * @param ancestor The ancestor node that should be set.
+     */
+    public void changeAncestor(AVMNode ancestor);
 
     /**
      * Get the ancestor of this node.

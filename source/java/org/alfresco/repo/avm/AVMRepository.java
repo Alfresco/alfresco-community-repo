@@ -2338,4 +2338,32 @@ public class AVMRepository
         fPurgeStoreTxnListener.storePurged(sourceName);
         fCreateStoreTxnListener.storeCreated(destName);
     }
+    
+    /**
+     * Revert a head path to a given version. This works by cloning
+     * the version to revert to, and then linking that new version into head.
+     * The reverted version will have the previous head version as ancestor.
+     * @param path The path to the parent directory.
+     * @param name The name of the node.
+     * @param toRevertTo The descriptor of the version to revert to.
+     */
+    public void revert(String path, String name, AVMNodeDescriptor toRevertTo)
+    {
+        fLookupCount.set(1);
+        try
+        {
+            String [] pathParts = SplitPath(path);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            if (store == null)
+            {
+                throw new AVMNotFoundException("Store not found: " + pathParts[0]);
+            }
+            fLookupCache.onWrite(pathParts[0]);
+            store.revert(pathParts[1], name, toRevertTo);
+        }
+        finally
+        {
+            fLookupCount.set(null);
+        }
+    }
 }

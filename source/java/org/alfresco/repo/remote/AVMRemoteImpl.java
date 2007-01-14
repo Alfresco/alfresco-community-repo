@@ -483,4 +483,12 @@ public class AVMRemoteImpl implements AVMRemote
     {
         fTransport.removeAspect(ClientTicketHolder.GetTicket(), path, aspectName);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#revert(java.lang.String, org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public void revert(String path, AVMNodeDescriptor toRevertTo) 
+    {
+        fTransport.revert(ClientTicketHolder.GetTicket(), path, toRevertTo);
+    }
 }

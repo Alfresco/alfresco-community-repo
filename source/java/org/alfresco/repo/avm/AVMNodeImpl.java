@@ -122,6 +122,20 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     }
 
     /**
+     * Change the ancestor of this node.
+     * @param ancestor The new ancestor to give it.
+     */
+    public void changeAncestor(AVMNode ancestor)
+    {
+        HistoryLink old = AVMDAOs.Instance().fHistoryLinkDAO.getByDescendent(this);
+        if (old != null)
+        {
+            AVMDAOs.Instance().fHistoryLinkDAO.delete(old);
+        }
+        setAncestor(ancestor);
+    }
+    
+    /**
      * Get the ancestor of this node.
      * @return The ancestor of this node.
      */

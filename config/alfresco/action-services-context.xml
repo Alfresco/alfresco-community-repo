@@ -458,9 +458,6 @@
     </bean>
     
     <bean id="avm-revert-to-version" class="org.alfresco.repo.avm.actions.AVMRevertToVersionAction" parent = "action-executer">
-        <property name="avmSyncService">
-            <ref bean="avmSyncService"/>
-        </property>
         <property name="avmService">
             <ref bean="avmService"/>
         </property>

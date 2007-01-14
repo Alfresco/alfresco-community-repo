@@ -30,6 +30,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.AVMAspectName;
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -1304,5 +1306,47 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
         dir.link(lPath, name, toLink);
+    }
+
+    /**
+     * Revert a head path to a given version. This works by cloning
+     * the version to revert to, and then linking that new version into head.
+     * The reverted version will have the previous head version as ancestor.
+     * @param path The path to the parent directory.
+     * @param name The name of the node to revert.
+     * @param toRevertTo The descriptor of the version to revert to.
+     */
+    public void revert(String path, String name, AVMNodeDescriptor toRevertTo)
+    {
+        Lookup lPath = lookupDirectory(-1, path, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path " + path + " not found.");
+        }
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        AVMNode child = dir.lookupChild(lPath, name, true);
+        if (child == null)
+        {
+            throw new AVMNotFoundException("Node not found: " + name);
+        }
+        AVMNode revertNode = AVMDAOs.Instance().fAVMNodeDAO.getByID(toRevertTo.getId());
+        if (revertNode == null)
+        {
+            throw new AVMNotFoundException(toRevertTo.toString());
+        }
+        AVMNode toLink = revertNode.copy(lPath);
+        dir.putChild(name, toLink);
+        toLink.changeAncestor(child);
+        toLink.setVersionID(child.getVersionID() + 1);
+        if (AVMDAOs.Instance().fAVMAspectNameDAO.exists(toLink, WCMModel.ASPECT_REVERTED))
+        {
+            AVMDAOs.Instance().fAVMAspectNameDAO.delete(toLink, WCMModel.ASPECT_REVERTED);
+        }
+        AVMAspectName aspect = new AVMAspectNameImpl();
+        aspect.setNode(toLink);
+        aspect.setName(WCMModel.ASPECT_REVERTED);
+        AVMDAOs.Instance().fAVMAspectNameDAO.save(aspect);
+        PropertyValue value = new PropertyValue(null, toRevertTo.getId());
+        toLink.setProperty(WCMModel.PROP_REVERTED_ID, value);
     }
 }

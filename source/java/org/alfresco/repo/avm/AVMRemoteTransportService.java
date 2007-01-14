@@ -999,4 +999,13 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
         fAuthService.validate(ticket);
         fAVMService.removeAspect(path, aspectName);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#revert(java.lang.String, java.lang.String, org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public void revert(String ticket, String path, AVMNodeDescriptor toRevertTo) 
+    {
+        fAuthService.validate(ticket);
+        fAVMService.revert(path, toRevertTo);
+    }
 }

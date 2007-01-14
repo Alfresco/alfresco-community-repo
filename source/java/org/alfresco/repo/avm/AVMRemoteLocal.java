@@ -479,4 +479,12 @@ public class AVMRemoteLocal implements AVMRemote
     {
         fService.removeAspect(path, aspectName);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#revert(java.lang.String, org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public void revert(String path, AVMNodeDescriptor toRevertTo) 
+    {
+        fService.revert(path, toRevertTo);
+    }
 }

@@ -36,4 +36,8 @@ public interface WCMModel
     static final QName TYPE_AVM_PLAIN_FOLDER = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "avmplainfolder");
     static final QName TYPE_AVM_LAYERED_FOLDER = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "avmlayeredfolder");
     static final QName PROP_AVM_DIR_INDIRECTION = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "avmdirindirection");
+    
+    // Reverted Aspect.
+    static final QName ASPECT_REVERTED = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "reverted");
+    static final QName PROP_REVERTED_ID = QName.createQName(NamespaceService.WCM_MODEL_1_0_URI, "revertedid");
 }

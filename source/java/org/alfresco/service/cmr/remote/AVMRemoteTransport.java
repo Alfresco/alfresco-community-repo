@@ -461,4 +461,14 @@ public interface AVMRemoteTransport
      * @throws AVMNotFoundException
      */
     public boolean hasAspect(String ticket, int version, String path, QName aspectName);
+
+    /**
+     * Revert a head path to a given version. This works by cloning
+     * the version to revert to, and then linking that new version into head.
+     * The reverted version will have the previous head version as ancestor.
+     * @param path The path to the node to revert.
+     * @param toRevertTo The descriptor of the version to revert to.
+     * @throws AVMNotFoundException
+     */
+    public void revert(String ticket, String path, AVMNodeDescriptor toRevertTo);    
 }

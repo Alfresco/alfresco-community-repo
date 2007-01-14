@@ -64,4 +64,18 @@
 
    </types>
    
+   <aspects>
+       <!-- Captures the node that a node was reverted from. -->
+       <aspect name="wcm:reverted">
+           <title>Contains a reference to the node that this node was reverted from.</title>
+           <properties>
+               <property name="wcm:revertedid">
+                   <title>The id of the node this was reverted from.</title>
+                   <type>d:long</type>
+                   <mandatory>true</mandatory>
+               </property>
+           </properties>
+       </aspect>
+   </aspects>
+   
 </model>

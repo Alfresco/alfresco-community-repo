@@ -511,7 +511,7 @@ public class AVMServiceImpl implements AVMService
         String [] basePath = AVMNodeConverter.SplitBase(path);
         if (basePath[0] == null)
         {
-            throw new AVMBadArgumentException("Cannot remove root node.");
+            throw new AVMBadArgumentException("Cannot remove root node: " + path);
         }
         AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.remove(basePath[0], basePath[1]);
@@ -1416,5 +1416,28 @@ public class AVMServiceImpl implements AVMService
             throw new AVMBadArgumentException("Illegal Null Argument.");
         }
         fAVMRepository.renameStore(sourceName, destName);
+    }
+
+    /**
+     * Revert a head path to a given version. This works by cloning
+     * the version to revert to, and then linking that new version into head.
+     * The reverted version will have the previous head version as ancestor.
+     * @param path The path to the node to revert.
+     * @param toRevertTo The descriptor of the version to revert to.
+     * @throws AVMNotFoundException
+     */
+    public void revert(String path, AVMNodeDescriptor toRevertTo)
+    {
+        if (path == null || toRevertTo == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        String [] baseName = AVMNodeConverter.SplitBase(path);
+        if (baseName.length != 2)
+        {
+            throw new AVMBadArgumentException("Cannot revert store root: " + path);
+        }
+        AlfrescoTransactionSupport.bindListener(fTransactionListener);
+        fAVMRepository.revert(baseName[0], baseName[1], toRevertTo);
     }
 }

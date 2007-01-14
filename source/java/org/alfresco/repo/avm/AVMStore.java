@@ -454,4 +454,14 @@ public interface AVMStore
      * @param toLink The node to link.
      */
     public void link(String parentPath, String name, AVMNodeDescriptor toLink);
+
+    /**
+     * Revert a head path to a given version. This works by cloning
+     * the version to revert to, and then linking that new version into head.
+     * The reverted version will have the previous head version as ancestor.
+     * @param path The path to the parent directory.
+     * @param name The name of the node to revert.
+     * @param toRevertTo The descriptor of the version to revert to.
+     */
+    public void revert(String path, String name, AVMNodeDescriptor toRevertTo);
 }

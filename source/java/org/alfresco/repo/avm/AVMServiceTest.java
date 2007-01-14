@@ -109,7 +109,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             };
             TransactionUtil.executeInUserTransaction((TransactionService)fContext.getBean("transactionComponent"),
                     new TxnWork());
-            assertEquals(toRevert.getId(), fService.lookup(-1, "main:/a/b/c/foo").getId());            
         }
         catch (Exception e)
         {

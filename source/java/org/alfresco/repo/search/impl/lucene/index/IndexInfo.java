@@ -69,11 +69,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
 
 /**
- * The information that makes up an index.
- * 
- * IndexInfoVersion
- * 
- * Repeated information of the form
+ * The information that makes up an index. IndexInfoVersion Repeated information of the form
  * <ol>
  * <li> Index Type.
  * <li> sub-directory name.
@@ -84,17 +80,12 @@ import org.apache.lucene.store.RAMDirectory;
  * <li>Overlay: Transaction status
  * </ol>
  * </ol>
- * 
- * Merges always take place to new indexes so we can detect merge failure or partial merges. Or we do not know what has merged.
- * 
- * Incomplete delete merging does not matter - the overlay would still exist and be treated as such. So a document may be deleted in the index as well as in the applied overlay. It
- * is still correctly deleted.
- * 
- * NOTE: Public methods lock as required, the private methods assume that the appropriate locks have been obtained.
- * 
- * TODO: Write element status into individual directories. This would be enough for recovery if both index files are lost or corrupted.
- * 
- * TODO: Tidy up index status at start up or after some time. How long would you leave a merge to run?
+ * Merges always take place to new indexes so we can detect merge failure or partial merges. Or we do not know what has
+ * merged. Incomplete delete merging does not matter - the overlay would still exist and be treated as such. So a
+ * document may be deleted in the index as well as in the applied overlay. It is still correctly deleted. NOTE: Public
+ * methods lock as required, the private methods assume that the appropriate locks have been obtained. TODO: Write
+ * element status into individual directories. This would be enough for recovery if both index files are lost or
+ * corrupted. TODO: Tidy up index status at start up or after some time. How long would you leave a merge to run?
  * 
  * @author Andy Hind
  */
@@ -155,7 +146,8 @@ public class IndexInfo
     private long version = -1;
 
     /**
-     * The index entries that make up this index. Map entries are looked up by name. These are maintained in order so document order is maintained.
+     * The index entries that make up this index. Map entries are looked up by name. These are maintained in order so
+     * document order is maintained.
      */
     private LinkedHashMap<String, IndexEntry> indexEntries = new LinkedHashMap<String, IndexEntry>();
 
@@ -223,13 +215,13 @@ public class IndexInfo
     private boolean mergerUseCompoundFile = true;
 
     private int mergerTargetOverlays = 5;
-    
+
     private long writeLockTimeout = IndexWriter.WRITE_LOCK_TIMEOUT;
-    
+
     private long commitLockTimeout = IndexWriter.COMMIT_LOCK_TIMEOUT;
-    
+
     private int maxFieldLength = IndexWriter.DEFAULT_MAX_FIELD_LENGTH;
-    
+
     private int termIndexInterval = IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
 
     // TODO: Something to control the maximum number of overlays
@@ -438,16 +430,15 @@ public class IndexInfo
         {
             cleanerThread = new Thread(cleaner);
             cleanerThread.setDaemon(true);
-            cleanerThread.setName("Index cleaner thread "+indexDirectory);
+            cleanerThread.setName("Index cleaner thread " + indexDirectory);
             cleanerThread.start();
         }
 
-       
         if (enableMergerThread)
         {
             mergerThread = new Thread(merger);
             mergerThread.setDaemon(true);
-            mergerThread.setName("Index merger thread "+indexDirectory);
+            mergerThread.setName("Index merger thread " + indexDirectory);
             mergerThread.start();
         }
 
@@ -856,20 +847,20 @@ public class IndexInfo
             // TODO: Should use the in memory index but we often end up forcing to disk anyway.
             // Is it worth it?
             // luceneIndexer.flushPending();
-            
-            IndexReader deltaReader =  buildAndRegisterDeltaReader(id);
+
+            IndexReader deltaReader = buildAndRegisterDeltaReader(id);
             IndexReader reader = null;
             if (deletions == null || deletions.size() == 0)
             {
-                reader = new MultiReader(new IndexReader[] {mainIndexReader, deltaReader });
+                reader = new MultiReader(new IndexReader[] { mainIndexReader, deltaReader });
             }
             else
             {
                 reader = new MultiReader(new IndexReader[] {
-                    new FilterIndexReaderByNodeRefs2(mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
+                        new FilterIndexReaderByNodeRefs2(mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
             }
-            reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader("MainReader"+id, reader);
-            ReferenceCounting refCounting = (ReferenceCounting)reader;
+            reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader("MainReader" + id, reader);
+            ReferenceCounting refCounting = (ReferenceCounting) reader;
             refCounting.incrementReferenceCount();
             refCounting.setInvalidForReuse();
             return reader;
@@ -888,49 +879,61 @@ public class IndexInfo
             throw new IndexerException("\"null\" is not a valid identifier for a transaction");
         }
         final Transition transition = getTransition(state);
-        getWriteLock();
+
+        getReadLock();
         try
         {
-            if (transition.requiresFileLock())
+            transition.beforeWithReadLock(id, toDelete, read);
+            releaseReadLock();
+            getWriteLock();
+            try
             {
-                doWithFileLock(new LockWork<Object>()
+                if (transition.requiresFileLock())
                 {
-                    public Object doWork() throws Exception
+                    doWithFileLock(new LockWork<Object>()
                     {
-                        if (s_logger.isDebugEnabled())
+                        public Object doWork() throws Exception
                         {
-                            s_logger.debug("Start Index " + id + " state = " + state);
+                            if (s_logger.isDebugEnabled())
+                            {
+                                s_logger.debug("Start Index " + id + " state = " + state);
+                            }
+                            dumpInfo();
+                            transition.transition(id, toDelete, read);
+                            if (s_logger.isDebugEnabled())
+                            {
+                                s_logger.debug("End Index " + id + " state = " + state);
+                            }
+                            dumpInfo();
+                            return null;
                         }
-                        dumpInfo();
-                        transition.transition(id, toDelete, read);
-                        if (s_logger.isDebugEnabled())
-                        {
-                            s_logger.debug("End Index " + id + " state = " + state);
-                        }
-                        dumpInfo();
-                        return null;
-                    }
 
-                });
+                    });
+                }
+                else
+                {
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("Start Index " + id + " state = " + state);
+                    }
+                    dumpInfo();
+                    transition.transition(id, toDelete, read);
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("End Index " + id + " state = " + state);
+                    }
+                    dumpInfo();
+                }
             }
-            else
+            finally
             {
-                if (s_logger.isDebugEnabled())
-                {
-                    s_logger.debug("Start Index " + id + " state = " + state);
-                }
-                dumpInfo();
-                transition.transition(id, toDelete, read);
-                if (s_logger.isDebugEnabled())
-                {
-                    s_logger.debug("End Index " + id + " state = " + state);
-                }
-                dumpInfo();
+                getReadLock();
+                releaseWriteLock();
             }
         }
         finally
         {
-            releaseWriteLock();
+            releaseReadLock();
         }
     }
 
@@ -967,6 +970,8 @@ public class IndexInfo
 
     private interface Transition
     {
+        void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException;
+
         void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException;
 
         boolean requiresFileLock();
@@ -974,6 +979,11 @@ public class IndexInfo
 
     private class PreparingTransition implements Transition
     {
+        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+
+        }
+
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
@@ -1001,6 +1011,11 @@ public class IndexInfo
 
     private class PreparedTransition implements Transition
     {
+        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+
+        }
+
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
@@ -1066,6 +1081,11 @@ public class IndexInfo
 
     private class CommittingTransition implements Transition
     {
+        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+
+        }
+
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
@@ -1093,6 +1113,14 @@ public class IndexInfo
 
     private class CommittedTransition implements Transition
     {
+        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+            // Make sure we have set up the reader for the data
+            // ... and close it so we do not up the ref count
+
+            getReferenceCountingIndexReader(id).close();
+        }
+
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
@@ -1129,6 +1157,7 @@ public class IndexInfo
                         merger.notify();
                     }
                 }
+
             }
             else
             {
@@ -1145,6 +1174,11 @@ public class IndexInfo
 
     private class RollingBackTransition implements Transition
     {
+        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+
+        }
+
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
@@ -1173,6 +1207,11 @@ public class IndexInfo
 
     private class RolledBackTransition implements Transition
     {
+        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+
+        }
+
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
@@ -1201,6 +1240,11 @@ public class IndexInfo
 
     private class DeletableTransition implements Transition
     {
+        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+
+        }
+
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
@@ -1234,6 +1278,11 @@ public class IndexInfo
 
     private class ActiveTransition implements Transition
     {
+        public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
+        {
+
+        }
+
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
@@ -1746,7 +1795,7 @@ public class IndexInfo
                 if (s_logger.isDebugEnabled())
                 {
                     long end = System.nanoTime();
-                    s_logger.debug(" ... got file lock in " + ((end - start)/10e6f) + " ms");
+                    s_logger.debug(" ... got file lock in " + ((end - start) / 10e6f) + " ms");
                 }
                 if (!checkVersion())
                 {
@@ -1862,6 +1911,7 @@ public class IndexInfo
                     catch (InterruptedException e)
                     {
                         runnable = false;
+                        s_logger.warn("Cleaner thread for " + indexDirectory + "stopped by interruption.");
                     }
                 }
             }
@@ -1899,31 +1949,14 @@ public class IndexInfo
     }
 
     /**
-     * Supported by one thread.
-     * 
-     * 1) If the first index is a delta we can just change it to an index.
-     * 
-     * There is now here to apply the deletions
-     * 
-     * 2) Merge indexes
-     * 
-     * Combine indexes together according to the target index merge strategy. This is a trade off to make an optimised index but not spend too much time merging and optimising
-     * small merges.
-     * 
-     * 3) Apply next deletion set to indexes
-     * 
-     * Apply the deletions for the first delta to all the other indexes. Deletes can be applied with relative impunity. If any are applied they take effect as required.
-     * 
-     * 1) 2) and 3) are mutually exclusive try in order
-     * 
-     * This could be supported in another thread
-     * 
-     * 4) Merge deltas
-     * 
-     * Merge two index deltas together. Starting at the end. Several merges can be going on at once.
-     * 
-     * a) Find merge b) Set state c) apply deletions to the previous delta d) update state e) add deletions to the previous delta deletion list f) update state
-     * 
+     * Supported by one thread. 1) If the first index is a delta we can just change it to an index. There is now here to
+     * apply the deletions 2) Merge indexes Combine indexes together according to the target index merge strategy. This
+     * is a trade off to make an optimised index but not spend too much time merging and optimising small merges. 3)
+     * Apply next deletion set to indexes Apply the deletions for the first delta to all the other indexes. Deletes can
+     * be applied with relative impunity. If any are applied they take effect as required. 1) 2) and 3) are mutually
+     * exclusive try in order This could be supported in another thread 4) Merge deltas Merge two index deltas together.
+     * Starting at the end. Several merges can be going on at once. a) Find merge b) Set state c) apply deletions to the
+     * previous delta d) update state e) add deletions to the previous delta deletion list f) update state
      */
 
     private enum MergeAction
@@ -2461,7 +2494,7 @@ public class IndexInfo
                             else
                             {
                                 writer = new IndexWriter(location, new AlfrescoStandardAnalyser(), true);
-                               
+
                             }
                             writer.setUseCompoundFile(mergerUseCompoundFile);
                             writer.setMaxBufferedDocs(mergerMinMergeDocs);
@@ -2564,7 +2597,7 @@ public class IndexInfo
                             indexEntries.remove(id);
                             deleteQueue.add(id);
                         }
-                        
+
                         dumpInfo();
 
                         writeStatus();
@@ -2575,7 +2608,7 @@ public class IndexInfo
                         {
                             cleaner.notify();
                         }
-                        
+
                         return null;
                     }
 
@@ -2655,7 +2688,7 @@ public class IndexInfo
         if (s_logger.isDebugEnabled())
         {
             long end = System.nanoTime();
-            s_logger.debug("...GOT WRITE LOCK  - " + threadName + " -  in " + ((end - start)/10e6f) + " ms");
+            s_logger.debug("...GOT WRITE LOCK  - " + threadName + " -  in " + ((end - start) / 10e6f) + " ms");
         }
     }
 
@@ -2682,7 +2715,7 @@ public class IndexInfo
         if (s_logger.isDebugEnabled())
         {
             long end = System.nanoTime();
-            s_logger.debug("...GOT READ LOCK  - " + threadName + " -  in " + ((end - start)/10e6f) + " ms");
+            s_logger.debug("...GOT READ LOCK  - " + threadName + " -  in " + ((end - start) / 10e6f) + " ms");
         }
     }
 
@@ -2829,6 +2862,5 @@ public class IndexInfo
     {
         this.writerUseCompoundFile = writerUseCompoundFile;
     }
-    
-    
+
 }

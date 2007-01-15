@@ -114,7 +114,7 @@
 			column="next_version_id" not-null="true"/>
 		<!-- Every AVMStore has a root directory that is the current root directory. -->
 		<many-to-one name="root" class="DirectoryNodeImpl"
-			column="current_root_id" unique="true" cascade="save-update">
+			column="current_root_id" cascade="save-update">
 		</many-to-one>
 	</class>
 	<class name="VersionRootImpl" proxy="VersionRoot" table="avm_version_roots">

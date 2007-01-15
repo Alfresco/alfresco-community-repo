@@ -473,9 +473,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
             new String[] {buf.toString()});
    }
    
+   /**
+    * @return the invited users for the project - as UserWrapper instances
+    */
    public List<UserWrapper> getInvitedUsers()
    {
-
       final FacesContext fc = FacesContext.getCurrentInstance();
       List<UserGroupRole> invitedUserRoles = (List<UserGroupRole>)
          getInviteUsersWizard().getUserRolesDataModel().getWrappedData();
@@ -496,6 +498,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       return result;      
    }
+   
    
    // ------------------------------------------------------------------------------
    // Define Web Content Workflows page

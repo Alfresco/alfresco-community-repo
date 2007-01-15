@@ -18,6 +18,7 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -26,6 +27,8 @@ import java.util.regex.PatternSyntaxException;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
@@ -33,6 +36,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
 import org.apache.commons.logging.Log;
@@ -167,6 +171,26 @@ public class FormWorkflowDialog extends BaseDialogBean
                {
                   List current = (List)params.get(qname);
                   current.addAll((List)value);
+               }
+            }
+            // remove any deleted associations
+            Map<String, Map<String, AssociationRef>> assocs = this.workflowNode.getRemovedAssociations();
+            for (String assocName : assocs.keySet())
+            {
+               QName assocQName = Repository.resolveToQName(assocName);
+               
+               // get the associations removed and create list of targets
+               if (params.containsKey(assocQName))
+               {
+                  List current = (List)params.get(assocQName);
+                  if (current != null)
+                  {
+                     Map<String, AssociationRef> removedAssocs = assocs.get(assocName);
+                     for (AssociationRef assoc : removedAssocs.values())
+                     {
+                        current.remove(assoc.getTargetRef());
+                     }
+                  }
                }
             }
             wf.setParams(params);

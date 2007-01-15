@@ -230,8 +230,13 @@ public class FormDetailsDialog extends BaseDialogBean
       }
       if (this.workflowSelectedValue != null && this.workflowSelectedValue.length != 0)
       {
-         WorkflowDefinition def = this.workflowService.getDefinitionByName(this.workflowSelectedValue[0]);
-         form.setWorkflow(new CreateWebsiteWizard.WorkflowWrapper(def.getName(), def.getTitle(), def.getDescription()));
+         // test to make sure we don't lose the existing workflow configuration
+         String wfSelected = this.workflowSelectedValue[0];
+         if (form.getWorkflow() == null || form.getWorkflow().getName().equals(wfSelected) == false)
+         {
+            WorkflowDefinition def = this.workflowService.getDefinitionByName(wfSelected);
+            form.setWorkflow(new CreateWebsiteWizard.WorkflowWrapper(def.getName(), def.getTitle(), def.getDescription()));
+         }
       }
       return outcome;
    }

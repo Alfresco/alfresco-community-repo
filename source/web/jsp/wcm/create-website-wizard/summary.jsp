@@ -102,7 +102,7 @@
 		    <c:when test="${r.workflow == null}">
 		      <span style="font-style:italic">${msg.none}</span>
 		    </c:when>
-		    <c:otherwise>{r.workflow.title}</c:otherwise>
+		    <c:otherwise>${r.workflow.title}</c:otherwise>
 		  </c:choose>
 		</td>
 	      </tr>

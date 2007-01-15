@@ -207,10 +207,10 @@ public class ImportWebsiteDialog
                   AVMConstants.getStoreName(rootPath),
                   "Import of file: " + this.fileName, null);
             
+            tx.commit();
+
             // Reload virtualisation server as required
             AVMConstants.updateVServerWebapp(rootPath, true);
-            
-            tx.commit();
             
             UIContextService.getInstance(context).notifyBeans();
             

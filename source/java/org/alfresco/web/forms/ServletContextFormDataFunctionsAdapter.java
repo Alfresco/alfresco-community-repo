@@ -38,17 +38,16 @@ public class ServletContextFormDataFunctionsAdapter
 
    private String toAVMPath(String path)
    {
-      // The real_path will look something like this:
-      //   /alfresco.avm/avm.alfresco.localhost/$-1$alfreco-guest-main:/www/avm_webapps/my_webapp
-      System.err.println("looking up real path for " + path);
+      // The "real path" will look something like:
+      //   /media/alfresco/cifs/v/mysite--bob/VERSION/v-1/DATA/www/avm_webapps/ROOT/media/releases/content
+
       path = this.servletContext.getRealPath(path);
-      System.err.println("got real path " + path);
       try
       {
-         final JNDIPath jndiPath = new JNDIPath(AVMFileDirContext.getAVMFileDirAppBase(), path);
-         // The avm_path to the root of the context will look something like this:
-         //    alfreco-guest-main:/www/avm_webapps/my_webapp
-         
+         // The corresponding AVM path will look something like:
+         //   mysite--bob:/www/avm_webapps/ROOT/media/releases/content
+
+         final JNDIPath jndiPath = new JNDIPath(AVMFileDirContext.getAVMFileDirMountPoint(), path);
          return jndiPath.getAvmPath();
       }
       catch (Exception e)

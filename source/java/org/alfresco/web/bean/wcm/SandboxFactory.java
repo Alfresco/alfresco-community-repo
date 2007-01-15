@@ -125,6 +125,9 @@ public final class SandboxFactory
       
       // tag the store with the DNS name property
       tagStoreDNSPath(avmService, previewStoreName, storeId, "preview");
+
+      // The preview store depends on the main staging store (dist=1)
+      tagStoreBackgroundLayer(avmService,previewStoreName,stagingStoreName,1);
       
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);
@@ -221,7 +224,6 @@ public final class SandboxFactory
                                   new PropertyValue(DataTypeDefinition.TEXT, storeId));
       
       // tag the store, oddly enough, with its own store name for querying.
-      // when will the madness end.
       avmService.setStoreProperty(userStoreName,
                                   QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + userStoreName),
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
@@ -229,9 +231,11 @@ public final class SandboxFactory
       // tag the store with the DNS name property
       tagStoreDNSPath(avmService, userStoreName, storeId, username);
       
+      // The user store depends on the main staging store (dist=1)
+      tagStoreBackgroundLayer(avmService,userStoreName,stagingStoreName,1);
+
       // snapshot the store
       avmService.createSnapshot(userStoreName, null, null);
-      
       
       // create the user 'preview' store
       avmService.createStore(previewStoreName);
@@ -266,6 +270,13 @@ public final class SandboxFactory
       // tag the store with the DNS name property
       tagStoreDNSPath(avmService, previewStoreName, storeId, username, "preview");
       
+      // The preview user store depends on the main user store (dist=1)
+      tagStoreBackgroundLayer(avmService,previewStoreName, userStoreName,1);
+
+      // The preview user store depends on the main staging store (dist=2)
+      tagStoreBackgroundLayer(avmService,previewStoreName, stagingStoreName,2);
+
+         
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);
       
@@ -335,7 +346,6 @@ public final class SandboxFactory
                                   new PropertyValue(DataTypeDefinition.TEXT, storeId));
          
       // tag the store, oddly enough, with its own store name for querying.
-      // when will the madness end.
       avmService.setStoreProperty(mainStoreName,
                                   QName.createQName(null, AVMConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName),
                                   new PropertyValue(DataTypeDefinition.TEXT, null));
@@ -343,6 +353,10 @@ public final class SandboxFactory
       // tag the store with the DNS name property
       tagStoreDNSPath(avmService, mainStoreName, storeId, packageName);
          
+
+      // The main workflow store depends on the main staging store (dist=1)
+      tagStoreBackgroundLayer(avmService,mainStoreName, stagingStoreName ,1);
+
       // snapshot the store
       avmService.createSnapshot(mainStoreName, null, null);
          
@@ -371,6 +385,14 @@ public final class SandboxFactory
          
       // tag the store with the DNS name property
       tagStoreDNSPath(avmService, previewStoreName, storeId, packageName, "preview");
+
+
+      // The preview worfkflow store depends on the main workflow store (dist=1)
+      tagStoreBackgroundLayer(avmService,previewStoreName, mainStoreName,1);
+
+      // The preview user store depends on the main staging store (dist=2)
+      tagStoreBackgroundLayer(avmService,previewStoreName, stagingStoreName,2);
+
       
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);
@@ -407,6 +429,43 @@ public final class SandboxFactory
       avmService.setStoreProperty(store, QName.createQName(null, dnsProp),
             new PropertyValue(DataTypeDefinition.TEXT, path));
    }
+
+   /**
+    *   Tags a store with a property that indicates one of its 
+    *   backgroundStore layers, and the distance of that layer. 
+    *   This function must be called separately for each background 
+    *   store;  for example the "mysite--alice--preview" store had 
+    *   as its immediate background "mysite--alice", which itself had
+    *   as its background store "mysite", you'd make a sequence of
+    *   calls like this:
+    *
+    *   <pre>
+    *    tagStoreBackgroundLayer("mysite--alice",          "mysite",        1);
+    *    tagStoreBackgroundLayer("mysite--alice--preview", "mysite--alice", 1);
+    *    tagStoreBackgroundLayer("mysite--alice--preview", "mysite",        2);
+    *   </pre>
+    *
+    *   This make it easy for other parts of the system to determine
+    *   which stores depend on others directly or indirectly (which is
+    *   useful for reloading virtualized webapps).
+    *
+    * @param store            Name of the store to tag
+    * @param backgroundStore  Name of store's background store
+    * @param distance         Distance from store.
+    *                         The backgroundStore 'mysite' is 1 away from the store 'mysite--alice'
+    *                         but 2 away from the store 'mysite--alice--preview'.
+    */
+   private static void tagStoreBackgroundLayer(AVMService  avmService, 
+                                               String      store, 
+                                               String      backgroundStore, 
+                                               int         distance)
+   {
+      String prop_key = AVMConstants.PROP_BACKGROUND_LAYER + backgroundStore;
+      avmService.setStoreProperty(store, QName.createQName(null, prop_key),
+            new PropertyValue(DataTypeDefinition.INT, distance));
+   }
+
+
    
    /**
     * Debug helper method to dump the properties of a store

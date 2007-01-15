@@ -44,6 +44,9 @@ public class AddAvmContentDialog extends AddContentDialog
    
    /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
+
+   /**  */
+   protected String path;
    
    
    /**
@@ -75,11 +78,11 @@ public class AddAvmContentDialog extends AddContentDialog
       
       // create the file
       this.avmService.createFile(parent, this.fileName);
-      String path = parent + '/' + this.fileName;
-      NodeRef fileNodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+      this.path = parent + '/' + this.fileName;
+      NodeRef fileNodeRef = AVMNodeConverter.ToNodeRef(-1, this.path);
       
       if (logger.isDebugEnabled())
-         logger.debug("Created AVM file: " + path);
+         logger.debug("Created AVM file: " + this.path);
       
       // apply the titled aspect - title and description
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
@@ -100,11 +103,6 @@ public class AddAvmContentDialog extends AddContentDialog
          writer.putContent(strContent == null ? "" : strContent);
       }
       
-      // reload the virtualisation server as required
-      if (logger.isDebugEnabled())
-         logger.debug("Reloading virtualisation server on path: " + path);
-      AVMConstants.updateVServerWebapp(path, false);
-      
       // remember the created node now
       this.createdNode = fileNodeRef;
    }
@@ -116,6 +114,22 @@ public class AddAvmContentDialog extends AddContentDialog
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {
       clearUpload();
+
+      // Notify virtualization server 
+      //
+      // This must be done in doPostCommitProcessing so that the notification
+      // can only be received by the virtualization server *after* the content
+      // update transaction within the AVM has completed.  Otherwise, there's 
+      // a race condition that can cause the virtualization server to not be 
+      // able to read the new (or modified) web.xml file within the virtual 
+      // webapps being relaoded via the call to updateVServerWebapp.
+
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("Reloading virtualisation server on path: " + this.path);
+      }
+
+      AVMConstants.updateVServerWebapp(this.path, false);
       
       return outcome;
    }

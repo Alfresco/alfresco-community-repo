@@ -1118,7 +1118,7 @@ public class IndexInfo
             // Make sure we have set up the reader for the data
             // ... and close it so we do not up the ref count
 
-            getReferenceCountingIndexReader(id).close();
+            //getReferenceCountingIndexReader(id).close();
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException

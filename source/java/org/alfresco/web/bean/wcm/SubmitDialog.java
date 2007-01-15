@@ -256,6 +256,8 @@ public class SubmitDialog extends BaseDialogBean
             // create error msg for display in dialog - the user must configure the workflow params
             Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_WORKFLOW_CONFIG));
             outcome = null;
+            // set the isFinished flag to allow the dialog to be finished again after the error
+            isFinished = true;
          }
       }
       else

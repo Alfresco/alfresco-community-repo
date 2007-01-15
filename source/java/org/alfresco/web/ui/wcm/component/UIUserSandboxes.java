@@ -261,6 +261,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       ResourceBundle bundle = Application.getBundle(context);
       AVMService avmService = getAVMService(context);
       NodeService nodeService = getNodeService(context);
+      PermissionService permissionService = getPermissionService(context);
       UserTransaction tx = null;
       try
       {
@@ -391,25 +392,31 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write("</td></tr>");
                   
                   // content forms panel
-                  out.write("<tr style='padding-top:4px'><td></td><td colspan=2>");
-                  panelImage = WebResources.IMAGE_COLLAPSED;
-                  if (this.expandedPanels.contains(username + PANEL_FORMS))
+                  if (permissionService.hasPermission(
+                       AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(mainStore)),
+                       PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED)
                   {
-                     panelImage = WebResources.IMAGE_EXPANDED;
+                      out.write("<tr style='padding-top:4px'><td></td><td colspan=2>");
+                      panelImage = WebResources.IMAGE_COLLAPSED;
+                      if (this.expandedPanels.contains(username + PANEL_FORMS))
+                      {
+                         panelImage = WebResources.IMAGE_EXPANDED;
+                      }
+                      out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
+                            Utils.generateFormSubmit(context, this, getClientId(context) + PANEL_FORMS, username + PANEL_FORMS)));
+                      out.write("&nbsp;<b>");
+                      out.write(bundle.getString(MSG_CONTENT_FORMS));
+                      out.write("</b>");
+                      if (this.expandedPanels.contains(username + PANEL_FORMS))
+                      {
+                         out.write("<div style='padding:2px'></div>");
+                         
+                         // list the content forms for this sandbox user
+                         renderContentForms(context, out, websiteRef, username, storeRoot);
+                      }
+                      out.write("</td></tr>");
                   }
-                  out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
-                        Utils.generateFormSubmit(context, this, getClientId(context) + PANEL_FORMS, username + PANEL_FORMS)));
-                  out.write("&nbsp;<b>");
-                  out.write(bundle.getString(MSG_CONTENT_FORMS));
-                  out.write("</b>");
-                  if (this.expandedPanels.contains(username + PANEL_FORMS))
-                  {
-                     out.write("<div style='padding:2px'></div>");
-                     
-                     // list the content forms for this sandbox user
-                     renderContentForms(context, out, websiteRef, username, storeRoot);
-                  }
-                  out.write("</td></tr></table>");
+                  out.write("</table>");
                   
                   // end the outer panel for this sandbox
                   PanelGenerator.generatePanelEnd(out,

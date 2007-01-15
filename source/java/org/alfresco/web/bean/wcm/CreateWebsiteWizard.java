@@ -771,8 +771,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    // ------------------------------------------------------------------------------
    // Inner classes
    
-   /////////////////////////////////////////////////////////////////////////////
-
    /**
     * Wrapper class for a configurable template Form instance
     */
@@ -905,7 +903,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
    }
    
-   /////////////////////////////////////////////////////////////////////////////
 
    /**
     * Class to represent a single configured Presentation Template instance
@@ -972,7 +969,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
    }
 
-   /////////////////////////////////////////////////////////////////////////////
    
    /**
     * Class to represent a single configured Workflow instance
@@ -1074,7 +1070,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
    }
 
-   /////////////////////////////////////////////////////////////////////////////
 
    public class UserWrapper
    {
@@ -1104,6 +1099,4 @@ public class CreateWebsiteWizard extends BaseWizardBean
       public String getName() { return this.name; }
       public String getRole() { return this.role; }
    }
-
-   /////////////////////////////////////////////////////////////////////////////
 }

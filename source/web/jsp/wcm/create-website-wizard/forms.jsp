@@ -58,12 +58,12 @@
             <h:outputText rendered="#{!empty row.description}" value="#{row.description}" />
             
             <h:outputText value="#{msg.workflow}: " />
-            <h:outputText rendered="#{row.workflow != null}" value="#{row.workflow.title}" />
-            <h:panelGroup rendered="#{row.workflow == null}">
-               <h:outputText value="#{msg.workflow_not_set}" />
+            <h:panelGroup rendered="#{row.workflow != null}">
+               <h:outputText value="#{row.workflow.title}" />
                <h:graphicImage url="/images/icons/warning.gif" style="padding:2px" width="16" height="16"
-                  rendered="#{row.workflow != null && row.workflow.params == null}" title="#{msg.workflow_not_configured}" />
+                  rendered="#{row.workflow.params == null}" title="#{msg.workflow_not_configured}" />
             </h:panelGroup>
+            <h:outputText rendered="#{row.workflow == null}" value="#{msg.workflow_not_set}" />
             
             <h:outputText value="#{msg.output_path_pattern}: " />
             <h:outputText value="#{row.outputPathPattern}" />

@@ -16,9 +16,15 @@
  */
 package org.alfresco.filesys.server.config;
 
+import java.net.InetAddress;
+
 import org.alfresco.filesys.smb.TcpipSMB;
 import org.alfresco.filesys.util.CifsMounter;
 import org.alfresco.filesys.util.Platform;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.sun.star.io.UnknownHostException;
 
 /**
  * File Server Configuration MBean Class
@@ -30,6 +36,10 @@ import org.alfresco.filesys.util.Platform;
  */
 public class FileServerConfig implements FileServerConfigMBean {
 
+	// Debug logging
+	
+    private static final Log logger = LogFactory.getLog( FileServerConfig.class);
+    
 	// File server configuration
 	
 	private ServerConfiguration m_serverConfig;
@@ -88,8 +98,7 @@ public class FileServerConfig implements FileServerConfigMBean {
 	 */
 	public boolean isNFSServerEnabled()
 	{
-//		return m_serverConfig.isNFSServerEnabled();
-		return false;
+		return m_serverConfig.isNFSServerEnabled();
 	}
 	
 	/**
@@ -129,6 +138,15 @@ public class FileServerConfig implements FileServerConfigMBean {
 		CifsMounter cifsMounter = new CifsMounter();
 		cifsMounter.setServerName( getCIFSServerName());
 		
+		// Set the server address if the global bind address has been set
+		
+		if ( m_serverConfig.hasSMBBindAddress())
+		{
+			// Use the global CIFS server bind address
+			
+			cifsMounter.setServerAddress( m_serverConfig.getSMBBindAddress().getHostAddress());
+		}
+		
 		// Get the local platform type
 		
 		Platform.Type platform = Platform.isPlatformType();
@@ -153,7 +171,32 @@ public class FileServerConfig implements FileServerConfigMBean {
 			if ( m_serverConfig.hasWin32NetBIOS())
 				cifsMounter.setProtocolType( CifsMounter.Win32NetBIOS);
 			else if ( m_serverConfig.hasNetBIOSSMB())
+			{
+				// Set the protocol type for Java socket based NetBIOS
+				
 				cifsMounter.setProtocolType( CifsMounter.NetBIOS);
+				
+				// Check if the socket NetBIOS is bound to a particular address
+				
+				if ( m_serverConfig.hasNetBIOSBindAddress())
+					cifsMounter.setServerAddress( m_serverConfig.getNetBIOSBindAddress().getHostAddress());
+			}
+		}
+		
+		// Check if the CIFS mounter server address has been set, if not then get the local address
+		
+		if ( cifsMounter.getServerAddress() == null)
+		{
+			// Set the CIFS mounter server address
+			
+			try
+			{
+				cifsMounter.setServerAddress( InetAddress.getLocalHost().getHostAddress());
+			}
+			catch ( java.net.UnknownHostException ex)
+			{
+				logger.error( "Failed to get local IP address", ex);
+			}
 		}
 		
 		// Return the CIFS mounter

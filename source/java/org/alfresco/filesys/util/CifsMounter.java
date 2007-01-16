@@ -56,8 +56,9 @@ public class CifsMounter {
 
 	private static final String LinuxMountSmbfsCmd	= "mount -t smbfs //${srvname}/${sharename} ${mountpoint} -o username=${username},password=${password}";
 	private static final String LinuxMountCifsCmd	= "mount -t cifs  //${srvname}/${sharename} ${mountpoint} -o username=${username},password=${password}";
+	private static final String LinuxMountCifsNBCmd = "mount.cifs //${srvname}/${sharename} ${mountpoint} -o servern=${srvname},port=139,username=${username},password=${password}";
 	private static final String LinuxUnMountCmd		= "umount ${mountpoint}";
-	
+
 	// Mac OS X mount/unmount commands
 	
 	private static final String MacOSXMountCmd		= "mount_smbfs -U ${username} //${password}@${srvname}/${sharename} ${mountpoint}";
@@ -67,6 +68,10 @@ public class CifsMounter {
 	
 	private String m_srvName;
 	private String m_shareName;
+	
+	// Server address
+	
+	private String m_srvAddr;
 	
 	// Access details for remote share
 	
@@ -159,9 +164,19 @@ public class CifsMounter {
 			}
 			else
 			{
-				// Set the command line to use the older smbfs VFS mounter to connect using NetBIOS
+				// Set the command line to use the CIFS VFS mounter to connect using NetBIOS
 				
-				commandMap.put( "Linux", LinuxMountSmbfsCmd);
+				StringBuilder cmd = new StringBuilder( LinuxMountCifsNBCmd);
+				
+				if ( getServerAddress() != null)
+				{
+					cmd.append( ",ip=");
+					cmd.append( getServerAddress());
+				}
+				
+				// Set the command line
+				
+				commandMap.put( "Linux", cmd.toString());
 			}
 			break;
 			
@@ -287,6 +302,16 @@ public class CifsMounter {
 	{
 		return m_srvName;
 	}
+
+	/**
+	 * Return hte server address
+	 * 
+	 * @return String
+	 */
+	public final String getServerAddress()
+	{
+		return m_srvAddr;
+	}
 	
 	/**
 	 * Return the share name
@@ -346,6 +371,16 @@ public class CifsMounter {
 	public final void setServerName(String name)
 	{
 		m_srvName = name;
+	}
+	
+	/**
+	 * Set the server address
+	 * 
+	 * @param srvAddr String
+	 */
+	public final void setServerAddress(String srvAddr)
+	{
+		m_srvAddr = srvAddr;
 	}
 	
 	/**

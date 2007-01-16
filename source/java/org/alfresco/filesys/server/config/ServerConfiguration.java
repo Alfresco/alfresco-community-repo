@@ -76,7 +76,6 @@ import org.alfresco.filesys.server.core.SharedDeviceList;
 import org.alfresco.filesys.server.filesys.DefaultShareMapper;
 import org.alfresco.filesys.server.filesys.DiskInterface;
 import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.server.oncrpc.DefaultRpcAuthenticator;
 import org.alfresco.filesys.server.oncrpc.RpcAuthenticator;
 import org.alfresco.filesys.smb.ServerType;
 import org.alfresco.filesys.smb.TcpipSMB;

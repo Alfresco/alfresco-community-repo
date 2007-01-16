@@ -5,7 +5,7 @@
    <import file="${dir.common}/common.xml"/>
 
    <!-- we want to build a WAR file in this project -->
-   <target name="package" depends="package-war" />
+   <target name="package" depends="package-war, -sample-website" />
 
    <!-- override the common assemble-war target -->
    <target name="assemble-war" depends="common.assemble-war">
@@ -121,7 +121,13 @@
       </delete>
    </target>
    
-   <target name="sample-website" depends="init">
+   <target name="sample-website" depends="init" description="Builds a sample website for WCM">
+   	<antcall target="-sample-website">
+   		<param name="build.release" value="true" />
+		</antcall>
+   </target>
+   
+   <target name="-sample-website" depends="init" if="build.release">
      <delete failonerror="false">
        <fileset dir="${dir.build}/sample-website"/>
      </delete>
@@ -152,4 +158,5 @@
        <webinf file="${dir.src}/test-resources/websites/alfresco/ROOT/WEB-INF/pr.tld"/>
      </war>
    </target>
+
 </project>

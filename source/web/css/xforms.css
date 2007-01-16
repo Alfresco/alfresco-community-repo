@@ -1,7 +1,7 @@
 .xformsItem
 {
 /*	border: 1px dashed blue; */
-/*	margin: 2px 0px; */
+	margin-right: 2px;
 }
 
 .xformsItemDOMContainer
@@ -11,7 +11,6 @@
 	left: 0px;
 	padding: 0px; 
 	margin: 0px;
-/*	margin: 5px 0px; */
 }
 
 .xformsGroup
@@ -21,27 +20,28 @@
 	left: 0px;
 	width: 100%;
 	margin-bottom: 10px;
+	border: 1px solid #67a4e6; 
 }
 
 .xformsGroupItem
 {
 	position: relative;
 	margin: 5px 0px; 
-	margin-right: 2px;
-/*	border: 1px dashed #cccccc; */
+	max-width: 100%;
 }
 
 .xformsGroupHeader
 {
+
 	position: relative;
 	top: 0px;
 	left: 0px;
 	height: 20px;
 	line-height: 20px;
-/*	background-color: #e3effa; */
+	width: 100%;
 	background-color: #cddbe8; 
 	font-weight: bold;
-	width: 100%;
+	border-bottom: 1px solid #67a4e6; 
 }
 
 .xformsTextArea
@@ -51,7 +51,6 @@
 
 .xformsRepeat
 {
-	border: 1px solid #67a4e6; 
 }
 
 .xformsRepeatItem
@@ -64,9 +63,7 @@
 {
 	position: relative;
 	white-space: nowrap;
-/*	background-color: white; */
 	border: 1px solid #67a4e6; 
-/*	border: 1px solid black; */
 	height: 20px;
 	line-height: 20px;
 }

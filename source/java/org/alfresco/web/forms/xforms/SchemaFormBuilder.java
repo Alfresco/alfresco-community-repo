@@ -1593,19 +1593,25 @@ public class SchemaFormBuilder
                if (bindId != null) 
                {
                   if (LOGGER.isDebugEnabled())
+                  {
                      LOGGER.debug("bindId found: " + bindId);
+                  }
 
                   final JXPathContext context = 
                      JXPathContext.newContext(formSection.getOwnerDocument());
                   final Pointer pointer = 
                      context.getPointer("//*[@" + NamespaceConstants.XFORMS_PREFIX + ":bind='" + bindId + "']");
                   if (pointer != null)
+                  {
                      control = (Element) pointer.getNode();
+                  }
                }
 
                //copy it
                if (control == null)
+               {
                   LOGGER.warn("Corresponding control not found");
+               }
                else 
                {
                   Element newControl = (Element)control.cloneNode(true);
@@ -1724,7 +1730,9 @@ public class SchemaFormBuilder
       if (bind != null && 
           bind.getLocalName() != null && 
           "bind".equals(bind.getLocalName())) 
+      {
          bindId = bind.getAttributeNS(null, "id");
+      }
       else 
       {
          LOGGER.warn("addRepeatIfNecessary: bind not found: " + bind
@@ -1736,9 +1744,13 @@ public class SchemaFormBuilder
          if (bind != null &&
              bind.getLocalName() != null && 
              "bind".equals(bind.getLocalName())) 
+         {
             bindId = bind.getAttributeNS(null, "id");
+         }
          else 
+         {
             LOGGER.warn("addRepeatIfNecessary: bind really not found");
+         }
       }
 
       repeatSection.setAttributeNS(NamespaceConstants.XFORMS_NS,
@@ -1756,7 +1768,6 @@ public class SchemaFormBuilder
       //add a group inside the repeat?
       final Element group = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
                                                   NamespaceConstants.XFORMS_PREFIX + ":group");
-
       group.setAttributeNS(NamespaceConstants.XFORMS_NS,
                            NamespaceConstants.XFORMS_PREFIX + ":appearance",
                            "repeated");
@@ -1869,7 +1880,9 @@ public class SchemaFormBuilder
 
       Element hint = this.createHint(xForm, owner, resourceBundle);
       if (hint != null)
+      {
          formControl.appendChild(hint);
+      }
 
       //add selector if repeat
       //if (repeatSection != formSection)
@@ -2114,7 +2127,10 @@ public class SchemaFormBuilder
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
                                         NamespaceConstants.XFORMS_PREFIX + ":group");
       this.setXFormsId(groupElement);
-      
+      groupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                  NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                                  "full");
+
       //groupElement = (Element) formSection.appendChild(groupElement);
       formSection.appendChild(groupElement);
       

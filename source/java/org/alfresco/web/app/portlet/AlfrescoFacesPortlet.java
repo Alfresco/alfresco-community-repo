@@ -159,7 +159,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                {
                   WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
                         WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-                  AuthenticationService auth = (AuthenticationService)ctx.getBean("authenticationService");
+                  AuthenticationService auth = (AuthenticationService)ctx.getBean("AuthenticationService");
                   auth.validate(user.getTicket());
                   
                   // save last username into portlet preferences, get from LoginBean state

@@ -183,6 +183,8 @@ public class IndexInfo
             TransactionStatus.class);
 
     private ConcurrentLinkedQueue<String> deleteQueue = new ConcurrentLinkedQueue<String>();
+    
+    private ConcurrentLinkedQueue<IndexReader> deletableReaders = new ConcurrentLinkedQueue<IndexReader>();
 
     private Cleaner cleaner = new Cleaner();
 
@@ -658,6 +660,10 @@ public class IndexInfo
         File file = new File(location, INDEX_INFO_DELETIONS);
         if (!file.exists())
         {
+            if(s_logger.isDebugEnabled())
+            {
+                s_logger.debug("No deletions for " + id);
+            }
             return Collections.<NodeRef> emptySet();
         }
         DataInputStream is = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
@@ -668,6 +674,10 @@ public class IndexInfo
             deletions.add(new NodeRef(ref));
         }
         is.close();
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("There are "+deletions.size()+ " deletions for " + id);
+        }
         return deletions;
 
     }
@@ -1118,7 +1128,7 @@ public class IndexInfo
             // Make sure we have set up the reader for the data
             // ... and close it so we do not up the ref count
 
-            //getReferenceCountingIndexReader(id).close();
+            getReferenceCountingIndexReader(id).close();
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1380,26 +1390,32 @@ public class IndexInfo
 
     private void clearOldReaders() throws IOException
     {
-        // Find valid
-        HashSet<String> valid = new HashSet<String>();
-        for (String id : indexEntries.keySet())
-        {
-            IndexEntry entry = indexEntries.get(id);
-            if (entry.getStatus().isCommitted())
-            {
-                valid.add(id);
-            }
-        }
         // Find current invalid
         HashSet<String> inValid = new HashSet<String>();
         for (String id : referenceCountingReadOnlyIndexReaders.keySet())
         {
-            if (!valid.contains(id))
+            if (!indexEntries.containsKey(id))
             {
+                if(s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(id+ " is now INVALID ");
+                }
                 inValid.add(id);
+            }
+            else
+            {
+                if(s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(id+ " is still part of the index ");
+                }
             }
         }
         // Clear invalid
+        clearInvalid(inValid);
+    }
+
+    private void clearInvalid(HashSet<String> inValid) throws IOException
+    {
         boolean hasInvalid = false;
         for (String id : inValid)
         {
@@ -1410,6 +1426,7 @@ public class IndexInfo
             }
             ReferenceCounting referenceCounting = (ReferenceCounting) reader;
             referenceCounting.setInvalidForReuse();
+            deletableReaders.add(reader);
             hasInvalid = true;
         }
         if (hasInvalid)
@@ -1880,6 +1897,25 @@ public class IndexInfo
             boolean runnable = true;
             while (runnable)
             {
+                // Add any closed index readers we were waiting for
+                HashSet<IndexReader> waiting = new HashSet<IndexReader>();
+                IndexReader reader;
+                while ((reader = deletableReaders.poll()) != null)
+                {
+                    ReferenceCounting refCounting = (ReferenceCounting)reader;
+                    if(refCounting.getReferenceCount() == 0)
+                    {
+                        s_logger.debug("Deleting no longer referenced "+refCounting.getId());
+                        s_logger.debug("... queued delete for "+refCounting.getId());
+                        deleteQueue.add(refCounting.getId());
+                    }
+                    else
+                    {
+                        waiting.add(reader);
+                    }
+                }
+                deletableReaders.addAll(waiting);
+                
                 String id = null;
                 HashSet<String> fails = new HashSet<String>();
                 while ((id = deleteQueue.poll()) != null)
@@ -2314,7 +2350,7 @@ public class IndexInfo
                                 referenceCounting.setInvalidForReuse();
                                 if (s_logger.isDebugEnabled())
                                 {
-                                    s_logger.debug("... invalidating sub reader after merge" + id);
+                                    s_logger.debug("... invalidating sub reader after applying deletions" + id);
                                 }
                             }
                         }
@@ -2324,9 +2360,16 @@ public class IndexInfo
                             {
                                 if (s_logger.isDebugEnabled())
                                 {
-                                    s_logger.debug("... invalidating main index reader after merge");
+                                    s_logger.debug("... invalidating main index reader after applying deletions");
                                 }
                                 ((ReferenceCounting) mainIndexReader).setInvalidForReuse();
+                            }
+                            else
+                            {
+                                if (s_logger.isDebugEnabled())
+                                {
+                                    s_logger.debug("... no main index reader to invalidate after applying deletions");
+                                }
                             }
                             mainIndexReader = null;
                         }
@@ -2336,10 +2379,6 @@ public class IndexInfo
                             for (String id : toDelete.keySet())
                             {
                                 s_logger.debug("...applied deletion for " + id);
-                            }
-                            for (String id : invalidIndexes)
-                            {
-                                s_logger.debug("...invalidated index " + id);
                             }
                             s_logger.debug("...deleting done");
                         }
@@ -2595,7 +2634,12 @@ public class IndexInfo
                         for (String id : toDelete)
                         {
                             indexEntries.remove(id);
-                            deleteQueue.add(id);
+                            // Only delete if there is no existing ref counting reader
+                            if (!referenceCountingReadOnlyIndexReaders.containsKey(id))
+                            {
+                                s_logger.debug("... queued delete for "+id);
+                                deleteQueue.add(id);
+                            }
                         }
 
                         dumpInfo();
@@ -2656,15 +2700,17 @@ public class IndexInfo
     {
         if (s_logger.isDebugEnabled())
         {
+            StringBuilder builder = new StringBuilder();
             readWriteLock.writeLock().lock();
             try
             {
-                s_logger.debug("");
-                s_logger.debug("Entry List");
+                builder.append("\n");
+                builder.append("Entry List\n");
                 for (IndexEntry entry : indexEntries.values())
                 {
-                    s_logger.debug("        " + entry.toString());
+                    builder.append("        " + entry.toString()).append("\n");
                 }
+                s_logger.debug(builder.toString());
             }
             finally
             {

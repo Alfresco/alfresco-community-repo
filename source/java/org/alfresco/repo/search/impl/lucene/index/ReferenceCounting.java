@@ -27,4 +27,6 @@ public interface ReferenceCounting
     public int getReferenceCount();
 
     public void setInvalidForReuse() throws IOException;
+    
+    public String getId();
 }

@@ -122,5 +122,10 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             throw new UnsupportedOperationException("Delete is not supported by read only index readers");
         }
 
+        public String getId()
+        {
+            return id;
+        }
+
     }
 }

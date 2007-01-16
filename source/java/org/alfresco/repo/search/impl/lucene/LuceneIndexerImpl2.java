@@ -1553,6 +1553,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 doc.add(new Field(attributeName + ".size", Long.toString(contentData.getSize()), Field.Store.NO,
                         Field.Index.TOKENIZED, Field.TermVector.NO));
+                
                 // TODO: Use the node locale in preferanced to the system locale
                 Locale locale = contentData.getLocale();
                 if (locale == null)

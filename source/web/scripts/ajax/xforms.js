@@ -515,7 +515,14 @@ dojo.declare("alfresco.xforms.DatePicker",
 
                setValue: function(value)
                {
-                 throw new Error("setValue unimplemented for DatePicker");
+                 if (!this.widget)
+                 {
+                   this.setInitialValue(value);
+                 }
+                 else
+                 {
+                   throw new Error("setValue unimplemented for DatePicker");
+                 }
                },
 
                getValue: function()
@@ -637,7 +644,10 @@ dojo.declare("alfresco.xforms.TextArea",
                  
                  var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
                  editorDocument.widget = this;
-                 tinyMCE.addEvent(editorDocument, "blur", this._tinyMCE_blurHandler);
+
+                 tinyMCE.addEvent(editorDocument, 
+                                  dojo.render.html.ie ? "beforedeactivate" : "blur", 
+                                  this._tinyMCE_blurHandler);
                  tinyMCE.addEvent(editorDocument, "focus", this._tinyMCE_focusHandler);
                },
 
@@ -668,7 +678,15 @@ dojo.declare("alfresco.xforms.TextArea",
                  else
                  {
                    tinyMCE.selectedInstance = tinyMCE.getInstanceById(this.id);
-                   tinyMCE.setContent(value);
+                   try
+                   {
+                     tinyMCE.setContent(value);
+                   }
+                   catch (e)
+                   {
+                     //XXXarielb figure this out - getting intermittent errors in IE.
+                     dojo.debug(e);
+                   }
                  }
                },
 
@@ -707,6 +725,10 @@ dojo.declare("alfresco.xforms.TextArea",
 
                _tinyMCE_blurHandler: function(event)
                {
+                 if (event.type == "beforedeactivate")
+                 {
+                   event.target = event.srcElement.ownerDocument;
+                 }
                  var widget = event.target.widget;
                  widget.xform.setXFormsValue(widget.id, widget.getValue());
                  this.focused = false;
@@ -867,7 +889,14 @@ dojo.declare("alfresco.xforms.Select",
 
                setValue: function(value)
                {
-                 throw new Error("setValue unimplemented for Select");
+                 if (!this.widget)
+                 {
+                   this.setInitialValue(value);
+                 }
+                 else
+                 {
+                   throw new Error("setValue unimplemented for Select");
+                 }
                },
 
                getValue: function()
@@ -984,7 +1013,14 @@ dojo.declare("alfresco.xforms.Select1",
 
                setValue: function(value)
                {
-                 throw new Error("setValue unimplemented for Select1");
+                 if (!this.widget)
+                 {
+                   this.setInitialValue(value);
+                 }
+                 else
+                 {
+                   throw new Error("setValue unimplemented for Select1");
+                 }
                },
 
                getValue: function()
@@ -1051,7 +1087,14 @@ dojo.declare("alfresco.xforms.Checkbox",
 
                setValue: function(value)
                {
-                 this.widget.checked = value == "true";
+                 if (!this.widget)
+                 {
+                   this.setInitialValue(value);
+                 }
+                 else
+                 {
+                   this.widget.checked = value == "true";
+                 }
                },
 
                getValue: function()
@@ -2444,7 +2487,15 @@ dojo.declare("alfresco.xforms.XForm",
                      if ("value" in xfe.properties)
                      {
                        dojo.debug("setting " + xfe.getTarget().id + " = " + xfe.properties["value"]);
-                       xfe.getTarget().setValue(xfe.properties["value"]);
+                       try
+                       {
+                         xfe.getTarget().setValue(xfe.properties["value"]);
+                       }
+                       catch(e)
+                       {
+                         //XXXarielb remove once setValues are implemented.
+                         dojo.debug("Error in set value: " + e);
+                       }
                      }
                      break;
                    }

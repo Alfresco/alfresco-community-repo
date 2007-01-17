@@ -119,8 +119,8 @@ public class UIPanel extends UICommand
       
       // determine if we have a bordered title area, note, we also need to have
       // the content area border defined as well
-      if ((getTitleBgcolor() != null) && (getTitleBorder() != null) && 
-          (getBorder() != null) && this.hasAdornments)
+      if (getTitleBgcolor() != null && getTitleBorder() != null &&
+          getBorder() != null && this.hasAdornments)
       {
          this.hasBorderedTitleArea = true;
       }
@@ -155,7 +155,7 @@ public class UIPanel extends UICommand
       {
          out.write("<a href='#' onclick=\"");
          String value = getClientId(context) + NamingContainer.SEPARATOR_CHAR + Boolean.toString(!isExpanded());
-         out.write(Utils.generateFormSubmit(context, this, getHiddenFieldName(), value));
+         out.write(Utils.generateFormSubmit(context, this, getHiddenFieldName(context), value));
          out.write("\">");
          
          if (isExpanded() == true)
@@ -204,12 +204,25 @@ public class UIPanel extends UICommand
       // if we have the titled border area, output the middle section
       if (this.hasBorderedTitleArea && isExpanded())
       {
-         PanelGenerator.generateTitledPanelMiddle(
-               out,
-               context.getExternalContext().getRequestContextPath(),
-               getTitleBorder(),
-               getBorder(),
-               getBgcolor());
+         if (getExpandedTitleBorder() != null)
+         {
+            PanelGenerator.generateExpandedTitledPanelMiddle(
+                  out,
+                  context.getExternalContext().getRequestContextPath(),
+                  getTitleBorder(),
+                  getExpandedTitleBorder(),
+                  getBorder(),
+                  getBgcolor());
+         }
+         else
+         {
+            PanelGenerator.generateTitledPanelMiddle(
+                  out,
+                  context.getExternalContext().getRequestContextPath(),
+                  getTitleBorder(),
+                  getBorder(),
+                  getBgcolor());
+         }
       }
    }
 
@@ -248,7 +261,7 @@ public class UIPanel extends UICommand
    public void decode(FacesContext context)
    {
       Map requestMap = context.getExternalContext().getRequestParameterMap();
-      String fieldId = getHiddenFieldName();
+      String fieldId = getHiddenFieldName(context);
       String value = (String)requestMap.get(fieldId);
       
       // we encoded the value to start with our Id
@@ -312,8 +325,9 @@ public class UIPanel extends UICommand
       this.label = (String)values[5];
       this.titleBgcolor = (String)values[6];
       this.titleBorder = (String)values[7];
-      this.expandedActionListener = (MethodBinding)values[8];
-      this.facetsId = (String)values[9];
+      this.expandedTitleBorder = (String)values[8];
+      this.expandedActionListener = (MethodBinding)values[9];
+      this.facetsId = (String)values[10];
    }
    
    /**
@@ -321,18 +335,18 @@ public class UIPanel extends UICommand
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[10];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = (isExpanded() ? Boolean.TRUE : Boolean.FALSE);
-      values[2] = this.progressive;
-      values[3] = this.border;
-      values[4] = this.bgcolor;
-      values[5] = this.label;
-      values[6] = this.titleBgcolor;
-      values[7] = this.titleBorder;
-      values[8] = this.expandedActionListener;
-      values[9] = this.facetsId;
+      Object values[] = new Object[] {
+         super.saveState(context),
+         (isExpanded() ? Boolean.TRUE : Boolean.FALSE),
+         this.progressive,
+         this.border,
+         this.bgcolor,
+         this.label,
+         this.titleBgcolor,
+         this.titleBorder,
+         this.expandedTitleBorder,
+         this.expandedActionListener,
+         this.facetsId};
       return values;
    }
    
@@ -442,6 +456,28 @@ public class UIPanel extends UICommand
    public void setTitleBorder(String titleBorder)
    {
       this.titleBorder = titleBorder;
+   }
+   
+   /**
+    * @return Returns the border style of the expanded title area
+    */
+   public String getExpandedTitleBorder()
+   {
+      ValueBinding vb = getValueBinding("expandedTitleBorder");
+      if (vb != null)
+      {
+         this.expandedTitleBorder = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.expandedTitleBorder;
+   }
+
+   /**
+    * @param expandedTitleBorder Sets the border style of the expanded title area
+    */
+   public void setExpandedTitleBorder(String expandedTitleBorder)
+   {
+      this.expandedTitleBorder = expandedTitleBorder;
    }
 
    /**
@@ -565,10 +601,10 @@ public class UIPanel extends UICommand
     * 
     * @return hidden field name
     */
-   private String getHiddenFieldName()
+   private String getHiddenFieldName(FacesContext fc)
    {
-      UIForm form = Utils.getParentForm(getFacesContext(), this);
-      return form.getClientId(getFacesContext()) + NamingContainer.SEPARATOR_CHAR + "panel";
+      UIForm form = Utils.getParentForm(fc, this);
+      return form.getClientId(fc) + NamingContainer.SEPARATOR_CHAR + "panel";
    }
    
    
@@ -580,6 +616,7 @@ public class UIPanel extends UICommand
    private String bgcolor = null;
    private String titleBorder = null;
    private String titleBgcolor = null;
+   private String expandedTitleBorder = null;
    private Boolean progressive = null;
    private String label = null;
    private String facetsId = null;

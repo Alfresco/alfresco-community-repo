@@ -73,10 +73,18 @@ public class UISidebar extends SelfRenderingComponent
       out.write("<div id=\"sidebar\">");
       
       // render the start of the header panel
-      PanelGenerator.generatePanelStart(out, 
-            context.getExternalContext().getRequestContextPath(),
-            "blue", "#D3E6FE");
-         
+      String cxPath = context.getExternalContext().getRequestContextPath();
+      out.write("<table cellspacing=0 cellpadding=0 bgcolor='#ffffff'>" + 
+                "<tr><td style=\"background-image: url(");
+      out.write(cxPath);
+      out.write("/images/parts/sidebar_top_grey_begin.gif)\" valign=\"top\" width=5>" +
+                "<img src=\"");
+      out.write(cxPath);
+      out.write("/images/parts/sidebar_grey_01.gif\" width=5 height=5></td>" + 
+                "<td style=\"background-image: url(");
+      out.write(cxPath);
+      out.write("/images/parts/sidebar_top_grey_bg.gif)\" height=24 width=100%>");
+      
       // generate the required child components if not present
       if (this.getChildCount() == 1)
       {
@@ -138,7 +146,7 @@ public class UISidebar extends SelfRenderingComponent
       {
          ResponseWriter out = context.getResponseWriter();
 
-         out.write("<table border='0' cellpadding='0' cellspacing='0' width='100%'><tr><td>");
+         out.write("<table border='0' cellpadding='6' cellspacing='0' width='100%'><tr><td>");
          
          // render the list
          UIModeList modeList = (UIModeList)getChildren().get(0);
@@ -153,13 +161,20 @@ public class UISidebar extends SelfRenderingComponent
          out.write("</td></tr></table>");
          
          // render the end of the header panel
-         PanelGenerator.generateTitledPanelMiddle(out,
-            context.getExternalContext().getRequestContextPath(),
-            "blue", "white", "white");
-      
+         String cxPath = context.getExternalContext().getRequestContextPath();
+         out.write("</td><td style=\"background-image: url(");
+         out.write(cxPath);
+         out.write("/images/parts/sidebar_top_grey_end.gif)\" width=5 align=right valign=top>" +
+                   "<img src=\"");
+         out.write(cxPath);
+         out.write("/images/parts/sidebar_grey_03.gif\" width=5 height=5></td></tr>" +
+                   "<tr><td colspan='3'>");
+         
          // render the plugin
+         out.write("<div id=\"pluginBox\" style=\"border: solid 1px #babfc5;\">");
          UIComponent plugin = (UIComponent)getChildren().get(2);
          Utils.encodeRecursive(context, plugin);
+         out.write("</div>");
       }
    }
 
@@ -170,10 +185,22 @@ public class UISidebar extends SelfRenderingComponent
       
       // render the end of the panel
       ResponseWriter out = context.getResponseWriter();
-      PanelGenerator.generatePanelEnd(out,
-            context.getExternalContext().getRequestContextPath(),
-            "white");
-      out.write("</div>");
+      String cxPath = context.getExternalContext().getRequestContextPath();
+      out.write("</td></tr>" + 
+                "<tr><td height=12 width=5><img src=\"");
+      out.write(cxPath);
+      out.write("/images/parts/sidebar_bottom_grey_begin.gif\" width=5 height=12></td>" + 
+                "<td width=100% style=\"background-image: url(");
+      out.write(cxPath);
+      out.write("/images/parts/sidebar_bottom_grey_bg.gif)\">" +
+                "<img src=\"");
+      out.write(cxPath);
+      out.write("/images/parts/sidebar_bottom_grey_bg.gif\" width=48 height=12></td>" +
+                "<td align=right width=5><img src=\"");
+      out.write(cxPath);
+      out.write("/images/parts/sidebar_bottom_grey_end.gif\" width=5 height=12></td></tr>" + 
+                "</table>" +
+                "</div>");
    }
 
    @Override

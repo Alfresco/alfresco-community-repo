@@ -222,11 +222,15 @@ public class UINavigator extends SelfRenderingComponent
          areaTitle = Application.getMessage(context, "my_alfresco");
       }
       
+      // main container div
+      out.write("<div id=\"navigator\" class=\"navigator\">");
+      
       // generate the active panel title
-      out.write("<div id=\"navigator\">");
-      out.write("<div class=\"navigatorPanelTitleSelected\">");
+      String cxPath = context.getExternalContext().getRequestContextPath();
+      out.write("<div class=\"sidebarButtonSelected\" style=\"background-image: url(" + cxPath + "/images/parts/navigator_blue_gradient_bg.gif)\">");
+      out.write("<span class=\"sidebarButtonLabelHighlight\">");
       out.write(areaTitle);
-      out.write("</div>");
+      out.write("</span></div>");
       
       // generate the javascript method to capture the tree node click events
       if (treePanel)
@@ -253,11 +257,13 @@ public class UINavigator extends SelfRenderingComponent
       }
       
       // generate the closed panel title areas
+      String sideBarStyle = "style=\"background-image: url(" + cxPath + "/images/parts/navigator_grey_gradient_bg.gif)\"";
       if (NavigationBean.LOCATION_COMPANY.equals(area) == false &&
           navBean.getCompanyHomeVisible())
       {
-         out.write("<div class=\"navigatorPanelTitle\">");
-         out.write("<a onclick=\"");
+         out.write("<div class=\"sidebarButton\" ");
+         out.write(sideBarStyle);
+         out.write("><a class='sidebarButtonLink' onclick=\"");
          out.write(Utils.generateFormSubmit(context, this, getClientId(context),
                PANEL_ACTION + NavigationBean.LOCATION_COMPANY));
          out.write("\" href=\"#\">");
@@ -267,8 +273,9 @@ public class UINavigator extends SelfRenderingComponent
       
       if (NavigationBean.LOCATION_HOME.equals(area) == false)
       {
-         out.write("<div class=\"navigatorPanelTitle\">");
-         out.write("<a onclick=\"");
+         out.write("<div class=\"sidebarButton\" ");
+         out.write(sideBarStyle);
+         out.write("><a class='sidebarButtonLink' onclick=\"");
          out.write(Utils.generateFormSubmit(context, this, getClientId(context),
                PANEL_ACTION + NavigationBean.LOCATION_HOME));
          out.write("\" href=\"#\">");
@@ -279,8 +286,9 @@ public class UINavigator extends SelfRenderingComponent
       if (NavigationBean.LOCATION_GUEST.equals(area) == false &&
           navBean.getIsGuest() == false && navBean.getGuestHomeVisible())
       {
-         out.write("<div class=\"navigatorPanelTitle\">");
-         out.write("<a onclick=\"");
+         out.write("<div class=\"sidebarButton\" ");
+         out.write(sideBarStyle);
+         out.write("><a class='sidebarButtonLink' onclick=\"");
          out.write(Utils.generateFormSubmit(context, this, getClientId(context),
                PANEL_ACTION + NavigationBean.LOCATION_GUEST));
          out.write("\" href=\"#\">");
@@ -290,8 +298,9 @@ public class UINavigator extends SelfRenderingComponent
       
       if (NavigationBean.LOCATION_MYALFRESCO.equals(area) == false)
       {
-         out.write("<div class=\"navigatorPanelTitle\">");
-         out.write("<a onclick=\"");
+         out.write("<div class=\"sidebarButton\" ");
+         out.write(sideBarStyle);
+         out.write("><a class='sidebarButtonLink' onclick=\"");
          out.write(Utils.generateFormSubmit(context, this, getClientId(context),
                PANEL_ACTION + NavigationBean.LOCATION_MYALFRESCO));
          out.write("\" href=\"#\">");

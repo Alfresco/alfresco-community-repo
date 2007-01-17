@@ -2,6 +2,7 @@ body
 {
    font-family: Tahoma, Arial, Helvetica, sans-serif;
    background-color: white;
+   margin: 3px;
 }
 
 p
@@ -18,7 +19,7 @@ table.moduletable td
 
 td,tr,p,div
 {
-   color: #003366;
+   color: #004488;
    font-family: Tahoma, Arial, Helvetica, sans-serif;
    font-size: 11px;
 }
@@ -41,7 +42,7 @@ p.status
 a:link, a:visited
 {
    font-size: 11px;
-   color: #003366;
+   color: #004488;
    text-decoration: none;
    font-family: Tahoma, Arial, Helvetica, sans-serif;
    font-weight: normal;
@@ -57,7 +58,7 @@ a:hover
 a.path:link, a.path:visited
 {
    font-size: 14px;
-   color: #003366;
+   color: #004488;
    text-decoration: none;
    font-weight: normal;
 }
@@ -108,7 +109,7 @@ a.small:link, a.small:visited
 {
    font-size: 11px;
    font-weight: normal;
-   color: #003366;
+   color: #004488;
 }
 
 a.small:hover
@@ -122,7 +123,7 @@ a.footer:link, a.footer:visited
 {
    font-size: 10px;
    text-decoration: underline;
-   color: #003366;
+   color: #004488;
 }
 
 a.footer:hover
@@ -140,20 +141,19 @@ a.footer:hover
 
 .pageTitle
 {
-   color: #003366;
+   color: #004488;
    font-size: 14px;
 }
 
 .main
 {
-   color: #003366;
+   color: #004488;
    font-size: 11px;
 }
 
 .mainTitle
 {
-   color: #003366;
-   font-family: Arial, Helvetica, sans-serif;
+   color: #004488;
    font-size: 16px;
    font-weight: bold;
    vertical-align: middle;
@@ -161,7 +161,7 @@ a.footer:hover
 
 .mainSubTitle
 {
-   color: #003366;
+   color: #004488;
    font-size: 11px;
    font-weight: bold;
    padding: 2px;
@@ -169,14 +169,14 @@ a.footer:hover
 
 .mainSubText
 {
-   color: #003366;
+   color: #004488;
    font-size: 11px;
    padding: 2px;
 }
 
 .summary
 {
-   color: #003366;
+   color: #004488;
    font-size: 11px;
    padding-left: 8px;
    padding-right: 8px;
@@ -186,28 +186,32 @@ a.footer:hover
 
 a.headbarLink
 {
-   color: #003366;
+   color: #004488;
    font-size: 11px;
    font-weight: normal;
 }
 
 .headbarTitle
 {
-   color: #003366;
-   font-size: 11px;
+   color: #004488;
+   font-size: 12px;
    font-weight: bold;
+   margin-top: 5px;
    margin-bottom: 5px;
+   background: #dfe6ed;
+   vertical-align: center;
+   padding-left: 6px;
 }
 
 .mainSubTextSmall
 {
-   color: #003366;
+   color: #004488;
    font-size: 10px;
 }
 
 .separator
 {
-   background-color: #92A8C0;
+   background-color: transparent;
 }
 
 .moreActionsMenu
@@ -341,21 +345,20 @@ input,textarea,select
 
 .topToolbar
 {
-   background-color:#465F7D;
 }
 
 .topToolbarTitle
 {
-   background-color: #465F7D;
-   color: #ffffff;
-   font-weight: bold;
+   color: #004488;
+   font-weight: normal;
    padding-left: 5px;
 }
 
 a.topToolbarLink, a.topToolbarLink:link, a.topToolbarLink:visited
 {
-   color: white;
-   font-weight: bold;
+   color: 004488;
+   font-weight: normal;
+   font-size: 12px;
 }
 
 .topToolbarHighlight
@@ -399,7 +402,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    background-color: #cddbe8;
    border-width: 1px;
    border-style: solid;
-   border-color: #003366;
+   border-color: #004488;
 }
 
 .recoveredItemsList
@@ -476,7 +479,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 .pager
 {
    padding: 3px;
-   border: 1px dashed #cccccc;
+   border: 1px dotted #cccccc;
 }
 
 .pager img
@@ -550,7 +553,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 .nodeWorkflowInfoTitle
 {
    font-weight: bold;
-   color: #003366;
+   color: #004488;
    padding-top: 3px;
    padding-bottom: 3px;
 }
@@ -558,6 +561,11 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 .nodeWorkflowInfoText
 {
    padding-bottom: 8px;
+}
+
+.navigator
+{
+   width:220px;
 }
 
 .selectListTable
@@ -584,21 +592,16 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .snapshotItemsList
 {
-   background-color: #c6d8eb;
+   background-color: #f8f8f8;
    border-width: 1px;
    border-style: solid;
-   border-color: #999999;
-}
-
-#navigator
-{
-   border: 1px solid #aaaaaa;
+   border-color: #DDDDDD;
 }
 
 .navigatorPanelTitle
 {
    background-color: #efefef;
-   color: #003366;
+   color: #004488;
    padding: 5px;
    border-top: 1px solid #aaaaaa;
 }
@@ -644,4 +647,37 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 .panelGridValueColumn
 {
   width: 100%;
+}
+
+.sidebarButtonSelected
+{
+   color: #004488;
+   font-size: 11px;
+   font-weight: normal;
+   padding: 5px;
+   background: #67a4e6 repeat-x; 
+   border-bottom: 1px solid #d3d7cf;
+}
+
+.sidebarButton
+{
+   color: #004488;
+   font-size: 12px;
+   font-weight: normal;
+   padding: 5px;
+   background: #dddddd repeat-x;
+   border-top: 1px solid #c8ccd1;
+}
+
+.sidebarButtonLabelHighlight
+{
+   color: #fff;
+   font-size:12px;
+}
+
+a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
+{
+   color: #004488;
+   font-weight: normal;
+   font-size:12px;
 }

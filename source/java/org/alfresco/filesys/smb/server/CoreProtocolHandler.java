@@ -77,6 +77,11 @@ class CoreProtocolHandler extends ProtocolHandler
 
     private static final int MaxWordValue = 0x0000FFFF;
 
+    // Invalid file name characters
+    
+    private static final String InvalidFileNameChars 		= "\"/[]:+|<>=;,*?";
+    private static final String InvalidFileNameCharsSearch	= "\"/[]:+|<>=;,";
+    
     // SMB packet class
 
     protected SMBSrvPacket m_smbPkt;
@@ -118,6 +123,48 @@ class CoreProtocolHandler extends ProtocolHandler
 
     }
 
+    /**
+     * Check if a path contains any illegal characters, for file/create open/create/rename/get info
+     * 
+     * @param path String
+     * @return boolean
+     */
+    protected boolean isValidPath(String path)
+    {
+    	// Scan the path for invalid path characters
+    	
+    	for ( int i = 0; i < InvalidFileNameChars.length(); i++)
+    	{
+    		if ( path.indexOf( InvalidFileNameChars.charAt( i)) != -1)
+    			return false;
+    	}
+    	
+    	// Path looks valid
+    	
+    	return true;
+    }
+    
+    /**
+     * Check if a path contains any illegal characters, for a folder search
+     * 
+     * @param path String
+     * @return boolean
+     */
+    protected boolean isValidSearchPath(String path)
+    {
+    	// Scan the path for invalid path characters
+    	
+    	for ( int i = 0; i < InvalidFileNameCharsSearch.length(); i++)
+    	{
+    		if ( path.indexOf( InvalidFileNameCharsSearch.charAt( i)) != -1)
+    			return false;
+    	}
+    	
+    	// Path looks valid
+    	
+    	return true;
+    }
+    
     /**
      * Pack file information for a search into the specified buffer.
      * 
@@ -231,6 +278,14 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( dirName) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
@@ -450,6 +505,14 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( dirName) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
@@ -573,6 +636,14 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( fileName) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Get the required file attributes for the new file
 
         int attr = m_smbPkt.getParameter(0);
@@ -719,6 +790,14 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( dirName) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
@@ -836,6 +915,14 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( fileName) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
@@ -1216,6 +1303,14 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( fileName) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
@@ -1343,7 +1438,7 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
-        // Debug
+       // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
             logger.debug("Get File Information 2 [" + netFile.getFileId() + "]");
@@ -2081,6 +2176,14 @@ class CoreProtocolHandler extends ProtocolHandler
             return;
         }
 
+        // Check if the search path is valid
+        
+        if ( isValidSearchPath( srchPath) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Update the received data position
 
         dataPos += srchPath.length() + 2;

@@ -2275,6 +2275,14 @@ public class NTProtocolHandler extends CoreProtocolHandler
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
             logger.debug("File Open AndX [" + m_smbPkt.getTreeId() + "] params=" + params);
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( params.getPath()) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Access the disk interface and open the requested file
 
         int fid;
@@ -2709,6 +2717,20 @@ public class NTProtocolHandler extends CoreProtocolHandler
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
             logger.debug("File Rename [" + m_smbPkt.getTreeId() + "] old name=" + oldName + ", new name=" + newName);
 
+        // Check if the from/to paths are
+        
+        if ( isValidPath( oldName) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
+        if ( isValidPath( newName) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+
         // Access the disk interface and rename the requested file
 
         try
@@ -3117,6 +3139,14 @@ public class NTProtocolHandler extends CoreProtocolHandler
             return;
         }
 
+        // Check if the search path is valid
+        
+        if ( isValidSearchPath( srchPath) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Access the shared device disk interface
 
         SearchContext ctx = null;
@@ -3967,6 +3997,14 @@ public class NTProtocolHandler extends CoreProtocolHandler
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_INFO))
             logger.debug("Query Path - level = 0x" + Integer.toHexString(infoLevl) + ", path = " + path);
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( path) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Access the shared device disk interface
 
         try
@@ -4813,6 +4851,14 @@ public class NTProtocolHandler extends CoreProtocolHandler
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_INFO))
             logger.debug("Set Path - path=" + path + ", level=0x" + Integer.toHexString(infoLevl));
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( path) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Access the shared device disk interface
 
         try
@@ -5358,11 +5404,20 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         FileOpenParams params = new FileOpenParams(fileName, createDisp, accessMask, attrib, shrAccess, allocSize,
                 createOptn, rootFID, impersonLev, secFlags);
+        
         // Debug
 
         if (logger.isDebugEnabled() && m_sess.hasDebug(SMBSrvSession.DBG_FILE))
             logger.debug("NT Create AndX [" + m_smbPkt.getTreeId() + "] params=" + params);
 
+        // Check if the file name is valid
+        
+        if ( isValidPath( params.getPath()) == false)
+        {
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNameInvalid, SMBStatus.DOSInvalidData, SMBStatus.ErrDos);
+            return;
+        }
+        
         // Access the disk interface and open the requested file
 
         int fid;

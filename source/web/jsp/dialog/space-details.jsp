@@ -59,7 +59,7 @@
                <%-- Status and Actions --%>
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width="4"></td>
-                  <td bgcolor="#EEEEEE">
+                  <td bgcolor="#dfe6ed">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
@@ -114,7 +114,7 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.custom_view}" id="dashboard-panel" progressive="true" facetsId="dashboard-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{SpaceDetailsBean.panels["dashboard-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <table width=100% cellspacing=0 cellpadding=0 border=0>
                                     <tr>
@@ -135,7 +135,7 @@
                               <div style="padding:4px"></div>
                               
                               <a:panel label="#{msg.links}" id="links-panel" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{SpaceDetailsBean.panels["links-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <table width="100%" cellspacing="2" cellpadding="2" border="0" align="center">
                                     <tr>
@@ -167,7 +167,7 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.properties}" id="properties-panel" facetsId="props-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" progressive="true"
                                        expanded='#{SpaceDetailsBean.panels["properties-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                     <tr>
@@ -211,7 +211,7 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.workflows}" id="workflow-panel" facetsId="workflow-panel-facets" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{SpaceDetailsBean.panels["workflow-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <r:nodeWorkflowInfo id="workflow-info" value="#{SpaceDetailsBean.space}" /> 
                               </a:panel>
@@ -227,13 +227,13 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.category}" id="category-panel" facetsId="category-panel-facets" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" rendered="#{SpaceDetailsBean.categorised}"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" rendered="#{SpaceDetailsBean.categorised}"
                                        expanded='#{SpaceDetailsBean.panels["category-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <h:outputText id="category-overview" value="#{SpaceDetailsBean.categoriesOverviewHTML}" 
                                                escape="false" />
                               </a:panel>
                               <a:panel label="#{msg.category}" id="no-category-panel" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        rendered="#{SpaceDetailsBean.categorised == false}"
                                        expanded='#{SpaceDetailsBean.panels["category-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <h:outputText id="no-category-msg" value="#{msg.not_in_category_space}<br/><br/>" 
@@ -255,7 +255,7 @@
                                  </f:facet>
                               </h:column>
                               <a:panel label="#{msg.rules}" id="rules-panel" facetsId="rules-panel-facets" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{SpaceDetailsBean.panels["rules-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <a:richList id="rulesList" viewMode="details" value="#{RulesBean.rules}" var="r"
                                           styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
@@ -323,7 +323,7 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.rss_feed}" id="rss-panel" progressive="true" facetsId="rss-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{SpaceDetailsBean.panels["rss-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <table width=100% cellspacing=0 cellpadding=0 border=0>
                                     <tr>
@@ -341,7 +341,7 @@
                                          need support for panel with facets - so can hide edit link unless edit permissions
                                          also need to wrap this panel with an permissions check: ReadPermissions
                               <a:panel label="#{msg.security}" id="security-panel" progressive="true" expanded="false"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        action="manageInvitedUsers" linkTooltip="#{msg.manage_invited_users}" linkIcon="/images/icons/invite.gif">
                                  <table cellspacing="2" cellpadding="0" border="0" width="100%">
                                     
@@ -352,14 +352,14 @@
                               
                               <%-- TBD
                               <a:panel label="Preferences" id="preferences-panel" progressive="true" expanded="false"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white">
                                  <div></div>
                               </a:panel>
                               --%>
                            </td>
                            
                            <td valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                               <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
@@ -367,12 +367,12 @@
                                     </td>
                                  </tr>
                               </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                               
                               <div style="padding:4px"></div>
                               
                               <%-- Space Actions --%>
-                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" style="text-align:center" progressive="true"
+                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" style="text-align:center" progressive="true"
                                     expanded='#{SpaceDetailsBean.panels["actions-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
                                  <r:actions id="actions_space" value="space_details_actions" context="#{SpaceDetailsBean.space}" verticalSpacing="3" style="white-space:nowrap" />
                               </a:panel>

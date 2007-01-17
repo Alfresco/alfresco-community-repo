@@ -24,7 +24,7 @@
 
 <tr>
    <td style="background-image: url(<%=request.getContextPath()%>/images/parts/headbar_4.gif)"></td>
-   <td bgcolor="#8EB6E6">
+   <td bgcolor="#dfe6ed">
       <%-- Breadcrumb component --%>
       <div style="padding-left:8px" class="headbarTitle">
          <a:breadcrumb value="#{NavigationBean.location}" styleClass="headbarLink" />

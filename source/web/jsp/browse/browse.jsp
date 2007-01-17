@@ -94,7 +94,7 @@
                <%-- Status and Actions --%>
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width=4></td>
-                  <td bgcolor="#EEEEEE">
+                  <td bgcolor="#dfe6ed">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
@@ -122,7 +122,7 @@
                                  <h:graphicImage id="img-rule" url="/images/icons/rule.gif" width="16" height="16" title="#{msg.rules_count}" /> <h:outputText value="(#{NavigationBean.ruleCount})" id="rulemsg1" style="vertical-align:20%" />
                                  </nobr>
                               </td>
-                              <td class="separator" width=1></td>
+                              <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>
                               <td style="padding-left:4px" align=right>
                                  <%-- Quick upload action --%>
                                  <nobr>
@@ -177,7 +177,7 @@
                               </td>
                            </a:panel>
                            
-                           <td class="separator" width=1></td>
+                           <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>
                            <td width=118 valign=middle>
                               <%-- View mode settings --%>
                               <a:modeList id="viewMode" itemSpacing="4" iconColumnWidth="20" selectedStyleClass="statusListHighlight" disabledStyleClass="statusListDisabled" selectedImage="/images/icons/Details.gif"
@@ -207,7 +207,7 @@
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
-                     <a:panel id="custom-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
+                     <a:panel id="custom-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
                               label="#{msg.custom_view}" progressive="true"
                               expanded='#{BrowseBean.panels["custom-panel"]}' expandedActionListener="#{BrowseBean.expandPanel}">
                         <r:template id="template" template="#{NavigationBean.currentNodeTemplate}" model="#{NavigationBean.templateModel}" />
@@ -232,7 +232,7 @@
                            </a:panel>
                         </f:facet>
                      </h:panelGroup>
-                     <a:panel id="spaces-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
+                     <a:panel id="spaces-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
                               label="#{msg.browse_spaces}" progressive="true" facetsId="spaces-panel-facets"
                               expanded='#{BrowseBean.panels["spaces-panel"]}' expandedActionListener="#{BrowseBean.expandPanel}">
                      
@@ -369,7 +369,7 @@
                            </a:panel>
                         </f:facet>
                      </h:panelGroup>
-                     <a:panel id="content-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle"
+                     <a:panel id="content-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
                            label="#{msg.browse_content}" progressive="true" facetsId="content-panel-facets"
                            expanded='#{BrowseBean.panels["content-panel"]}' expandedActionListener="#{BrowseBean.expandPanel}">
                      

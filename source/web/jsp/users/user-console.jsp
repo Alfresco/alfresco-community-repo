@@ -59,7 +59,7 @@
                <%-- Status and Actions --%>
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width="4"></td>
-                  <td bgcolor="#EEEEEE">
+                  <td bgcolor="#dfe6ed">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
@@ -101,7 +101,7 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.my_details}" id="mydetails-panel" facetsId="mydetails-panel-facets"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white">
                                  <table cellspacing=2 cellpadding=2 border=0>
                                     <tr>
                                        <td class="propertiesLabel">
@@ -140,7 +140,7 @@
                                  </f:facet>
                               </h:panelGroup>--%>
                               <a:panel label="#{msg.general_pref}" id="pref-panel" rendered="#{NavigationBean.isGuest == false}"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE">
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white">
                                  <table cellspacing=2 cellpadding=2 border=0>
                                     <tr>
                                        <td>
@@ -180,7 +180,7 @@
                            </td>
                            
                            <td valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
@@ -188,7 +188,7 @@
                                     </td>
                                  </tr>
                               </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                            </td>
                         
                         </tr>

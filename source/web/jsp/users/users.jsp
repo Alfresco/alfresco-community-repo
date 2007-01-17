@@ -82,7 +82,7 @@
                <%-- Status and Actions --%>
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width="4"></td>
-                  <td bgcolor="#EEEEEE">
+                  <td bgcolor="#dfe6ed">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
@@ -101,7 +101,7 @@
                               <a:actionLink value="#{msg.create_user}" image="/images/icons/create_user.gif" padding="4" rendered="#{LoginBean.alfrescoAuth}" action="createUser" actionListener="#{NewUserWizard.startWizard}" />
                            </td>
                            
-                           <td class="separator" width=1></td>
+                           <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>
                            <td width=110 valign=middle>
                               <%-- View mode settings --%>
                               <a:modeList itemSpacing="3" iconColumnWidth="20" selectedStyleClass="statusListHighlight" selectedImage="/images/icons/Details.gif" value="0"
@@ -131,7 +131,7 @@
                            <td width="100%" valign="top">
                               
                               <%-- Users List --%>
-                              <a:panel id="users-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.users}">
+                              <a:panel id="users-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.users}">
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
                               <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -207,7 +207,7 @@
                            </td>
                            
                            <td valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                               <table cellpadding="0" cellspacing="0" border="0">
                                  <tr>
                                     <td align="center">
@@ -215,7 +215,7 @@
                                     </td>
                                  </tr>
                               </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                            </td>
                         </tr>
                      </table>

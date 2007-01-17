@@ -60,7 +60,7 @@
                <%-- Status and Actions --%>
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width="4"></td>
-                  <td bgcolor="#EEEEEE">
+                  <td bgcolor="#dfe6ed">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
@@ -100,43 +100,43 @@
                                  <tr>
                                     <td colspan="2">
                                        <a:panel label="#{msg.http_app_state}" id="http-application-state" border="white" bgcolor="white" 
-                                                titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
+                                                titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" progressive="true" styleClass="mainSubTitle"
                                                 expanded="false">
                                        	<a:httpApplicationState id="has" />
                                        </a:panel>
                                        <br/>
                                        <a:panel label="#{msg.http_session_state}" id="http-session-state" border="white" bgcolor="white" 
-                                                titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
+                                                titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" progressive="true" styleClass="mainSubTitle"
                                                 expanded="false">
                                        	<a:httpSessionState id="hss" />
                                        </a:panel>
                                        <br/>
                                        <a:panel label="#{msg.http_request_state}" id="http-request-state" border="white" bgcolor="white" 
-                                                titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
+                                                titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" progressive="true" styleClass="mainSubTitle"
                                                 expanded="false">
                                        	<a:httpRequestState id="hrs" />
                                        </a:panel>
                                        <br/>
                                        <a:panel label="#{msg.http_request_params}" id="http-request-params" border="white" bgcolor="white" 
-                                                titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
+                                                titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" progressive="true" styleClass="mainSubTitle"
                                                 expanded="false">
                                        	<a:httpRequestParams id="hrp" />
                                        </a:panel>
                                        <br/>
                                        <a:panel label="#{msg.http_request_headers}" id="http-request-headers" border="white" bgcolor="white" 
-                                                titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
+                                                titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" progressive="true" styleClass="mainSubTitle"
                                                 expanded="false">
                                        	<a:httpRequestHeaders id="hrh" />
                                        </a:panel>
                                        <br/>
                                        <a:panel label="#{msg.repository_props}" id="repo-props" border="white" bgcolor="white" 
-                                                titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
+                                                titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" progressive="true" styleClass="mainSubTitle"
                                                 expanded="false">
                                        	<a:repositoryProperties id="rp" />
                                        </a:panel>
                                        <br/>
                                        <a:panel label="#{msg.system_props}" id="system-props" border="white" bgcolor="white" 
-                                                titleBorder="blue" titleBgcolor="#D3E6FE" progressive="true" styleClass="mainSubTitle"
+                                                titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" progressive="true" styleClass="mainSubTitle"
                                                 expanded="false">
                                        	<a:systemProperties id="sp" />
                                        </a:panel>
@@ -147,7 +147,7 @@
                            </td>
                            
                            <td valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
@@ -155,7 +155,7 @@
                                     </td>
                                  </tr>
                               </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                            </td>
                         </tr>
                      </table>

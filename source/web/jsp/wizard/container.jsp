@@ -60,7 +60,7 @@
                <%-- Status and Actions --%>
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width="4"></td>
-                  <td bgcolor="#EEEEEE">
+                  <td bgcolor="#dfe6ed">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
@@ -94,13 +94,13 @@
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
                            <td width="20%" valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                               <h:outputText styleClass="mainSubTitle" value="#{msg.steps}"/><br>
                               <a:modeList itemSpacing="3" iconColumnWidth="2" selectedStyleClass="statusListHighlight"
                                     value="#{WizardManager.currentStepAsString}" disabled="true">
                                  <a:listItems value="#{WizardManager.stepItems}" />
                               </a:modeList>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                            </td>
                            
                            <td width="100%" valign="top">
@@ -132,7 +132,7 @@
                            </td>
                            
                            <td valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
@@ -167,7 +167,7 @@
                                     </td>
                                  </tr>
                               </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                            </td>
                         </tr>
                      </table>

@@ -39,7 +39,7 @@
 
 <a:panel id="metadata-panel" label="#{msg.properties}" rendered="#{WizardManager.bean.taskMetadataNode != null}"
          border="white" bgcolor="white" 
-         titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+         titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
    
    <r:propertySheetGrid id="task-props" value="#{WizardManager.bean.taskMetadataNode}" 
                         var="taskProps" columns="1" externalConfig="true" 
@@ -49,7 +49,7 @@
 <h:outputText id="padding" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel id="resources-panel" label="#{msg.resources}"
-      border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+      border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
 
    <a:richList id="resources-list" viewMode="details" value="#{WizardManager.bean.resources}" var="r"
                binding="#{WizardManager.bean.packageItemsRichList}"
@@ -134,7 +134,7 @@
 <h:outputText id="padding" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel rendered="false" id="workflow-outline" label="#{msg.workflow_outline}" progressive="true" expanded="false" 
-         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
 
    <h:graphicImage value="#{WizardManager.bean.workflowDefinitionImageUrl}"/>
    

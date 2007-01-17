@@ -26,7 +26,7 @@
 </f:verbatim>
 <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" style="background-colour:##ffffcc" rowClasses="alignTop" id="outer-panel">
    <h:panelGrid columns="1" cellpadding="2" cellspacing="2" border="0" id="links-panel">
-      <h:outputText style="font-size: 11px; font-weight:bold; color:#4272B4" value="#{msg.product_name}" />
+      <h:outputText style="font-size: 11px; font-weight:bold; color:#004488" value="#{msg.product_name}" />
    
       <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="demo-panel">
          <h:graphicImage value="/images/icons/gettingstarted_demonstration.gif" width="32" height="32" />
@@ -57,7 +57,7 @@
    </h:panelGrid>
    
    <h:panelGrid columns="1" cellpadding="2" cellspacing="2" border="0" id="tasks-panel">
-      <h:outputText style="font-size: 11px; font-weight:bold; color:#4272B4" value="#{msg.gettingstarted_commontasks}" />
+      <h:outputText style="font-size: 11px; font-weight:bold; color:#004488" value="#{msg.gettingstarted_commontasks}" />
       
       <h:panelGrid columns="2" cellpadding="2" cellspacing="2" border="0" id="browse-panel">
          <h:graphicImage value="/images/icons/gettingstarted_browse.gif" width="32" height="32" />

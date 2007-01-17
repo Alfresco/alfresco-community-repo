@@ -20,7 +20,7 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <a:panel id="props-panel" label="#{msg.workitem_properties}" 
-         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
    
    <r:propertySheetGrid id="work-item-props" value="#{DialogManager.bean.workItemNode}" 
                        var="workItemProps" columns="1" externalConfig="true" />
@@ -29,7 +29,7 @@
 <h:outputText styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel id="resources-panel" label="#{msg.resources}"
-         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
    
    <a:richList id="resources-list" viewMode="details" value="#{DialogManager.bean.resources}" var="r"
                binding="#{DialogManager.bean.packageItemsRichList}"

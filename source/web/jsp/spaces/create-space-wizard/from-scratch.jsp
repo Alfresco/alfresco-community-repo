@@ -35,7 +35,7 @@
       <td>
          </f:verbatim>
          <a:imagePickerRadioPanel id="space-type" columns="4" spacing="4" value="#{WizardManager.bean.spaceType}"
-                             onclick="javascript:itemSelected(this);" panelBorder="blue" panelBgcolor="#D3E6FE">
+                             onclick="javascript:itemSelected(this);" panelBorder="lbgrey" panelBgcolor="white">
             <a:listItems value="#{WizardManager.bean.folderTypes}" />
          </a:imagePickerRadioPanel>
          <f:verbatim>

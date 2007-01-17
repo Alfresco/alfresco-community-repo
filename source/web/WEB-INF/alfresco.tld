@@ -459,6 +459,12 @@
       </attribute>
 
       <attribute>
+         <name>expandedTitleBorder</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+
+      <attribute>
          <name>titleBgcolor</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>

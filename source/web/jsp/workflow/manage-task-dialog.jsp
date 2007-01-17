@@ -20,7 +20,7 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <a:panel id="metadata-panel" label="#{msg.task_properties}" 
-         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
    
    <r:propertySheetGrid id="task-props" value="#{DialogManager.bean.taskNode}"
                        var="taskProps" columns="1" externalConfig="true" />
@@ -29,7 +29,7 @@
 <h:outputText id="padding1" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel id="resources-panel" label="#{msg.resources}"
-         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
    
    <h:outputText value="#{msg.no_resources}" rendered="#{empty DialogManager.bean.resources}" />
    
@@ -120,7 +120,7 @@
 <h:outputText id="padding2" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel id="workflow-summary-panel" label="#{msg.part_of_workflow}"
-         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
 
    <r:workflowSummary id="workflow-summary" value="#{DialogManager.bean.workflowInstance}" styleClass="workflowSummary" />
 
@@ -129,7 +129,7 @@
 <h:outputText id="padding2" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel rendered="false" id="workflow-outline" label="#{msg.workflow_outline}" progressive="true" expanded="false" 
-         border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle">
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
 
    <h:graphicImage value="#{DialogManager.bean.workflowDefinitionImageUrl}"/>
    

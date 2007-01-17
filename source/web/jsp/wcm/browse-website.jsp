@@ -59,7 +59,7 @@
                <%-- Status and Actions --%>
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width=4></td>
-                  <td bgcolor="#EEEEEE">
+                  <td bgcolor="#dfe6ed">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
@@ -109,10 +109,10 @@
                         <f:verbatim><div style="padding:4px"></div></f:verbatim>
                      </h:panelGroup>
                      
-                     <a:panel id="staging-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
+                     <a:panel id="staging-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.staging_sandbox}">
                         
                         <%-- Staging Sandbox Info --%>
-                        <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                        <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                         <table cellspacing=2 cellpadding=2 border=0 width=100%>
                            <tr>
                               <td align=left width=32><a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" /></td>
@@ -163,7 +163,7 @@
                               </td>
                            </tr>
                         </table>
-                        <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                        <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                         
                      </a:panel>
                      
@@ -176,7 +176,7 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
-                     <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
+                     <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
                         
                         <%-- User Sandboxes List --%>
                         <w:userSandboxes id="sandboxes" binding="#{AVMBrowseBean.userSandboxes}" value="#{AVMBrowseBean.website.nodeRef}" webapp="#{AVMBrowseBean.webapp}" />

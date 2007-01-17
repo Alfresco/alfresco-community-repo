@@ -22,8 +22,8 @@
          <table cellspacing=0 cellpadding=0 width=100%>
             <tr>
                <td style="padding-right:4px;"><a:actionLink image="/images/logo/AlfrescoLogo32.png" value="Alfresco" tooltip="Alfresco" showLink="false" action="about" /></td>
-               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_begin.gif" width=10 height=30></td>
-               <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/titlebar_bg.gif)">
+               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_begin.gif" width=10 height=31></td>
+               <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/titlebar_bg.gif); background-repeat:repeat-x">
                   <%-- Toolbar --%>
                   <a:modeList itemSpacing="3" iconColumnWidth="0" horizontal="true"
                         itemStyleClass="topToolbar" itemLinkStyleClass="topToolbarLink" selectedStyleClass="topToolbar" selectedLinkStyleClass="topToolbarLink"
@@ -34,7 +34,7 @@
                      <a:listItem value="myalfresco" label="#{msg.my_alfresco}" />
                   </a:modeList>
                </td>
-               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_end.gif" width=8 height=30></td>
+               <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_end.gif" width=8 height=31></td>
             </tr>
          </table>
       </td>
@@ -49,7 +49,7 @@
                      <a:actionLink value="#{msg.admin_console}" image="/images/icons/admin_console.gif" showLink="false" action="dialog:adminConsole" id="link11_1" />
                   </a:booleanEvaluator>
                </td>
-               <td width=8>&nbsp;</td>
+               <td width=12>&nbsp;</td>
                <td>
                   <%-- user preferences --%>
                   <a:actionLink value="#{msg.user_console}" image="/images/icons/user_console.gif" showLink="false" action="dialog:userConsole" actionListener="#{UsersBean.setupUserAction}" id="link11_2">
@@ -75,11 +75,11 @@
       <td>
          <table cellspacing=0 cellpadding=0 width=100%>
             <tr>
-               <td><img src="<%=request.getContextPath()%>/images/parts/searchbar_begin.gif" width=6 height=30></td>
+               <td><img src="<%=request.getContextPath()%>/images/parts/searchbar_begin.gif" width=6 height=31></td>
                <td width=100% style="background-image: url(<%=request.getContextPath()%>/images/parts/searchbar_bg.gif)">
                   <r:simpleSearch id="search" actionListener="#{BrowseBean.search}" />
                </td>
-               <td><img src="<%=request.getContextPath()%>/images/parts/searchbar_end.gif" width=6 height=30></td>
+               <td><img src="<%=request.getContextPath()%>/images/parts/searchbar_end.gif" width=6 height=31></td>
             </tr>
          </table>
       </td>

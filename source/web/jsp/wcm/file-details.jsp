@@ -59,7 +59,7 @@
                <%-- Status and Actions --%>
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width="4"></td>
-                  <td bgcolor="#EEEEEE">
+                  <td bgcolor="#dfe6ed">
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
@@ -108,7 +108,7 @@
                         <tr>
                            <td width="100%" valign="top">
                               <a:panel label="#{msg.view_links}" id="links-panel" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{FileDetailsBean.panels["links-panel"]}' expandedActionListener="#{FileDetailsBean.expandPanel}">
                                  <table width="100%" cellspacing="2" cellpadding="2" border="0" align="center">
                                     <tr>
@@ -138,7 +138,7 @@
                                  </f:facet>
                               </h:panelGroup>
                               <a:panel label="#{msg.properties}" id="properties-panel" facetsId="props-panel-facets" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{FileDetailsBean.panels["properties-panel"]}' expandedActionListener="#{FileDetailsBean.expandPanel}">
                                  <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                     <tr>
@@ -172,7 +172,7 @@
                               <div style="padding:4px"></div>
                               
                               <a:panel label="#{msg.version_history}" id="version-history-panel" progressive="true"
-                                       border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
                                        expanded='#{FileDetailsBean.panels["version-history-panel"]}' expandedActionListener="#{FileDetailsBean.expandPanel}">
                                  
                                  <a:richList id="version-history-list" viewMode="details" value="#{FileDetailsBean.versionHistory}" 
@@ -217,7 +217,7 @@
                            
                            <td valign="top">
                               
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "blue", "#D3E6FE"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                               <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
@@ -225,12 +225,12 @@
                                     </td>
                                  </tr>
                               </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "blue"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
                               
                               <div style="padding:4px"></div>
                               
                               <%-- Document Actions --%>
-                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="blue" titleBgcolor="#D3E6FE" style="text-align:center"
+                              <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" style="text-align:center"
                                     progressive="true" expanded='#{FileDetailsBean.panels["actions-panel"]}' expandedActionListener="#{FileDetailsBean.expandPanel}">
                                  <r:actions id="actions_doc" value="avm_file_details" context="#{FileDetailsBean.avmNode}" verticalSpacing="3" style="white-space:nowrap" />
                               </a:panel>

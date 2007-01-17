@@ -86,13 +86,31 @@ import org.apache.lucene.store.RAMDirectory;
  * methods lock as required, the private methods assume that the appropriate locks have been obtained. TODO: Write
  * element status into individual directories. This would be enough for recovery if both index files are lost or
  * corrupted. TODO: Tidy up index status at start up or after some time. How long would you leave a merge to run?
+ * <p>
+ * The index structure is duplicated to two files. If one is currupted the second is used.
+ * <p>
+ * TODO:
+ * <p>
+ * <ol>
+ * <li> make the index sharing configurable
+ * <li> use a thread pool for deletions, merging and index deletions
+ * <li> something to control the maximum number of overlays to limit the number of things layered together for searching
+ * <li> look at lucene locking again post 2.0, to see if it is improved
+ * <li> clean up old data files (that are not old index entries) - should be a config option
+ * </ol>
  * 
  * @author Andy Hind
  */
 public class IndexInfo
 {
+    /**
+     * The logger.
+     */
     private static Logger s_logger = Logger.getLogger(IndexInfo.class);
 
+    /**
+     * Use NIO memory mapping to wite the index control file.
+     */
     private static final boolean useNIOMemoryMapping = true;
 
     /**
@@ -105,8 +123,14 @@ public class IndexInfo
      */
     private static String INDEX_INFO_BACKUP = "IndexInfoBackup";
 
+    /**
+     * The default name for the index deletions file
+     */
     private static String INDEX_INFO_DELETIONS = "IndexInfoDeletions";
 
+    /**
+     * What to look for to detect the previous index implementation.
+     */
     private static String OLD_INDEX = "index";
 
     /**
@@ -182,21 +206,52 @@ public class IndexInfo
     private EnumMap<TransactionStatus, Transition> transitions = new EnumMap<TransactionStatus, Transition>(
             TransactionStatus.class);
 
+    /**
+     * The queue of files and folders to delete
+     */
     private ConcurrentLinkedQueue<String> deleteQueue = new ConcurrentLinkedQueue<String>();
-    
+
+    /**
+     * A queue of reference counting index readers. We wait for these to become unused (ref count falls to zero) then
+     * the data can be removed.
+     */
     private ConcurrentLinkedQueue<IndexReader> deletableReaders = new ConcurrentLinkedQueue<IndexReader>();
 
+    /**
+     * The call that is responsible for deleting old index information from disk.
+     */
     private Cleaner cleaner = new Cleaner();
 
+    /**
+     * The thread that deletes old index data
+     */
     private Thread cleanerThread;
 
+    /**
+     * The class the supports index merging and applying deletions from deltas to indexes and deltas that go before it.
+     */
     private Merger merger = new Merger();
 
+    /**
+     * The thread that carries out index merging and applying deletions from deltas to indexes and deltas that go before
+     * it.
+     */
     private Thread mergerThread;
 
+    /**
+     * A shared empty index to use if non exist.
+     */
     private Directory emptyIndex = new RAMDirectory();
 
+    /**
+     * The index infor files that make up the index
+     */
     private static HashMap<File, IndexInfo> indexInfos = new HashMap<File, IndexInfo>();
+
+    // Properties that cotrol lucene indexing
+    // --------------------------------------
+
+    // Properties for indexes that are created by transactions ...
 
     private int maxDocsForInMemoryMerge = 10000;
 
@@ -208,6 +263,8 @@ public class IndexInfo
 
     private boolean writerUseCompoundFile = true;
 
+    // Properties for indexes created by merging
+
     private int mergerMinMergeDocs = 1000;
 
     private int mergerMergeFactor = 5;
@@ -218,6 +275,8 @@ public class IndexInfo
 
     private int mergerTargetOverlays = 5;
 
+    // Common properties for indexers
+
     private long writeLockTimeout = IndexWriter.WRITE_LOCK_TIMEOUT;
 
     private long commitLockTimeout = IndexWriter.COMMIT_LOCK_TIMEOUT;
@@ -226,26 +285,49 @@ public class IndexInfo
 
     private int termIndexInterval = IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
 
-    // TODO: Something to control the maximum number of overlays
+    /**
+     * Control if the cleaner thread is active
+     */
 
     private boolean enableCleanerThread = true;
 
+    /**
+     * Control if the merger thread is active
+     */
     private boolean enableMergerThread = true;
 
     static
     {
+        // We do not require any of the lucene in-built locking.
         System.setProperty("disableLuceneLocks", "true");
     }
 
-    public static synchronized IndexInfo getIndexInfo(File file)
+    /**
+     * Get the IndexInfo object based in the given directory. There is only one object per directory per JVM.
+     * 
+     * @param file
+     * @return
+     * @throws IndexerException
+     */
+    public static synchronized IndexInfo getIndexInfo(File file) throws IndexerException
     {
-        IndexInfo indexInfo = indexInfos.get(file);
-        if (indexInfo == null)
+        File canonicalFile;
+        try
         {
-            indexInfo = new IndexInfo(file);
-            indexInfos.put(file, indexInfo);
+            canonicalFile = file.getCanonicalFile();
+            IndexInfo indexInfo = indexInfos.get(canonicalFile);
+            if (indexInfo == null)
+            {
+                indexInfo = new IndexInfo(canonicalFile);
+                indexInfos.put(canonicalFile, indexInfo);
+            }
+            return indexInfo;
         }
-        return indexInfo;
+        catch (IOException e)
+        {
+            throw new IndexerException("Failed to transform a file into is canonical form", e);
+        }
+
     }
 
     /**
@@ -278,19 +360,18 @@ public class IndexInfo
         File indexInfoBackupFile = new File(this.indexDirectory, INDEX_INFO_BACKUP);
         if (createFile(indexInfoFile) && createFile(indexInfoBackupFile))
         {
-            // a spanking new index
+            // If both files required creation this is a new index
             version = 0;
-
         }
 
-        // Open the files and channels
+        // Open the files and channels for the index info file and the backup
         this.indexInfoRAF = openFile(indexInfoFile);
         this.indexInfoChannel = this.indexInfoRAF.getChannel();
 
         this.indexInfoBackupRAF = openFile(indexInfoBackupFile);
         this.indexInfoBackupChannel = this.indexInfoBackupRAF.getChannel();
 
-        // Read info from disk if this is not a new index.
+        // If the index found no info files (i.e. it is new), check if there is an old style index and covert it.
         if (version == 0)
         {
             // Check if an old style index exists
@@ -342,6 +423,7 @@ public class IndexInfo
             }
         }
 
+        // The index exists
         else if (version == -1)
         {
             getWriteLock();
@@ -353,6 +435,7 @@ public class IndexInfo
                     {
                         setStatusFromFile();
 
+                        // If the index is not shared we can do some easy clean up
                         if (!indexIsShared)
                         {
                             HashSet<String> deletable = new HashSet<String>();
@@ -361,6 +444,8 @@ public class IndexInfo
                             {
                                 switch (entry.getStatus())
                                 {
+                                // states which can be deleted
+                                // We could check prepared states can be committed.
                                 case ACTIVE:
                                 case MARKED_ROLLBACK:
                                 case NO_TRANSACTION:
@@ -378,6 +463,7 @@ public class IndexInfo
                                     entry.setStatus(TransactionStatus.DELETABLE);
                                     deletable.add(entry.getName());
                                     break;
+                                // States which are in mid-transition which we can roll back to the committed state
                                 case COMMITTED_DELETING:
                                 case MERGE:
                                     if (s_logger.isInfoEnabled())
@@ -386,6 +472,7 @@ public class IndexInfo
                                     }
                                     entry.setStatus(TransactionStatus.COMMITTED);
                                     break;
+                                // Complete committing (which is post database commit)
                                 case COMMITTING:
                                     // do the commit
                                     if (s_logger.isInfoEnabled())
@@ -395,12 +482,14 @@ public class IndexInfo
                                     entry.setStatus(TransactionStatus.COMMITTED);
                                     mainIndexReader = null;
                                     break;
+                                // States that require no action
                                 case COMMITTED:
                                 default:
                                     // nothing to do
                                     break;
                                 }
                             }
+                            // Delete entries that are not required
                             for (String id : deletable)
                             {
                                 indexEntries.remove(id);
@@ -414,6 +503,7 @@ public class IndexInfo
                             {
                                 merger.notify();
                             }
+                            // persist the new state
                             writeStatus();
                         }
                         return null;
@@ -444,6 +534,7 @@ public class IndexInfo
             mergerThread.start();
         }
 
+        // Create an empty in memory index
         IndexWriter writer;
         try
         {
@@ -456,6 +547,7 @@ public class IndexInfo
             writer.setWriteLockTimeout(writeLockTimeout);
             writer.setMaxFieldLength(maxFieldLength);
             writer.setTermIndexInterval(termIndexInterval);
+            writer.close();
         }
         catch (IOException e)
         {
@@ -465,7 +557,7 @@ public class IndexInfo
     }
 
     /**
-     * This method should only be called from one thread.
+     * This method should only be called from one thread as it is bound to a transaction.
      * 
      * @param id
      * @return
@@ -524,7 +616,7 @@ public class IndexInfo
 
         // A write lock is required if we have to update the local index entries.
         // There should only be one thread trying to access this delta.
-        File location = new File(indexDirectory, id);
+        File location = new File(indexDirectory, id).getCanonicalFile();
         getReadLock();
         try
         {
@@ -558,24 +650,46 @@ public class IndexInfo
         return location;
     }
 
+    /**
+     * Make a lucene index writer
+     * 
+     * @param location
+     * @param analyzer
+     * @return
+     * @throws IOException
+     */
     private IndexWriter makeDeltaIndexWriter(File location, Analyzer analyzer) throws IOException
     {
+        IndexWriter writer;
         if (!IndexReader.indexExists(location))
         {
-            IndexWriter creator = new IndexWriter(location, analyzer, true);
-            creator.setUseCompoundFile(writerUseCompoundFile);
-            creator.setMaxBufferedDocs(writerMinMergeDocs);
-            creator.setMergeFactor(writerMergeFactor);
-            creator.setMaxMergeDocs(writerMaxMergeDocs);
-            creator.setCommitLockTimeout(commitLockTimeout);
-            creator.setWriteLockTimeout(writeLockTimeout);
-            creator.setMaxFieldLength(maxFieldLength);
-            creator.setTermIndexInterval(termIndexInterval);
-            return creator;
+            writer = new IndexWriter(location, analyzer, true);
         }
-        return null;
+        else
+        {
+            writer = new IndexWriter(location, analyzer, false);
+        }
+        writer.setUseCompoundFile(writerUseCompoundFile);
+        writer.setMaxBufferedDocs(writerMinMergeDocs);
+        writer.setMergeFactor(writerMergeFactor);
+        writer.setMaxMergeDocs(writerMaxMergeDocs);
+        writer.setCommitLockTimeout(commitLockTimeout);
+        writer.setWriteLockTimeout(writeLockTimeout);
+        writer.setMaxFieldLength(maxFieldLength);
+        writer.setTermIndexInterval(termIndexInterval);
+        return writer;
+
     }
 
+    /**
+     * Manage getting a lucene index writer for transactional data - looks after registration and checking there is no
+     * active reader.
+     * 
+     * @param id
+     * @param analyzer
+     * @return
+     * @throws IOException
+     */
     public IndexWriter getDeltaIndexWriter(String id, Analyzer analyzer) throws IOException
     {
         if (id == null)
@@ -591,23 +705,17 @@ public class IndexInfo
             closeDeltaIndexReader(id);
             File location = ensureDeltaIsRegistered(id);
             writer = makeDeltaIndexWriter(location, analyzer);
-            if (writer == null)
-            {
-                writer = new IndexWriter(location, analyzer, false);
-                writer.setUseCompoundFile(writerUseCompoundFile);
-                writer.setMaxBufferedDocs(writerMinMergeDocs);
-                writer.setMergeFactor(writerMergeFactor);
-                writer.setMaxMergeDocs(writerMaxMergeDocs);
-                writer.setCommitLockTimeout(commitLockTimeout);
-                writer.setWriteLockTimeout(writeLockTimeout);
-                writer.setMaxFieldLength(maxFieldLength);
-                writer.setTermIndexInterval(termIndexInterval);
-            }
             indexWriters.put(id, writer);
         }
         return writer;
     }
 
+    /**
+     * Manage closing and unregistering an index reader.
+     * 
+     * @param id
+     * @throws IOException
+     */
     public void closeDeltaIndexReader(String id) throws IOException
     {
         if (id == null)
@@ -623,6 +731,12 @@ public class IndexInfo
         }
     }
 
+    /**
+     * Manage closing and unregistering an index writer .
+     * 
+     * @param id
+     * @throws IOException
+     */
     public void closeDeltaIndexWriter(String id) throws IOException
     {
         if (id == null)
@@ -638,6 +752,12 @@ public class IndexInfo
         }
     }
 
+    /**
+     * Make sure the writer and reader for TX data are closed.
+     * 
+     * @param id
+     * @throws IOException
+     */
     public void closeDelta(String id) throws IOException
     {
         if (id == null)
@@ -648,6 +768,14 @@ public class IndexInfo
         closeDeltaIndexWriter(id);
     }
 
+    /**
+     * Get the deletions for a given index (there is not check if thery should be applied that is up to the calling
+     * layer)
+     * 
+     * @param id
+     * @return
+     * @throws IOException
+     */
     public Set<NodeRef> getDeletions(String id) throws IOException
     {
         if (id == null)
@@ -656,11 +784,11 @@ public class IndexInfo
         }
         // Check state
         Set<NodeRef> deletions = new HashSet<NodeRef>();
-        File location = new File(indexDirectory, id);
-        File file = new File(location, INDEX_INFO_DELETIONS);
+        File location = new File(indexDirectory, id).getCanonicalFile();
+        File file = new File(location, INDEX_INFO_DELETIONS).getCanonicalFile();
         if (!file.exists())
         {
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
                 s_logger.debug("No deletions for " + id);
             }
@@ -674,14 +802,27 @@ public class IndexInfo
             deletions.add(new NodeRef(ref));
         }
         is.close();
-        if(s_logger.isDebugEnabled())
+        if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("There are "+deletions.size()+ " deletions for " + id);
+            s_logger.debug("There are " + deletions.size() + " deletions for " + id);
         }
         return deletions;
 
     }
 
+    /**
+     * Set the aux data for the index entry for a transactional unit of work.
+     * 
+     * @param id -
+     *            the tx id
+     * @param toDelete -
+     *            noderefs that should be deleted from previous indexes (not this one)
+     * @param documents -
+     *            the number of docs in the index
+     * @param deleteNodesOnly -
+     *            should deletions on apply to nodes (ie not to containers)
+     * @throws IOException
+     */
     public void setPreparedState(String id, Set<NodeRef> toDelete, long documents, boolean deleteNodesOnly)
             throws IOException
     {
@@ -692,7 +833,7 @@ public class IndexInfo
         // Check state
         if (toDelete.size() > 0)
         {
-            File location = new File(indexDirectory, id);
+            File location = new File(indexDirectory, id).getCanonicalFile();
             if (!location.exists())
             {
                 if (!location.mkdirs())
@@ -700,8 +841,9 @@ public class IndexInfo
                     throw new IndexerException("Failed to make index directory " + location);
                 }
             }
+            // Write deletions
             DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(location,
-                    INDEX_INFO_DELETIONS))));
+                    INDEX_INFO_DELETIONS).getCanonicalFile())));
             os.writeInt(toDelete.size());
             for (NodeRef ref : toDelete)
             {
@@ -733,11 +875,19 @@ public class IndexInfo
         }
     }
 
+    /**
+     * Get the main reader for committed index data
+     * 
+     * @return
+     * @throws IOException
+     */
     public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader() throws IOException
     {
         getReadLock();
         try
         {
+            // Check if we need to rebuild the main indexer as it is invalid.
+            // (it is shared and quick version check fails)
             if (indexIsShared && !checkVersion())
             {
                 releaseReadLock();
@@ -753,6 +903,7 @@ public class IndexInfo
                 }
             }
 
+            // Build if required
             if (mainIndexReader == null)
             {
                 releaseReadLock();
@@ -780,6 +931,7 @@ public class IndexInfo
                     releaseWriteLock();
                 }
             }
+            // Manage reference counting
             ReferenceCounting refCount = (ReferenceCounting) mainIndexReader;
             refCount.incrementReferenceCount();
             if (s_logger.isDebugEnabled())
@@ -794,6 +946,15 @@ public class IndexInfo
         }
     }
 
+    /**
+     * Get the main index reader augmented with the specified TX data As above but we add the TX data
+     * 
+     * @param id
+     * @param deletions
+     * @param deleteOnlyNodes
+     * @return
+     * @throws IOException
+     */
     public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<NodeRef> deletions,
             boolean deleteOnlyNodes) throws IOException
     {
@@ -965,6 +1126,9 @@ public class IndexInfo
 
     }
 
+    /**
+     * Initialise the definitions for the available transitions.
+     */
     private void initialiseTransitions()
     {
 
@@ -978,6 +1142,11 @@ public class IndexInfo
         transitions.put(TransactionStatus.ACTIVE, new ActiveTransition());
     }
 
+    /**
+     * API for transitions
+     * 
+     * @author andyh
+     */
     private interface Transition
     {
         void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException;
@@ -987,11 +1156,16 @@ public class IndexInfo
         boolean requiresFileLock();
     }
 
+    /**
+     * Transition to the perparing state
+     * 
+     * @author andyh
+     */
     private class PreparingTransition implements Transition
     {
         public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
-
+            // Nothing to do
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1019,6 +1193,11 @@ public class IndexInfo
         }
     }
 
+    /**
+     * Transition to the prepared state.
+     * 
+     * @author andyh
+     */
     private class PreparedTransition implements Transition
     {
         public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1396,17 +1575,17 @@ public class IndexInfo
         {
             if (!indexEntries.containsKey(id))
             {
-                if(s_logger.isDebugEnabled())
+                if (s_logger.isDebugEnabled())
                 {
-                    s_logger.debug(id+ " is now INVALID ");
+                    s_logger.debug(id + " is now INVALID ");
                 }
                 inValid.add(id);
             }
             else
             {
-                if(s_logger.isDebugEnabled())
+                if (s_logger.isDebugEnabled())
                 {
-                    s_logger.debug(id+ " is still part of the index ");
+                    s_logger.debug(id + " is still part of the index ");
                 }
             }
         }
@@ -1484,7 +1663,7 @@ public class IndexInfo
         IndexReader reader = referenceCountingReadOnlyIndexReaders.get(id);
         if (reader == null)
         {
-            File location = new File(indexDirectory, id);
+            File location = new File(indexDirectory, id).getCanonicalFile();
             if (IndexReader.indexExists(location))
             {
                 reader = IndexReader.open(location);
@@ -1902,11 +2081,14 @@ public class IndexInfo
                 IndexReader reader;
                 while ((reader = deletableReaders.poll()) != null)
                 {
-                    ReferenceCounting refCounting = (ReferenceCounting)reader;
-                    if(refCounting.getReferenceCount() == 0)
+                    ReferenceCounting refCounting = (ReferenceCounting) reader;
+                    if (refCounting.getReferenceCount() == 0)
                     {
-                        s_logger.debug("Deleting no longer referenced "+refCounting.getId());
-                        s_logger.debug("... queued delete for "+refCounting.getId());
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("Deleting no longer referenced " + refCounting.getId());
+                            s_logger.debug("... queued delete for " + refCounting.getId());
+                        }
                         deleteQueue.add(refCounting.getId());
                     }
                     else
@@ -1915,24 +2097,32 @@ public class IndexInfo
                     }
                 }
                 deletableReaders.addAll(waiting);
-                
+
                 String id = null;
                 HashSet<String> fails = new HashSet<String>();
                 while ((id = deleteQueue.poll()) != null)
                 {
-                    if (s_logger.isDebugEnabled())
-                    {
-                        s_logger.debug("Expunging " + id + " remaining " + deleteQueue.size());
-                    }
-                    // try and delete
-                    File location = new File(indexDirectory, id);
-                    if (!deleteDirectory(location))
+                    try
                     {
                         if (s_logger.isDebugEnabled())
                         {
-                            s_logger.debug("DELETE FAILED");
+                            s_logger.debug("Expunging " + id + " remaining " + deleteQueue.size());
                         }
-                        // try again later
+                        // try and delete
+                        File location = new File(indexDirectory, id).getCanonicalFile();
+                        if (!deleteDirectory(location))
+                        {
+                            if (s_logger.isDebugEnabled())
+                            {
+                                s_logger.debug("DELETE FAILED");
+                            }
+                            // try again later
+                            fails.add(id);
+                        }
+                    }
+                    catch (IOException ioe)
+                    {
+                        s_logger.warn("Failed to delete file - invalid canonical file", ioe);
                         fails.add(id);
                     }
                 }
@@ -2123,7 +2313,10 @@ public class IndexInfo
                     {
                         try
                         {
-                            this.wait();
+                            if (action == MergeAction.NONE)
+                            {
+                                this.wait();
+                            }
                         }
                         catch (InterruptedException e)
                         {
@@ -2232,7 +2425,7 @@ public class IndexInfo
                 LinkedHashMap<String, IndexReader> readers = new LinkedHashMap<String, IndexReader>();
                 for (IndexEntry entry : indexes.values())
                 {
-                    File location = new File(indexDirectory, entry.getName());
+                    File location = new File(indexDirectory, entry.getName()).getCanonicalFile();
                     IndexReader reader;
                     if (IndexReader.indexExists(location))
                     {
@@ -2286,7 +2479,7 @@ public class IndexInfo
                         }
 
                     }
-                    File location = new File(indexDirectory, currentDelete.getName());
+                    File location = new File(indexDirectory, currentDelete.getName()).getCanonicalFile();
                     IndexReader reader;
                     if (IndexReader.indexExists(location))
                     {
@@ -2507,7 +2700,7 @@ public class IndexInfo
                     File outputLocation = null;
                     for (IndexEntry entry : toMerge.values())
                     {
-                        File location = new File(indexDirectory, entry.getName());
+                        File location = new File(indexDirectory, entry.getName()).getCanonicalFile();
                         if (entry.getStatus() == TransactionStatus.MERGE)
                         {
                             IndexReader reader;
@@ -2637,7 +2830,10 @@ public class IndexInfo
                             // Only delete if there is no existing ref counting reader
                             if (!referenceCountingReadOnlyIndexReaders.containsKey(id))
                             {
-                                s_logger.debug("... queued delete for "+id);
+                                if (s_logger.isDebugEnabled())
+                                {
+                                    s_logger.debug("... queued delete for " + id);
+                                }
                                 deleteQueue.add(id);
                             }
                         }

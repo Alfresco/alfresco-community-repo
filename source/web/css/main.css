@@ -399,10 +399,10 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 .filterBorders
 {
    padding: 2px;
-   background-color: #cddbe8;
+   background-color: #f5f5f5;
    border-width: 1px;
    border-style: solid;
-   border-color: #004488;
+   border-color: #DDDDDD;
 }
 
 .recoveredItemsList
@@ -584,7 +584,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .modifiedItemsList
 {
-   background-color: #f8f8f8;
+   background-color: #f5f5f5;
    border-width: 1px;
    border-style: solid;
    border-color: #DDDDDD;
@@ -592,7 +592,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .snapshotItemsList
 {
-   background-color: #f8f8f8;
+   background-color: #f5f5f5;
    border-width: 1px;
    border-style: solid;
    border-color: #DDDDDD;

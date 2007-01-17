@@ -301,15 +301,15 @@ a.headbarLink
 
 .recordSetRowAlt
 {
-   background-color: #DEE5EC;
+   background-color: #F5F5F5;
    vertical-align: top;
 }
 
 .recordSetHeader
 {
-   background-color: #C6D8EB;
-   color: #1B3557;
+   color: #004488;
    font-weight: bold;
+   border-bottom: 1px solid #cacfd3;
 }
 
 .errorMessage

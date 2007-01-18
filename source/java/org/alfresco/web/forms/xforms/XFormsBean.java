@@ -67,6 +67,7 @@ import org.chiba.xml.xforms.core.Instance;
 import org.chiba.xml.xforms.core.ModelItem;
 import org.chiba.xml.xforms.core.Model;
 import org.chiba.xml.xforms.core.UpdateHandler;
+import org.chiba.xml.xforms.core.impl.DefaultValidatorMode;
 import org.chiba.xml.xforms.exception.XFormsException;
 import org.chiba.xml.xforms.ui.RepeatItem;
 import org.chiba.xml.xforms.ui.Upload;
@@ -92,7 +93,7 @@ public class XFormsBean
    
    /**
     */
-   static class XFormsSession implements FormProcessor.Session
+   class XFormsSession implements FormProcessor.Session
    {
 
       private final Document formInstanceData;
@@ -221,6 +222,11 @@ public class XFormsBean
       et.addEventListener(ChibaEventNames.LOAD_URI, el, true);
       et.addEventListener(ChibaEventNames.RENDER_MESSAGE, el, true);
       et.addEventListener(ChibaEventNames.REPLACE_ALL, el, true);
+      et.addEventListener(XFormsEventNames.REQUIRED, el, true);
+      et.addEventListener(XFormsEventNames.OPTIONAL, el, true);
+      et.addEventListener(XFormsEventNames.VALID, el, true);
+      et.addEventListener(XFormsEventNames.INVALID, el, true);
+      et.addEventListener(XFormsEventNames.OUT_OF_RANGE, el, true);
 
       chibaBean.init();
 
@@ -228,11 +234,6 @@ public class XFormsBean
       et.addEventListener(XFormsEventNames.SUBMIT, el, true);
       et.addEventListener(XFormsEventNames.SUBMIT_DONE, el, true);
       et.addEventListener(XFormsEventNames.SUBMIT_ERROR, el, true);
-      et.addEventListener(XFormsEventNames.REQUIRED, el, true);
-      et.addEventListener(XFormsEventNames.OPTIONAL, el, true);
-      et.addEventListener(XFormsEventNames.VALID, el, true);
-      et.addEventListener(XFormsEventNames.INVALID, el, true);
-      et.addEventListener(XFormsEventNames.OUT_OF_RANGE, el, true);
       et.addEventListener(ChibaEventNames.STATE_CHANGED, el, true);
       et.addEventListener(ChibaEventNames.PROTOTYPE_CLONED, el, true);
       et.addEventListener(ChibaEventNames.ID_GENERATED, el, true);
@@ -247,8 +248,8 @@ public class XFormsBean
     * Initializes the chiba process with the xform and registers any necessary
     * event listeners.
     */
-   public static XFormsSession createSession(final Document formInstanceData,
-                                             final Form form)
+   public XFormsSession createSession(final Document formInstanceData,
+                                      final Form form)
    {
       if (LOGGER.isDebugEnabled())
       {
@@ -265,7 +266,7 @@ public class XFormsBean
                               request.getServerName() + ':' + 
                               request.getServerPort() + 
                               request.getContextPath());
-      return new XFormsSession(formInstanceData, form, baseUrl);
+      return this.new XFormsSession(formInstanceData, form, baseUrl);
    }
 
    /**
@@ -672,6 +673,7 @@ public class XFormsBean
          {
             LOGGER.debug("adding event " + type + " to the event log");
          }
+
          final Element target = (Element)xfe.getTarget();
 
          final Element eventElement = result.createElement(type);
@@ -696,6 +698,35 @@ public class XFormsBean
                propertyElement.setAttribute("name", name.toString());
                propertyElement.setAttribute("value", 
                                             value != null ? value.toString() : null);
+            }
+         }
+
+         if (LOGGER.isDebugEnabled() && XFormsEventNames.SUBMIT_ERROR.equals(type))
+         {
+            // debug for figuring out which elements aren't valid for submit
+            LOGGER.debug("performing full revalidate");
+            try
+            {
+               final Model model = this.xformsSession.chibaBean.getContainer().getDefaultModel();
+               final Instance instance = model.getDefaultInstance();
+               model.getValidator().validate(instance, "/", new DefaultValidatorMode());
+               final Iterator<ModelItem> it = instance.iterateModelItems("/");
+               while (it.hasNext())
+               {
+                  final ModelItem modelItem = it.next();
+                  if (!modelItem.isValid())
+                  {
+                     LOGGER.debug("model node " + modelItem.getNode() + " is invalid");
+                  }
+                  if (modelItem.isRequired() && modelItem.getValue().length() == 0)
+                  {
+                     LOGGER.debug("model node " + modelItem.getNode() + " is empty and required");
+                  }
+               }
+            }
+            catch (final XFormsException xfe2)
+            {
+               LOGGER.debug("error performing revaliation", xfe2);
             }
          }
       }

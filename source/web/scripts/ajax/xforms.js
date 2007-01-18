@@ -160,16 +160,26 @@ dojo.declare("alfresco.xforms.Widget",
                {
                  if (!this._valid)
                  {
+                   dojo.debug(this.id + " is invalid");
                    return false;
                  }
-                 if (!this._modified && this.isRequired() && this.getInitialValue() == null)
+                 if (!this._modified && 
+                     this.isRequired() && 
+                     this.getInitialValue() == null)
                  {
+                   dojo.debug(this.id + " is unmodified and required and empty");
                    return false;
                  }
                  if (this.isRequired() && this.getValue() == null)
                  {
+                   dojo.debug(this.id + " is required and empty");
                    return false;
                  }
+                 dojo.debug(this.id + " is valid: {" +
+                            "modified: " + this._modified + 
+                            ", required: " + this.isRequired() +
+                            ", initial_value: " + this.getInitialValue() +
+                            ", value: " + this.getValue() + "}");
                  return true;
                },
 
@@ -206,7 +216,7 @@ dojo.declare("alfresco.xforms.Widget",
                    return this._required;
                  }
                  var binding = this.xform.getBinding(this.xformsNode);
-                 return binding && binding.required == "true()";
+                 return binding && binding.isRequired();
                },
 
                /** Sets the widget's readonly state, as indicated by an XFormsEvent */
@@ -223,13 +233,14 @@ dojo.declare("alfresco.xforms.Widget",
                    return this._readonly;
                  }
                  var binding = this.xform.getBinding(this.xformsNode);
-                 return binding && binding.readonly == "true()";
+                 return binding && binding.isReadonly();
                },
 
                /** Sets the widget's initial value. */
                setInitialValue: function(value)
                {
-                 this.initialValue = value;
+                 this.initialValue = 
+                   (typeof value == "string" && value.length == 0 ? null : value);
                },
 
                /** 
@@ -258,6 +269,10 @@ dojo.declare("alfresco.xforms.Widget",
                  result = (result.nodeType == dojo.dom.ELEMENT_NODE
                            ? dojo.dom.textContent(result)
                            : result.nodeValue);
+                 if (typeof result == "string" && result.length == 0)
+                 {
+                   result = null;
+                 }
                  dojo.debug("resolved xpath " + xpath + " to " + result);
                  return result;
                },
@@ -466,7 +481,10 @@ dojo.declare("alfresco.xforms.FilePicker",
                _filePicker_resizeHandler: function(fpw) 
                { 
                  var w = fpw.node.widget;
-                 w.domContainer.style.height = fpw.node.offsetHeight + "px";
+                 w.domContainer.style.height = 
+                   Math.max(fpw.node.offsetHeight + 
+                            dojo.style.getMarginHeight(w.domNode.parentNode),
+                            20) + "px";
                }
              });
 
@@ -521,7 +539,8 @@ dojo.declare("alfresco.xforms.DatePicker",
                  }
                  else
                  {
-                   throw new Error("setValue unimplemented for DatePicker");
+                   this.widget.setAttribute("value", value);
+                   this.widget.picker.setDate(value);
                  }
                },
 
@@ -541,7 +560,9 @@ dojo.declare("alfresco.xforms.DatePicker",
                  dojo.style.hide(this.widget);
                  this.widget.picker.show();
                  this.domContainer.style.height = 
-                   this.widget.picker.domNode.offsetHeight + "px";
+                   Math.max(this.widget.picker.domNode.offsetHeight +
+                            dojo.style.getMarginHeight(this.domNode.parentNode),
+                            20) + "px";
                },
 
                _datePicker_setDateHandler: function(event)
@@ -549,7 +570,9 @@ dojo.declare("alfresco.xforms.DatePicker",
                  this.widget.picker.hide();
                  dojo.style.show(this.widget);
                  this.domContainer.style.height = 
-                   Math.max(this.widget.offsetHeight, 20) + "px";
+                   Math.max(this.domNode.parentNode.offsetHeight + 
+                            dojo.style.getMarginHeight(this.domNode.parentNode), 
+                            20) + "px";
                  this.widget.value = dojo.widget.DatePicker.util.toRfcDate(this.widget.picker.date);
                  this.xform.setXFormsValue(this.id, this.getValue());
                }
@@ -895,13 +918,35 @@ dojo.declare("alfresco.xforms.Select",
                  }
                  else
                  {
-                   throw new Error("setValue unimplemented for Select");
+                   this._selectedValues = value.split(' ');
+                   if (this.widget.nodeName == "div")
+                   {
+                     var checkboxes = this.widgets.getElementsByTagName("input");
+                     for (var i = 0; i < checkboxes.length; i++)
+                     {
+                       checkboxes[i].checked = 
+                         this._selectedValues.indexOf(checkboxes[i].getAttribute("value")) != -1;
+                     }
+                   }
+                   else if (this.widget.nodeName == "select")
+                   {
+                     var options = this.widgets.getElementsByTagName("option");
+                     for (var i = 0; i < options.length; i++)
+                     {
+                       options[i].selected = 
+                         this._selectedValues.indexOf(options[i].getAttribute("value")) != -1;
+                     }
+                   }
+                   else
+                   {
+                     throw new Error("unexpected nodeName for Select widget: " + this.widget.nodeName);
+                   }
                  }
                },
 
                getValue: function()
                {
-                 return this._selectedValues.join(" ");
+                 return this._selectedValues.length == 0 ? null : this._selectedValues.join(" ");
                },
 
                /////////////////////////////////////////////////////////////////
@@ -928,7 +973,9 @@ dojo.declare("alfresco.xforms.Select",
                  {
                    var checkbox = document.getElementById(this.id + "_" + i + "-widget");
                    if (checkbox && checkbox.checked)
+                   {
                      this._selectedValues.push(checkbox.value);
+                   }
                  }
                  this.xform.setXFormsValue(this.id, this._selectedValues.join(" "));
                }
@@ -1019,7 +1066,27 @@ dojo.declare("alfresco.xforms.Select1",
                  }
                  else
                  {
-                   throw new Error("setValue unimplemented for Select1");
+                   this._selectedValue = value;
+                   if (this.widget.nodeName == "div")
+                   {
+                     var radios = this.widget.getElementsByTagName("input");
+                     for (var i = 0; i < radios.length; i++)
+                     {
+                       radios[i].checked = radios[i].getAttribute("value") == this._selectedValue;
+                     }
+                   }
+                   else if (this.widget.nodeName == "select")
+                   {
+                     var options = this.widget.getElementsByTagName("option");
+                     for (var i = 0; i < options.length; i++)
+                     {
+                       options[i].selected = options[i].getAttribute("value") == this._selectedValue;
+                     }
+                   }
+                   else
+                   {
+                     throw new Error("unexpected nodeName for Select1 widget: " + this.widget.nodeName);
+                   }
                  }
                },
 
@@ -2139,15 +2206,24 @@ dojo.declare("alfresco.xforms.Binding",
                {
                  this.xformsNode = xformsNode;
                  this.id = this.xformsNode.getAttribute("id");
-                 this.readonly =  this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":readonly");
-                 this.required =  this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":required");
                  this.nodeset =  this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":nodeset");
-                 this._type = (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":type")
-                               ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":type")
-                               : null);
-                 this.constraint =  (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
-                                     ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
-                                     : null);
+                 this._readonly =
+                   (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":readonly")
+                    ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":readonly") == "true()"
+                    : null);
+                 this._required =
+                   (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":required")
+                    ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":required") == "true()"
+                    : null);
+                 
+                 this._type =
+                   (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":type")
+                    ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":type")
+                    : null);
+                 this.constraint = 
+                   (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
+                    ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
+                    : null);
                  this.maximum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":maximum"));
                  this.minimum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":minimum"));
                  this.parent =  parent;
@@ -2162,12 +2238,26 @@ dojo.declare("alfresco.xforms.Binding",
                          : (this.parent != null ? this.parent.getType() : null));
                },
 
+               /** Returns true if a node bound by this binding has a readonly value */
+               isReadonly: function()
+               {
+                 return (this._readonly != null ? this._readonly : 
+                         (this.parent != null ? this.parent.isReadonly() : false));
+               },
+                 
+               /** Returns true if a node bound by this binding has a required value */
+               isRequired: function()
+               {
+                 return (this._required != null ? this._required :
+                         (this.parent != null ? this.parent.isRequired() : false));
+               },
+               
                toString: function()
                {
                  return ("{id: " + this.id + 
                          ",type: " + this.getType() + 
-                         ",required: " + this.required +
-                         ",readonly: " + this.readonly +
+                         ",required: " + this.isRequired() +
+                         ",readonly: " + this.isReadonly() +
                          ",nodeset: " + this.nodeset + "}");
                }
              });

@@ -68,8 +68,12 @@ public class XFormsProcessor
                           final Writer out)
       throws FormProcessor.ProcessingException
    {
+      final FacesContext fc = FacesContext.getCurrentInstance();
+      //make the XFormsBean available for this session
+      final XFormsBean xforms = (XFormsBean)
+         FacesHelper.getManagedBean(fc, "XFormsBean");
       final Session result = 
-         XFormsBean.createSession(instanceDataDocument, form);
+         xforms.createSession(instanceDataDocument, form);
       this.process(result, out);
       return result;
    }

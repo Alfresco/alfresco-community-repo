@@ -61,7 +61,7 @@ public class ConcurrentNodeServiceTest extends TestCase
 
     public static final QName PROP_QNAME_TEST_MIMETYPE = QName.createQName(NAMESPACE, "mimetype");
 
-    public static final int COUNT = 10;
+    public static final int COUNT = 0;
 
     public static final int REPEATS = 10;
 

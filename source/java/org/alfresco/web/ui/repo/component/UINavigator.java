@@ -235,13 +235,12 @@ public class UINavigator extends SelfRenderingComponent
       // generate the javascript method to capture the tree node click events
       if (treePanel)
       {
-         out.write("\n<script type=\"text/javascript\">\n");      
-         out.write("function treeNodeSelected(nodeRef) {\n");
+         out.write("<script type=\"text/javascript\">");      
+         out.write("function treeNodeSelected(nodeRef) {");
          out.write(Utils.generateFormSubmit(context, this, getClientId(context), 
                "nodeRef", true, null));
-         out.write("\n}\n");
-         out.write("</script>\n");
-      
+         out.write("}</script>");
+         
          // generate the active panel containing the tree
          out.write("<div class=\"navigatorPanelBody\">");
          UITree tree = (UITree)context.getApplication().createComponent(

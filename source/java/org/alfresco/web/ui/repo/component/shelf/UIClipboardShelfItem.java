@@ -211,9 +211,9 @@ public class UIClipboardShelfItem extends UIShelfItem
          }
          
          // output general actions if any clipboard items are present
-         out.write("<tr><td colspan=3><nobr>");
+         out.write("<tr><td colspan=4 style='padding-top:3px' align='center'><nobr>");
          out.write(buildActionLink(ACTION_PASTE_ALL, -1, bundle.getString(MSG_PASTE_ALL), null));
-         out.write("&nbsp;");
+         out.write("&nbsp;|&nbsp;");
          out.write(buildActionLink(ACTION_REMOVE_ALL, -1, bundle.getString(MSG_REMOVE_ALL), null));
          out.write("</nobr></td><td></td></tr>");
       }

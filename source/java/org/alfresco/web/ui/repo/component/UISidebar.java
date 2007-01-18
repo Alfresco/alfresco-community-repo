@@ -83,7 +83,7 @@ public class UISidebar extends SelfRenderingComponent
       out.write("/images/parts/sidebar_grey_01.gif\" width=5 height=5></td>" + 
                 "<td style=\"background-image: url(");
       out.write(cxPath);
-      out.write("/images/parts/sidebar_top_grey_bg.gif)\" height=24 width=100%>");
+      out.write("/images/parts/sidebar_top_grey_bg.gif)\" height=24>");
       
       // generate the required child components if not present
       if (this.getChildCount() == 1)
@@ -171,7 +171,7 @@ public class UISidebar extends SelfRenderingComponent
                    "<tr><td colspan='3'>");
          
          // render the plugin
-         out.write("<div id=\"pluginBox\" style=\"border: solid 1px #babfc5;\">");
+         out.write("<div id=\"pluginBox\">");
          UIComponent plugin = (UIComponent)getChildren().get(2);
          Utils.encodeRecursive(context, plugin);
          out.write("</div>");

@@ -173,7 +173,7 @@
                            </td>
                            
                            <td valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "greyround", "#F5F5F5"); %>
                               <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
@@ -181,7 +181,7 @@
                                     </td>
                                  </tr>
                               </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "greyround"); %>
                               
                               <div style="padding:4px"></div>
                               

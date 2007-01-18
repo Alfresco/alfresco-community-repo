@@ -101,7 +101,7 @@
                            <td width="100%" background='<%=request.getContextPath()%>/images/parts/white_02.gif'><img src='<%=request.getContextPath()%>/images/parts/white_02.gif' width=7 height=7 alt=''></td>
                            <td width="7"><img src='<%=request.getContextPath()%>/images/parts/white_03.gif' width=7 height=7 alt=''></td>
                            <td rowspan="4" valign="top" style="padding-left:6px;">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
+                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "greyround", "#F5F5F5"); %>
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
@@ -115,7 +115,7 @@
                                     </td>
                                  </tr>
                               </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "lbgrey"); %>
+                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "greyround"); %>
                            </td>
                         </tr>
                         <tr>

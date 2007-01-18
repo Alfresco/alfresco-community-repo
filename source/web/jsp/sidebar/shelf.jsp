@@ -22,8 +22,8 @@
 <%-- Shelf component --%>
 <%-- IMPORTANT NOTE: All inner components must be given an explicit ID! --%>
 <%--                 This is because they are wrapped in a Panel component --%>
-<r:shelf id="shelf" groupPanel="ballongrey" groupBgcolor="#eeeeee" selectedGroupPanel="bluetoolbar" selectedGroupBgcolor="#e9f0f4"
-      innerGroupPanel="white" innerGroupBgcolor="#ffffff" groupExpandedActionListener="#{NavigationBean.shelfGroupToggled}">
+<r:shelf id="shelf" groupPanel="lbgrey" groupBgcolor="white" selectedGroupPanel="lbgrey" selectedGroupBgcolor="white"
+      groupExpandedActionListener="#{NavigationBean.shelfGroupToggled}">
    <r:shelfGroup label="#{msg.clipboard}" id="shelf-group-1" expanded="#{NavigationBean.shelfItemExpanded[0]}">
       <r:clipboardShelfItem id="clipboard-shelf" collections="#{ClipboardBean.items}" pasteActionListener="#{ClipboardBean.pasteItem}" />
    </r:shelfGroup>

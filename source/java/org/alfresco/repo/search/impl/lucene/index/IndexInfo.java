@@ -1644,9 +1644,17 @@ public class IndexInfo
                     }
                     else if (entry.getType() == IndexType.DELTA)
                     {
+                        try
+                        {
                         reader = new MultiReader(new IndexReader[] {
                                 new FilterIndexReaderByNodeRefs2(reader, getDeletions(entry.getName()), entry
                                         .isDeletOnlyNodes()), subReader });
+                        }
+                        catch(IOException ioe)
+                        {
+                            s_logger.error("Failed building filter reader beneath "+entry.getName());
+                            throw ioe;
+                        }
                     }
                 }
             }

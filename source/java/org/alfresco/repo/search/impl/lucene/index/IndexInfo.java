@@ -321,7 +321,10 @@ public class IndexInfo
                 indexInfo = new IndexInfo(canonicalFile);
                 indexInfos.put(canonicalFile, indexInfo);
             }
-            s_logger.error("Got "+indexInfo +" for "+file.getAbsolutePath());
+            if(s_logger.isDebugEnabled())
+            {
+               s_logger.debug("Got "+indexInfo +" for "+file.getAbsolutePath());
+            }
             return indexInfo;
         }
         catch (IOException e)

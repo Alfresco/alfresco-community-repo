@@ -321,6 +321,7 @@ public class IndexInfo
                 indexInfo = new IndexInfo(canonicalFile);
                 indexInfos.put(canonicalFile, indexInfo);
             }
+            s_logger.error("Got "+indexInfo +" for "+file.getAbsolutePath());
             return indexInfo;
         }
         catch (IOException e)
@@ -493,8 +494,8 @@ public class IndexInfo
                             for (String id : deletable)
                             {
                                 indexEntries.remove(id);
-                                deleteQueue.add(id);
                             }
+                            clearOldReaders();
                             synchronized (cleaner)
                             {
                                 cleaner.notify();
@@ -1445,12 +1446,12 @@ public class IndexInfo
             if (TransactionStatus.DELETABLE.follows(entry.getStatus()))
             {
                 indexEntries.remove(id);
-                deleteQueue.add(id);
                 synchronized (cleaner)
                 {
                     cleaner.notify();
                 }
                 writeStatus();
+                clearOldReaders();
             }
             else
             {
@@ -2293,7 +2294,7 @@ public class IndexInfo
 
                     catch (IOException e)
                     {
-                        s_logger.error(e);
+                        s_logger.error("Error reading index file", e);
                     }
                     finally
                     {
@@ -2502,7 +2503,7 @@ public class IndexInfo
             }
             catch (IOException e)
             {
-                s_logger.error(e);
+                s_logger.error("Failed to merge deletions", e);
                 fail = true;
             }
 
@@ -2770,7 +2771,7 @@ public class IndexInfo
             }
             catch (Throwable e)
             {
-                s_logger.error(e);
+                s_logger.error("Failed to merge indexes", e);
                 fail = true;
             }
 
@@ -2827,15 +2828,6 @@ public class IndexInfo
                         for (String id : toDelete)
                         {
                             indexEntries.remove(id);
-                            // Only delete if there is no existing ref counting reader
-                            if (!referenceCountingReadOnlyIndexReaders.containsKey(id))
-                            {
-                                if (s_logger.isDebugEnabled())
-                                {
-                                    s_logger.debug("... queued delete for " + id);
-                                }
-                                deleteQueue.add(id);
-                            }
                         }
 
                         dumpInfo();
@@ -2972,7 +2964,11 @@ public class IndexInfo
 
     public String toString()
     {
-        return indexDirectory.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append(indexDirectory.toString());
+        builder.append(" ");
+        builder.append(super.toString());
+        return builder.toString();
     }
 
     public boolean isEnableCleanerThread()

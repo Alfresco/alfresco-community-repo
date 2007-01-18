@@ -105,11 +105,17 @@ public class ConcurrentNodeServiceTest extends TestCase
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
         // create a first store directly
-        UserTransaction tx = transactionService.getUserTransaction();
-        tx.begin();
-        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
-        rootNodeRef = nodeService.getRootNode(storeRef);
-        tx.commit();
+        TransactionUtil.executeInUserTransaction(transactionService, new TransactionUtil.TransactionWork<Object>()
+        {
+
+            public Object doWork() throws Exception
+            {
+                StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_"
+                        + System.currentTimeMillis());
+                rootNodeRef = nodeService.getRootNode(storeRef);
+                return null;
+            }
+        });
     }
 
     @Override
@@ -126,56 +132,69 @@ public class ConcurrentNodeServiceTest extends TestCase
 
     protected Map<QName, ChildAssociationRef> commitNodeGraph() throws Exception
     {
-        UserTransaction tx = transactionService.getUserTransaction();
-        tx.begin();
-        Map<QName, ChildAssociationRef> answer = buildNodeGraph();
-        tx.commit();
+        return TransactionUtil.executeInUserTransaction(transactionService,
+                new TransactionUtil.TransactionWork<Map<QName, ChildAssociationRef>>()
+                {
 
-        return null;// answer;
+                    public Map<QName, ChildAssociationRef> doWork() throws Exception
+                    {
+
+                        Map<QName, ChildAssociationRef> answer = buildNodeGraph();
+                        return answer;
+                    }
+                });
     }
 
     public void test1() throws Exception
     {
         testConcurrent();
     }
-    
+
     public void test2() throws Exception
     {
         testConcurrent();
     }
+
     public void test3() throws Exception
     {
         testConcurrent();
     }
+
     public void test4() throws Exception
     {
         testConcurrent();
     }
+
     public void test5() throws Exception
     {
         testConcurrent();
     }
+
     public void test6() throws Exception
     {
         testConcurrent();
     }
+
     public void test7() throws Exception
     {
         testConcurrent();
     }
+
     public void test8() throws Exception
     {
         testConcurrent();
     }
+
     public void test9() throws Exception
     {
         testConcurrent();
     }
+
     public void test10() throws Exception
     {
         testConcurrent();
     }
-    
+
     public void testConcurrent() throws Exception
     {
         luceneFTS.pause();
@@ -211,7 +230,7 @@ public class ConcurrentNodeServiceTest extends TestCase
             {
                 // There are two nodes at the base level in each test
                 assertEquals(2 * ((COUNT * REPEATS) + 1), nodeService.getChildAssocs(rootNodeRef).size());
-                
+
                 SearchService searcher = (SearchService) ctx.getBean(ServiceRegistry.SEARCH_SERVICE.getLocalName());
                 assertEquals(2 * ((COUNT * REPEATS) + 1), searcher.selectNodes(rootNodeRef, "/*", null,
                         getNamespacePrefixReolsver(""), false).size());
@@ -223,25 +242,25 @@ public class ConcurrentNodeServiceTest extends TestCase
                     // index
                     assertEquals(3 * ((COUNT * REPEATS) + 1), results.length());
                     results.close();
-                    
+
                     results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"");
                     // n6 has root aspect - there are three things at the root level in the
                     // index
                     assertEquals(3 * ((COUNT * REPEATS) + 1), results.length());
                     results.close();
-                    
+
                     results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"");
                     // n6 has root aspect - there are three things at the root level in the
                     // index
                     assertEquals(2 * ((COUNT * REPEATS) + 1), results.length());
                     results.close();
-                    
+
                     results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*/*\"");
                     // n6 has root aspect - there are three things at the root level in the
                     // index
                     assertEquals(1 * ((COUNT * REPEATS) + 1), results.length());
                     results.close();
-                    
+
                     results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*/*/*\"");
                     // n6 has root aspect - there are three things at the root level in the
                     // index

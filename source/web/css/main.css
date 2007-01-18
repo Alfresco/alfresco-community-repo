@@ -217,51 +217,10 @@ a.headbarLink
 .moreActionsMenu
 {
    background-color: #f5f5f5;
-   border-top: thin solid #cacfd3;
-   border-left: thin solid #cacfd3;
-   border-right: thin solid #cacfd3;
-   border-bottom: thin solid #cacfd3;
-}
-
-.welcomeHeader
-{
-   background-color: #eeeeee;
-   border-top: thin solid #666666;
-   border-bottom: thin solid #cccccc;
-}
-
-.headerTopActions
-{
-   background-color: #CCCCCC;
-   border-top: thin solid #FFFFFF;
-   border-bottom: thin solid #999999;
-}
-
-.headerMainActions
-{
-   background-color: #CCCCCC;
-   border-top: thin solid #FFFFFF;
-   border-bottom: thin solid #999999;
-}
-
-.headerTopDetail
-{
-   background-color: #EEEEEE;
-   border-top: thin solid #FFFFFF;
-   border-bottom: thin solid #999999;
-}
-
-.headerTopDetailNoActions
-{
-   background-color: #EEEEEE;
-   border-top: thin solid #FFFFFF;
-   border-bottom: thin solid #999999;
-}
-
-.contentsListActions
-{
-   background-color: #FFFFFF;
-   font-size: 11px;
+   border-top: 1px solid #cacfd3;
+   border-left: 1px solid #cacfd3;
+   border-right: 1px solid #cacfd3;
+   border-bottom: 1px solid #cacfd3;
 }
 
 .infoText

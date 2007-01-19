@@ -22,19 +22,19 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%">
+<h:panelGrid id="grid-1" columns="1" cellpadding="2" cellpadding="2" width="100%">
    <r:propertySheetGrid id="task-props" value="#{DialogManager.bean.workflowMetadataNode}" 
          var="taskProps" columns="1" externalConfig="true" />
 </h:panelGrid>
 
-<h:panelGroup rendered="#{DialogManager.bean.filenamePattern != null}">
-   <h:panelGrid columns="1" cellpadding="2" style="padding-top:4px;padding-bottom:4px;"
+<h:panelGroup id="grp-1" rendered="#{DialogManager.bean.filenamePattern != null}">
+   <h:panelGrid id="grid-2" columns="1" cellpadding="2" style="padding-top:4px;padding-bottom:4px;"
          width="100%" rowClasses="wizardSectionHeading">
-      <h:outputText value="&nbsp;#{msg.workflow_settings}" escape="false" />
+      <h:outputText id="msg-1" value="&nbsp;#{msg.workflow_settings}" escape="false" />
    </h:panelGrid>
    
-   <h:panelGrid columns="2" cellpadding="2" cellspacing="2" style="margin-left:16px">
-      <h:outputText value="&nbsp;#{msg.website_filename_match}" escape="false" />
-      <h:inputText value="#{DialogManager.bean.filenamePattern}" size="70" />
+   <h:panelGrid id="grid-3" columns="2" cellpadding="2" cellspacing="2" style="margin-left:16px">
+      <h:outputText id="msg-2" value="&nbsp;#{msg.website_filename_match}" escape="false" />
+      <h:inputText id="in-1" value="#{DialogManager.bean.filenamePattern}" size="70" />
    </h:panelGrid>
 </h:panelGroup>

@@ -22,48 +22,48 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%">
+<h:panelGrid id="grid-1" columns="1" cellpadding="2" cellpadding="2" width="100%">
    <%-- Template selection list --%>
-   <h:outputText styleClass="mainSubText" value="#{msg.website_select_templates}:" />
-   <h:panelGroup>
+   <h:outputText id="msg-select" styleClass="mainSubText" value="#{msg.website_select_templates}:" />
+   <h:panelGroup id="grp-0">
       <a:selectList id="template-list" activeSelect="true" styleClass="selectListTable" itemStyleClass="selectListItem">
-         <a:listItems value="#{DialogManager.bean.templatesList}" />
-         <h:commandButton value="#{msg.add_to_list_button}" styleClass="dialogControls" actionListener="#{DialogManager.bean.addTemplate}" />
+         <a:listItems id="items1" value="#{DialogManager.bean.templatesList}" />
+         <h:commandButton id="cmd-add" value="#{msg.add_to_list_button}" styleClass="dialogControls" actionListener="#{DialogManager.bean.addTemplate}" />
       </a:selectList>
    </h:panelGroup>
    
    <f:verbatim><div style='padding:4px'></div></f:verbatim>
-   <h:outputText styleClass="mainSubText" value="#{msg.website_selected_templates}:" />
+   <h:outputText id="msg-selected" styleClass="mainSubText" value="#{msg.website_selected_templates}:" />
    
-   <h:panelGroup rendered="#{DialogManager.bean.templatesDataModel.rowCount != 0}">
-      <h:panelGrid columns="2" cellspacing="2" width="100%">
-         <h:dataTable value="#{DialogManager.bean.templatesDataModel}" var="row" 
+   <h:panelGroup id="grp-1" rendered="#{DialogManager.bean.templatesDataModel.rowCount != 0}">
+      <h:panelGrid id="grid-2" columns="2" cellspacing="2" width="100%">
+         <h:dataTable id="templates" value="#{DialogManager.bean.templatesDataModel}" var="row" 
                       rowClasses="selectedItemsRow,selectedItemsRowAlt"
                       styleClass="selectedItems" headerClass="selectedItemsHeader"
                       cellspacing="0" cellpadding="4" width="100%">
-            <h:column>
+            <h:column id="col1">
                <f:facet name="header">
-                  <h:outputText value="#{msg.name}" />
+                  <h:outputText id="head-1" value="#{msg.name}" />
                </f:facet>
                <f:verbatim>
                   <img style="float:left" src="<%=request.getContextPath()%>/images/icons/template_large.gif" />
                </f:verbatim>
             </h:column>
-            <h:column>
-               <h:outputText value="#{row.title}" />
+            <h:column id="col2">
+               <h:outputText id="msg-01" value="#{row.title}" />
             </h:column>
             <h:column>
                <f:facet name="header">
-                  <h:outputText value="#{msg.output_path_pattern}" />
+                  <h:outputText id="head-2" value="#{msg.output_path_pattern}" />
                </f:facet>
-               <h:inputText value="#{row.outputPathPattern}" size="70" maxlength="1024" />
+               <h:inputText id="in-01" value="#{row.outputPathPattern}" size="70" maxlength="1024" />
             </h:column>
             <h:column>
-               <a:actionLink actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"
+               <a:actionLink id="act-01" actionListener="#{DialogManager.bean.removeTemplate}" image="/images/icons/delete.gif"
                              value="#{msg.remove}" showLink="false" style="padding:4px" />
             </h:column>
          </h:dataTable>
-         <h:graphicImage value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />
+         <h:graphicImage id="img-help" value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />
       </h:panelGrid>
       <f:verbatim>
          <jsp:directive.include file="/jsp/wcm/output-path-pattern-help.jsp"/>
@@ -71,7 +71,7 @@
    </h:panelGroup>
    
    <a:panel id="no-items" rendered="#{DialogManager.bean.templatesDataModel.rowCount == 0}">
-      <h:panelGrid width="100%" columns="1" cellpadding="2"
+      <h:panelGrid id="grid-none" width="100%" columns="1" cellpadding="2"
             styleClass="selectedItems" rowClasses="selectedItemsHeader,selectedItemsRow">
          <h:outputText id="no-items-name" value="#{msg.name}" />
          <h:outputText styleClass="selectedItemsRow" id="no-items-msg" value="#{msg.no_selected_items}" />

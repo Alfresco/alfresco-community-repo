@@ -127,7 +127,7 @@
          <table border="0" cellpadding="0" cellspacing="0"><tr><td>
          </f:verbatim>
          <a:imagePickerRadioPanel id="space-icon" columns="6" spacing="4" value="#{DialogManager.bean.icon}" 
-                                  panelBorder="lbgrey" panelBgcolor="white">
+                                  panelBorder="greyround" panelBgcolor="#F5F5F5">
             <a:listItems value="#{DialogManager.bean.icons}" />
          </a:imagePickerRadioPanel>
          <f:verbatim>

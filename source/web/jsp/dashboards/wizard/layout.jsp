@@ -26,7 +26,7 @@
    <h:outputText value="#{msg.select_layout}" />
    
    <a:imagePickerRadioPanel id="layout-type" columns="4" spacing="4" value="#{WizardManager.bean.layout}"
-                       onclick="javascript:itemSelected(this);" panelBorder="lbgrey" panelBgcolor="white">
+                       onclick="javascript:itemSelected(this);" panelBorder="greyround" panelBgcolor="#F5F5F5">
       <a:listItems value="#{WizardManager.bean.layoutIcons}" />
    </a:imagePickerRadioPanel>
    

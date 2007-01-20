@@ -231,6 +231,12 @@ dojo.declare("alfresco.xforms.Widget",
                {
                },
 
+               /** Returns the widget's enabled state */
+               isEnabled: function()
+               {
+                 return true;
+               },
+
                /** Sets the widget's required state, as indicated by an XFormsEvent */
                setRequired: function(b)
                {
@@ -264,6 +270,11 @@ dojo.declare("alfresco.xforms.Widget",
                  }
                  var binding = this.xform.getBinding(this.xformsNode);
                  return binding && binding.isReadonly();
+               },
+
+               isVisible: function()
+               {
+                 return true;
                },
 
                /** Sets the widget's initial value. */
@@ -1300,6 +1311,18 @@ dojo.declare("alfresco.xforms.Group",
                    this._children.splice(position, 0, child);
                  }
 
+                 if (this.getAppearance() == "full" && 
+                     !(this instanceof alfresco.xforms.Repeat) &&
+                     child.isVisible() &&
+                     ((child instanceof alfresco.xforms.Group && position != 0) ||
+                      this._children[position - 1] instanceof alfresco.xforms.Group))
+                 {
+                   var divider = document.createElement("div");
+                   dojo.html.setClass(divider, "xformsGroupDivider");
+                   this.domNode.childContainerNode.insertBefore(divider,
+                                                                child.domContainer);
+                 }
+
                  var labelDiv = null;
                  if (!(child instanceof alfresco.xforms.Group))
                  {
@@ -1668,6 +1691,7 @@ dojo.declare("alfresco.xforms.ViewRoot",
                  this.domNode.widget = this;
                  this.domNode.style.position = "relative";
                  this.domNode.style.width = "100%";
+                 dojo.html.setClass(this.domNode, "xformsViewRoot");
 
                  this.groupHeaderNode = document.createElement("div");
                  this.groupHeaderNode.id = this.id + "-groupHeaderNode";
@@ -2231,6 +2255,19 @@ dojo.declare("alfresco.xforms.Trigger",
                initializer: function(xform, xformsNode) 
                {
                },
+               /////////////////////////////////////////////////////////////////
+               // methods & properties
+               /////////////////////////////////////////////////////////////////
+
+               /** TODO: DOCUMENT */
+               getAction: function()
+               {
+                 var action = _getElementsByTagNameNS(this.xformsNode, 
+                                                      alfresco_xforms_constants.XFORMS_NS,
+                                                      alfresco_xforms_constants.XFORMS_PREFIX,
+                                                      "action")[0];
+                 return new alfresco.xforms.XFormsAction(this.xform, dojo.dom.firstElement(action));
+               },
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -2239,6 +2276,11 @@ dojo.declare("alfresco.xforms.Trigger",
                isValidForSubmit: function()
                {
                  return true;
+               },
+
+               isVisible: function()
+               {
+                 return false;
                },
 
                render: function(attach_point)
@@ -2253,16 +2295,6 @@ dojo.declare("alfresco.xforms.Trigger",
                                                         nodeRef);
                  dojo.event.connect(this.widget, "onClick", this, this._clickHandler);
                  this.domContainer.style.display = "none";
-               },
-
-               /** TODO: DOCUMENT */
-               getAction: function()
-               {
-                 var action = _getElementsByTagNameNS(this.xformsNode, 
-                                                      alfresco_xforms_constants.XFORMS_NS,
-                                                      alfresco_xforms_constants.XFORMS_PREFIX,
-                                                      "action")[0];
-                 return new alfresco.xforms.XFormsAction(this.xform, dojo.dom.firstElement(action));
                },
 
                /////////////////////////////////////////////////////////////////

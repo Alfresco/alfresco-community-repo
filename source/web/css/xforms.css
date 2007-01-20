@@ -19,7 +19,7 @@
 	top: 0px;
 	left: 0px;
 	width: 100%;
-	margin-bottom: 10px;
+/*	margin-bottom: 10px; */
 /* border: 1px solid #67a4e6;  */
 	border: 1px solid #d2d2d9; 
 }
@@ -46,6 +46,18 @@
 	border-bottom: 1px solid #d2d2d9; 
 }
 
+.xformsGroupDivider
+{
+        border-bottom: 1px dotted #d9d9de;
+        margin: 5px 3px;
+}
+
+.xformsViewRoot
+{
+        padding-bottom: 5px;
+        border-bottom: 1px dotted #d9d9de;
+}
+
 .xformsViewRootHeader
 {
 	position: relative;
@@ -59,6 +71,8 @@
         font-weight: bold;
         text-align: center;
         padding-bottom: 5px;
+        border-bottom: 1px dotted #d9d9de;
+        margin-bottom: 5px;
 }
 
 .xformsTextArea

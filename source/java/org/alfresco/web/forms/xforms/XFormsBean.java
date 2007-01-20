@@ -218,15 +218,26 @@ public class XFormsBean
             XFormsBean.this.xformsSession.eventLog.add(xmle);
          }
       };
+
       // interaction events my occur during init so we have to register before
       et.addEventListener(ChibaEventNames.LOAD_URI, el, true);
       et.addEventListener(ChibaEventNames.RENDER_MESSAGE, el, true);
       et.addEventListener(ChibaEventNames.REPLACE_ALL, el, true);
+
+      et.addEventListener(XFormsEventNames.ENABLED, el, true);
+      et.addEventListener(XFormsEventNames.DISABLED, el, true);
       et.addEventListener(XFormsEventNames.REQUIRED, el, true);
       et.addEventListener(XFormsEventNames.OPTIONAL, el, true);
+      et.addEventListener(XFormsEventNames.READONLY, el, true);
+      et.addEventListener(XFormsEventNames.READWRITE, el, true);
       et.addEventListener(XFormsEventNames.VALID, el, true);
       et.addEventListener(XFormsEventNames.INVALID, el, true);
+      et.addEventListener(XFormsEventNames.IN_RANGE, el, true);
       et.addEventListener(XFormsEventNames.OUT_OF_RANGE, el, true);
+      et.addEventListener(XFormsEventNames.SELECT, el, true);
+      et.addEventListener(XFormsEventNames.DESELECT, el, true);
+      et.addEventListener(XFormsEventNames.INSERT, el, true);
+      et.addEventListener(XFormsEventNames.DELETE, el, true);
 
       chibaBean.init();
 
@@ -388,7 +399,7 @@ public class XFormsBean
          instanceData.appendChild(documentElement);
 
          final ResponseWriter out = context.getResponseWriter();
-         XMLUtil.print(instanceData, out);
+         XMLUtil.print(instanceData, out, false);
          out.close();
       }
       catch (Throwable t)
@@ -607,9 +618,10 @@ public class XFormsBean
       }
 
       String beforeLocation = toLocationPath;
-      if (from.getPosition() < to.getPosition())
+      final int toPosition = to.getPosition();
+      if (from.getPosition() < toPosition)
       {
-         final RepeatItem beforeItem = to.getRepeat().getRepeatItem(to.getPosition() + 1);
+         final RepeatItem beforeItem = to.getRepeat().getRepeatItem(toPosition + 1);
          beforeLocation = (beforeItem != null
                            ? beforeItem.getLocationPath()
                            : to.getRepeat().getLocationPath().replaceAll("\\[position\\(\\)[\\s]*!=[\\s]*last\\(\\)]$",
@@ -626,6 +638,13 @@ public class XFormsBean
       LOGGER.debug("deleting from " + from.getLocationPath());
       // need to reload from location path since it has moved
       instance.deleteNode(from.getLocationPath());
+
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REBUILD, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.RECALCULATE, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REVALIDATE, null);
+      model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REFRESH, null);
+
+      to.getRepeat().setIndex(toPosition);
 
       model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REBUILD, null);
       model.getContainer().dispatch(model.getTarget(), XFormsEventNames.RECALCULATE, null);

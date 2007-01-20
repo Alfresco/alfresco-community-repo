@@ -53,15 +53,21 @@ public class XMLUtil
    {
       return XMLUtil.getDocumentBuilder().newDocument();
    }
-   
+
    /** utility function for serializing a node */
    public static void print(final Node n, final Writer output)
+   {
+      XMLUtil.print(n, output, true);
+   }
+   
+   /** utility function for serializing a node */
+   public static void print(final Node n, final Writer output, final boolean indent)
    {
       try 
       {
          final TransformerFactory tf = TransformerFactory.newInstance();
          final Transformer t = tf.newTransformer();
-         t.setOutputProperty(OutputKeys.INDENT, "yes");
+         t.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
          
          if (LOGGER.isDebugEnabled())
          {
@@ -92,8 +98,14 @@ public class XMLUtil
    /** utility function for serializing a node */
    public static String toString(final Node n)
    {
+      return XMLUtil.toString(n, true);
+   }
+
+   /** utility function for serializing a node */
+   public static String toString(final Node n, final boolean indent)
+   {
       final StringWriter result = new StringWriter();
-      XMLUtil.print(n, result);
+      XMLUtil.print(n, result, indent);
       return result.toString();
    }
    

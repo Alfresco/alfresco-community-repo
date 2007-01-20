@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified" >
+
+  <xs:complexType name="complex-type">
+    <xs:sequence>
+      <xs:element name="fixed_string_element" type="xs:string" minOccurs="1" maxOccurs="1" fixed="fixed value"/>
+    </xs:sequence>
+    <xs:attribute name="required_string_attribute" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="inheritence-type">
+    <xs:complexContent>
+      <xs:extension base="complex-type">
+	<xs:sequence>
+	  <xs:element name="additional_required_string_element" type="xs:string" minOccurs="1" maxOccurs="1"/>
+	</xs:sequence>
+	<xs:attribute name="additional_fixed_string_attribute" type="xs:string" use="required" fixed="additional fixed value"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+<!--
+  <xs:complexType name="extended-inheritence-type">
+    <xs:complexContent>
+      <xs:extension base="inheritence-type">
+	<xs:sequence>
+	  <xs:element name="another_required_integer_element" type="xs:integer" use="required"/>
+	</xs:sequence>
+	<xs:attribute name="another_fixed_integer_attribute" type="xs:integer" use="required" fixed="1413"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+-->
+  <xs:element name="inheritence-test">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="complex_type" type="complex-type" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="inherited_type" type="inheritence-type" minOccurs="1" maxOccurs="1"/>
+	<!-- xs:element name="extended_inherited_type" type="extended-inheritence-type" minOccurs="1" maxOccurs="1"/ -->
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

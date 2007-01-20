@@ -438,7 +438,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                                                       fileName,
                                                       path, 
                                                       this.avmBrowseBean.getWebapp());
-         this.content = XMLUtil.toString(this.instanceDataDocument);
+         this.content = XMLUtil.toString(this.instanceDataDocument, false);
          final String[] sb = AVMNodeConverter.SplitBase(path);
          path = sb[0];
          fileName = sb[1];

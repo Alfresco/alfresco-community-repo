@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified" >
+  <xs:element name="datetime-test">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="datetime" type="xs:dateTime" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="date" type="xs:date" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="time" type="xs:time" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="day" type="xs:gDay" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="month" type="xs:gMonth" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="year" type="xs:gYear" minOccurs="1" maxOccurs="1"/>
+	<!-- not supported by chiba -->
+	<!-- xs:element name="duration" type="xs:duration" minOccurs="1" maxOccurs="1"/ -->
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

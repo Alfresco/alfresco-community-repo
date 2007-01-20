@@ -431,7 +431,7 @@ public class AVMEditBean
          final ContentWriter writer = this.avmService.getContentWriter(avmPath);
          if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            this.editorOutput = XMLUtil.toString(this.instanceDataDocument);
+            this.editorOutput = XMLUtil.toString(this.instanceDataDocument, false);
          }
          writer.putContent(this.editorOutput);
          

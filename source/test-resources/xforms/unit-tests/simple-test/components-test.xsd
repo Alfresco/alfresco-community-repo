@@ -96,7 +96,19 @@
 	<xs:element name="integer" type="xs:integer"/>
 	<xs:element name="positive_integer" type="xs:positiveInteger"/>
 	<xs:element name="double" type="xs:double"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="date_and_time_components">
+    <xs:complexType>
+      <xs:sequence>
 	<xs:element name="date" type="xs:date"/>
+	<xs:element name="time" type="xs:time"/>
+	<xs:element name="day" type="xs:gDay"/>
+	<xs:element name="month" type="xs:gMonth"/>
+	<xs:element name="year" type="xs:gYear"/>
+	<xs:element name="month_and_day" type="xs:gMonthDay"/>
+	<xs:element name="year_and_month" type="xs:gYearMonth"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -134,6 +146,7 @@
       <xs:sequence>
 	<xs:element ref="text_components"/>
 	<xs:element ref="numerical_components"/>
+	<xs:element ref="date_and_time_components"/>
 	<xs:element ref="list_components"/>
 	<xs:element ref="other_components"/>
       </xs:sequence>

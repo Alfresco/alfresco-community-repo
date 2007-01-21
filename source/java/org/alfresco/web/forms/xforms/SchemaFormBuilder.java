@@ -624,7 +624,6 @@ public class SchemaFormBuilder
          choicesElement.appendChild(item);
 
          /// action in the case
-
          final Element action = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
                                                       NamespaceConstants.XFORMS_PREFIX + ":action");
          this.setXFormsId(action);
@@ -1291,8 +1290,8 @@ public class SchemaFormBuilder
       final Element dispatchTrigger = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                                                      NamespaceConstants.XFORMS_PREFIX + ":dispatch");
       dispatchTrigger.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                      NamespaceConstants.XFORMS_PREFIX + ":name",
-                                      "DOMActivate");
+                                     NamespaceConstants.XFORMS_PREFIX + ":name",
+                                     "DOMActivate");
       dispatchTrigger.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                      NamespaceConstants.XFORMS_PREFIX + ":target",
                                      select1Id);
@@ -1305,7 +1304,10 @@ public class SchemaFormBuilder
       //add switch
       final Element switchElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                                                    NamespaceConstants.XFORMS_PREFIX + ":switch");
-      this.setXFormsId(switchElement);
+      this.setXFormsId(switchElement, select1Id + "-" + this.setXFormsId(switchElement));
+      switchElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                   NamespaceConstants.XFORMS_PREFIX + ":bind",
+                                   bindId);
 
       formSection.appendChild(switchElement);
       //formSection.appendChild(switchElement);
@@ -1739,7 +1741,6 @@ public class SchemaFormBuilder
                                  final SchemaUtil.Occurance o,
                                  final ResourceBundle resourceBundle)
    {
-
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug("addSimpleType for " + controlType.getName() +
@@ -1753,7 +1754,7 @@ public class SchemaFormBuilder
 
       // create the <xforms:bind> element and add it to the model.
       Element bindElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                  NamespaceConstants.XFORMS_PREFIX + ":bind");
+                                                           NamespaceConstants.XFORMS_PREFIX + ":bind");
       String bindId = this.setXFormsId(bindElement);
       modelSection.appendChild(bindElement);
       bindElement = this.startBindElement(bindElement, schema, controlType, owner, pathToRoot, o);
@@ -1787,15 +1788,14 @@ public class SchemaFormBuilder
       if (repeatSection != formSection)
       {
          //if there is a repeat -> create another bind with "."
-         Element bindElement2 =
+         final Element bindElement2 =
             xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                  NamespaceConstants.XFORMS_PREFIX + ":bind");
-         String bindId2 = this.setXFormsId(bindElement2);
+                                           NamespaceConstants.XFORMS_PREFIX + ":bind");
+         final String bindId2 = this.setXFormsId(bindElement2);
          bindElement2.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                      NamespaceConstants.XFORMS_PREFIX + ":nodeset",
                                      ".");
          bindElement.appendChild(bindElement2);
-
          bindElement = bindElement2;
          bindId = bindId2;
       }

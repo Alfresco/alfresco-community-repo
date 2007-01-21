@@ -11,6 +11,8 @@
 	<xs:element name="day" type="xs:gDay" minOccurs="1" maxOccurs="1"/>
 	<xs:element name="month" type="xs:gMonth" minOccurs="1" maxOccurs="1"/>
 	<xs:element name="year" type="xs:gYear" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="month_day" type="xs:gMonthDay" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="year_month" type="xs:gYearMonth" minOccurs="1" maxOccurs="1"/>
 	<!-- not supported by chiba -->
 	<!-- xs:element name="duration" type="xs:duration" minOccurs="1" maxOccurs="1"/ -->
       </xs:sequence>

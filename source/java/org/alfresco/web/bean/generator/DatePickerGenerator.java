@@ -1,6 +1,6 @@
 package org.alfresco.web.bean.generator;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIOutput;
@@ -26,7 +26,7 @@ public class DatePickerGenerator extends BaseComponentGenerator
 {
    private boolean initialiseIfNull = false;
    private int yearCount = 30;
-   private int startYear = new Date().getYear() + 1900 + 2;
+   private int startYear = Calendar.getInstance().get(Calendar.YEAR) + 2;
    
    private static final String MSG_DATE = "date_pattern";
    

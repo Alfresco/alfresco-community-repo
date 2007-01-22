@@ -94,8 +94,24 @@
     <xs:complexType>
       <xs:sequence>
 	<xs:element name="integer" type="xs:integer"/>
+        <xs:element name="bounded_integer">
+          <xs:simpleType>
+            <xs:restriction base="xs:integer">
+              <xs:minInclusive value="-100"/>
+              <xs:maxInclusive value="100"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
 	<xs:element name="positive_integer" type="xs:positiveInteger"/>
 	<xs:element name="double" type="xs:double"/>
+        <xs:element name="bounded_double">
+          <xs:simpleType>
+            <xs:restriction base="xs:double">
+              <xs:minInclusive value="0.0"/>
+              <xs:maxInclusive value="1.0"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

@@ -75,12 +75,6 @@ public class Schema2XForms
 
    private static final String PROPERTY_PREFIX =
       "http://www.chiba.org/properties/schemaFormBuilder/";
-   /**
-    * Property to control the cascading style sheet used for the XForm - corresponds to envelope@chiba:css-style.
-    */
-   public static final String CSS_STYLE_PROP =
-      PROPERTY_PREFIX + "envelope@css-style";
-   private static final String DEFAULT_CSS_STYLE_PROP = "style.css";
 
    /**
     * Property to control the selection of UI control for a selectOne control.
@@ -379,7 +373,6 @@ public class Schema2XForms
    public void reset()
    {
       this.counter.clear();
-      setProperty(CSS_STYLE_PROP, DEFAULT_CSS_STYLE_PROP);
       setProperty(SELECTMANY_LONG_LIST_SIZE_PROP, DEFAULT_LONG_LIST_MAX_SIZE);
       setProperty(SELECTMANY_UI_CONTROL_SHORT_PROP,
                   DEFAULT_SELECTMANY_UI_CONTROL_SHORT_PROP);
@@ -612,12 +605,19 @@ public class Schema2XForms
       final Map<String, Element> result = new HashMap<String, Element>();
       for (XSTypeDefinition type : choiceValues)
       {
-         String textValue = type.getName();
-
+         final String textValue = type.getName();
+         
          if (LOGGER.isDebugEnabled())
          {
             LOGGER.debug("addChoicesForSelectSwitchControl, processing " + textValue);
          }
+
+         //build the case element
+         final Element caseElement = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                           NamespaceConstants.XFORMS_PREFIX + ":case");
+         final String caseId = this.setXFormsId(caseElement);
+         result.put(textValue, caseElement);
+
          final Element item = this.createXFormsItem(xForm,
                                                     this.createCaption(textValue),
                                                     textValue);
@@ -636,12 +636,6 @@ public class Schema2XForms
          final Element toggle = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
                                                       NamespaceConstants.XFORMS_PREFIX + ":toggle");
          this.setXFormsId(toggle);
-
-         //build the case element
-         final Element caseElement = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                           NamespaceConstants.XFORMS_PREFIX + ":case");
-         final String caseId = this.setXFormsId(caseElement);
-         result.put(textValue, caseElement);
 
          toggle.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                NamespaceConstants.XFORMS_PREFIX + ":case",
@@ -2234,41 +2228,66 @@ public class Schema2XForms
                                              String caption,
                                              XSSimpleTypeDefinition controlType)
    {
-      Element control;
+      LOGGER.debug("creating a control for atomic type {name: " + controlType.getName() +
+                   ", numeric: " + controlType.getNumeric() +
+                   ", bounded: " + controlType.getBounded() +
+                   ", finite: " + controlType.getFinite() +
+                   ", ordered: " + controlType.getOrdered() +
+                   ", final: " + controlType.getFinal() +
+                   ", minInc: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE) +
+                   ", maxInc: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE) +
+                   ", minExc: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINEXCLUSIVE) +
+                   ", maxExc: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE) +
+                   ", builtInTypeName: " + SchemaUtil.getBuiltInTypeName(controlType) +
+                   "}");
 
+      Element result = null;
       if ("boolean".equals(controlType.getName()))
       {
-         control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                         NamespaceConstants.XFORMS_PREFIX + ":select1");
-         this.setXFormsId(control);
+         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                 NamespaceConstants.XFORMS_PREFIX + ":select1");
          final String[] values = { "true", "false" };
          for (String v : values)
          {
             final Element item = this.createXFormsItem(xformsDocument, v, v);
-            control.appendChild(item);
+            result.appendChild(item);
          }
       }
       else if ("anyURI".equals(controlType.getName()))
       {
-         control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                         NamespaceConstants.XFORMS_PREFIX + ":upload");
+         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                 NamespaceConstants.XFORMS_PREFIX + ":upload");
          final Element e = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                 NamespaceConstants.XFORMS_PREFIX + ":filename");
-         control.appendChild(e);
+                                                          NamespaceConstants.XFORMS_PREFIX + ":filename");
+         this.setXFormsId(e);
+         result.appendChild(e);
          e.setAttributeNS(NamespaceConstants.XFORMS_NS,
                           NamespaceConstants.XFORMS_PREFIX + ":ref",
                           ".");
-         this.setXFormsId(control);
+      }
+      else if (controlType.getBounded() &&
+               controlType.getNumeric() &&
+               controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE) != null &&
+               controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE) != null)
+      {
+         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                 NamespaceConstants.XFORMS_PREFIX + ":range");
+         result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                               NamespaceConstants.XFORMS_PREFIX + ":start",
+                               controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE));
+         result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                               NamespaceConstants.XFORMS_PREFIX + ":end",
+                               controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE));
       }
       else
       {
-         control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, NamespaceConstants.XFORMS_PREFIX + ":input");
-         this.setXFormsId(control);
+         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
+                                                 NamespaceConstants.XFORMS_PREFIX + ":input");
       }
+      this.setXFormsId(result);
+      result.appendChild(this.createLabel(xformsDocument, caption));
 
-      control.appendChild(this.createLabel(xformsDocument, caption));
-
-      return control;
+      return result;
    }
 
    /**
@@ -2441,7 +2460,7 @@ public class Schema2XForms
                               ? getProperty(SELECTMANY_UI_CONTROL_SHORT_PROP)
                               : getProperty(SELECTMANY_UI_CONTROL_LONG_PROP)));
       Element choices = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                              NamespaceConstants.XFORMS_PREFIX + ":choices");
+                                                       NamespaceConstants.XFORMS_PREFIX + ":choices");
       this.setXFormsId(choices);
       control.appendChild(choices);
 

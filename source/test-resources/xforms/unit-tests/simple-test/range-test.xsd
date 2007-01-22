@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified">
+  <xs:simpleType name="jan_to_dec_2006">
+    <xs:restriction base="xs:date">
+      <xs:minInclusive value="2006-01-01"/>
+      <xs:maxInclusive value="2006-12-31"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="neg_10_unbounded">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="-10"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="neg_10_to_pos_10">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="-10"/>
+      <xs:maxInclusive value="10"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="range-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="integer">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="unbounded_integer" 
+		          type="xs:integer"
+		          minOccurs="1"
+		          maxOccurs="1"/>
+              <xs:element name="range_neg_10_to_pos_10" 
+		          minOccurs="1"
+		          maxOccurs="1">
+                <xs:simpleType>
+                  <xs:restriction base="xs:integer">
+                    <xs:minInclusive value="-10"/>
+                    <xs:maxInclusive value="10"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="double">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="unbounded_double" 
+		          type="xs:double"
+		          minOccurs="1"
+		          maxOccurs="1"/>
+              <xs:element name="range_neg_0_to_1" 
+		          minOccurs="1"
+		          maxOccurs="1">
+                <xs:simpleType>
+                  <xs:restriction base="xs:double">
+                    <xs:minInclusive value="0.0"/>
+                    <xs:maxInclusive value="1.0"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="date">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="unbounded_date" 
+		          type="xs:date"
+		          minOccurs="1"
+		          maxOccurs="1"/>
+              <xs:element name="range_2006" 
+		          minOccurs="1"
+		          maxOccurs="1">
+                <xs:simpleType>
+                  <xs:restriction base="xs:date">
+                    <xs:minInclusive value="2006-01-01"/>
+                    <xs:maxInclusive value="2006-12-31"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

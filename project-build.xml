@@ -48,7 +48,7 @@
       </copy>
 
       <mkdir dir="${dir.assemble}/scripts/ajax"/>
-      <property name="dojo.version" value="0.3.1-ajax"/>
+      <property name="dojo.version" value="0.4.1-ajax"/>
 
       <unzip src="${dir.common.lib}/dojo-${dojo.version}.zip"
 	     dest="${dir.assemble}/scripts/ajax">

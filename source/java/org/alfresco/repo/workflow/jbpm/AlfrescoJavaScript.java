@@ -255,17 +255,22 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      */
     private static VariableAccess getWritableVariable(List<VariableAccess> variableAccesses)
     {
+        VariableAccess writable = null;
         if (variableAccesses != null)
         {
             for (VariableAccess variableAccess : variableAccesses)
             {
                 if (variableAccess.isWritable())
                 {
-                    return variableAccess;
+                    if (writable != null)
+                    {
+                        throw new WorkflowException("AlfrescoJavaScript supports only one writable variable");
+                    }
+                    writable = variableAccess;
                 }
             }
         }
-        return null;
+        return writable;
     }
 
 }

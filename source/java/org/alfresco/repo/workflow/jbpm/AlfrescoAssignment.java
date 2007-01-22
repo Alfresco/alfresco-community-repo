@@ -16,19 +16,12 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
-import java.util.Collection;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.Node;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.dom4j.Element;
 import org.jbpm.graph.exe.ExecutionContext;
-import org.jbpm.jpdl.el.impl.JbpmExpressionEvaluator;
-import org.jbpm.taskmgmt.def.AssignmentHandler;
 import org.jbpm.taskmgmt.exe.Assignable;
 import org.springframework.beans.factory.BeanFactory;
 

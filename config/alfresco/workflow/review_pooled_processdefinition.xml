@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:reviewpooled">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="wf:submitGroupReviewTask" swimlane="initiator" />
+        <transition name="" to="review" />
+    </start-state>
+
+    <swimlane name="reviewer">
+        <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+            <pooledactors>#{bpm_groupAssignee}</pooledactors>
+        </assignment>    
+    </swimlane>
+
+    <task-node name="review">
+        <task name="wf:reviewTask" swimlane="reviewer">
+            <event type="task-create">
+                <script>
+                   if (bpm_workflowDueDate != void) taskInstance.dueDate = bpm_workflowDueDate;
+                   if (bpm_workflowPriority != void) taskInstance.priority = bpm_workflowPriority;
+                </script>
+            </event>
+            <event type="task-end">
+               <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                  <script>
+                     <variable name="bpm_assignee" access="write"/>
+                     <expression>
+                        if (taskInstance.actorId != null)
+                           people.getPerson(taskInstance.actorId);
+                        else
+                           person;
+                     </expression>
+                  </script>
+               </action>
+            </event>
+        </task>
+        <transition name="reject" to="rejected" />
+        <transition name="approve" to="approved" />
+    </task-node>
+
+    <task-node name="rejected">
+        <task name="wf:rejectedTask" swimlane="initiator" />
+        <transition name="" to="end" />
+    </task-node>
+
+    <task-node name="approved">
+        <task name="wf:approvedTask" swimlane="initiator" />
+        <transition name="" to="end" />
+    </task-node>
+
+    <end-state name="end" />
+
+</process-definition>

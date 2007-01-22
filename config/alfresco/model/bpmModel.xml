@@ -338,6 +338,29 @@
             </associations>
         </aspect>
 
+        <!--                             -->
+        <!--  Multiple Group Assignees   -->
+        <!--                             -->
+
+        <aspect name="bpm:groupAssignees">
+            <associations>
+
+                <association name="bpm:groupAssignees">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <!-- TODO: Refactor when group is pulled into content model -->
+                        <class>usr:authorityContainer</class>
+                        <mandatory>true</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+
+            </associations>
+        </aspect>
+
         <!--                                                             -->
         <!--  A collection of content routed through a workflow.         -->
         <!--                                                             -->

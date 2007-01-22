@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +50,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -112,7 +110,6 @@ public class JBPMEngine extends BPMEngine
     protected NodeService nodeService;
     protected ServiceRegistry serviceRegistry;
     protected PersonService personService;
-    protected AuthorityService authorityService;
     protected AuthorityDAO authorityDAO;
     protected JbpmTemplate jbpmTemplate;
     
@@ -187,16 +184,6 @@ public class JBPMEngine extends BPMEngine
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
-    }
-    
-    /**
-     * Sets the Authority Service
-     * 
-     * @param authorityService
-     */
-    public void setAuthorityService(AuthorityService authorityService)
-    {
-        this.authorityService = authorityService;
     }
 
     /**
@@ -857,17 +844,9 @@ public class JBPMEngine extends BPMEngine
             {
                 public List<WorkflowTask> doInJbpm(JbpmContext context)
                 {
-                    // flatten authorities to include all parent authorities
-                    Set<String> flattenedAuthorities = new HashSet<String>();
-                    for (String authority : authorities)
-                    {
-                        Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, authority, false);
-                        flattenedAuthorities.addAll(parents);
-                    }
-                    
                     // retrieve pooled tasks for all flattened authorities
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
-                    List<TaskInstance> tasks = taskSession.findPooledTaskInstances(new ArrayList(flattenedAuthorities));
+                    List<TaskInstance> tasks = taskSession.findPooledTaskInstances(authorities);
                     List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
                     for (TaskInstance task : tasks)
                     {
@@ -1406,7 +1385,16 @@ public class JBPMEngine extends BPMEngine
             List<NodeRef> pooledNodeRefs = new ArrayList<NodeRef>(pooledActors.size());
             for (PooledActor pooledActor : (Set<PooledActor>)pooledActors)
             {
-                NodeRef pooledNodeRef = mapNameToAuthority(pooledActor.getActorId());
+                NodeRef pooledNodeRef = null;
+                String pooledActorId = pooledActor.getActorId();
+                if (AuthorityType.getAuthorityType(pooledActorId) == AuthorityType.GROUP)
+                {
+                    pooledNodeRef = mapNameToAuthority(pooledActorId);
+                }
+                else
+                {
+                    pooledNodeRef = mapNameToPerson(pooledActorId);
+                }
                 if (pooledNodeRef != null)
                 {
                     pooledNodeRefs.add(pooledNodeRef);
@@ -1529,12 +1517,20 @@ public class JBPMEngine extends BPMEngine
                             int i = 0;
                             for (JBPMNode actor : actors)
                             {
-                                pooledActors[i++] = actor.getName();
+                                if (actor.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+                                {
+                                    pooledActors[i++] = (String)actor.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+                                }
+                                else
+                                {
+                                    pooledActors[i++] = actor.getName();
+                                }
                             }
                         }
                         else if (value instanceof JBPMNode)
                         {
-                            pooledActors = new String[] {((JBPMNode)value).getName()};
+                            JBPMNode node = (JBPMNode)value;
+                            pooledActors = new String[] {(node.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER)) ? (String)node.getProperties().get(ContentModel.PROP_AUTHORITY_NAME) : node.getName()};
                         }
                         else
                         {

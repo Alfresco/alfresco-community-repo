@@ -10,6 +10,8 @@
     <imports>
         <!-- Import Alfresco Dictionary Definitions -->
         <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <!-- Import Alfresco System Definitions -->
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
         <!-- Import Alfresco Content Domain Model Definitions -->
         <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
         <!-- Import User Model Definitions -->
@@ -146,7 +148,8 @@
                         <many>false</many>
                     </source>
                     <target>
-                        <class>cm:person</class>
+                        <!-- For now, this may consists of cm:person or usr:authorityContainer -->
+                        <class>sys:base</class>
                         <mandatory>false</mandatory>
                         <many>true</many>
                     </target>

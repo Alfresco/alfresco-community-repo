@@ -15,6 +15,7 @@
    </bean>
    
    <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">
+      <property name="authorityService" ref="authorityService"/>
       <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
       <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
    </bean>
@@ -89,7 +90,6 @@
       <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="personService" ref="personService"/>
-      <property name="authorityService" ref="authorityService"/>
       <property name="authorityDAO" ref="authorityDAO"/>
       <property name="serviceRegistry" ref="ServiceRegistry"/>
       <property name="companyHomeStore"><value>${spaces.store}</value></property>

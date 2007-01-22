@@ -221,7 +221,15 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	 */
 	public ActionDefinition getActionDefinition(String name)
 	{
-		return this.actionDefinitions.get(name);
+	    // get direct access to action definition (i.e. ignoring public flag of executer)
+        ActionDefinition definition = null;
+        Object bean = this.applicationContext.getBean(name);
+        if (bean != null && bean instanceof ActionExecuter)
+        {
+            ActionExecuter executer = (ActionExecuter)bean;
+            definition = executer.getActionDefinition();
+        }
+        return definition;
 	}
 
 	/**

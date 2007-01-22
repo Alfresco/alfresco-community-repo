@@ -18,7 +18,8 @@
 
     <task-node name="review">
         <task name="wf:reviewTask" swimlane="reviewer"/>
-        <transition name="" to="end" />
+        <transition name="reject" to="end" />
+        <transition name="approve" to="end" />
     </task-node>
 
     <node name="parallel">

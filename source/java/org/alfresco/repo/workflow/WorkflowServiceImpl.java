@@ -22,8 +22,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -49,9 +52,20 @@ public class WorkflowServiceImpl implements WorkflowService
     private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");
 
     // Dependent services
+    private AuthorityService authorityService;
     private BPMEngineRegistry registry;
     private WorkflowPackageComponent workflowPackageComponent;
+
     
+    /**
+     * Sets the Authority Service
+     * 
+     * @param authorityService
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
 
     /**
      * Sets the BPM Engine Registry
@@ -288,10 +302,13 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public List<WorkflowTask> getPooledTasks(String authority)
     {
-        // TODO: Expand authorities to include associated groups (and parent groups)
+        // Expand authorities to include associated groups (and parent groups)
         List<String> authorities = new ArrayList<String>();
         authorities.add(authority);
-        
+        Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, authority, false);
+        authorities.addAll(parents);
+
+        // Retrieve pooled tasks for authorities (from each of the registered task components)
         List<WorkflowTask> tasks = new ArrayList<WorkflowTask>(10);
         String[] ids = registry.getTaskComponents();
         for (String id: ids)

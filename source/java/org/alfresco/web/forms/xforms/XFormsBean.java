@@ -100,7 +100,7 @@ public class XFormsBean
       private final Form form;
 
       private ChibaBean chibaBean;
-      private final SchemaFormBuilder schemaFormBuilder;
+      private final Schema2XForms schema2XForms;
       private final Set<NodeRef> uploads = new HashSet<NodeRef>();
       private final List<XMLEvent> eventLog = new LinkedList<XMLEvent>();
 
@@ -110,10 +110,9 @@ public class XFormsBean
       {
          this.formInstanceData = formInstanceData;
          this.form = form;
-         this.schemaFormBuilder = 
-            new SchemaFormBuilder("/ajax/invoke/XFormsBean.handleAction",
-                                  SchemaFormBuilder.SubmitMethod.POST,
-                                  baseUrl);
+         this.schema2XForms = new Schema2XForms("/ajax/invoke/XFormsBean.handleAction",
+                                                Schema2XForms.SubmitMethod.POST,
+                                                baseUrl);
       }
 
       public void addUpload(final NodeRef nr)
@@ -394,7 +393,7 @@ public class XFormsBean
          }
 
          documentElement = result.getDocumentElement();
-         this.xformsSession.schemaFormBuilder.removePrototypeNodes(documentElement);
+         this.xformsSession.schema2XForms.removePrototypeNodes(documentElement);
          documentElement = (Element)instanceData.importNode(documentElement, true);
          instanceData.appendChild(documentElement);
 
@@ -806,10 +805,10 @@ public class XFormsBean
          XFormsBean.rewriteInlineURIs(schemaDocument, cwdAVMPath);
          final String rootElementName = this.xformsSession.form.getSchemaRootElementName();
          final Document result = 
-            this.xformsSession.schemaFormBuilder.buildXForm(this.xformsSession.formInstanceData, 
-                                                            schemaDocument,
-                                                            rootElementName,
-                                                            resourceBundle);
+            this.xformsSession.schema2XForms.buildXForm(this.xformsSession.formInstanceData, 
+                                                        schemaDocument,
+                                                        rootElementName,
+                                                        resourceBundle);
          if (LOGGER.isDebugEnabled())
          {
             LOGGER.debug("generated xform: " + XMLUtil.toString(result));

@@ -35,7 +35,7 @@ import org.w3c.dom.*;
 import org.w3c.dom.ls.*;
 
 /**
- * An abstract implementation of the SchemaFormBuilder interface allowing
+ * An abstract implementation of the Schema2XForms interface allowing
  * an XForm to be automatically generated for an XML Schema definition.
  * This abstract class implements the buildForm and buildFormAsString methods
  * and associated helper but relies on concrete subclasses to implement other
@@ -43,7 +43,7 @@ import org.w3c.dom.ls.*;
  *
  * @author $Author: unl $
  */
-public class SchemaFormBuilder
+public class Schema2XForms
 {
 
    /////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ public class SchemaFormBuilder
 
    /////////////////////////////////////////////////////////////////////////////
 
-   private final static Log LOGGER = LogFactory.getLog(SchemaFormBuilder.class);
+   private final static Log LOGGER = LogFactory.getLog(Schema2XForms.class);
 
    private static final String PROPERTY_PREFIX =
       "http://www.chiba.org/properties/schemaFormBuilder/";
@@ -164,14 +164,14 @@ public class SchemaFormBuilder
    private TreeMap<String, TreeSet<XSTypeDefinition>> typeTree;
 
    /**
-    * Creates a new SchemaFormBuilder object.
+    * Creates a new Schema2XForms object.
     *
     * @param action         _UNDOCUMENTED_
     * @param submitMethod   _UNDOCUMENTED_
     */
-   public SchemaFormBuilder(final String action,
-                            final SubmitMethod submitMethod,
-                            final String base)
+   public Schema2XForms(final String action,
+                        final SubmitMethod submitMethod,
+                        final String base)
    {
       reset();
 
@@ -181,7 +181,7 @@ public class SchemaFormBuilder
    }
 
    /**
-    * Get the current set of properties used by implementations of SchemaFormBuilder.
+    * Get the current set of properties used by implementations of Schema2XForms.
     *
     * @return The list of properties.
     */
@@ -374,7 +374,7 @@ public class SchemaFormBuilder
    }
 
    /**
-    * Reset the SchemaFormBuilder to default values.
+    * Reset the Schema2XForms to default values.
     */
    public void reset()
    {
@@ -1933,10 +1933,10 @@ public class SchemaFormBuilder
       formControl.appendChild(alertElement);
       this.setXFormsId(alertElement);
 
-      String alert = SchemaFormBuilder.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
-                                                                     "alert",
-                                                                     this.getAnnotation(owner),
-                                                                     resourceBundle);
+      String alert = Schema2XForms.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                                 "alert",
+                                                                 this.getAnnotation(owner),
+                                                                 resourceBundle);
       if (alert == null)
       {
          alert = ("Please provide a valid value for '" + caption + "'." +
@@ -2096,10 +2096,10 @@ public class SchemaFormBuilder
                                final XSAnnotation annotation,
                                final ResourceBundle resourceBundle)
    {
-      final String s = SchemaFormBuilder.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
-                                                                       "label",
-                                                                       annotation,
-                                                                       resourceBundle);
+      final String s = Schema2XForms.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                                   "label",
+                                                                   annotation,
+                                                                   resourceBundle);
       return s != null ? s : this.createCaption(text);
    }
 
@@ -2207,8 +2207,8 @@ public class SchemaFormBuilder
       Element control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                                        NamespaceConstants.XFORMS_PREFIX + ":textarea");
       this.setXFormsId(control);
-//      control.setAttributeNS(SchemaFormBuilder.CHIBA_NS,
-//                             SchemaFormBuilder.CHIBA_PREFIX + "height",
+//      control.setAttributeNS(Schema2XForms.CHIBA_NS,
+//                             Schema2XForms.CHIBA_PREFIX + "height",
 //                             "3");
 
       control.appendChild(this.createLabel(xformsDocument, caption));
@@ -2828,7 +2828,7 @@ public class SchemaFormBuilder
                             NamespaceConstants.XFORMS_PREFIX + ":method",
                             (this.submitMethod != null
                              ? this.submitMethod
-                             :  SchemaFormBuilder.SubmitMethod.POST).toString());
+                             : Schema2XForms.SubmitMethod.POST).toString());
       return result;
    }
 

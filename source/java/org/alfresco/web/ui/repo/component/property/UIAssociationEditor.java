@@ -160,6 +160,11 @@ public class UIAssociationEditor extends BaseAssociationEditor
             {
                out.write(User.getFullName(nodeService, targetNode));
             }
+            else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetNode)))
+            {
+               String groupName = (String)nodeService.getProperty(targetNode, ContentModel.PROP_AUTHORITY_NAME);
+               out.write(groupName.substring("GROUP_".length()));
+            }
             else
             {
                out.write(Repository.getDisplayPath(nodeService.getPath(targetNode)));

@@ -40,6 +40,7 @@ public class WorkflowBean
    protected NodeService nodeService;
    protected WorkflowService workflowService;
    protected List<Node> tasks;
+   protected List<Node> pooledTasks;
    protected List<Node> completedTasks;
    
    private static final Log logger = LogFactory.getLog(WorkflowBean.class);
@@ -47,6 +48,55 @@ public class WorkflowBean
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
    
+   /**
+    * Returns a list of nodes representing the "pooled" to do tasks the 
+    * current user has.
+    * 
+    * @return List of to do tasks
+    */
+   public List<Node> getPooledTasks()
+   {
+      if (this.pooledTasks == null)
+      {
+         // get the current username
+         FacesContext context = FacesContext.getCurrentInstance();
+         User user = Application.getCurrentUser(context);
+         String userName = user.getUserName();
+         
+         UserTransaction tx = null;
+         try
+         {
+            tx = Repository.getUserTransaction(context, true);
+            tx.begin();
+            
+            // get the current pooled tasks for the current user
+            List<WorkflowTask> tasks = this.workflowService.getPooledTasks(userName);
+            
+            // create a list of transient nodes to represent
+            this.pooledTasks = new ArrayList<Node>(tasks.size());
+            for (WorkflowTask task : tasks)
+            {
+               Node node = createTask(task);
+               this.pooledTasks.add(node);
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Added pooled task: " + node);
+            }
+            
+            // commit the changes
+            tx.commit();
+         }
+         catch (Throwable e)
+         {
+            // rollback the transaction
+            try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+            Utils.addErrorMessage("Failed to get pooled tasks: " + e.toString(), e);
+         }
+      }
+      
+      return this.pooledTasks;
+   }
+
    /**
     * Returns a list of nodes representing the to do tasks the 
     * current user has.

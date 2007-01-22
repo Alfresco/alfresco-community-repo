@@ -148,6 +148,10 @@
             <action idref="reassign_task" />
          </action-group>
          
+         <action-group id="dashlet_pooled_actions">
+            <action idref="manage_task" />
+         </action-group>
+
          <action-group id="dashlet_completed_actions">
             <action idref="view_completed_task" />
             <action idref="cancel_workflow" />

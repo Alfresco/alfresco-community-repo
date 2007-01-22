@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +14,12 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -28,28 +34,21 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
-import org.alfresco.model.WCMModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 
 /**
  * Bean implementation for the "Manage Task" dialog.
@@ -201,16 +200,34 @@ public class ManageTaskDialog extends BaseDialogBean
          // get the transitions available from this task and 
          // show them in the dialog as additional buttons
          this.transitions = this.task.path.node.transitions;
-
-         if (this.transitions != null)
+         boolean isPooledTask = isPooledTask();
+         
+         if (isPooledTask || this.transitions != null)
          {
-            buttons = new ArrayList<DialogButtonConfig>(this.transitions.length);
-            
-            for (WorkflowTransition trans : this.transitions)
-            {
-               buttons.add(new DialogButtonConfig(ID_PREFIX + trans.title, trans.title, null,
-                     "#{DialogManager.bean.transition}", "false", null));
-            }
+             buttons = new ArrayList<DialogButtonConfig>(this.transitions.length + 1);
+
+             if (isPooledTask)
+             {
+                 if (this.taskNode.getProperties().get(ContentModel.PROP_OWNER) == null)
+                 {
+                     buttons.add(new DialogButtonConfig("button_take_ownership", null, "take_ownership",
+                             "#{DialogManager.bean.takeOwnership}", "false", null));
+                 }
+                 else
+                 {
+                     buttons.add(new DialogButtonConfig("button_return_to_pool", null, "return_ownership",
+                             "#{DialogManager.bean.returnOwnership}", "false", null));
+                 }
+             }
+
+             if (this.transitions != null)
+             {
+                for (WorkflowTransition trans : this.transitions)
+                {
+                   buttons.add(new DialogButtonConfig(ID_PREFIX + trans.title, trans.title, null,
+                         "#{DialogManager.bean.transition}", "false", null));
+                }
+             }
          }
       }
       
@@ -245,6 +262,82 @@ public class ManageTaskDialog extends BaseDialogBean
       
    // ------------------------------------------------------------------------------
    // Event handlers
+
+   @SuppressWarnings("unused")
+   public String takeOwnership()
+   {
+      String outcome = getDefaultFinishOutcome();
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Taking ownership of task: " + this.task.id);
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      UserTransaction tx = null;
+  
+      try
+      {
+         tx = Repository.getUserTransaction(context);
+         tx.begin();
+        
+         // prepare the edited parameters for saving
+         User user = Application.getCurrentUser(context);
+         String userName = user.getUserName();
+         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+         params.put(ContentModel.PROP_OWNER, userName);
+  
+         // update the task with the updated parameters
+         this.workflowService.updateTask(this.task.id, params, null, null);
+     
+         // commit the changes
+         tx.commit();
+      }
+      catch (Throwable e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(formatErrorMessage(e), e);
+         outcome = this.getErrorOutcome(e);
+      }
+      
+      return outcome;
+   }
+
+   @SuppressWarnings("unused")
+   public String returnOwnership()
+   {
+      String outcome = getDefaultFinishOutcome();
+      
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("Returning ownership of task to pool: " + this.task.id);
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      UserTransaction tx = null;
+  
+      try
+      {
+         tx = Repository.getUserTransaction(context);
+         tx.begin();
+        
+         // prepare the edited parameters for saving
+         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+         params.put(ContentModel.PROP_OWNER, null);
+  
+         // update the task with the updated parameters
+         this.workflowService.updateTask(this.task.id, params, null, null);
+     
+         // commit the changes
+         tx.commit();
+      }
+      catch (Throwable e)
+      {
+         // rollback the transaction
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+         Utils.addErrorMessage(formatErrorMessage(e), e);
+         outcome = this.getErrorOutcome(e);
+      }
+      
+      return outcome;
+   }
 
    @SuppressWarnings("unused")
    public String transition()
@@ -480,6 +573,17 @@ public class ManageTaskDialog extends BaseDialogBean
    public Node getTaskNode()
    {
       return this.taskNode;
+   }
+
+   /**
+    * Returns whether this is a pooled task
+    * 
+    * @return  true => pooled
+    */
+   public boolean isPooledTask()
+   {
+       List pooledActors = (List)taskNode.getAssociations().get(WorkflowModel.ASSOC_POOLED_ACTORS);
+       return (pooledActors != null && pooledActors.size() > 0);
    }
    
    /**

@@ -66,7 +66,8 @@ public class XSLFORenderingEngine
       MIME_TYPES.put(MimeConstants.MIME_SVG, MimeConstants.MIME_SVG);
       MIME_TYPES.put("image/svg", MimeConstants.MIME_SVG);
 
-      MIME_TYPES.put(MimeConstants.MIME_GIF, MimeConstants.MIME_GIF);
+      //looks like a dependency is missing - removing for now
+      //MIME_TYPES.put(MimeConstants.MIME_GIF, MimeConstants.MIME_GIF);
       MIME_TYPES.put(MimeConstants.MIME_PNG, MimeConstants.MIME_PNG);
       MIME_TYPES.put(MimeConstants.MIME_JPEG, MimeConstants.MIME_JPEG);
       MIME_TYPES.put(MimeConstants.MIME_TIFF, MimeConstants.MIME_TIFF);

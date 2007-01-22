@@ -453,12 +453,12 @@ public class AVMEditBean
                {
                   rendition.regenerate(fid);
                }
-               catch (Throwable t)
+               catch (Exception e)
                {
-                  LOGGER.error("error regenerating " + rendition.getName() + 
-                               ": " + t.getMessage(), t);
                   Utils.addErrorMessage("error regenerating " + rendition.getName() + 
-                                        ": " + t.getMessage(), t);
+                                        " using " + rendition.getRenderingEngineTemplate().getName() + 
+                                        ": " + e.getMessage(),
+                                        e);
                }
             }
             final NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();

@@ -480,7 +480,16 @@ public class CreateWebContentWizard extends BaseContentWizard
          this.renditions = new LinkedList<Rendition>();
          for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
          {
-            this.renditions.add(ret.render(this.formInstanceData));
+            try
+            {
+               this.renditions.add(ret.render(this.formInstanceData));
+            }
+            catch (Exception e)
+            {
+               Utils.addErrorMessage("Error generating rendition using " + ret.getName() +
+                                     ": " + e.getMessage(), 
+                                     e);
+            }
          }
       }
       else

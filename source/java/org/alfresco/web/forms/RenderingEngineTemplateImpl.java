@@ -197,7 +197,8 @@ public class RenderingEngineTemplateImpl
    {
       final AVMService avmService = this.getServiceRegistry().getAVMService();
       final String renditionAvmPath = this.getOutputPathForRendition(formInstanceData);
-      if (avmService.lookup(-1, renditionAvmPath) == null)
+      final boolean isRegenerate = avmService.lookup(-1, renditionAvmPath) != null;
+      if (!isRegenerate)
       {
          final String parentAVMPath = AVMNodeConverter.SplitBase(renditionAvmPath)[0];
          AVMConstants.makeAllDirectories(parentAVMPath);
@@ -205,6 +206,13 @@ public class RenderingEngineTemplateImpl
                                AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + renditionAvmPath);
+      }
+
+      final Rendition result = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, renditionAvmPath));
+      this.render(formInstanceData, result);
+
+      if (!isRegenerate)
+      {
          avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
          avmService.addAspect(renditionAvmPath, ContentModel.ASPECT_TITLED);
          avmService.addAspect(renditionAvmPath, WCMAppModel.ASPECT_RENDITION);
@@ -220,9 +228,6 @@ public class RenderingEngineTemplateImpl
                                     new PropertyValue(DataTypeDefinition.TEXT,
                                                       (Serializable)renditions));
       }
-
-      final Rendition result = new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, renditionAvmPath));
-      this.render(formInstanceData, result);
       return result;
    }
 

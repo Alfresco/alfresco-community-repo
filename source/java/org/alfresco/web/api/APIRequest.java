@@ -89,6 +89,16 @@ public class APIRequest extends HttpServletRequestWrapper
     {
         return getPath() + getServletPath();
     }
+
+    /**
+     * Gets the full request URL
+     * 
+     * @return  request url e.g. http://localhost:port/alfresco/service/text?searchTerms=dsfsdf
+     */
+    public String getUrl()
+    {
+        return getScheme() + "://" + getServerName() + ":" + getServerPort() + getPathInfo() + (getQueryString() != null ? "?" + getQueryString() : "");
+    }
     
     /**
      * Gets the currently authenticated username
@@ -120,5 +130,25 @@ public class APIRequest extends HttpServletRequestWrapper
         String format = getParameter("format");
         return (format == null || format.length() == 0) ? "" : format;
     }
-    
+ 
+    /**
+     * Get User Agent
+     * 
+     * TODO: Expand on known agents
+     * 
+     * @return  MSIE / Firefox
+     */
+    public String getAgent()
+    {
+        String userAgent = getHeader("user-agent");
+        if (userAgent.indexOf("Firefox/") != -1)
+        {
+            return "Firefox";
+        }
+        else if (userAgent.indexOf("MSIE") != -1)
+        {
+            return "MSIE";
+        }
+        return null;
+    }
 }

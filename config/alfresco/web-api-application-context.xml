@@ -4,17 +4,75 @@
 <beans>
 
    <!--  -->   
+   <!--  Web API Configuration -->
+   <!--  -->   
+
+   <bean id="web.api.ConfigSource" class="org.alfresco.config.source.UrlConfigSource">
+      <constructor-arg>
+         <list>
+            <value>classpath:alfresco/web-api-config.xml</value>
+         </list>
+      </constructor-arg>
+   </bean>
+
+   <bean id="web.api.Config" class="org.alfresco.config.xml.XMLConfigService" init-method="init">
+      <constructor-arg>
+         <ref bean="web.api.ConfigSource" />
+      </constructor-arg>
+   </bean>
+
+
+   <!--  -->
+   <!--  Web API Formats -->
+   <!--  -->
+
+   <!--  Format Registry -->
+   <bean id="web.api.FormatRegistry" class="org.alfresco.web.api.FormatRegistry" />
+
+   <!--  Format Map -->
+   <bean id="web.api.FormatMap" class="org.alfresco.web.api.FormatMap" abstract="true">
+      <property name="registry" ref="web.api.FormatRegistry" />
+   </bean>
+
+   <!--  Default set of API Formats -->
+   <bean id="web.api.Formats" parent="web.api.FormatMap">
+      <property name="formats">
+         <props>
+            <prop key="html">text/html</prop>
+            <prop key="xml">text/xml</prop>
+            <prop key="atom">application/atom+xml</prop>
+            <prop key="rss">application/rss+xml</prop>
+            <prop key="opensearchdescription">application/opensearchdescription+xml</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!--  IE Specific set of API Formats -->
+   <bean id="web.api.Formats.IE" parent="web.api.FormatMap">
+      <property name="agent"><value>MSIE</value></property>
+      <property name="formats">
+         <props>
+            <prop key="atom">text/xml</prop>
+            <prop key="rss">text/xml</prop>
+         </props>
+      </property>
+   </bean>
+
+
+   <!--  -->   
    <!--  Web API Authentication -->
    <!--  -->   
 
-   <!--  TODO: For now, experiment with HTTP Basic Authentication -->
+   <!--  Active Authenticator -->
    <!--  <alias alias="web.api.Authenticator" name="web.api.BasicAuthenticator" /> -->
    <alias alias="web.api.Authenticator" name="web.api.AlfWebClientAuthenticator" />
 
+   <!--  Alfresco Web Client Authenticator -->
    <bean id="web.api.AlfWebClientAuthenticator" class="org.alfresco.web.api.AlfWebClientAuthenticator">
       <property name="authenticationService" ref="AuthenticationService" />
    </bean>
    
+   <!--  HTTP Basic Authenticator -->
    <bean id="web.api.BasicAuthenticator" class="org.alfresco.web.api.BasicAuthenticator">
       <property name="authenticationService" ref="AuthenticationService" />
    </bean>
@@ -27,21 +85,67 @@
    <bean id="web.api.ServiceLogger" class="org.alfresco.web.api.ServiceLogger">
    </bean>
 
+
+   <!--  -->
+   <!--  Web API Template Processor -->
+   <!--  -->
+
+   <bean id="web.api.TemplateProcessor" class="org.alfresco.web.api.APITemplateProcessor">
+      <!-- <property name="defaultEncoding"><value>UTF-8</value></property> -->
+   </bean>
+
+   <bean id="web.api.TemplateClassPathSet" class="org.alfresco.web.api.TemplateClassPathSet" abstract="true">
+      <property name="templateProcessor" ref="web.api.TemplateProcessor" />
+   </bean>
+
+   <bean id="web.api.TemplatePaths" parent="web.api.TemplateClassPathSet">
+      <property name="paths">
+         <list>
+            <value>alfresco/extension/templates/api</value>
+            <value>alfresco/templates/api</value>
+         </list>
+      </property>
+   </bean>
+
+
+   <!--  -->
+   <!--  Web API Abstract Service Implementations -->
+   <!--  -->
+
+   <!--  Basic Service Implementation Helper -->
+   <bean id="web.api.APIService" abstract="true">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="descriptorService" ref="DescriptorService" />
+      <property name="templateProcessor" ref="web.api.TemplateProcessor" />
+      <property name="formatRegistry" ref="web.api.FormatRegistry" />
+   </bean>
+
+   <!--  Template based Service Implementation Helper -->
+   <bean id="web.api.APITemplateService" parent="web.api.APIService" abstract="true" />
+
+
    <!--  -->
    <!--  Web API Services -->
    <!--  -->
 
-   <bean id="web.api.APIService" abstract="true">
-      <property name="serviceRegistry" ref="ServiceRegistry" />
-      <property name="descriptorService" ref="DescriptorService" />
-      <property name="templateService" ref="TemplateService" />
+   <!--  List of available Web APIs -->
+   <bean id="web.api.Services" class="org.alfresco.web.api.services.Services" parent="web.api.APITemplateService">
+      <property name="httpUri" value="/index" />
    </bean>
 
-   <bean id="web.api.TextSearchDescription" class="org.alfresco.web.api.services.TextSearchDescription" parent="web.api.APIService">
+   <!--  List of registered (OpenSearch) search engines -->
+   <bean id="web.api.SearchEngines" class="org.alfresco.web.api.services.SearchEngines" parent="web.api.APITemplateService">
+      <property name="httpUri" value="/search/engines" />
+      <property name="configService" ref="web.api.Config" />
+   </bean>
+
+   <!--  Alfresco Web Client Text Search Description (OpenSearch) -->
+   <bean id="web.api.TextSearchDescription" class="org.alfresco.web.api.services.TextSearchDescription" parent="web.api.APITemplateService">
       <property name="httpUri" value="/search/textsearchdescription.xml" />
    </bean>
 
-   <bean id="web.api.TextSearch" class="org.alfresco.web.api.services.TextSearch" parent="web.api.APIService">
+   <!--  Alfresco Web Client Text Search (OpenSearch) -->
+   <bean id="web.api.TextSearch" class="org.alfresco.web.api.services.TextSearch" parent="web.api.APITemplateService">
       <property name="httpUri" value="/search/text" />
       <property name="searchService" ref="SearchService" />
    </bean>

@@ -16,23 +16,27 @@
  */
 package org.alfresco.web.api.services;
 
-import java.io.IOException;
+import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.repo.template.ISO8601DateFormatMethod;
 import org.alfresco.repo.template.UrlEncodeMethod;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.api.APIContextAware;
 import org.alfresco.web.api.APIRequest;
 import org.alfresco.web.api.APIResponse;
 import org.alfresco.web.api.APIService;
+import org.alfresco.web.api.FormatRegistry;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
 /**
@@ -49,7 +53,8 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService, APICo
     private ServletContext context;
     private ServiceRegistry serviceRegistry;
     private DescriptorService descriptorService;
-    private TemplateService templateService;
+    private TemplateProcessor templateProcessor;
+    private FormatRegistry formatRegistry;
 
     //
     // Initialisation
@@ -80,11 +85,11 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService, APICo
     }
 
     /**
-     * @param templateService
+     * @param templateProcessor
      */
-    public void setTemplateService(TemplateService templateService)
+    public void setTemplateProcessor(TemplateProcessor templateProcessor)
     {
-        this.templateService = templateService;
+        this.templateProcessor = templateProcessor;
     }
 
     /**
@@ -93,6 +98,14 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService, APICo
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.descriptorService = descriptorService;
+    }
+    
+    /**
+     * @param formatRegistry
+     */
+    public void setFormatRegistry(FormatRegistry formatRegistry)
+    {
+        this.formatRegistry = formatRegistry;
     }
     
     /**
@@ -155,24 +168,39 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService, APICo
     }
     
     /**
-     * @return templateService
+     * @return templateProcessor
      */
-    protected TemplateService getTemplateService()
+    protected TemplateProcessor getTemplateProcessor()
     {
-        return templateService;
+        return templateProcessor;
     }
     
     /**
-     * Create a basic template model
+     * @return formatRegistry
+     */
+    protected FormatRegistry getFormatRegistry()
+    {
+        return formatRegistry;
+    }
+    
+    
+    //
+    // Basic Templating Support
+    //
+    
+    
+    /**
+     * Create a basic API model
      * 
      * @param req  api request
      * @param res  api response
      * @return  template model
      */
-    protected Map<String, Object> createTemplateModel(APIRequest req, APIResponse res)
+    protected Map<String, Object> createAPIModel(APIRequest req, APIResponse res)
     {
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         model.put("xmldate", new ISO8601DateFormatMethod());
+        model.put("absurl", new AbsoluteUrlMethod(req.getPath()));
         model.put("urlencode", new UrlEncodeMethod());
         model.put("date", new Date());
         model.put("agent", descriptorService.getServerDescriptor());
@@ -182,16 +210,71 @@ public abstract class APIServiceImpl implements BeanNameAware, APIService, APICo
     }
 
     /**
-     * Render a template to the API Response
+     * Render a template (identified by path)
      * 
-     * @param template
-     * @param model
-     * @param res
+     * @param templatePath  template path
+     * @param model  model
+     * @param writer  output writer
      */
-    protected void renderTemplate(String template, Map<String, Object> model, APIResponse res)
-        throws IOException
+    protected void renderTemplate(String templatePath, Map<String, Object> model, Writer writer)
     {
-        templateService.processTemplateString(null, template, model, res.getWriter());
+        templateProcessor.process(templatePath, model, writer);
     }
     
+    /**
+     * Render a template (contents as string)
+     * @param template  the template
+     * @param model  model
+     * @param writer  output writer
+     */
+    protected void renderString(String template, Map<String, Object> model, Writer writer)
+    {
+        templateProcessor.processString(template, model, writer);
+    }
+    
+
+    /**
+     * Helper to retrieve API Service
+     * 
+     * @param name  name of service
+     * @return  the service
+     */
+    protected static APIService getMethod(String name)
+    {
+        String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/web-api-application-context.xml" };
+        ApplicationContext context = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
+        APIService method = (APIService)context.getBean(name);
+        return method;
+    }
+    
+    /**
+     * Create a base test model (for use stand-alone)
+     * 
+     * @return  test model
+     */
+    protected Map<String, Object> createTestModel()
+    {
+        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+
+        // create api methods
+        model.put("xmldate", new ISO8601DateFormatMethod());
+        model.put("urlencode", new UrlEncodeMethod());
+        model.put("absurl", new AbsoluteUrlMethod("http://test:8080/test"));
+        model.put("date", new Date());
+        
+        // create dummy request model
+        Map<String, Object> request = new HashMap<String, Object>();
+        request.put("servicePath", "http://localhost:8080/alfresco/service");
+        request.put("path", "http://localhost:8080/alfresco");
+        request.put("url", "http://localhost:8080/alfresco/service/testurl");
+        request.put("guest", false);
+        request.put("format", "xml");
+        model.put("request", request);        
+
+        // create dummy agent model
+        model.put("agent", getDescriptorService().getServerDescriptor());
+        
+        return model;
+    }
+ 
 }

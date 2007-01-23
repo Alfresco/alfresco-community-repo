@@ -14,23 +14,30 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.web.api;
+package org.alfresco.web.ui.repo.tag;
 
-import javax.servlet.ServletContext;
+import org.alfresco.web.ui.common.tag.HtmlComponentTag;
 
 /**
- * Interface for marking that a service is API Context aware
+ * Tag class for the OpenSearch component
  * 
- * @author davidc
- *
+ * @author gavinc
  */
-public interface APIContextAware
+public class OpenSearchTag extends HtmlComponentTag
 {
+   /**
+    * @see javax.faces.webapp.UIComponentTag#getComponentType()
+    */
+   public String getComponentType()
+   {
+      return "org.alfresco.faces.OpenSearch";
+   }
 
-    /**
-     * Sets the API Context
-     * 
-     * @param context  api context
-     */
-    public void setAPIContext(ServletContext context);
+   /**
+    * @see javax.faces.webapp.UIComponentTag#getRendererType()
+    */
+   public String getRendererType()
+   {
+      return null;
+   }
 }

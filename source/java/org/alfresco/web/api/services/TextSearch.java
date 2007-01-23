@@ -16,29 +16,22 @@
  */
 package org.alfresco.web.api.services;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Date;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.repo.template.ISO8601DateFormatMethod;
-import org.alfresco.repo.template.UrlEncodeMethod;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
-import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.api.APIException;
 import org.alfresco.web.api.APIRequest;
 import org.alfresco.web.api.APIResponse;
@@ -47,7 +40,6 @@ import org.alfresco.web.api.APIRequest.RequiredAuthentication;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 
 
 /**
@@ -55,7 +47,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author davidc
  */
-public class TextSearch extends APIServiceImpl
+public class TextSearch extends APIServiceTemplateImpl
 {
     // Logger
     private static final Log logger = LogFactory.getLog(TextSearch.class);
@@ -64,6 +56,7 @@ public class TextSearch extends APIServiceImpl
     // TODO: allow configuration of search store
     protected static final StoreRef SEARCH_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final int DEFAULT_ITEMS_PER_PAGE = 10;
+    protected static final String QUERY_TEMPLATE_TYPE = "query";
 
     // dependencies
     protected SearchService searchService;
@@ -102,16 +95,33 @@ public class TextSearch extends APIServiceImpl
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#execute(org.alfresco.web.api.APIRequest, org.alfresco.web.api.APIResponse)
+     * @see org.alfresco.web.api.APIService#getDefaultFormat()
      */
-    public void execute(APIRequest req, APIResponse res)
-        throws IOException
+    public String getDefaultFormat()
+    {
+        return APIResponse.HTML_FORMAT;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.api.APIService#getDescription()
+     */
+    public String getDescription()
+    {
+        return "Issue an Alfresco Web Client keyword search";
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.api.services.APIServiceTemplateImpl#createModel(org.alfresco.web.api.APIRequest, org.alfresco.web.api.APIResponse, java.util.Map)
+     */
+    @Override
+    protected Map<String, Object> createModel(APIRequest req, APIResponse res, Map<String, Object> model)
     {
         //
-        // process parameters
+        // process arguments
         //
         
         String searchTerms = req.getParameter("q");
+        ParameterCheck.mandatoryString("q", searchTerms);
         String startPageArg = req.getParameter("p");
         int startPage = 1;
         try
@@ -147,31 +157,13 @@ public class TextSearch extends APIServiceImpl
         SearchResult results = search(searchTerms, startPage, itemsPerPage, locale);
         
         //
-        // render the results
+        // append to model
         //
         
-        String contentType = APIResponse.HTML_TYPE;
-        String template = HTML_TEMPLATE;
-
-        // TODO: data-drive this
-        String format = req.getFormat();
-        if (format.equals("atom"))
-        {
-            contentType = APIResponse.ATOM_TYPE;
-            template = ATOM_TEMPLATE;
-        }
-        else if (format.equals("xml"))
-        {
-            contentType = APIResponse.XML_TYPE;
-            template = ATOM_TEMPLATE;
-        }
-        
-        Map<String, Object> model = createTemplateModel(req, res);
         model.put("search", results);
-        res.setContentType(contentType + ";charset=UTF-8");
-        renderTemplate(template, model, res);
+        return model;
     }
-
+    
     /**
      * Execute the search
      * 
@@ -190,7 +182,9 @@ public class TextSearch extends APIServiceImpl
             String[] terms = searchTerms.split(" "); 
             Map<String, Object> statementModel = new HashMap<String, Object>(7, 1.0f);
             statementModel.put("terms", terms);
-            String query = getTemplateService().processTemplateString(null, QUERY_STATEMENT, statementModel);
+            Writer queryWriter = new StringWriter(1024);
+            renderTemplate(QUERY_TEMPLATE_TYPE, null, statementModel, queryWriter);
+            String query = queryWriter.toString();
             
             // execute query
             if (logger.isDebugEnabled())
@@ -408,162 +402,27 @@ public class TextSearch extends APIServiceImpl
         }
     }
         
-    
-    // TODO: place into accessible file
-    private final static String ATOM_TEMPLATE = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:opensearch=\"http://a9.com/-/spec/opensearch/1.1/\" xmlns:relevance=\"http://a9.com/-/opensearch/extensions/relevance/1.0/\">\n" +
-        "  <generator version=\"${agent.version}\">Alfresco (${agent.edition})</generator>\n" +
-        "  <title>Alfresco Search: ${search.searchTerms}</title>\n" + 
-        "  <updated>${xmldate(date)}</updated>\n" +
-        "  <icon>${request.path}/images/logo/AlfrescoLogo16.ico</icon>\n" +
-        "  <author>\n" + 
-        "    <name><#if request.authenticatedUsername?exists>${request.authenticatedUsername}<#else>unknown</#if></name>\n" +
-        "  </author>\n" + 
-        "  <id>urn:uuid:${search.id}</id>\n" +
-        "  <opensearch:totalResults>${search.totalResults}</opensearch:totalResults>\n" +
-        "  <opensearch:startIndex>${search.startIndex}</opensearch:startIndex>\n" +
-        "  <opensearch:itemsPerPage>${search.itemsPerPage}</opensearch:itemsPerPage>\n" +
-        "  <opensearch:Query role=\"request\" searchTerms=\"${search.searchTerms}\" startPage=\"${search.startPage}\" count=\"${search.itemsPerPage}\" language=\"${search.localeId}\"/>\n" +
-        "  <link rel=\"alternate\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=html\" type=\"text/html\"/>\n" +
-        "  <link rel=\"self\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" +
-        "  <link rel=\"first\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=1&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" +
-        "<#if search.startPage &gt; 1>" +
-        "  <link rel=\"previous\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" +
-        "</#if>" +
-        "<#if search.startPage &lt; search.totalPages>" +
-        "  <link rel=\"next\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" + 
-        "</#if>" +
-        "  <link rel=\"last\" href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string(\"true\",\"\")}&amp;format=${request.format}\" type=\"application/atom+xml\"/>\n" +
-        "  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.servicePath}/search/text/textsearchdescription.xml\"/>\n" +
-        "<#list search.results as row>" +            
-        "  <entry>\n" +
-        "    <title>${row.name}</title>\n" +
-        "    <link href=\"${request.path}${row.url}\"/>\n" +
-        "    <icon>${request.path}${row.icon16}</icon>\n" +  // TODO: Standard for entry icons?
-        "    <id>urn:uuid:${row.id}</id>\n" +
-        "    <updated>${xmldate(row.properties.modified)}</updated>\n" +
-        "    <summary>${row.properties.description}</summary>\n" +
-        "    <author>\n" + 
-        "      <name>${row.properties.creator}</name>\n" +
-        "    </author>\n" + 
-        "    <relevance:score>${row.score}</relevance:score>\n" +
-        "  </entry>\n" +
-        "</#list>" +
-        "</feed>";        
         
-    // TODO: place into accessible file
-    private final static String HTML_TEMPLATE =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
-        "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
-        "  <head profile=\"http://a9.com/-/spec/opensearch/1.1/\">\n" + 
-        "    <title>Alfresco Text Search: ${search.searchTerms}</title>\n" + 
-        "    <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"${request.servicePath}/search/text/textsearchdescription.xml\" title=\"Alfresco Text Search\"/>\n" +
-        "    <meta name=\"totalResults\" content=\"${search.totalResults}\"/>\n" +
-        "    <meta name=\"startIndex\" content=\"${search.startIndex}\"/>\n" +
-        "    <meta name=\"itemsPerPage\" content=\"${search.itemsPerPage}\"/>\n" +
-        "  </head>\n" +
-        "  <body>\n" +
-        "    <h2>Alfresco Text Search</h2>\n" +
-        "    Results <b>${search.startIndex}</b> - <b>${search.startIndex + search.totalPageItems - 1}</b> of <b>${search.totalResults}</b> for <b>${search.searchTerms}</b> " +
-            "visible to user <b><#if request.authenticatedUsername?exists>${request.authenticatedUsername}<#else>unknown</#if>.</b>\n" + 
-        "    <ul>\n" +
-        "<#list search.results as row>" +            
-        "      <li>\n" +
-        "        <img src=\"${request.path}${row.icon16}\"/>" +
-        "        <a href=\"${request.path}${row.url}\">${row.name}</a>\n" +
-        "        <div>\n" +
-        "          ${row.properties.description}\n" +
-        "        </div>\n" +
-        "      </li>\n" +
-        "</#list>" +
-        "    </ul>\n" +
-        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=1&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">first</a>" +
-        "<#if search.startPage &gt; 1>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=${search.startPage - 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">previous</a>" +
-        "</#if>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=${search.startPage}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">${search.startPage}</a>" +
-        "<#if search.startPage &lt; search.totalPages>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=${search.startPage + 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">next</a>" +
-        "</#if>" +
-        "    <a href=\"${request.servicePath}/search/text?q=${urlencode(search.searchTerms)}&p=${search.totalPages}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${request.guest?string(\"true\",\"\")}\">last</a>" +
-        "  </body>\n" +
-        "</html>\n";
-
-    // TODO: place into accessible file
-    private final static String QUERY_STATEMENT =  
-        "(" +
-          "TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" AND " +
-          "(" +
-            "(" +
-        "<#list 1..terms?size as i>" +
-              "@\\{http\\://www.alfresco.org/model/content/1.0\\}name:${terms[i - 1]}" +
-        "<#if (i < terms?size)>" +
-             " OR " +
-        "</#if>" +
-        "</#list>" +
-            ") " +
-            "(" +
-        "<#list 1..terms?size as i>" +
-              "TEXT:${terms[i - 1]}" +
-        "<#if (i < terms?size)>" +
-             " OR " +
-        "</#if>" +
-        "</#list>" +
-            ")" +
-          ")" +
-        ")";
-
-    
-    
     /**
      * Simple test that can be executed outside of web context
-     *  
-     * TODO: Move to test harness
-     *
-     * @param args
-     * @throws Exception
      */
     public static void main(String[] args)
         throws Exception
     {
-        ApplicationContext context = ApplicationContextHelper.getApplicationContext();
-        TextSearch method = new TextSearch();
-        method.setServiceRegistry((ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY));
-        method.setTemplateService((TemplateService)context.getBean(ServiceRegistry.TEMPLATE_SERVICE.getLocalName()));
-        method.setSearchService((SearchService)context.getBean(ServiceRegistry.SEARCH_SERVICE.getLocalName()));
-        method.setDescriptorService((DescriptorService)context.getBean(ServiceRegistry.DESCRIPTOR_SERVICE.getLocalName()));
-        method.setHttpUri("/search/text");
-        method.test();
+        TextSearch service = (TextSearch)APIServiceImpl.getMethod("web.api.TextSearch");
+        service.test(APIResponse.HTML_FORMAT);
     }
 
-    /**
-     * Simple test that can be executed outside of web context
-     * 
-     * TODO: Move to test harness
+    /* (non-Javadoc)
+     * @see org.alfresco.web.api.services.APIServiceImpl#createTestModel()
      */
-    private void test()
+    @Override
+    protected Map<String, Object> createTestModel()
     {
+        Map<String, Object> model = super.createTestModel();
         SearchResult result = search("alfresco tutorial", 1, 5, I18NUtil.getLocale());
-
-        Map<String, Object> searchModel = new HashMap<String, Object>(7, 1.0f);
-        Map<String, Object> request = new HashMap<String, Object>();
-        request.put("servicePath", "http://localhost:8080/alfresco/service");
-        request.put("path", "http://localhost:8080/alfresco");
-        request.put("guest", false);
-        request.put("format", "xml");
-        searchModel.put("xmldate", new ISO8601DateFormatMethod());
-        searchModel.put("urlencode", new UrlEncodeMethod());
-        searchModel.put("date", new Date());
-        searchModel.put("agent", getDescriptorService().getServerDescriptor());
-        searchModel.put("request", request);
-        searchModel.put("search", result);
-        
-        StringWriter rendition = new StringWriter();
-        PrintWriter writer = new PrintWriter(rendition);
-        getTemplateService().processTemplateString(null, ATOM_TEMPLATE, searchModel, writer);
-        System.out.println(rendition.toString());
+        model.put("search", result);
+        return model;
     }
-
+    
 }

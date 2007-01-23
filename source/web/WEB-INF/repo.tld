@@ -1611,6 +1611,25 @@
    </tag>
    
    <tag>
+      <name>openSearch</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.OpenSearchTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         The openSearch component renders a purely JavaScript based OpenSearch
+         client. Search engine registration is provided by the server during
+         initialisation, the client will search all the engines and render
+         the results.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
       <name>nodeWorkflowInfo</name>
       <tag-class>org.alfresco.web.ui.repo.tag.NodeWorkflowInfoTag</tag-class>
       <body-content>JSP</body-content>

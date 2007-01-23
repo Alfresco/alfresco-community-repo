@@ -86,7 +86,7 @@ public class APIServlet extends BaseServlet
             String uri = request.getPathInfo();
     
             if (logger.isDebugEnabled())
-                logger.debug("Processing request ("  + request.getHttpMethod() + ") " + request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : ""));
+                logger.debug("Processing request ("  + request.getHttpMethod() + ") " + request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : "") + " (agent: " + request.getAgent() + ")");
             
             APIService service = apiServiceRegistry.get(method, uri);
             if (service != null)

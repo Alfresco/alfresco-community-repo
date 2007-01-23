@@ -225,7 +225,10 @@
                     page="/jsp/sidebar/navigator.jsp" actions-config-id="navigator_actions" />
             <plugin id="shelf" label-id="shelf" description-id="shelf_desc"
                     page="/jsp/sidebar/shelf.jsp" />
+            <plugin id="opensearch" label-id="opensearch" description-id="opensearch_desc"
+                    page="/jsp/sidebar/opensearch.jsp" />
          </plugins>
+         
          <!-- the default sidebar plugin to be shown on app startup -->
          <default-plugin>navigator</default-plugin>
       </sidebar>

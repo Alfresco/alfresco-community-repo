@@ -26,13 +26,13 @@ import javax.servlet.http.HttpServletResponseWrapper;
  */
 public class APIResponse extends HttpServletResponseWrapper
 {
-
-    // Content Types
+    // API Formats
+    public static final String HTML_FORMAT = "html";
+    public static final String ATOM_FORMAT = "atom";
+    public static final String RSS_FORMAT = "rss";
+    public static final String XML_FORMAT = "xml";
+    public static final String OPENSEARCH_DESCRIPTION_FORMAT = "opensearchdescription";
     
-    public static final String HTML_TYPE = "text/html";    
-    public static final String OPEN_SEARCH_DESCRIPTION_TYPE = "application/opensearchdescription+xml";    
-    public static final String ATOM_TYPE = "application/atom+xml";
-    public static final String XML_TYPE = "text/xml";
     
     /**
      * Construct

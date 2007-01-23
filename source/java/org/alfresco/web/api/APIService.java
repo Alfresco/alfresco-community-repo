@@ -34,6 +34,11 @@ public interface APIService
     public String getName();
     
     /**
+     * Gets the description of this service
+     */
+    public String getDescription();
+    
+    /**
      * Gets the required authentication level for execution of this service
      * 
      * @return  the required authentication level 
@@ -54,6 +59,13 @@ public interface APIService
      */
     public String getHttpUri();
 
+    /**
+     * Gets the default response format 
+     * 
+     * @return  response format
+     */
+    public String getDefaultFormat();
+    
     /**
      * Execute service
      * 

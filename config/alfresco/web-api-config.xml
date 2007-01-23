@@ -1,0 +1,43 @@
+<!--                        -->
+<!--  Web API Configuration -->
+<!--                        -->
+
+<alfresco-config>
+
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="opensearch" class="org.alfresco.web.config.OpenSearchElementReader"/>
+      </element-readers>
+   </plug-ins>
+   
+   <config>
+      <!-- TODO: host, port?? -->
+   </config>
+
+
+   <!--  -->
+   <!--  Configuration of Open Search API -->
+   <!--  -->
+
+   <config evaluator="string-compare" condition="OpenSearch">
+      <opensearch>
+         <engines>
+            <engine label="Alfresco Text Search">
+               <url type="application/opensearchdescription+xml">
+                  /service/search/textsearchdescription.xml
+               </url>
+               <url type="application/atom+xml">
+                  /service/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}&amp;format=atom
+               </url>
+               <url type="application/rss+xml">
+                  /service/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}&amp;format=rss
+               </url>
+               <url type="text/html">
+                  /service/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+               </url>
+            </engine>
+         </engines>
+      </opensearch>
+   </config>
+   
+</alfresco-config>

@@ -16,7 +16,6 @@
  */
 package org.alfresco.web.api.services;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.alfresco.web.api.APIRequest;
@@ -30,7 +29,7 @@ import org.alfresco.web.api.APIRequest.RequiredAuthentication;
  *
  * @author davidc
  */
-public class TextSearchDescription extends APIServiceImpl
+public class TextSearchDescription extends APIServiceTemplateImpl
 {
     
     /* (non-Javadoc)
@@ -50,27 +49,38 @@ public class TextSearchDescription extends APIServiceImpl
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#execute(org.alfresco.web.api.APIRequest, org.alfresco.web.api.APIResponse)
+     * @see org.alfresco.web.api.APIService#getDefaultFormat()
      */
-    public void execute(APIRequest req, APIResponse res)
-        throws IOException
+    public String getDefaultFormat()
     {
-        Map<String, Object> model = createTemplateModel(req, res);
-        res.setContentType(APIResponse.OPEN_SEARCH_DESCRIPTION_TYPE + ";charset=UTF-8");
-        renderTemplate(OPEN_SEARCH_DESCRIPTION, model, res);
+        return APIResponse.OPENSEARCH_DESCRIPTION_FORMAT;
     }
 
-    // TODO: place into accessible file
-    private final static String OPEN_SEARCH_DESCRIPTION = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<OpenSearchDescription xmlns=\"http://a9.com/-/spec/opensearch/1.1/\" xmlns:alf=\"http://www.alfresco.org\">\n" +
-        "  <ShortName>Alfresco Text Search</ShortName>\n" +
-        "  <LongName>Alfresco ${agent.edition} Text Search ${agent.version}</LongName>\n" +
-        "  <Description>Search Alfresco \"company home\" using text keywords</Description>\n" +
-        "  <Url type=\"application/atom+xml\" template=\"${request.servicePath}/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}&amp;format=atom\"/>\n" +
-        "  <Url type=\"text/xml\" template=\"${request.servicePath}/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}&amp;format=xml\"/>\n" +
-        "  <Url type=\"text/html\" template=\"${request.servicePath}/search/text?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}\"/>\n" +
-        "  <Image height=\"16\" width=\"16\" type=\"image/x-icon\">${request.path}/images/logo/AlfrescoLogo16.ico</Image>\n" +
-        "</OpenSearchDescription>";
+    /* (non-Javadoc)
+     * @see org.alfresco.web.api.services.APIServiceTemplateImpl#createModel(org.alfresco.web.api.APIRequest, org.alfresco.web.api.APIResponse, java.util.Map)
+     */
+    @Override
+    protected Map<String, Object> createModel(APIRequest req, APIResponse res, Map<String, Object> model)
+    {
+        return model;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.api.APIService#getDescription()
+     */
+    public String getDescription()
+    {
+        return "Retrieve the OpenSearch Description for the Alfresco Web Client keyword search";
+    }
 
+    /**
+     * Simple test that can be executed outside of web context
+     */
+    public static void main(String[] args)
+        throws Exception
+    {
+        TextSearchDescription service = (TextSearchDescription)APIServiceImpl.getMethod("web.api.TextSearchDescription");
+        service.test(APIResponse.OPENSEARCH_DESCRIPTION_FORMAT);
+    }
+    
 }

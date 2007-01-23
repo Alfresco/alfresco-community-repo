@@ -248,9 +248,11 @@ public class AVMEditBean
          final String formName = (String)pv.getValue(DataTypeDefinition.TEXT);
          final WebProject wp = new WebProject(this.getAvmNode().getPath());
          this.form = wp.getForm(formName);
-         LOGGER.debug("loaded form " + this.form + 
-                      ", form name " + formName +
-                      ", for " + this.getAvmNode().getPath());
+
+         if (LOGGER.isDebugEnabled())
+             LOGGER.debug("loaded form " + this.form + 
+                          ", form name " + formName +
+                          ", for " + this.getAvmNode().getPath());
       }
       return this.form;
    }
@@ -317,13 +319,16 @@ public class AVMEditBean
       {
          if (LOGGER.isDebugEnabled())
             LOGGER.debug(avmPath + " is a rendition, editing primary rendition instead");
+
          try
          {
             final FormInstanceData fid = 
                new RenditionImpl(AVMNodeConverter.ToNodeRef(-1, avmPath)).getPrimaryFormInstanceData();
             avmPath = fid.getPath();
+
             if (LOGGER.isDebugEnabled())
                LOGGER.debug("Editing primary form instance data " + avmPath);
+
             this.avmBrowseBean.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, avmPath)));
          }
          catch (FileNotFoundException fnfe)
@@ -340,13 +345,16 @@ public class AVMEditBean
          String storeName = AVMConstants.getStoreName(avmPath);
          storeName = AVMConstants.getCorrespondingPreviewStoreName(storeName);
          final String path = AVMConstants.buildStoreRootPath(storeName);
+
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("reseting layer " + path);
+             LOGGER.debug("reseting layer " + path);
+
          this.avmSyncService.resetLayer(path);
       }
 
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Editing AVM node: " + avmPath);
+          LOGGER.debug("Editing AVM node: " + avmPath);
+
       ContentReader reader = this.avmService.getContentReader(-1, avmPath);
       if (reader != null)
       {
@@ -400,8 +408,10 @@ public class AVMEditBean
       AVMNode node = getAvmNode();
       if (node != null)
       {
+         // Possibly notify virt server
+         AVMConstants.updateVServerWebapp(node.getPath(), false);
+
          resetState();
-         
          outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
       }
       
@@ -421,7 +431,10 @@ public class AVMEditBean
       }
       
       final String avmPath = avmNode.getPath();
-      LOGGER.debug("saving " + avmPath);
+
+      if (LOGGER.isDebugEnabled())
+          LOGGER.debug("saving " + avmPath);
+
       try
       {
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
@@ -446,7 +459,10 @@ public class AVMEditBean
                @Override
                public Form getForm() { return AVMEditBean.this.getForm(); }
             };
-            LOGGER.debug("regenerating renditions of " + fid);
+
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("regenerating renditions of " + fid);
+
             for (Rendition rendition : fid.getRenditions())
             {
                try
@@ -455,6 +471,7 @@ public class AVMEditBean
                }
                catch (Exception e)
                {
+
                   Utils.addErrorMessage("error regenerating " + rendition.getName() + 
                                         " using " + rendition.getRenderingEngineTemplate().getName() + 
                                         ": " + e.getMessage(),
@@ -462,7 +479,10 @@ public class AVMEditBean
                }
             }
             final NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
-            LOGGER.debug("updating " + uploadedFiles.length + " uploaded files");
+
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("updating " + uploadedFiles.length + " uploaded files");
+
             final List<AVMDifference> diffList = new ArrayList<AVMDifference>(uploadedFiles.length);
             for (NodeRef uploadedFile : uploadedFiles)
             {
@@ -473,7 +493,8 @@ public class AVMEditBean
             }
             this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
          }
-         
+            
+         // Possibly notify virt server
          AVMConstants.updateVServerWebapp(avmNode.getPath(), false);
          
          resetState();
@@ -519,6 +540,9 @@ public class AVMEditBean
             
             // commit the transaction
             tx.commit();
+
+            // Possibly notify virt server
+            AVMConstants.updateVServerWebapp(node.getPath(), false);
             
             // clear action context
             resetState();

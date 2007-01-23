@@ -145,7 +145,9 @@ public final class AuthenticationHelper
                   // check that the home space node exists - else Guest cannot proceed
                   if (nodeService.exists(guestHomeRef) == false)
                   {
-                     throw new InvalidNodeRefException(guestHomeRef);
+                     // cannot login as Guest as Home is missing - return to login screen
+                     logger.warn("Unable to locate Guest Home space - may have been deleted?");
+                     throw new AuthenticationException("");
                   }
                   user.setHomeSpaceId(guestHomeRef.getId());
                   

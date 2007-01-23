@@ -28,6 +28,7 @@ import org.alfresco.config.Config;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.config.LanguagesConfigElement;
 
@@ -39,10 +40,6 @@ import org.alfresco.web.config.LanguagesConfigElement;
 public class UserPreferencesBean
 {
    private static final String PREF_STARTLOCATION = "start-location";
-   private static final String MSG_MYALFRESCO = "my_alfresco";
-   private static final String MSG_MYHOME = "my_home";
-   private static final String MSG_COMPANYHOME = "company_home";
-   private static final String MSG_GUESTHOME = "guest_home";
    
    private static final String PREF_CONTENTFILTERLANGUAGE = "content-filter-language";
    private static final String MSG_CONTENTALLLANGUAGES = "content_all_languages";
@@ -53,33 +50,9 @@ public class UserPreferencesBean
    /** content language locale selection */
    private String contentFilterLanguage = null;
    
-   private SelectItem[] getLanguageItems(boolean includeAllLanguages)
-   {
-       Config config = Application.getConfigService(FacesContext.getCurrentInstance()).getConfig("Languages");
-       LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
-             LanguagesConfigElement.CONFIG_ELEMENT_ID);
-       
-       List<String> languages = langConfig.getLanguages();
-       List<SelectItem> items = new ArrayList<SelectItem>(20);
-       if (includeAllLanguages)
-       {
-           ResourceBundle msg = Application.getBundle(FacesContext.getCurrentInstance());
-           String allLanguagesStr = msg.getString(MSG_CONTENTALLLANGUAGES);
-           items.add(new SelectItem(MSG_CONTENTALLLANGUAGES, allLanguagesStr));
-       }
-       for (String locale : languages)
-       {
-          // get label associated to the locale
-          String label = langConfig.getLabelForLanguage(locale);
-          items.add(new SelectItem(locale, label));
-       }
-       
-       SelectItem[] result = new SelectItem[items.size()];
-       return items.toArray(result);
-   }
 
    /**
-    * @return the available languages
+    * @return the list of available languages
     */
    public SelectItem[] getLanguages()
    {
@@ -124,6 +97,9 @@ public class UserPreferencesBean
       Application.setLanguage(FacesContext.getCurrentInstance(), this.language);
    }
    
+   /**
+    * @return current content filter language
+    */
    public String getContentFilterLanguage()
    {
       if (this.contentFilterLanguage == null)
@@ -143,7 +119,7 @@ public class UserPreferencesBean
    }
    
    /**
-    * @param languageStr A valid locale string or {@link #MSG_CONTENTALLLANGUAGES}
+    * @param languageStr   A valid locale string or {@link #MSG_CONTENTALLLANGUAGES}
     */
    public void setContentFilterLanguage(String languageStr)
    {
@@ -161,6 +137,9 @@ public class UserPreferencesBean
        PreferencesService.getPreferences().setValue(PREF_CONTENTFILTERLANGUAGE, language);
    }
    
+   /**
+    * @return list of items for the content filtering language selection
+    */
    public SelectItem[] getContentFilterLanguages()
    {
        // Get the item selection list
@@ -169,7 +148,39 @@ public class UserPreferencesBean
        return items;
    }
    
+   /**
+    * Helper to return the available language items
+    * 
+    * @param includeAllLanguages    True to include a marker item for "All Languages"
+    * @return
+    */
+   private static SelectItem[] getLanguageItems(boolean includeAllLanguages)
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      Config config = Application.getConfigService(fc).getConfig("Languages");
+      LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
+            LanguagesConfigElement.CONFIG_ELEMENT_ID);
+      
+      List<String> languages = langConfig.getLanguages();
+      List<SelectItem> items = new ArrayList<SelectItem>(10);
+      if (includeAllLanguages)
+      {
+         String allLanguagesStr = Application.getMessage(fc, MSG_CONTENTALLLANGUAGES);
+         items.add(new SelectItem(MSG_CONTENTALLLANGUAGES, allLanguagesStr));
+      }
+      for (String locale : languages)
+      {
+         // get label associated to the locale
+         String label = langConfig.getLabelForLanguage(locale);
+         items.add(new SelectItem(locale, label));
+      }
+      
+      return items.toArray(new SelectItem[items.size()]);
+   }
    
+   /**
+    * @return the start location for this user (@see NavigationBean)
+    */
    public String getStartLocation()
    {
       String location = (String)PreferencesService.getPreferences().getValue(PREF_STARTLOCATION);
@@ -181,18 +192,47 @@ public class UserPreferencesBean
       return location;
    }
    
+   /**
+    * @param location   The current start location for this user (@see NavigationBean)
+    */
    public void setStartLocation(String location)
    {
       PreferencesService.getPreferences().setValue(PREF_STARTLOCATION, location);
    }
    
+   /**
+    * @return the list of available start locations
+    */
    public SelectItem[] getStartLocations()
    {
-      ResourceBundle msg = Application.getBundle(FacesContext.getCurrentInstance());
-      return new SelectItem[] {
-            new SelectItem(NavigationBean.LOCATION_MYALFRESCO, msg.getString(MSG_MYALFRESCO)),
-            new SelectItem(NavigationBean.LOCATION_HOME, msg.getString(MSG_MYHOME)),
-            new SelectItem(NavigationBean.LOCATION_COMPANY, msg.getString(MSG_COMPANYHOME)),
-            new SelectItem(NavigationBean.LOCATION_GUEST, msg.getString(MSG_GUESTHOME))};
+      FacesContext fc = FacesContext.getCurrentInstance();
+      NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, "NavigationBean");
+      ResourceBundle msg = Application.getBundle(fc);
+      
+      List<SelectItem> locations = new ArrayList<SelectItem>(4);
+      
+      // add My Alfresco location
+      locations.add(new SelectItem(
+            NavigationBean.LOCATION_MYALFRESCO, msg.getString(NavigationBean.MSG_MYALFRESCO)));
+      
+      // add My Home location
+      locations.add(new SelectItem(
+            NavigationBean.LOCATION_HOME, msg.getString(NavigationBean.MSG_MYHOME)));
+      
+      // add Company Home location if visible
+      if (navigator.getCompanyHomeVisible())
+      {
+         locations.add(new SelectItem(
+               NavigationBean.LOCATION_COMPANY, msg.getString(NavigationBean.MSG_COMPANYHOME)));
+      }
+      
+      // add Guest Home location if visible
+      if (navigator.getGuestHomeVisible())
+      {
+         locations.add(new SelectItem(
+               NavigationBean.LOCATION_GUEST, msg.getString(NavigationBean.MSG_GUESTHOME)));
+      }
+      
+      return locations.toArray(new SelectItem[locations.size()]);
    }
 }

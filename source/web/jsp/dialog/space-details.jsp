@@ -23,10 +23,18 @@
 <%@ page buffer="64kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+<%@ page import="org.alfresco.web.app.Application" %>
+<%@ page import="javax.faces.context.FacesContext" %>
 
 <r:page titleId="title_space_details">
 
 <f:view>
+   <%
+      FacesContext fc = FacesContext.getCurrentInstance();
+     
+      // set locale for JSF framework usage
+      fc.getViewRoot().setLocale(Application.getLanguage(fc));
+   %>
    
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>

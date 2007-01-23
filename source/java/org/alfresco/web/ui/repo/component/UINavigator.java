@@ -46,8 +46,6 @@ public class UINavigator extends SelfRenderingComponent
    protected String activeArea;
    
    private static final Log logger = LogFactory.getLog(UINavigator.class);
-   private static final String NAVIGATION_BEAN = "NavigationBean";
-   private static final String BROWSE_BEAN = "BrowseBean";
    private static final String AJAX_URL_START = "/ajax/invoke/" + NavigatorPluginBean.BEAN_NAME;
    private static final String PANEL_ACTION = "panel:";
    private static final int PANEL_SELECTED = 1;
@@ -130,7 +128,7 @@ public class UINavigator extends SelfRenderingComponent
                // a panel was selected, setup the context to make the panel
                // the focus
                NavigationBean nb = (NavigationBean)FacesHelper.getManagedBean(
-                     context, NAVIGATION_BEAN);
+                     context, NavigationBean.BEAN_NAME);
                if (nb != null)
                {
                   try
@@ -163,7 +161,7 @@ public class UINavigator extends SelfRenderingComponent
                
                // setup the context to make the node the current node
                BrowseBean bb = (BrowseBean)FacesHelper.getManagedBean(
-                     context, BROWSE_BEAN);
+                     context, BrowseBean.BEAN_NAME);
                if (bb != null)
                {
                   if (logger.isDebugEnabled())
@@ -193,7 +191,7 @@ public class UINavigator extends SelfRenderingComponent
       
       ResponseWriter out = context.getResponseWriter();
       NavigationBean navBean = (NavigationBean)FacesHelper.getManagedBean(
-            context, NAVIGATION_BEAN);
+            context, NavigationBean.BEAN_NAME);
       NavigatorPluginBean navPluginBean = (NavigatorPluginBean)FacesHelper.getManagedBean(
             context, NavigatorPluginBean.BEAN_NAME);
       
@@ -204,22 +202,22 @@ public class UINavigator extends SelfRenderingComponent
       if (NavigationBean.LOCATION_COMPANY.equals(area))
       {
          rootNodesForArea = navPluginBean.getCompanyHomeRootNodes();
-         areaTitle = Application.getMessage(context, "company_home");
+         areaTitle = Application.getMessage(context, NavigationBean.MSG_COMPANYHOME);
       }
       else if (NavigationBean.LOCATION_HOME.equals(area))
       {
          rootNodesForArea = navPluginBean.getMyHomeRootNodes();
-         areaTitle = Application.getMessage(context, "my_home");
+         areaTitle = Application.getMessage(context, NavigationBean.MSG_MYHOME);
       }
       else if (NavigationBean.LOCATION_GUEST.equals(area))
       {
          rootNodesForArea = navPluginBean.getGuestHomeRootNodes();
-         areaTitle = Application.getMessage(context, "guest_home");
+         areaTitle = Application.getMessage(context, NavigationBean.MSG_GUESTHOME);
       }
       else
       {
          treePanel = false;
-         areaTitle = Application.getMessage(context, "my_alfresco");
+         areaTitle = Application.getMessage(context, NavigationBean.MSG_MYALFRESCO);
       }
       
       // main container div
@@ -243,8 +241,7 @@ public class UINavigator extends SelfRenderingComponent
          
          // generate the active panel containing the tree
          out.write("<div class=\"navigatorPanelBody\">");
-         UITree tree = (UITree)context.getApplication().createComponent(
-               UITree.COMPONENT_TYPE);
+         UITree tree = (UITree)context.getApplication().createComponent(UITree.COMPONENT_TYPE);
          tree.setId("tree");
          tree.setRootNodes(rootNodesForArea);
          tree.setRetrieveChildrenUrl(AJAX_URL_START + ".retrieveChildren?area=" + area);
@@ -260,54 +257,48 @@ public class UINavigator extends SelfRenderingComponent
       if (NavigationBean.LOCATION_COMPANY.equals(area) == false &&
           navBean.getCompanyHomeVisible())
       {
-         out.write("<div class=\"sidebarButton\" ");
-         out.write(sideBarStyle);
-         out.write("><a class='sidebarButtonLink' onclick=\"");
-         out.write(Utils.generateFormSubmit(context, this, getClientId(context),
-               PANEL_ACTION + NavigationBean.LOCATION_COMPANY));
-         out.write("\" href=\"#\">");
-         out.write(Application.getMessage(context, "company_home"));
-         out.write("</a></div>");
+         encodeSidebarButton(context, out, sideBarStyle, NavigationBean.LOCATION_COMPANY, NavigationBean.MSG_COMPANYHOME);
       }
       
       if (NavigationBean.LOCATION_HOME.equals(area) == false)
       {
-         out.write("<div class=\"sidebarButton\" ");
-         out.write(sideBarStyle);
-         out.write("><a class='sidebarButtonLink' onclick=\"");
-         out.write(Utils.generateFormSubmit(context, this, getClientId(context),
-               PANEL_ACTION + NavigationBean.LOCATION_HOME));
-         out.write("\" href=\"#\">");
-         out.write(Application.getMessage(context, "my_home"));
-         out.write("</a></div>");
+         encodeSidebarButton(context, out, sideBarStyle, NavigationBean.LOCATION_HOME, NavigationBean.MSG_MYHOME);
       }
       
       if (NavigationBean.LOCATION_GUEST.equals(area) == false &&
           navBean.getIsGuest() == false && navBean.getGuestHomeVisible())
       {
-         out.write("<div class=\"sidebarButton\" ");
-         out.write(sideBarStyle);
-         out.write("><a class='sidebarButtonLink' onclick=\"");
-         out.write(Utils.generateFormSubmit(context, this, getClientId(context),
-               PANEL_ACTION + NavigationBean.LOCATION_GUEST));
-         out.write("\" href=\"#\">");
-         out.write(Application.getMessage(context, "guest_home"));
-         out.write("</a></div>");
+         encodeSidebarButton(context, out, sideBarStyle, NavigationBean.LOCATION_GUEST, NavigationBean.MSG_GUESTHOME);
       }
       
       if (NavigationBean.LOCATION_MYALFRESCO.equals(area) == false)
       {
-         out.write("<div class=\"sidebarButton\" ");
-         out.write(sideBarStyle);
-         out.write("><a class='sidebarButtonLink' onclick=\"");
-         out.write(Utils.generateFormSubmit(context, this, getClientId(context),
-               PANEL_ACTION + NavigationBean.LOCATION_MYALFRESCO));
-         out.write("\" href=\"#\">");
-         out.write(Application.getMessage(context, "my_alfresco"));
-         out.write("</a></div>");
+         encodeSidebarButton(context, out, sideBarStyle, NavigationBean.LOCATION_MYALFRESCO, NavigationBean.MSG_MYALFRESCO);
       }
       
       out.write("</div>");
+   }
+
+   /**
+    * Encode a Sidebar Button DIV with selectable button link 
+    * 
+    * @param context       FacesContext
+    * @param out           ResponseWriter
+    * @param sideBarStyle  Inline CSS style to apply to the sidebar button
+    * @param location      Toolbar location id
+    * @param labelId       Label I18N message id
+    */
+   private void encodeSidebarButton(FacesContext context, ResponseWriter out, String sideBarStyle,
+         String location, String labelId)
+      throws IOException
+   {
+      out.write("<div class=\"sidebarButton\" ");
+      out.write(sideBarStyle);
+      out.write("><a class='sidebarButtonLink' onclick=\"");
+      out.write(Utils.generateFormSubmit(context, this, getClientId(context), PANEL_ACTION + location));
+      out.write("\" href=\"#\">");
+      out.write(Application.getMessage(context, labelId));
+      out.write("</a></div>");
    }
    
    @Override

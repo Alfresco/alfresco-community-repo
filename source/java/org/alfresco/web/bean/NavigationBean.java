@@ -44,7 +44,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
@@ -66,8 +65,6 @@ public class NavigationBean
    /** Public JSF Bean name */
    public static final String BEAN_NAME = "NavigationBean";
    
-   private static final String OUTCOME_MYALFRESCO = "myalfresco";
-   private static final String OUTCOME_BROWSE = "browse";
 
    /**
     * Default constructor
@@ -190,7 +187,7 @@ public class NavigationBean
    }
    
    /**
-    * @return Returns the toolbar Location.
+    * @return Returns the toolbar Location - initially set from the user preferences.
     */
    public String getToolbarLocation()
    {
@@ -198,17 +195,30 @@ public class NavigationBean
       {
          // if the toolbar location has not been set yet, try and get the
          // default via the user preferences object
-         UserPreferencesBean prefsBean = (UserPreferencesBean)FacesHelper.getManagedBean(
-               FacesContext.getCurrentInstance(), "UserPreferencesBean");
-         if (prefsBean != null)
+         this.toolbarLocation = this.preferences.getStartLocation();
+         
+         // test that the user still has access to the specified location
+         // the location will need to be reset if the user permissions are no longer valid
+         if (NavigationBean.LOCATION_COMPANY.equals(this.toolbarLocation))
          {
-            this.toolbarLocation = prefsBean.getStartLocation();
+            if (getCompanyHomeVisible() == false)
+            {
+               this.toolbarLocation = null;
+            }
+         }
+         else if (NavigationBean.LOCATION_GUEST.equals(this.toolbarLocation))
+         {
+            if (getGuestHomeVisible() == false)
+            {
+               this.toolbarLocation = null;
+            }
          }
          
-         // if we still haven't found a location default to my home
+         // if don't have a valid start location default to My Home
          if (this.toolbarLocation == null)
          {
             this.toolbarLocation = LOCATION_HOME;
+            this.preferences.setStartLocation(this.toolbarLocation);
          }
       }
       
@@ -560,7 +570,7 @@ public class NavigationBean
       if (this.location == null)
       {
          // get the initial location from the user preferences
-         processToolbarLocation(this.preferences.getStartLocation(), false);
+         processToolbarLocation(getToolbarLocation(), false);
       }
       
       return this.location;
@@ -850,7 +860,14 @@ public class NavigationBean
    public static final String LOCATION_GUEST      = "guesthome";
    public static final String LOCATION_MYALFRESCO = "myalfresco";
    
-   private static final String MSG_MYALFRESCO = "my_alfresco";
+   /** constant value representing the display lables for toolbar locations */
+   public static final String MSG_MYALFRESCO = "my_alfresco";
+   public static final String MSG_MYHOME = "my_home";
+   public static final String MSG_COMPANYHOME = "company_home";
+   public static final String MSG_GUESTHOME = "guest_home";
+   
+   private static final String OUTCOME_MYALFRESCO = "myalfresco";
+   private static final String OUTCOME_BROWSE = "browse";
    
    private static final String ERROR_DELETED_FOLDER = "error_deleted_folder";
    

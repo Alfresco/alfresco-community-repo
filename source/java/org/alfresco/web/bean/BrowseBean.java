@@ -87,6 +87,10 @@ import org.apache.log4j.Priority;
  */
 public class BrowseBean implements IContextListener
 {
+   /** Public JSF Bean name */
+   public static final String BEAN_NAME = "BrowseBean";
+   
+   
    // ------------------------------------------------------------------------------
    // Construction 
 

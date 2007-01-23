@@ -59,6 +59,9 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_IMAGE_SVG = "image/svg";
     public static final String MIMETYPE_JAVASCRIPT = "application/x-javascript";
     public static final String MIMETYPE_ZIP = "application/zip";
+    public static final String MIMETYPE_OPENSEARCH_DESCRIPTION = "application/opensearchdescription+xml";
+    public static final String MIMETYPE_ATOM = "application/atom+xml";
+    public static final String MIMETYPE_RSS = "application/rss+xml";
     // Open Document
     public static final String MIMETYPE_OPENDOCUMENT_TEXT = "application/vnd.oasis.opendocument.text";
     public static final String MIMETYPE_OPENDOCUMENT_TEXT_TEMPLATE = "application/vnd.oasis.opendocument.text-template";

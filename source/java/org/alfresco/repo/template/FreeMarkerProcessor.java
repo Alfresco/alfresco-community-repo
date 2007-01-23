@@ -108,7 +108,7 @@ public class FreeMarkerProcessor implements TemplateProcessor
      * 
      * @return FreeMarker configuration
      */
-    private Configuration getConfig()
+    protected Configuration getConfig()
     {
         Configuration config = new Configuration();
         
@@ -141,7 +141,7 @@ public class FreeMarkerProcessor implements TemplateProcessor
      * 
      * @return FreeMarker configuration
      */
-    private Configuration getStringConfig(String path, String template)
+    protected Configuration getStringConfig(String path, String template)
     {
         Configuration config = new Configuration();
         

@@ -58,7 +58,6 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.ExternalAccessServlet;
@@ -1305,6 +1304,12 @@ public final class Utils
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/scripts/ajax/common.js\"> </script>\n");
          
+         // set the context path
+         out.write("<script type=\"text/javascript\">\n");
+         out.write("setContextPath('");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("');\n</script>\n");
+         
          // add marker to request
          context.getExternalContext().getRequestMap().put(DOJO_SCRIPTS_WRITTEN, Boolean.TRUE);
       }
@@ -1352,6 +1357,12 @@ public final class Utils
          out.write("<script type=\"text/javascript\" src=\"");
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/scripts/ajax/common.js\"> </script>\n");
+         
+         // set the context path
+         out.write("<script type=\"text/javascript\">\n");
+         out.write("setContextPath('");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("');\n</script>\n");
          
          // add marker to request
          context.getExternalContext().getRequestMap().put(YAHOO_SCRIPTS_WRITTEN, Boolean.TRUE);

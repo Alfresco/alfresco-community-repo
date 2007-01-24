@@ -33,6 +33,15 @@ function handleErrorYahoo(msg)
 }
 
 /**
+ * Sets the context path to use, useful for portals where 
+ * the URL can be different from the app's context path.
+ */
+function setContextPath(contextPath)
+{
+   _alfContextPath = contextPath;
+}
+
+/**
  * Calculates and returns the context path for the current page
  */
 function getContextPath()

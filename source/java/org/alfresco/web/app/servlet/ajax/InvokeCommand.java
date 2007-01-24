@@ -16,12 +16,16 @@
  */
 package org.alfresco.web.app.servlet.ajax;
 
-import java.lang.annotation.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Enumeration;
 
 import javax.faces.FactoryFinder;
 import javax.faces.component.UIViewRoot;
@@ -75,24 +79,51 @@ public class InvokeCommand extends BaseAjaxCommand
                        final HttpServletResponse response)
       throws ServletException, IOException
    {
-
-   
       UserTransaction tx = null;
       ResponseWriter writer = null;
       try
       {
-         final VariableResolver vr = facesContext.getApplication().getVariableResolver();
-
          final int indexOfDot = expression.indexOf('.');
          final String variableName = expression.substring(0, indexOfDot);
          final String methodName = expression.substring(indexOfDot + 1);
-
+         
          if (logger.isDebugEnabled())
             logger.debug("Invoking method represented by " + expression +
                          " on variable " + variableName + 
                          " with method " + methodName);
 
-         final Object bean  = vr.resolveVariable(facesContext, variableName);
+         // retrieve the managed bean, this is really weak but if the 
+         // request comes from a portal server the bean we need to get
+         // is in the session with a prefix chosen by the portal vendor,
+         // to cover this scenario we have to go through the names of
+         // all the objects in the session to find the bean we want.
+         Object bean = null;
+         Enumeration enumNames = request.getSession().getAttributeNames();
+         while (enumNames.hasMoreElements())
+         {
+            String name = (String)enumNames.nextElement();
+            if (name.endsWith(variableName))
+            {
+               bean = request.getSession().getAttribute(name);
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Found bean " + bean + " in the session");
+               
+               break;
+            }
+         }
+         
+         // if we didn't find the bean it may be a request scope bean, in which
+         // case go through the variable resolver to create it.
+         if (bean == null)
+         {
+            VariableResolver vr = facesContext.getApplication().getVariableResolver();
+            bean = vr.resolveVariable(facesContext, variableName);
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Created bean " + bean + " via the variable resolver");
+         }
+         
          final Method method = bean.getClass().getMethod(methodName);
 
          final String responseMimetype = 
@@ -103,6 +134,7 @@ public class InvokeCommand extends BaseAjaxCommand
          if (logger.isDebugEnabled())
             logger.debug("invoking method " + method + 
                          " with repsonse mimetype  " + responseMimetype);
+         
          writer = this.setupResponseWriter(responseMimetype,
                                            response,
                                            facesContext);

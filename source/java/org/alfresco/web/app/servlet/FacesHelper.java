@@ -93,15 +93,12 @@ public final class FacesHelper
     */
    private static FacesContext getFacesContextImpl(Object request, Object response, Object context)
    {
-      FacesContext facesContext = FacesContext.getCurrentInstance();
-      if (facesContext != null) return facesContext;
-      
       FacesContextFactory contextFactory = (FacesContextFactory)FactoryFinder.getFactory(FactoryFinder.FACES_CONTEXT_FACTORY);
       LifecycleFactory lifecycleFactory = (LifecycleFactory)FactoryFinder.getFactory(FactoryFinder.LIFECYCLE_FACTORY);
       Lifecycle lifecycle = lifecycleFactory.getLifecycle(LifecycleFactory.DEFAULT_LIFECYCLE);
       
       // Doesn't set this instance as the current instance of FacesContext.getCurrentInstance
-      facesContext = contextFactory.getFacesContext(context, request, response, lifecycle);
+      FacesContext facesContext = contextFactory.getFacesContext(context, request, response, lifecycle);
       
       // Set using our inner class
       InnerFacesContext.setFacesContextAsCurrent(facesContext);

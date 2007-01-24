@@ -20,8 +20,11 @@ package org.alfresco.web.ui.repo.component.property;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -31,8 +34,10 @@ import javax.faces.el.ValueBinding;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -40,6 +45,8 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -99,7 +106,7 @@ public abstract class BaseAssociationEditor extends UIInput
    
    protected boolean showAvailable = false;
    
-   /** Map of the original associations keyed by the id of the child */
+   /** Map of the original associations keyed by the noderef of the child */
    protected Map<String, Object> originalAssocs;
    protected Map<String, Object> added;
    protected Map<String, Object> removed;
@@ -176,7 +183,7 @@ public abstract class BaseAssociationEditor extends UIInput
       String value = (String)requestMap.get(fieldId);
       
       int action = ACTION_NONE;
-      String removeId = null;
+      String removeRef = null;
       if (value != null && value.length() != 0)
       {
          // break up the action into it's parts
@@ -184,7 +191,7 @@ public abstract class BaseAssociationEditor extends UIInput
          if (sepIdx != -1)
          {
             action = Integer.parseInt(value.substring(0, sepIdx));
-            removeId = value.substring(sepIdx+1);
+            removeRef = value.substring(sepIdx+1);
          }
          else
          {
@@ -196,7 +203,7 @@ public abstract class BaseAssociationEditor extends UIInput
       String[] addedItems = (String[])valuesMap.get(fieldId + FIELD_AVAILABLE);
       String contains = (String)requestMap.get(fieldId + FIELD_CONTAINS);
       
-      AssocEditorEvent event = new AssocEditorEvent(this, action, addedItems, removeId, contains);
+      AssocEditorEvent event = new AssocEditorEvent(this, action, addedItems, removeRef, contains);
       queueEvent(event);
       
       super.decode(context);
@@ -233,12 +240,12 @@ public abstract class BaseAssociationEditor extends UIInput
             }
             case ACTION_REMOVE:
             {
-               removeTarget(node, assocEvent.RemoveId);
+               removeTarget(node, assocEvent.RemoveRef);
                break;
             }
             case ACTION_CHANGE:
             {
-               this.changingAssociation = assocEvent.RemoveId;
+               this.changingAssociation = assocEvent.RemoveRef;
                this.showAvailable = true;
                break;
             }
@@ -667,15 +674,15 @@ public abstract class BaseAssociationEditor extends UIInput
     * Updates the component and node state to reflect an association being removed 
     * 
     * @param node The node we are dealing with
-    * @param targetId The id of the child to remove
+    * @param targetRef The noderef of the child to remove
     */
-   protected abstract void removeTarget(Node node, String targetId);
+   protected abstract void removeTarget(Node node, String targetRef);
 
    /**
     * Updates the component and node state to reflect an association being added 
     * 
     * @param node The node we are dealing with
-    * @param childId The id of the child to add
+    * @param childId The noderefs of the children to add
     */
    protected abstract void addTarget(Node node, String[] toAdd);
    
@@ -707,6 +714,13 @@ public abstract class BaseAssociationEditor extends UIInput
       {
          out.write(User.getFullName(nodeService, targetRef));
       }
+      else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetRef)))
+      {
+         int offset = PermissionService.GROUP_PREFIX.length();
+         String group = (String)nodeService.getProperty(targetRef, 
+               ContentModel.PROP_AUTHORITY_NAME);
+         out.write(group.substring(offset));
+      }
       else
       {
          out.write(Repository.getDisplayPath(nodeService.getPath(targetRef)));
@@ -726,7 +740,7 @@ public abstract class BaseAssociationEditor extends UIInput
       out.write("'><a href='#' title='");
       out.write(Application.getMessage(context, MSG_REMOVE));
       out.write("' onclick=\"");
-      out.write(generateFormSubmit(context, ACTION_REMOVE + ACTION_SEPARATOR + targetRef.getId()));
+      out.write(generateFormSubmit(context, ACTION_REMOVE + ACTION_SEPARATOR + targetRef.toString()));
       out.write("\"><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
       out.write("/images/icons/delete.gif' border='0' width='13' height='16'/></a>");
@@ -736,7 +750,7 @@ public abstract class BaseAssociationEditor extends UIInput
          out.write("&nbsp;<a href='#' title='");
          out.write(Application.getMessage(context, MSG_CHANGE));
          out.write("' onclick=\"");
-         out.write(generateFormSubmit(context, ACTION_CHANGE + ACTION_SEPARATOR + targetRef.getId()));
+         out.write(generateFormSubmit(context, ACTION_CHANGE + ACTION_SEPARATOR + targetRef.toString()));
          out.write("\"><img src='");
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/images/icons/edit_icon.gif' border='0' width='12' height='16'/></a>");
@@ -821,27 +835,39 @@ public abstract class BaseAssociationEditor extends UIInput
          for (NodeRef item : this.availableOptions)
          {
             // NOTE: only show the items that are not already associated to and don't show the current node
-            if ((this.originalAssocs.containsKey(item.getId()) == false && this.added.containsKey(item.getId()) == false &&
-                item.getId().equals(currentNode.getId()) == false) || 
-                this.removed.containsKey(item.getId())) 
+            if ((this.originalAssocs.containsKey(item.toString()) == false && this.added.containsKey(item.toString()) == false &&
+                item.toString().equals(currentNode.getNodeRef().toString()) == false) || 
+                this.removed.containsKey(item.toString())) 
             {
-               // if the node represents a person, show the username instead of the name
                if (ContentModel.TYPE_PERSON.equals(nodeService.getType(item)))
                {
+                  // if the node represents a person, show the username instead of the name
                   String userName = (String)nodeService.getProperty(item, ContentModel.PROP_USERNAME);
                   if (userName != null && (userName.equals(PermissionService.GUEST_AUTHORITY) == false))
                   {
                      out.write("<option value='");
-                     out.write(item.getId());
+                     out.write(item.toString());
                      out.write("'>");
                      out.write(User.getFullName(nodeService, item));
                      out.write("</option>");
                   }
                }
+               else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(item)))
+               {
+                  // if the node represents a group, show the authority name instead of the name
+                  int offset = PermissionService.GROUP_PREFIX.length();
+                  String group = (String)nodeService.getProperty(item, 
+                        ContentModel.PROP_AUTHORITY_NAME);
+                  out.write("<option value='");
+                  out.write(item.toString());
+                  out.write("'>");
+                  out.write(group.substring(offset));
+                  out.write("</option>");
+               }
                else
                {
                   out.write("<option value='");
-                  out.write(item.getId());
+                  out.write(item.toString());
                   out.write("'>");
                   out.write(Repository.getDisplayPath(nodeService.getPath(item)));
                   out.write("/");
@@ -875,6 +901,7 @@ public abstract class BaseAssociationEditor extends UIInput
     * @param context Faces Context
     * @param contains The contains part of the query
     */
+   @SuppressWarnings("unchecked")
    protected void getAvailableOptions(FacesContext context, String contains)
    {
       AssociationDefinition assocDef = getAssociationDefinition(context);
@@ -882,76 +909,152 @@ public abstract class BaseAssociationEditor extends UIInput
       {
          // find and show all the available options for the current association
          String type = assocDef.getTargetClass().getName().toString();
-         StringBuilder query = new StringBuilder("+TYPE:\"");
-         query.append(type);
-         query.append("\"");
          
-         if (contains != null && contains.length() > 0)
+         if (type.equals(ContentModel.TYPE_AUTHORITY_CONTAINER.toString()))
          {
-            String safeContains = Utils.remove(contains.trim(), "\"");
+            UserTransaction tx = null;
+            try
+            {
+               tx = Repository.getUserTransaction(context, true);
+               tx.begin();
+               
+               String safeContains = null;
+               if (contains != null && contains.length() > 0)
+               {
+                  safeContains = Utils.remove(contains.trim(), "\"");
+                  safeContains = safeContains.toLowerCase();
+               }
+               
+               // get all available groups
+               AuthorityService authorityService = Repository.getServiceRegistry(context).getAuthorityService();
+               Set<String> groups = authorityService.getAllAuthorities(AuthorityType.GROUP);
+               this.availableOptions = new ArrayList<NodeRef>(groups.size());
+               
+               // get the NodeRef for each matching group
+               AuthorityDAO authorityDAO = (AuthorityDAO)FacesContextUtils.
+                        getRequiredWebApplicationContext(context).getBean("authorityDAO");
+               if (authorityDAO != null)
+               {
+                  List<String> matchingGroups = new ArrayList<String>();
+                  int offset = PermissionService.GROUP_PREFIX.length();
+                  
+                  for (String group : groups)
+                  {
+                     // if a search string is present make sure the group matches
+                     // otherwise just add the group name to the sorted set
+                     if (safeContains != null)
+                     {
+                        if (group.toLowerCase().indexOf(safeContains, offset) != -1)
+                        {
+                           matchingGroups.add(group);
+                        }
+                     }
+                     else
+                     {
+                        matchingGroups.add(group);
+                     }
+                  }
+                  
+                  // sort the group names
+                  Collections.sort(matchingGroups, new SimpleStringComparator());
+               
+                  // go through the sorted set and get the NodeRef for each group
+                  for (String groupName : matchingGroups)
+                  {
+                     NodeRef groupRef = authorityDAO.getAuthorityNodeRefOrNull(groupName);
+                     if (groupRef != null)
+                     {
+                        this.availableOptions.add(groupRef);
+                     }
+                  }
+               }
+               
+               // commit the transaction
+               tx.commit();
+            }
+            catch (Throwable err)
+            {
+               Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                     context, Repository.ERROR_GENERIC), err.getMessage()), err);
+               this.availableOptions = Collections.<NodeRef>emptyList();
+               try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            }
+         }
+         else
+         {
+            // for all other types perform a lucene search
             
-            // if the association's target is the person type search on the 
-            // firstName and lastName properties instead of the name property
-            if (type.equals(ContentModel.TYPE_PERSON.toString()))
+            StringBuilder query = new StringBuilder("+TYPE:\"");
+            query.append(type);
+            query.append("\"");
+            
+            if (contains != null && contains.length() > 0)
             {
-               query.append(" AND (@");
-               String firstName = Repository.escapeQName(QName.createQName(
-                     NamespaceService.CONTENT_MODEL_1_0_URI, "firstName"));
-               query.append(firstName);
-               query.append(":*" + safeContains + "*");
-               query.append(" OR @");
-               String lastName = Repository.escapeQName(QName.createQName(
-                     NamespaceService.CONTENT_MODEL_1_0_URI, "lastName"));
-               query.append(lastName);
-               query.append(":*" + safeContains + "*)");
+               String safeContains = Utils.remove(contains.trim(), "\"");
+               
+               // if the association's target is the person type search on the 
+               // firstName and lastName properties instead of the name property
+               if (type.equals(ContentModel.TYPE_PERSON.toString()))
+               {
+                  query.append(" AND (@");
+                  String firstName = Repository.escapeQName(QName.createQName(
+                        NamespaceService.CONTENT_MODEL_1_0_URI, "firstName"));
+                  query.append(firstName);
+                  query.append(":*" + safeContains + "*");
+                  query.append(" OR @");
+                  String lastName = Repository.escapeQName(QName.createQName(
+                        NamespaceService.CONTENT_MODEL_1_0_URI, "lastName"));
+                  query.append(lastName);
+                  query.append(":*" + safeContains + "*)");
+               }
+               else
+               {
+                  query.append(" AND +@");
+                  String nameAttr = Repository.escapeQName(QName.createQName(
+                        NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
+                  query.append(nameAttr);
+                  query.append(":*" + safeContains + "*");
+               }
             }
-            else
-            {
-               query.append(" AND +@");
-               String nameAttr = Repository.escapeQName(QName.createQName(
-                     NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
-               query.append(nameAttr);
-               query.append(":*" + safeContains + "*");
-            }
-         }
-         
-         int maxResults = Application.getClientConfig(context).getSelectorsSearchMaxResults();
-         
-         if (logger.isDebugEnabled())
-         {
-            logger.debug("Query: " + query.toString());
-            logger.debug("Max results size: " + maxResults);
-         }
-         
-         SearchParameters searchParams = new SearchParameters();
-         searchParams.addStore(Repository.getStoreRef());
-         searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
-         searchParams.setQuery(query.toString());
-         if (maxResults > 0)
-         {
-            searchParams.setLimit(maxResults);
-            searchParams.setLimitBy(LimitBy.FINAL_SIZE);
-         }
-         
-         if (type.equals(ContentModel.TYPE_PERSON.toString()))
-         {
-            searchParams.addSort("@" + ContentModel.PROP_LASTNAME, true);
+            
+            int maxResults = Application.getClientConfig(context).getSelectorsSearchMaxResults();
             
             if (logger.isDebugEnabled())
-               logger.debug("Added lastname as sort column to query for people");
-         }
-         
-         ResultSet results = null;
-         try
-         {
-            results = Repository.getServiceRegistry(context).getSearchService().query(searchParams);
-            this.availableOptions = results.getNodeRefs();
-         }
-         finally
-         {
-            if (results != null)
             {
-               results.close();
+               logger.debug("Query: " + query.toString());
+               logger.debug("Max results size: " + maxResults);
+            }
+            
+            SearchParameters searchParams = new SearchParameters();
+            searchParams.addStore(Repository.getStoreRef());
+            searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
+            searchParams.setQuery(query.toString());
+            if (maxResults > 0)
+            {
+               searchParams.setLimit(maxResults);
+               searchParams.setLimitBy(LimitBy.FINAL_SIZE);
+            }
+            
+            if (type.equals(ContentModel.TYPE_PERSON.toString()))
+            {
+               searchParams.addSort("@" + ContentModel.PROP_LASTNAME, true);
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Added lastname as sort column to query for people");
+            }
+            
+            ResultSet results = null;
+            try
+            {
+               results = Repository.getServiceRegistry(context).getSearchService().query(searchParams);
+               this.availableOptions = results.getNodeRefs();
+            }
+            finally
+            {
+               if (results != null)
+               {
+                  results.close();
+               }
             }
          }
          
@@ -995,16 +1098,30 @@ public abstract class BaseAssociationEditor extends UIInput
 
       public int Action;
       public String[] ToAdd;
-      public String RemoveId;
+      public String RemoveRef;
       public String Contains;
       
-      public AssocEditorEvent(UIComponent component, int action, String[] toAdd, String removeId, String contains)
+      public AssocEditorEvent(UIComponent component, int action, String[] toAdd, String removeRef, String contains)
       {
          super(component);
          this.Action = action;
          this.ToAdd = toAdd;
-         this.RemoveId = removeId;
+         this.RemoveRef = removeRef;
          this.Contains = contains;
+      }
+   }
+   
+   /**
+    * Comparator used for ordering groups
+    */
+   private static class SimpleStringComparator implements Comparator
+   {
+      public int compare(final Object obj1, final Object obj2)
+      {
+         if (obj1 == null && obj2 == null) return 0;
+         if (obj1 == null) return -1;
+         if (obj2 == null) return 1;
+         return ((String)obj1).compareToIgnoreCase((String)obj2);
       }
    }
 }

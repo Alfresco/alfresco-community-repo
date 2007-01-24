@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -66,7 +67,7 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
    protected void populateAssocationMaps(Node node)
    {
       // we need to remember the original set of associations (if there are any)
-      // and place them in a map keyed by the id of the child node
+      // and place them in a map keyed by the noderef of the child node
       if (this.originalAssocs == null)
       {
          this.originalAssocs = new HashMap<String, Object>();
@@ -80,7 +81,7 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
                ChildAssociationRef assoc = (ChildAssociationRef)iter.next();
                
                // add the association to the map
-               this.originalAssocs.put(assoc.getChildRef().getId(), assoc);
+               this.originalAssocs.put(assoc.getChildRef().toString(), assoc);
             }
          }
       }
@@ -117,7 +118,7 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
       while (iter.hasNext())
       {
          ChildAssociationRef assoc = (ChildAssociationRef)iter.next();
-         if (removed.containsKey(assoc.getChildRef().getId()) == false)
+         if (removed.containsKey(assoc.getChildRef().toString()) == false)
          {
             renderExistingAssociation(context, out, nodeService, assoc.getChildRef(), allowMany);
             itemsRendered = true;
@@ -160,6 +161,14 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
             {
                out.write(User.getFullName(nodeService, targetNode));
             }
+            else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetNode)))
+            {
+               // if the node represents a group, show the group name instead of the name
+               int offset = PermissionService.GROUP_PREFIX.length();
+               String group = (String)nodeService.getProperty(targetNode, 
+                     ContentModel.PROP_AUTHORITY_NAME);
+               out.write(group.substring(offset));
+            }
             else
             {
                out.write(Repository.getDisplayPath(nodeService.getPath(targetNode)));
@@ -177,34 +186,34 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
    /**
     * @see org.alfresco.web.ui.repo.component.property.BaseAssociationEditor#removeTarget(org.alfresco.web.bean.repository.Node, java.lang.String)
     */
-   protected void removeTarget(Node node, String childId)
+   protected void removeTarget(Node node, String childRef)
    {
-      if (node != null && childId != null)
+      if (node != null && childRef != null)
       {
          QName assocQName = Repository.resolveToQName(this.associationName);
          ChildAssociationRef childAssoc = new ChildAssociationRef(assocQName, 
-            node.getNodeRef(), assocQName, new NodeRef(Repository.getStoreRef(), childId));
+            node.getNodeRef(), assocQName, new NodeRef(childRef));
          
          // update the node so it knows to remove the association, but only if the association
          // was one of the original ones
-         if (this.originalAssocs.containsKey(childId))
+         if (this.originalAssocs.containsKey(childRef))
          {
             Map<String, ChildAssociationRef> removed = node.getRemovedChildAssociations().get(this.associationName);
-            removed.put(childId, childAssoc);
+            removed.put(childRef, childAssoc);
             
             if (logger.isDebugEnabled())
-               logger.debug("Added association to " + childId + " to the removed list");
+               logger.debug("Added association to " + childRef + " to the removed list");
          }
          
          // if this association was previously added in this session it will still be
          // in the added list so remove it if it is
          Map<String, ChildAssociationRef> added = node.getAddedChildAssociations().get(this.associationName);
-         if (added.containsKey(childId))
+         if (added.containsKey(childRef))
          {
-            added.remove(childId);
+            added.remove(childRef);
             
             if (logger.isDebugEnabled())
-               logger.debug("Removed association to " + childId + " from the added list");
+               logger.debug("Removed association to " + childRef + " from the added list");
          }
       }
    }
@@ -218,31 +227,31 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
       {
          for (int x = 0; x < toAdd.length; x++)
          {
-            String childId = toAdd[x];
+            String childRef = toAdd[x];
             
             // update the node so it knows to add the association
-            if (this.originalAssocs.containsKey(childId) == false)
+            if (this.originalAssocs.containsKey(childRef) == false)
             {
                QName assocQName = Repository.resolveToQName(this.associationName);
                ChildAssociationRef childAssoc = new ChildAssociationRef(assocQName, 
-                     node.getNodeRef(), assocQName, new NodeRef(Repository.getStoreRef(), childId));
+                     node.getNodeRef(), assocQName, new NodeRef(childRef));
             
                Map<String, ChildAssociationRef> added = node.getAddedChildAssociations().get(this.associationName);
-               added.put(childId, childAssoc);
+               added.put(childRef, childAssoc);
             
                if (logger.isDebugEnabled())
-                  logger.debug("Added association to " + childId + " to the added list");
+                  logger.debug("Added association to " + childRef + " to the added list");
             }
             
             // if the association was previously removed and has now been re-added it
             // will still be in the "to be removed" list so remove it if it is
             Map<String, ChildAssociationRef> removed = node.getRemovedChildAssociations().get(this.associationName);
-            if (removed.containsKey(childId))
+            if (removed.containsKey(childRef))
             {
-               removed.remove(childId);
+               removed.remove(childRef);
                
                if (logger.isDebugEnabled())
-                  logger.debug("Removed association to " + childId + " from the removed list");
+                  logger.debug("Removed association to " + childRef + " from the removed list");
             }
          }
       }

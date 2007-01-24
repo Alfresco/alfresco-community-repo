@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -66,7 +67,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
    protected void populateAssocationMaps(Node node)
    {
       // we need to remember the original set of associations (if there are any)
-      // and place them in a map keyed by the id of the child node
+      // and place them in a map keyed by the noderef of the child node
       if (this.originalAssocs == null)
       {
          this.originalAssocs = new HashMap<String, Object>();
@@ -80,7 +81,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
                AssociationRef assoc = (AssociationRef)iter.next();
                
                // add the association to the map
-               this.originalAssocs.put(assoc.getTargetRef().getId(), assoc);
+               this.originalAssocs.put(assoc.getTargetRef().toString(), assoc);
             }
          }
       }
@@ -117,7 +118,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
       while (iter.hasNext())
       {
          AssociationRef assoc = (AssociationRef)iter.next();
-         if (removed.containsKey(assoc.getTargetRef().getId()) == false)
+         if (removed.containsKey(assoc.getTargetRef().toString()) == false)
          {
             renderExistingAssociation(context, out, nodeService, assoc.getTargetRef(), allowManyChildren);
             itemsRendered = true;
@@ -155,18 +156,22 @@ public class UIAssociationEditor extends BaseAssociationEditor
             out.write("<tr><td>");
             AssociationRef assoc = (AssociationRef)iter.next();
             NodeRef targetNode = assoc.getTargetRef();
-            // if the node represents a person, show the username instead of the name
             if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetNode)))
             {
+               // if the node represents a person, show the username instead of the name
                out.write(User.getFullName(nodeService, targetNode));
             }
             else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetNode)))
             {
-               String groupName = (String)nodeService.getProperty(targetNode, ContentModel.PROP_AUTHORITY_NAME);
-               out.write(groupName.substring("GROUP_".length()));
+               // if the node represents a group, show the group name instead of the name
+               int offset = PermissionService.GROUP_PREFIX.length();
+               String group = (String)nodeService.getProperty(targetNode, 
+                     ContentModel.PROP_AUTHORITY_NAME);
+               out.write(group.substring(offset));
             }
             else
             {
+               // use the standard cm:name property
                out.write(Repository.getDisplayPath(nodeService.getPath(targetNode)));
                out.write("/");
                out.write(Repository.getNameForNode(nodeService, targetNode));
@@ -182,35 +187,35 @@ public class UIAssociationEditor extends BaseAssociationEditor
     * Updates the component and node state to reflect an association being removed 
     * 
     * @param node The node we are dealing with
-    * @param targetId The id of the child to remove
+    * @param targetRef The noderef of the child to remove
     */
-   protected void removeTarget(Node node, String targetId)
+   protected void removeTarget(Node node, String targetRef)
    {
-      if (node != null && targetId != null)
+      if (node != null && targetRef != null)
       {
          QName assocQName = Repository.resolveToQName(this.associationName);
-         AssociationRef newAssoc = new AssociationRef(node.getNodeRef(), assocQName, new NodeRef(Repository.getStoreRef(), targetId));
+         AssociationRef newAssoc = new AssociationRef(node.getNodeRef(), assocQName, new NodeRef(targetRef));
          
          // update the node so it knows to remove the association, but only if the association
          // was one of the original ones
-         if (this.originalAssocs.containsKey(targetId))
+         if (this.originalAssocs.containsKey(targetRef))
          {
             Map<String, AssociationRef> removed = node.getRemovedAssociations().get(this.associationName);
-            removed.put(targetId, newAssoc);
+            removed.put(targetRef, newAssoc);
             
             if (logger.isDebugEnabled())
-               logger.debug("Added association to " + targetId + " to the removed list");
+               logger.debug("Added association to " + targetRef + " to the removed list");
          }
          
          // if this association was previously added in this session it will still be
          // in the added list so remove it if it is
          Map<String, AssociationRef> added = node.getAddedAssociations().get(this.associationName);
-         if (added.containsKey(targetId))
+         if (added.containsKey(targetRef))
          {
-            added.remove(targetId);
+            added.remove(targetRef);
             
             if (logger.isDebugEnabled())
-               logger.debug("Removed association to " + targetId + " from the added list");
+               logger.debug("Removed association to " + targetRef + " from the added list");
          }
       }
    }
@@ -219,7 +224,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
     * Updates the component and node state to reflect an association being added 
     * 
     * @param node The node we are dealing with
-    * @param childId The id of the child to add
+    * @param toAdd The noderefs of the children to add
     */
    protected void addTarget(Node node, String[] toAdd)
    {
@@ -227,31 +232,31 @@ public class UIAssociationEditor extends BaseAssociationEditor
       {
          for (int x = 0; x < toAdd.length; x++)
          {
-            String targetId = toAdd[x];   
+            String targetRef = toAdd[x];   
             
             // update the node so it knows to add the association (if it wasn't there originally)
-            if (this.originalAssocs.containsKey(targetId) == false)
+            if (this.originalAssocs.containsKey(targetRef) == false)
             {
                QName assocQName = Repository.resolveToQName(this.associationName);
                AssociationRef newAssoc = new AssociationRef(node.getNodeRef(), assocQName, 
-                     new NodeRef(Repository.getStoreRef(), targetId));
+                     new NodeRef(targetRef));
             
                Map<String, AssociationRef> added = node.getAddedAssociations().get(this.associationName);
-               added.put(targetId, newAssoc);
+               added.put(targetRef, newAssoc);
                
                if (logger.isDebugEnabled())
-                  logger.debug("Added association to " + targetId + " to the added list");
+                  logger.debug("Added association to " + targetRef + " to the added list");
             }
             
             // if the association was previously removed and has now been re-added it
             // will still be in the "to be removed" list so remove it if it is
             Map<String, AssociationRef> removed = node.getRemovedAssociations().get(this.associationName);
-            if (removed.containsKey(targetId))
+            if (removed.containsKey(targetRef))
             {
-               removed.remove(targetId);
+               removed.remove(targetRef);
                
                if (logger.isDebugEnabled())
-                  logger.debug("Removed association to " + targetId + " from the removed list");
+                  logger.debug("Removed association to " + targetRef + " from the removed list");
             }
          }
       }

@@ -18,7 +18,6 @@ package org.alfresco.filesys.ftp;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -59,7 +58,6 @@ import org.alfresco.filesys.server.filesys.SrvDiskInfo;
 import org.alfresco.filesys.server.filesys.TreeConnection;
 import org.alfresco.filesys.server.filesys.TreeConnectionHash;
 import org.alfresco.filesys.smb.server.repo.ContentContext;
-import org.alfresco.filesys.util.HexDump;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -185,8 +183,6 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
     private InputStream m_in;
     private byte[] m_inbuf;
-//    private InputStreamReader m_in;
-//    private char[] m_inbuf;
 
     private OutputStreamWriter m_out;
     private StringBuffer m_outbuf;
@@ -888,6 +884,10 @@ public class FTPSrvSession extends SrvSession implements Runnable
     
         cInfo.setPassword(req.getArgument());
 
+        // Start a transaction
+        
+        beginReadTransaction( getServer().getConfiguration().getTransactionService());
+        
         // Use the normal authentication service as we have the plaintext password
         
         AuthenticationService authService = getServer().getConfiguration().getAuthenticationService();

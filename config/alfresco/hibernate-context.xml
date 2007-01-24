@@ -72,7 +72,7 @@
                 <value>org/jbpm/graph/node/ProcessState.hbm.xml</value>
                 <value>org/jbpm/graph/node/Decision.hbm.xml</value>
                 <value>org/jbpm/graph/node/Fork.hbm.xml</value>
-                <value>org/jbpm/graph/node/Join.hbm.xml</value>
+                <value>org/alfresco/repo/workflow/jbpm/Join.hbm.xml</value>
                 <value>org/jbpm/graph/node/State.hbm.xml</value>
                 <value>org/jbpm/graph/node/TaskNode.hbm.xml</value>
                 <value>org/jbpm/context/def/ContextDefinition.hbm.xml</value>

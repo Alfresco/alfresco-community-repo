@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:xor">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="submit" swimlane="initiator" />
+        <transition name="" to="orsplit" />
+    </start-state>
+
+    <fork name="orsplit">
+      <transition name="a" to="a" />
+      <transition name="bc" to="bc" />
+    </fork>
+
+    <task-node name="a">
+        <task name="a">
+            <assignment actor-id="usera" />
+        </task>
+        <transition name="" to="orjoin" />
+    </task-node>
+
+    <fork name="bc">
+      <transition name="b" to="b" />
+      <transition name="c" to="c" />
+    </fork>
+
+    <task-node name="b">
+        <task name="b">
+            <assignment actor-id="userb" />
+        </task>
+        <transition name="" to="bcjoin" />
+    </task-node>
+
+    <task-node name="c">
+        <task name="c">
+            <assignment actor-id="userc" />
+        </task>
+        <transition name="" to="bcjoin" />
+    </task-node>
+
+    <join name="bcjoin">
+       <transition name="" to="orjoin" />
+    </join>
+
+    <join name="orjoin">
+        <event type="node-enter">
+           <script>
+              node.nOutOfM = 1;
+           </script>
+        </event>
+        <transition name="" to="wait" />
+    </join>
+
+    <state name="wait">
+       <transition name="" to="end" />
+    </state>
+    
+    <end-state name="end" />
+
+</process-definition>

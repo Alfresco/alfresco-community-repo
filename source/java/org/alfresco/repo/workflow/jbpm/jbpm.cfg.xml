@@ -14,7 +14,7 @@
   <string name="resource.default.modules" value="org/jbpm/graph/def/jbpm.default.modules.properties" />
   <string name='resource.converter' value='org/alfresco/repo/workflow/jbpm/jbpm.converter.properties' />
   <string name="resource.action.types" value="org/jbpm/graph/action/action.types.xml" />
-  <string name="resource.node.types" value="org/jbpm/graph/node/node.types.xml" />
+  <string name="resource.node.types" value="org/alfresco/repo/workflow/jbpm/jbpm.node.types.xml" />
   <string name="resource.parsers" value="org/jbpm/jpdl/par/jbpm.parsers.xml" />
   <string name="resource.varmapping" value="org/alfresco/repo/workflow/jbpm/jbpm.varmapping.xml" />
 

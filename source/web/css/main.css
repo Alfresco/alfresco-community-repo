@@ -550,15 +550,15 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-color: #DDDDDD;
 }
 
-#shelf
-{
-   min-width: 220px;
-   *width: 100%;
-}
-
 #pluginBox
 {
    border: 1px solid #babfc5;
+}
+
+.shelf
+{
+   min-width: 220px;
+   *width: 100%;
 }
 
 .navigator

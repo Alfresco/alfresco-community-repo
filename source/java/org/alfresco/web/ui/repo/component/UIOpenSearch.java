@@ -108,11 +108,11 @@ public class UIOpenSearch extends SelfRenderingComponent
       out.write("-search-term' type='text' size='25' onkeyup='return handleKeyPress(event);' />");
       out.write("</td><td><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/search_icon.gif' onclick='executeQuery()' title='");
+      out.write("/images/icons/search_icon.gif' style='cursor:pointer' onclick='executeQuery()' title='");
       out.write(Application.getMessage(context, "search"));
       out.write("' /></td><td><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/collapsed.gif' onclick='toggleOptions(this)' class='collapsed' title='");
+      out.write("/images/icons/collapsed.gif' style='cursor:pointer' onclick='toggleOptions(this)' class='collapsed' title='");
       out.write(Application.getMessage(context, "options"));
       out.write("' /></td></tr></table>\n");
       out.write("<div id='os-options' class='osOptions'>");

@@ -70,7 +70,7 @@ public class UISidebar extends SelfRenderingComponent
       
       ResponseWriter out = context.getResponseWriter();
       
-      out.write("<div id=\"sidebar\">");
+      out.write("<div id=\"sidebar\" class=\"sidebar\">");
       
       // render the start of the header panel
       String cxPath = context.getExternalContext().getRequestContextPath();

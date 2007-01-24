@@ -1,13 +1,14 @@
 .osSidebarPanel
 {
-   width: 190px;
+   min-width: 190px;
+   *width: 100%;
 }
 
 .osPanel
 {
    margin: 4px;
 }
-   
+
 .osOptions
 {
    margin: 6px;

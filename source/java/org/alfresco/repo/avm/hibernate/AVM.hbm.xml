@@ -137,7 +137,7 @@
 			column="root_id" not-null="true">
 		</many-to-one>
 		<property name="tag" type="string" length="255" column="tag"/>
-		<property name="description" type="string" length="8192" column="description"/>
+		<property name="description" type="string" length="4000" column="description"/>
 	</class>
     <class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries">
         <cache usage="read-write"/>

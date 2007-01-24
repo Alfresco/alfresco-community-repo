@@ -17,7 +17,6 @@
 package org.alfresco.web.bean.clipboard;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,16 +36,15 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.NavigationBean;
-import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -128,10 +126,10 @@ public class ClipboardBean
    {
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
-      String id = params.get("id");
-      if (id != null && id.length() != 0)
+      String ref = params.get("ref");
+      if (ref != null && ref.length() != 0)
       {
-         addClipboardNode(id, ClipboardStatus.COPY);
+         addClipboardNode(new NodeRef(ref), ClipboardStatus.COPY);
       }
    }
    
@@ -142,10 +140,10 @@ public class ClipboardBean
    {
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
-      String id = params.get("id");
-      if (id != null && id.length() != 0)
+      String ref = params.get("ref");
+      if (ref != null && ref.length() != 0)
       {
-         addClipboardNode(id, ClipboardStatus.CUT);
+         addClipboardNode(new NodeRef(ref), ClipboardStatus.CUT);
       }
    }
    
@@ -195,7 +193,7 @@ public class ClipboardBean
             for (int i=0; i<this.items.size(); i++)
             {
                ClipboardItem item = this.items.get(i);
-               if (item.Mode != ClipboardStatus.CUT)
+               if (item.getMode() != ClipboardStatus.CUT)
                {
                   newItems.add(item);
                }
@@ -208,7 +206,7 @@ public class ClipboardBean
             // single paste operation
             ClipboardItem item = this.items.get(index);
             performClipboardOperation(item, action);
-            if (item.Mode == ClipboardStatus.CUT)
+            if (item.getMode() == ClipboardStatus.CUT)
             {
                this.items.remove(index);
             }
@@ -243,10 +241,10 @@ public class ClipboardBean
       //       the clipboard operation (e.g. the source folder) is specifically that parent node.
       //       So does not allow for more than one possible parent node - or for linked objects!
       //       This code should be refactored to use a parent ID when appropriate. 
-      ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(item.Node.getNodeRef());
+      ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(item.getNodeRef());
       
       // initial name to attempt the copy of the item with
-      String name = item.Node.getName();
+      String name = item.getName();
       if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
       {
          // copy as link was specifically requested by the user
@@ -263,13 +261,13 @@ public class ClipboardBean
             // attempt each copy/paste in its own transaction
             tx = Repository.getUserTransaction(FacesContext.getCurrentInstance());
             tx.begin();
-            if (item.Mode == ClipboardStatus.COPY)
+            if (item.getMode() == ClipboardStatus.COPY)
             {
                if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
                {
                   // LINK operation
                   if (logger.isDebugEnabled())
-                     logger.debug("Attempting to link node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+                     logger.debug("Attempting to link node ID: " + item.getId() + " into node ID: " + destRef.getId());
                   
                   // we create a special Link Object node that has a property to reference the original
                   // create the node using the nodeService (can only use FileFolderService for content)
@@ -277,8 +275,8 @@ public class ClipboardBean
                   {
                      Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
                      props.put(ContentModel.PROP_NAME, name + ".lnk");
-                     props.put(ContentModel.PROP_LINK_DESTINATION, item.Node.getNodeRef());
-                     if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT))
+                     props.put(ContentModel.PROP_LINK_DESTINATION, item.getNodeRef());
+                     if (dd.isSubClass(item.getType(), ContentModel.TYPE_CONTENT))
                      {
                         // create File Link node
                         ChildAssociationRef childRef = this.nodeService.createNode(
@@ -320,21 +318,21 @@ public class ClipboardBean
                {
                   // COPY operation
                   if (logger.isDebugEnabled())
-                     logger.debug("Attempting to copy node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+                     logger.debug("Attempting to copy node ID: " + item.getId() + " into node ID: " + destRef.getId());
                   
-                  if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT) ||
-                      dd.isSubClass(item.Node.getType(), ContentModel.TYPE_FOLDER))
+                  if (dd.isSubClass(item.getType(), ContentModel.TYPE_CONTENT) ||
+                      dd.isSubClass(item.getType(), ContentModel.TYPE_FOLDER))
                   {
                      // copy the file/folder
                      // first check that we are not attempting to copy a duplicate into the same parent
-                     if (destRef.equals(assocRef.getParentRef()) && name.equals(item.Node.getName()))
+                     if (destRef.equals(assocRef.getParentRef()) && name.equals(item.getName()))
                      {
                         // manually change the name if this occurs
                         String copyOf = Application.getMessage(FacesContext.getCurrentInstance(), MSG_COPY_OF);
                         name = copyOf + ' ' + name;
                      }
                      this.fileFolderService.copy(
-                           item.Node.getNodeRef(),
+                           item.getNodeRef(),
                            destRef,
                            name);
                   }
@@ -344,7 +342,7 @@ public class ClipboardBean
                      if (checkExists(name, destRef) == false)
                      {
                         this.copyService.copy(
-                              item.Node.getNodeRef(),
+                              item.getNodeRef(),
                               destRef,
                               ContentModel.ASSOC_CONTAINS,
                               assocRef.getQName(),
@@ -360,14 +358,14 @@ public class ClipboardBean
             {
                // MOVE operation
                if (logger.isDebugEnabled())
-                  logger.debug("Attempting to move node ID: " + item.Node.getId() + " into node ID: " + destRef.getId());
+                  logger.debug("Attempting to move node ID: " + item.getId() + " into node ID: " + destRef.getId());
                
-               if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_CONTENT) ||
-                   dd.isSubClass(item.Node.getType(), ContentModel.TYPE_FOLDER))
+               if (dd.isSubClass(item.getType(), ContentModel.TYPE_CONTENT) ||
+                   dd.isSubClass(item.getType(), ContentModel.TYPE_FOLDER))
                {
                   // move the file/folder
                   this.fileFolderService.move(
-                        item.Node.getNodeRef(),
+                        item.getNodeRef(),
                         destRef,
                         name);
                }
@@ -375,7 +373,7 @@ public class ClipboardBean
                {
                   // move the node
                   this.nodeService.moveNode(
-                        item.Node.getNodeRef(),
+                        item.getNodeRef(),
                         destRef,
                         ContentModel.ASSOC_CONTAINS,
                         assocRef.getQName());
@@ -387,7 +385,7 @@ public class ClipboardBean
          }
          catch (FileExistsException fileExistsErr)
          {
-            if (item.Mode != ClipboardStatus.COPY)
+            if (item.getMode() != ClipboardStatus.COPY)
             {    
                 // we should not rename an item when it is being moved - so exit
                 throw fileExistsErr;
@@ -439,27 +437,32 @@ public class ClipboardBean
       return (nodeRefs.size() != 0);
    }
    
-   /** Shallow search for nodes with a name pattern */
-   private static final String XPATH_QUERY_NODE_MATCH =
-      "./*" +
-      "[like(@cm:name, $cm:name, false)]";// +
-      //" and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
-      //" and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "'))]";
-   
    /**
     * Add a clipboard node for an operation to the clipboard
     * 
-    * @param id      ID of the node for the operation
+    * @param ref     NodeRef of the item for the operation
     * @param mode    ClipboardStatus for the operation
     */
-   private void addClipboardNode(String id, ClipboardStatus mode)
+   private void addClipboardNode(NodeRef ref, ClipboardStatus mode)
    {
-      try
+      // construct item based on store protocol
+      ClipboardItem item = null;
+      if (StoreRef.PROTOCOL_WORKSPACE.equals(ref.getStoreRef().getProtocol()))
       {
-         NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
-         
+         item = new WorkspaceClipboardItem(ref, mode);
+      }
+      else if (StoreRef.PROTOCOL_AVM.equals(ref.getStoreRef().getProtocol()))
+      {
+         item = new AVMClipboardItem(ref, mode);
+      }
+      else
+      {
+         logger.warn("Unable to add item to clipboard - unknown store protocol: " + ref.getStoreRef().getProtocol());
+      }
+      
+      if (item != null)
+      {
          // check for duplicates first
-         ClipboardItem item = new ClipboardItem(new Node(ref), mode);
          boolean foundDuplicate = false;
          for (int i=0; i<items.size(); i++)
          {
@@ -477,11 +480,6 @@ public class ClipboardBean
             items.add(item);
          }
       }
-      catch (InvalidNodeRefException refErr)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {id}) );
-      }
    }
    
    
@@ -494,6 +492,9 @@ public class ClipboardBean
    private static final String MSG_ERROR_PASTE  = "error_paste";
    private static final String MSG_COPY_OF      = "copy_of";
    private static final String MSG_LINK_TO      = "link_to";
+   
+   /** Shallow search for nodes with a name pattern */
+   private static final String XPATH_QUERY_NODE_MATCH = "./*[like(@cm:name, $cm:name, false)]";
    
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;

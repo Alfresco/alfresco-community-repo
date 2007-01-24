@@ -16,53 +16,32 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import javax.faces.context.FacesContext;
+
+import org.alfresco.model.ApplicationModel;
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
+ * Simple class representing a single item added to the clipboard. 
+ * 
  * @author Kevin Roast
  */
-public class ClipboardItem
+public interface ClipboardItem
 {
-   /**
-    * Constructor
-    * 
-    * @param node       The node on the clipboard
-    * @param mode       The ClipboardStatus enum value
-    */
-   public ClipboardItem(Node node, ClipboardStatus mode)
-   {
-      this.Node = node;
-      this.Mode = mode;
-   }
+   public ClipboardStatus getMode();
    
-   /**
-    * Override equals() to compare NodeRefs
-    */
-   public boolean equals(Object obj)
-   {
-      if (obj == this)
-      {
-         return true;
-      }
-      if (obj instanceof ClipboardItem)
-      {
-         return ((ClipboardItem)obj).Node.getNodeRef().equals(Node.getNodeRef());
-      }
-      else
-      {
-         return false;
-      }
-   }
+   public String getName();
    
-   /**
-    * Override hashCode() to use the internal NodeRef hashcode instead
-    */
-   public int hashCode()
-   {
-      return Node.getNodeRef().hashCode();
-   }
+   public QName getType();
    
+   public String getIcon();
    
-   public Node Node;
-   public ClipboardStatus Mode;
+   public String getId();
+   
+   public NodeRef getNodeRef();
 }

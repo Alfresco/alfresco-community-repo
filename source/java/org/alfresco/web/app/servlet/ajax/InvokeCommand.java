@@ -42,6 +42,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
@@ -98,18 +99,22 @@ public class InvokeCommand extends BaseAjaxCommand
          // to cover this scenario we have to go through the names of
          // all the objects in the session to find the bean we want.
          Object bean = null;
-         Enumeration enumNames = request.getSession().getAttributeNames();
-         while (enumNames.hasMoreElements())
+         
+         if (Application.inPortalServer())
          {
-            String name = (String)enumNames.nextElement();
-            if (name.endsWith(variableName))
+            Enumeration enumNames = request.getSession().getAttributeNames();
+            while (enumNames.hasMoreElements())
             {
-               bean = request.getSession().getAttribute(name);
-               
-               if (logger.isDebugEnabled())
-                  logger.debug("Found bean " + bean + " in the session");
-               
-               break;
+               String name = (String)enumNames.nextElement();
+               if (name.endsWith(variableName))
+               {
+                  bean = request.getSession().getAttribute(name);
+                  
+                  if (logger.isDebugEnabled())
+                     logger.debug("Found bean " + bean + " in the session");
+                  
+                  break;
+               }
             }
          }
          

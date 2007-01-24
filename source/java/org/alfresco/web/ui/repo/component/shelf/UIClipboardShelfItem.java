@@ -160,7 +160,7 @@ public class UIClipboardShelfItem extends UIShelfItem
             
             // start row with cut/copy state icon
             out.write("<tr><td width=16>");
-            if (item.Mode == ClipboardStatus.COPY)
+            if (item.getMode() == ClipboardStatus.COPY)
             {
                out.write(Utils.buildImageTag(context, WebResources.IMAGE_COPY, 14, 16, bundle.getString(MSG_COPY), null, "absmiddle"));
             }
@@ -170,10 +170,10 @@ public class UIClipboardShelfItem extends UIShelfItem
             }
             out.write("</td><td width=16>");
             
-            if (dd.isSubClass(item.Node.getType(), ContentModel.TYPE_FOLDER))
+            if (dd.isSubClass(item.getType(), ContentModel.TYPE_FOLDER))
             {
                // start row with correct node icon
-               String icon = (String)item.Node.getProperties().get("app:icon");
+               String icon = (String)item.getIcon();
                if (icon != null)
                {
                   icon = "/images/icons/" + icon + "-16.gif";
@@ -186,21 +186,21 @@ public class UIClipboardShelfItem extends UIShelfItem
             }
             else
             {
-               String image = Utils.getFileTypeImage(item.Node.getName(), true);
+               String image = Utils.getFileTypeImage(item.getName(), true);
                out.write(Utils.buildImageTag(context, image, null, "absmiddle"));
             }
             
             // output cropped item label - we also output with no breaks, this is ok
             // as the copped label will ensure a sensible maximum width
             out.write("</td><td width=100%><nobr>&nbsp;");
-            out.write(Utils.cropEncode(item.Node.getName()));
+            out.write(Utils.cropEncode(item.getName()));
             
             // output actions
             out.write("</nobr></td><td align=right><nobr>");
             out.write(buildActionLink(ACTION_REMOVE_ITEM, i, bundle.getString(MSG_REMOVE_ITEM), WebResources.IMAGE_REMOVE));
             out.write("&nbsp;");
             out.write(buildActionLink(ACTION_PASTE_ITEM, i, bundle.getString(MSG_PASTE_ITEM), WebResources.IMAGE_PASTE));
-            if (item.Mode == ClipboardStatus.COPY && dd.isSubClass(item.Node.getType(), ContentModel.TYPE_LINK) == false)
+            if (item.getMode() == ClipboardStatus.COPY && dd.isSubClass(item.getType(), ContentModel.TYPE_LINK) == false)
             {
                out.write("&nbsp;");
                out.write(buildActionLink(ACTION_PASTE_LINK, i, bundle.getString(MSG_PASTE_LINK), WebResources.IMAGE_PASTE_LINK));

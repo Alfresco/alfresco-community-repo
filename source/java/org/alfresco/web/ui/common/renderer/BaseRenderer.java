@@ -96,16 +96,7 @@ public abstract class BaseRenderer extends Renderer
          if (child instanceof UIParameter)
          {
             final UIParameter param = (UIParameter)child;
-            if (param.getValue() == null || param.getValue() instanceof String)
-            {
-               params.put(param.getName(), (String)param.getValue());
-            }
-            else
-            {
-               throw new ClassCastException("value of parameter " + param.getName() +
-                                            " is a " + param.getValue().getClass().getName() +
-                                            ". Expected a " + String.class.getName());
-            }
+            params.put(param.getName(), param.getValue() != null ? param.getValue().toString() : null);
          }
       }
       return params;

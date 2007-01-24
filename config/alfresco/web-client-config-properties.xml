@@ -266,6 +266,17 @@
          <show-association name="bpm:assignee" display-label-id="wf_reviewer" />
       </property-sheet>
    </config>
+
+   <config evaluator="node-type" condition="wf:submitGroupReviewTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:workflowDescription" component-generator="TextAreaGenerator" />
+         <show-property name="bpm:workflowPriority" display-label-id="wf_review_priority" />
+         <show-property name="bpm:workflowDueDate" display-label-id="wf_review_due_date" />
+         <separator name="sep2" display-label-id="users_and_roles" component-generator="HeaderSeparatorGenerator" />
+         <show-association name="bpm:groupAssignee" display-label-id="wf_reviewers" />
+      </property-sheet>
+   </config>
    
    <config evaluator="node-type" condition="wf:reviewTask" replace="true">
       <property-sheet>

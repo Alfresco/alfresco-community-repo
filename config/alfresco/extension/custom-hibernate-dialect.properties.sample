@@ -21,12 +21,12 @@
 #
 # Sybase dialect
 #
-#hibernate.dialect=org.hibernate.dialect.SybaseAnywhereDialect
+#hibernate.dialect=org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect
 
 #
 # SQLServer dialect
 #
-#hibernate.dialect=org.hibernate.dialect.SQLServerDialect
+#hibernate.dialect=org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect
 
 #
 # PostgreSQL dialect

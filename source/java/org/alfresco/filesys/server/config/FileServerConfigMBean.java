@@ -16,8 +16,6 @@
  */
 package org.alfresco.filesys.server.config;
 
-import org.alfresco.filesys.util.CifsMounter;
-
 /**
  * File Server Configuration MBean Interface
  * 
@@ -61,11 +59,4 @@ public interface FileServerConfigMBean {
 	 * @return String
 	 */
 	public String getCIFSServerAddress();
-	
-	/**
-	 * Create a mounter to mount/unmount a share on the CIFS server
-	 * 
-	 * @return CifsMounter
-	 */
-	public CifsMounter createMounter();
 }

@@ -246,6 +246,35 @@
             </params>
          </action>
          
+         <!-- Cut a file or folder to the clipboard -->
+         <action id="cut_avm_node">
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <label-id>cut</label-id>
+            <image>/images/icons/cut.gif</image>
+            <action-listener>#{ClipboardBean.cutNode}</action-listener>
+            <params>
+               <param name="ref">#{actionContext.nodeRef}</param>
+               <!--<param name="parent">#{NavigationBean.currentNodeId}</param>-->
+            </params>
+         </action>
+         
+         <!-- Copy a file or folder to the clipboard -->
+         <action id="copy_avm_node">
+            <permissions>
+               <permission allow="true">Read</permission>
+            </permissions>
+            <label-id>copy</label-id>
+            <image>/images/icons/copy.gif</image>
+            <action-listener>#{ClipboardBean.copyNode}</action-listener>
+            <params>
+               <param name="ref">#{actionContext.nodeRef}</param>
+               <!--<param name="parent">#{NavigationBean.currentNodeId}</param>-->
+            </params>
+         </action>
+         
          
          <!-- Actions for a file in the AVM Browse screen -->
          <action-group id="avm_file_browse">
@@ -253,6 +282,8 @@
             <action idref="edit_file" />
             <action idref="update_file" />
             <action idref="preview_file" />
+            <action idref="cut_avm_node" />
+            <action idref="copy_avm_node" />
             <action idref="file_details" />
             <action idref="delete_file_browse" />
          </action-group>
@@ -261,6 +292,8 @@
          <action-group id="avm_folder_browse">
             <show-link>false</show-link>
             <action idref="preview_folder" />
+            <action idref="cut_avm_node" />
+            <action idref="copy_avm_node" />
             <action idref="folder_details" />
             <action idref="delete_folder_browse" />
          </action-group>
@@ -273,6 +306,7 @@
             <action idref="submit" />
             <action idref="revert" />
             <action idref="preview_file" />
+            <action idref="copy_avm_node" />
             <action idref="file_details" />
             <action idref="delete_file" />
          </action-group>
@@ -283,6 +317,7 @@
             <action idref="submit" />
             <action idref="revert" />
             <action idref="preview_folder" />
+            <action idref="copy_avm_node" />
             <action idref="folder_details" />
             <action idref="delete_folder" />
          </action-group>
@@ -311,6 +346,8 @@
          <!-- Actions for the File Details action menu -->
          <action-group id="avm_file_details">
             <show-link>false</show-link>
+            <action idref="cut_avm_node" />
+            <action idref="copy_avm_node" />
             <action idref="edit_file" />
             <action idref="update_file" />
             <action idref="delete_file_browse" />
@@ -319,6 +356,8 @@
          <!-- Actions for the Folder Details action menu -->
          <action-group id="avm_folder_details">
             <show-link>false</show-link>
+            <action idref="cut_avm_node" />
+            <action idref="copy_avm_node" />
             <action idref="delete_folder_browse" />
          </action-group>
          

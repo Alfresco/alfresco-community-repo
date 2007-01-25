@@ -33,4 +33,12 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    {
       super(ref, mode);
    }
+   
+   /**
+    * @see org.alfresco.web.bean.clipboard.ClipboardItem#supportsLink()
+    */
+   public boolean supportsLink()
+   {
+      return true;
+   }
 }

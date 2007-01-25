@@ -438,7 +438,7 @@ public class ClipboardBean
    }
    
    /**
-    * Add a clipboard node for an operation to the clipboard
+    * Add a clipboard node to the clipboard ready for a cut/copy operation
     * 
     * @param ref     NodeRef of the item for the operation
     * @param mode    ClipboardStatus for the operation

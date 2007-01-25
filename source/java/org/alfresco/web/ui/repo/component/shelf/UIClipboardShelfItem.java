@@ -32,8 +32,10 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.clipboard.ClipboardItem;
 import org.alfresco.web.bean.clipboard.ClipboardStatus;
 import org.alfresco.web.bean.repository.Repository;
@@ -170,7 +172,8 @@ public class UIClipboardShelfItem extends UIShelfItem
             }
             out.write("</td><td width=16>");
             
-            if (dd.isSubClass(item.getType(), ContentModel.TYPE_FOLDER))
+            boolean isFolder = (dd.isSubClass(item.getType(), ContentModel.TYPE_FOLDER));
+            if (isFolder)
             {
                // start row with correct node icon
                String icon = (String)item.getIcon();
@@ -193,14 +196,28 @@ public class UIClipboardShelfItem extends UIShelfItem
             // output cropped item label - we also output with no breaks, this is ok
             // as the copped label will ensure a sensible maximum width
             out.write("</td><td width=100%><nobr>&nbsp;");
-            out.write(Utils.cropEncode(item.getName()));
+            if (isFolder)
+            {
+               out.write(Utils.cropEncode(item.getName()));
+            }
+            else
+            {
+               // output as a content download link
+               out.write("<a href='");
+               out.write(context.getExternalContext().getRequestContextPath());
+               out.write(DownloadContentServlet.generateBrowserURL(item.getNodeRef(), item.getName()));
+               out.write("' target='new'>");
+               out.write(Utils.cropEncode(item.getName()));
+               out.write("</a>");
+            }
             
             // output actions
             out.write("</nobr></td><td align=right><nobr>");
             out.write(buildActionLink(ACTION_REMOVE_ITEM, i, bundle.getString(MSG_REMOVE_ITEM), WebResources.IMAGE_REMOVE));
             out.write("&nbsp;");
             out.write(buildActionLink(ACTION_PASTE_ITEM, i, bundle.getString(MSG_PASTE_ITEM), WebResources.IMAGE_PASTE));
-            if (item.getMode() == ClipboardStatus.COPY && dd.isSubClass(item.getType(), ContentModel.TYPE_LINK) == false)
+            if (item.supportsLink() && item.getMode() == ClipboardStatus.COPY &&
+                dd.isSubClass(item.getType(), ContentModel.TYPE_LINK) == false)
             {
                out.write("&nbsp;");
                out.write(buildActionLink(ACTION_PASTE_LINK, i, bundle.getString(MSG_PASTE_LINK), WebResources.IMAGE_PASTE_LINK));

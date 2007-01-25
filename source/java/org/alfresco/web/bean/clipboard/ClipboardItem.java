@@ -44,4 +44,6 @@ public interface ClipboardItem
    public String getId();
    
    public NodeRef getNodeRef();
+   
+   public boolean supportsLink();
 }

@@ -194,6 +194,7 @@ public class AVMNode extends Node implements Map<String, Object>
          }
          
          this.properties.put("id", this.id);
+         this.properties.put("nodeRef", this.nodeRef);
          this.properties.put("size", this.avmRef.getLength());
          this.properties.put("name", this.avmRef.getName());
          this.properties.put("created", this.avmRef.getCreateDate());

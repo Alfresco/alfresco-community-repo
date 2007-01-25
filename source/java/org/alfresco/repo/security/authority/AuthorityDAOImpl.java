@@ -495,4 +495,22 @@ public class AuthorityDAOImpl implements AuthorityDAO
         return getAuthorityOrNull(name);
     }
 
+    public String getAuthorityName(NodeRef authorityRef)
+    {
+        String name = null;
+        if (nodeService.exists(authorityRef))
+        {
+            QName type = nodeService.getType(authorityRef);
+            if (type.equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+            {
+                name = (String)nodeService.getProperty(authorityRef, ContentModel.PROP_AUTHORITY_NAME);
+            }
+            else if (type.equals(ContentModel.TYPE_AUTHORITY))
+            {
+                name = (String)nodeService.getProperty(authorityRef, ContentModel.PROP_USER_USERNAME);
+            }
+        }
+        return name;
+    }
+    
 }

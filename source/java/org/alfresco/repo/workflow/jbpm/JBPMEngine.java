@@ -1517,20 +1517,13 @@ public class JBPMEngine extends BPMEngine
                             int i = 0;
                             for (JBPMNode actor : actors)
                             {
-                                if (actor.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
-                                {
-                                    pooledActors[i++] = (String)actor.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
-                                }
-                                else
-                                {
-                                    pooledActors[i++] = actor.getName();
-                                }
+                                pooledActors[i++] = mapAuthorityToName(actor.getNodeRef());
                             }
                         }
                         else if (value instanceof JBPMNode)
                         {
                             JBPMNode node = (JBPMNode)value;
-                            pooledActors = new String[] {(node.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER)) ? (String)node.getProperties().get(ContentModel.PROP_AUTHORITY_NAME) : node.getName()};
+                            pooledActors = new String[] {mapAuthorityToName(node.getNodeRef())};
                         }
                         else
                         {
@@ -1845,6 +1838,27 @@ public class JBPMEngine extends BPMEngine
             }
         }
         return authority;
+    }
+
+    /**
+     * Convert Alfresco authority to actor id
+     *  
+     * @param authority
+     * @return  actor id
+     */
+    private String mapAuthorityToName(NodeRef authority)
+    {
+        String name = null;
+        QName type = nodeService.getType(authority);
+        if (type.equals(ContentModel.TYPE_PERSON))
+        {
+            name = (String)nodeService.getProperty(authority, ContentModel.PROP_USERNAME);
+        }
+        else
+        {
+            name = authorityDAO.getAuthorityName(authority);
+        }
+        return name;
     }
     
     /**

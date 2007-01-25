@@ -18,8 +18,10 @@ package org.alfresco.repo.workflow.jbpm;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.Node;
+import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.namespace.QName;
 import org.dom4j.Element;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.taskmgmt.exe.Assignable;
@@ -36,6 +38,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
 {
     private static final long serialVersionUID = 1025667849552265719L;
     private ServiceRegistry services;
+    private AuthorityDAO authorityDAO;
 
     private Element actor;
     private Element pooledactors;
@@ -48,6 +51,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
     protected void initialiseHandler(BeanFactory factory)
     {
         services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        authorityDAO = (AuthorityDAO)factory.getBean("authorityDAO");
     }
 
     
@@ -79,24 +83,21 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                     {
                         throw new WorkflowException("actor expression '" + actorValStr + "' evaluates to null");
                     }
-    
+
+                    String actor = null;
                     if (eval instanceof String)
                     {
-                        assignedActor = (String)eval;
+                        actor = (String)eval;
                     }
                     else if (eval instanceof Node)
                     {
-                        Node node = (Node)eval;
-                        if (!node.getType().equals(ContentModel.TYPE_PERSON))
-                        {
-                            throw new WorkflowException("actor expression does not evaluate to a person");
-                        }
-                        assignedActor = (String)node.getProperties().get(ContentModel.PROP_USERNAME);
+                        actor = mapAuthorityToName((Node)eval, false);
                     }
-                    else
+                    if (actor == null)
                     {
-                        throw new WorkflowException("actor expression does not evaluate to a person");
+                        throw new WorkflowException("actor expression must evaluate to a person");
                     }
+                    assignedActor = actor;
                 }
                 else
                 {
@@ -132,36 +133,23 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                         int i = 0;
                         for (Node node : (Node[])nodes)
                         {
-                            if (node.getType().equals(ContentModel.TYPE_PERSON))
-                            {
-                                assignedPooledActors[i++] = (String)node.getProperties().get(ContentModel.PROP_USERNAME);
-                            }
-                            else if (node.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
-                            {
-                                assignedPooledActors[i++] = (String)node.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
-                            }
-                            else
+                            String actor = mapAuthorityToName(node, true);
+                            if (actor == null)
                             {
                                 throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
                             }
+                            assignedPooledActors[i++] = actor;
                         }
                     }
                     else if (eval instanceof Node)
                     {
-                        assignedPooledActors = new String[1];
                         Node node = (Node)eval;
-                        if (node.getType().equals(ContentModel.TYPE_PERSON))
-                        {
-                            assignedPooledActors[0] = (String)node.getProperties().get(ContentModel.PROP_USERNAME);
-                        }
-                        else if (node.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
-                        {
-                            assignedPooledActors[0] = (String)node.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
-                        }
-                        else
+                        String actor = mapAuthorityToName(node, true);
+                        if (actor == null)
                         {
                             throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
                         }
+                        assignedPooledActors = new String[] {actor};
                     }
                 }
                 else
@@ -184,4 +172,30 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
         }
     }
 
+    
+    /**
+     * Convert Alfresco authority to actor id
+     *  
+     * @param authority
+     * @return  actor id
+     */
+    private String mapAuthorityToName(Node authority, boolean allowGroup)
+    {
+        String name = null;
+        QName type = authority.getType();
+        if (type.equals(ContentModel.TYPE_PERSON))
+        {
+            name = (String)authority.getProperties().get(ContentModel.PROP_USERNAME);
+        }
+        else if (type.equals(ContentModel.TYPE_AUTHORITY))
+        {
+            name = authorityDAO.getAuthorityName(authority.getNodeRef());
+        }
+        else if (allowGroup && type.equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        {
+            name = authorityDAO.getAuthorityName(authority.getNodeRef());
+        }
+        return name;
+    }
+    
 }

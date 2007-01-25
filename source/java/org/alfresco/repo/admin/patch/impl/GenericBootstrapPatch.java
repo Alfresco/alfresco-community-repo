@@ -80,7 +80,6 @@ public class GenericBootstrapPatch extends AbstractPatch
     protected void checkProperties()
     {
         checkPropertyNotNull(importerBootstrap, "importerBootstrap");
-        checkPropertyNotNull(checkPath, "checkPath");
         checkPropertyNotNull(bootstrapView, "bootstrapView");
         // fulfil contract of override
         super.checkProperties();
@@ -91,21 +90,24 @@ public class GenericBootstrapPatch extends AbstractPatch
     {
         StoreRef storeRef = importerBootstrap.getStoreRef();
         NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-        List<NodeRef> results = searchService.selectNodes(
-                rootNodeRef,
-                checkPath,
-                null,
-                namespaceService,
-                false);
-        if (results.size() > 1)
+        if (checkPath != null)
         {
-            throw new PatchException(ERR_MULTIPLE_FOUND, checkPath);
-        }
-        else if (results.size() == 1)
-        {
-            // nothing to do - it exsists
-            return I18NUtil.getMessage(MSG_EXISTS, checkPath);
-            
+            List<NodeRef> results = searchService.selectNodes(
+                    rootNodeRef,
+                    checkPath,
+                    null,
+                    namespaceService,
+                    false);
+            if (results.size() > 1)
+            {
+                throw new PatchException(ERR_MULTIPLE_FOUND, checkPath);
+            }
+            else if (results.size() == 1)
+            {
+                // nothing to do - it exsists
+                return I18NUtil.getMessage(MSG_EXISTS, checkPath);
+                
+            }
         }
         String path = bootstrapView.getProperty("path");
         List<Properties> bootstrapViews = Collections.singletonList(bootstrapView);

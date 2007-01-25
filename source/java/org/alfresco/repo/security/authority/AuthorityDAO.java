@@ -105,4 +105,13 @@ public interface AuthorityDAO
      * @return
      */
     NodeRef getAuthorityNodeRefOrNull(String name);
+
+    /**
+     * Gets the name for the given authority node
+     * 
+     * @param authorityRef  authority node
+     * @return  name
+     */
+    public String getAuthorityName(NodeRef authorityRef);
+
 }

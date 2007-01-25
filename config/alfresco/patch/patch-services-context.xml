@@ -568,4 +568,22 @@
         </property>
     </bean>
 
+    <bean id="patch.authoritiesFolderPermission" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.authoritiesFolderPermission</value></property>
+        <property name="description"><value>patch.authoritiesFolderPermission.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>32</value></property>
+        <property name="targetSchema"><value>33</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
+                <prop key="location">alfresco/bootstrap/alfrescoAuthorityStorePermission.xml</prop>
+            </props>
+        </property>
+    </bean>
+
 </beans>

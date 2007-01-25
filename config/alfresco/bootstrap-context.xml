@@ -66,6 +66,10 @@
                     <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
                     <prop key="location">alfresco/bootstrap/alfrescoAuthorityStore.xml</prop>
                 </props>
+                <props>
+                    <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoAuthorityStorePermission.xml</prop>
+                </props>
             </list>
         </property>
     </bean>

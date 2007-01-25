@@ -661,6 +661,9 @@ dojo.declare("alfresco.xforms.NumericalRange",
              alfresco.xforms.Widget,
              function(xform, xformsNode) 
              {
+               this.fractionDigits = (this.xformsNode.hasAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":fractionDigits")
+                                      ? Number(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":fractionDigits"))
+                                      : -1);
              },
              {
                /////////////////////////////////////////////////////////////////
@@ -679,7 +682,7 @@ dojo.declare("alfresco.xforms.NumericalRange",
                  var minimum = Number(this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":start"));
                  var maximum = Number(this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":end"));
                  var snapValues = 0;
-                 if (this.xform.getBinding(this.xformsNode).getType() == "integer")
+                 if (this.fractionDigits == 0)
                  {
                    snapValues = maximum - minimum + 1;
                  }
@@ -3147,31 +3150,7 @@ dojo.declare("alfresco.xforms.XForm",
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":upload":
                    return new alfresco.xforms.FilePicker(this, xformsNode);
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":range":
-                 {
-                   var type = this.getBinding(xformsNode).getType();
-                   switch (type)
-                   {
-                   // number types
-                   case "byte":
-                   case "double":
-                   case "float":
-                   case "int":
-                   case "integer":
-                   case "long":
-                   case "negativeInteger":
-                   case "nonNegativeInteger":
-                   case "nonPositiveInteger":
-                   case "short":
-                   case "unsignedByte":
-                   case "unsignedInt":
-                   case "unsignedLong":
-                   case "unsignedShort":
-                   case "positiveInteger":
-                     return new alfresco.xforms.NumericalRange(this, xformsNode);
-                   default:
-                     throw new Error("range not supported for type " + type);
-                   }
-                 }
+                   return new alfresco.xforms.NumericalRange(this, xformsNode);
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":input":
                  {
                    var type = this.getBinding(xformsNode).getType();

@@ -131,9 +131,17 @@
   <xs:element name="list_components">
     <xs:complexType>
       <xs:sequence>
-	<xs:element name="radio" type="five_string_values"/>
+	<xs:element name="radio" type="five_string_values">
+          <xs:annotation>
+            <xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo>
+          </xs:annotation>
+        </xs:element>
 	<xs:element name="combobox" type="ten_string_values"/>
-	<xs:element name="list_of_five" type="five_number_list"/>
+	<xs:element name="list_of_five" type="five_number_list">
+          <xs:annotation>
+            <xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo>
+          </xs:annotation>
+        </xs:element>
 	<xs:element name="list_of_ten" type="ten_number_list"/>
 	<xs:element name="list_of_ten_select_three" type="ten_number_list_select_three">
 	  <xs:annotation>

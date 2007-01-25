@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:mynsprefix="http://mine.org/mynsuri"
+           elementFormDefault="qualified"
+           attributeFormDefault="qualified"
+           targetNamespace="http://mine.org/mynsuri">
+
+  <xs:simpleType name="yes_or_no">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="yes"/>
+      <xs:enumeration value="no"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="element_1">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="yes_no_using_extension" minOccurs="0">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="mynsprefix:yes_or_no"/>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="yes_no_type" minOccurs="0" type="mynsprefix:yes_or_no"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

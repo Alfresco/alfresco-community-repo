@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:mynsprefix="http://mine.org/mynsuri"
+           elementFormDefault="qualified"
+           attributeFormDefault="qualified"
+           targetNamespace="http://mine.org/mynsuri">
+
+  <xs:element name="referenced_element">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:base64Binary">
+          <xs:attribute name="referenced_element_attribute" type="xs:string" use="required"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="complex_type_1">
+    <xs:sequence>
+      <xs:element name="string_in_ct" type="xs:string"/>
+      <xs:element ref="mynsprefix:referenced_element"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="element-ref-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="string" type="xs:string"/>
+        <xs:element name="complex_type_1" type="mynsprefix:complex_type_1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

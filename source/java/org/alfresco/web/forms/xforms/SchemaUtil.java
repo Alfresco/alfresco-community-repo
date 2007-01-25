@@ -348,27 +348,35 @@ public class SchemaUtil
 
    public static XSParticle findCorrespondingParticleInComplexType(final XSElementDeclaration elDecl) 
    {
-      XSComplexTypeDefinition complexType = elDecl.getEnclosingCTDefinition();
+      final XSComplexTypeDefinition complexType = elDecl.getEnclosingCTDefinition();
       if (complexType == null)
+      {
          return null;
+      }
 
-      XSParticle particle = complexType.getParticle();
-      XSTerm term = particle.getTerm();
+      final XSParticle particle = complexType.getParticle();
+      final XSTerm term = particle.getTerm();
       if (! (term instanceof XSModelGroup)) 
+      {
          return null;
+      }
 
-      XSModelGroup group = (XSModelGroup) term;
-      XSObjectList particles = group.getParticles();
+      final XSModelGroup group = (XSModelGroup) term;
+      final XSObjectList particles = group.getParticles();
       if (particles == null)
+      {
          return null;
+      }
 
       for (int i = 0; i < particles.getLength(); i++) 
       {
-         XSParticle part = (XSParticle) particles.item(i);
+         final XSParticle part = (XSParticle) particles.item(i);
          //test term
-         XSTerm thisTerm = part.getTerm();
+         final XSTerm thisTerm = part.getTerm();
          if (thisTerm == elDecl)
+         {
             return part;
+         }
       }
       return null;
    }
@@ -380,10 +388,10 @@ public class SchemaUtil
                                              XSComplexTypeDefinition type, 
                                              boolean recursive) 
    {
-      boolean found = false;
-
       if (LOGGER.isDebugEnabled())
+      {
          LOGGER.debug("isElement " + name + " declared in " + type.getName());
+      }
 
       //test if extension + declared in parent + not recursive -> NOK
       if (!recursive && type.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) 
@@ -395,6 +403,7 @@ public class SchemaUtil
             return false;
       }
 
+      boolean found = false;
       XSParticle particle = type.getParticle();
       if (particle != null) 
       {
@@ -440,65 +449,87 @@ public class SchemaUtil
       }
 
       if (LOGGER.isDebugEnabled())
+      {
          LOGGER.debug("isElement " + name + " declared in group " + group.getName() + ": " + found);
+      }
       return found;
    }
 
-   public static boolean doesElementComeFromExtension(XSElementDeclaration element, 
-                                                      XSComplexTypeDefinition controlType) 
+   public static boolean doesElementComeFromExtension(final XSElementDeclaration element, 
+                                                      final XSComplexTypeDefinition controlType) 
    {
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("doesElementComeFromExtension for " + element.getName() + " and controlType=" + controlType.getName());
-      boolean comesFromExtension = false;
-      if (controlType.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) {
-         XSTypeDefinition baseType = controlType.getBaseType();
-         if (baseType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-            XSComplexTypeDefinition complexType = (XSComplexTypeDefinition) baseType;
-            if (SchemaUtil.isElementDeclaredIn(element.getName(), complexType, true)) {
+      {
+         LOGGER.debug("doesElementComeFromExtension for " + element.getName() + 
+                      " and controlType=" + controlType.getName());
+      }
+      if (controlType.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) 
+      {
+         final XSTypeDefinition baseType = controlType.getBaseType();
+         if (baseType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) 
+         {
+            final XSComplexTypeDefinition complexType = (XSComplexTypeDefinition) baseType;
+            if (SchemaUtil.isElementDeclaredIn(element.getName(), complexType, true)) 
+            {
                if (LOGGER.isDebugEnabled())
+               {
                   LOGGER.debug("doesElementComeFromExtension: yes");
-               comesFromExtension = true;
-            } else { //recursive call
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("doesElementComeFromExtension: recursive call on previous level");
-               comesFromExtension = SchemaUtil.doesElementComeFromExtension(element, complexType);
+               }
+               return true;
+            } 
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("doesElementComeFromExtension: recursive call on previous level");
             }
+            return SchemaUtil.doesElementComeFromExtension(element, complexType);
          }
       }
-      return comesFromExtension;
+      return false;
    }
 
    /**
     * check that the element defined by this name is declared directly in the type
     */
-   public static boolean isAttributeDeclaredIn(XSAttributeUse attr, XSComplexTypeDefinition type, boolean recursive) 
+   public static boolean isAttributeDeclaredIn(final XSAttributeUse attr, 
+                                               final XSComplexTypeDefinition type, 
+                                               final boolean recursive) 
    {
-      boolean found = false;
-
       if (LOGGER.isDebugEnabled())
+      {
          LOGGER.debug("is Attribute " + attr.getAttrDeclaration().getName() + " declared in " + type.getName());
+      }
 
       //check on parent if not recursive
       if (!recursive && type.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION) 
       {
          XSComplexTypeDefinition parent = (XSComplexTypeDefinition) type.getBaseType();
          if (LOGGER.isDebugEnabled())
+         {
             LOGGER.debug("testing if it is not on parent " + parent.getName());
+         }
          if (SchemaUtil.isAttributeDeclaredIn(attr, parent, true))
+         {
             return false;
+         }
       }
 
       //check on this type  (also checks recursively)
+      boolean found = false;
       final XSObjectList attrs = type.getAttributeUses();
-      for (int i = 0; i < attrs.getLength() && !found; i++) 
+      for (int i = 0; i < attrs.getLength(); i++) 
       {
-         XSAttributeUse anAttr = (XSAttributeUse)attrs.item(i);
-         if (anAttr == attr)
+         if ((XSAttributeUse)attrs.item(i) == attr)
+         {
             found = true;
+            break;
+         }
       }
 
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("is Attribute " + attr.getName() + " declared in " + type.getName() + ": " + found);
+      {
+         LOGGER.debug("is Attribute " + attr.getName() +
+                      " declared in " + type.getName() + ": " + found);
+      }
 
       return found;
    }
@@ -595,8 +626,10 @@ public class SchemaUtil
       final Occurance result = new Occurance(particle);
 
       if (LOGGER.isDebugEnabled())
+      {
          LOGGER.debug("getOccurance for " + elDecl.getName() + 
                       ", " + result);
+      }
       return result;
    }
 }

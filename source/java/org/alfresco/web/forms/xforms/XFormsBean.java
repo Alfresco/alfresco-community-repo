@@ -670,10 +670,16 @@ public class XFormsBean
          if (includeEl.hasAttribute("schemaLocation"))
          {
             String uri = includeEl.getAttribute("schemaLocation");
+            if (uri != null && uri.startsWith("http://"))
+            {
+               LOGGER.debug("not rewriting " + uri);
+               continue;
+            }
+
             final String baseURI = (uri.charAt(0) == '/'
                                     ? AVMConstants.buildStoreUrl(cwdAvmPath)
                                     : AVMConstants.buildAssetUrl(cwdAvmPath));
-
+            
             LOGGER.debug("rewriting " + uri + " as " + (baseURI + uri));
             includeEl.setAttribute("schemaLocation", baseURI + uri);
          }

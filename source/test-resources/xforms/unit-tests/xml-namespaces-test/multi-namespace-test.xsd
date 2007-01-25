@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:mynsprefix="http://mine.org/mynsuri"
+           xmlns:othernsprefix="http://other.org/othernsuri"
+           elementFormDefault="qualified"
+           attributeFormDefault="qualified"
+           targetNamespace="http://mine.org/mynsuri">
+  <xs:import namespace="http://other.org/othernsuri" schemaLocation="/multi-namespace-test-other.xsd"/>
+
+  <xs:element name="multi-namespace-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="element_type_1" type="othernsprefix:type1"/>
+      </xs:sequence>
+      <xs:attribute name="attribute_type_1" type="othernsprefix:type1" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

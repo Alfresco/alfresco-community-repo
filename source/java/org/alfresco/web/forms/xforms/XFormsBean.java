@@ -660,12 +660,13 @@ public class XFormsBean
    private static void rewriteInlineURIs(final Document schemaDocument,
                                          final String cwdAvmPath)
    {
-      final NodeList includes = 
-         schemaDocument.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "include");
-      LOGGER.debug("rewriting " + includes.getLength() + " includes");
-      for (int i = 0; i < includes.getLength(); i++)
+      final NodeList nl =
+         XMLUtil.combine(schemaDocument.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "include"),
+                         schemaDocument.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "import"));
+      LOGGER.debug("rewriting " + nl.getLength() + " includes");
+      for (int i = 0; i < nl.getLength(); i++)
       {
-         final Element includeEl = (Element)includes.item(i);
+         final Element includeEl = (Element)nl.item(i);
          if (includeEl.hasAttribute("schemaLocation"))
          {
             String uri = includeEl.getAttribute("schemaLocation");

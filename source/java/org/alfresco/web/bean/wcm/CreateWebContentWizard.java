@@ -84,6 +84,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    protected String content = null;
    protected String formName;
    protected transient List<SelectItem> createMimeTypes;
+   protected transient List<SelectItem> formChoices;
    protected String createdPath = null;
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;
@@ -171,6 +172,8 @@ public class CreateWebContentWizard extends BaseContentWizard
       this.renditions = null;
       this.startWorkflow = false;
       this.formSelectDisabled = false;
+      this.createMimeTypes = null;
+      this.formChoices = null;
       
       // check for a form ID being passed in as a parameter
       if (this.parameters.get(UIUserSandboxes.PARAM_FORM_NAME) != null)
@@ -523,17 +526,20 @@ public class CreateWebContentWizard extends BaseContentWizard
     */
    public List<SelectItem> getFormChoices()
    {
-      final List<Form> forms = this.avmBrowseBean.getWebProject().getForms();
-      final List<SelectItem> items = new ArrayList<SelectItem>(forms.size());
-      for (final Form f : forms)
+      if (this.formChoices == null)
       {
-         items.add(new SelectItem(f.getName(), f.getTitle()));
+         final List<Form> forms = this.avmBrowseBean.getWebProject().getForms();
+         this.formChoices = new ArrayList<SelectItem>(forms.size());
+         for (final Form f : forms)
+         {
+            this.formChoices.add(new SelectItem(f.getName(), f.getTitle()));
+         }
+         
+         final QuickSort sorter = new QuickSort(this.formChoices, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
+         
       }
-      
-      final QuickSort sorter = new QuickSort(items, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-      sorter.sort();
-      
-      return items;
+      return this.formChoices;
    }
    
    /**
@@ -543,21 +549,21 @@ public class CreateWebContentWizard extends BaseContentWizard
    {
       if (this.createMimeTypes == null)
       {
-         FacesContext context = FacesContext.getCurrentInstance();
+         final FacesContext context = FacesContext.getCurrentInstance();
          
          // add the well known object type to start with
          this.createMimeTypes = new ArrayList<SelectItem>(5);
          
          // add the configured create mime types to the list
-         ConfigService svc = Application.getConfigService(context);
-         Config wizardCfg = svc.getConfig("Content Wizards");
+         final ConfigService svc = Application.getConfigService(context);
+         final Config wizardCfg = svc.getConfig("Content Wizards");
          if (wizardCfg == null)
          {
             LOGGER.warn("Could not find 'Content Wizards' configuration section");
          }
          else
          {
-            ConfigElement typesCfg = wizardCfg.getConfigElement("create-mime-types");
+            final ConfigElement typesCfg = wizardCfg.getConfigElement("create-mime-types");
             if (typesCfg == null)
             {
                LOGGER.warn("Could not find 'create-mime-types' configuration element");
@@ -566,16 +572,20 @@ public class CreateWebContentWizard extends BaseContentWizard
             {
                for (ConfigElement child : typesCfg.getChildren())
                {
-                  String currentMimeType = child.getAttribute("name");
-                  if (currentMimeType != null)
+                  final String currentMimeType = child.getAttribute("name");
+                  if (currentMimeType == null ||
+                      (MimetypeMap.MIMETYPE_XML.equals(currentMimeType) &&
+                       this.getFormChoices().size() == 0))
                   {
-                     String label = getSummaryMimeType(currentMimeType);
-                     this.createMimeTypes.add(new SelectItem(currentMimeType, label));
+                     continue;
                   }
+
+                  final String label = this.getSummaryMimeType(currentMimeType);
+                  this.createMimeTypes.add(new SelectItem(currentMimeType, label));
                }
                
                // make sure the list is sorted by the label
-               QuickSort sorter = new QuickSort(this.objectTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+               final QuickSort sorter = new QuickSort(this.objectTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
                sorter.sort();
             }
          }

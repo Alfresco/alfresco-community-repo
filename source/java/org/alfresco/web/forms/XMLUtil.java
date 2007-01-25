@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -174,5 +175,42 @@ public class XMLUtil
          LOGGER.error(pce);
          return null;
       }
+   }
+
+   /**
+    * Provides a NodeList of multiple nodelists
+    */
+   public static NodeList combine(final NodeList... nls)
+   {
+
+      return new NodeList()
+      {
+         public Node item(final int index)
+         {
+            int offset = 0;
+            for (int i = 0; i < nls.length; i++)
+            {
+               if (index - offset < nls[i].getLength())
+               {
+                  return nls[i].item(index - offset);
+               }
+               else
+               {
+                  offset += nls[i].getLength();
+               }
+            }
+            return null;
+         }
+
+         public int getLength()
+         {
+            int result = 0;
+            for (int i = 0; i < nls.length; i++)
+            {
+               result += nls[i].getLength();
+            }
+            return result;
+         }
+      };
    }
 }

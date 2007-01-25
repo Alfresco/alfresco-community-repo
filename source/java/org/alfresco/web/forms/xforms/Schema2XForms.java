@@ -73,65 +73,7 @@ public class Schema2XForms
 
    private final static Log LOGGER = LogFactory.getLog(Schema2XForms.class);
 
-   private static final String PROPERTY_PREFIX =
-      "http://www.chiba.org/properties/schemaFormBuilder/";
-
-   /**
-    * Property to control the selection of UI control for a selectOne control.
-    * If a selectOne control has >= the number of values specified in this property,
-    * it is considered a <b>long</b> list, and the UI control specified by
-    * SELECTONE_UI_CONTROL_LONG_PROP is used. Otherwise, the value of SELECTONE_UI_CONTROL_SHORT_PROP
-    * is used.
-    */
-   public static final String SELECTONE_LONG_LIST_SIZE_PROP =
-      PROPERTY_PREFIX + "select1@longListSize";
-
-   /**
-    * Property to specify the selectMany UI control to be used when there are releatively few items
-    * to choose from.
-    */
-   public static final String SELECTONE_UI_CONTROL_SHORT_PROP =
-      PROPERTY_PREFIX + "select1@appearance/short";
-
-   /**
-    * Property to specify the selectMany UI control to be used when there are large numbers of items
-    * to choose from.
-    */
-   public static final String SELECTONE_UI_CONTROL_LONG_PROP =
-      PROPERTY_PREFIX + "select1@appearance/long";
-   private static final String DEFAULT_SELECTONE_UI_CONTROL_SHORT_PROP =
-      "full";
-   private static final String DEFAULT_SELECTONE_UI_CONTROL_LONG_PROP =
-      "minimal";
-
-   /**
-    * Property to control the selection of UI control for a selectMany control.
-    * If a selectMany control has >= the number of values specified in this property,
-    * it is considered a <b>long</b> list, and the UI control specified by
-    * SELECTMANY_UI_CONTROL_LONG_PROP is used. Otherwise, the value of SELECTMANY_UI_CONTROL_SHORT_PROP
-    * is used.
-    */
-   public static final String SELECTMANY_LONG_LIST_SIZE_PROP =
-      PROPERTY_PREFIX + "select@longListSize";
-
-   /**
-    * Property to specify the selectMany UI control to be used when there are releatively few items
-    * to choose from.
-    */
-   public static final String SELECTMANY_UI_CONTROL_SHORT_PROP =
-      PROPERTY_PREFIX + "select@appearance/short";
-
-   /**
-    * Property to specify the selectMany UI control to be used when there are large numbers of items
-    * to choose from.
-    */
-   public static final String SELECTMANY_UI_CONTROL_LONG_PROP =
-      PROPERTY_PREFIX + "select@appearance/long";
-   private static final String DEFAULT_SELECTMANY_UI_CONTROL_SHORT_PROP =
-      "full";
-   private static final String DEFAULT_SELECTMANY_UI_CONTROL_LONG_PROP =
-      "compact";
-   private static final String DEFAULT_LONG_LIST_MAX_SIZE = "6";
+   private final static int LONG_LIST_SIZE = 5;
 
    private final String action;
    private final SubmitMethod submitMethod;
@@ -143,7 +85,6 @@ public class Schema2XForms
     * values: "Long" representing the counter for this element
     */
    private final Map<String, Long> counter = new HashMap<String, Long>();
-   private final Properties properties = new Properties();
    private String targetNamespace;
    private final Map namespacePrefixes = new HashMap();
 
@@ -172,50 +113,6 @@ public class Schema2XForms
       this.action = action;
       this.submitMethod = submitMethod;
       this.base = base;
-   }
-
-   /**
-    * Get the current set of properties used by implementations of Schema2XForms.
-    *
-    * @return The list of properties.
-    */
-   public Properties getProperties()
-   {
-      return properties;
-   }
-
-   /**
-    * Sets the property to the specified value. If the property exists, its value is overwritten.
-    *
-    * @param key   The implementation defined property key.
-    * @param value The value for the property.
-    */
-   public void setProperty(String key, String value)
-   {
-      getProperties().setProperty(key, value);
-   }
-
-   /**
-    * Gets the value for the specified property.
-    *
-    * @param key The implementation defined property key.
-    * @return The property value if found, or null if the property cannot be located.
-    */
-   public String getProperty(String key)
-   {
-      return getProperties().getProperty(key);
-   }
-
-   /**
-    * Gets the value for the specified property, with a default if the property cannot be located.
-    *
-    * @param key          The implementation defined property key.
-    * @param defaultValue This value will be returned if the property does not exists.
-    * @return The property value if found, or defaultValue if the property cannot be located.
-    */
-   public String getProperty(String key, String defaultValue)
-   {
-      return getProperties().getProperty(key, defaultValue);
    }
 
    /**
@@ -373,16 +270,6 @@ public class Schema2XForms
    public void reset()
    {
       this.counter.clear();
-      setProperty(SELECTMANY_LONG_LIST_SIZE_PROP, DEFAULT_LONG_LIST_MAX_SIZE);
-      setProperty(SELECTMANY_UI_CONTROL_SHORT_PROP,
-                  DEFAULT_SELECTMANY_UI_CONTROL_SHORT_PROP);
-      setProperty(SELECTMANY_UI_CONTROL_LONG_PROP,
-                  DEFAULT_SELECTMANY_UI_CONTROL_LONG_PROP);
-      setProperty(SELECTONE_LONG_LIST_SIZE_PROP, DEFAULT_LONG_LIST_MAX_SIZE);
-      setProperty(SELECTONE_UI_CONTROL_SHORT_PROP,
-                  DEFAULT_SELECTONE_UI_CONTROL_SHORT_PROP);
-      setProperty(SELECTONE_UI_CONTROL_LONG_PROP,
-                  DEFAULT_SELECTONE_UI_CONTROL_LONG_PROP);
    }
 
    private void insertPrototypeNodes(final Element instanceDocumentElement,
@@ -580,9 +467,10 @@ public class Schema2XForms
 
    /**
     */
-   protected Map<String, Element> addChoicesForSelectSwitchControl(final Document xForm,
-                                                                   final Element choicesElement,
-                                                                   final List<XSTypeDefinition> choiceValues)
+   protected Map<String, Element> addChoicesForSelectSwitchControl(final Document xformsDocument,
+                                                                   final Element formSection,
+                                                                   final List<XSTypeDefinition> choiceValues,
+                                                                   final String typeBindId)
    {
       if (LOGGER.isDebugEnabled())
       {
@@ -613,37 +501,32 @@ public class Schema2XForms
          }
 
          //build the case element
-         final Element caseElement = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                           NamespaceConstants.XFORMS_PREFIX + ":case");
+         final Element caseElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                                    NamespaceConstants.XFORMS_PREFIX + ":case");
+         caseElement.appendChild(this.createLabel(xformsDocument, textValue));
          final String caseId = this.setXFormsId(caseElement);
          result.put(textValue, caseElement);
 
-         final Element item = this.createXFormsItem(xForm,
-                                                    this.createCaption(textValue),
-                                                    textValue);
-         choicesElement.appendChild(item);
-
-         /// action in the case
-         final Element action = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                      NamespaceConstants.XFORMS_PREFIX + ":action");
-         this.setXFormsId(action);
-         item.appendChild(action);
-
-         action.setAttributeNS(NamespaceConstants.XMLEVENTS_NS,
-                               NamespaceConstants.XMLEVENTS_PREFIX + ":event",
-                               "xforms-select");
-
-         final Element toggle = xForm.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                      NamespaceConstants.XFORMS_PREFIX + ":toggle");
+         final Element toggle = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                               NamespaceConstants.XFORMS_PREFIX + ":toggle");
          this.setXFormsId(toggle);
-
          toggle.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                NamespaceConstants.XFORMS_PREFIX + ":case",
                                caseId);
 
-         //toggle.setAttributeNS(NamespaceConstants.XFORMS_NS,
-         //NamespaceConstants.XFORMS_PREFIX + ":case",bindIdPrefix + "_" + textValue +"_case");
-         action.appendChild(toggle);
+         final Element setValue = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                                 NamespaceConstants.XFORMS_PREFIX + ":setvalue");
+         setValue.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                 NamespaceConstants.XFORMS_PREFIX + ":bind",
+                                 typeBindId);
+         setValue.appendChild(xformsDocument.createTextNode(textValue));
+
+         formSection.appendChild(this.createTrigger(xformsDocument,
+                                                    null,
+                                                    typeBindId,
+                                                    "toggle to case " + caseId,
+                                                    toggle,
+                                                    setValue));
       }
       return result;
    }
@@ -661,11 +544,15 @@ public class Schema2XForms
 
       final NodeList d = doc.getElementsByTagNameNS(namespace, elementName);
       if (d.getLength() == 0)
+      {
          return null;
+      }
       if (d.getLength() > 1)
-         LOGGER.warn("expect exactly one value for " + namespace +
+      {
+         LOGGER.warn("expected exactly one value for " + namespace +
                      ":" + elementName +
                      ". found " + d.getLength());
+      }
       String result = DOMUtil.getTextNodeAsString(d.item(0));
       LOGGER.debug(namespace + ":" + elementName + " = " + result);
       if (result.startsWith("${") && result.endsWith("}") && resourceBundle != null)
@@ -685,7 +572,7 @@ public class Schema2XForms
       return result;
    }
 
-   private Element addAnyType(final Document xForm,
+   private Element addAnyType(final Document xformsDocument,
                               final Element modelSection,
                               final Element formSection,
                               final XSModel schema,
@@ -694,7 +581,7 @@ public class Schema2XForms
                               final String pathToRoot,
                               final ResourceBundle resourceBundle)
    {
-      return this.addSimpleType(xForm,
+      return this.addSimpleType(xformsDocument,
                                 modelSection,
                                 formSection,
                                 schema,
@@ -706,7 +593,7 @@ public class Schema2XForms
                                 resourceBundle);
    }
 
-   private void addAttributeSet(final Document xForm,
+   private void addAttributeSet(final Document xformsDocument,
                                 final Element modelSection,
                                 final Element defaultInstanceElement,
                                 final Element formSection,
@@ -819,7 +706,7 @@ public class Schema2XForms
                throw new FormBuilderException("error retrieving default value for attribute " +
                                               attributeName + " at " + newPathToRoot, e);
             }
-            this.addSimpleType(xForm,
+            this.addSimpleType(xformsDocument,
                                modelSection,
                                formSection,
                                schema,
@@ -831,7 +718,7 @@ public class Schema2XForms
       }
    }
 
-   private Element addComplexType(final Document xForm,
+   private Element addComplexType(final Document xformsDocument,
                                   final Element modelSection,
                                   final Element defaultInstanceElement,
                                   final Element formSection,
@@ -861,13 +748,13 @@ public class Schema2XForms
       }
 
       // add a group node and recurse
-      final Element groupElement = this.createGroup(xForm,
+      final Element groupElement = this.createGroup(xformsDocument,
                                                     modelSection,
                                                     formSection,
                                                     owner,
                                                     resourceBundle);
       final SchemaUtil.Occurance o = SchemaUtil.getOccurance(owner);
-      final Element repeatSection = this.addRepeatIfNecessary(xForm,
+      final Element repeatSection = this.addRepeatIfNecessary(xformsDocument,
                                                               modelSection,
                                                               groupElement,
                                                               controlType,
@@ -883,7 +770,7 @@ public class Schema2XForms
          relative = true;
       }
 
-      this.addComplexTypeChildren(xForm,
+      this.addComplexTypeChildren(xformsDocument,
                                   modelSection,
                                   defaultInstanceElement,
                                   repeatSection,
@@ -897,7 +784,7 @@ public class Schema2XForms
       return groupElement;
    }
 
-   private void addComplexTypeChildren(final Document xForm,
+   private void addComplexTypeChildren(final Document xformsDocument,
                                        Element modelSection,
                                        final Element defaultInstanceElement,
                                        final Element formSection,
@@ -937,7 +824,7 @@ public class Schema2XForms
          {
             if (base.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE)
             {
-               this.addSimpleType(xForm,
+               this.addSimpleType(xformsDocument,
                                   modelSection,
                                   formSection,
                                   schema,
@@ -973,7 +860,7 @@ public class Schema2XForms
       }
 
       //attributes
-      this.addAttributeSet(xForm,
+      this.addAttributeSet(xformsDocument,
                            modelSection,
                            defaultInstanceElement,
                            formSection,
@@ -1001,7 +888,7 @@ public class Schema2XForms
          if (term instanceof XSModelGroup)
          {
             //call addGroup on this group
-            this.addGroup(xForm,
+            this.addGroup(xformsDocument,
                           modelSection,
                           defaultInstanceElement,
                           formSection,
@@ -1065,7 +952,7 @@ public class Schema2XForms
                                 modelSection,
                                 formSection,
                                 schema,
-                                (XSComplexTypeDefinition) controlType,
+                                (XSComplexTypeDefinition)controlType,
                                 elementDecl,
                                 pathToRoot,
                                 resourceBundle);
@@ -1078,13 +965,15 @@ public class Schema2XForms
       }
 
       boolean relative = true;
-      String typeName = controlType.getName();
+      final String typeName = controlType.getName();
+      final boolean typeIsAbstract = ((XSComplexTypeDefinition)controlType).getAbstract();
       final TreeSet<XSTypeDefinition> compatibleTypes =
-         typeName != null ? this.typeTree.get(controlType.getName()) : null;
+         typeName != null ? this.typeTree.get(typeName) : null;
       if (compatibleTypes == null && typeName != null && LOGGER.isDebugEnabled())
       {
          LOGGER.debug("No compatible type found for " + typeName);
       }
+
       if (typeName != null && compatibleTypes != null)
       {
          relative = false;
@@ -1097,7 +986,7 @@ public class Schema2XForms
                LOGGER.debug("          compatible type name=" + compType.getName());
             }
          }
-         final boolean typeIsAbstract = ((XSComplexTypeDefinition)controlType).getAbstract();
+
          if (!typeIsAbstract && compatibleTypes.size() == 0)
          {
             relative = true;
@@ -1111,7 +1000,7 @@ public class Schema2XForms
          }
          else if (typeIsAbstract && compatibleTypes.size() == 0)
          {
-            //name not null but no compatibleType?
+            // name not null but no compatibleType?
             relative = false;
          }
          else
@@ -1147,7 +1036,7 @@ public class Schema2XForms
          // create the <xforms:bind> element and add it to the model.
          final Element bindElement =
             xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                  NamespaceConstants.XFORMS_PREFIX + ":bind");
+                                           NamespaceConstants.XFORMS_PREFIX + ":bind");
          final String bindId = this.setXFormsId(bindElement);
          bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                     NamespaceConstants.XFORMS_PREFIX + ":nodeset",
@@ -1175,7 +1064,6 @@ public class Schema2XForms
                                  true,
                                  false,
                                  resourceBundle);
-
    }
 
    private Element addElementWithMultipleCompatibleTypes(final Document xformsDocument,
@@ -1189,12 +1077,16 @@ public class Schema2XForms
                                                          final ResourceBundle resourceBundle)
       throws FormBuilderException
    {
-
-      LOGGER.debug("&&&&&&&&&&&&&&& path to root =  " + pathToRoot);
       // look for compatible types
       final XSTypeDefinition controlType = elementDecl.getTypeDefinition();
+      defaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
+                                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":type",
+                                            controlType.getName());
+      defaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
+                                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil",
+                                            "true");
 
-         //get possible values
+      //get possible values
       final List<XSTypeDefinition> enumValues = new LinkedList<XSTypeDefinition>();
       //add the type (if not abstract)
       if (!((XSComplexTypeDefinition) controlType).getAbstract())
@@ -1205,17 +1097,7 @@ public class Schema2XForms
       //add compatible types
       enumValues.addAll(compatibleTypes);
 
-      final Element control =
-         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                        NamespaceConstants.XFORMS_PREFIX + ":select1");
-      final String select1Id = this.setXFormsId(control);
-
-      final Element choices =
-         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                        NamespaceConstants.XFORMS_PREFIX + ":choices");
-      this.setXFormsId(choices, select1Id + "-choices");
       final String caption = this.createCaption(elementDecl.getName() + " Type");
-      control.appendChild(this.createLabel(xformsDocument, caption));
 
       // multiple compatible types for this element exist
       // in the schema - allow the user to choose from
@@ -1229,109 +1111,47 @@ public class Schema2XForms
                                  pathToRoot + "/@xsi:type");
 
       modelSection.appendChild(bindElement);
-      control.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                             NamespaceConstants.XFORMS_PREFIX + ":bind",
-                             bindId);
 
       //add the "element" bind, in addition
-      Element bindElement2 = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                            NamespaceConstants.XFORMS_PREFIX + ":bind");
-      String bindId2 = this.setXFormsId(bindElement2);
+      final Element bindElement2 = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                                  NamespaceConstants.XFORMS_PREFIX + ":bind");
+      final String bindId2 = this.setXFormsId(bindElement2);
       bindElement2.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                   NamespaceConstants.XFORMS_PREFIX + ":nodeset",
                                   pathToRoot);
 
       modelSection.appendChild(bindElement2);
 
-      control.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                             NamespaceConstants.XFORMS_PREFIX + ":appearance",
-                             (enumValues.size() < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))
-                              ? getProperty(SELECTONE_UI_CONTROL_SHORT_PROP)
-                              : getProperty(SELECTONE_UI_CONTROL_LONG_PROP)));
-
-      if (enumValues.size() >= Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP)))
-      {
-         // add the "Please select..." instruction item for the combobox
-         // and set the isValid attribute on the bind element to check for the "Please select..."
-         // item to indicate that is not a valid value
-         //
-         final String pleaseSelect = "[Select1 " + caption + "]";
-         final Element item = this.createXFormsItem(xformsDocument, pleaseSelect, pleaseSelect);
-         choices.appendChild(item);
-
-         // not(purchaseOrder/state = '[Choose State]')
-         //String isValidExpr = "not(" + bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "nodeset") + " = '" + pleaseSelect + "')";
-         // ->no, not(. = '[Choose State]')
-         final String isValidExpr = "not( . = '" + pleaseSelect + "')";
-
-         //check if there was a constraint
-         final String constraint = bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "constraint");
-         bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                    NamespaceConstants.XFORMS_PREFIX + ":constraint",
-                                    (constraint != null && constraint.length() != 0
-                                     ? constraint + " && " + isValidExpr
-                                     : isValidExpr));
-      }
-
-      control.appendChild(choices);
-      formSection.appendChild(control);
-
       // add content to select1
       final Map<String, Element> caseTypes =
-         this.addChoicesForSelectSwitchControl(xformsDocument, choices, enumValues);
-
-      //add a trigger for this control (is there a way to not need it ?)
-      final Element dispatchTrigger = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                                     NamespaceConstants.XFORMS_PREFIX + ":dispatch");
-      dispatchTrigger.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                     NamespaceConstants.XFORMS_PREFIX + ":name",
-                                     "DOMActivate");
-      dispatchTrigger.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                     NamespaceConstants.XFORMS_PREFIX + ":target",
-                                     select1Id);
-      formSection.appendChild(this.createTrigger(xformsDocument,
-                                                 null,
-                                                 null,
-                                                 "validate choice",
-                                                 dispatchTrigger));
+         this.addChoicesForSelectSwitchControl(xformsDocument, formSection, enumValues, bindId);
 
       //add switch
       final Element switchElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                                                    NamespaceConstants.XFORMS_PREFIX + ":switch");
-      this.setXFormsId(switchElement, select1Id + "-" + this.setXFormsId(switchElement));
+      final String switchId = this.setXFormsId(switchElement);
       switchElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                    NamespaceConstants.XFORMS_PREFIX + ":bind",
                                    bindId);
 
       formSection.appendChild(switchElement);
-      //formSection.appendChild(switchElement);
 
-      /////////////// add this type //////////////
       final Element firstCaseElement = caseTypes.get(controlType.getName());
       switchElement.appendChild(firstCaseElement);
-      firstCaseElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                      NamespaceConstants.XFORMS_PREFIX + ":selected",
-                                      "true");
-
-      defaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
-                                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":type",
-                                            controlType.getName());
-      defaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
-                                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil",
-                                            "true");
-      LOGGER.debug("&&&&& die before " + XMLUtil.toString(defaultInstanceElement));
-      this.addComplexType(xformsDocument,
-                          modelSection,
-                          defaultInstanceElement,
-                          firstCaseElement,
-                          schema,
-                          (XSComplexTypeDefinition)controlType,
-                          elementDecl,
-                          pathToRoot,
-                          true,
-                          false,
-                          resourceBundle);
-      LOGGER.debug("&&&&& die after " + XMLUtil.toString(defaultInstanceElement));
+      final Element firstGroupElement = this.addComplexType(xformsDocument,
+                                                            modelSection,
+                                                            defaultInstanceElement,
+                                                            firstCaseElement,
+                                                            schema,
+                                                            (XSComplexTypeDefinition)controlType,
+                                                            elementDecl,
+                                                            pathToRoot,
+                                                            true,
+                                                            false,
+                                                            resourceBundle);
+      firstGroupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                       NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                                       "");
 
       /////////////// add sub types //////////////
       // add each compatible type within
@@ -1352,27 +1172,23 @@ public class Schema2XForms
             continue;
          }
 
-         //Element caseElement = (Element) xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,NamespaceConstants.XFORMS_PREFIX + ":case");
-         //caseElement.setAttributeNS(NamespaceConstants.XFORMS_NS,NamespaceConstants.XFORMS_PREFIX + ":id",bindId + "_" + type.getName() +"_case");
-         //String case_id=this.setXFormsId(caseElement);
          final Element caseElement = caseTypes.get(type.getName());
-         caseElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                    NamespaceConstants.XFORMS_PREFIX + ":selected",
-                                    "false");
-
          switchElement.appendChild(caseElement);
 
-         this.addComplexType(xformsDocument,
-                             modelSection,
-                             defaultInstanceElement,
-                             caseElement,
-                             schema,
-                             (XSComplexTypeDefinition) type,
-                             elementDecl,
-                             pathToRoot,
-                             true,
-                             true,
-                             resourceBundle);
+         final Element groupElement = this.addComplexType(xformsDocument,
+                                                          modelSection,
+                                                          defaultInstanceElement,
+                                                          caseElement,
+                                                          schema,
+                                                          (XSComplexTypeDefinition) type,
+                                                          elementDecl,
+                                                          pathToRoot,
+                                                          true,
+                                                          true,
+                                                          resourceBundle);
+         groupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                     NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                                     "");
 
          // modify bind to add a "relevant" attribute that checks the value of @xsi:type
          if (LOGGER.isDebugEnabled())
@@ -1383,8 +1199,8 @@ public class Schema2XForms
          final NodeList binds = bindElement2.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "bind");
          for (int i = 0; i < binds.getLength(); i++)
          {
-            Element subBind = (Element) binds.item(i);
-            String name = subBind.getAttributeNS(NamespaceConstants.XFORMS_NS, "nodeset");
+            final Element subBind = (Element) binds.item(i);
+            final String name = subBind.getAttributeNS(NamespaceConstants.XFORMS_NS, "nodeset");
 
             if (LOGGER.isDebugEnabled())
             {
@@ -1427,7 +1243,7 @@ public class Schema2XForms
                                    newRelevant);
          }
       }
-      return control;
+      return switchElement;
    }
 
    /**
@@ -1629,8 +1445,10 @@ public class Schema2XForms
             }
          }
          else
-         { //XSWildcard -> ignore ?
-            //LOGGER.warn("XSWildcard found in group from "+owner.getName()+" for pathToRoot="+pathToRoot);
+         {
+            LOGGER.warn("Unhandled term " + term + 
+                        " found in group from " + owner.getName() + 
+                        " for pathToRoot = " + pathToRoot);
          }
       }
 
@@ -1665,7 +1483,7 @@ public class Schema2XForms
 
       final Element repeatSection =
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                               NamespaceConstants.XFORMS_PREFIX + ":repeat");
+                                        NamespaceConstants.XFORMS_PREFIX + ":repeat");
 
       //bind instead of repeat
       //repeatSection.setAttributeNS(NamespaceConstants.XFORMS_NS,NamespaceConstants.XFORMS_PREFIX + ":nodeset",pathToRoot);
@@ -1713,7 +1531,7 @@ public class Schema2XForms
 
       //add a group inside the repeat?
       final Element group = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                  NamespaceConstants.XFORMS_PREFIX + ":group");
+                                                           NamespaceConstants.XFORMS_PREFIX + ":group");
       group.setAttributeNS(NamespaceConstants.XFORMS_NS,
                            NamespaceConstants.XFORMS_PREFIX + ":appearance",
                            "repeated");
@@ -1887,6 +1705,7 @@ public class Schema2XForms
       {
             formControl = this.createControlForListType(xformsDocument,
                                                         (XSSimpleTypeDefinition)controlType,
+                                                        owner,
                                                         caption,
                                                         bindElement,
                                                         resourceBundle);
@@ -1896,6 +1715,7 @@ public class Schema2XForms
       {
          formControl = this.createControlForEnumerationType(xformsDocument,
                                                             (XSSimpleTypeDefinition)controlType,
+                                                            owner,
                                                             caption,
                                                             bindElement,
                                                             resourceBundle);
@@ -2040,19 +1860,22 @@ public class Schema2XForms
       }
 
       //model element
-      Element modelElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                            NamespaceConstants.XFORMS_PREFIX + ":model");
+      final Element modelElement = 
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                        NamespaceConstants.XFORMS_PREFIX + ":model");
       this.setXFormsId(modelElement);
-      Element modelWrapper = xformsDocument.createElementNS(NamespaceConstants.XHTML_NS,
-                                                            NamespaceConstants.XHTML_PREFIX + ":head");
+      final Element modelWrapper =
+         xformsDocument.createElementNS(NamespaceConstants.XHTML_NS,
+                                        NamespaceConstants.XHTML_PREFIX + ":head");
       modelWrapper.appendChild(modelElement);
       envelopeElement.appendChild(modelWrapper);
 
       //form control wrapper -> created by wrapper
       //Element formWrapper = xformsDocument.createElement("body");
       //envelopeElement.appendChild(formWrapper);
-      Element formWrapper = xformsDocument.createElementNS(NamespaceConstants.XHTML_NS,
-                                                           NamespaceConstants.XHTML_PREFIX + ":body");
+      final Element formWrapper = 
+         xformsDocument.createElementNS(NamespaceConstants.XHTML_NS,
+                                        NamespaceConstants.XHTML_PREFIX + ":body");
       envelopeElement.appendChild(formWrapper);
       return xformsDocument;
    }
@@ -2064,7 +1887,7 @@ public class Schema2XForms
                                final ResourceBundle resourceBundle)
    {
       // add a group node and recurse
-      Element groupElement =
+      final Element groupElement =
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                         NamespaceConstants.XFORMS_PREFIX + ":group");
       this.setXFormsId(groupElement);
@@ -2111,18 +1934,26 @@ public class Schema2XForms
    {
       // if the word is all upper case, then set to lower case and continue
       if (text.equals(text.toUpperCase()))
+      {
          text = text.toLowerCase();
+      }
       final String[] s = text.split("[-_\\ ]");
       final StringBuffer result = new StringBuffer();
       for (int i = 0; i < s.length; i++)
       {
          if (i != 0)
+         {
             result.append(' ');
+         }
          if (s[i].length() > 1)
+         {
             result.append(Character.toUpperCase(s[i].charAt(0)) +
                           s[i].substring(1, s[i].length()));
+         }
          else
+         {
             result.append(s[i]);
+         }
       }
       return result.toString();
    }
@@ -2169,15 +2000,23 @@ public class Schema2XForms
                                final ResourceBundle resourceBundle)
    {
       if (element instanceof XSElementDeclaration)
+      {
          return this.createCaption((XSElementDeclaration)element, resourceBundle);
+      }
       if (element instanceof XSAttributeDeclaration)
+      {
          return this.createCaption((XSAttributeDeclaration)element, resourceBundle);
+      }
       if (element instanceof XSAttributeUse)
+      {
          return this.createCaption((XSAttributeUse)element, resourceBundle);
-
-      LOGGER.warn("WARNING: createCaption: element is not an attribute nor an element: "
-                  + element.getClass().getName());
-      return null;
+      }
+      else
+      {
+         LOGGER.warn("WARNING: createCaption: element is not an attribute nor an element: "
+                     + element.getClass().getName());
+         return null;
+      }
    }
 
    /**
@@ -2198,15 +2037,14 @@ public class Schema2XForms
                                           final String caption,
                                           final XSTypeDefinition controlType)
    {
-      Element control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                       NamespaceConstants.XFORMS_PREFIX + ":textarea");
+      final Element control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                             NamespaceConstants.XFORMS_PREFIX + ":textarea");
       this.setXFormsId(control);
 //      control.setAttributeNS(Schema2XForms.CHIBA_NS,
 //                             Schema2XForms.CHIBA_PREFIX + "height",
 //                             "3");
 
       control.appendChild(this.createLabel(xformsDocument, caption));
-
       return control;
    }
 
@@ -2310,6 +2148,7 @@ public class Schema2XForms
     */
    public Element createControlForEnumerationType(final Document xformsDocument,
                                                   final XSSimpleTypeDefinition controlType,
+                                                  final XSObject owner,
                                                   final String caption,
                                                   final Element bindElement,
                                                   final ResourceBundle resourceBundle)
@@ -2326,20 +2165,23 @@ public class Schema2XForms
          return null;
       }
 
-      Element control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                              NamespaceConstants.XFORMS_PREFIX + ":select1");
+      final Element control = 
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                        NamespaceConstants.XFORMS_PREFIX + ":select1");
       this.setXFormsId(control);
 
       //label
       control.appendChild(this.createLabel(xformsDocument, caption));
 
-      Element choices = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                       NamespaceConstants.XFORMS_PREFIX + ":choices");
+      final Element choices = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                             NamespaceConstants.XFORMS_PREFIX + ":choices");
       this.setXFormsId(choices);
 
       final XSObjectList mvFacets = controlType.getMultiValueFacets();
       if (mvFacets.getLength() != 1)
+      {
          throw new RuntimeException("expected exactly one MultiValueFacet for " + controlType);
+      }
 
       final XSObjectList annotations =
          ((XSMultiValueFacet)mvFacets.item(0)).getAnnotations();
@@ -2354,43 +2196,43 @@ public class Schema2XForms
                          : null));
       }
 
+      String appearance = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                             "appearance",
+                                                             this.getAnnotation(owner),
+                                                             resourceBundle);
+      if (appearance == null || appearance.length() == 0)
+      {
+         appearance = enumFacets.getLength() < Schema2XForms.LONG_LIST_SIZE ? "full" : "compact";
+      }
       control.setAttributeNS(NamespaceConstants.XFORMS_NS,
                              NamespaceConstants.XFORMS_PREFIX + ":appearance",
-                             (enumFacets.getLength() < Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP))
-                              ? getProperty(SELECTONE_UI_CONTROL_SHORT_PROP)
-                              : getProperty(SELECTONE_UI_CONTROL_LONG_PROP)));
+                             appearance);
 
-      if (enumFacets.getLength() >= Long.parseLong(getProperty(SELECTONE_LONG_LIST_SIZE_PROP)))
-      {
-         // add the "Please select..." instruction item for the combobox
-         // and set the isValid attribute on the bind element to check for the "Please select..."
-         // item to indicate that is not a valid value
-         //
-         final String pleaseSelect = "[Select1 " + caption + "]";
-         final Element item = this.createXFormsItem(xformsDocument, pleaseSelect, pleaseSelect);
-         choices.appendChild(item);
-
-         // not(purchaseOrder/state = '[Choose State]')
-         //String isValidExpr = "not(" + bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS,"nodeset") + " = '" + pleaseSelect + "')";
-         // ->no, not(. = '[Choose State]')
-         final String isValidExpr = "not( . = '" + pleaseSelect + "')";
-
-         //check if there was a constraint
-         String constraint = bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "constraint");
-
-         constraint = (constraint != null && constraint.length() != 0
-                       ? constraint + " and " + isValidExpr
-                       : isValidExpr);
-
-         bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                    NamespaceConstants.XFORMS_PREFIX + ":constraint",
-                                    constraint);
-      }
+      // add the "Please select..." instruction item for the combobox
+      // and set the isValid attribute on the bind element to check for the "Please select..."
+      // item to indicate that is not a valid value
+      final String pleaseSelect = "[Select1 " + caption + "]";
+      final Element item = this.createXFormsItem(xformsDocument, pleaseSelect, pleaseSelect);
+      choices.appendChild(item);
+      
+      // not(purchaseOrder/state = '[Choose State]')
+      //String isValidExpr = "not(" + bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS,"nodeset") + " = '" + pleaseSelect + "')";
+      // ->no, not(. = '[Choose State]')
+      final String isValidExpr = "not( . = '" + pleaseSelect + "')";
+      
+      //check if there was a constraint
+      String constraint = bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "constraint");
+      
+      constraint = (constraint != null && constraint.length() != 0
+                    ? constraint + " and " + isValidExpr
+                    : isValidExpr);
+      
+      bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                 NamespaceConstants.XFORMS_PREFIX + ":constraint",
+                                 constraint);
 
       control.appendChild(choices);
-
       this.addChoicesForSelectControl(xformsDocument, choices, enumValues, resourceBundle);
-
       return control;
    }
 
@@ -2415,6 +2257,7 @@ public class Schema2XForms
     */
    public Element createControlForListType(final Document xformsDocument,
                                            final XSSimpleTypeDefinition listType,
+                                           final XSObject owner,
                                            final String caption,
                                            final Element bindElement,
                                            final ResourceBundle resourceBundle)
@@ -2423,17 +2266,19 @@ public class Schema2XForms
 
       final StringList enumFacets = controlType.getLexicalEnumeration();
       if (enumFacets.getLength() <= 0)
+      {
          return null;
+      }
       Element control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                               NamespaceConstants.XFORMS_PREFIX + ":select");
       this.setXFormsId(control);
-
       control.appendChild(this.createLabel(xformsDocument, caption));
-
 
       final XSObjectList mvFacets = controlType.getMultiValueFacets();
       if (mvFacets.getLength() != 1)
+      {
          throw new RuntimeException("expected exactly one MultiValueFacet for " + controlType);
+      }
 
       final XSObjectList annotations =
          ((XSMultiValueFacet)mvFacets.item(0)).getAnnotations();
@@ -2453,19 +2298,23 @@ public class Schema2XForms
       // Possibly look for special appInfo section in the schema and if not present default to checkBox...
       //
       // For now, use checkbox if there are < DEFAULT_LONG_LIST_MAX_SIZE items, otherwise use long control
-      //
+      String appearance = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                             "appearance",
+                                                             this.getAnnotation(owner),
+                                                             resourceBundle);
+      if (appearance == null || appearance.length() == 0)
+      {
+         appearance = enumValues.size() < Schema2XForms.LONG_LIST_SIZE ? "full" : "compact";
+      }
       control.setAttributeNS(NamespaceConstants.XFORMS_NS,
                              NamespaceConstants.XFORMS_PREFIX + ":appearance",
-                             (enumValues.size() < Long.parseLong(getProperty(SELECTMANY_LONG_LIST_SIZE_PROP))
-                              ? getProperty(SELECTMANY_UI_CONTROL_SHORT_PROP)
-                              : getProperty(SELECTMANY_UI_CONTROL_LONG_PROP)));
-      Element choices = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                       NamespaceConstants.XFORMS_PREFIX + ":choices");
+                             appearance);
+      final Element choices = 
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                        NamespaceConstants.XFORMS_PREFIX + ":choices");
       this.setXFormsId(choices);
       control.appendChild(choices);
-
       this.addChoicesForSelectControl(xformsDocument, choices, enumValues, resourceBundle);
-
       return control;
    }
 
@@ -2487,13 +2336,17 @@ public class Schema2XForms
    {
       final XSAnnotation annotation = this.getAnnotation(node);
       if (annotation == null)
+      {
          return null;
+      }
       final String s = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
                                                           "hint",
                                                           annotation,
                                                           resourceBundle);
       if (s == null)
+      {
          return null;
+      }
       final Element hintElement =
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                         NamespaceConstants.XFORMS_PREFIX + ":hint");
@@ -2615,9 +2468,11 @@ public class Schema2XForms
                                     ? minConstraint
                                     : maxConstraint));
       if (constraint != null)
+      {
          bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                     NamespaceConstants.XFORMS_PREFIX + ":constraint",
                                     constraint);
+      }
       return bindElement;
    }
 
@@ -2873,13 +2728,11 @@ public class Schema2XForms
                                      final Element rootGroup)
    {
 
-      Element submission = this.createSubmissionElement(xformsDocument, "submission-validate", true);
+      Element submission = 
+         this.createSubmissionElement(xformsDocument, "submission-validate", true);
       modelSection.appendChild(submission);
 
-      Element submit = this.createSubmitControl(xformsDocument,
-                                                submission,
-                                                "submit",
-                                                "Submit");
+      Element submit = this.createSubmitControl(xformsDocument, submission, "submit", "Submit");
       rootGroup.appendChild(submit);
 
       submission = this.createSubmissionElement(xformsDocument, "submission-draft", false);
@@ -2896,13 +2749,15 @@ public class Schema2XForms
                                     final String label,
                                     final String value)
    {
-      final Element item = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                          NamespaceConstants.XFORMS_PREFIX + ":item");
+      final Element item = 
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                        NamespaceConstants.XFORMS_PREFIX + ":item");
       this.setXFormsId(item);
       item.appendChild(this.createLabel(xformsDocument, label));
 
-      final Element e = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                       NamespaceConstants.XFORMS_PREFIX + ":value");
+      final Element e = 
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                        NamespaceConstants.XFORMS_PREFIX + ":value");
       this.setXFormsId(e);
       e.appendChild(xformsDocument.createTextNode(value));
       item.appendChild(e);
@@ -2912,8 +2767,9 @@ public class Schema2XForms
    private Element createLabel(final Document xformsDocument,
                                final String label)
    {
-      final Element e = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                       NamespaceConstants.XFORMS_PREFIX + ":label");
+      final Element e = 
+         xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                        NamespaceConstants.XFORMS_PREFIX + ":label");
       this.setXFormsId(e);
       e.appendChild(xformsDocument.createTextNode(label));
       return e;

@@ -94,7 +94,12 @@
 
    <h:outputText value=""/>
    <h:outputText value="#{msg.form}:"/>
-   <h:selectOneMenu value="#{WizardManager.bean.formName}" disabled="#{WizardManager.bean.formSelectDisabled}">
+   <h:selectOneMenu value="#{WizardManager.bean.formName}" 
+                    disabled="#{WizardManager.bean.formSelectDisabled}"
+                    rendered="#{!empty WizardManager.bean.formChoices}">
       <f:selectItems value="#{WizardManager.bean.formChoices}" />
    </h:selectOneMenu>
+   <h:outputText value="#{msg.sandbox_no_web_forms}" 
+                 style="font-style: italic"
+                 rendered="#{empty WizardManager.bean.formChoices}"/>
 </h:panelGrid>

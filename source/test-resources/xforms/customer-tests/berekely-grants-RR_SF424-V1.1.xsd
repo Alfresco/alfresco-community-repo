@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Revision:   1.5  $ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:glob="http://apply.grants.gov/system/Global-V1.0" xmlns:att="http://apply.grants.gov/system/Attachments-V1.0" xmlns:globLib="http://apply.grants.gov/system/GlobalLibrary-V2.0" xmlns:RR_SF424="http://apply.grants.gov/forms/RR_SF424-V1.1" targetNamespace="http://apply.grants.gov/forms/RR_SF424-V1.1" elementFormDefault="qualified" attributeFormDefault="qualified" version="1.1">
+	<xs:import namespace="http://apply.grants.gov/system/GlobalLibrary-V2.0" schemaLocation="http://apply.grants.gov/system/schemas/GlobalLibrary-V2.0.xsd"/>
+	<xs:import namespace="http://apply.grants.gov/system/Global-V1.0" schemaLocation="http://apply.grants.gov/system/schemas/Global-V1.0.xsd"/>
+	<xs:import namespace="http://apply.grants.gov/system/Attachments-V1.0" schemaLocation="http://apply.grants.gov/system/schemas/Attachments-V1.0.xsd"/>
+	<xs:element name="RR_SF424">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="SubmissionTypeCode" type="RR_SF424:SubmissionTypeDataType"/>
+				<xs:element name="SubmittedDate" type="xs:date" minOccurs="0"/>
+				<xs:element name="ApplicantID" type="globLib:ApplicantIDDataType" minOccurs="0"/>
+				<xs:element name="StateReceivedDate" type="xs:date" minOccurs="0"/>
+				<xs:element name="StateID" type="globLib:StateIDDataType" minOccurs="0"/>
+				<xs:element name="FederalID" type="globLib:FederalIDDataType" minOccurs="0"/>
+				<xs:element name="ApplicantInfo">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="OrganizationInfo" type="globLib:OrganizationDataType"/>
+							<xs:element name="ContactPersonInfo">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Name" type="globLib:HumanNameDataType"/>
+										<xs:element name="Phone" type="globLib:TelephoneNumberDataType"/>
+										<xs:element name="Fax" type="globLib:TelephoneNumberDataType" minOccurs="0"/>
+										<xs:element name="Email" type="globLib:EmailDataType" minOccurs="0"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="EmployerID">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:minLength value="9"/>
+							<xs:maxLength value="30"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="ApplicantType">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="ApplicantTypeCode" type="globLib:ApplicantTypeCodeDataType"/>
+							<xs:element name="ApplicantTypeCodeOtherExplanation" minOccurs="0">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:minLength value="1"/>
+										<xs:maxLength value="50"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="SmallBusinessOrganizationType" nillable="true" minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="isWomenOwned" minOccurs="0">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="globLib:YesNoDataType"/>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="isSociallyEconomicallyDisadvantaged" minOccurs="0">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="globLib:YesNoDataType"/>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="ApplicationType">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="ApplicationTypeCode" type="RR_SF424:ApplicationTypeCodeDataType"/>
+							<xs:element name="RevisionCode" type="RR_SF424:RevisionTypeCodeDataType" minOccurs="0"/>
+							<xs:element name="RevisionCodeOtherExplanation" minOccurs="0">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:minLength value="1"/>
+										<xs:maxLength value="45"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="isOtherAgencySubmission" type="globLib:YesNoDataType"/>
+							<xs:element name="OtherAgencySubmissionExplanation" minOccurs="0">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:minLength value="1"/>
+										<xs:maxLength value="20"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="FederalAgencyName" type="globLib:AgencyNameDataType"/>
+				<xs:element name="CFDANumber" type="globLib:CFDANumberDataType" minOccurs="0"/>
+				<xs:element name="ActivityTitle" type="globLib:ProgramActivityTitleDataType" minOccurs="0"/>
+				<xs:element name="ProjectTitle" type="globLib:ProjectTitleDataType"/>
+				<xs:element name="Location">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:minLength value="1"/>
+							<xs:maxLength value="45"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="ProposedProjectPeriod">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="ProposedStartDate" type="xs:date"/>
+							<xs:element name="ProposedEndDate" type="xs:date"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="CongressionalDistrict">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="ApplicantCongressionalDistrict" type="globLib:CongressionalDistrictDataType"/>
+							<xs:element name="ProjectCongressionalDistrict" type="globLib:CongressionalDistrictDataType"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="PDPIContactInfo" type="RR_SF424:OrganizationContactPersonDataType"/>
+				<xs:element name="EstimatedProjectFunding">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="TotalEstimatedAmount" type="globLib:BudgetTotalAmountDataType"/>
+							<xs:element name="TotalfedNonfedrequested" type="globLib:BudgetTotalAmountDataType"/>
+							<xs:element name="EstimatedProgramIncome" type="globLib:BudgetTotalAmountDataType"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="StateReview">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="StateReviewCodeType" type="RR_SF424:StateReviewCodeTypeDataType"/>
+							<xs:element name="StateReviewDate" type="xs:date" minOccurs="0"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="TrustAgree" type="globLib:YesNoDataType"/>
+				<xs:element name="AORInfo" type="RR_SF424:AORInfoType"/>
+				<xs:element name="PreApplicationAttachment" type="att:AttachedFileDataType" minOccurs="0"/>
+				<xs:element name="AdditionalCongressionalDistricts" type="att:AttachedFileDataType" minOccurs="0"/>
+				<xs:element name="AOR_Signature" type="globLib:SignatureDataType"/>
+				<xs:element name="AOR_SignedDate" type="xs:date"/>
+			</xs:sequence>
+			<xs:attribute name="FormVersion" type="globLib:FormVersionDataType" use="required" fixed="1.1"/>
+		</xs:complexType>
+		<!--
+		<xs:key name="ApplicantTypeCodeKey">
+			<xs:selector xpath="./RR_SF424:ApplicantType"/>
+			<xs:field xpath="RR_SF424:ApplicantTypeCode"/>
+		</xs:key>
+		<xs:keyref name="ApplicantTypeCodeOtherKeyRef" refer="RR_SF424:ApplicantTypeCodeKey">
+			<xs:selector xpath="./RR_SF424:ApplicantType/RR_SF424:ApplicantTypeCodeOtherExplanation"/>
+			<xs:field xpath="@ApplicantTypeCode"/>
+		</xs:keyref>
+		<xs:keyref name="ApplicantTypeCodeSmallBusinessKeyRef" refer="RR_SF424:ApplicantTypeCodeKey">
+			<xs:selector xpath="./RR_SF424:ApplicantType/RR_SF424:SmallBusinessOrganizationType"/>
+			<xs:field xpath="@ApplicantTypeCode"/>
+		</xs:keyref>
+		<xs:key name="ApplicationTypeCodeKey">
+			<xs:selector xpath="./RR_SF424:ApplicationType"/>
+			<xs:field xpath="RR_SF424:ApplicationTypeCode"/>
+		</xs:key>
+		<xs:keyref name="ApplicationTypeCodeKeyRef" refer="RR_SF424:ApplicationTypeCodeKey">
+			<xs:selector xpath="./RR_SF424:ApplicationType/RR_SF424:RevisionCode"/>
+			<xs:field xpath="@ApplicationTypeCode"/>
+		</xs:keyref>
+		<xs:key name="isOtherAgencySubmissionKey">
+			<xs:selector xpath="./RR_SF424:ApplicationType"/>
+			<xs:field xpath="RR_SF424:isOtherAgencySubmission"/>
+		</xs:key>
+		<xs:keyref name="isOtherAgencySubmissionKeyRef" refer="RR_SF424:isOtherAgencySubmissionKey">
+			<xs:selector xpath="./RR_SF424:ApplicationType/RR_SF424:OtherAgencySubmissionExplanation"/>
+			<xs:field xpath="@isOtherAgencySubmission"/>
+		</xs:keyref>
+		<xs:key name="StateReviewCodeTypeKey">
+			<xs:selector xpath="./RR_SF424:StateReview"/>
+			<xs:field xpath="RR_SF424:StateReviewCodeType"/>
+		</xs:key>
+		<xs:keyref name="StateReviewCodeTypeKeyRef" refer="RR_SF424:StateReviewCodeTypeKey">
+			<xs:selector xpath="./RR_SF424:StateReview/RR_SF424:StateReview"/>
+			<xs:field xpath="@StateReviewCodeType"/>
+		</xs:keyref>
+		-->
+	</xs:element>
+	<xs:simpleType name="SubmissionTypeDataType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Preapplication"/>
+			<xs:enumeration value="Application"/>
+			<xs:enumeration value="Change/Corrected Application"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<!--
+	
+<xs:simpleType name="ApplicantTypeCodeDataType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="A: State Government"/>
+			<xs:enumeration value="B: County Government"/>
+			<xs:enumeration value="C: City or Township Government"/>
+			<xs:enumeration value="D: Special District Governments"/>
+			<xs:enumeration value="E: Independent School District"/>
+			<xs:enumeration value="F: State-Controlled Institution of Higher Education"/>
+			<xs:enumeration value="G: Native American Tribal Government (Federally Recognized)"/>
+			<xs:enumeration value="H: Public/Indian Housing Authority"/>
+			<xs:enumeration value="I: Native American Tribal Organization (other than Federally recognized)"/>
+			<xs:enumeration value="J: Nonprofit with 501C3 IRS status (other than Institution of Higher Education)"/>
+			<xs:enumeration value="K: Nonprofit without 501C3 IRS status (other than Institution of Higher Education)"/>
+			<xs:enumeration value="L: Private Institution of Higher Education"/>
+			<xs:enumeration value="M: Individual"/>
+			<xs:enumeration value="N: For-profit Organization (other than small business)"/>
+			<xs:enumeration value="O: Small Business"/>
+			<xs:enumeration value="P: Other (specify)"/>
+		</xs:restriction>
+	</xs:simpleType>-->
+	<xs:simpleType name="ApplicationTypeCodeDataType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="New"/>
+			<xs:enumeration value="Resubmission"/>
+			<xs:enumeration value="Renewal"/>
+			<xs:enumeration value="Continuation"/>
+			<xs:enumeration value="Revision"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RevisionTypeCodeDataType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="A"/>
+			<xs:enumeration value="B"/>
+			<xs:enumeration value="C"/>
+			<xs:enumeration value="D"/>
+			<xs:enumeration value="E"/>
+			<xs:enumeration value="AC"/>
+			<xs:enumeration value="AD"/>
+			<xs:enumeration value="BC"/>
+			<xs:enumeration value="BD"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="StateReviewCodeTypeDataType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Y: Yes"/>
+			<xs:enumeration value="Program is not covered by E.O. 12372"/>
+			<xs:enumeration value="Program has not been selected by state for review"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="OrganizationContactPersonDataType">
+		<xs:sequence>
+			<xs:element name="Name" type="globLib:HumanNameDataType"/>
+			<xs:element name="Title" type="globLib:HumanTitleDataType" minOccurs="0"/>
+			<xs:element name="Address" type="globLib:AddressDataType"/>
+			<xs:element name="Phone" type="globLib:TelephoneNumberDataType"/>
+			<xs:element name="Fax" type="globLib:TelephoneNumberDataType" minOccurs="0"/>
+			<xs:element name="Email" type="globLib:EmailDataType"/>
+			<xs:element name="OrganizationName" type="globLib:OrganizationNameDataType"/>
+			<xs:element name="DepartmentName" type="globLib:DepartmentNameDataType" minOccurs="0"/>
+			<xs:element name="DivisionName" type="globLib:DivisionNameDataType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ================================================ -->
+	<!-- AORInfoType                                      -->
+	<!-- The AORInfoType is a re-definition of the global -->
+	<!-- library's ContactPersonDataType.  Restriction    -->
+	<!-- based inheritence could not be used since each   -->
+	<!-- element in the restricted derivation would have  -->
+	<!-- a different namespace from the base type, making -->
+	<!-- it an entirely different element that cannot be  -->
+	<!-- mapped back to its base particle.  This violates -->
+	<!-- the schema specification for "Particle Derivation-->
+	<!-- OK (All:All,Sequence:Sequence - Recurse)" line   -->
+	<!-- 2.1, for more information see the following link:-->
+	<!-- http://www.w3.org/TR/xmlschema-1/#rcase-Recurse  -->
+	<!-- ================================================ -->
+	<xs:complexType name="AORInfoType">
+		<xs:sequence>
+			<xs:element name="Name" type="globLib:HumanNameDataType"/>
+			<xs:element name="Title" type="globLib:HumanTitleDataType"/>
+			<xs:element name="Address" type="globLib:AddressDataType"/>
+			<xs:element name="Phone" type="globLib:TelephoneNumberDataType"/>
+			<xs:element name="Fax" type="globLib:TelephoneNumberDataType" minOccurs="0"/>
+			<xs:element name="Email" type="globLib:EmailDataType"/>
+			<xs:element name="OrganizationName" type="globLib:OrganizationNameDataType"/>
+			<xs:element name="DepartmentName" type="globLib:DepartmentNameDataType" minOccurs="0"/>
+			<xs:element name="DivisionName" type="globLib:DivisionNameDataType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:othernsprefix="http://other.org/othernsuri"
+           elementFormDefault="qualified"
+           attributeFormDefault="qualified"
+           targetNamespace="http://other.org/othernsuri">
+  <xs:simpleType name="type1">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="5"/>
+      <xs:maxLength value="5"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

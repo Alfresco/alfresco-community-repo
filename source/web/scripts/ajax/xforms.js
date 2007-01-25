@@ -457,6 +457,14 @@ dojo.declare("alfresco.xforms.Widget",
                  }
                },
 
+               /** Returns the value of the appearance attribute for widget */
+               getAppearance: function()
+               {
+                 var result = (this.xformsNode.getAttribute("appearance") ||
+                               this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":appearance"));
+                 return result == null || result.length == 0 ? null : result;
+               },
+
                /** Updates the display of the widget.  This is intended to be overridden. */
                _updateDisplay: function()
                {
@@ -520,10 +528,10 @@ dojo.declare("alfresco.xforms.Widget",
 /** The file picker widget which handles xforms widget xf:upload. */
 dojo.declare("alfresco.xforms.FilePicker",
              alfresco.xforms.Widget,
+             function(xform, xformsNode)
              {
-               initializer: function(xform, xformsNode)
-               {
-               },
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -583,10 +591,10 @@ dojo.declare("alfresco.xforms.FilePicker",
 /** The textfield widget which handle xforms widget xf:input with any string or numerical type */
 dojo.declare("alfresco.xforms.TextField",
              alfresco.xforms.Widget,
+             function(xform, xformsNode) 
              {
-               initializer: function(xform, xformsNode) 
-               {
-               },
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -737,11 +745,11 @@ dojo.declare("alfresco.xforms.NumericalRange",
 /** The textfield widget which handle xforms widget xf:textarea. */
 dojo.declare("alfresco.xforms.TextArea",
              alfresco.xforms.Widget,
+             function(xform, xformsNode) 
              {
-               initializer: function(xform, xformsNode) 
-               {
-                 this.focused = false;
-               },
+               this.focused = false;
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // methods
@@ -952,7 +960,7 @@ dojo.declare("alfresco.xforms.Select",
                  var initial_value = this.getInitialValue();
                  initial_value = initial_value ? initial_value.split(' ') : [];
                  this._selectedValues = [];
-                 if (values.length <= 5)
+                 if (this.getAppearance() == "full")
                  {
                    this.widget = document.createElement("div");
                    this.widget.style.width = "100%";
@@ -1051,7 +1059,7 @@ dojo.declare("alfresco.xforms.Select",
                  {
                    if (event.target.options[i].selected)
                    {
-                     this._selectedValues.push(event.target.options[i].value);
+                     this._selectedValues.push(event.target.options[i].getAttribute("value"));
                    }
                  }
                  this._commitValueChange();
@@ -1060,12 +1068,12 @@ dojo.declare("alfresco.xforms.Select",
                _checkbox_clickHandler: function(event)
                { 
                  this._selectedValues = [];
-                 for (var i = 0; i < 5; i++)
+                 var all_checkboxes = this.widget.getElementsByTagName("input");
+                 for (var i = 0; i < all_checkboxes.length; i++)
                  {
-                   var checkbox = document.getElementById(this.id + "_" + i + "-widget");
-                   if (checkbox && checkbox.checked)
+                   if (all_checkboxes[i] && all_checkboxes[i].checked)
                    {
-                     this._selectedValues.push(checkbox.value);
+                     this._selectedValues.push(all_checkboxes[i].getAttribute("value"));
                    }
                  }
                  this._commitValueChange();
@@ -1090,13 +1098,19 @@ dojo.declare("alfresco.xforms.Select1",
                {
                  var values = this._getItemValues();
                  var initial_value = this.getInitialValue();
-                 if (values.length <= 5)
+                 if (this.getAppearance() == "full")
                  {
                    this.widget = document.createElement("div");
                    this.widget.style.width = "100%";
                    attach_point.appendChild(this.widget);
                    for (var i = 0; i < values.length; i++)
                    {
+                     if (!values[i].valid)
+                     {
+                       // always skip the invalid values for radios
+                       continue;
+                     }
+
                      var radio_div = document.createElement("div");
                      radio_div.style.lineHeight = "16px";
                      this.widget.appendChild(radio_div);
@@ -1273,10 +1287,10 @@ dojo.declare("alfresco.xforms.Checkbox",
 /** The date picker widget which handles xforms widget xf:input with type xf:date */
 dojo.declare("alfresco.xforms.DatePicker",
              alfresco.xforms.Widget,
+             function(xform, xformsNode) 
              {
-               initializer: function(xform, xformsNode) 
-               {
-               },
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -1363,10 +1377,10 @@ dojo.declare("alfresco.xforms.DatePicker",
 /** The date picker widget which handles xforms widget xf:input with type xf:date */
 dojo.declare("alfresco.xforms.TimePicker",
              alfresco.xforms.Widget,
+             function(xform, xformsNode) 
              {
-               initializer: function(xform, xformsNode) 
-               {
-               },
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -1438,10 +1452,10 @@ dojo.declare("alfresco.xforms.TimePicker",
 /** The year picker handles xforms widget xf:input with a gYear type */
 dojo.declare("alfresco.xforms.YearPicker",
              alfresco.xforms.TextField,
+             function(xform, xformsNode) 
              {
-               initializer: function(xform, xformsNode) 
-               {
-               },
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -1479,10 +1493,10 @@ dojo.declare("alfresco.xforms.YearPicker",
 /** The day picker widget which handles xforms widget xf:input with type xf:gDay */
 dojo.declare("alfresco.xforms.DayPicker",
              alfresco.xforms.Select1,
+             function(xform, xformsNode)
              {
-               initializer: function(xform, xformsNode)
-               {
-               },
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -1506,10 +1520,10 @@ dojo.declare("alfresco.xforms.DayPicker",
 /** The month picker widget which handles xforms widget xf:input with type xf:gMonth */
 dojo.declare("alfresco.xforms.MonthPicker",
              alfresco.xforms.Select1,
+             function(xform, xformsNode)
              {
-               initializer: function(xform, xformsNode)
-               {
-               },
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -1535,15 +1549,15 @@ dojo.declare("alfresco.xforms.MonthPicker",
 /** The month day picker widget which handles xforms widget xf:input with type xf:gMonthDay */
 dojo.declare("alfresco.xforms.MonthDayPicker",
              alfresco.xforms.Widget,
+             function(xform, xformsNode)
              {
-               initializer: function(xform, xformsNode)
-               {
-                 this.monthPicker = new alfresco.xforms.MonthPicker(xform, xformsNode);
-                 this.monthPicker._compositeParent = this;
-
-                 this.dayPicker = new alfresco.xforms.DayPicker(xform, xformsNode);
-                 this.dayPicker._compositeParent = this;
-               },
+               this.monthPicker = new alfresco.xforms.MonthPicker(xform, xformsNode);
+               this.monthPicker._compositeParent = this;
+               
+               this.dayPicker = new alfresco.xforms.DayPicker(xform, xformsNode);
+               this.dayPicker._compositeParent = this;
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -1575,15 +1589,15 @@ dojo.declare("alfresco.xforms.MonthDayPicker",
 /** The year month picker widget which handles xforms widget xf:input with type xf:gYearMonth */
 dojo.declare("alfresco.xforms.YearMonthPicker",
              alfresco.xforms.Widget,
+             function(xform, xformsNode)
              {
-               initializer: function(xform, xformsNode)
-               {
-                 this.yearPicker = new alfresco.xforms.YearPicker(xform, xformsNode);
-                 this.yearPicker._compositeParent = this;
-
-                 this.monthPicker = new alfresco.xforms.MonthPicker(xform, xformsNode);
-                 this.monthPicker._compositeParent = this;
-               },
+               this.yearPicker = new alfresco.xforms.YearPicker(xform, xformsNode);
+               this.yearPicker._compositeParent = this;
+               
+               this.monthPicker = new alfresco.xforms.MonthPicker(xform, xformsNode);
+               this.monthPicker._compositeParent = this;
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -1625,23 +1639,17 @@ dojo.declare("alfresco.xforms.YearMonthPicker",
  */
 dojo.declare("alfresco.xforms.Group",
              alfresco.xforms.Widget,
+             function(xform, xformsNode) 
              {
-               initializer: function(xform, xformsNode) 
-               {
-                 this._children = [];
-                 dojo.html.removeClass(this.domNode, "xformsItem");
-               },
-
+               this._children = [];
+               dojo.html.removeClass(this.domNode, "xformsItem");
+             },
+             {
                /////////////////////////////////////////////////////////////////
                // methods & properties
                /////////////////////////////////////////////////////////////////
 
-               /** Returns the value of the appearance attribute for widget */
-               getAppearance: function()
-               {
-                 return (this.xformsNode.getAttribute("appearance") ||
-                         this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":appearance"));
-               },
+               _groupHeaderNode: null,
 
                /** Returns the child at the specified index or null if the index is out of range. */
                getChildAt: function(index)
@@ -1704,11 +1712,38 @@ dojo.declare("alfresco.xforms.Group",
                    this._children.splice(position, 0, child);
                  }
 
-                 if (this.getAppearance() == "full" && 
-                     !(this instanceof alfresco.xforms.Repeat) &&
-                     child.isVisible() &&
-                     ((child instanceof alfresco.xforms.Group && position != 0) ||
-                      this._children[position - 1] instanceof alfresco.xforms.Group))
+                 function shouldInsertDivider(group, child, position)
+                 {
+                   if (group.getAppearance() != "full")
+                   {
+                     return false;
+                   }
+                   if (group instanceof alfresco.xforms.Repeat)
+                   {
+                     return false;
+                   }
+                   if (!child.isVisible())
+                   {
+                     return false;
+                   }
+                   if (group._children[position - 1] instanceof alfresco.xforms.Group)
+                   {
+                     return true;
+                   }
+                   if (child instanceof alfresco.xforms.Group)
+                   {
+                     for (var i = position - 1; i > 0; i--)
+                     {
+                       if (group._children[i].isVisible())
+                       {
+                         return true;
+                       }
+                     }
+                   }
+                   return false;
+                 }
+
+                 if (shouldInsertDivider(this, child, position))
                  {
                    var divider = document.createElement("div");
                    dojo.html.setClass(divider, "xformsGroupDivider");
@@ -1898,13 +1933,13 @@ dojo.declare("alfresco.xforms.Group",
                                                       attach_point.offsetWidth)) * 100 + "%";
                    }
 
-                   this.groupHeaderNode = document.createElement("div");
-                   this.groupHeaderNode.id = this.id + "-groupHeaderNode";
-                   dojo.html.setClass(this.groupHeaderNode, "xformsGroupHeader");
-                   this.domNode.appendChild(this.groupHeaderNode);
+                   this._groupHeaderNode = document.createElement("div");
+                   this._groupHeaderNode.setAttribute("id", this.id + "-groupHeaderNode");
+                   dojo.html.setClass(this._groupHeaderNode, "xformsGroupHeader");
+                   this.domNode.appendChild(this._groupHeaderNode);
 
                    this.toggleExpandedImage = document.createElement("img");
-                   this.groupHeaderNode.appendChild(this.toggleExpandedImage);
+                   this._groupHeaderNode.appendChild(this.toggleExpandedImage);
                    this.toggleExpandedImage.setAttribute("src", alfresco_xforms_constants.EXPANDED_IMAGE.src);
                    this.toggleExpandedImage.align = "absmiddle";
                    this.toggleExpandedImage.style.marginLeft = "5px";
@@ -1915,7 +1950,7 @@ dojo.declare("alfresco.xforms.Group",
                                       this, 
                                       this._toggleExpanded_clickHandler);
                    
-                   this.groupHeaderNode.appendChild(document.createTextNode(this.getLabel()));
+                   this._groupHeaderNode.appendChild(document.createTextNode(this.getLabel()));
                  }
                  attach_point.appendChild(this.domNode);
 
@@ -2037,17 +2072,86 @@ dojo.declare("alfresco.xforms.SwitchGroup",
              alfresco.xforms.Group,
              function(xform, xformsNode)
              {
-               this.selectedCaseId = null;
-               var widgets = this.xform.getBinding(this.xformsNode).widgets;
-               for (var i in widgets)
+               if (this.getInitialValue())
                {
-                 if (widgets[i] instanceof alfresco.xforms.Select1)
-                 {
-                   widgets[i].setValue(this.getInitialValue(), "true");
-                 }
+                 var initialValueTrigger = this._getCaseToggleTriggerByTypeValue(this.getInitialValue());
+                 this._selectedCaseId = initialValueTrigger.getActions()["toggle"].properties["case"];
                }
              },
              {
+               /////////////////////////////////////////////////////////////////
+               // methods & properties
+               /////////////////////////////////////////////////////////////////
+               _getCaseToggleTriggers: function()
+               {
+                 var bw = this.xform.getBinding(this.xformsNode).widgets;
+                 var result = [];
+                 for (var i in bw)
+                 {
+                   if (! (bw[i] instanceof alfresco.xforms.Trigger))
+                   {
+                     continue;
+                   }
+                   
+                   var action = bw[i].getActions()["toggle"];
+                   if (action)
+                   {
+                     result.push(bw[i]);
+                   }
+                 }
+                 return result;
+               },
+
+               _getCaseToggleTriggerByCaseId: function(caseId)
+               {
+                 var bw = this.xform.getBinding(this.xformsNode).widgets;
+                 for (var i in bw)
+                 {
+                   if (! (bw[i] instanceof alfresco.xforms.Trigger))
+                   {
+                     continue;
+                   }
+                   
+                   var action = bw[i].getActions()["toggle"];
+                   if (!action)
+                   {
+                     continue;
+                   }
+                   if (action.properties["case"] == caseId)
+                   {
+                     return bw[i];
+                   }
+                 }
+                 throw new Error("unable to find trigger " + type + 
+                                 ", properties " + properties +
+                                 " for " + this.id);
+
+               },
+
+               _getCaseToggleTriggerByTypeValue: function(typeValue)
+               {
+                 var bw = this.xform.getBinding(this.xformsNode).widgets;
+                 for (var i in bw)
+                 {
+                   if (! (bw[i] instanceof alfresco.xforms.Trigger))
+                   {
+                     continue;
+                   }
+                   
+                   var action = bw[i].getActions()["setvalue"];
+                   if (!action)
+                   {
+                     continue;
+                   }
+                   if (action.properties["value"] == typeValue)
+                   {
+                     return bw[i];
+                   }
+                 }
+                 throw new Error("unable to find toggle trigger for type value " + typeValue + 
+                                 " for " + this.id);
+               },
+
                /////////////////////////////////////////////////////////////////
                // overridden methods & properties
                /////////////////////////////////////////////////////////////////
@@ -2057,15 +2161,43 @@ dojo.declare("alfresco.xforms.SwitchGroup",
                {
                  var childDomContainer = 
                    alfresco.xforms.SwitchGroup.superclass._insertChildAt.call(this, child, position);
-                 this.selectedCaseId = this.selectedCaseId || child.id;
-                 if (this.selectedCaseId != child.id)
+                 if (child.id == this._selectedCaseId)
+                 {
+                   this._getCaseToggleTriggerByCaseId(this._selectedCaseId).fire();
+                 }
+                 else
                  {
                    childDomContainer.style.display = "none";
                  }
                  return childDomContainer;
                },
 
-                
+               render: function(attach_point)
+               {
+                 alfresco.xforms.SwitchGroup.superclass.render.call(this, attach_point);
+                 this._groupHeaderNode = document.createElement("div");
+                 this._groupHeaderNode.setAttribute("id", this.id + "-groupHeaderNode");
+                 this.domNode.appendChild(this._groupHeaderNode);
+                 this._groupHeaderNode.style.backgroundColor = "orange";
+                 var cases = this._getCaseToggleTriggers();
+                 for (var i = 0; i < cases.length; i++)
+                 {
+                   var d = document.createElement("div");
+                   this._groupHeaderNode.appendChild(d);
+                   var link = document.createElement("a");
+                   link.setAttribute("id", cases[i].id);
+                   link.trigger = cases[i];
+                   link.appendChild(document.createTextNode(cases[i].getLabel()));
+                   d.appendChild(link);
+                   dojo.event.browser.addListener(link, 
+                                                  "onclick",
+                                                  function(event) 
+                                                  {
+                                                    event.target.trigger.fire();
+                                                  });
+                 }
+               },
+
                /////////////////////////////////////////////////////////////////
                // XForms event handlers
                /////////////////////////////////////////////////////////////////
@@ -2091,6 +2223,15 @@ dojo.declare("alfresco.xforms.SwitchGroup",
                }
              });
 
+/** */
+dojo.declare("alfresco.xforms.CaseGroup",
+             alfresco.xforms.Group,
+             function(xform, xformsNode)
+             {
+             },
+             {
+             });
+
 /** 
  * Handles xforms widget xf:group for the root group.  Does some special rendering
  * to present a title rather than a group header.
@@ -2109,18 +2250,18 @@ dojo.declare("alfresco.xforms.ViewRoot",
                  this.domNode.style.width = "100%";
                  dojo.html.setClass(this.domNode, "xformsViewRoot");
 
-                 this.groupHeaderNode = document.createElement("div");
-                 this.groupHeaderNode.id = this.id + "-groupHeaderNode";
-                 dojo.html.setClass(this.groupHeaderNode, "xformsViewRootHeader");
-                 this.domNode.appendChild(this.groupHeaderNode);
+                 this._groupHeaderNode = document.createElement("div");
+                 this._groupHeaderNode.id = this.id + "-groupHeaderNode";
+                 dojo.html.setClass(this._groupHeaderNode, "xformsViewRootHeader");
+                 this.domNode.appendChild(this._groupHeaderNode);
 
                  var icon = document.createElement("img");
-                 this.groupHeaderNode.appendChild(icon);
+                 this._groupHeaderNode.appendChild(icon);
                  icon.setAttribute("src", alfresco_xforms_constants.WEBAPP_CONTEXT + "/images/icons/file_large.gif");
                  icon.align = "absmiddle";
                  icon.style.marginLeft = "5px";
                  icon.style.marginRight = "5px";
-                 this.groupHeaderNode.appendChild(document.createTextNode(this.getLabel()));
+                 this._groupHeaderNode.appendChild(document.createTextNode(this.getLabel()));
                  attach_point.appendChild(this.domNode);
 
                  this.domNode.childContainerNode = document.createElement("div");
@@ -2211,8 +2352,8 @@ dojo.declare("alfresco.xforms.Repeat",
                      continue;
                    }
 
-                   var action = bw[i].getAction();
-                   if (action.getType() != type)
+                   var action = bw[i].getActions()[type];
+                   if (!action)
                    {
                      continue;
                    }
@@ -2432,10 +2573,10 @@ dojo.declare("alfresco.xforms.Repeat",
 
                  // clear the border bottom for the group header since we'll be getting it
                  // from the repeat item border
-                 this.groupHeaderNode.style.borderBottomWidth = "0px";
+                 this._groupHeaderNode.style.borderBottomWidth = "0px";
 
-                 this.groupHeaderNode.repeat = this;
-                 dojo.event.connect(this.groupHeaderNode, "onclick", function(event)
+                 this._groupHeaderNode.repeat = this;
+                 dojo.event.connect(this._groupHeaderNode, "onclick", function(event)
                                     {
                                       if (event.target == event.currentTarget)
                                       {
@@ -2445,7 +2586,7 @@ dojo.declare("alfresco.xforms.Repeat",
                
                  this.headerInsertRepeatItemImage = document.createElement("img"); 
                  this.headerInsertRepeatItemImage.repeat = this;
-                 this.groupHeaderNode.appendChild(this.headerInsertRepeatItemImage);
+                 this._groupHeaderNode.appendChild(this.headerInsertRepeatItemImage);
                  this.headerInsertRepeatItemImage.setAttribute("src", 
                                                                alfresco_xforms_constants.WEBAPP_CONTEXT + 
                                                                "/images/icons/plus.gif");
@@ -2469,14 +2610,14 @@ dojo.declare("alfresco.xforms.Repeat",
                      (this.getViewRoot().focusedRepeat == this ||
                       this.getViewRoot().focusedRepeat.isAncestorOf(this)))
                  {
-                   if (!dojo.html.hasClass(this.groupHeaderNode, "xformsRepeatFocusedHeader"))
+                   if (!dojo.html.hasClass(this._groupHeaderNode, "xformsRepeatFocusedHeader"))
                    {
-                     dojo.html.addClass(this.groupHeaderNode, "xformsRepeatFocusedHeader");
+                     dojo.html.addClass(this._groupHeaderNode, "xformsRepeatFocusedHeader");
                    }
                  }
-                 else if (dojo.html.hasClass(this.groupHeaderNode, "xformsRepeatFocusedHeader"))
+                 else if (dojo.html.hasClass(this._groupHeaderNode, "xformsRepeatFocusedHeader"))
                  {
-                   dojo.html.removeClass(this.groupHeaderNode, "xformsRepeatFocusedHeader");
+                   dojo.html.removeClass(this._groupHeaderNode, "xformsRepeatFocusedHeader");
                  }
 
                  for (var i = 0; i < this._children.length; i++)
@@ -2533,7 +2674,7 @@ dojo.declare("alfresco.xforms.Repeat",
                    var repeatItem = repeat.getChildAt(index);
                    this.setFocusedChild(repeatItem);
                    var trigger = this._getRepeatItemTrigger("insert", { position: "after" });
-                   this.xform.fireAction(trigger.id);
+                   trigger.fire();
                  }
                },
 
@@ -2551,7 +2692,7 @@ dojo.declare("alfresco.xforms.Repeat",
                    {
                      this.setFocusedChild(null);
                      var trigger = this._getRepeatItemTrigger("insert", { position: "before" });
-                     this.xform.fireAction(trigger.id);
+                     trigger.fire();
                    }
                  }
                },
@@ -2570,7 +2711,7 @@ dojo.declare("alfresco.xforms.Repeat",
                    var repeatItem = repeat.getChildAt(index);
                    this.setFocusedChild(repeatItem);
                    var trigger = this._getRepeatItemTrigger("delete", {});
-                   this.xform.fireAction(trigger.id);
+                   trigger.fire();
                  }
                },
 
@@ -2666,24 +2807,44 @@ dojo.declare("alfresco.xforms.Repeat",
  */
 dojo.declare("alfresco.xforms.Trigger",
              alfresco.xforms.Widget,
+             function(xform, xformsNode) 
              {
-               initializer: function(xform, xformsNode) 
-               {
-               },
+             },
+             {
                /////////////////////////////////////////////////////////////////
                // methods & properties
                /////////////////////////////////////////////////////////////////
 
                /** TODO: DOCUMENT */
-               getAction: function()
+               getActions: function()
                {
-                 var action = _getElementsByTagNameNS(this.xformsNode, 
-                                                      alfresco_xforms_constants.XFORMS_NS,
-                                                      alfresco_xforms_constants.XFORMS_PREFIX,
-                                                      "action")[0];
-                 return new alfresco.xforms.XFormsAction(this.xform, dojo.dom.firstElement(action));
-               },
+                 if (typeof this._actions == "undefined")
+                 {
+                   var actionNode = _getElementsByTagNameNS(this.xformsNode, 
+                                                            alfresco_xforms_constants.XFORMS_NS,
+                                                            alfresco_xforms_constants.XFORMS_PREFIX,
+                                                            "action")[0];
+                   this._actions = {};
+                   for (var i = 0; i < actionNode.childNodes.length; i++)
+                   {
+                     if (actionNode.childNodes[i].nodeType != dojo.dom.ELEMENT_NODE)
+                     {
+                       continue;
+                     }
 
+                     var a = new alfresco.xforms.XFormsAction(this.xform, actionNode.childNodes[i]);
+                     this._actions[a.getType()] = a;
+                   }
+                 }
+                 return this._actions;
+               },
+               
+               /** fires the xforms action associated with the trigger */
+               fire: function()
+               {
+                 this.xform.fireAction(this.id);
+               },
+                 
                /////////////////////////////////////////////////////////////////
                // overridden methods
                /////////////////////////////////////////////////////////////////
@@ -2717,7 +2878,7 @@ dojo.declare("alfresco.xforms.Trigger",
                /////////////////////////////////////////////////////////////////
                _clickHandler: function(event)
                {
-                 this.xform.fireAction(this.id);
+                 this.fire();
                }
              });
 
@@ -2726,53 +2887,53 @@ dojo.declare("alfresco.xforms.Trigger",
  */
 dojo.declare("alfresco.xforms.Submit",
              alfresco.xforms.Trigger,
+             function(xform, xformsNode) 
              {
-               initializer: function(xform, xformsNode) 
+               var submit_buttons = (this.id == "submit" 
+                                     ? _xforms_getSubmitButtons()
+                                     : (this.id == "save-draft"
+                                        ? _xforms_getSaveDraftButtons()
+                                        : null));
+               if (submit_buttons == null)
                {
-                 var submit_buttons = (this.id == "submit" 
-                                       ? _xforms_getSubmitButtons()
-                                       : (this.id == "save-draft"
-                                          ? _xforms_getSaveDraftButtons()
-                                          : null));
-                 if (submit_buttons == null)
-                 {
-                   throw new Error("unknown submit button " + this.id);
-                 }
-                 for (var i = 0; i < submit_buttons.length; i++)
-                 {
-                   dojo.debug("adding submit handler for " + submit_buttons[i].getAttribute('id'));
-                   submit_buttons[i].widget = this;
-                   dojo.event.browser.addListener(submit_buttons[i], 
-                                                  "onclick", 
-                                                  function(event)
+                 throw new Error("unknown submit button " + this.id);
+               }
+               for (var i = 0; i < submit_buttons.length; i++)
+               {
+                 dojo.debug("adding submit handler for " + submit_buttons[i].getAttribute('id'));
+                 submit_buttons[i].widget = this;
+                 dojo.event.browser.addListener(submit_buttons[i], 
+                                                "onclick", 
+                                                function(event)
+                                                {
+                                                  if (!event.target.widget)
                                                   {
-                                                    if (!event.target.widget)
-                                                    {
-                                                      return true;
-                                                    }
-
-                                                    var xform = event.target.widget.xform;
-                                                    if (xform.submitWidget && xform.submitWidget.done)
-                                                    {
-                                                      dojo.debug("done - doing base click on " + xform.submitWidget.currentButton.id);
-                                                      xform.submitWidget.currentButton = null;
-                                                      xform.submitWidget = null;
-                                                      return true;
-                                                    }
-                                                    else
-                                                    {
-                                                      dojo.debug("triggering submit from handler " + event.target.id);
-                                                      dojo.event.browser.stopEvent(event);
-                                                      _hide_errors();
-                                                      xform.submitWidget = event.target.widget;
-                                                      xform.submitWidget.currentButton = event.target;
-                                                      xform.submitWidget.widget.buttonClick(); 
-                                                      return false;
-                                                    }
-                                                  },
-                                                  false);
-                 }
-               },
+                                                    return true;
+                                                  }
+                                                  
+                                                  var xform = event.target.widget.xform;
+                                                  if (xform.submitWidget && xform.submitWidget.done)
+                                                  {
+                                                    dojo.debug("done - doing base click on " + xform.submitWidget.currentButton.id);
+                                                    xform.submitWidget.currentButton = null;
+                                                    xform.submitWidget = null;
+                                                    return true;
+                                                  }
+                                                  else
+                                                  {
+                                                    dojo.debug("triggering submit from handler " + event.target.id);
+                                                    dojo.event.browser.stopEvent(event);
+                                                    _hide_errors();
+                                                    xform.submitWidget = event.target.widget;
+                                                    xform.submitWidget.currentButton = event.target;
+                                                    xform.submitWidget.widget.buttonClick(); 
+                                                    return false;
+                                                  }
+                                                },
+                                                false);
+               }
+             },
+             {
 
                /////////////////////////////////////////////////////////////////
                // DOM event handlers
@@ -2782,7 +2943,7 @@ dojo.declare("alfresco.xforms.Submit",
                {
                  this.done = false;
                  _hide_errors();
-                 this.xform.fireAction(this.id);
+                 this.fire();
                }
              });
 
@@ -2791,24 +2952,27 @@ dojo.declare("alfresco.xforms.Submit",
  */
 dojo.declare("alfresco.xforms.XFormsAction",
              null,
+             function(xform, xformsNode)
              {
-               initializer: function(xform, xformsNode)
+               this.xform = xform;
+               this.xformsNode = xformsNode;
+               /** All properties of the action as map of key value pairs */
+               this.properties = [];
+               for (var i = 0; i < this.xformsNode.attributes.length; i++)
                {
-                 this.xform = xform;
-                 this.xformsNode = xformsNode;
-                 /** All properties of the action as map of key value pairs */
-                 this.properties = [];
-                 for (var i = 0; i < this.xformsNode.attributes.length; i++)
+                 var attr = this.xformsNode.attributes[i];
+                 if (attr.nodeName.match(new RegExp("^" + alfresco_xforms_constants.XFORMS_PREFIX + ":")))
                  {
-                   var attr = this.xformsNode.attributes[i];
-                   if (attr.nodeName.match(new RegExp("^" + alfresco_xforms_constants.XFORMS_PREFIX + ":")))
-                   {
-                     this.properties[attr.nodeName.substring((alfresco_xforms_constants.XFORMS_PREFIX + ":").length)] = 
-                       attr.nodeValue;
-                   }
+                   this.properties[attr.nodeName.substring((alfresco_xforms_constants.XFORMS_PREFIX + ":").length)] = 
+                     attr.nodeValue;
                  }
-               },
-
+               }
+               if (this.getType() == "setvalue" && !this.properties["value"])
+               {
+                 this.properties["value"] = this.xformsNode.firstChild.nodeValue;
+               }
+             },
+             {
                /** Returns the action type. */
                getType: function()
                {
@@ -2826,20 +2990,22 @@ dojo.declare("alfresco.xforms.XFormsAction",
  */
 dojo.declare("alfresco.xforms.XFormsEvent",
              null,
+             function(node)
              {
-               initializer: function(node)
+               this.type = node.nodeName;
+               this.targetId = node.getAttribute("targetId");
+               this.targetName = node.getAttribute("targetName");
+               this.properties = {};
+               for (var i = 0; i < node.childNodes.length; i++)
                {
-                 this.type = node.nodeName;
-                 this.targetId = node.getAttribute("targetId");
-                 this.targetName = node.getAttribute("targetName");
-                 this.properties = {};
-                 for (var i = 0; i < node.childNodes.length; i++)
+                 if (node.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
                  {
-                   if (node.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
-                     this.properties[node.childNodes[i].getAttribute("name")] =
-                       node.childNodes[i].getAttribute("value");
+                   this.properties[node.childNodes[i].getAttribute("name")] =
+                     node.childNodes[i].getAttribute("value");
                  }
-               },
+               }
+             },
+             {
                /** Returns the widget managing the specified target id. */
                getTarget: function()
                {
@@ -2857,35 +3023,34 @@ dojo.declare("alfresco.xforms.XFormsEvent",
  */
 dojo.declare("alfresco.xforms.Binding",
              null,
+             function(xformsNode, parent)
              {
-               initializer: function(xformsNode, parent)
-               {
-                 this.xformsNode = xformsNode;
-                 this.id = this.xformsNode.getAttribute("id");
-                 this.nodeset =  this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":nodeset");
-                 this._readonly =
-                   (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":readonly")
-                    ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":readonly") == "true()"
-                    : null);
-                 this._required =
-                   (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":required")
-                    ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":required") == "true()"
-                    : null);
-                 
-                 this._type =
-                   (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":type")
-                    ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":type")
-                    : null);
-                 this.constraint = 
-                   (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
-                    ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
-                    : null);
-                 this.maximum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":maximum"));
-                 this.minimum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":minimum"));
-                 this.parent = parent;
-                 this.widgets = {};
-               },
-
+               this.xformsNode = xformsNode;
+               this.id = this.xformsNode.getAttribute("id");
+               this.nodeset =  this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":nodeset");
+               this._readonly =
+                 (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":readonly")
+                  ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":readonly") == "true()"
+                  : null);
+               this._required =
+                 (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":required")
+                  ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":required") == "true()"
+                  : null);
+               
+               this._type =
+                 (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":type")
+                  ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":type")
+                  : null);
+               this.constraint = 
+                 (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
+                  ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
+                  : null);
+               this.maximum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":maximum"));
+               this.minimum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":minimum"));
+               this.parent = parent;
+               this.widgets = {};
+             },
+             {
                /** Returns the expected schema type for this binding. */
                getType: function()
                {
@@ -2923,23 +3088,22 @@ dojo.declare("alfresco.xforms.Binding",
  */
 dojo.declare("alfresco.xforms.XForm",
              null,
+             /** Makes a request to the XFormsBean to load the xforms document. */
+             function()
+             {
+               var req = AjaxHelper.createRequest(this,
+                                                  "getXForm",
+                                                  {},
+                                                  function(type, data, evt) 
+                                                  {
+                                                    this.target._loadHandler(data);
+                                                  });
+               AjaxHelper.sendRequest(req);
+             },
              {
                /////////////////////////////////////////////////////////////////
                // Initialization
                /////////////////////////////////////////////////////////////////
-
-               /** Makes a request to the XFormsBean to load the xforms document. */
-               initializer: function()
-               {
-                 var req = AjaxHelper.createRequest(this,
-                                                    "getXForm",
-                                                    {},
-                                                    function(type, data, evt) 
-                                                    {
-                                                      this.target._loadHandler(data);
-                                                    });
-                 AjaxHelper.sendRequest(req);
-               },
 
                /** Parses the xforms document and produces the widget tree. */
                _loadHandler: function(xformDocument)
@@ -3074,8 +3238,7 @@ dojo.declare("alfresco.xforms.XForm",
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":switch":
                    return new alfresco.xforms.SwitchGroup(this, xformsNode);
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":case":
-                   return new alfresco.xforms.Group(this, xformsNode);
-
+                   return new alfresco.xforms.CaseGroup(this, xformsNode);
                  default:
                    throw new Error("unknown type " + xformsNode.nodeName);
                  }
@@ -3086,26 +3249,27 @@ dojo.declare("alfresco.xforms.XForm",
                {
                  for (var i = 0; i < xformsNode.childNodes.length; i++)
                  {
-                   if (xformsNode.childNodes[i].nodeType == dojo.dom.ELEMENT_NODE)
+                   if (xformsNode.childNodes[i].nodeType != dojo.dom.ELEMENT_NODE)
                    {
-                     dojo.debug("loading " + xformsNode.childNodes[i].nodeName + 
-                                " into " + parentWidget.id);
-                     if (xformsNode.childNodes[i].getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX +
-                                                               ":prototype") == "true")
+                     continue;
+                   }
+                   dojo.debug("loading " + xformsNode.childNodes[i].nodeName + 
+                              " into " + parentWidget.id);
+                   if (xformsNode.childNodes[i].getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX +
+                                                             ":prototype") == "true")
+                   {
+                     dojo.debug(xformsNode.childNodes[i].getAttribute("id") + 
+                                " is a prototype, ignoring");
+                     continue;
+                   }
+                   var w = this.createWidget(xformsNode.childNodes[i]);
+                   if (w != null)
+                   {
+                     dojo.debug("created " + w.id + " for " + xformsNode.childNodes[i].nodeName);
+                     parentWidget.addChild(w);
+                     if (w instanceof alfresco.xforms.Group)
                      {
-                       dojo.debug(xformsNode.childNodes[i].getAttribute("id") + 
-                                  " is a prototype, ignoring");
-                       continue;
-                     }
-                     var w = this.createWidget(xformsNode.childNodes[i]);
-                     if (w != null)
-                     {
-                       dojo.debug("created " + w.id + " for " + xformsNode.childNodes[i].nodeName);
-                       parentWidget.addChild(w);
-                       if (w instanceof alfresco.xforms.Group)
-                       {
-                         this.loadWidgets(xformsNode.childNodes[i], w);
-                       }
+                       this.loadWidgets(xformsNode.childNodes[i], w);
                      }
                    }
                  }

@@ -158,11 +158,9 @@ public class FileDetailsBean extends AVMDetailsBean
          wrapper.put("version", record.getVersionID());
          wrapper.put("strVersion", Integer.toString(record.getVersionID()));
          wrapper.put("modifiedDate", new Date(record.getModDate()));
-         List<Pair<Integer, String>> paths = this.avmService.getPaths(record);
-         if (paths.size() != 0)
+         Pair<Integer, String> path = this.avmService.getAPath(record);
+         if (path != null)
          {
-            // display the first path as any will show the same content
-            Pair<Integer, String> path = paths.get(0);
             wrapper.put("url", DownloadContentServlet.generateBrowserURL(
                         AVMNodeConverter.ToNodeRef(path.getFirst(), path.getSecond()), avmNode.getName()));
          }

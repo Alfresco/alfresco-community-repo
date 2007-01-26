@@ -19,6 +19,7 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -138,7 +139,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          
          // assume 'workspace' or other NodeRef based protocol for remaining URL elements
          StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
-         String id = t.nextToken();
+         String id = URLDecoder.decode(t.nextToken(), "UTF-8");
          // build noderef from the appropriate URL elements
          nodeRef = new NodeRef(storeRef, id);
          

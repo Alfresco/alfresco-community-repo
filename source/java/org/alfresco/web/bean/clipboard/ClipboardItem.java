@@ -18,13 +18,8 @@ package org.alfresco.web.bean.clipboard;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ApplicationModel;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Simple class representing a single item added to the clipboard. 
@@ -46,4 +41,8 @@ public interface ClipboardItem
    public NodeRef getNodeRef();
    
    public boolean supportsLink();
+   
+   public boolean canPasteToViewId(String viewId);
+   
+   public boolean paste(FacesContext fc, String viewId, int action) throws Throwable;
 }

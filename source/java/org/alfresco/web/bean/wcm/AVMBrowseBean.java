@@ -77,6 +77,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMBrowseBean implements IContextListener
 {
+   public static final String BEAN_NAME = "AVMBrowseBean";
+   
    private static final Log LOGGER = LogFactory.getLog(AVMBrowseBean.class);
    
    private static final String MSG_REVERT_SUCCESS = "revert_success";

@@ -16,15 +16,21 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import java.util.List;
+
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Base class representing a single item added to the clipboard. 
@@ -33,6 +39,24 @@ import org.alfresco.web.bean.repository.Repository;
  */
 abstract class AbstractClipboardItem implements ClipboardItem
 {
+   protected static Log logger = LogFactory.getLog(ClipboardBean.class);
+   
+   protected static final String MSG_COPY_OF = "copy_of";
+   
+   /** Shallow search for nodes with a name pattern */
+   private static final String XPATH_QUERY_NODE_MATCH = "./*[like(@cm:name, $cm:name, false)]";
+   
+   private ServiceRegistry services = null;
+   
+   protected NodeRef ref;
+   protected ClipboardStatus mode;
+   
+   // cached values
+   private String name;
+   private QName type;
+   private String icon;
+   
+   
    /**
     * Constructor
     * 
@@ -54,7 +78,8 @@ abstract class AbstractClipboardItem implements ClipboardItem
    {
       if (this.name == null)
       {
-         this.name = (String)getNodeService().getProperty(this.ref, ContentModel.PROP_NAME);
+         this.name = (String)getServiceRegistry().getNodeService().getProperty(
+               this.ref, ContentModel.PROP_NAME);
       }
       return this.name;
    }
@@ -63,7 +88,7 @@ abstract class AbstractClipboardItem implements ClipboardItem
    {
       if (this.type == null)
       {
-         this.type = getNodeService().getType(this.ref);
+         this.type = getServiceRegistry().getNodeService().getType(this.ref);
       }
       return this.type;
    }
@@ -72,7 +97,8 @@ abstract class AbstractClipboardItem implements ClipboardItem
    {
       if (this.icon == null)
       {
-         this.icon = (String)getNodeService().getProperty(this.ref, ApplicationModel.PROP_ICON);
+         this.icon = (String)getServiceRegistry().getNodeService().getProperty(
+               this.ref, ApplicationModel.PROP_ICON);
       }
       return this.icon;
    }
@@ -114,16 +140,33 @@ abstract class AbstractClipboardItem implements ClipboardItem
       return ref.hashCode();
    }
    
-   protected static NodeService getNodeService()
+   protected ServiceRegistry getServiceRegistry()
    {
-      return Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      if (services == null)
+      {
+         services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      }
+      return services;
    }
    
-   protected NodeRef ref;
-   protected ClipboardStatus mode;
-   
-   // cached values
-   private String name;
-   private QName type;
-   private String icon;
+   protected boolean checkExists(String name, NodeRef parent)
+   {
+      QueryParameterDefinition[] params = new QueryParameterDefinition[1];
+      params[0] = new QueryParameterDefImpl(
+            ContentModel.PROP_NAME,
+            getServiceRegistry().getDictionaryService().getDataType(
+                  DataTypeDefinition.TEXT),
+                  true,
+                  name);
+      
+      // execute the query
+      List<NodeRef> nodeRefs = getServiceRegistry().getSearchService().selectNodes(
+            parent,
+            XPATH_QUERY_NODE_MATCH,
+            params,
+            getServiceRegistry().getNamespaceService(),
+            false);
+      
+      return (nodeRefs.size() != 0);
+   }
 }

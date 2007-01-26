@@ -105,6 +105,12 @@
          <fileset dir="${dir.project.remoteapi}/source/wsdl" />
       </copy>
       
+      <!-- Fixes to lucene FSDirectory -->
+      
+      <copy todir="${dir.assemble}/WEB-INF/classes/org/apache/lucene/store">
+         <fileset dir="${dir.project.repository}/build/classes/org/apache/lucene/store" includes="*.class" />
+      </copy>
+
    </target>
  
    <target name="assemble-war-tomcat" if="isTomcat">

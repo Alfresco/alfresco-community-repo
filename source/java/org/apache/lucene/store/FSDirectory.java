@@ -25,6 +25,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Hashtable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexFileNameFilter;
 
 /**
@@ -34,6 +36,8 @@ import org.apache.lucene.index.IndexFileNameFilter;
  * @author Doug Cutting
  */
 public class FSDirectory extends Directory {
+    
+    private static Log s_logger = LogFactory.getLog(FSDirectory.class);
     
   /** This cache of directories ensures that there is a unique Directory
    * instance per path, so that synchronization on the Directory can be used to
@@ -158,6 +162,11 @@ public class FSDirectory extends Directory {
 
   private void init(File path, boolean create) throws IOException {
     directory = path;
+    
+    if(s_logger.isDebugEnabled())
+    {
+        s_logger.debug("Alfresco FSDirectory used for "+path+" create = "+create);
+    }
     
     if (LOCK_DIR == null) {
       lockDir = directory;

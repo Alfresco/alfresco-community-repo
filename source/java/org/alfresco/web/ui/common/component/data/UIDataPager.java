@@ -111,7 +111,7 @@ public class UIDataPager extends UICommand
             Integer.toString(pageCount)
             }));
       
-      buf.append("&nbsp;");
+      buf.append("&nbsp;&nbsp;");
       
       // output HTML links or labels to render the paging controls
       // first page
@@ -127,6 +127,8 @@ public class UIDataPager extends UICommand
       {
          buf.append(Utils.buildImageTag(context, WebResources.IMAGE_FIRSTPAGE_NONE, 16, 16, null));
       }
+      
+      buf.append("&nbsp;");
       
       // previous page
       if (currentPage != 0)
@@ -227,6 +229,8 @@ public class UIDataPager extends UICommand
       {
          buf.append(Utils.buildImageTag(context, WebResources.IMAGE_NEXTPAGE_NONE, 16, 16, null));
       }
+      
+      buf.append("&nbsp;");
       
       // last page
       if ((dataContainer.getCurrentPage() < dataContainer.getPageCount() - 1) == true)

@@ -22,7 +22,7 @@
    <config evaluator="string-compare" condition="OpenSearch">
       <opensearch>
          <engines>
-            <engine label="Alfresco Text Search">
+            <engine label-id="current_repo">
                <url type="application/opensearchdescription+xml">
                   /service/search/textsearchdescription.xml
                </url>

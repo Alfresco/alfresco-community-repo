@@ -3,8 +3,33 @@
 // Gavin Cornwell 14-07-2006
 //
 
+// Global Alfresco namespace object
+if (typeof Alfresco == "undefined") 
+{
+   var Alfresco = {};
+}
+
 var _alfContextPath = null;
 
+/**
+ * Error handler for errors caught in a catch block
+ */
+function handleCaughtError(err)
+{
+   var msg = null;
+      
+   if (err.message)
+   {
+      msg = err.message;
+   }
+   else
+   {
+      msg = err;
+   }
+   
+   alert("An error occurred: " + msg);
+}
+   
 /**
  * Default handler for errors when using the dojo toolkit
  */

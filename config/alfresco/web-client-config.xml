@@ -211,6 +211,8 @@
             <dashlet id="my-images" label-id="dashlet_myimages"
                   description-id="dashlet_myimages_desc"
                   jsp="/jsp/dashboards/dashlets/my-images.jsp" allow-narrow="false" />
+            <dashlet id="opensearch" label-id="opensearch" description-id="opensearch_desc"
+                  jsp="/jsp/dashboards/dashlets/opensearch.jsp" />
          </dashlets>
          <!-- set true allow the Guest user to configure the dashboard view - false by default -->
          <allow-guest-config>false</allow-guest-config>

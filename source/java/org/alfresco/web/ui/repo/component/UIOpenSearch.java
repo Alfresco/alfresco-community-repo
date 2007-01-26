@@ -55,7 +55,7 @@ public class UIOpenSearch extends SelfRenderingComponent
          return;
       }
       
-      String clientId = this.getClientId(context);
+      String clientId = this.getId();
       
       // output the scripts required by the component (checks are 
       // made to make sure the scripts are only written once)
@@ -78,17 +78,17 @@ public class UIOpenSearch extends SelfRenderingComponent
       
       // write out the javascript initialisation required
       out.write("<script type='text/javascript'>\n");
-      out.write("setSearchTermFieldId('");
+      out.write("var ");
       out.write(clientId);
-      out.write("-search-term');\n");
-      out.write("setPageSizeFieldId('");
+      out.write(" = new Alfresco.OpenSearchClient('");
       out.write(clientId);
-      out.write("-page-size');\n");
+      out.write("');\n");
       
       // register the engines on the client
       for (OpenSearchEngine engine : engines)
       {
-         out.write("registerOpenSearchEngine('");
+         out.write(clientId);
+         out.write(".registerOpenSearchEngine('");
          out.write(engine.getId());
          out.write("', '");
          out.write(engine.getLabel());
@@ -99,45 +99,67 @@ public class UIOpenSearch extends SelfRenderingComponent
       out.write("</script>\n");
       
       // write out the HTML
-      out.write("<div class='osPanel'>\n");
+      out.write("<div class='osPanel'><div class='osControls'>");
       out.write("<table border='0' cellpadding='2' cellspacing='0'><tr>");
       out.write("<td><input id='");
       out.write(clientId);
       out.write("-search-term' name='");
       out.write(clientId);
-      out.write("-search-term' type='text' size='25' onkeyup='return handleKeyPress(event);' />");
+      out.write("-search-term' type='text' size='30' onkeyup='return ");
+      out.write(clientId);
+      out.write(".handleKeyPress(event);' />");
       out.write("</td><td><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/search_icon.gif' style='cursor:pointer' onclick='executeQuery()' title='");
+      out.write("/images/icons/search_icon.gif' style='cursor:pointer' onclick='");
+      out.write(clientId);
+      out.write(".executeQuery()' title='");
       out.write(Application.getMessage(context, "search"));
+      out.write("' /></td></tr></table>\n");
+      out.write("<table border='0' cellpadding='2' cellspacing='0' style='margin-top: 2px;'><tr><td><img src='");
+      out.write(context.getExternalContext().getRequestContextPath());
+      out.write("/images/icons/expanded.gif' style='cursor:pointer' onclick='");
+      out.write(clientId);
+      out.write(".toggleOptions(this)' class='expanded' title='");
+      out.write(Application.getMessage(context, "toggle_options"));
       out.write("' /></td><td><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/collapsed.gif' style='cursor:pointer' onclick='toggleOptions(this)' class='collapsed' title='");
+      out.write("/images/icons/opensearch_controls.gif' /></td><td>");
       out.write(Application.getMessage(context, "options"));
-      out.write("' /></td></tr></table>\n");
-      out.write("<div id='os-options' class='osOptions'>");
+      out.write("</td></tr></table>\n");
+      
+      out.write("<div id='");
+      out.write(clientId);
+      out.write("-os-options' class='osOptions'>");
+      out.write(Application.getMessage(context, "show"));
       out.write("<input id='");
       out.write(clientId);
       out.write("-page-size' name='");
       out.write(clientId);
-      out.write("-page-size' type='text' value='5' style='width: 25px; margin-right: 5px;' />");
+      out.write("-page-size' type='text' value='5' style='width: 25px; margin-left: 5px; margin-right: 5px;' />");
       out.write(Application.getMessage(context, "items_per_page"));
-      out.write("<div style='margin-top: 6px; margin-bottom: 6px;'>");
-      out.write(Application.getMessage(context, "perform_search_in"));
+      out.write("<div style='margin-top: 6px; margin-bottom: 4px;'>");
+      out.write(Application.getMessage(context, "search_in"));
       out.write(":</div><table border='0' cellpadding='2' cellspacing='0'>");
       for (OpenSearchEngine engine : engines)
       {
          out.write("<tr><td><input id='");
+         out.write(clientId);
+         out.write("-");
          out.write(engine.getId());
          out.write("-engine-enabled' name='");
+         out.write(clientId);
+         out.write("-");
          out.write(engine.getId());
          out.write("-engine-enabled' type='checkbox' checked='checked' />");
          out.write("</td><td>");
          out.write(engine.getLabel());
          out.write("</td></tr>");
       }
-      out.write("</table></div>\n");
-      out.write("<div id='os-results'></div>\n</div>\n");
+      out.write("</table></div></div>\n");
+      
+      out.write("<div id='");
+      out.write(clientId);
+      out.write("-os-results'></div>\n</div>\n");
    }
    
    /**

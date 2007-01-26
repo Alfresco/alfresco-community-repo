@@ -93,20 +93,21 @@ public class InvokeCommand extends BaseAjaxCommand
                          " on variable " + variableName + 
                          " with method " + methodName);
 
-         // retrieve the managed bean, this is really weak but if the 
-         // request comes from a portal server the bean we need to get
-         // is in the session with a prefix chosen by the portal vendor,
-         // to cover this scenario we have to go through the names of
-         // all the objects in the session to find the bean we want.
-         Object bean = null;
-         
+         Object bean = null;         
          if (Application.inPortalServer())
          {
+            // retrieve the managed bean, this is really weak but if the 
+            // request comes from a portal server the bean we need to get
+            // is in the session with a prefix chosen by the portal vendor,
+            // to cover this scenario we have to go through the names of
+            // all the objects in the session to find the bean we want.
+            
+            String beanNameSuffix = "?" + variableName;
             Enumeration enumNames = request.getSession().getAttributeNames();
             while (enumNames.hasMoreElements())
             {
                String name = (String)enumNames.nextElement();
-               if (name.endsWith(variableName))
+               if (name.endsWith(beanNameSuffix))
                {
                   bean = request.getSession().getAttribute(name);
                   
@@ -118,8 +119,7 @@ public class InvokeCommand extends BaseAjaxCommand
             }
          }
          
-         // if we didn't find the bean it may be a request scope bean, in which
-         // case go through the variable resolver to create it.
+         // if we don't have the bean yet try and get it via the variable resolver
          if (bean == null)
          {
             VariableResolver vr = facesContext.getApplication().getVariableResolver();

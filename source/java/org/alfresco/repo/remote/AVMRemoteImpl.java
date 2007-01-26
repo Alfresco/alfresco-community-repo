@@ -18,6 +18,7 @@ import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Client side wrapper for AVMRemoteTransport.
@@ -490,5 +491,13 @@ public class AVMRemoteImpl implements AVMRemote
     public void revert(String path, AVMNodeDescriptor toRevertTo) 
     {
         fTransport.revert(ClientTicketHolder.GetTicket(), path, toRevertTo);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#getAPath(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public Pair<Integer, String> getAPath(AVMNodeDescriptor desc) 
+    {
+        return fTransport.getAPath(ClientTicketHolder.GetTicket(), desc);
     }
 }

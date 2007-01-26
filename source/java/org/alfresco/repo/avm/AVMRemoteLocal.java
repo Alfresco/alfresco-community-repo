@@ -18,6 +18,7 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * A loopback implementation of the AVMRemote interface?
@@ -486,5 +487,13 @@ public class AVMRemoteLocal implements AVMRemote
     public void revert(String path, AVMNodeDescriptor toRevertTo) 
     {
         fService.revert(path, toRevertTo);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#getAPath(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public Pair<Integer, String> getAPath(AVMNodeDescriptor desc) 
+    {
+        return fService.getAPath(desc);
     }
 }

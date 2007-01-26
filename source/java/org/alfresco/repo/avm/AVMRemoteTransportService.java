@@ -24,6 +24,7 @@ import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 
 /**
  * Implementation of AVMRemoteTransport for the server side. It's 
@@ -1007,5 +1008,14 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
     {
         fAuthService.validate(ticket);
         fAVMService.revert(path, toRevertTo);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemoteTransport#getAPath(java.lang.String, org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public Pair<Integer, String> getAPath(String ticket, AVMNodeDescriptor desc) 
+    {
+        fAuthService.validate(ticket);
+        return fAVMService.getAPath(desc);
     }
 }

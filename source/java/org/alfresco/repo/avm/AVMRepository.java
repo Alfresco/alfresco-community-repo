@@ -1255,6 +1255,22 @@ public class AVMRepository
     }
     
     /**
+     * Get a single valid path for a node.
+     * @param desc The node descriptor.
+     * @return A version, path
+     */
+    public Pair<Integer, String> getAPath(AVMNodeDescriptor desc)
+    {
+        AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(desc.getId());
+        if (node == null)
+        {
+            throw new AVMNotFoundException("Could not find node: " + desc);
+        }
+        List<String> components = new ArrayList<String>();
+        return recursiveGetAPath(node, components);
+    }
+    
+    /**
      * Get all paths for a node reachable by HEAD.
      * @param desc The node descriptor.
      * @return A List of all the version, path Pairs that match.
@@ -1272,6 +1288,13 @@ public class AVMRepository
         return paths;
     }
     
+    /**
+     * Get all paths in a particular store in the head version for
+     * a particular node.
+     * @param desc The node descriptor.
+     * @param store The name of the store.
+     * @return All matching paths.
+     */
     public List<Pair<Integer, String>> getPathsInStoreHead(AVMNodeDescriptor desc, String store)
     {
         AVMStore st = getAVMStoreByName(store);
@@ -1325,6 +1348,43 @@ public class AVMRepository
         }
     }
 
+    /**
+     * Do the work of getting one path for a node.
+     * @param node The node to get the path of.
+     * @param components The storage for path components.
+     * @return A path or null.
+     */
+    private Pair<Integer, String> recursiveGetAPath(AVMNode node, List<String> components)
+    {
+        if (node.getIsRoot())
+        {
+            AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByRoot(node);
+            if (store != null)
+            {
+                return new Pair<Integer, String>(-1, makePath(components, store.getName()));
+            }
+            VersionRoot vr = AVMDAOs.Instance().fVersionRootDAO.getByRoot(node);
+            if (vr != null)
+            {
+                return new Pair<Integer, String>(vr.getVersionID(), makePath(components, vr.getAvmStore().getName()));
+            }
+            return null;
+        }
+        List<ChildEntry> entries = AVMDAOs.Instance().fChildEntryDAO.getByChild(node);
+        for (ChildEntry entry : entries)
+        {
+            String name = entry.getKey().getName();
+            components.add(name);
+            Pair<Integer, String> path = recursiveGetAPath(entry.getKey().getParent(), components);
+            if (path != null)
+            {
+                return path;
+            }
+            components.remove(components.size() - 1);
+        }
+        return null;
+    }
+    
     /**
      * Do the actual work.
      * @param node The current node.
@@ -1391,23 +1451,33 @@ public class AVMRepository
     private void addPath(List<String> components, int version, String storeName, 
                          List<Pair<Integer, String>> paths)
     {
+        paths.add(new Pair<Integer, String>(version, makePath(components, storeName)));
+    }
+    
+    /**
+     * Helper for generating paths.
+     * @param components The path components.
+     * @param storeName The store that the path is in.
+     * @return The path.
+     */
+    private String makePath(List<String> components, String storeName)
+    {
         StringBuilder pathBuilder = new StringBuilder();
         pathBuilder.append(storeName);
         pathBuilder.append(":");
         if (components.size() == 0)
         {
             pathBuilder.append("/");
-            paths.add(new Pair<Integer, String>(version, pathBuilder.toString()));
-            return;
+            return pathBuilder.toString();
         }
         for (int i = components.size() - 1; i >= 0; i--)
         {
             pathBuilder.append("/");
             pathBuilder.append(components.get(i));
         }
-        paths.add(new Pair<Integer, String>(version, pathBuilder.toString()));
+        return pathBuilder.toString();
     }
-    
+   
     /**
      * Get information about layering of a path.
      * @param version The version to look under.

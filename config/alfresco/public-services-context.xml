@@ -1004,6 +1004,7 @@
                 <value>getContentDataForRead</value>
                 <value>getAspects</value>
                 <value>hasAspect</value>
+                <value>getAPath</value>
             </list>
         </property>
     </bean>

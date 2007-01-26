@@ -779,6 +779,13 @@ public interface AVMService
     
 
     /**
+     * Get a single valid path to a given node.
+     * @param desc The node descriptor to get a path for.
+     * @return AVMNotFoundException
+     */
+    public Pair<Integer, String> getAPath(AVMNodeDescriptor desc);
+    
+    /**
      * Get all paths that a given node has that are in the 
      * <strong><code>HEAD</code></strong> version (<strong><code> -1 </code></strong>).
      * This can be an expensive operation but less so than getPaths().

@@ -16,6 +16,7 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * This is the actual remote interface that is wrapped by
@@ -470,5 +471,13 @@ public interface AVMRemoteTransport
      * @param toRevertTo The descriptor of the version to revert to.
      * @throws AVMNotFoundException
      */
-    public void revert(String ticket, String path, AVMNodeDescriptor toRevertTo);    
+    public void revert(String ticket, String path, AVMNodeDescriptor toRevertTo);  
+    
+    /**
+     * Get a version and path for a node.
+     * @param ticket The authentication ticket.
+     * @param desc The node descriptor for the node we want to get a path to.
+     * @return version and path.
+     */
+    public Pair<Integer, String> getAPath(String ticket, AVMNodeDescriptor desc);
 }

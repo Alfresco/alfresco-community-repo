@@ -716,6 +716,18 @@ public class AVMServiceImpl implements AVMService
     	return fAVMRepository.getPaths(desc);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getAPath(org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public Pair<Integer, String> getAPath(AVMNodeDescriptor desc) 
+    {
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Descriptor is null.");
+        }
+        return fAVMRepository.getAPath(desc);
+    }
+
     /**
      * Get all paths that a given node has that are in the head version.
      * @param desc The node descriptor to get paths for.

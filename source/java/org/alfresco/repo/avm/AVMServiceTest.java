@@ -295,6 +295,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             {
                 System.out.println(path.getFirst() + " " + path.getSecond());
             }
+            assertNotNull(fService.getAPath(fService.lookup(-1, "main:/a/b/c/foo")));
         }
         catch (Exception e)
         {

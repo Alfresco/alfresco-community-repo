@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Remote interface for AVM.
@@ -452,5 +453,13 @@ public interface AVMRemote
      * @param toRevertTo The descriptor of the version to revert to.
      * @throws AVMNotFoundException
      */
-    public void revert(String path, AVMNodeDescriptor toRevertTo);    
+    public void revert(String path, AVMNodeDescriptor toRevertTo);  
+    
+    /**
+     * Get a version and path of a node. 
+     * @param desc The descriptor for the node to which we want a path.
+     * @return version and path.
+     * @throws AVMNotFoundException
+     */
+    public Pair<Integer, String> getAPath(AVMNodeDescriptor desc);
 }

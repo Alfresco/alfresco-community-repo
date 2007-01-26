@@ -1553,7 +1553,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         Field.Index.UN_TOKENIZED, Field.TermVector.NO));
                 doc.add(new Field(attributeName + ".size", Long.toString(contentData.getSize()), Field.Store.NO,
                         Field.Index.TOKENIZED, Field.TermVector.NO));
-                
+
                 // TODO: Use the node locale in preferanced to the system locale
                 Locale locale = contentData.getLocale();
                 if (locale == null)
@@ -1692,6 +1692,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
             {
                 Field.Store fieldStore = store ? Field.Store.YES : Field.Store.NO;
                 Field.Index fieldIndex;
+
                 if (index)
                 {
                     if (tokenise)
@@ -1708,42 +1709,45 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     fieldIndex = Field.Index.NO;
                 }
 
-                if (isMultiLingual)
+                if ((fieldIndex != Field.Index.NO) || (fieldStore != Field.Store.NO))
                 {
-                    MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
-                    for (Locale locale : mlText.getLocales())
+                    if (isMultiLingual)
                     {
-                        String localeString = mlText.getValue(locale);
+                        MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
+                        for (Locale locale : mlText.getLocales())
+                        {
+                            String localeString = mlText.getValue(locale);
+                            StringBuilder builder = new StringBuilder();
+                            builder.append("\u0000").append(locale.toString()).append("\u0000").append(localeString);
+                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
+                                    Field.TermVector.NO));
+                        }
+                    }
+                    else if (isText)
+                    {
+                        // TODO: Use the node locale in preferanced to the system locale
+                        Locale locale = null;
+
+                        Serializable localeProperty = nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
+                        if (localeProperty != null)
+                        {
+                            locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, localeProperty);
+                        }
+
+                        if (locale == null)
+                        {
+                            locale = Locale.getDefault();
+                        }
                         StringBuilder builder = new StringBuilder();
-                        builder.append("\u0000").append(locale.toString()).append("\u0000").append(localeString);
+                        builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
                         doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
                                 Field.TermVector.NO));
                     }
-                }
-                else if (isText)
-                {
-                    // TODO: Use the node locale in preferanced to the system locale
-                    Locale locale = null;
-
-                    Serializable localeProperty = nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
-                    if (localeProperty != null)
+                    else
                     {
-                        locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, localeProperty);
+                        doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
                     }
-
-                    if (locale == null)
-                    {
-                        locale = Locale.getDefault();
-                    }
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
-                    doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
                 }
-                else
-                {
-                    doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
-                }
-
             }
         }
 

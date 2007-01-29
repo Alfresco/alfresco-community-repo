@@ -99,7 +99,7 @@ public class FileFolderServiceImpl implements FileFolderService
         "[like(@cm:name, $cm:name, false)" +
         " and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
         " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
-        " and (subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
+        " and subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
     
     /** empty parameters */
     private static final QueryParameterDefinition[] PARAMS_ANY_NAME = new QueryParameterDefinition[1];

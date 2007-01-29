@@ -50,6 +50,9 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    
    private static final String MSG_LINK_TO = "link_to";
    
+   // File extension to use for link nodes
+   
+   private static final String LinkNodeExtension = ".url";
    
    /**
     * @param ref
@@ -131,7 +134,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                      if (checkExists(name + ".lnk", destRef) == false)
                      {
                         Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-                        props.put(ContentModel.PROP_NAME, name + ".lnk");
+                        props.put(ContentModel.PROP_NAME, name + LinkNodeExtension);
                         props.put(ContentModel.PROP_LINK_DESTINATION, getNodeRef());
                         if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT))
                         {

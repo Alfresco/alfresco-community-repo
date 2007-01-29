@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.web.api.APIException;
 import org.alfresco.web.api.APIRequest;
@@ -114,17 +115,25 @@ public abstract class APIServiceTemplateImpl extends APIServiceImpl
     /**
      * Simple test that can be executed outside of web context
      */
-    /*package*/ void test(String format)
+    /*package*/ void test(final String format)
         throws IOException
     {
-        // create test model
-        Map<String, Object> model = createTestModel();
-        
-        // render service template to string
-        StringWriter rendition = new StringWriter();
-        PrintWriter writer = new PrintWriter(rendition);
-        renderTemplate(null, format, model, writer);
-        System.out.println(rendition.toString());
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+            public Object doWork()
+            {
+                // create test model
+                Map<String, Object> model = createTestModel();
+
+                // render service template to string
+                StringWriter rendition = new StringWriter();
+                PrintWriter writer = new PrintWriter(rendition);
+                renderTemplate(null, format, model, writer);
+                System.out.println(rendition.toString());
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
     
 }

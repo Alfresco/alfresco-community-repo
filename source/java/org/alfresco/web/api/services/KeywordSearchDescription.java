@@ -25,11 +25,11 @@ import org.alfresco.web.api.APIRequest.RequiredAuthentication;
 
 
 /**
- * Provide OpenSearch Description for an Alfresco Text (simple) Search
+ * Provide OpenSearch Description for an Alfresco Keyword (simple) Search
  *
  * @author davidc
  */
-public class TextSearchDescription extends APIServiceTemplateImpl
+public class KeywordSearchDescription extends APIServiceTemplateImpl
 {
     
     /* (non-Javadoc)
@@ -79,7 +79,7 @@ public class TextSearchDescription extends APIServiceTemplateImpl
     public static void main(String[] args)
         throws Exception
     {
-        TextSearchDescription service = (TextSearchDescription)APIServiceImpl.getMethod("web.api.TextSearchDescription");
+        KeywordSearchDescription service = (KeywordSearchDescription)APIServiceImpl.getMethod("web.api.KeywordSearchDescription");
         service.test(APIResponse.OPENSEARCH_DESCRIPTION_FORMAT);
     }
     

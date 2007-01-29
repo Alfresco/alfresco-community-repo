@@ -144,8 +144,11 @@ public class SearchEngines extends APIServiceTemplateImpl
                     String labelId = engineConfig.getLabelId();
                     if (labelId != null && labelId.length() > 0)
                     {
-                        String i18nLabel = I18NUtil.getMessage(labelId); 
-                        label = (i18nLabel == null) ? "$$" + labelId + "$$" : i18nLabel;
+                        String i18nLabel = I18NUtil.getMessage(labelId);
+                        if (i18nLabel == null && label == null)
+                        {
+                            label = (i18nLabel == null) ? "$$" + labelId + "$$" : i18nLabel;
+                        }
                     }
                     urls.add(new UrlTemplate(label, type, url));
                 }

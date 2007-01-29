@@ -139,14 +139,14 @@
       <property name="configService" ref="web.api.Config" />
    </bean>
 
-   <!--  Alfresco Web Client Text Search Description (OpenSearch) -->
-   <bean id="web.api.TextSearchDescription" class="org.alfresco.web.api.services.TextSearchDescription" parent="web.api.APITemplateService">
-      <property name="httpUri" value="/search/textsearchdescription.xml" />
+   <!--  Alfresco Web Client Keyword Search Description (OpenSearch) -->
+   <bean id="web.api.KeywordSearchDescription" class="org.alfresco.web.api.services.KeywordSearchDescription" parent="web.api.APITemplateService">
+      <property name="httpUri" value="/search/keywordsearchdescription.xml" />
    </bean>
 
-   <!--  Alfresco Web Client Text Search (OpenSearch) -->
-   <bean id="web.api.TextSearch" class="org.alfresco.web.api.services.TextSearch" parent="web.api.APITemplateService">
-      <property name="httpUri" value="/search/text" />
+   <!--  Alfresco Web Client Keyword Search (OpenSearch) -->
+   <bean id="web.api.KeywordSearch" class="org.alfresco.web.api.services.KeywordSearch" parent="web.api.APITemplateService">
+      <property name="httpUri" value="/search/keyword" />
       <property name="searchService" ref="SearchService" />
    </bean>
    

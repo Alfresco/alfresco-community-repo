@@ -21,10 +21,10 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.web.app.servlet.BaseServlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -36,7 +36,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * 
  * @author davidc
  */
-public class APIServlet extends BaseServlet
+public class APIServlet extends HttpServlet
 {
     private static final long serialVersionUID = 4209892938069597860L;
 

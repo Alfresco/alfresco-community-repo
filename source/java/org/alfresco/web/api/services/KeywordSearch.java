@@ -43,14 +43,14 @@ import org.apache.commons.logging.LogFactory;
 
 
 /**
- * Alfresco Text (simple) Search Service
+ * Alfresco Keyword (simple) Search Service
  * 
  * @author davidc
  */
-public class TextSearch extends APIServiceTemplateImpl
+public class KeywordSearch extends APIServiceTemplateImpl
 {
     // Logger
-    private static final Log logger = LogFactory.getLog(TextSearch.class);
+    private static final Log logger = LogFactory.getLog(KeywordSearch.class);
 
     // search parameters 
     // TODO: allow configuration of search store
@@ -409,7 +409,7 @@ public class TextSearch extends APIServiceTemplateImpl
     public static void main(String[] args)
         throws Exception
     {
-        TextSearch service = (TextSearch)APIServiceImpl.getMethod("web.api.TextSearch");
+        KeywordSearch service = (KeywordSearch)APIServiceImpl.getMethod("web.api.KeywordSearch");
         service.test(APIResponse.HTML_FORMAT);
     }
 

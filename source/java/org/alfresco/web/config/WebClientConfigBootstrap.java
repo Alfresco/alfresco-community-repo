@@ -34,15 +34,25 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class WebClientConfigBootstrap implements ApplicationContextAware
 {
+    /** The application context */
     private ApplicationContext applicationContext;
     
+    /** List of configs */
     private List<String> configs;
     
+    /**
+     * Set the configs
+     * 
+     * @param configs   the configs
+     */
     public void setConfigs(List<String> configs)
     {
         this.configs = configs;
     }
     
+    /**
+     * Initialisation method
+     */
     public void init()
     {
         if (this.applicationContext.containsBean("webClientConfigService") == true)
@@ -50,15 +60,9 @@ public class WebClientConfigBootstrap implements ApplicationContextAware
             ConfigService configService = (ConfigService)this.applicationContext.getBean("webClientConfigService"); 
             if (configService != null && this.configs != null && this.configs.size() != 0)
             {
-                System.out.println("****************************************");
                 UrlConfigSource configSource = new UrlConfigSource(this.configs);
                 configService.appendConfig(configSource);
             }
-        }
-        else
-        {
-
-            System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         }
     }
 

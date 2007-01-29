@@ -435,7 +435,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .pager
 {
-   padding: 3px;
+   padding: 5px 3px 4px 3px;
    border: 1px dotted #cccccc;
 }
 

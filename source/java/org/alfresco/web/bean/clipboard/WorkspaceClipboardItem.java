@@ -51,8 +51,8 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    private static final String MSG_LINK_TO = "link_to";
    
    // File extension to use for link nodes
+   private static final String LINK_NODE_EXTENSION = ".url";
    
-   private static final String LinkNodeExtension = ".url";
    
    /**
     * @param ref
@@ -131,10 +131,10 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                      
                      // we create a special Link Object node that has a property to reference the original
                      // create the node using the nodeService (can only use FileFolderService for content)
-                     if (checkExists(name + ".lnk", destRef) == false)
+                     if (checkExists(name + LINK_NODE_EXTENSION, destRef) == false)
                      {
                         Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-                        props.put(ContentModel.PROP_NAME, name + LinkNodeExtension);
+                        props.put(ContentModel.PROP_NAME, name + LINK_NODE_EXTENSION);
                         props.put(ContentModel.PROP_LINK_DESTINATION, getNodeRef());
                         if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT))
                         {

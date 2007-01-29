@@ -435,12 +435,13 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .pager
 {
-   padding: 5px 3px 4px 3px;
+   padding: 4px 2px 3px 2px;
    border: 1px dotted #cccccc;
 }
 
 .pager img
 {
+   margin-top:2px;
    vertical-align: -20%;
 }
 

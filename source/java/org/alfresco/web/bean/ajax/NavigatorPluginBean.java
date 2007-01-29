@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -47,6 +48,7 @@ public class NavigatorPluginBean implements IContextListener
    protected NodeRef previouslySelectedNode;
    
    private NodeService nodeService;
+   private NodeService internalNodeService;
    private DictionaryService dictionaryService;
    
    private static final Log logger = LogFactory.getLog(NavigatorPluginBean.class);
@@ -69,54 +71,68 @@ public class NavigatorPluginBean implements IContextListener
       FacesContext context = FacesContext.getCurrentInstance();
       ResponseWriter out = context.getResponseWriter();
       
-      Map params = context.getExternalContext().getRequestParameterMap();
-      String nodeRefStr = (String)params.get("nodeRef");
-      String area = (String)params.get("area");
-      
-      if (logger.isDebugEnabled())
-         logger.debug("retrieveChildren: area = " + area + ", nodeRef = " + nodeRefStr);
-      
-      // work out which list to cache the nodes in
-      Map<String, TreeNode> currentNodes = getNodesMapForArea(area);
-      
-      if (nodeRefStr != null && currentNodes != null)
+      UserTransaction tx = null;
+      try
       {
-         // get the given node's details
-         NodeRef parentNodeRef = new NodeRef(nodeRefStr);
-         TreeNode parentNode = currentNodes.get(parentNodeRef.toString());
-         parentNode.setExpanded(true);
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         Map params = context.getExternalContext().getRequestParameterMap();
+         String nodeRefStr = (String)params.get("nodeRef");
+         String area = (String)params.get("area");
          
          if (logger.isDebugEnabled())
-            logger.debug("retrieving children for noderef: " + parentNodeRef);
+            logger.debug("retrieveChildren: area = " + area + ", nodeRef = " + nodeRefStr);
          
-         // remove any existing children as the latest ones will be added below
-         parentNode.removeChildren();
+         // work out which list to cache the nodes in
+         Map<String, TreeNode> currentNodes = getNodesMapForArea(area);
          
-         // get all the child folder objects for the parent
-         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentNodeRef, 
-               ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-         
-         StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><nodes>");
-         for (ChildAssociationRef ref: childRefs)
+         if (nodeRefStr != null && currentNodes != null)
          {
-            NodeRef nodeRef = ref.getChildRef();
+            // get the given node's details
+            NodeRef parentNodeRef = new NodeRef(nodeRefStr);
+            TreeNode parentNode = currentNodes.get(parentNodeRef.toString());
+            parentNode.setExpanded(true);
             
-            if (isAddableChild(nodeRef))
+            if (logger.isDebugEnabled())
+               logger.debug("retrieving children for noderef: " + parentNodeRef);
+            
+            // remove any existing children as the latest ones will be added below
+            parentNode.removeChildren();
+            
+            // get all the child folder objects for the parent
+            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentNodeRef, 
+                  ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            
+            StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><nodes>");
+            for (ChildAssociationRef ref: childRefs)
             {
-               // build the XML representation of the child node
-               TreeNode childNode = createTreeNode(nodeRef);
-               parentNode.addChild(childNode);
-               currentNodes.put(childNode.getNodeRef(), childNode);
-               xml.append(childNode.toXML());
+               NodeRef nodeRef = ref.getChildRef();
+               
+               if (isAddableChild(nodeRef))
+               {
+                  // build the XML representation of the child node
+                  TreeNode childNode = createTreeNode(nodeRef);
+                  parentNode.addChild(childNode);
+                  currentNodes.put(childNode.getNodeRef(), childNode);
+                  xml.append(childNode.toXML());
+               }
             }
+            xml.append("</nodes>");
+            
+            // send the generated XML back to the tree
+            out.write(xml.toString());
+            
+            if (logger.isDebugEnabled())
+               logger.debug("returning XML: " + xml.toString());
          }
-         xml.append("</nodes>");
          
-         // send the generated XML back to the tree
-         out.write(xml.toString());
-         
-         if (logger.isDebugEnabled())
-            logger.debug("returning XML: " + xml.toString());
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
    }
    
@@ -263,23 +279,36 @@ public class NavigatorPluginBean implements IContextListener
          this.companyHomeRootNodes = new ArrayList<TreeNode>();
          this.companyHomeNodes = new HashMap<String, TreeNode>();
 
-         // query for the child nodes of company home
-         NodeRef root = new NodeRef(Repository.getStoreRef(),
-               Application.getCompanyRootId());         
-         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
-               ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-         
-         for (ChildAssociationRef ref: childRefs)
+         UserTransaction tx = null;
+         try
          {
-            NodeRef child = ref.getChildRef();
+            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+            tx.begin();
             
-            if (isAddableChild(child))
+            // query for the child nodes of company home
+            NodeRef root = new NodeRef(Repository.getStoreRef(),
+                  Application.getCompanyRootId());         
+            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
+                  ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            
+            for (ChildAssociationRef ref: childRefs)
             {
-               TreeNode node = createTreeNode(child);
-               this.companyHomeRootNodes.add(node);
-               this.companyHomeNodes.put(node.getNodeRef(), node);
+               NodeRef child = ref.getChildRef();
+               
+               if (isAddableChild(child))
+               {
+                  TreeNode node = createTreeNode(child);
+                  this.companyHomeRootNodes.add(node);
+                  this.companyHomeNodes.put(node.getNodeRef(), node);
+               }
             }
-         }         
+            
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
       }
       
       return this.companyHomeRootNodes;
@@ -300,24 +329,37 @@ public class NavigatorPluginBean implements IContextListener
       {
          this.myHomeRootNodes = new ArrayList<TreeNode>();
          this.myHomeNodes = new HashMap<String, TreeNode>();
-
-         // query for the child nodes of the user's home
-         NodeRef root = new NodeRef(Repository.getStoreRef(),
-               Application.getCurrentUser(FacesContext.getCurrentInstance()).getHomeSpaceId());         
-         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
-               ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
          
-         for (ChildAssociationRef ref: childRefs)
+         UserTransaction tx = null;
+         try
          {
-            NodeRef child = ref.getChildRef();
+            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+            tx.begin();
             
-            if (isAddableChild(child))
+            // query for the child nodes of the user's home
+            NodeRef root = new NodeRef(Repository.getStoreRef(),
+                  Application.getCurrentUser(FacesContext.getCurrentInstance()).getHomeSpaceId());         
+            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
+                  ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            
+            for (ChildAssociationRef ref: childRefs)
             {
-               TreeNode node = createTreeNode(child);
-               this.myHomeRootNodes.add(node);
-               this.myHomeNodes.put(node.getNodeRef(), node);
+               NodeRef child = ref.getChildRef();
+               
+               if (isAddableChild(child))
+               {
+                  TreeNode node = createTreeNode(child);
+                  this.myHomeRootNodes.add(node);
+                  this.myHomeNodes.put(node.getNodeRef(), node);
+               }
             }
-         }         
+            
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
       }
       
       return this.myHomeRootNodes;
@@ -339,25 +381,38 @@ public class NavigatorPluginBean implements IContextListener
          this.guestHomeRootNodes = new ArrayList<TreeNode>();
          this.guestHomeNodes = new HashMap<String, TreeNode>();
 
-         // query for the child nodes of the guest home space
-         NavigationBean navBean = getNavigationBean();
-         if (navBean != null)
+         UserTransaction tx = null;
+         try
          {
-            NodeRef root = navBean.getGuestHomeNode().getNodeRef();
-            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
-                  ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+            tx.begin();
             
-            for (ChildAssociationRef ref: childRefs)
+            // query for the child nodes of the guest home space
+            NavigationBean navBean = getNavigationBean();
+            if (navBean != null)
             {
-               NodeRef child = ref.getChildRef();
+               NodeRef root = navBean.getGuestHomeNode().getNodeRef();
+               List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
+                     ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                
-               if (isAddableChild(child))
+               for (ChildAssociationRef ref: childRefs)
                {
-                  TreeNode node = createTreeNode(child);
-                  this.guestHomeRootNodes.add(node);
-                  this.guestHomeNodes.put(node.getNodeRef(), node);
+                  NodeRef child = ref.getChildRef();
+                  
+                  if (isAddableChild(child))
+                  {
+                     TreeNode node = createTreeNode(child);
+                     this.guestHomeRootNodes.add(node);
+                     this.guestHomeNodes.put(node.getNodeRef(), node);
+                  }
                }
             }
+            
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
       }
       
@@ -372,6 +427,14 @@ public class NavigatorPluginBean implements IContextListener
       this.nodeService = nodeService;
    }
    
+   /**
+    * @param internalNodeService The internalNodeService to set.
+    */
+   public void setInternalNodeService(NodeService internalNodeService)
+   {
+      this.internalNodeService = internalNodeService;
+   }
+
    /**
     * @param dictionaryService The DictionaryService to set.
     */
@@ -554,8 +617,8 @@ public class NavigatorPluginBean implements IContextListener
    protected TreeNode createTreeNode(NodeRef nodeRef)
    {
       TreeNode node = new TreeNode(nodeRef.toString(), 
-            Repository.getNameForNode(this.nodeService, nodeRef),
-            (String)this.nodeService.getProperty(nodeRef, ApplicationModel.PROP_ICON));
+            Repository.getNameForNode(this.internalNodeService, nodeRef),
+            (String)this.internalNodeService.getProperty(nodeRef, ApplicationModel.PROP_ICON));
       
       return node;
    }
@@ -568,7 +631,7 @@ public class NavigatorPluginBean implements IContextListener
    protected NavigationBean getNavigationBean()
    {
       return (NavigationBean)FacesHelper.getManagedBean(
-            FacesContext.getCurrentInstance(), "NavigationBean");
+            FacesContext.getCurrentInstance(), NavigationBean.BEAN_NAME);
    }
    
    /**
@@ -579,7 +642,7 @@ public class NavigatorPluginBean implements IContextListener
    protected BrowseBean getBrowseBean()
    {
       return (BrowseBean)FacesHelper.getManagedBean(
-            FacesContext.getCurrentInstance(), "BrowseBean");
+            FacesContext.getCurrentInstance(), BrowseBean.BEAN_NAME);
    }
    
    /**

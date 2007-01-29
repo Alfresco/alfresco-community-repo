@@ -3130,6 +3130,10 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
+         <property-name>internalNodeService</property-name>
+         <value>#{nodeService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>dictionaryService</property-name>
          <value>#{DictionaryService}</value>
       </managed-property>

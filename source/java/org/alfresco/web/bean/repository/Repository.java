@@ -430,7 +430,7 @@ public final class Repository
     */
    public static ConfigurableService getConfigurableService(FacesContext context)
    {
-      return (ConfigurableService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("configurableService");
+      return (ConfigurableService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("ConfigurableService");
    }
    
    /**

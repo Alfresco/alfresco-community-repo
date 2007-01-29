@@ -819,7 +819,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
 
             // Make sure the CIFS server name does not match the local server name
 
-            if (hostName.equals(srvName))
+            if (hostName.equals(srvName) && getPlatformType() == PlatformType.WINDOWS)
                 throw new AlfrescoRuntimeException("CIFS server name must be unique");
         }
 

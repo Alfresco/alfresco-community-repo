@@ -55,6 +55,10 @@ public class ContentContext extends AlfrescoContext
         m_rootPath  = rootPath;
         
         m_rootNodeRef = rootNodeRef;
+        
+        // Create the I/O control handler
+        
+        setIOHandler( createIOHandler( null));
     }
     
     /**

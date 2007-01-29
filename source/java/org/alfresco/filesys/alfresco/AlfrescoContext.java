@@ -335,6 +335,16 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     protected abstract IOControlHandler createIOHandler( DiskInterface filesysDriver);
     
     /**
+     * Set the I/O control handler
+     * 
+     * @param ioctlHandler IOControlHandler
+     */
+    protected void setIOHandler( IOControlHandler ioctlHandler)
+    {
+    	m_ioHandler = ioctlHandler;
+    }
+    
+    /**
      * Close the filesystem context
      */
 	public void CloseContext() {

@@ -44,6 +44,16 @@ public interface FileInfo
     public boolean isFolder();
     
     /**
+     * @return true if this instance represents a link to a node
+     */
+    public boolean isLink();
+    
+    /**
+     * @return Return the reference to the node that this node is linked to
+     */
+    public NodeRef getLinkNodeRef();
+    
+    /**
      * @return Returns the name of the file or folder within the parent folder
      */
     public String getName();

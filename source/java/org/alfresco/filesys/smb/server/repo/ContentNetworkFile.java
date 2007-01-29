@@ -50,14 +50,13 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class ContentNetworkFile extends NetworkFile
+public class ContentNetworkFile extends NodeRefNetworkFile
 {
     private static final Log logger = LogFactory.getLog(ContentNetworkFile.class);
     
     private TransactionService transactionService;
     private NodeService nodeService;
     private ContentService contentService;
-    private NodeRef nodeRef;
     
     // File channel to file content
     
@@ -175,12 +174,11 @@ public class ContentNetworkFile extends NetworkFile
             NodeRef nodeRef,
             String name)
     {
-        super(name);
+        super(name, nodeRef);
         setFullName(name);
         this.transactionService = transactionService;
         this.nodeService = nodeService;
         this.contentService = contentService;
-        this.nodeRef = nodeRef;
     }
 
     /**
@@ -193,7 +191,7 @@ public class ContentNetworkFile extends NetworkFile
         StringBuilder str = new StringBuilder();
         
         str.append( "[");
-        str.append( nodeRef.getId());
+        str.append( getNodeRef().getId());
         str.append( ",channel=");
         str.append( channel);
         if ( channel != null)
@@ -203,14 +201,6 @@ public class ContentNetworkFile extends NetworkFile
         str.append( "]");
 
         return str.toString();
-    }
-    
-    /**
-     * @return Returns the node reference representing this file
-     */
-    public NodeRef getNodeRef()
-    {
-        return nodeRef;
     }
     
     /**
@@ -304,7 +294,7 @@ public class ContentNetworkFile extends NetworkFile
         {
         	// Get a writeable channel to the content
         	
-            content = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, false);
+            content = contentService.getWriter( getNodeRef(), ContentModel.PROP_CONTENT, false);
             
             // Indicate that we have a writable channel to the file
             
@@ -318,14 +308,14 @@ public class ContentNetworkFile extends NetworkFile
         {
         	// Get a read-only channel to the content
         	
-            content = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            content = contentService.getReader( getNodeRef(), ContentModel.PROP_CONTENT);
             
             // Ensure that the content we are going to read is valid
             
             content = FileContentReader.getSafeContentReader(
                     (ContentReader) content,
                     I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
-                    nodeRef, content);
+                    getNodeRef(), content);
             
             // Indicate that we only have a read-only channel to the data
             
@@ -372,7 +362,7 @@ public class ContentNetworkFile extends NetworkFile
             // Update node properties
             
             ContentData contentData = content.getContentData();
-            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
+            nodeService.setProperty( getNodeRef(), ContentModel.PROP_CONTENT, contentData);
         }
         else
         {

@@ -585,5 +585,20 @@
             </props>
         </property>
     </bean>
+	
+    <bean id="patch.LinkNodeFileExtension" class="org.alfresco.repo.admin.patch.impl.LinkNodeFileExtensionPatch" parent="basePatch" >
+        <property name="id"><value>patch.LinkNodeFileExtension</value></property>
+        <property name="description"><value>patch.invalidNameEnding.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>33</value></property>
+        <property name="targetSchema"><value>34</value></property>
+        <!-- helper beans -->
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService" />
+        </property>
+    </bean>
 
 </beans>

@@ -175,6 +175,20 @@ public class ContentIOControlHandler implements IOControlHandler
         int devType = NTIOCtl.getDeviceType(ctrlCode);
         int ioFunc  = NTIOCtl.getFunctionCode(ctrlCode);
         
+        // Check for I/O controls that require a success status
+        
+        if ( devType == NTIOCtl.DeviceFileSystem)
+        {
+	        // I/O control requests that require a success status
+	        //
+	        // Create or get object id
+	        	
+	        if ( ioFunc == NTIOCtl.FsCtlCreateOrGetObjectId)
+	        	return null;
+        }
+        
+        // Check if the I/O control looks like a custom I/O control request
+        
         if ( devType != NTIOCtl.DeviceFileSystem || dataBuf == null)
             throw new IOControlNotImplementedException();
         
@@ -260,7 +274,7 @@ public class ContentIOControlHandler implements IOControlHandler
 	        	
 	        	retBuffer = procRunAction(sess, tree, dataBuf, folderNode, netFile);
 	        	break;
-	        	
+
 	        // Unknown I/O control code
 	            
 	        default:

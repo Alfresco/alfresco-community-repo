@@ -19,6 +19,7 @@ package org.alfresco.filesys.smb.server.repo;
 import java.io.FileNotFoundException;
 import java.util.List;
 
+import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.server.filesys.SearchContext;
@@ -37,8 +38,18 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ContentSearchContext extends SearchContext
 {
+	// Debug logging
+	
     private static final Log logger = LogFactory.getLog(ContentSearchContext.class);
 
+    // Constants
+    //
+    // Link file size, actual size will be set if/when the link is opened
+    
+    public final static int LinkFileSize	= 512;
+    
+    // List of nodes returned from the folder search
+    
     private CifsHelper cifsHelper;
     private List<NodeRef> results;
     private int index = -1;
@@ -193,7 +204,7 @@ public class ContentSearchContext extends SearchContext
         {
             // Get the file information and copy across to the callers file info
             
-            FileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
+            ContentFileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
             info.copyFrom(nextInfo);
             
         	// Generate a file id for the current file
@@ -203,6 +214,20 @@ public class ContentSearchContext extends SearchContext
         	
         	info.setFileId( pathStr.toString().hashCode());
 
+        	// Check if this is a link node
+        	
+        	if ( nextInfo.isLinkNode())
+        	{
+        		// Set a dummy file size for the link data that will be generated if/when the file is opened
+        		
+        		info.setFileSize( LinkFileSize);
+        		
+        		// Make the link read-only
+        		
+        		if ( info.isReadOnly() == false)
+        			info.setFileAttributes( info.getFileAttributes() + FileAttribute.ReadOnly);
+        	}
+        	
         	// Indicate that the file information is valid
             
             return true;

@@ -68,7 +68,8 @@ public class FileFolderServiceImpl implements FileFolderService
         "./*" +
         "[like(@cm:name, $cm:name, false)" +
         " and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
-        " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "'))]";
+        " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
+        " and (subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
     
     /** Shallow search for all files and folders */
     private static final String LUCENE_QUERY_SHALLOW_ALL =
@@ -77,6 +78,7 @@ public class FileFolderServiceImpl implements FileFolderService
         "+(" +
         "TYPE:\"" + ContentModel.TYPE_CONTENT + "\" " +
         "TYPE:\"" + ContentModel.TYPE_FOLDER + "\" " +
+        "TYPE:\"" + ContentModel.TYPE_LINK + "\" " +
         ")";
     
     /** Shallow search for all files and folders */
@@ -96,7 +98,8 @@ public class FileFolderServiceImpl implements FileFolderService
         ".//*" +
         "[like(@cm:name, $cm:name, false)" +
         " and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
-        " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "'))]";
+        " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
+        " and (subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
     
     /** empty parameters */
     private static final QueryParameterDefinition[] PARAMS_ANY_NAME = new QueryParameterDefinition[1];
@@ -246,7 +249,8 @@ public class FileFolderServiceImpl implements FileFolderService
             }
             return true;
         }
-        else if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+        else if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT) ||
+        		dictionaryService.isSubClass(typeQName, ContentModel.TYPE_LINK))
         {
             // it is a regular file
             return false;

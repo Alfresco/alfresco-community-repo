@@ -35,7 +35,9 @@ import org.alfresco.service.namespace.QName;
 public class FileInfoImpl implements FileInfo
 {
     private NodeRef nodeRef;
+    private NodeRef linkNodeRef;
     private boolean isFolder;
+    private boolean isLink;
     private Map<QName, Serializable> properties;
 
     /**
@@ -46,6 +48,14 @@ public class FileInfoImpl implements FileInfo
         this.nodeRef = nodeRef;
         this.isFolder = isFolder;
         this.properties = properties;
+        
+        // Check if this is a link node
+        
+        if ( properties.containsKey( ContentModel.PROP_LINK_DESTINATION))
+        {
+        	isLink = true;
+        	linkNodeRef = (NodeRef) properties.get( ContentModel.PROP_LINK_DESTINATION);
+        }
     }
     
     @Override
@@ -55,8 +65,15 @@ public class FileInfoImpl implements FileInfo
         sb.append("FileInfo")
           .append("[name=").append(getName())
           .append(", isFolder=").append(isFolder)
-          .append(", nodeRef=").append(nodeRef)
-          .append("]");
+          .append(", nodeRef=").append(nodeRef);
+        
+        if ( isLink())
+        {
+        	sb.append(", linkref=");
+        	sb.append(linkNodeRef);
+        }
+        
+        sb.append("]");
         return sb.toString();
     }
     
@@ -70,6 +87,16 @@ public class FileInfoImpl implements FileInfo
         return isFolder;
     }
 
+    public boolean isLink()
+    {
+    	return isLink;
+    }
+  
+    public NodeRef getLinkNodeRef()
+    {
+    	return linkNodeRef;
+    }
+    
     public String getName()
     {
         return (String) properties.get(ContentModel.PROP_NAME);

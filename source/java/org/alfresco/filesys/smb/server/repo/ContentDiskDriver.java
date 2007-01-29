@@ -26,7 +26,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
-import org.alfresco.filesys.avm.AVMNetworkFile;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
@@ -56,6 +55,7 @@ import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.lock.NodeLockedException;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -101,6 +101,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private SearchService searchService;
     private ContentService contentService;
     private PermissionService permissionService;
+    private FileFolderService fileFolderService;
     
     private AuthenticationComponent authComponent;
     private AuthenticationService authService;
@@ -252,6 +253,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     public void setAuthenticationService(AuthenticationService authService)
     {
     	this.authService = authService;
+    }
+
+    /**
+     * Set the file folder server
+     * 
+     * @param fileService FileFolderService
+     */
+    public void setFileFolderService(FileFolderService fileService)
+    {
+    	fileFolderService = fileService;
     }
     
     /**
@@ -465,6 +476,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Enable file state caching
         
         context.enableStateTable( true, getStateReaper());
+        
+        // Initialize the I/O control handler
+        
+        if ( context.hasIOHandler())
+        	context.getIOHandler().initialize( this, context);
         
         // Return the context for this shared filesystem
         
@@ -1200,9 +1216,53 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 }
             }
             
-            // Create the network file
+            // Check if the node is a link node
             
-            NetworkFile netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
+            NodeRef linkRef = (NodeRef) nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
+            NetworkFile netFile = null;
+            
+            if ( linkRef == null)
+            {
+	            // Create the network file
+	            
+	            netFile = ContentNetworkFile.createFile(transactionService, nodeService, contentService, cifsHelper, nodeRef, params);
+            }
+            else
+            {
+            	// Convert the target node to a path, convert to URL format
+            	
+            	String path = getPathForNode( tree, linkRef);
+            	path = path.replace( FileName.DOS_SEPERATOR, '/');
+            	
+                // Build the URL file data
+                
+                StringBuilder urlStr = new StringBuilder();
+            
+                urlStr.append("[InternetShortcut]\r\n");
+                urlStr.append("URL=file://");
+                urlStr.append( sess.getServer().getServerName());
+                urlStr.append("/");
+                urlStr.append( tree.getSharedDevice().getName());
+                urlStr.append( path);
+                urlStr.append("\r\n");
+    
+                // Create the in memory pseudo file for the URL link
+                
+                byte[] urlData = urlStr.toString().getBytes();
+                
+                // Get the file information for the link node
+                
+                FileInfo fInfo = cifsHelper.getFileInformation( nodeRef);
+
+                // Set the file size to the actual data length
+                
+                fInfo.setFileSize( urlData.length);
+                
+                // Create the network file using the in-memory file data
+                
+                netFile = new LinkMemoryNetworkFile( fInfo.getFileName(), urlData, fInfo, nodeRef);
+                netFile.setFullName( params.getPath());
+            }
             
             // Generate a file id for the file
             
@@ -1619,12 +1679,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         if (file.hasDeleteOnClose())
         {
-            // Check if the file is a content file
+            // Check if the file is a noderef based file
             
-            if ( file instanceof ContentNetworkFile)
+            if ( file instanceof NodeRefNetworkFile)
             {
-                ContentNetworkFile contentNetFile = (ContentNetworkFile) file;
-                NodeRef nodeRef = contentNetFile.getNodeRef();
+                NodeRefNetworkFile nodeNetFile = (NodeRefNetworkFile) file;
+                NodeRef nodeRef = nodeNetFile.getNodeRef();
                 
                 // We don't know how long the network file has had the reference, so check for existence
                 
@@ -1776,14 +1836,22 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             ContentContext ctx = (ContentContext) tree.getContext();
             
             // Get the file/folder to move
+            
             NodeRef nodeToMoveRef = getNodeForPath(tree, oldName);
             
+            // Check if the node is a link node
+
+            if ( nodeToMoveRef != null && nodeService.getProperty(nodeToMoveRef, ContentModel.PROP_LINK_DESTINATION) != null)
+            	throw new AccessDeniedException("Cannot rename link nodes");
+            
             // Get the new target folder - it must be a folder
+            
             String[] splitPaths = FileName.splitPath(newName);
             NodeRef targetFolderRef = getNodeForPath(tree, splitPaths[0]);
-            String name = splitPaths[1];                                    // the new file or folder name
+            String name = splitPaths[1];
 
             // Update the state table
+            
             boolean relinked = false;
             if ( ctx.hasStateTable())
             {
@@ -2193,6 +2261,44 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Search the repository for the node
         
         return cifsHelper.getNodeRef(ctx.getRootNode(), path);
+    }
+    
+    /**
+     * Convert a node into a share relative path
+     * 
+     * @param tree TreeConnection
+     * @param nodeRef NodeRef
+     * @return String
+     * @exception FileNotFoundException
+     */
+    public String getPathForNode( TreeConnection tree, NodeRef nodeRef)
+    	throws FileNotFoundException
+    {
+    	// Convert the target node to a path
+    	
+        ContentContext ctx = (ContentContext) tree.getContext();
+    	List<org.alfresco.service.cmr.model.FileInfo> linkPaths = null;
+    	
+    	try {
+    		linkPaths = fileFolderService.getNamePath( ctx.getRootNode(), nodeRef);
+    	}
+    	catch ( org.alfresco.service.cmr.model.FileNotFoundException ex)
+    	{
+    		throw new FileNotFoundException();
+    	}
+
+    	// Build the share relative path to the node
+    	
+    	StringBuilder pathStr = new StringBuilder();
+    	
+    	for ( org.alfresco.service.cmr.model.FileInfo fInfo : linkPaths) {
+    		pathStr.append( FileName.DOS_SEPERATOR);
+    		pathStr.append( fInfo.getName());
+    	}
+    	
+    	// Return the share relative path
+    	
+    	return pathStr.toString();
     }
     
     /**

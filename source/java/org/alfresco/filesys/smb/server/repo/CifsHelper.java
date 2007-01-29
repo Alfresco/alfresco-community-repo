@@ -29,7 +29,6 @@ import java.util.StringTokenizer;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileExistsException;
-import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.model.ContentModel;
@@ -175,14 +174,12 @@ public class CifsHelper
      * @return Returns the existing node reference
      * @throws FileNotFoundException
      */
-    public FileInfo getFileInformation(NodeRef pathRootNodeRef, String path) throws FileNotFoundException
+    public ContentFileInfo getFileInformation(NodeRef pathRootNodeRef, String path) throws FileNotFoundException
     {
         // get the node being referenced
         NodeRef nodeRef = getNodeRef(pathRootNodeRef, path);
 
-        FileInfo fileInfo = getFileInformation(nodeRef);
-
-        return fileInfo;
+        return getFileInformation(nodeRef);
     }
 
     /**
@@ -196,13 +193,14 @@ public class CifsHelper
      * @return Returns the file information pertinent to the node
      * @throws FileNotFoundException if the path refers to a non-existent file
      */
-    public FileInfo getFileInformation(NodeRef nodeRef) throws FileNotFoundException
+    public ContentFileInfo getFileInformation(NodeRef nodeRef) throws FileNotFoundException
     {
         // get the file info
         org.alfresco.service.cmr.model.FileInfo fileFolderInfo = fileFolderService.getFileInfo(nodeRef);
         
         // retrieve required properties and create file info
-        FileInfo fileInfo = new FileInfo();
+        ContentFileInfo fileInfo = new ContentFileInfo();
+        fileInfo.setNodeRef(nodeRef);
         
         // unset all attribute flags
         int fileAttributes = 0;
@@ -251,6 +249,11 @@ public class CifsHelper
                 
                 fileInfo.setFileAttributes( attr);
             }
+            
+            // Check if it is a link node
+            
+            if ( fileFolderInfo.isLink())
+            	fileInfo.setLinkNodeRef( fileFolderInfo.getLinkNodeRef());
         }
         
         // created

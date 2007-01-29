@@ -52,9 +52,13 @@ public interface AuthenticationComponent
     public void clearCurrentSecurityContext();
     
     /**
-     * Explicitly set the current suthentication.
+     * Explicitly set the current suthentication.  If the authentication is <tt>null</tt> the
+     * the current authentication is {@link #clearCurrentSecurityContext() cleared}.
+     * 
+     * @param authentication the current authentication (may be <tt>null</tt>).
+     * 
+     * @return Returns the modified authentication instance or <tt>null</tt> if it was cleared.
      */
-    
     public Authentication setCurrentAuthentication(Authentication authentication);
     
     /**

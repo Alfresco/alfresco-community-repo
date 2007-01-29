@@ -73,29 +73,6 @@ public class UserHomesFolderPatch extends AbstractPatch
     }
 
     /**
-     * Ensure that required common properties have been set
-     */
-    protected void checkCommonProperties() throws Exception
-    {
-        if (importerBootstrap == null)
-        {
-            throw new PatchException("'importerBootstrap' property has not been set");
-        }
-        else if (namespaceService == null)
-        {
-            throw new PatchException("'namespaceService' property has not been set");
-        }
-        else if (searchService == null)
-        {
-            throw new PatchException("'searchService' property has not been set");
-        }
-        else if (nodeService == null)
-        {
-            throw new PatchException("'nodeService' property has not been set");
-        }
-    }
-    
-    /**
      * Extracts pertinent references and properties that are common to execution
      * of this and derived patches.
      */
@@ -170,11 +147,8 @@ public class UserHomesFolderPatch extends AbstractPatch
     protected String applyInternal() throws Exception
     {
         // properties must be set
-        checkCommonProperties();
-        if (messageSource == null)
-        {
-            throw new PatchException("'messageSource' property has not been set");
-        }
+        super.checkPropertyNotNull(importerBootstrap, "importerBootstrap");
+        super.checkPropertyNotNull(messageSource, "messageSource");
         
         // get useful values
         setUp();

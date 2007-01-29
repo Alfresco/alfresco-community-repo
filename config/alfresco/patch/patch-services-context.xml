@@ -537,8 +537,7 @@
             </props>
         </property>
     </bean>
-	
-	<bean id="patch.userHomesFolder" class="org.alfresco.repo.admin.patch.impl.UserHomesFolderPatch" parent="basePatch" >
+    <bean id="patch.userHomesFolder" class="org.alfresco.repo.admin.patch.impl.UserHomesFolderPatch" parent="basePatch" >
         <property name="id"><value>patch.userHomesFolder</value></property>
         <property name="description"><value>patch.userHomesFolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -548,7 +547,7 @@
         <property name="messageSource">
             <ref bean="bootstrapSpacesMessageSource" />
         </property>   
-		<property name="importerBootstrap">
+        <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
     </bean>
@@ -588,7 +587,7 @@
 	
     <bean id="patch.LinkNodeFileExtension" class="org.alfresco.repo.admin.patch.impl.LinkNodeFileExtensionPatch" parent="basePatch" >
         <property name="id"><value>patch.LinkNodeFileExtension</value></property>
-        <property name="description"><value>patch.invalidNameEnding.description</value></property>
+        <property name="description"><value>patch.linkNodeExtension.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>33</value></property>
         <property name="targetSchema"><value>34</value></property>
@@ -598,6 +597,27 @@
         </property>
         <property name="nodeDaoService">
             <ref bean="nodeDaoService" />
+        </property>
+    </bean>
+
+    <bean id="patch.systemRegistryBootstrap" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.systemRegistryBootstrap</value></property>
+        <property name="description"><value>patch.systemRegistryBootstrap.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>34</value></property>
+        <property name="targetSchema"><value>35</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="systemBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/sys:system-registry</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/</prop>
+                <prop key="location">alfresco/bootstrap/systemRegistry.xml</prop>
+            </props>
         </property>
     </bean>
 

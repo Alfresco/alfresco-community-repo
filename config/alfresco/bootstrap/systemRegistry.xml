@@ -1,0 +1,6 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0">
+
+	<sys:container view:childName="sys:system-registry" />
+
+</view:view>

@@ -44,11 +44,15 @@ public interface ResultSet extends Iterable<ResultSetRow> // Specfic iterator ov
 
     /**
      * Get the id of the node at the given index
+     * 
+     * @param n zero-based index
      */
     NodeRef getNodeRef(int n);
 
     /**
      * Get the score for the node at the given position
+     * 
+     * @param n zero-based index
      */
     float getScore(int n);
 
@@ -61,6 +65,8 @@ public interface ResultSet extends Iterable<ResultSetRow> // Specfic iterator ov
     
     /**
      * Get a row from the result set by row index, starting at 0.
+     * 
+     * @param i zero-based index
      */
     ResultSetRow getRow(int i);
     
@@ -76,6 +82,8 @@ public interface ResultSet extends Iterable<ResultSetRow> // Specfic iterator ov
     
     /**
      * Get the child assoc ref for a particular row.
+     * 
+     * @param n zero-based index
      */
     ChildAssociationRef getChildAssocRef(int n);
     

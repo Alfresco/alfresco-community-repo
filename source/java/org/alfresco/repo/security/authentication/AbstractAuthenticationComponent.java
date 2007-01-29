@@ -116,27 +116,32 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
-     * Explicitly set the current authentication.
-     * 
-     * @param authentication
-     *            Authentication
+     * @inheritDoc
      */
     public Authentication setCurrentAuthentication(Authentication authentication)
     {
-        Context context = ContextHolder.getContext();
-        SecureContext sc = null;
-        if ((context == null) || !(context instanceof SecureContext))
+        if (authentication == null)
         {
-            sc = new SecureContextImpl();
-            ContextHolder.setContext(sc);
+            clearCurrentSecurityContext();
+            return null;
         }
         else
         {
-            sc = (SecureContext) context;
+            Context context = ContextHolder.getContext();
+            SecureContext sc = null;
+            if ((context == null) || !(context instanceof SecureContext))
+            {
+                sc = new SecureContextImpl();
+                ContextHolder.setContext(sc);
+            }
+            else
+            {
+                sc = (SecureContext) context;
+            }
+            authentication.setAuthenticated(true);
+            sc.setAuthentication(authentication);
+            return authentication;
         }
-        authentication.setAuthenticated(true);
-        sc.setAuthentication(authentication);
-        return authentication;
     }
 
     /**

@@ -55,6 +55,7 @@ import org.alfresco.repo.avm.CreateVersionTxnListener;
 import org.alfresco.repo.avm.PurgeStoreTxnListener;
 import org.alfresco.repo.avm.PurgeVersionTxnListener;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -667,6 +668,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     	{
     		throw new FileNotFoundException( params.getPath());
     	}
+    	catch ( AVMBadArgumentException ex)
+    	{
+    		throw new FileNotFoundException( params.getPath());
+    	}
     }
     
     /**
@@ -750,6 +755,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
     		throw new FileNotFoundException( params.getPath());
     	}
     	catch ( AVMWrongTypeException ex)
+    	{
+    		throw new FileNotFoundException( params.getPath());
+    	}
+    	catch ( AVMBadArgumentException ex)
     	{
     		throw new FileNotFoundException( params.getPath());
     	}

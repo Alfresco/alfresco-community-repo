@@ -769,7 +769,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private Set<PermissionReference> getRequirementsForPermissionGroup(PermissionGroup target,
             RequiredPermission.On on, QName qName, Set<QName> aspectQNames)
     {
-        HashSet<PermissionReference> requiredPermissions = new HashSet<PermissionReference>();
+        HashSet<PermissionReference> requiredPermissions = new HashSet<PermissionReference>(4, 1.0f);
         if (target == null)
         {
             return requiredPermissions;

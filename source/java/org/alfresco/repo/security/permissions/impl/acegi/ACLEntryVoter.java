@@ -371,7 +371,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
-        List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>();
+        List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>(2);
         Iterator iter = config.getConfigAttributes();
 
         while (iter.hasNext())

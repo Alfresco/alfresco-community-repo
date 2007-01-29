@@ -339,7 +339,7 @@
                org.alfresco.service.cmr.repository.NodeService.createNode=ACL_NODE.0.sys:base.CreateChildren
                org.alfresco.service.cmr.repository.NodeService.moveNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
                org.alfresco.service.cmr.repository.NodeService.setChildAssociationIndex=ACL_PARENT.0.sys:base.WriteProperties
-               org.alfresco.service.cmr.repository.NodeService.getType=ACL_NODE.0.sys:base.Read
+               org.alfresco.service.cmr.repository.NodeService.getType=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.setType=ACL_NODE.0.sys:base.Write
                org.alfresco.service.cmr.repository.NodeService.addAspect=ACL_NODE.0.sys:base.Write
                org.alfresco.service.cmr.repository.NodeService.removeAspect=ACL_NODE.0.sys:base.Write

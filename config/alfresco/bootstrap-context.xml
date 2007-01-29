@@ -270,6 +270,14 @@
         </property>
     </bean>
 
+    <!-- Start module components -->
+
+    <bean id="moduleStarter" class="org.alfresco.repo.module.ModuleStarter">
+        <property name="moduleService">
+            <ref bean="ModuleService" />
+        </property>
+    </bean>
+
     <!-- CIFS Server -->
 
     <bean id="fileServerConfiguration" class="org.alfresco.filesys.server.config.ServerConfiguration" parent="fileServerConfigurationBase">

@@ -40,7 +40,7 @@ public class RegistryServiceImplTest extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
         registryService = (RegistryService) ctx.getBean("RegistryService");
         
-        // Run as admin
+        // Run as system user
         authenticationComponent.setSystemUserAsCurrentUser();
     }
     
@@ -65,13 +65,16 @@ public class RegistryServiceImplTest extends TestCase
     private static final Long VALUE_ONE = 1L;
     private static final Long VALUE_TWO = 2L;
     private static final Long VALUE_THREE = 3L;
-    private static final String KEY_A_B_C_1 = "/a/b/c/1";
-    private static final String KEY_A_B_C_2 = "/a/b/c/2";
-    private static final String KEY_A_B_C_3 = "/a/b/c/3";
-    private static final String KEY_A_B_C_D_1 = "/a/b/c/d/1";
-    private static final String KEY_A_B_C_D_2 = "/a/b/c/d/2";
-    private static final String KEY_A_B_C_D_3 = "/a/b/c/d/3";
-    private static final String KEY_SPECIAL = "/me & you/ whatever";
+    private static final RegistryKey KEY_A_B_C_0 = new RegistryKey(null, "a", "b", "c", "0");
+    private static final RegistryKey KEY_A_B_C_1 = new RegistryKey(null, "a", "b", "c", "1");
+    private static final RegistryKey KEY_A_B_C_2 = new RegistryKey(null, "a", "b", "c", "2");
+    private static final RegistryKey KEY_A_B_C_3 = new RegistryKey(null, "a", "b", "c", "3");
+    private static final RegistryKey KEY_A_B_C_D_0 = new RegistryKey(null, "a", "b", "c", "d", "0");
+    private static final RegistryKey KEY_A_B_C_D_1 = new RegistryKey(null, "a", "b", "c", "d", "1");
+    private static final RegistryKey KEY_A_B_C_D_2 = new RegistryKey(null, "a", "b", "c", "d", "2");
+    private static final RegistryKey KEY_A_B_C_D_3 = new RegistryKey(null, "a", "b", "c", "d", "3");
+    private static final RegistryKey KEY_X_Y_Z_0 = new RegistryKey(null, "x", "y", "z", "0");
+    private static final RegistryKey KEY_SPECIAL = new RegistryKey(null, "me & you", "whatever");
     /**
      * General writing and reading back.
      */
@@ -91,9 +94,9 @@ public class RegistryServiceImplTest extends TestCase
         assertEquals("Incorrect value from service registry", VALUE_TWO, registryService.getValue(KEY_A_B_C_D_2));
         assertEquals("Incorrect value from service registry", VALUE_THREE, registryService.getValue(KEY_A_B_C_D_3));
         
-        assertNull("Missing key should return null value", registryService.getValue("/a/b/c/0"));
-        assertNull("Missing key should return null value", registryService.getValue("/a/b/c/d/0"));
-        assertNull("Missing key should return null value", registryService.getValue("/x/y/z/0"));
+        assertNull("Missing key should return null value", registryService.getValue(KEY_A_B_C_0));
+        assertNull("Missing key should return null value", registryService.getValue(KEY_A_B_C_D_0));
+        assertNull("Missing key should return null value", registryService.getValue(KEY_X_Y_Z_0));
     }
     
     public void testSpecialCharacters()

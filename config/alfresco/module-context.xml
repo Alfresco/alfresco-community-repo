@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!--
+   Core and helper beans for the module-loading components.
+-->
+<beans >
+
+   <!-- The ModuleService implementation -->
+   <bean id="moduleService" class="org.alfresco.repo.module.ModuleServiceImpl">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="authenticationComponent" ref="AuthenticationComponent" />
+      <property name="registryService" ref="RegistryService" />
+   </bean>
+
+   <!-- Parent bean for beans derived from AbstractModuleComponent -->
+   <bean id="module.baseComponent" abstract="true" init-method="init">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="authenticationComponent" ref="AuthenticationComponent" />
+      <property name="moduleService" ref="ModuleService" />
+   </bean>
+
+   <!-- Import of installed modules -->
+   <import resource="classpath*:alfresco/module/*/module-context.xml"/>    
+   <import resource="classpath*:alfresco/module/*/module-uninstall-context.xml"/>
+
+</beans>

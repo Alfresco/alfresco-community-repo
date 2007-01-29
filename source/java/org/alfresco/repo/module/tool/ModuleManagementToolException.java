@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-package org.alfresco.repo.module;
+package org.alfresco.repo.module.tool;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 

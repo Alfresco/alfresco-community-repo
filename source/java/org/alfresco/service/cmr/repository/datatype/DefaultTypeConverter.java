@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.VersionNumber;
 
 /**
  * Support for generic conversion between types.
@@ -278,6 +279,14 @@ public class DefaultTypeConverter
             }
         });
 
+        INSTANCE.addConverter(String.class, VersionNumber.class, new TypeConverter.Converter<String, VersionNumber>()
+        {
+            public VersionNumber convert(String source)
+            {
+                return new VersionNumber(source);
+            }
+        });
+
         
         //
         // From Locale
@@ -296,7 +305,20 @@ public class DefaultTypeConverter
             }
         });
 
+        
+        //
+        // From VersionNumber
+        //
 
+        INSTANCE.addConverter(VersionNumber.class, String.class, new TypeConverter.Converter<VersionNumber, String>()
+        {
+            public String convert(VersionNumber source)
+            {
+                return source.toString();
+            }
+        });
+
+        
         //
         // From MLText
         //

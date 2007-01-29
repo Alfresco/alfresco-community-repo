@@ -20,14 +20,12 @@ package org.alfresco.util;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.ApplicationContext;
 
@@ -52,8 +50,8 @@ public abstract class BaseAlfrescoTestCase extends TestCase
     /** The content service */
     protected ContentService contentService;
     
-    /** The authentication service */
-    protected AuthenticationService authenticationService;
+    /** The authentication component */
+    protected AuthenticationComponent authenticationComponent;
     
     /** The store reference */
     protected StoreRef storeRef;
@@ -73,14 +71,13 @@ public abstract class BaseAlfrescoTestCase extends TestCase
         // get the service register
         this.serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         //Get a reference to the node service
-        this.nodeService = (NodeService)ctx.getBean("NodeService");
-        this.contentService = (ContentService)ctx.getBean("ContentService");
-        this.authenticationService = (AuthenticationService)ctx.getBean("authenticationService");
+        this.nodeService = serviceRegistry.getNodeService();
+        this.contentService = serviceRegistry.getContentService();
+        this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         this.actionService = (ActionService)ctx.getBean("actionService");
-        this.transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        this.transactionService = serviceRegistry.getTransactionService();
         
         // Authenticate as the system user - this must be done before we create the store
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
         
         // Create the store and get the root node
@@ -94,7 +91,15 @@ public abstract class BaseAlfrescoTestCase extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        authenticationService.clearCurrentSecurityContext();
+        try
+        {
+            authenticationComponent.clearCurrentSecurityContext();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+            // Don't let this mask any previous exceptions
+        }
         super.tearDown();
     }
     

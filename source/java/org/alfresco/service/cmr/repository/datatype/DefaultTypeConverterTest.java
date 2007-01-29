@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.VersionNumber;
 
 public class DefaultTypeConverterTest extends TestCase
 {
@@ -98,6 +99,8 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals("woof", DefaultTypeConverter.INSTANCE.convert(String.class, mlText));
         // Locale
         assertEquals("fr_FR_", DefaultTypeConverter.INSTANCE.convert(String.class, Locale.FRANCE));
+        // VersionNumber
+        assertEquals("1.2.3", DefaultTypeConverter.INSTANCE.convert(String.class, new VersionNumber("1.2.3")));
     }
 
     public void testFromString()
@@ -131,6 +134,8 @@ public class DefaultTypeConverterTest extends TestCase
         
         assertEquals(Locale.FRANCE, DefaultTypeConverter.INSTANCE.convert(Locale.class, "fr_FR"));
         assertEquals(Locale.FRANCE, DefaultTypeConverter.INSTANCE.convert(Locale.class, "fr_FR_"));
+        
+        assertEquals(new VersionNumber("1.2.3"), DefaultTypeConverter.INSTANCE.convert(VersionNumber.class, "1.2.3"));
     }
 
     public void testPrimativeAccessors()

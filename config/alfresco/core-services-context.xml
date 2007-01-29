@@ -213,6 +213,7 @@
     	<property name="resourceBundles">
     		<list>
     			<value>alfresco.messages.system-messages</value>
+    			<value>alfresco.messages.module-messages</value>
     			<value>alfresco.messages.dictionary-messages</value>
     			<value>alfresco.messages.version-service</value>
     			<value>alfresco.messages.permissions-service</value>

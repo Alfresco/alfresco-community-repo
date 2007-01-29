@@ -1320,4 +1320,32 @@
         </property>
     </bean>
     
+    <!-- ModuleService -->
+    
+    <bean id="ModuleService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.module.ModuleService</value>
+        </property>
+        <property name="target">
+            <ref bean="moduleService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ModuleService_transaction"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="ModuleService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
 </beans>

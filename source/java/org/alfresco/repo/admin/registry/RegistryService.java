@@ -29,16 +29,16 @@ public interface RegistryService
     /**
      * Assign a value to the registry key, which must be of the form <b>/a/b/c</b>.
      * 
-     * @param key           the registry key path delimited with '/'.
+     * @param key           the registry key.
      * @param value         any value that can be stored in the repository.
      */
-    void addValue(String key, Serializable value);
+    void addValue(RegistryKey key, Serializable value);
     
     /**
-     * @param key           the registry key path delimited with '/'.
+     * @param key           the registry key.
      * @return              Returns the value stored in the key.
      * 
      * @see #addValue(String, Serializable)
      */
-    Serializable getValue(String key);
+    Serializable getValue(RegistryKey key);
 }

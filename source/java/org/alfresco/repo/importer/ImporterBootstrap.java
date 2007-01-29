@@ -30,9 +30,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import javax.transaction.UserTransaction;
+
+import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
@@ -249,21 +250,8 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     public void setLocale(String locale)
     {
         // construct locale
-        StringTokenizer t = new StringTokenizer(locale, "_");
-        int tokens = t.countTokens();
-        if (tokens == 1)
-        {
-           this.locale = new Locale(locale);
-        }
-        else if (tokens == 2)
-        {
-           this.locale = new Locale(t.nextToken(), t.nextToken());
-        }
-        else if (tokens == 3)
-        {
-           this.locale = new Locale(t.nextToken(), t.nextToken(), t.nextToken());
-        }        
-
+        this.locale = I18NUtil.parseLocale(locale);
+        
         // store original
         strLocale = locale;
     }
@@ -333,6 +321,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
+        Authentication authentication = authenticationComponent.getCurrentAuthentication();
         authenticationComponent.setSystemUserAsCurrentUser();
 
         try
@@ -448,7 +437,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         }
         finally
         {
-            try {authenticationComponent.clearCurrentSecurityContext(); } catch (Throwable ex) {}
+            try {authenticationComponent.setCurrentAuthentication(authentication); } catch (Throwable ex) {}
         }
     }
     

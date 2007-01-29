@@ -19,42 +19,52 @@ package org.alfresco.service.cmr.module;
 import org.alfresco.util.VersionNumber;
 
 /**
- * Module details, contains the details of an installed alfresco
- * module.
+ * Module details, contains the details of an installed alfresco module.
  * 
  * @author Roy Wetherall
+ * @since 2.0
  */
-public class ModuleDetails
+public interface ModuleDetails
 {
-    private String id;
-    private VersionNumber version;
-    private String title;
-    private String description;
+    /**
+     * Indicates whether the details exists or not
+     * 
+     * @return  true if it exists, false otherwise
+     */
+    boolean exists();
     
-    public ModuleDetails(String id, VersionNumber version, String title, String description)
-    {
-        this.id = id;
-        this.version = version;
-        this.title = title;
-    }
+    /**
+     * Get the id of the module
+     * 
+     * @return  module id
+     */
+    String getId();
     
-    public String getId()
-    {
-        return id;
-    }
+    /**
+     * Get the version number of the module
+     * 
+     * @return  module version number
+     */
+    VersionNumber getVersionNumber();
     
-    public VersionNumber getVersion()
-    {
-        return version;
-    }
+    /**
+     * Get the title of the module
+     * 
+     * @return  module title
+     */
+    String getTitle();
     
-    public String getTitle()
-    {
-        return title;
-    }
+    /** 
+     * Get the description of the module
+     * 
+     * @return  module description
+     */
+    String getDescription();
     
-    public String getDescription()
-    {
-        return description;
-    }
+    /**
+     * Get the modules install date
+     * 
+     * @return  module install date
+     */
+    String getInstalledDate();
 }

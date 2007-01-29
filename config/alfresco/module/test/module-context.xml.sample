@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans >
+
+   <bean id="module.test.xyz.A" class="org.alfresco.repo.module.ModuleComponentHelperTest$NoopModuleComponent" parent="module.baseComponent">
+      <property name="moduleId" value="test.xyz" />
+      <property name="name" value="A" />
+      <property name="description" value="Component that does nothing A" />
+      <property name="sinceVersion" value="2.0" />
+      <property name="appliesFromVersion" value="1.0" />
+      <property name="appliesToVersion" value="1.5" />
+   </bean>
+
+   <bean id="module.test.xyz.B" class="org.alfresco.repo.module.ModuleComponentHelperTest$NoopModuleComponent" parent="module.baseComponent">
+      <property name="moduleId" value="test.xyz" />
+      <property name="name" value="B" />
+      <property name="description" value="Component that does nothing B" />
+      <property name="sinceVersion" value="2.0" />
+      <property name="appliesFromVersion" value="1.0" />
+      <!-- <property name="appliesToVersion" value="2.0" /> -->  <!-- This should default to uncapped -->
+   </bean>
+
+</beans>

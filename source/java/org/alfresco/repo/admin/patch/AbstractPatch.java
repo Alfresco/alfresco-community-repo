@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractPatch implements Patch
 {
     /**
-     * I18N message when properties nto set.
+     * I18N message when properties not set.
      * <ul>
      *   <li>{0} = property name</li>
      *   <li>{1} = patch instance</li>

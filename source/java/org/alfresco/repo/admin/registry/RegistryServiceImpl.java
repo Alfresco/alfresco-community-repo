@@ -18,7 +18,6 @@ package org.alfresco.repo.admin.registry;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -33,6 +32,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -155,64 +155,43 @@ public class RegistryServiceImpl implements RegistryService
     }
     
     /**
-     * @return Returns a pair representing the node path and the property name
-     */
-    private Pair<String, String> splitKey(String key)
-    {
-        int index = key.lastIndexOf('/');
-        Pair<String, String> result = null;
-        if (index < 0)                      // It is just a property
-        {
-            result = new Pair<String, String>("/", key);
-        }
-        else
-        {
-            String propertyName = key.substring(index + 1, key.length());
-            if (propertyName.length() == 0)
-            {
-                throw new IllegalArgumentException("The registry key is invalid: " + key);
-            }
-            result = new Pair<String, String>(key.substring(0, index), propertyName);
-        }
-        // done
-        return result;
-    }
-    
-    /**
      * @return Returns the node and property name represented by the key or <tt>null</tt>
      *      if it doesn't exist and was not allowed to be created
      */
-    private Pair<NodeRef, QName> getPath(String key, boolean create)
+    private Pair<NodeRef, QName> getPath(RegistryKey key, boolean create)
     {
         // Get the root
         NodeRef currentNodeRef = getRegistryRootNodeRef();
-        // Split the key
-        Pair<String, String> keyPair = splitKey(key);
-        // Parse the key
-        StringTokenizer tokenizer = new StringTokenizer(keyPair.getFirst(), "/");
+        // Get the key and property
+        String namespaceUri = key.getNamespaceUri();
+        String[] pathElements = key.getPath();
+        String property = key.getProperty();
         // Find the node and property to put the value
-        while (tokenizer.hasMoreTokens())
+        for (String pathElement : pathElements)
         {
-            String token = tokenizer.nextToken();
-            String name = QName.createValidLocalName(token);
-            QName qname = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, name);
+            QName assocQName = QName.createQName(
+                    namespaceUri,
+                    QName.createValidLocalName(pathElement));
             
             // Find the node
             List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(
                     currentNodeRef,
                     ContentModel.ASSOC_CHILDREN,
-                    qname);
+                    assocQName);
             int size = childAssocRefs.size();
             if (size == 0)                          // Found nothing with that path
             {
                 if (create)                         // Must create the path
                 {
-                    // Create the node
+                    // Create the node (with a name)
+                    PropertyMap properties = new PropertyMap();
+                    properties.put(ContentModel.PROP_NAME, pathElement);
                     currentNodeRef = nodeService.createNode(
                             currentNodeRef,
                             ContentModel.ASSOC_CHILDREN,
-                            qname,
-                            ContentModel.TYPE_CONTAINER).getChildRef();
+                            assocQName,
+                            ContentModel.TYPE_CONTAINER,
+                            properties).getChildRef();
                 }
                 else
                 {
@@ -244,15 +223,15 @@ public class RegistryServiceImpl implements RegistryService
         }
         // Create the result
         QName propertyQName = QName.createQName(
-                NamespaceService.SYSTEM_MODEL_1_0_URI,
-                QName.createValidLocalName(keyPair.getSecond()));
+                namespaceUri,
+                QName.createValidLocalName(property));
         Pair<NodeRef, QName> resultPair = new Pair<NodeRef, QName>(currentNodeRef, propertyQName);
         // done
         if (logger.isDebugEnabled())
         {
             logger.debug("Converted registry key: \n" +
-                    "   key pair: " + keyPair + "\n" +
-                    "   result:   " + resultPair);
+                    "   Key:      " + key + "\n" +
+                    "   Result:   " + resultPair);
         }
         if (resultPair.getFirst() == null)
         {
@@ -267,7 +246,7 @@ public class RegistryServiceImpl implements RegistryService
     /**
      * @inheritDoc
      */
-    public void addValue(String key, Serializable value)
+    public void addValue(RegistryKey key, Serializable value)
     {
         // Get the path, with creation support
         Pair<NodeRef, QName> keyPair = getPath(key, true);
@@ -282,7 +261,7 @@ public class RegistryServiceImpl implements RegistryService
         }
     }
 
-    public Serializable getValue(String key)
+    public Serializable getValue(RegistryKey key)
     {
         // Get the path, without creating
         Pair<NodeRef, QName> keyPair = getPath(key, false);

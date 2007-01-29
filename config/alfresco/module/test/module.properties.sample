@@ -1,0 +1,5 @@
+# A test module
+module.id=test.xyz
+module.title=Test XYZ
+module.description=A module for unit testing
+module.version=3.0

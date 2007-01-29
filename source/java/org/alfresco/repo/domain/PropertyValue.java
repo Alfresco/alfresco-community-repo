@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -256,6 +257,20 @@ public class PropertyValue implements Cloneable, Serializable
             {
                 return DefaultTypeConverter.INSTANCE.convert(Locale.class, value);
             }
+        },
+        VERSION_NUMBER
+        {
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                return ValueType.STRING;
+            }
+
+            @Override
+            Serializable convert(Serializable value)
+            {
+                return DefaultTypeConverter.INSTANCE.convert(VersionNumber.class, value);
+            }
         };
         
         /**
@@ -361,6 +376,10 @@ public class PropertyValue implements Cloneable, Serializable
         else if (value instanceof Locale)
         {
             return ValueType.LOCALE;
+        }
+        else if (value instanceof VersionNumber)
+        {
+            return ValueType.VERSION_NUMBER;
         }
         else
         {

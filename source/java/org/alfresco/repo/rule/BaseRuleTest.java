@@ -113,7 +113,7 @@ public class BaseRuleTest extends BaseSpringTest
         this.ruleService = (RuleService) this.applicationContext
                 .getBean("ruleService");
         this.configService = (ConfigurableService)this.applicationContext
-        		.getBean("configurableService");
+        		.getBean("ConfigurableService");
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");

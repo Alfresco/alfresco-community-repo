@@ -1263,4 +1263,61 @@
         </property>
     </bean>
     
+    <!-- ConfigurableService -->
+    
+    <bean id="ConfigurableService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.configuration.ConfigurableService</value>
+        </property>
+        <property name="target">
+            <ref bean="configurableService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ConfigurableService_transaction"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="ConfigurableService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="is*">${server.transaction.mode.readOnly}</prop>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- RegistryService -->
+    
+    <bean id="RegistryService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.admin.registry.RegistryService</value>
+        </property>
+        <property name="target">
+            <ref bean="registryService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RegistryService_transaction"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="RegistryService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
 </beans>

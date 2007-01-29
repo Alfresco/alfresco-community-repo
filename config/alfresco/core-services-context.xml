@@ -255,31 +255,10 @@
     <!-- Indexing and Search API -->
     <!--                         -->
 
-    <bean id="indexerComponent" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.search.Indexer</value>
+    <bean id="indexerComponent" class="org.alfresco.repo.search.IndexerComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="indexerAndSearcherFactory" />
         </property>
-        <property name="target">
-            <bean class="org.alfresco.repo.search.IndexerComponent">
-                <property name="indexerAndSearcherFactory">
-                    <ref bean="indexerAndSearcherFactory" />
-                </property>
-            </bean>
-        </property>
-        <!-- use for debugging
-        <property name="interceptorNames">
-            <list>
-                <idref bean="methodCallLogAdvice" />
-                <idref local="indexerComponent_PerformanceMonitorAdvice" />
-            </list>
-        </property>
-        -->
-    </bean>
-
-    <bean id="indexerComponent_PerformanceMonitorAdvice" class="org.alfresco.util.perf.PerformanceMonitorAdvice">
-        <constructor-arg>
-            <value>indexerComponent</value>
-        </constructor-arg>
     </bean>
 
     <bean id="searchService" class="org.alfresco.repo.search.SearcherComponent">
@@ -794,24 +773,32 @@
     </bean>
 
     <!-- Configurable service -->
-    <bean id="configurableService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.configuration.ConfigurableService</value>
+    <bean id="configurableService" class="org.alfresco.repo.configuration.ConfigurableServiceImpl">
+        <property name="nodeService">
+            <ref bean="nodeService" />
         </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
+    </bean>
+    
+    <!-- Registry service -->
+    <bean id="registryService" class="org.alfresco.repo.admin.registry.RegistryServiceImpl" init-method="init">
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
         </property>
-        <property name="target">
-            <bean class="org.alfresco.repo.configuration.ConfigurableServiceImpl">
-                <property name="nodeService">
-                    <ref bean="nodeService" />
-                </property>
-            </bean>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
         </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
+        <property name="searchService">
+            <ref bean="SearchService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <!-- Root properties -->
+        <property name="registryStore">
+            <value>system://system</value>
+        </property>
+        <property name="registryRootPath">
+            <value>/sys:system-registry</value>
         </property>
     </bean>
 

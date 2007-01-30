@@ -150,11 +150,16 @@
                                        <td>
                                           <a:actionLink value="#{msg.view_in_webdav}" href="#{SpaceDetailsBean.webdavUrl}" target="new" id="link1" />
                                        </td>
-                                       <td>
+                                       <td colspan=2>
                                           <a:actionLink value="#{msg.view_in_cifs}" href="#{SpaceDetailsBean.cifsPath}" target="new" id="link2" />
                                        </td>
+                                    </tr>
+                                    <tr>
                                        <td>
                                           <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsBean.bookmarkUrl}" id="out1" />' onclick="return false;"><a:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
+                                       </td>
+                                       <td>
+                                          <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsBean.browseUrl}" id="out1_1" />' onclick="return false;"><a:outputText value="#{msg.details_browse_bookmark}" id="out2_2" /></a>
                                        </td>
                                        <td>
                                           <a href='<a:outputText value="#{SpaceDetailsBean.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>

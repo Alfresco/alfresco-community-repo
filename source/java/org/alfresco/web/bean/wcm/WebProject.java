@@ -43,6 +43,8 @@ import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.*;
 import org.alfresco.web.forms.xforms.XFormsProcessor;
 import org.apache.commons.logging.Log;
@@ -220,7 +222,10 @@ public class WebProject
     */
    public List<Form> getForms()
    {
-      return Collections.unmodifiableList(new ArrayList(this.getFormsImpl().values()));
+      List forms = new ArrayList(this.getFormsImpl().values());
+      QuickSort sorter = new QuickSort(forms, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+      sorter.sort();
+      return Collections.unmodifiableList(forms);
    }
 
    /**

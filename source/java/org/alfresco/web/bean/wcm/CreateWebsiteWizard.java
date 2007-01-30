@@ -535,7 +535,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    /**
-    * @return List of UI items to represent the available Workflows for all websites
+    * @return List of UI items to represent the available Web Forms for all websites
     */
    public List<UIListItem> getFormsList()
    {

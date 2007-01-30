@@ -554,7 +554,7 @@ public final class Utils
    /**
     * Enum representing the client URL type to generate
     */
-   public enum URLMode {HTTP_DOWNLOAD, HTTP_INLINE, WEBDAV, CIFS, SHOW_DETAILS, FTP}
+   public enum URLMode {HTTP_DOWNLOAD, HTTP_INLINE, WEBDAV, CIFS, SHOW_DETAILS, BROWSE, FTP}
    
    /**
     * Generates a URL for the given usage for the given node.
@@ -665,12 +665,12 @@ public final class Utils
             DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
             
             // default to showing details of content
-            String outcome = "showDocDetails";
+            String outcome = ExternalAccessServlet.OUTCOME_DOCDETAILS;
             
             // if the node is a type of folder then make the outcome to show space details
             if (dd.isSubClass(node.getType(), ContentModel.TYPE_FOLDER))
             {
-               outcome = "showSpaceDetails";
+               outcome = ExternalAccessServlet.OUTCOME_SPACEDETAILS;
             }
             
             // build the url
@@ -678,6 +678,13 @@ public final class Utils
                   Repository.getStoreRef().getProtocol() + "/" + 
                   Repository.getStoreRef().getIdentifier() + "/" + node.getId());
             break;
+         }
+         
+         case BROWSE:
+         {
+            url = ExternalAccessServlet.generateExternalURL(ExternalAccessServlet.OUTCOME_BROWSE, 
+                  Repository.getStoreRef().getProtocol() + "/" + 
+                  Repository.getStoreRef().getIdentifier() + "/" + node.getId());
          }
          
          case FTP:

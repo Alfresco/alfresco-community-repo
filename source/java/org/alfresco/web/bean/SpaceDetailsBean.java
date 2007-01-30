@@ -40,6 +40,7 @@ import org.alfresco.web.app.servlet.TemplateContentServlet;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
 
 /**
@@ -110,6 +111,16 @@ public class SpaceDetailsBean extends BaseDetailsBean
    public Node getSpace()
    {
       return getNode();
+   }
+   
+   /**
+    * Returns the URL to access the browse page for the current node
+    * 
+    * @return The bookmark URL
+    */
+   public String getBrowseUrl()
+   {
+      return Utils.generateURL(FacesContext.getCurrentInstance(), getNode(), URLMode.BROWSE);
    }
    
    /**

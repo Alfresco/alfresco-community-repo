@@ -17,6 +17,7 @@
 package org.alfresco.web.forms;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -50,6 +51,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -64,7 +67,6 @@ import org.xml.sax.SAXException;
 public final class FormsService 
    implements Serializable
 {
-   
    private static final Log LOGGER = LogFactory.getLog(FormsService.class);
    
    /** the single instance initialized using spring */
@@ -155,7 +157,8 @@ public final class FormsService
          final String xpath = (Application.getRootPath(fc) + "/" +
                                Application.getGlossaryFolderName(fc) + "/" +
                                Application.getContentFormsFolderName(fc));
-         LOGGER.debug("locating content forms at " + xpath);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("locating content forms at " + xpath);
          final List<NodeRef> results = 
             searchService.selectNodes(this.nodeService.getRootNode(Repository.getStoreRef()),
                                       xpath,
@@ -183,12 +186,14 @@ public final class FormsService
       final ResultSet rs = this.searchService.query(sp);
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("received " + rs.length() + " results");
-      final Collection<Form> result = new LinkedList<Form>();
+      final Collection<Form> result = new ArrayList<Form>(rs.length());
       for (ResultSetRow row : rs)
       {
-         final NodeRef nodeRef = row.getNodeRef();
-         result.add(this.getForm(nodeRef));
+         result.add(this.getForm(row.getNodeRef()));
       }
+      QuickSort sorter = new QuickSort((List)result, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+      sorter.sort();
+      
       return result;
    }
    

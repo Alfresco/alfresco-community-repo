@@ -180,17 +180,18 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                      if (logger.isDebugEnabled())
                         logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
                      
+                     // first check that we are not attempting to copy a duplicate into the same parent
+                     if (destRef.equals(assocRef.getParentRef()) && name.equals(getName()))
+                     {
+                        // manually change the name if this occurs
+                        String copyOf = Application.getMessage(fc, MSG_COPY_OF);
+                        name = copyOf + ' ' + name;
+                     }
+                     
                      if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
                          dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
                      {
                         // copy the file/folder
-                        // first check that we are not attempting to copy a duplicate into the same parent
-                        if (destRef.equals(assocRef.getParentRef()) && name.equals(getName()))
-                        {
-                           // manually change the name if this occurs
-                           String copyOf = Application.getMessage(fc, MSG_COPY_OF);
-                           name = copyOf + ' ' + name;
-                        }
                         fileFolderService.copy(
                               getNodeRef(),
                               destRef,
@@ -201,7 +202,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                         // copy the node
                         if (checkExists(name, destRef) == false)
                         {
-                           copyService.copy(
+                           copyService.copyAndRename(
                                  getNodeRef(),
                                  destRef,
                                  ContentModel.ASSOC_CONTAINS,

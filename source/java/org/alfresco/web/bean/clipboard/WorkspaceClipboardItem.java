@@ -127,7 +127,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                   {
                      // LINK operation
                      if (logger.isDebugEnabled())
-                        logger.debug("Attempting to link node ID: " + getId() + " into node ID: " + destRef.getId());
+                        logger.debug("Attempting to link node ID: " + getNodeRef() + " into node: " + destRef.toString());
                      
                      // we create a special Link Object node that has a property to reference the original
                      // create the node using the nodeService (can only use FileFolderService for content)
@@ -178,7 +178,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                   {
                      // COPY operation
                      if (logger.isDebugEnabled())
-                        logger.debug("Attempting to copy node ID: " + getId() + " into node ID: " + destRef.getId());
+                        logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
                      
                      if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
                          dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
@@ -218,7 +218,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                {
                   // MOVE operation
                   if (logger.isDebugEnabled())
-                     logger.debug("Attempting to move node ID: " + getId() + " into node ID: " + destRef.getId());
+                     logger.debug("Attempting to move node: " + getNodeRef() + " into node ID: " + destRef.toString());
                   
                   if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
                       dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))

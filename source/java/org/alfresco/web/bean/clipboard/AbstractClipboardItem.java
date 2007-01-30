@@ -103,11 +103,6 @@ abstract class AbstractClipboardItem implements ClipboardItem
       return this.icon;
    }
    
-   public String getId()
-   {
-      return this.ref.getId();
-   }
-   
    public NodeRef getNodeRef()
    {
       return this.ref;

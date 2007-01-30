@@ -18,6 +18,7 @@ package org.alfresco.web.ui.repo.component.template;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
@@ -29,6 +30,7 @@ import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.Utils;
@@ -36,20 +38,29 @@ import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.apache.log4j.Logger;
 
 /**
+ * Component responsible for rendering the output of a FreeMarker template directly to the page.
+ * <p>
+ * FreeMarker templates can be specified as a NodeRef or classpath location. The template output
+ * will be processed against the default model merged with any custom model reference supplied to
+ * the component as a value binding attribute. The output of the template is the output of the
+ * component tag.
+ * 
  * @author Kevin Roast
  */
 public class UITemplate extends SelfRenderingComponent
 {
    private final static String ENGINE_DEFAULT = "freemarker";
-   private final static String TEMPLATE_KEY = "_template_";
    
    private static Logger logger = Logger.getLogger(UITemplate.class);
    
    /** Template engine name */
    private String engine = null;
    
-   /** Template name/path */
+   /** Template name/classpath */
    private String template = null;
+   
+   /** Template cm:name based path */
+   private String templatePath = null;
    
    /** Data model reference */
    private Object model = null;
@@ -76,7 +87,8 @@ public class UITemplate extends SelfRenderingComponent
       super.restoreState(context, values[0]);
       this.engine = (String)values[1];
       this.template = (String)values[2];
-      this.model = (Object)values[3];
+      this.templatePath = (String)values[3];
+      this.model = (Object)values[4];
    }
    
    /**
@@ -84,12 +96,8 @@ public class UITemplate extends SelfRenderingComponent
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[4];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.engine;
-      values[2] = this.template;
-      values[3] = this.model;
+      Object values[] = new Object[] {
+         super.saveState(context), this.engine, this.template, this.templatePath, this.model};
       return (values);
    }
    
@@ -104,8 +112,30 @@ public class UITemplate extends SelfRenderingComponent
       }
       
       // get the template to process
-      String template = getTemplate();
-      if (template != null && template.length() != 0)
+      String templateRef = getTemplate();
+      if (templateRef == null || templateRef.length() == 0)
+      {
+         // no noderef/classpath template found - try a name based path
+         String path = getTemplatePath();
+         if (path != null && path.length() != 0)
+         {
+            // convert cm:name based path to a NodeRef
+            StringTokenizer t = new StringTokenizer(path, "/");
+            int tokenCount = t.countTokens();
+            String[] elements = new String[tokenCount];
+            for (int i=0; i<tokenCount; i++)
+            {
+               elements[i] = t.nextToken();
+            }
+            NodeRef pathRef = BaseServlet.resolveWebDAVPath(context, elements, false);
+            if (pathRef != null)
+            {
+               templateRef = pathRef.toString();
+            }
+         }
+      }
+      
+      if (templateRef != null && templateRef.length() != 0)
       {
          // get the class name of the processor to instantiate
          String engine = getEngine();
@@ -117,14 +147,14 @@ public class UITemplate extends SelfRenderingComponent
             startTime = System.currentTimeMillis();
          }
          
-         // get the data model to use - building default if required
-         Object model = getModel();
+         // get the data model to use - building default FreeMarker model as required
+         Object model = getFreeMarkerModel(getModel(), templateRef);
          
          // process the template against the model
          try
          {
             TemplateService templateService = Repository.getServiceRegistry(context).getTemplateService();
-            templateService.processTemplate(engine, getTemplate(), model, context.getResponseWriter());
+            templateService.processTemplate(engine, templateRef, model, context.getResponseWriter());
          }
          catch (TemplateException err)
          {
@@ -137,6 +167,49 @@ public class UITemplate extends SelfRenderingComponent
             logger.debug("Time to process template: " + (endTime - startTime) + "ms");
          }
       }
+   }
+   
+   /**
+    * By default we return a Map model containing root references to the Company Home Space,
+    * the users Home Space and the Person Node for the current user.
+    * 
+    * @param model      Custom model to merge into default model
+    * @param template   Optional reference to the template to add to model
+    * 
+    * @return Returns the data model to bind template against.
+    */
+   private Object getFreeMarkerModel(Object model, String template)
+   {
+      if (getEngine().equals(ENGINE_DEFAULT))
+      {
+         // create an instance of the default FreeMarker template object model
+         FacesContext fc = FacesContext.getCurrentInstance();
+         ServiceRegistry services = Repository.getServiceRegistry(fc);
+         User user = Application.getCurrentUser(fc);
+         
+         // add the template itself to the model
+         NodeRef templateRef = null;
+         if (template.indexOf(StoreRef.URI_FILLER) != -1)
+         {
+            // found a noderef template
+            templateRef = new NodeRef(template);
+         }
+         
+         Map root = DefaultModelHelper.buildDefaultModel(services, user, templateRef);
+         
+         // merge models
+         if (model instanceof Map)
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Found valid Map model to merge with FreeMarker: " + model);
+            
+            root.putAll((Map)model);
+         }
+         
+         model = root;
+      }
+      
+      return model;
    }
    
    
@@ -166,61 +239,23 @@ public class UITemplate extends SelfRenderingComponent
    }
 
    /**
-    * Return the data model to bind template against.
-    * <p>
-    * By default we return a Map model containing root references to the Company Home Space,
-    * the users Home Space and the Person Node for the current user.
+    * Return the custom data model to bind template against.
     * 
-    * @return Returns the data model to bind template against.
+    * @return Returns the custom data model to bind template against.
     */
    public Object getModel()
    {
       if (this.model == null)
       {
-         Object model = null;
          ValueBinding vb = getValueBinding("model");
          if (vb != null)
          {
-            model = vb.getValue(getFacesContext());
+            this.model = vb.getValue(getFacesContext());
          }
-         
-         if (getEngine().equals(ENGINE_DEFAULT))
-         {
-            // create an instance of the default FreeMarker template object model
-            FacesContext fc = FacesContext.getCurrentInstance();
-            ServiceRegistry services = Repository.getServiceRegistry(fc);
-            User user = Application.getCurrentUser(fc);
-            
-            // add the template itself to the model
-            NodeRef templateRef = null;
-            if (getTemplate().indexOf(StoreRef.URI_FILLER) != -1)
-            {
-               // found a noderef template
-               templateRef = new NodeRef(getTemplate());
-            }
-            
-            Map root = DefaultModelHelper.buildDefaultModel(services, user, templateRef);
-            
-            // merge models
-            if (model instanceof Map)
-            {
-               if (logger.isDebugEnabled())
-                  logger.debug("Found valid Map model to merge with FreeMarker: " + model);
-               
-               root.putAll((Map)model);
-            }
-            
-            model = root;
-         }
-         
-         return model;
       }
-      else
-      {
-         return this.model;
-      }
+      return this.model;
    }
-
+   
    /**
     * @param model The model to set.
     */
@@ -230,7 +265,7 @@ public class UITemplate extends SelfRenderingComponent
    }
 
    /**
-    * @return Returns the template name.
+    * @return Returns the template NodeRef/classpath.
     */
    public String getTemplate()
    {
@@ -249,12 +284,39 @@ public class UITemplate extends SelfRenderingComponent
    }
 
    /**
-    * @param template The template name to set.
+    * @param template   The template NodeRef/classpath to set.
     */
    public void setTemplate(String template)
    {
       this.template = template;
    }
+   
+   /**
+    * @return Returns the template path.
+    */
+   public String getTemplatePath()
+   {
+      ValueBinding vb = getValueBinding("templatePath");
+      if (vb != null)
+      {
+         String val = (String)vb.getValue(getFacesContext());
+         if (val != null)
+         {
+            this.templatePath = val.toString();
+         }
+      }
+      
+      return this.templatePath;
+   }
+
+   /**
+    * @param templatePath  The template cm:name based path to set.
+    */
+   public void setTemplatePath(String templatePath)
+   {
+      this.templatePath = templatePath;
+   }
+   
    
    /** Template Image resolver helper */
    private TemplateImageResolver imageResolver = new TemplateImageResolver()

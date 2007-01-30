@@ -52,6 +52,7 @@ public class TemplateTag extends BaseComponentTag
       
       setStringProperty(component, "engine", this.engine);
       setStringProperty(component, "template", this.template);
+      setStringProperty(component, "templatePath", this.templatePath);
       setStringBindingProperty(component, "model", this.model);
    }
    
@@ -64,6 +65,7 @@ public class TemplateTag extends BaseComponentTag
       
       this.engine = null;
       this.template = null;
+      this.templatePath = null;
       this.model = null;
    }
    
@@ -86,6 +88,16 @@ public class TemplateTag extends BaseComponentTag
    {
       this.template = template;
    }
+   
+   /**
+    * Set the template name based path
+    *
+    * @param templatePath     the template name based path
+    */
+   public void setTemplatePath(String templatePath)
+   {
+      this.templatePath = templatePath;
+   }
 
    /**
     * Set the data model
@@ -97,6 +109,9 @@ public class TemplateTag extends BaseComponentTag
       this.model = model;
    }
 
+
+   /** the template name based path */
+   private String templatePath;
 
    /** the engine name */
    private String engine;

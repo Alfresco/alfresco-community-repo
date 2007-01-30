@@ -211,6 +211,19 @@ public abstract class BaseServlet extends HttpServlet
    /**
     * Resolves the given path elements to a NodeRef in the current repository
     * 
+    * @param context Faces context
+    * @param args    The elements of the path to lookup
+    * @param decode  True to decode the arg from UTF-8 format, false for no decoding
+    */
+   public static NodeRef resolveWebDAVPath(FacesContext context, String[] args, boolean decode)
+   {
+      WebApplicationContext wc = FacesContextUtils.getRequiredWebApplicationContext(context);
+      return resolveWebDAVPath(wc, args, decode);
+   }
+   
+   /**
+    * Resolves the given path elements to a NodeRef in the current repository
+    * 
     * @param context ServletContext context
     * @param args    The elements of the path to lookup
     */

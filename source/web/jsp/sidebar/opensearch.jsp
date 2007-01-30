@@ -19,8 +19,4 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<f:verbatim><div class="osSidebarPanel"></f:verbatim>
-
-<r:openSearch id="sidebarOsClient" />
-
-<f:verbatim></div></f:verbatim>
+<r:openSearch id="sidebarOsClient" styleClass="osSidebarPanel" />

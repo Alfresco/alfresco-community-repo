@@ -99,6 +99,30 @@ public class UIOpenSearch extends SelfRenderingComponent
       out.write("</script>\n");
       
       // write out the HTML
+      String styleClass = (String)this.getAttributes().get("styleClass");
+      String style = (String)this.getAttributes().get("style");
+      
+      if (styleClass != null || style != null)
+      {
+         out.write("<div");
+         
+         if (styleClass != null && styleClass.length() > 0)
+         {
+            out.write(" class='");
+            out.write(styleClass);
+            out.write("'");
+         }
+         
+         if (style != null && style.length() > 0)
+         {
+            out.write(" style='");
+            out.write(style);
+            out.write("'");
+         }
+         
+         out.write(">\n");
+      }
+      
       out.write("<div class='osPanel'><div class='osControls'>");
       out.write("<table border='0' cellpadding='2' cellspacing='0'><tr>");
       out.write("<td><input id='");
@@ -160,6 +184,11 @@ public class UIOpenSearch extends SelfRenderingComponent
       out.write("<div id='");
       out.write(clientId);
       out.write("-os-results'></div>\n</div>\n");
+      
+      if (styleClass != null || style != null)
+      {
+         out.write("</div>\n");
+      }
    }
    
    /**

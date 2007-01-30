@@ -79,7 +79,7 @@ public class AVMWorkflowUtil extends WorkflowUtil
    private static List<WorkflowDefinition> configuredWorkflowDefs = null;
    
    public static NodeRef createWorkflowPackage(final List<String> srcPaths,
-                                               final String storeId,
+                                               final SandboxInfo sandboxInfo,
                                                final WorkflowPath path,
                                                final AVMSubmittedAspect avmSubmittedAspect,
                                                final AVMSyncService avmSyncService,
@@ -88,8 +88,6 @@ public class AVMWorkflowUtil extends WorkflowUtil
                                                final NodeService nodeService)
    {
       // create package paths (layered to user sandbox area as target)
-
-      SandboxInfo sandboxInfo = SandboxFactory.createWorkflowSandbox(storeId);
       final String workflowMainStoreName = sandboxInfo.getMainStoreName();
       final String packagesPath = AVMConstants.buildStoreRootPath(workflowMainStoreName);
                     

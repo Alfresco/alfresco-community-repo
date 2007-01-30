@@ -368,9 +368,14 @@ public class CreateWebContentWizard extends BaseContentWizard
                   }
 
                   LOGGER.debug("creating workflow package with " + srcPaths.size() + " files");
+
+
+                  // Create workflow sandbox for workflow package
+                  SandboxInfo sandboxInfo = SandboxFactory.createWorkflowSandbox(storeId);
+
                   final NodeRef packageNodeRef = 
                      AVMWorkflowUtil.createWorkflowPackage(srcPaths,
-                                                           storeId,
+                                                           sandboxInfo,
                                                            path,
                                                            avmSubmittedAspect,
                                                            this.avmSyncService,

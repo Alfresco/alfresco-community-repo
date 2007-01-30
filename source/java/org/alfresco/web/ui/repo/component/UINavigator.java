@@ -226,9 +226,11 @@ public class UINavigator extends SelfRenderingComponent
       // generate the active panel title
       String cxPath = context.getExternalContext().getRequestContextPath();
       out.write("<div class=\"sidebarButtonSelected\" style=\"background-image: url(" + cxPath + "/images/parts/navigator_blue_gradient_bg.gif)\">");
-      out.write("<span class=\"sidebarButtonLabelHighlight\">");
+      out.write("<a class='sidebarButtonSelectedLink' onclick=\"");
+      out.write(Utils.generateFormSubmit(context, this, getClientId(context), PANEL_ACTION + area));
+      out.write("\" href=\"#\">");
       out.write(areaTitle);
-      out.write("</span></div>");
+      out.write("</a></div>");
       
       // generate the javascript method to capture the tree node click events
       if (treePanel)

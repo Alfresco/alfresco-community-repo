@@ -600,6 +600,13 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    border-bottom: 1px solid #d3d7cf;
 }
 
+a.sidebarButtonSelectedLink, a.sidebarButtonSelectedLink:link, a.sidebarButtonSelectedLink:visited
+{
+   color: #fff;
+   font-weight: normal;
+   font-size:12px;
+}
+
 .sidebarButton
 {
    color: #004488;
@@ -608,12 +615,6 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    padding: 5px;
    background: #dddddd repeat-x;
    border-top: 1px solid #c8ccd1;
-}
-
-.sidebarButtonLabelHighlight
-{
-   color: #fff;
-   font-size:12px;
 }
 
 a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited

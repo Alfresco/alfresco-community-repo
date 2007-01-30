@@ -101,7 +101,6 @@
    <bean id="web.api.TemplatePaths" parent="web.api.TemplateClassPathSet">
       <property name="paths">
          <list>
-            <value>alfresco/extension/templates/api</value>
             <value>alfresco/templates/api</value>
          </list>
       </property>

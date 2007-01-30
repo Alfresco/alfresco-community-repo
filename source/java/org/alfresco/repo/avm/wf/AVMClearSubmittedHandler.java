@@ -17,8 +17,10 @@
 package org.alfresco.repo.avm.wf;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -26,6 +28,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
@@ -94,6 +97,17 @@ public class AVMClearSubmittedHandler extends JBPMSpringActionHandler
             {
                 String submittedPath = from + diff.getSourcePath().substring(pkgPath.getSecond().length());
                 fAVMSubmittedAspect.clearSubmitted(-1, submittedPath);
+            }
+            // Now delete the stores in the workflow sandbox.
+            String [] storePath = pkgPath.getSecond().split(":");
+            // Get the sandbox id for the package.
+            Map<QName, PropertyValue> matches = fAVMService.queryStorePropertyKey(storePath[0], QName.createQName(null, ".sandbox-id%"));
+            QName sandboxID = matches.keySet().iterator().next();
+            // Get all the stores in the sandbox.
+            Map<String, Map<QName, PropertyValue>> stores = fAVMService.queryStoresPropertyKeys(sandboxID);
+            for (String storeName : stores.keySet())
+            {
+                fAVMService.purgeStore(storeName);
             }
         }
     }

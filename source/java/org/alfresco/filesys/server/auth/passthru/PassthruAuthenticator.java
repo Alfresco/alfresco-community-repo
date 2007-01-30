@@ -220,7 +220,7 @@ public class PassthruAuthenticator extends CifsAuthenticator implements SessionL
                     {
                     	// Use the person name as the current user
                     	
-                        m_authComponent.setCurrentUser(personName);
+                        client.setAuthenticationToken( m_authComponent.setCurrentUser(personName));
                         
                         // DEBUG
                         

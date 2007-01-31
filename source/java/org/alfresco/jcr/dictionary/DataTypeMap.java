@@ -40,6 +40,7 @@ public class DataTypeMap
     static
     {
         dataTypeToPropertyType.put(DataTypeDefinition.TEXT, PropertyType.STRING);
+        dataTypeToPropertyType.put(DataTypeDefinition.MLTEXT, PropertyType.STRING);
         dataTypeToPropertyType.put(DataTypeDefinition.CONTENT, PropertyType.BINARY);
         dataTypeToPropertyType.put(DataTypeDefinition.INT, PropertyType.LONG);
         dataTypeToPropertyType.put(DataTypeDefinition.LONG, PropertyType.LONG);

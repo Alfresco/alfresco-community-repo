@@ -1531,8 +1531,9 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         }
         boolean wereAllAtomic = true;
         // convert value to String
-        for (String strValue : DefaultTypeConverter.INSTANCE.getCollection(String.class, value))
+        for (Serializable serializableValue : DefaultTypeConverter.INSTANCE.getCollection(Serializable.class, value))
         {
+            String strValue =  DefaultTypeConverter.INSTANCE.convert(String.class, serializableValue);
             if (strValue == null)
             {
                 // nothing to index
@@ -1541,7 +1542,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
             if (isContent)
             {
-                ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+                ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, serializableValue);
                 if (!index || contentData.getMimetype() == null)
                 {
                     // no mimetype or property not indexed
@@ -1713,7 +1714,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                 {
                     if (isMultiLingual)
                     {
-                        MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
+                        MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, serializableValue);
                         for (Locale locale : mlText.getLocales())
                         {
                             String localeString = mlText.getValue(locale);

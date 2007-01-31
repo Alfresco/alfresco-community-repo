@@ -102,7 +102,7 @@ public class RegexQNamePattern implements QNamePattern
         else
         {
             sb.append(" uri=").append(namespaceUriPattern);
-            sb.append(", localname=").append(namespaceUriPattern);
+            sb.append(", localname=").append(localNamePattern);
         }
         sb.append(" ]");
         return sb.toString();

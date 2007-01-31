@@ -68,6 +68,10 @@
          <property-name>userPreferencesBean</property-name>
          <value>#{UserPreferencesBean}</value>
       </managed-property>
+      <managed-property>
+         <property-name>authenticationService</property-name>
+         <value>#{AuthenticationService}</value>
+      </managed-property>
    </managed-bean>
    
    <managed-bean>

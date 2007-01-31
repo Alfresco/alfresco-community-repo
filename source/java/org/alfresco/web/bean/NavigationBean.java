@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
@@ -58,6 +59,10 @@ import org.alfresco.web.ui.repo.component.shelf.UIShelf;
 import org.apache.log4j.Logger;
 
 /**
+ * Bean providing access and management of the various global navigation mechanisms
+ * such as the My Home, Company Home, Guest Home toolbar shortcuts, breadcrumb and
+ * the current node id and associated properties.
+ * 
  * @author Kevin Roast
  */
 public class NavigationBean
@@ -134,6 +139,14 @@ public class NavigationBean
       this.preferences = preferences;
    }
    
+   /**
+    * @param authService The AuthenticationService to set.
+    */
+   public void setAuthenticationService(AuthenticationService authService)
+   {
+      this.authService = authService;
+   }
+
    /**
     * @return the User object representing the current instance for this user 
     */
@@ -679,8 +692,15 @@ public class NavigationBean
     */
    public boolean getGuestHomeVisible()
    {
-      Node guestHome = getGuestHomeNode();
-      return guestHome != null && guestHome.hasPermission(PermissionService.READ);
+      if (this.authService.guestUserAuthenticationAllowed())
+      {
+         Node guestHome = getGuestHomeNode();
+         return guestHome != null && guestHome.hasPermission(PermissionService.READ);
+      }
+      else
+      {
+         return false;
+      }
    }
    
    
@@ -894,6 +914,9 @@ public class NavigationBean
    
    /** The user preferences bean reference */
    protected UserPreferencesBean preferences;
+   
+   /** The Authentication service bean reference */
+   protected AuthenticationService authService;
    
    /** Cached path to our CIFS server and top level node DIR */
    private String cifsServerPath;

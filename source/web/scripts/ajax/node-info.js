@@ -38,7 +38,7 @@ function showNodeInfoHandler(type, data, evt)
    var div = document.createElement("div");
    
    // get the position of the element we are showing info for
-   var pos = dojo.style.getAbsolutePosition(_launchElement, false);
+   var pos = dojo.html.getAbsolutePosition(_launchElement, false);
    
    // setup the div with the correct appearance
    div.innerHTML = data;
@@ -52,7 +52,7 @@ function showNodeInfoHandler(type, data, evt)
    
    // is there a better way of doing this, dojo.dom.insertBefore??
    var body = document.getElementsByTagName("body")[0];
-   dojo.style.setOpacity(div, 0);
+   dojo.html.setOpacity(div, 0);
    _popupElement = div;
    body.appendChild(div);
    

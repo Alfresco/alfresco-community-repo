@@ -160,31 +160,8 @@ public class ManageTaskDialog extends BaseDialogBean
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("Saving task with parameters: " + params);
       
-      // remove any items the user selected to remove 
-      if (this.workflowPackage != null && this.packageItemsToRemove != null && 
-          this.packageItemsToRemove.size() > 0)
-      {
-         for (String removedItem : this.packageItemsToRemove)
-         {
-            this.nodeService.removeChild(this.workflowPackage, new NodeRef(removedItem));
-         }
-      }
-      
-      // add any items the user selected to add 
-      if (this.workflowPackage != null && this.packageItemsToAdd != null && 
-          this.packageItemsToAdd.size() > 0)
-      {
-         for (String addedItem : this.packageItemsToAdd)
-         {
-            NodeRef addedNodeRef = new NodeRef(addedItem);
-            this.nodeService.addChild(this.workflowPackage, addedNodeRef, 
-                  ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                  QName.createValidLocalName((String)this.nodeService.getProperty(
-                        addedNodeRef, ContentModel.PROP_NAME))));
-         }
-      }
-      
-      // update the task with the updated parameters
+      // update the task with the updated parameters and resources
+      updateResources();
       this.workflowService.updateTask(this.task.id, params, null, null);
       
       return outcome;
@@ -285,7 +262,8 @@ public class ManageTaskDialog extends BaseDialogBean
          Map<QName, Serializable> params = new HashMap<QName, Serializable>();
          params.put(ContentModel.PROP_OWNER, userName);
   
-         // update the task with the updated parameters
+         // update the task with the updated parameters and resources
+         updateResources();
          this.workflowService.updateTask(this.task.id, params, null, null);
      
          // commit the changes
@@ -322,7 +300,8 @@ public class ManageTaskDialog extends BaseDialogBean
          Map<QName, Serializable> params = new HashMap<QName, Serializable>();
          params.put(ContentModel.PROP_OWNER, null);
   
-         // update the task with the updated parameters
+         // update the task with the updated parameters and resources
+         updateResources();
          this.workflowService.updateTask(this.task.id, params, null, null);
      
          // commit the changes
@@ -378,7 +357,8 @@ public class ManageTaskDialog extends BaseDialogBean
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Transitioning task with parameters: " + params);
         
-         // update the task with the updated parameters
+         // update the task with the updated parameters and resources
+         updateResources();
          this.workflowService.updateTask(this.task.id, params, null, null);
      
          // signal the selected transition to the workflow task
@@ -825,6 +805,33 @@ public class ManageTaskDialog extends BaseDialogBean
       node.getProperties().put("taskId", this.task.id);
       
       this.resources.add(node);
+   }
+   
+   protected void updateResources()
+   {
+      // remove any items the user selected to remove 
+      if (this.workflowPackage != null && this.packageItemsToRemove != null && 
+          this.packageItemsToRemove.size() > 0)
+      {
+         for (String removedItem : this.packageItemsToRemove)
+         {
+            this.nodeService.removeChild(this.workflowPackage, new NodeRef(removedItem));
+         }
+      }
+      
+      // add any items the user selected to add 
+      if (this.workflowPackage != null && this.packageItemsToAdd != null && 
+          this.packageItemsToAdd.size() > 0)
+      {
+         for (String addedItem : this.packageItemsToAdd)
+         {
+            NodeRef addedNodeRef = new NodeRef(addedItem);
+            this.nodeService.addChild(this.workflowPackage, addedNodeRef, 
+                  ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                  QName.createValidLocalName((String)this.nodeService.getProperty(
+                        addedNodeRef, ContentModel.PROP_NAME))));
+         }
+      }
    }
    
    // ------------------------------------------------------------------------------

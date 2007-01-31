@@ -6,7 +6,7 @@
    <!-- Axis handler to validate the ticket sent with the web service request -->
    <bean id="ticketCallbackHandler" class="org.alfresco.repo.webservice.axis.TicketCallbackHandler">
       <property name="authenticationService">
-         <ref bean="authenticationService"/>
+         <ref bean="AuthenticationService"/>
       </property>
    </bean>
    

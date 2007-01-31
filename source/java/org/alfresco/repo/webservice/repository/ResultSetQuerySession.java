@@ -49,6 +49,7 @@ public class ResultSetQuerySession extends AbstractQuerySession
    
    private Store store;
    private Query query;
+   @SuppressWarnings("unused")
    private boolean includeMetaData;
    
    /**
@@ -111,7 +112,7 @@ public class ResultSetQuerySession extends AbstractQuerySession
             
                // get the data for the row and build up the columns structure
                Map<Path, Serializable> values = origRow.getValues();
-               NamedValue[] columns = new NamedValue[values.size()];
+               NamedValue[] columns = new NamedValue[values.size() + 1];
                int col = 0;
                for (Path path : values.keySet())
                {
@@ -125,7 +126,9 @@ public class ResultSetQuerySession extends AbstractQuerySession
                   columns[col] = Utils.createNamedValue(dictionaryService, QName.createQName(attributeName), values.get(path)); //new NamedValue(attributeName, value);
                   col++;
                }
-
+               
+               // add one extra column for the node's path
+               columns[col] = Utils.createNamedValue(dictionaryService, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "path"), nodeService.getPath(nodeRef).toString());
             
                org.alfresco.repo.webservice.types.ResultSetRow row = new org.alfresco.repo.webservice.types.ResultSetRow();
                row.setColumns(columns);

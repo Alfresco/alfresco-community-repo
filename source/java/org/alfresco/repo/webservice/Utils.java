@@ -309,12 +309,26 @@ public class Utils
      *            The node to create a Reference for
      * @return The Reference
      */
-    public static Reference convertToReference(NodeRef node)
+    public static Reference convertToReference(NodeService nodeService, NodeRef node)
     {
         Reference ref = new Reference();
         Store store = new Store(node.getStoreRef().getProtocol(), node.getStoreRef().getIdentifier());
         ref.setStore(store);
         ref.setUuid(node.getId());
+        
+        // Need to check if node still exists (e.g., after a delete operation) so getPath()
+        // doesn't fail
+        if(nodeService.exists(node) == true) 
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("setting path for reference to: " + nodeService.getPath(node).toString());
+            }
+            
+            // so clients can get the path too          
+            ref.setPath(nodeService.getPath(node).toString());
+        }
+        
         return ref;
     }
 
@@ -324,12 +338,10 @@ public class Utils
      * @param store
      *            The Store to search within
      * @param uuid
-     *            The id of the node, or the id of the starting node if a path
-     *            is also present
+     *            The id of the required node.c
      * @param path
-     *            The path to the required node, if a uuid is given the search
-     *            starts from that node otherwise the search will start from the
-     *            root node
+     *           The path to the required node.  If a uuid is given the uuid is used
++    *            to find the node.  Otherwise, the path is used.
      * @param nodeService
      *            NodeService to use
      * @param searchService
@@ -350,54 +362,45 @@ public class Utils
 
         NodeRef nodeRef = null;
 
-        // find out where we are starting from, either the root or the node
-        // represented by the uuid
-        NodeRef rootNodeRef = null;
+        // If uuid is null, then use the path to find the node
         if (uuid == null || uuid.length() == 0)
         {
-            rootNodeRef = nodeService.getRootNode(convertToStoreRef(store));
-        } 
-        else
-        {
-            rootNodeRef = new NodeRef(convertToStoreRef(store), uuid);
-        }
-
-        // see if we have a path to further define the node being requested
-        if (path != null && path.length() != 0)
-        {
-            if (logger.isDebugEnabled() == true)
+            if (path != null && path.length() != 0)
             {
-                logger.debug("Resolving path: " + path);
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Resolving path: " + path);
+                }
+
+                NodeRef rootNodeRef = nodeService.getRootNode(convertToStoreRef(store));
+                List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, path,
+                                null, namespaceService, false);
+
+                 // make sure we only have one result
+                if (nodes.size() != 1)
+                {
+                    StringBuilder builder = new StringBuilder(
+                                    "Failed to resolve to a single NodeRef with parameters (store=");
+                    builder.append(store.getScheme()).append(":")
+                           .append(store.getAddress());
+                    builder.append(" uuid=").append(uuid);
+                    builder.append(" path=").append(path).append("), found ");
+                    builder.append(nodes.size()).append(" nodes.");
+                    throw new IllegalStateException(builder.toString());
+                }
+                
+                nodeRef = nodes.get(0);
+            } 
+            else
+            {
+                throw new IllegalArgumentException("A uuid or a path must be supplied to resolve to a NodeRef");
             }
             
-            List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, path,
-                    null, namespaceService, false);
-
-            // make sure we only have one result
-            if (nodes.size() != 1)
-            {
-                StringBuilder builder = new StringBuilder(
-                        "Failed to resolve to a single NodeRef with parameters (store=");
-                builder.append(store.getScheme()).append(":")
-                        .append(store.getAddress());
-                builder.append(" uuid=").append(uuid);
-                builder.append(" path=").append(path).append("), found ");
-                builder.append(nodes.size()).append(" nodes.");
-                throw new IllegalStateException(builder.toString());
-            }
-
-            nodeRef = nodes.get(0);
-        } 
-        else
-        {
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("There was no path to resolve so using root or specified node");
-            }
             
-            // if there is no path just use whatever the rootNodeRef currently
-            // is
-            nodeRef = rootNodeRef;
+        } 
+        else // use the uuid
+        {
+            nodeRef = new NodeRef(convertToStoreRef(store), uuid);
         }
 
         return nodeRef;
@@ -556,12 +559,13 @@ public class Utils
      * @return the web service version object
      */
     public static Version convertToVersion(
+            NodeService nodeService,
             org.alfresco.service.cmr.version.Version version)
     {
         Version webServiceVersion = new Version();
 
         // Set the basic properties
-        webServiceVersion.setId(Utils.convertToReference(version
+        webServiceVersion.setId(Utils.convertToReference(nodeService, version
                 .getFrozenStateNodeRef()));
         webServiceVersion.setCreator(version.getCreator());
         webServiceVersion.setLabel(version.getVersionLabel());

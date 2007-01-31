@@ -128,7 +128,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         // Create the acl
         ACL acl = new ACL();
-        acl.setReference(Utils.convertToReference(node));
+        acl.setReference(Utils.convertToReference(this.nodeService, node));
         
         // Set the inhertied value
         boolean inheritPermission = this.permissionService.getInheritParentPermissions(node);
@@ -332,7 +332,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
             
             // Create the permissions result object
             GetPermissionsResult result = new GetPermissionsResult();
-            result.setReference(Utils.convertToReference(node));
+            result.setReference(Utils.convertToReference(this.nodeService, node));
             result.setPermissions((String[])permissions.toArray(new String[permissions.size()]));
             
             // Add result to array
@@ -451,7 +451,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
                 }
                 
                 // Add to the results list
-                results.add(new HasPermissionsResult(Utils.convertToReference(node), permission, accessState));
+                results.add(new HasPermissionsResult(Utils.convertToReference(this.nodeService, node), permission, accessState));
             }            
         }
         
@@ -556,7 +556,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
             String owner = this.ownableService.getOwner(node);
             
             // Marshal into result            
-            result[count] = new OwnerResult(Utils.convertToReference(node), owner);
+            result[count] = new OwnerResult(Utils.convertToReference(this.nodeService, node), owner);
             count ++;
         }
         
@@ -609,7 +609,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
             this.ownableService.setOwner(node, owner);
             
             // Marshal into result            
-            result[count] = new OwnerResult(Utils.convertToReference(node), owner);
+            result[count] = new OwnerResult(Utils.convertToReference(this.nodeService, node), owner);
             count ++;
         }
         

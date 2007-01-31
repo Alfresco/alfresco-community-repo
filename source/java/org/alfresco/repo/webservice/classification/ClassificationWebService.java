@@ -16,7 +16,6 @@
  */
 package org.alfresco.repo.webservice.classification;
 
-import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -177,7 +176,7 @@ public class ClassificationWebService extends AbstractWebService implements
         }
         
         Category category = new Category();
-        category.setId(Utils.convertToReference(nodeRef));
+        category.setId(Utils.convertToReference(this.nodeService, nodeRef));
         category.setTitle(title);
         // TODO need to set the description
         return category;
@@ -275,7 +274,7 @@ public class ClassificationWebService extends AbstractWebService implements
                                             int iIndex = 0;
                                             for (NodeRef categoryNodeRef : categoryNodeRefs)
                                             {
-                                                categoryReferences[iIndex] = Utils.convertToReference(categoryNodeRef);
+                                                categoryReferences[iIndex] = Utils.convertToReference(ClassificationWebService.this.nodeService, categoryNodeRef);
                                                 iIndex ++;
                                             }
                                                                                 
@@ -292,7 +291,7 @@ public class ClassificationWebService extends AbstractWebService implements
                                 
                                 // Create the category result object
                                 CategoriesResult categoryResult = new CategoriesResult();
-                                categoryResult.setNode(Utils.convertToReference(nodeRef));
+                                categoryResult.setNode(Utils.convertToReference(ClassificationWebService.this.nodeService, nodeRef));
                                 categoryResult.setCategories(appliedCategories.toArray(new AppliedCategory[appliedCategories.size()]));
                                 
                                 result.add(categoryResult);
@@ -401,7 +400,7 @@ public class ClassificationWebService extends AbstractWebService implements
                                 
                                 // Create the category result object
                                 CategoriesResult categoryResult = new CategoriesResult();
-                                categoryResult.setNode(Utils.convertToReference(nodeRef));
+                                categoryResult.setNode(Utils.convertToReference(ClassificationWebService.this.nodeService, nodeRef));
                                 categoryResult.setCategories(appliedCategories.toArray(new AppliedCategory[appliedCategories.size()]));
                                 
                                 result.add(categoryResult);

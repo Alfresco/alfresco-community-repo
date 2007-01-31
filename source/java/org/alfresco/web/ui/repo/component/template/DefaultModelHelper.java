@@ -55,11 +55,31 @@ public class DefaultModelHelper
     * Other root level objects such as the current Space or Document are generally
     * added by the appropriate bean responsible for provided access to those nodes. 
     * <p>
+    * Uses the default TemplateImageResolver instance to resolve icons - assumes that the client
+    * has a valid FacesContext.
+    * <p>
     * See {@link http://www.alfresco.org/mediawiki/index.php/Template_Guide}
     * 
     * @return Map containing the default model.
     */
-   public static Map<String, Object> buildDefaultModel(ServiceRegistry services, User user, NodeRef template)
+   public static Map<String, Object> buildDefaultModel(
+         ServiceRegistry services, User user, NodeRef template)
+   {
+      return buildDefaultModel(services, user, template, imageResolver);
+   }
+   
+   /**
+    * Construct the default FreeMarker template model.
+    * <p>
+    * Other root level objects such as the current Space or Document are generally
+    * added by the appropriate bean responsible for provided access to those nodes. 
+    * <p>
+    * See {@link http://www.alfresco.org/mediawiki/index.php/Template_Guide}
+    * 
+    * @return Map containing the default model.
+    */
+   public static Map<String, Object> buildDefaultModel(
+         ServiceRegistry services, User user, NodeRef template, TemplateImageResolver resolver)
    {
       if (services == null)
       {
@@ -74,7 +94,7 @@ public class DefaultModelHelper
       NodeRef userRootRef = new NodeRef(Repository.getStoreRef(), user.getHomeSpaceId());
       
       return FreeMarkerProcessor.buildDefaultModel(
-              services, user.getPerson(), companyRootRef, userRootRef, template, imageResolver);
+              services, user.getPerson(), companyRootRef, userRootRef, template, resolver);
    }
    
    /** Template Image resolver helper */

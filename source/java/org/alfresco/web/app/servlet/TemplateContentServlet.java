@@ -84,7 +84,7 @@ public class TemplateContentServlet extends BaseTemplateContentServlet
          NodeRef templateRef)
    {
       return DefaultModelHelper.buildDefaultModel(services, 
-            Application.getCurrentUser(req.getSession()), templateRef);
+            Application.getCurrentUser(req.getSession()), templateRef, this.imageResolver);
    }
    
    /**

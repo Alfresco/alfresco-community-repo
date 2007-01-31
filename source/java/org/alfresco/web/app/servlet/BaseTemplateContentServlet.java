@@ -295,7 +295,7 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
    }
    
    /** Template Image resolver helper */
-   private TemplateImageResolver imageResolver = new TemplateImageResolver()
+   protected TemplateImageResolver imageResolver = new TemplateImageResolver()
    {
       public String resolveImagePathForName(String filename, boolean small)
       {

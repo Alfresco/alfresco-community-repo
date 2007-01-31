@@ -111,7 +111,7 @@ public class GuestTemplateContentServlet extends BaseTemplateContentServlet
       guestUser.setHomeSpaceId(guestHomeRef.getId());
       
       // build the default model
-      return DefaultModelHelper.buildDefaultModel(services, guestUser, templateRef);
+      return DefaultModelHelper.buildDefaultModel(services, guestUser, templateRef, this.imageResolver);
    }
    
    /**

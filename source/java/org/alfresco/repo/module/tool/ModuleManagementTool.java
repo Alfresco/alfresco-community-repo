@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 
+import org.alfresco.service.cmr.module.ModuleInstallState;
+import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.util.GUID;
 import org.apache.log4j.Logger;
 import org.springframework.util.FileCopyUtils;
@@ -136,6 +138,8 @@ public class ModuleManagementTool
     {
         try
         {   
+            outputMessage("Installing AMP '" + ampFileLocation + "' into WAR '" + warFileLocation + "'");
+            
             if (preview == false)
             {
                 // Make sure the module and backup directory exisits in the WAR file
@@ -239,6 +243,7 @@ public class ModuleManagementTool
                 installedFiles.save();
            
                 // Update the installed module details
+                installingModuleDetails.setInstallState(ModuleInstallState.INSTALLED);
                 installingModuleDetails.save(warFileLocation, installingModuleDetails.getId());
 
                 // Update the zip file's

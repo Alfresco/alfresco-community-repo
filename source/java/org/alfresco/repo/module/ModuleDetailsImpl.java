@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.alfresco.repo.module.tool.ModuleManagementToolException;
 import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.VersionNumber;
 
 /**
@@ -39,6 +40,7 @@ public class ModuleDetailsImpl implements ModuleDetails
     protected static final String PROP_DESCRIPTION = "module.description";
     protected static final String PROP_VERSION = "module.version";
     protected static final String PROP_INSTALL_DATE = "module.installDate";
+    protected static final String PROP_INSTALL_STATE = "module.installState";
     
     /** Properties object */
     protected Properties properties;
@@ -128,6 +130,20 @@ public class ModuleDetailsImpl implements ModuleDetails
     public String getInstalledDate()
     {
         return this.properties.getProperty(PROP_INSTALL_DATE);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.module.ModuleDetails#getInstallState()
+     */
+    public ModuleInstallState getInstallState()
+    {
+        ModuleInstallState result = ModuleInstallState.INSTALLED;
+        String value = this.properties.getProperty(PROP_INSTALL_STATE);
+        if (value != null && value.length() != 0)
+        {
+            result = ModuleInstallState.valueOf(value);
+        }
+        return result;
     }
     
     /**

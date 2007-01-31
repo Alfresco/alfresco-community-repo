@@ -67,4 +67,11 @@ public interface ModuleDetails
      * @return  module install date
      */
     String getInstalledDate();
+    
+    /**
+     * Get the modules install state
+     * 
+     * @return  the modules install state
+     */
+    ModuleInstallState getInstallState();
 }

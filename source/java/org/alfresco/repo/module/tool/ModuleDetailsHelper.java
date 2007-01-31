@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.util.Date;
 
 import org.alfresco.repo.module.ModuleDetailsImpl;
+import org.alfresco.service.cmr.module.ModuleInstallState;
 
 import de.schlichtherle.io.File;
 import de.schlichtherle.io.FileInputStream;
@@ -124,6 +125,16 @@ public class ModuleDetailsHelper extends ModuleDetailsImpl
         {
             throw new ModuleManagementToolException("Unable to save module details into WAR file.", exception);
         }
+    }
+    
+    /**
+     * Set the install state
+     * 
+     * @param installState  the install state
+     */
+    public void setInstallState(ModuleInstallState installState)
+    {
+        this.properties.setProperty(PROP_INSTALL_STATE, installState.toString());
     }
 
 }

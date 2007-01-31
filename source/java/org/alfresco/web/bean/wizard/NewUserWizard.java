@@ -851,7 +851,7 @@ public class NewUserWizard extends AbstractWizardBean
 
    private NodeRef getDefaultHomeSpace()
    {
-      if (this.defaultHomeSpaceRef == null)
+      if ((this.defaultHomeSpaceRef == null) || !nodeService.exists(this.defaultHomeSpaceRef))
       {
          String defaultHomeSpacePath = Application.getClientConfig(FacesContext.getCurrentInstance()).getDefaultHomeSpacePath();
          
@@ -861,7 +861,7 @@ public class NewUserWizard extends AbstractWizardBean
          
          if (nodes.size() == 0)
          {
-            throw new IllegalStateException("Unable to find company home space path: " + defaultHomeSpacePath);
+            return getCompanyHomeSpace();
          }
          
          this.defaultHomeSpaceRef = nodes.get(0);

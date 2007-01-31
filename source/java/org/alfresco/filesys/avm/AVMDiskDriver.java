@@ -27,6 +27,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
+import org.alfresco.filesys.avm.AVMPath.LevelId;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
@@ -48,6 +49,7 @@ import org.alfresco.filesys.server.pseudo.PseudoFile;
 import org.alfresco.filesys.server.pseudo.PseudoFileList;
 import org.alfresco.filesys.server.pseudo.PseudoFolderNetworkFile;
 import org.alfresco.filesys.server.state.FileState;
+import org.alfresco.filesys.smb.FindFirstNext;
 import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.repo.avm.CreateStoreTxnListener;
@@ -1648,6 +1650,19 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
      */
     private final PseudoFile findPseudoFolder( AVMPath avmPath, AVMContext avmCtx)
     {
+    	return findPseudoFolder( avmPath, avmCtx, true);
+    }
+    
+    /**
+     * Find the pseudo file for a virtual path
+     * 
+     * @param avmPath AVMPath
+     * @param avmCtx AVMContext
+     * @param generateStates boolean
+     * @return PseudoFile
+     */
+    private final PseudoFile findPseudoFolder( AVMPath avmPath, AVMContext avmCtx, boolean generateStates)
+    {
     	// Check if the path is to a store pseudo folder
 
     	if ( avmPath.isRootPath())
@@ -1668,6 +1683,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    		// Get the root folder file state
 	    		
 	    		fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR);
+	    		
 	    		if ( fstate != null && fstate.hasPseudoFiles())
 	    			psFile = fstate.getPseudoFileList().findFile( avmPath.getStoreName(), false);
 	    		break;
@@ -1688,7 +1704,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    		
 	    		AVMPath storePath = new AVMPath( str.toString());
 	    		fstate = findPseudoState( storePath, avmCtx);
-	    		
+
 	    		// Find the version root or head pseudo folder
 	    		
 	    		if ( fstate != null)
@@ -1807,6 +1823,20 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    			}
 	    		}
 	    		break;
+    	}
+
+    	// Check if the pseudo file was not found but file states should be generated
+    	
+    	if ( psFile == null && generateStates == true)
+    	{
+    		// Generate the file states for the path, this is required if a request is made to a path without
+    		// walking the folder tree
+    		
+    		generatePseudoFolders( avmPath, avmCtx);
+    		
+    		// Try and find the pseudo file again
+    		
+    		psFile = findPseudoFolder( avmPath, avmCtx, false);
     	}
     	
 		// Return the pseudo file, or null if not found
@@ -2039,4 +2069,68 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    
 	    return fstate;
     }
+    
+    /**
+     * Generate the pseudo folders for the specified path
+     * 
+     * @param avmPath AVMPath
+     * @param avmCtx AVMContext
+     */
+   private final void generatePseudoFolders( AVMPath avmPath, AVMContext avmCtx)
+   {
+	   // Create the root file state
+	   
+	   AVMPath createPath = new AVMPath();
+	   StringBuilder pathStr = new StringBuilder();
+	   
+	   pathStr.append( FileName.DOS_SEPERATOR);
+	   createPath.parsePath( pathStr.toString());
+	   
+	   FileState rootState = findPseudoState( createPath, avmCtx);
+	   
+	   // Check if the path has a store name
+	   
+	   if ( avmPath.getStoreName() != null)
+	   {
+		   // Check if the store name is valid
+		   
+		   if ( rootState.hasPseudoFiles() && rootState.getPseudoFileList().findFile( avmPath.getStoreName(), false) != null)
+		   {
+			   // Create the store file state
+			   
+			   pathStr.append( avmPath.getStoreName());
+			   pathStr.append( FileName.DOS_SEPERATOR);
+			   
+			   createPath.parsePath( pathStr.toString());
+			   
+			   findPseudoState( createPath, avmCtx);
+			   
+			   // Add the head and version root pseudo folders
+	
+			   createPath.parsePath( pathStr.toString() + AVMPath.VersionNameHead);
+			   findPseudoState( createPath, avmCtx);
+			   
+			   createPath.parsePath( pathStr.toString() + AVMPath.VersionsFolder);
+			   findPseudoState( createPath, avmCtx);
+			   
+			   // Check if the path is to a version folder
+			   
+			   if ( avmPath.isLevel().ordinal() >= AVMPath.LevelId.Version.ordinal())
+			   {
+				   // Build the path
+				   
+				   pathStr.append( AVMPath.VersionsFolder);
+				   pathStr.append( FileName.DOS_SEPERATOR);
+				   pathStr.append( AVMPath.VersionFolderPrefix);
+				   pathStr.append( avmPath.getVersion());
+				   
+				   createPath.parsePath( pathStr.toString());
+				   
+				   // Generate the version folders
+				   
+				   findPseudoState( createPath, avmCtx);
+			   }
+		   }
+	   }
+   }
 }

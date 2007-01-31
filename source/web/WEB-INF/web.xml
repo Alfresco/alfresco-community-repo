@@ -110,6 +110,16 @@
       <filter-name>Authentication Filter</filter-name>
       <url-pattern>/navigate/*</url-pattern>
    </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/command/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/template/*</url-pattern>
+   </filter-mapping>
    -->
       
    <filter-mapping>

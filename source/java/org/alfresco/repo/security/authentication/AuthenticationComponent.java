@@ -85,6 +85,14 @@ public interface AuthenticationComponent
     
     
     /**
+     * True if Guest user authentication is allowed, false otherwise
+     * 
+     * @return
+     */
+    public boolean guestUserAuthenticationAllowed();
+    
+    
+    /**
      * Get the name of the system user
      * 
      * @return

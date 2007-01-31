@@ -111,6 +111,14 @@ public interface AuthenticationService
     public void authenticateAsGuest() throws AuthenticationException;
     
     /**
+     * Check if Guest user authentication is allowed.
+     * 
+     * @return true if Guest user authentication is allowed, false otherwise
+     */
+    @Auditable
+    public boolean guestUserAuthenticationAllowed();
+    
+    /**
      * Check if the given authentication exists.
      * 
      * @param userName the username

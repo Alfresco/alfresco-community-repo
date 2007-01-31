@@ -635,7 +635,7 @@
    <!-- The Authentication Service security interceptor -->
    <!-- =============================================== -->
  
-   <!-- Authentication is excluded as it sets or cleas authentication -->
+   <!-- NOTE: Authentication is excluded as it sets or clears authentication -->
    <!-- The same for validate ticaket -->
    <!-- Update authentication checks internally -->
    <bean id="AuthenticationService_security" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
@@ -657,6 +657,7 @@
                 org.alfresco.service.cmr.security.AuthenticationService.getCurrentTicket=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.clearCurrentSecurityContext=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.isCurrentUserTheSystemUser=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthenticationService.guestUserAuthenticationAllowed=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.getDomains=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.getDomainsThatAllowUserCreation=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.getDomainsThatAllowUserDeletion=ACL_METHOD.ROLE_ADMINISTRATOR

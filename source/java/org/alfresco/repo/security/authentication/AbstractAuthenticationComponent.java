@@ -257,6 +257,21 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     protected abstract boolean implementationAllowsGuestLogin();
+    
+    /**
+     * @return true if Guest user authentication is allowed, false otherwise
+     */
+    public boolean guestUserAuthenticationAllowed()
+    {
+        if (allowGuestLogin == null)
+        {
+            return (implementationAllowsGuestLogin());
+        }
+        else
+        {
+            return (allowGuestLogin.booleanValue());
+        }
+    }
 
     /**
      * Remove the current security information

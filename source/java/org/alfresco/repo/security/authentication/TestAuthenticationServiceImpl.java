@@ -229,6 +229,11 @@ public class TestAuthenticationServiceImpl implements AuthenticationService
             throw new AuthenticationException("Guest access denied");
         }
     }
+    
+    public boolean guestUserAuthenticationAllowed()
+    {
+        return allowGuest;
+    }
 
     public boolean authenticationExists(String userName)
     {

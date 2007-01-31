@@ -168,6 +168,10 @@ public class AuthenticationServiceImpl implements AuthenticationService
         authenticationComponent.setGuestUserAsCurrentUser();
     }
     
+    public boolean guestUserAuthenticationAllowed()
+    {
+        return authenticationComponent.guestUserAuthenticationAllowed();
+    }
 
     public boolean getAllowsUserCreation()
     {

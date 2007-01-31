@@ -537,20 +537,6 @@
             </props>
         </property>
     </bean>
-    <bean id="patch.userHomesFolder" class="org.alfresco.repo.admin.patch.impl.UserHomesFolderPatch" parent="basePatch" >
-        <property name="id"><value>patch.userHomesFolder</value></property>
-        <property name="description"><value>patch.userHomesFolder.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>30</value></property>
-        <property name="targetSchema"><value>31</value></property>
-        <!-- helper beans for execution -->
-        <property name="messageSource">
-            <ref bean="bootstrapSpacesMessageSource" />
-        </property>   
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-    </bean>
     
     <bean id="patch.wcmFolders" class="org.alfresco.repo.admin.patch.impl.WCMFoldersPatch" parent="basePatch" >
         <property name="id"><value>patch.wcmFolders</value></property>

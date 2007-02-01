@@ -62,6 +62,9 @@ import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
+import org.alfresco.util.VirtServerUtils;
+
+
 
 /**
  * Submit items for WCM workflow dialog.
@@ -352,7 +355,8 @@ public class SubmitDialog extends BaseDialogBean
                 //     mysite:/www/avm_webapps/ROOT/WEB-INF/web.xml
                 //     mysite:/www/avm_webapps/ROOT/WEB-INF/lib/moo.jar
                 
-                update_vserver = AVMConstants.requiresVServerUpdate( destPath );
+                update_vserver = VirtServerUtils.requiresUpdateNotification( destPath );
+
                 if ( update_vserver ) { this.virtUpdatePath = destPath; }
             }
          }

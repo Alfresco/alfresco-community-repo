@@ -28,15 +28,17 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.jsf.FacesContextUtils;
+
 
 /**
  * Helper methods and constants related to AVM directories, paths and store name manipulation.
@@ -655,21 +657,6 @@ public final class AVMConstants
    }
 
    /**
-    * @param path    Path to match against
-    * 
-    * @return true if the path should require a virtualisation server reload, false otherwise
-    */
-   public static boolean requiresVServerUpdate(String path)
-   {
-      if (path == null || path.length() == 0)
-      {
-         throw new IllegalArgumentException("Path value is mandatory.");
-      }
-      
-      return WEB_INF_PATH_PATTERN.matcher(path).matches();
-   }
-   
-   /**
     * Update notification on the virtualisation server webapp as required for the specified path
     * 
     * @param path    Path to match against
@@ -677,7 +664,7 @@ public final class AVMConstants
     */
    public static void updateVServerWebapp(String path, boolean force)
    {
-      if (force || requiresVServerUpdate(path))
+      if (force || VirtServerUtils.requiresUpdateNotification(path))
       {
          VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
 
@@ -701,7 +688,7 @@ public final class AVMConstants
     */
    public static void removeVServerWebapp(String path, boolean force)
    {
-      if (force || requiresVServerUpdate(path))
+      if (force || VirtServerUtils.requiresUpdateNotification(path))
       {
          VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
             
@@ -775,10 +762,4 @@ public final class AVMConstants
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
                       "/" + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
    
-   // patterns for WEB-INF files that require virtualisation server reload
-   private final static Pattern WEB_INF_PATH_PATTERN = 
-      Pattern.compile(".*:/" + JNDIConstants.DIR_DEFAULT_WWW + 
-                      "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + 
-                      ".*/WEB-INF/((classes/.*)|(lib/.*)|(web.xml))",
-                      Pattern.CASE_INSENSITIVE);
 }

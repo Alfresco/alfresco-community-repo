@@ -22,6 +22,7 @@ import java.util.List;
 import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileName;
+import org.alfresco.filesys.server.filesys.FileType;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.server.pseudo.PseudoFile;
 import org.alfresco.filesys.server.pseudo.PseudoFileList;
@@ -226,6 +227,10 @@ public class ContentSearchContext extends SearchContext
         		
         		if ( info.isReadOnly() == false)
         			info.setFileAttributes( info.getFileAttributes() + FileAttribute.ReadOnly);
+        		
+        		// Set the file type to indicate a symbolic link
+        		
+        		info.setFileType( FileType.SymbolicLink);
         	}
         	
         	// Indicate that the file information is valid

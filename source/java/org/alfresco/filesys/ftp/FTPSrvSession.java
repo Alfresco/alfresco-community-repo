@@ -51,6 +51,7 @@ import org.alfresco.filesys.server.filesys.FileAttribute;
 import org.alfresco.filesys.server.filesys.FileInfo;
 import org.alfresco.filesys.server.filesys.FileOpenParams;
 import org.alfresco.filesys.server.filesys.FileStatus;
+import org.alfresco.filesys.server.filesys.FileType;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.NotifyChange;
 import org.alfresco.filesys.server.filesys.SearchContext;
@@ -3877,30 +3878,39 @@ public class FTPSrvSession extends SrvSession implements Runnable
 
                 // Get the file names/information
 
+            	FileInfo finfo = new FileInfo();
+            	
                 while (ctx.hasMoreFiles())
                 {
-
-                    // Check if a file name or file information is required
-
-                    if (nameOnly)
-                    {
-
-                        // Add a file name to the list
-
-                        files.add(new FileInfo(ctx.nextFileName(), 0L, 0));
-                    }
-                    else
-                    {
-
-                        // Create a file information object
-
-                        FileInfo finfo = new FileInfo();
-
-                        if (ctx.nextFileInfo(finfo) == false)
-                            break;
-                        if (finfo.getFileName() != null)
-                            files.add(finfo);
-                    }
+                	// Get the next file details
+                	
+                	if ( ctx.nextFileInfo( finfo) == false)
+                		break;
+                	
+                	// Filter out link nodes
+                	
+                	if ( finfo.isFileType() != FileType.SymbolicLink)
+                	{
+	                    // Check if a file name or file information is required
+	
+	                    if (nameOnly)
+	                    {
+	                        // Add a file name to the list
+	
+	                        files.add(new FileInfo(ctx.nextFileName(), 0L, 0));
+	                    }
+	                    else
+	                    {
+	                    	// add the file information
+	                    	
+	                        if (finfo.getFileName() != null)
+	                            files.add(finfo);
+	                    }
+	                    
+	                    // Allocate a new file information object
+	                    
+	                    finfo = new FileInfo();
+                	}
                 }
             }
         }

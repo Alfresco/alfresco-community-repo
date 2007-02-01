@@ -49,6 +49,12 @@
             </accessControl>
 -->
          </filesystem>
+		  
+		 <!-- AVM virtualization view of all stores/versions for WCM -->
+         <avmfilesystem name="AVM">
+            <virtualView/>
+         </avmfilesystem>
+		  
       </filesystems>
    </config>
 

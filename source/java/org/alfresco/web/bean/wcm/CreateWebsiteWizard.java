@@ -119,6 +119,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /** Current workflow for dialog context */
    protected WorkflowConfiguration actionWorkflow = null;
    
+   /** Data for virtualization server notification  */
+   private SandboxInfo sandboxInfo;
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -187,7 +189,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (outcome != null)
       {
          // create the AVM staging store to represent the newly created location website
-         SandboxFactory.createStagingSandbox(avmStore, nodeRef);
+         this.sandboxInfo =  SandboxFactory.createStagingSandbox(avmStore, nodeRef);
          
          // create the default webapp folder under the hidden system folders
          final String stagingStore = AVMConstants.buildStagingStoreName(avmStore);
@@ -209,6 +211,28 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       return outcome;
    }
+
+   @Override
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      // TODO:  ask about isStandalone() 
+      //        in InviteWebsiteUsersWizard
+
+      if ( this.sandboxInfo != null )
+      {
+          String newStoreName = 
+            AVMConstants.buildStagingStoreName( sandboxInfo.getMainStoreName());
+
+          String path = AVMConstants.buildStoreWebappPath(
+                          newStoreName, "ROOT"
+                        );
+
+          AVMConstants.updateVServerWebapp(path, true);
+       }
+       return outcome;
+   }
+
+
    
    /**
     * Persist the forms, templates, workflows and workflow defaults to the model for this web project

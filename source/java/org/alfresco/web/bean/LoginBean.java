@@ -101,6 +101,11 @@ public class LoginBean
       this.preferences = preferences;
    }
    
+   public UserPreferencesBean getUserPreferencesBean()
+   {
+     return preferences;
+   }
+   
    /**
     * @return true if the default Alfresco authentication process is being used, else false
     *         if an external authorisation mechanism is present.

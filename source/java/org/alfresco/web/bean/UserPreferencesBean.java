@@ -28,6 +28,7 @@ import org.alfresco.config.Config;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.config.LanguagesConfigElement;
@@ -135,6 +136,9 @@ public class UserPreferencesBean
            language = I18NUtil.parseLocale(languageStr);
        }
        PreferencesService.getPreferences().setValue(PREF_CONTENTFILTERLANGUAGE, language);
+       
+       // Ensure a refresh
+       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
    }
    
    /**

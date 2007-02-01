@@ -18,6 +18,7 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Locale;
 
 import javax.portlet.PortletSession;
 import javax.servlet.ServletContext;
@@ -154,13 +155,23 @@ public final class AuthenticationHelper
                   tx.commit();
                   tx = null;     // clear this so we know not to rollback 
                   
+//                  // store the User object in the Session - the authentication servlet will then proceed
+//                  session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
+//               
+//                  // Set the current locale
+//                  I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+//                  
+//                  // remove the session invalidated flag
+//                  session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
+
+                  I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
                   // store the User object in the Session - the authentication servlet will then proceed
                   session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
                
                   // Set the current locale
                   I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
-                  
-                  // remove the session invalidated flag
+//                  
+                 // remove the session invalidated flag
                   session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
                   
                   // it is the responsibilty of the caller to handle the Guest return status
@@ -217,6 +228,19 @@ public final class AuthenticationHelper
          // Set the current locale
          I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
          
+         /* setup face context */
+         FacesHelper.getFacesContext(httpRequest, httpResponse, context);
+         
+         if (loginBean != null && (loginBean.getUserPreferencesBean() != null) )
+         {
+            String contentFilterLanguageStr = loginBean.getUserPreferencesBean().getContentFilterLanguage();
+            if (contentFilterLanguageStr != null)
+            {
+               //set the cocale for the method interceptor for MLText properties
+               I18NUtil.setContentLocale(new Locale(contentFilterLanguageStr));
+            }
+         }
+
          return AuthenticationStatus.Success;
       }
    }

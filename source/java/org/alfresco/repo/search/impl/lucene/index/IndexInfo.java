@@ -351,6 +351,27 @@ public class IndexInfo
         super();
         initialiseTransitions();
 
+        
+        // Create an empty in memory index
+        IndexWriter writer;
+        try
+        {
+            writer = new IndexWriter(emptyIndex, new AlfrescoStandardAnalyser(), true);
+            writer.setUseCompoundFile(writerUseCompoundFile);
+            writer.setMaxBufferedDocs(writerMinMergeDocs);
+            writer.setMergeFactor(writerMergeFactor);
+            writer.setMaxMergeDocs(writerMaxMergeDocs);
+            writer.setCommitLockTimeout(commitLockTimeout);
+            writer.setWriteLockTimeout(writeLockTimeout);
+            writer.setMaxFieldLength(maxFieldLength);
+            writer.setTermIndexInterval(termIndexInterval);
+            writer.close();
+        }
+        catch (IOException e)
+        {
+            throw new IndexerException("Failed to create an empty in memory index!");
+        }
+        
         this.indexDirectory = indexDirectory;
 
         // Make sure the directory exists
@@ -557,25 +578,7 @@ public class IndexInfo
             mergerThread.start();
         }
 
-        // Create an empty in memory index
-        IndexWriter writer;
-        try
-        {
-            writer = new IndexWriter(emptyIndex, new AlfrescoStandardAnalyser(), true);
-            writer.setUseCompoundFile(writerUseCompoundFile);
-            writer.setMaxBufferedDocs(writerMinMergeDocs);
-            writer.setMergeFactor(writerMergeFactor);
-            writer.setMaxMergeDocs(writerMaxMergeDocs);
-            writer.setCommitLockTimeout(commitLockTimeout);
-            writer.setWriteLockTimeout(writeLockTimeout);
-            writer.setMaxFieldLength(maxFieldLength);
-            writer.setTermIndexInterval(termIndexInterval);
-            writer.close();
-        }
-        catch (IOException e)
-        {
-            throw new IndexerException("Failed to create an empty in memory index!");
-        }
+ 
 
     }
 

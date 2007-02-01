@@ -103,7 +103,7 @@ public class LoginBean
    
    public UserPreferencesBean getUserPreferencesBean()
    {
-     return preferences;
+      return preferences;
    }
    
    /**

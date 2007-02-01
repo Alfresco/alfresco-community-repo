@@ -155,23 +155,16 @@ public final class AuthenticationHelper
                   tx.commit();
                   tx = null;     // clear this so we know not to rollback 
                   
-//                  // store the User object in the Session - the authentication servlet will then proceed
-//                  session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
-//               
-//                  // Set the current locale
-//                  I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
-//                  
-//                  // remove the session invalidated flag
-//                  session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
-
-                  I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
                   // store the User object in the Session - the authentication servlet will then proceed
                   session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
                
                   // Set the current locale
                   I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
-//                  
-                 // remove the session invalidated flag
+                  
+                  // remove the session invalidated flag
+                  session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
+
+                  // remove the session invalidated flag
                   session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
                   
                   // it is the responsibilty of the caller to handle the Guest return status

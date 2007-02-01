@@ -56,6 +56,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.Rendition;
@@ -880,6 +881,16 @@ public class SubmitDialog extends BaseDialogBean
       {
          return DownloadContentServlet.generateBrowserURL(
                AVMNodeConverter.ToNodeRef(-1, descriptor.getPath()), descriptor.getName());
+      }
+      
+      public String getPreviewUrl()
+      {
+         ClientConfigElement config =  Application.getClientConfig(FacesContext.getCurrentInstance());
+         String dns = AVMConstants.lookupStoreDNS(AVMConstants.getStoreName(descriptor.getPath()));
+         return AVMConstants.buildAssetUrl(AVMConstants.getSandboxRelativePath(descriptor.getPath()),
+                                           config.getWCMDomain(),
+                                           config.getWCMPort(),
+                                           dns);
       }
       
       public AVMNodeDescriptor getDescriptor()

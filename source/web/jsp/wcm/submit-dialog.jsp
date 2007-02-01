@@ -125,7 +125,7 @@
             <h:outputText id="col1-name2" value="#{r.name}" rendered="#{r.deleted}" />
          </a:column>
          
-         <%-- Description columns --%>
+         <%-- Description column --%>
          <a:column id="col2" width="200" style="text-align:left">
             <f:facet name="header">
                <a:sortLink label="#{msg.description}" value="description" styleClass="header"/>
@@ -133,7 +133,7 @@
             <h:outputText id="col2-desc" value="#{r.description}" />
          </a:column>
          
-         <%-- Description columns --%>
+         <%-- Path column --%>
          <a:column id="col3" style="text-align:left">
             <f:facet name="header">
                <a:sortLink label="#{msg.path}" value="path" styleClass="header"/>
@@ -182,7 +182,7 @@
             <h:outputText id="col10-name2" value="#{r.name}" rendered="#{r.deleted}" />
          </a:column>
          
-         <%-- Description columns --%>
+         <%-- Description column --%>
          <a:column id="col11" width="200" style="text-align:left">
             <f:facet name="header">
                <a:sortLink label="#{msg.description}" value="description" styleClass="header"/>
@@ -190,7 +190,7 @@
             <h:outputText id="col11-desc" value="#{r.description}" />
          </a:column>
          
-         <%-- Description columns --%>
+         <%-- Path column --%>
          <a:column id="col12" style="text-align:left">
             <f:facet name="header">
                <a:sortLink label="#{msg.path}" value="path" styleClass="header"/>
@@ -206,6 +206,15 @@
             <h:outputText id="col13-date" value="#{r.modifiedDate}">
                <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
             </h:outputText>
+         </a:column>
+         
+         <%-- Actions column --%>
+         <a:column id="col14" actions="true" style="text-align:left">
+            <f:facet name="header">
+               <h:outputText id="col14-txt" value="#{msg.actions}"/>
+            </f:facet>
+            
+            <a:actionLink value="#{msg.file_preview}" image="/images/icons/preview_website.gif" href="#{r.previewUrl}" target="new" />
          </a:column>
          
          <a:dataPager styleClass="pager" />

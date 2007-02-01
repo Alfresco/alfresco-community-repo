@@ -312,7 +312,7 @@ public class RichListRenderer extends BaseRenderer
       {
          ResponseWriter out = context.getResponseWriter();
          
-         out.write("<tr><td colspan=99 align=right>");
+         out.write("<tr><td colspan=99 align=center>");
          for (Iterator i=richList.getChildren().iterator(); i.hasNext(); /**/)
          {
             // output all remaining child components that are not UIColumn
@@ -518,7 +518,7 @@ public class RichListRenderer extends BaseRenderer
             out.write(END_ROW_SEPARATOR);
          }
          
-         out.write("<tr><td colspan=99 align=right>");
+         out.write("<tr><td colspan=99 align=center>");
          for (Iterator i=richList.getChildren().iterator(); i.hasNext(); /**/)
          {
             // output all remaining child components that are not UIColumn
@@ -695,7 +695,7 @@ public class RichListRenderer extends BaseRenderer
             out.write(END_ROW_SEPARATOR);
          }
          
-         out.write("<tr><td colspan=99 align=right>");
+         out.write("<tr><td colspan=99 align=center>");
          for (Iterator i=richList.getChildren().iterator(); i.hasNext(); /**/)
          {
             // output all remaining child components that are not UIColumn

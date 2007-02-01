@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -52,6 +53,12 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
      */
     private AVMSubmittedAspect fAVMSubmittedAspect;
 
+    /**
+     * The AVMSubmitTransactionListener instance 
+     * (for JMX notification of virtualization server after commit/rollback).
+     */
+    private AVMSubmitTransactionListener fAVMSubmitTransactionListener;
+
     
     /**
      * Initialize service references.
@@ -63,6 +70,9 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         fAVMService = (AVMService)factory.getBean("AVMService");
         fAVMSyncService = (AVMSyncService)factory.getBean("AVMSyncService");
         fAVMSubmittedAspect = (AVMSubmittedAspect)factory.getBean("AVMSubmittedAspect");
+        fAVMSubmitTransactionListener = (AVMSubmitTransactionListener) factory.getBean("AVMSubmitTransactionListener");
+
+        AlfrescoTransactionSupport.bindListener(fAVMSubmitTransactionListener);
     }
 
     /**
@@ -87,6 +97,17 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements
         {
             fAVMSubmittedAspect.clearSubmitted(diff.getSourceVersion(), diff.getSourcePath());
         }
+        
+        // Allow AVMSubmitTransactionListener to inspect the staging diffs
+        // so it can notify the virtualization server via JMX if when this
+        // submit succeeds or fails.   This allows virtual webapps devoted
+        // to the workarea to be destroyed, and staging to be updated in
+        // the event that some of the files alter the behavior of the
+        // webapp itself (e.g.: WEB-INF/web.xml, WEB-INF/lib/*.jar), etc.
+
+        AlfrescoTransactionSupport.bindResource("staging_diffs", stagingDiffs);
+
+
         fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
 
         // flatten source folder where changes were submitted from

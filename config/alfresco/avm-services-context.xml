@@ -269,6 +269,11 @@
         </property>
     </bean>
 
+    <!-- Used to notify virtualization server occur after commit/rollback -->
+    <bean id="AVMSubmitTransactionListener" 
+          class="org.alfresco.repo.avm.wf.AVMSubmitTransactionListener"/>
+
+
 	<!-- NameMatcher beans for filtering what shows up as different in compares. -->
 	
     <bean id="excludeRegexMatcher" class="org.alfresco.util.RegexNameMatcher">

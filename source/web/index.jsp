@@ -15,10 +15,12 @@ language governing permissions and limitations under the
 License.
 --%>
 
+<%@ page import="javax.faces.context.FacesContext" %>
 <%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
 <%@ page import="org.alfresco.service.cmr.security.PermissionService" %>
 <%@ page import="org.alfresco.config.ConfigService" %>
 <%@ page import="org.alfresco.web.app.servlet.AuthenticationHelper" %>
+<%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
 <%@ page import="org.alfresco.web.bean.NavigationBean" %>
 <%@ page import="org.alfresco.web.bean.repository.User" %>
 <%@ page import="org.alfresco.web.bean.repository.PreferencesService" %>
@@ -35,7 +37,9 @@ String location = configElement.getInitialLocation();
 User user = (User)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
 if (user != null && (user.getUserName().equals(PermissionService.GUEST_AUTHORITY) == false))
 {
-   String preference = (String)PreferencesService.getPreferences(user).getValue("start-location");
+   // ensure construction of the FacesContext before attemping a service call
+   FacesContext fc = FacesHelper.getFacesContext(request, response, application);
+   String preference = (String)PreferencesService.getPreferences(fc).getValue("start-location");
    if (preference != null)
    {
       location = preference;

@@ -160,7 +160,8 @@ public class TransactionAwareSingletonTest extends TestCase
                 // wait for some random time
                 try
                 {
-                    wait((long)(rand.nextDouble() * 1000.0));   // wait up to a second
+                    // DH:  The "+1" is necessary to ensure that wait(0) is never called
+                    wait((long)(rand.nextDouble() * 1000.0) + 1);   // wait up to a second
                 }
                 catch (InterruptedException e)
                 {

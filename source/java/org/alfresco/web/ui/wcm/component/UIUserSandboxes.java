@@ -680,9 +680,9 @@ public class UIUserSandboxes extends SelfRenderingComponent
          out.write("<tr><td colspan=8>");
          out.write(bundle.getString(MSG_SELECTED));
          out.write(":&nbsp;&nbsp;");
-         if (permissionService.hasPermission(
-               AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(userStore)),
-               PermissionService.WRITE) == AccessStatus.ALLOWED)
+         NodeRef userStoreRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(userStore));
+         if (permissionService.hasPermission(userStoreRef, PermissionService.WRITE) == AccessStatus.ALLOWED ||
+             permissionService.hasPermission(userStoreRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED)
          {
             Utils.encodeRecursive(fc, aquireAction(
                   fc, userStore, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",

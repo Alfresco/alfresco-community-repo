@@ -31,7 +31,6 @@ import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -49,6 +48,7 @@ import org.springframework.context.ApplicationContext;
  * @see org.alfresco.repo.ml.MultilingualContentServiceImpl
  * 
  * @author Derek Hulley
+ * @author Philippe Dubois
  */
 public class MultilingualContentServiceImplTest extends TestCase
 {
@@ -203,7 +203,7 @@ public class MultilingualContentServiceImplTest extends TestCase
         Version japaneseVersionPreEdition = versionService.getCurrentVersion(japaneseContentNodeRef);
         
         // Create the edition, keeping the Chinese translation as the basis
-        multilingualContentService.createEdition(mlContainerNodeRef, chineseContentNodeRef);
+        multilingualContentService.createEdition(chineseContentNodeRef);
         // Check the container child count
         assertEquals("Incorrect number of child nodes", 1, nodeService.getChildAssocs(mlContainerNodeRef).size());
         

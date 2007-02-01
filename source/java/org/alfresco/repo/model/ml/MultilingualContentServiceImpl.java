@@ -46,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
  * Multilingual support implementation
  * 
  * @author Derek Hulley
+ * @author Philippe Dubois
  */
 public class MultilingualContentServiceImpl implements MultilingualContentService
 {
@@ -216,6 +217,13 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             // The aspect is present, so just ensure that the locale is correct
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_LOCALE, locale);
         }
+        //get all the languages already there
+        Map<Locale, NodeRef> existingLanguages = this.getTranslations(mlContainerNodeRef);
+        if (existingLanguages.containsKey(locale))
+        {
+            throw new AlfrescoRuntimeException("Duplicate locale in document pool:" + locale.toString());
+        }
+        
         // Do we make use of an existing container?
         if (mlContainerNodeRef == null)
         {
@@ -288,8 +296,9 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     }
 
     /** @inheritDoc */
-    public void createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef)
+    public void createEdition( NodeRef translationNodeRef)
     {
+    	NodeRef mlContainerNodeRef = getOrCreateMLContainer(translationNodeRef, false);
         // Ensure that the translation given is one of the children
         getOrCreateMLContainer(translationNodeRef, false);
         // Get all the container's children

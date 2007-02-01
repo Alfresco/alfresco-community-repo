@@ -16,21 +16,19 @@
  */
 package org.alfresco.service.cmr.ml;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * The API to manage multilingual content and related structures.
  * 
  * @author Derek Hulley
+ * @author Philippe Dubois
  */
 @PublicService
 public interface MultilingualContentService
@@ -76,14 +74,14 @@ public interface MultilingualContentService
     NodeRef getTranslationContainer(NodeRef translationNodeRef);
 
     /**
-     * Create a new edition of an existing <b>cm:mlContainer</b>.
+     * Create a new edition of an existing <b>cm:mlContainer</b> using any one of the
+     * associated <b>cm:mlDocument</b> transalations.
      *
-     * @param mlContainerNodeRef        An existing <b>cm:mlContainer</b>
      * @param translationNodeRef        The specific <b>cm:mlDocument</b> to use as the starting point
      *                                  of the new edition.  All other translations will be removed.
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef", "translationNodeRef"})
-    void createEdition(NodeRef mlContainerNodeRef, NodeRef translationNodeRef);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef"})
+    void createEdition(NodeRef translationNodeRef);
 
     /**
      * Gets the set of sibling translations associated with the given <b>cm:mlDocument</b> or

@@ -359,7 +359,7 @@ public class CMLUtilTest extends BaseSpringTest
         this.nodeService.addChild(this.folderNodeRef, this.nodeRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
         
         CMLRemoveChild removeChild = new CMLRemoveChild();
-        removeChild.setFrom(Utils.convertToReference(this.nodeService, this.folderNodeRef));
+        removeChild.setFrom(Utils.convertToReference(this.nodeService, this.namespaceService, this.folderNodeRef));
         removeChild.setWhere(createPredicate(this.nodeRef));
         
         CML cml = new CML();
@@ -448,7 +448,7 @@ public class CMLUtilTest extends BaseSpringTest
     {
         Predicate predicate = new Predicate();
         predicate.setStore(Utils.convertToStore(nodeRef.getStoreRef()));
-        predicate.setNodes(new Reference[]{Utils.convertToReference(this.nodeService, nodeRef)});
+        predicate.setNodes(new Reference[]{Utils.convertToReference(this.nodeService, this.namespaceService, nodeRef)});
         return predicate;
     }
 

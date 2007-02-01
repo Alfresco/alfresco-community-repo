@@ -483,7 +483,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         
         // Create the web service action object
         org.alfresco.repo.webservice.action.Action webServiceAction = new org.alfresco.repo.webservice.action.Action(
-                Utils.convertToReference(this.nodeService, action.getNodeRef()),
+                Utils.convertToReference(this.nodeService, this.namespaceService, action.getNodeRef()),
                 action.getId(),
                 action.getActionDefinitionName(),
                 action.getTitle(),
@@ -860,7 +860,7 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         {
             // Create the execution result object and set the action reference
             ActionExecutionResult executionResult = new ActionExecutionResult();
-            executionResult.setReference(Utils.convertToReference(this.nodeService, nodeRef));
+            executionResult.setReference(Utils.convertToReference(this.nodeService, this.namespaceService, nodeRef));
             
             // Tyr and execute the actions
             List<org.alfresco.repo.webservice.action.Action> executedActions = new ArrayList<org.alfresco.repo.webservice.action.Action>(10);
@@ -946,12 +946,12 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         NodeRef owningNodeRef = this.ruleService.getOwningNodeRef(rule);
         if (owningNodeRef != null)
         {
-            owningReference = Utils.convertToReference(this.nodeService, owningNodeRef);
+            owningReference = Utils.convertToReference(this.nodeService, this.namespaceService, owningNodeRef);
         }
         
         // Create the web service rule object
         org.alfresco.repo.webservice.action.Rule webServiceRule = new org.alfresco.repo.webservice.action.Rule(
-                Utils.convertToReference(this.nodeService, rule.getNodeRef()),
+                Utils.convertToReference(this.nodeService, this.namespaceService, rule.getNodeRef()),
                 owningReference,
                 rule.getRuleTypes().toArray(new String[rule.getRuleTypes().size()]),
                 rule.getTitle(),

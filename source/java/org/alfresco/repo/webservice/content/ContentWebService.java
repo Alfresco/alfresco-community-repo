@@ -147,7 +147,7 @@ public class ContentWebService extends AbstractWebService implements
             
             // Create the content object
             ContentFormat format = new ContentFormat(contentReader.getMimetype(), contentReader.getEncoding());
-            content = new Content(Utils.convertToReference(this.nodeService, nodeRef), property, contentReader.getSize(), format, downloadUrl);
+            content = new Content(Utils.convertToReference(this.nodeService, this.namespaceService, nodeRef), property, contentReader.getSize(), format, downloadUrl);
             
             // Debug
             if (logger.isDebugEnabled())
@@ -163,7 +163,7 @@ public class ContentWebService extends AbstractWebService implements
         else
         {
             // Create an empty content object
-            content = new Content(Utils.convertToReference(this.nodeService, nodeRef), property, 0, null, null);
+            content = new Content(Utils.convertToReference(this.nodeService, this.namespaceService, nodeRef), property, 0, null, null);
             
             // Debug
             if (logger.isDebugEnabled())

@@ -176,7 +176,7 @@ public class ClassificationWebService extends AbstractWebService implements
         }
         
         Category category = new Category();
-        category.setId(Utils.convertToReference(this.nodeService, nodeRef));
+        category.setId(Utils.convertToReference(this.nodeService, this.namespaceService, nodeRef));
         category.setTitle(title);
         // TODO need to set the description
         return category;
@@ -274,7 +274,7 @@ public class ClassificationWebService extends AbstractWebService implements
                                             int iIndex = 0;
                                             for (NodeRef categoryNodeRef : categoryNodeRefs)
                                             {
-                                                categoryReferences[iIndex] = Utils.convertToReference(ClassificationWebService.this.nodeService, categoryNodeRef);
+                                                categoryReferences[iIndex] = Utils.convertToReference(ClassificationWebService.this.nodeService, ClassificationWebService.this.namespaceService, categoryNodeRef);
                                                 iIndex ++;
                                             }
                                                                                 
@@ -291,7 +291,7 @@ public class ClassificationWebService extends AbstractWebService implements
                                 
                                 // Create the category result object
                                 CategoriesResult categoryResult = new CategoriesResult();
-                                categoryResult.setNode(Utils.convertToReference(ClassificationWebService.this.nodeService, nodeRef));
+                                categoryResult.setNode(Utils.convertToReference(ClassificationWebService.this.nodeService, ClassificationWebService.this.namespaceService, nodeRef));
                                 categoryResult.setCategories(appliedCategories.toArray(new AppliedCategory[appliedCategories.size()]));
                                 
                                 result.add(categoryResult);
@@ -400,7 +400,7 @@ public class ClassificationWebService extends AbstractWebService implements
                                 
                                 // Create the category result object
                                 CategoriesResult categoryResult = new CategoriesResult();
-                                categoryResult.setNode(Utils.convertToReference(ClassificationWebService.this.nodeService, nodeRef));
+                                categoryResult.setNode(Utils.convertToReference(ClassificationWebService.this.nodeService, ClassificationWebService.this.namespaceService, nodeRef));
                                 categoryResult.setCategories(appliedCategories.toArray(new AppliedCategory[appliedCategories.size()]));
                                 
                                 result.add(categoryResult);

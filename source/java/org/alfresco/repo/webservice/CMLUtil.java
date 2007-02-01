@@ -341,11 +341,11 @@ public class CMLUtil
         }
         if (sourceNodeRef != null)
         {
-            result.setSource(Utils.convertToReference(this.nodeService, sourceNodeRef));
+            result.setSource(Utils.convertToReference(this.nodeService, this.namespaceService, sourceNodeRef));
         }
         if (destinationNodeRef != null)
         {
-            result.setDestination(Utils.convertToReference(this.nodeService, destinationNodeRef));
+            result.setDestination(Utils.convertToReference(this.nodeService, this.namespaceService, destinationNodeRef));
         }
         // Sort out the count ???        
         return result;

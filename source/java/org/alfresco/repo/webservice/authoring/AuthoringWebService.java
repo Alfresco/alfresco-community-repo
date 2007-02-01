@@ -183,8 +183,8 @@ public class AuthoringWebService extends AbstractWebService implements
                                 }
     
                                 // store the results
-                                originals[x] = Utils.convertToReference(AuthoringWebService.this.nodeService, original);
-                                workingCopies[x] = Utils.convertToReference(AuthoringWebService.this.nodeService, workingCopy);
+                                originals[x] = Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, original);
+                                workingCopies[x] = Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, workingCopy);
                             }
     
                             // setup the result object
@@ -248,12 +248,12 @@ public class AuthoringWebService extends AbstractWebService implements
                                 NodeRef checkedInNode = AuthoringWebService.this.cociService.checkin(node, mapComments, null, keepCheckedOut);
                                 
                                 // Add the results to the array
-                                checkedIn[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, checkedInNode);
+                                checkedIn[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, checkedInNode);
                                 
                                 // Only return the working copies if the node is keep checked out otherwise the working copies have been deleted
                                 if (keepCheckedOut == true)
                                 {
-                                    listWorkingCopies.add(Utils.convertToReference(AuthoringWebService.this.nodeService, node));
+                                    listWorkingCopies.add(Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, node));
                                 }                                
                                 iIndex++;
                             }
@@ -333,7 +333,7 @@ public class AuthoringWebService extends AbstractWebService implements
                                                                         contentUrl, 
                                                                         keepCheckedOut);
                             // Return the orig node ref
-                            return Utils.convertToReference(AuthoringWebService.this.nodeService, origNodeRef);
+                            return Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, origNodeRef);
                         }
                     });
         }
@@ -380,8 +380,8 @@ public class AuthoringWebService extends AbstractWebService implements
                                 NodeRef origNode = AuthoringWebService.this.cociService.cancelCheckout(node);
                                 
                                 // Set the value in the arrays
-                                origNodes[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, origNode);
-                                workingCopies[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, node);
+                                origNodes[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, origNode);
+                                workingCopies[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, node);
                                 iIndex ++;
                             }
                             
@@ -433,7 +433,7 @@ public class AuthoringWebService extends AbstractWebService implements
                             {
                                 LockType convertedLockType = convertToLockType(lockType);
                                 AuthoringWebService.this.lockService.lock(node, convertedLockType, 0, lockChildren);
-                                result[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, node);
+                                result[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, node);
                                 iIndex++;
                             }                        
                             
@@ -501,7 +501,7 @@ public class AuthoringWebService extends AbstractWebService implements
                             {
                                 AuthoringWebService.this.lockService.unlock(node, unlockChildren);
                                 
-                                result[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, node);
+                                result[iIndex] = Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, node);
                                 iIndex++;
                             }                        
                             
@@ -555,7 +555,7 @@ public class AuthoringWebService extends AbstractWebService implements
                                 LockStatus lockStatus = new LockStatus();
                                 lockStatus.setLockOwner(lockOwner);
                                 lockStatus.setLockType(lockTypeEnum);
-                                lockStatus.setNode(Utils.convertToReference(AuthoringWebService.this.nodeService, node));
+                                lockStatus.setNode(Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, node));
                                 
                                 result[iIndex] = lockStatus;
                                 iIndex++;
@@ -634,8 +634,8 @@ public class AuthoringWebService extends AbstractWebService implements
                                 Collection<Version> versions = AuthoringWebService.this.versionService.createVersion(node, mapComments, versionChildren);
                                 for (Version version : versions)
                                 {
-                                    versionedReferences.add(Utils.convertToReference(AuthoringWebService.this.nodeService, version.getVersionedNodeRef()));
-                                    webServiceVersions.add(Utils.convertToVersion(AuthoringWebService.this.nodeService, version));
+                                    versionedReferences.add(Utils.convertToReference(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, version.getVersionedNodeRef()));
+                                    webServiceVersions.add(Utils.convertToVersion(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, version));
                                 }
                             }
                             
@@ -689,7 +689,7 @@ public class AuthoringWebService extends AbstractWebService implements
                                 int iIndex = 0;
                                 for (Version version : versions)
                                 {
-                                    webServiceVersions[iIndex] = Utils.convertToVersion(AuthoringWebService.this.nodeService, version);
+                                    webServiceVersions[iIndex] = Utils.convertToVersion(AuthoringWebService.this.nodeService, AuthoringWebService.this.namespaceService, version);
                                     iIndex ++;
                                 }
                                 webServiceVersionHistory.setVersions(webServiceVersions);

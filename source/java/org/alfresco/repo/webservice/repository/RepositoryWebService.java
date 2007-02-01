@@ -614,7 +614,7 @@ public class RepositoryWebService extends AbstractWebService implements
             for (NodeRef nodeRef : nodeRefs)
             {
                 // Get the nodes reference
-                Reference reference = Utils.convertToReference(this.nodeService, nodeRef);
+                Reference reference = Utils.convertToReference(this.nodeService, this.namespaceService, nodeRef);
                 
                 // Get the nodes type
                 String type = this.nodeService.getType(nodeRef).toString();

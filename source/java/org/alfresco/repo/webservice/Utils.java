@@ -309,7 +309,7 @@ public class Utils
      *            The node to create a Reference for
      * @return The Reference
      */
-    public static Reference convertToReference(NodeService nodeService, NodeRef node)
+    public static Reference convertToReference(NodeService nodeService, NamespaceService namespaceService, NodeRef node)
     {
         Reference ref = new Reference();
         Store store = new Store(node.getStoreRef().getProtocol(), node.getStoreRef().getIdentifier());
@@ -322,11 +322,11 @@ public class Utils
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("setting path for reference to: " + nodeService.getPath(node).toString());
+                logger.debug("setting path for reference to: " + nodeService.getPath(node).toPrefixString(namespaceService));
             }
             
             // so clients can get the path too          
-            ref.setPath(nodeService.getPath(node).toString());
+            ref.setPath(nodeService.getPath(node).toPrefixString(namespaceService));
         }
         
         return ref;
@@ -560,12 +560,13 @@ public class Utils
      */
     public static Version convertToVersion(
             NodeService nodeService,
+            NamespaceService namespaceService, 
             org.alfresco.service.cmr.version.Version version)
     {
         Version webServiceVersion = new Version();
 
         // Set the basic properties
-        webServiceVersion.setId(Utils.convertToReference(nodeService, version
+        webServiceVersion.setId(Utils.convertToReference(nodeService, namespaceService, version
                 .getFrozenStateNodeRef()));
         webServiceVersion.setCreator(version.getCreator());
         webServiceVersion.setLabel(version.getVersionLabel());

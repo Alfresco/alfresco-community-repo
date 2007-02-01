@@ -20,6 +20,8 @@ package org.alfresco.filesys.avm;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 
@@ -27,7 +29,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
-import org.alfresco.filesys.avm.AVMPath.LevelId;
 import org.alfresco.filesys.server.SrvSession;
 import org.alfresco.filesys.server.core.DeviceContext;
 import org.alfresco.filesys.server.core.DeviceContextException;
@@ -49,13 +50,13 @@ import org.alfresco.filesys.server.pseudo.PseudoFile;
 import org.alfresco.filesys.server.pseudo.PseudoFileList;
 import org.alfresco.filesys.server.pseudo.PseudoFolderNetworkFile;
 import org.alfresco.filesys.server.state.FileState;
-import org.alfresco.filesys.smb.FindFirstNext;
 import org.alfresco.filesys.util.StringList;
 import org.alfresco.filesys.util.WildCard;
 import org.alfresco.repo.avm.CreateStoreTxnListener;
 import org.alfresco.repo.avm.CreateVersionTxnListener;
 import org.alfresco.repo.avm.PurgeStoreTxnListener;
 import org.alfresco.repo.avm.PurgeVersionTxnListener;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -67,6 +68,7 @@ import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -274,9 +276,13 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
             ConfigElement virtElem = cfg.getChild( "virtualView");
             if ( virtElem != null)
             {
+            	// Check if sandboxes should be shown in the virtualization view
+            	
+            	boolean showSandboxes = cfg.getChild( "showAllSandboxes") != null ? true : false;
+            	
             	// Create the context
             	
-            	context = new AVMContext( name);
+            	context = new AVMContext( name, showSandboxes, this);
             	
 	            // Enable file state caching
 	            
@@ -523,7 +529,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
         }
         catch (Exception ex)
         {
-	        logger.error("Error during create context", ex);
+	        logger.error("Error getting store names", ex);
 	    }
 	    finally
 	    {
@@ -545,6 +551,66 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 	    // Return the list of AVM store names
 	    
 	    return storeNames;
+    }
+    
+    /**
+     * Get the properties for a store
+     * 
+     * @param storeName String
+     * @return Map<QName, PropertyValue>
+     */
+    protected final Map<QName, PropertyValue> getAVMStoreProperties( String storeName)
+    {
+        // Use the system user as the authenticated context to get the AVM store properties
+        
+        m_authComponent.setCurrentUser( m_authComponent.getSystemUserName());
+        
+        // Wrap the service request in a transaction
+        
+        UserTransaction tx = m_transactionService.getUserTransaction(false);
+
+        Map<QName, PropertyValue> properties = null;
+        
+        try
+        {
+            // Start the transaction
+            
+            if ( tx != null)
+                tx.begin();
+
+            // Get the list of properties for AVM store
+            
+            properties = m_avmService.getStoreProperties( storeName);
+
+            // Commit the transaction
+            
+            tx.commit();
+            tx = null;
+        }
+        catch (Exception ex)
+        {
+	        logger.error("Error getting store properties", ex);
+	    }
+	    finally
+	    {
+	        // If there is an active transaction then roll it back
+	        
+	        if ( tx != null)
+	        {
+	            try
+	            {
+	                tx.rollback();
+	            }
+	            catch (Exception ex)
+	            {
+	                logger.warn("Failed to rollback transaction", ex);
+	            }
+	        }
+	    }
+	    
+	    // Return the list of AVM store properties
+	    
+	    return properties;
     }
     
     /**
@@ -1890,11 +1956,26 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 		            {
 		            	// Add pseudo files for the stores
 		            	
+		            	boolean sandbox = false;
+		            	
 		            	for ( AVMStoreDescriptor storeDesc : storeList)
 		            	{
-		            		// Add a pseudo file for the current store
+		            		// Get the properties for the current store
 		            		
-		            		fstate.addPseudoFile( new StorePseudoFile( storeDesc));
+		            		Map<QName, PropertyValue> props = m_avmService.getStoreProperties( storeDesc.getName());
+		            		
+		            		if ( props.containsKey( AVMContext.PROP_WORKFLOWPREVIEW) || props.containsKey( AVMContext.PROP_AUTHORPREVIEW))
+		            			sandbox = true;
+
+		            		// DEBUG
+		            		
+		            		if ( logger.isDebugEnabled())
+		            			logger.debug( "Store " + storeDesc.getName() + ", sandbox=" + sandbox);
+		            		
+		            		// Add a pseudo file for the current store
+
+		            		if ( sandbox == false || avmCtx.showSandboxes() == true)
+		            			fstate.addPseudoFile( new StorePseudoFile( storeDesc));
 		            	}
 		            }
 				}

@@ -17,6 +17,8 @@
 
 package org.alfresco.filesys.avm;
 
+import java.util.Map;
+
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.filesys.server.filesys.DiskInterface;
@@ -29,6 +31,9 @@ import org.alfresco.repo.avm.CreateStoreCallback;
 import org.alfresco.repo.avm.CreateVersionCallback;
 import org.alfresco.repo.avm.PurgeStoreCallback;
 import org.alfresco.repo.avm.PurgeVersionCallback;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,7 +57,12 @@ public class AVMContext extends AlfrescoContext
 	
 	public static final int VERSION_HEAD	= -1;
 	
-	// Store, root path and version
+    // Store properties
+	
+    public static QName PROP_WORKFLOWPREVIEW = QName.createQName(NamespaceService.DEFAULT_URI, ".sandbox.workflow.preview");
+    public static QName PROP_AUTHORPREVIEW   = QName.createQName(NamespaceService.DEFAULT_URI, ".sandbox.author.preview");
+	
+    // Store, root path and version
     
     private String m_storePath;
     private int m_version = VERSION_HEAD; 
@@ -63,6 +73,14 @@ public class AVMContext extends AlfrescoContext
     //  paths below.
 
     private boolean m_virtualView;
+    
+    // Show sandboxes in the virtualization view
+    
+    private boolean m_showSandboxes = false;
+    
+    // associated AVM filesystem driver
+    
+    private AVMDiskDriver m_avmDriver;
     
     /**
      * Class constructor
@@ -94,14 +112,21 @@ public class AVMContext extends AlfrescoContext
      * <p>Construct a context for a virtualization view onto all stores/versions within AVM.
      * 
      * @param filesysName String
+     * @param showSandboxes boolean
+     * @param avmDriver AVMDiskDriver
      */
-    public AVMContext( String filesysName)
+    public AVMContext( String filesysName, boolean showSandboxes, AVMDiskDriver avmDriver)
     {
     	super( filesysName, "VirtualView");
     	
     	// Enable the virtualization view
     	
     	m_virtualView = true;
+    	m_showSandboxes = showSandboxes;
+    	
+    	// Save the associated filesystem driver
+    	
+    	m_avmDriver = avmDriver;
     }
     
     /**
@@ -145,6 +170,16 @@ public class AVMContext extends AlfrescoContext
     }
     
     /**
+     * Check if sandboxes should be shown in the virtualization view
+     * 
+     * @return boolean
+     */
+    public final boolean showSandboxes()
+    {
+    	return m_showSandboxes;
+    }
+    
+    /**
      * Close the filesystem context
      */
 	public void CloseContext() {
@@ -185,30 +220,43 @@ public class AVMContext extends AlfrescoContext
 
 		if ( rootState != null)
 		{
-			// Add a pseudo folder for the new store
-			
-			rootState.addPseudoFile( new StorePseudoFile( storeName));
-			
-			// DEBUG
-			
-			if ( logger.isDebugEnabled())
-				logger.debug( "Added pseudo folder for new store " + storeName);
-			
-			// Send a change notification for the new folder
-			
-			if ( hasChangeHandler())
-			{
-				// Build the filesystem relative path to the new store folder
+    		// Get the properties for the new store
+    		
+			boolean sandbox = false;
+    		Map<QName, PropertyValue> props = m_avmDriver.getAVMStoreProperties( storeName);
+    		
+    		if ( props.containsKey( PROP_WORKFLOWPREVIEW) || props.containsKey( PROP_AUTHORPREVIEW))
+    			sandbox = true;
+    		
+    		// Add a pseudo file for the current store
+
+    		if ( sandbox == false || showSandboxes() == true)
+    		{
+				// Add a pseudo folder for the new store
 				
-				StringBuilder str = new StringBuilder();
+				rootState.addPseudoFile( new StorePseudoFile( storeName));
 				
-				str.append( FileName.DOS_SEPERATOR);
-				str.append( storeName);
+				// DEBUG
 				
-				// Send the change notification
+				if ( logger.isDebugEnabled())
+					logger.debug( "Added pseudo folder for new store " + storeName);
 				
-                getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionAdded, str.toString());
-			}
+				// Send a change notification for the new folder
+				
+				if ( hasChangeHandler())
+				{
+					// Build the filesystem relative path to the new store folder
+					
+					StringBuilder str = new StringBuilder();
+					
+					str.append( FileName.DOS_SEPERATOR);
+					str.append( storeName);
+					
+					// Send the change notification
+					
+	                getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionAdded, str.toString());
+				}
+    		}
 		}
 	}
 	

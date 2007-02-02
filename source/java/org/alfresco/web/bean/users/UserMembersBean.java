@@ -48,7 +48,9 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
+import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -545,8 +547,40 @@ public abstract class UserMembersBean implements IContextListener
          {
             msg = Application.getMessage(context, MSG_SUCCESS_INHERIT_NOT);
          }
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         context.addMessage(event.getComponent().getClientId(context), facesMsg);
+         
+         // see if the user still has permissions to the node, if not, we need
+         // to go back to the root of the current "area" by simulating the user
+         // pressing the top level navigation button i.e. My Home
+         if (this.permissionService.hasPermission(getNode().getNodeRef(), 
+             PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+         {
+            FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+            context.addMessage(event.getComponent().getClientId(context), facesMsg);
+         }
+         else
+         {
+            NavigationBean nb = (NavigationBean)FacesHelper.getManagedBean(
+                  context, NavigationBean.BEAN_NAME);
+            if (nb != null)
+            {
+               try
+               {
+                  nb.processToolbarLocation(nb.getToolbarLocation(), true);
+               }
+               catch (InvalidNodeRefException refErr)
+               {
+                  Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                        FacesContext.getCurrentInstance(), Repository.ERROR_NOHOME), 
+                        Application.getCurrentUser(context).getHomeSpaceId()), refErr );
+               }
+               catch (Exception err)
+               {
+                  Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                        FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), 
+                        err.getMessage()), err);
+               }
+            }
+         }
       }
       catch (Throwable e)
       {
@@ -641,11 +675,12 @@ public abstract class UserMembersBean implements IContextListener
     */
    public String removeOK()
    {
+      String outcome = OUTCOME_FINISH;
       UserTransaction tx = null;
+      FacesContext context = FacesContext.getCurrentInstance();
 
       try
       {
-         FacesContext context = FacesContext.getCurrentInstance();
          tx = Repository.getUserTransaction(context);
          tx.begin();
          
@@ -666,8 +701,38 @@ public abstract class UserMembersBean implements IContextListener
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext
                .getCurrentInstance(), ERROR_DELETE), e.getMessage()), e);
       }
+
+      // see if the user still has permissions to the node, if not, we need
+      // to go back to the root of the current "area" by simulating the user
+      // pressing the top level navigation button i.e. My Home
+      if (this.permissionService.hasPermission(getNode().getNodeRef(), 
+          PermissionService.CHANGE_PERMISSIONS) == AccessStatus.DENIED)
+      {
+         NavigationBean nb = (NavigationBean)FacesHelper.getManagedBean(
+               context, NavigationBean.BEAN_NAME);
+         if (nb != null)
+         {
+            try
+            {
+               nb.processToolbarLocation(nb.getToolbarLocation(), true);
+               outcome = "browse";
+            }
+            catch (InvalidNodeRefException refErr)
+            {
+               Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                     FacesContext.getCurrentInstance(), Repository.ERROR_NOHOME), 
+                     Application.getCurrentUser(context).getHomeSpaceId()), refErr );
+            }
+            catch (Exception err)
+            {
+               Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                     FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), 
+                     err.getMessage()), err);
+            }
+         }
+      }
       
-      return OUTCOME_FINISH;
+      return outcome;
    }
    
    

@@ -45,6 +45,7 @@ import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xpath.objects.XObject;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.apache.xml.utils.Constants;
+import org.springframework.util.StringUtils;
 //import org.apache.xml.utils.QName;
 import org.w3c.dom.*;
 import org.w3c.dom.traversal.NodeFilter;
@@ -261,11 +262,19 @@ public class XSLTRenderingEngine
       final String XALAN_NS_PREFIX = "xalan";
       docEl.setAttribute("xmlns:" + XALAN_NS_PREFIX, XALAN_NS);
 
+      final Set<String> excludePrefixes = new HashSet<String>();
+      if (docEl.hasAttribute("exclude-result-prefixes"))
+      {
+         excludePrefixes.addAll(Arrays.asList(docEl.getAttribute("exclude-result-prefixes").split(" ")));
+      }
+      excludePrefixes.add(XALAN_NS_PREFIX);
+
       final List<String> result = new LinkedList<String>();
       for (QName ns : methods.keySet())
       {
          final String prefix = ns.getLocalName();
          docEl.setAttribute("xmlns:" + prefix, ns.getNamespaceURI()); 
+         excludePrefixes.add(prefix);
 
          final Element compEl = xslTemplate.createElementNS(XALAN_NS, 
                                                             XALAN_NS_PREFIX + ":component");
@@ -304,6 +313,8 @@ public class XSLTRenderingEngine
          compEl.setAttribute("functions", functionNames);
          compEl.appendChild(scriptEl);
       }
+      docEl.setAttribute("exclude-result-prefixes",
+                         StringUtils.arrayToDelimitedString(excludePrefixes.toArray(new String[excludePrefixes.size()]), " "));
       return result;
    }
 

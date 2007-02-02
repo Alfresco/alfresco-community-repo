@@ -517,7 +517,7 @@ public abstract class CifsAuthenticator
 
             throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
         }
-        else if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+        else 
         {
         	// Save the current user token in the client information
         	
@@ -527,9 +527,9 @@ public abstract class CifsAuthenticator
         		client.setAuthenticationToken( null);
         	
             // DEBUG
-
-            logger.debug("User " + user + " logged on "
-                    + (client != null ? " (type " + client.getLogonTypeString() + ")" : ""));
+        	
+        	if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+        		logger.debug("User " + user + " logged on " + (client != null ? " (type " + client.getLogonTypeString() + ")" : ""));
         }
 
         // Create a virtual circuit and allocate a UID to the new circuit

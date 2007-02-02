@@ -10,14 +10,14 @@ package org.alfresco.repo.webservice.repository;
 public class Association  implements java.io.Serializable {
     private java.lang.String associationType;
 
-    private org.alfresco.repo.webservice.repository.AssociationDirectionEnum direction;
+    private java.lang.String direction;
 
     public Association() {
     }
 
     public Association(
            java.lang.String associationType,
-           org.alfresco.repo.webservice.repository.AssociationDirectionEnum direction) {
+           java.lang.String direction) {
            this.associationType = associationType;
            this.direction = direction;
     }
@@ -48,7 +48,7 @@ public class Association  implements java.io.Serializable {
      * 
      * @return direction
      */
-    public org.alfresco.repo.webservice.repository.AssociationDirectionEnum getDirection() {
+    public java.lang.String getDirection() {
         return direction;
     }
 
@@ -58,7 +58,7 @@ public class Association  implements java.io.Serializable {
      * 
      * @param direction
      */
-    public void setDirection(org.alfresco.repo.webservice.repository.AssociationDirectionEnum direction) {
+    public void setDirection(java.lang.String direction) {
         this.direction = direction;
     }
 
@@ -111,13 +111,13 @@ public class Association  implements java.io.Serializable {
         elemField.setFieldName("associationType");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/repository/1.0", "associationType"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setNillable(false);
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("direction");
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/repository/1.0", "direction"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/repository/1.0", "AssociationDirectionEnum"));
-        elemField.setNillable(false);
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
     }
 

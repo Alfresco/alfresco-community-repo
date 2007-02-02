@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +51,7 @@ public class AssociatedQuerySession extends AbstractQuerySession
             .getLog(AssociatedQuerySession.class);
 
     private Reference node;
+    private Association association;
 
     /**
      * Constructs a AssociatedQuerySession
@@ -59,11 +61,12 @@ public class AssociatedQuerySession extends AbstractQuerySession
      * @param node
      *            The node to retrieve the associations
      */
-    public AssociatedQuerySession(int batchSize, Reference node)
+    public AssociatedQuerySession(int batchSize, Reference node, Association association)
     {
         super(batchSize);
 
         this.node = node;
+        this.association = association;
     }
 
     /**
@@ -82,10 +85,29 @@ public class AssociatedQuerySession extends AbstractQuerySession
                 logger.debug("Before getNextResultsBatch: " + toString());
 
             // create the node ref and get the children from the repository
-            NodeRef nodeRef = Utils.convertToNodeRef(this.node, nodeService,
-                    searchService, namespaceService);
-            List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef,
-                    RegexQNamePattern.MATCH_ALL);
+            NodeRef nodeRef = Utils.convertToNodeRef(this.node, nodeService, searchService, namespaceService);
+            List<AssociationRef> assocs = null;
+            if (association != null)
+            {
+                assocs = nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
+            }
+            else
+            {
+                QNamePattern name = RegexQNamePattern.MATCH_ALL;
+                String assocType = association.getAssociationType();
+                if (assocType != null)
+                {
+                    name = QName.createQName(assocType);
+                }
+                if ("source".equals(association.getDirection()) == true)
+                {
+                    assocs = nodeService.getSourceAssocs(nodeRef, name);
+                }
+                else
+                {
+                    assocs = nodeService.getTargetAssocs(nodeRef, name);
+                }
+            }
 
             int totalRows = assocs.size();
             int lastRow = calculateLastRowIndex(totalRows);

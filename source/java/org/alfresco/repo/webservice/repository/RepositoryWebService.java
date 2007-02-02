@@ -345,7 +345,7 @@ public class RepositoryWebService extends AbstractWebService implements
      * @see org.alfresco.repo.webservice.repository.RepositoryServiceSoapPort#queryAssociated(org.alfresco.repo.webservice.types.Reference,
      *      org.alfresco.repo.webservice.repository.Association[])
      */
-    public QueryResult queryAssociated(Reference node, Association[] association)
+    public QueryResult queryAssociated(Reference node, Association association)
             throws RemoteException, RepositoryFault
     {
         UserTransaction tx = null;
@@ -356,7 +356,7 @@ public class RepositoryWebService extends AbstractWebService implements
             tx.begin();
 
             // setup a query session and get the first batch of results
-            QuerySession querySession = new AssociatedQuerySession(Utils.getBatchSize(MessageContext.getCurrentContext()), node);
+            QuerySession querySession = new AssociatedQuerySession(Utils.getBatchSize(MessageContext.getCurrentContext()), node, association);
             QueryResult queryResult = querySession
                     .getNextResultsBatch(this.searchService, this.nodeService,
                             this.namespaceService, this.dictionaryService);

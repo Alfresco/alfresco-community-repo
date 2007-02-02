@@ -105,7 +105,7 @@
             <complexType>
                <sequence>
                   <element name="node" type="cms:Reference"/>
-                  <element name="association" type="rep:Association" maxOccurs="unbounded" minOccurs="0"/>
+                  <element name="association" type="rep:Association" nillable="true"/>
                </sequence>
             </complexType>
          </element>
@@ -203,18 +203,11 @@
          
          <complexType name="Association">
             <sequence>
-               <element name="associationType" type="cms:Name"/>
-               <element name="direction" type="rep:AssociationDirectionEnum"/>
+               <element name="associationType" type="cms:Name" nillable="true"/>
+               <element name="direction" type="xsd:string" nillable="true"/>
             </sequence>
          </complexType>
          <element name="Association" type="rep:Association"/>
-         
-         <xsd:simpleType name="AssociationDirectionEnum">
-            <xsd:restriction base="xsd:string">
-    		      <xsd:enumeration value="source"/>
-    		      <xsd:enumeration value="target"/>
-            </xsd:restriction>
-         </xsd:simpleType>
          
          <complexType name="RepositoryFault">
             <sequence>

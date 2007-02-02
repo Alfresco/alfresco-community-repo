@@ -74,7 +74,7 @@
                               <div class="mainSubText"><h:outputText value="#{msg.website_info}" id="msg3" /></div>
                               <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
                            </td>
-                           <td align="right" style="white-space:nowrap" width=150>
+                           <td style="white-space:nowrap" width=150>
                               <nobr>
                               <%-- More actions menu --%>
                               <a:menu id="actions-menu" itemSpacing="4" label="#{msg.actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">

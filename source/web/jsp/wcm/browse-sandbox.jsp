@@ -74,11 +74,11 @@
                               <div class="mainSubText"><h:outputText value="#{msg.sandbox_info}" id="msg3" /></div>
                               <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
                            </td>
-                           <td align=right>
+                           <td style="white-space:nowrap">
                               <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.sandboxPreviewUrl}" target="new" />
                            </td>
                            <r:permissionEvaluator value="#{AVMBrowseBean.currentPathNode}" allow="CreateChildren" id="eval1">
-                           <td style="padding-left:4px;white-space:nowrap" width=80>
+                           <td style="padding-left:4px;white-space:nowrap" width=120>
                               <%-- Create actions menu --%>
                               <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                  <r:actions id="acts_create" value="avm_create_menu" context="#{AVMBrowseBean.currentPathNode}" />

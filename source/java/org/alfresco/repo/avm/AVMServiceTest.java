@@ -42,6 +42,7 @@ import org.alfresco.repo.avm.actions.SimpleAVMPromoteAction;
 import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.remote.RepoRemoteService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -56,6 +57,9 @@ import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.remote.RepoRemote;
+import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -226,6 +230,13 @@ public class AVMServiceTest extends AVMServiceTestBase
             {
                 // This is a success.
             }
+            CrossRepositoryCopyService copyService = (CrossRepositoryCopyService)fContext.getBean("CrossRepositoryCopyService");
+            RepoRemote remoteService = (RepoRemote)fContext.getBean("RepoRemoteService");
+            Pair<NodeRef, Boolean> toCopy = remoteService.lookup(remoteService.getRoot(), "Guest Home");
+            copyService.copy(toCopy.getFirst(), AVMNodeConverter.ToNodeRef(-1, "main:/"), "Guest Home");
+            desc = fService.lookup(-1, "main:/Guest Home");
+            assertTrue(desc.isDirectory());
+            System.out.println(this.recursiveList("main", -1, true));
         }
         catch (Exception e)
         {

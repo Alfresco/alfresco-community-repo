@@ -958,6 +958,56 @@
         </property>
     </bean>
     
+    <!-- The CrossRepositoryCopyService -->
+    
+    <bean id="crossRepositoryCopyService" class="org.alfresco.repo.copy.CrossRepositoryCopyServiceImpl">
+        <property name="avmService">
+            <ref bean="avmService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="fileFolderService">
+            <ref bean="fileFolderService"/>
+        </property>
+        <property name="contentService">
+            <ref bean="contentService"/>
+        </property>
+        <property name="copyService">
+            <ref bean="copyService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService"/>
+        </property> 
+    </bean>
+    
+    <bean id="crossRepositoryCopyServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>copy</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="CrossRepositoryCopyService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.repository.CrossRepositoryCopyService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>crossRepositoryCopyService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>crossRepositoryCopyServiceWriteTxnAdvisor</value>
+            </list>
+        </property>
+    </bean>
+    
     <!-- The AVMService -->
     
     <bean id="avmService" class="org.alfresco.repo.avm.AVMServiceImpl">

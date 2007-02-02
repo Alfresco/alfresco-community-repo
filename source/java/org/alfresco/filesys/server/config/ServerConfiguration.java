@@ -201,7 +201,7 @@ public class ServerConfiguration extends AbstractLifecycleBean
 
     // Server domain
 
-    private String m_domain;
+    private String m_domain = "WORKGROUP";
 
     // Network broadcast mask string
 

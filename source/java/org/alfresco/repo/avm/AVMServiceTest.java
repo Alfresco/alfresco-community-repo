@@ -237,6 +237,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             desc = fService.lookup(-1, "main:/Guest Home");
             assertTrue(desc.isDirectory());
             System.out.println(this.recursiveList("main", -1, true));
+            copyService.copy(AVMNodeConverter.ToNodeRef(-1, "main:/a"), toCopy.getFirst(), "a");
+            Pair<NodeRef, Boolean> theCopy = remoteService.lookup(toCopy.getFirst(), "a");
+            assertTrue(theCopy.getSecond());
+            remoteService.removeNode(theCopy.getFirst());
         }
         catch (Exception e)
         {

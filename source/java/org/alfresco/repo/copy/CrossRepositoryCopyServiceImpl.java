@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -161,6 +163,55 @@ public class CrossRepositoryCopyServiceImpl implements
      */
     private void copyAVMToRepo(NodeRef src, NodeRef dst, String name)
     {
+        Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(src);
+        AVMNodeDescriptor desc = fAVMService.lookup(versionPath.getFirst(), versionPath.getSecond());
+        if (desc.isFile())
+        {
+            FileInfo newChild = fFileFolderService.create(dst, name, ContentModel.TYPE_CONTENT);
+            NodeRef childRef = newChild.getNodeRef();
+            InputStream in = fAVMService.getFileInputStream(desc);
+            OutputStream out = fContentService.getWriter(childRef, ContentModel.PROP_CONTENT, true).getContentOutputStream();
+            copyData(in, out);
+            copyPropsAndAspectsAVMToRepo(src, childRef);
+        }
+        else
+        {
+            FileInfo newChild = fFileFolderService.create(dst, name, ContentModel.TYPE_FOLDER);
+            NodeRef childRef = newChild.getNodeRef();
+            copyPropsAndAspectsAVMToRepo(src, childRef);
+            Map<String, AVMNodeDescriptor> listing = fAVMService.getDirectoryListing(desc);
+            for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
+            {
+                NodeRef srcChild = AVMNodeConverter.ToNodeRef(versionPath.getFirst(), entry.getValue().getPath());
+                copyAVMToRepo(srcChild, childRef, entry.getKey());
+            }
+        }
+    }
+    
+    /**
+     * Helper that copies aspects and properties.
+     * @param src The source AVM node.
+     * @param dst The destination Repo node.
+     */
+    private void copyPropsAndAspectsAVMToRepo(NodeRef src, NodeRef dst)
+    {
+        Map<QName, Serializable> props = fNodeService.getProperties(src);
+        fNodeService.setProperties(dst, props);
+        Set<QName> aspects = fNodeService.getAspects(src);
+        Map<QName, Serializable> empty = new HashMap<QName, Serializable>();
+        for (QName aspect : aspects)
+        {
+            fNodeService.addAspect(dst, aspect, empty);
+        }
+        if (!fNodeService.hasAspect(dst, ContentModel.ASPECT_COPIEDFROM))
+        {
+            empty.put(ContentModel.PROP_COPY_REFERENCE, src);
+            fNodeService.addAspect(dst, ContentModel.ASPECT_COPIEDFROM, empty);
+        }
+        else
+        {
+            fNodeService.setProperty(dst, ContentModel.PROP_COPY_REFERENCE, src);
+        }
     }
 
     /**

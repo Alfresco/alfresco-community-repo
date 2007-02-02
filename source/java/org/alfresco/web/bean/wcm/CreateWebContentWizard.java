@@ -70,6 +70,7 @@ import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -387,7 +388,7 @@ public class CreateWebContentWizard extends BaseContentWizard
 
                   parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
                   // TODO: capture label and comment?
-                  parameters.put(AVMWorkflowUtil.PROP_LABEL, form ? this.formInstanceData.getName() : this.fileName);
+                  parameters.put(AVMWorkflowUtil.PROP_LABEL, form ? this.formInstanceData.getName() : this.getFileName());
                   parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildStoreRootPath(sandboxName));
                     
                   // update start task with submit parameters
@@ -433,7 +434,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       throws Exception
    {
       // get the parent path of the location to save the content
-      String fileName = this.fileName;
+      String fileName = this.getFileName();
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("saving file content to " + fileName);
 
@@ -512,6 +513,19 @@ public class CreateWebContentWizard extends BaseContentWizard
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
    
+   /** Overrides in order to strip an xml extension if the user entered it */
+   @Override
+   public String getFileName()
+   {
+      final String result = super.getFileName();
+      return (result != null &&
+              MimetypeMap.MIMETYPE_XML.equals(this.mimeType) &&
+              this.getFormName() != null &&
+              "xml".equals(FilenameUtils.getExtension(result).toLowerCase())
+              ? FilenameUtils.removeExtension(result)
+              : result);
+   }
+
    /**
     * @return Returns the content from the edited form.
     */
@@ -748,7 +762,7 @@ public class CreateWebContentWizard extends BaseContentWizard
             },
             new String[] 
             {
-               this.fileName, 
+               this.getFileName(), 
                this.getSummaryObjectType(), 
                this.getSummaryMimeType(this.mimeType)
             });

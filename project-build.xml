@@ -51,28 +51,33 @@
       <property name="dojo.version" value="0.4.1-ajax"/>
 
       <unzip src="${dir.common.lib}/dojo-${dojo.version}.zip"
-	     dest="${dir.assemble}/scripts/ajax">
-	<patternset>
-	  <include name="dojo-${dojo.version}/*.js"/>
-	  <include name="dojo-${dojo.version}/src/**"/>
-	</patternset>
+             dest="${dir.assemble}/scripts/ajax">
+         <patternset>
+            <include name="dojo-${dojo.version}/*.js"/>
+            <include name="dojo-${dojo.version}/src/**"/>
+         </patternset>
       </unzip>
+   
       <delete dir="${dir.assemble}/scripts/ajax/dojo"/>
-      <rename src="${dir.assemble}/scripts/ajax/dojo-${dojo.version}"
-              dest="${dir.assemble}/scripts/ajax/dojo"/>
+		
+      <move file="${dir.assemble}/scripts/ajax/dojo-${dojo.version}"
+            tofile="${dir.assemble}/scripts/ajax/dojo"/>
 
       <unzip src="${dir.common.lib}/tinymce_2_0_6_1.zip"
-	     dest="${dir.assemble}/scripts">
-	<patternset>
-	  <include name="tinymce/jscripts/tiny_mce/**"/>
-	  <exclude name="tinymce/jscripts/tiny_mce/plugins/**"/>
-	  <exclude name="tinymce/jscripts/tiny_mce/themes/simple/**"/>
-	  <exclude name="tinymce/jscripts/tiny_mce/themes/advanced/docs/**"/>
-	  <exclude name="**/*.txt"/>
-	</patternset>
+             dest="${dir.assemble}/scripts">
+         <patternset>
+            <include name="tinymce/jscripts/tiny_mce/*"/>
+            <include name="tinymce/jscripts/tiny_mce/langs/**"/>
+            <include name="tinymce/jscripts/tiny_mce/plugins/table/**"/>
+            <include name="tinymce/jscripts/tiny_mce/themes/advanced/**"/>
+            <include name="tinymce/jscripts/tiny_mce/utils/**"/>
+            <exclude name="tinymce/jscripts/tiny_mce/themes/advanced/docs/**"/>
+            <exclude name="**/*.txt"/>
+         </patternset>
       </unzip>
+  
       <move file="${dir.assemble}/scripts/tinymce/jscripts/tiny_mce"
-	    todir="${dir.assemble}/scripts/"/>
+ 				todir="${dir.assemble}/scripts/"/>
       <delete dir="${dir.assemble}/scripts/tinymce"/>
 	    
       <!-- add config files to WEB-INF/classes -->

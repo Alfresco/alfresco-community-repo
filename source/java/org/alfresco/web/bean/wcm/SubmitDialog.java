@@ -88,7 +88,6 @@ public class SubmitDialog extends BaseDialogBean
    private Map<String, FormWorkflowWrapper> formWorkflowMap;
    private List<UIListItem> workflowItems;
 
-
    // The virtualization server might need to be notified 
    // because one or more of the files submitted could alter 
    // the behavior the virtual webapp in the target of the submit.
@@ -97,7 +96,6 @@ public class SubmitDialog extends BaseDialogBean
    // This must take place after the transaction has been completed;
    // therefore, a variable is needed to store the path to the 
    // updated webapp so it can happen in doPostCommitProcessing.
-   //
    private String virtUpdatePath;     
    
    protected AVMService avmService;
@@ -247,9 +245,8 @@ public class SubmitDialog extends BaseDialogBean
                      {
                         // Example srcPath:
                         //     mysite--alice:/www/avm_webapps/ROOT/foo.txt
-
                         String srcPath = wrapper.getDescriptor().getPath();
-
+                        
                         // We *always* want to update virtualization server
                         // when a workflow sandbox is given data in the 
                         // context of a submit workflow.  Without this,
@@ -266,41 +263,35 @@ public class SubmitDialog extends BaseDialogBean
                         // the submiot list (even if it's not in WEB-INF), 
                         // and force the virt server notification after the
                         // transaction has completed via doPostCommitProcessing.
-
-                        if ( this.virtUpdatePath  == null )
+                        if (this.virtUpdatePath  == null)
                         {
-                            // Example workflow main store name:
-                            //     mysite--workflow-9161f640-b020-11db-8015-130bf9b5b652
-                            String workflowMainStoreName = sandboxInfo.getMainStoreName();
-
-                            // The virtUpdatePath looks just like the srcPath 
-                            // except that it belongs to a the main store of
-                            // the workflow sandbox instead of the sandbox
-                            // that originated the submit.
-
-                            this.virtUpdatePath = workflowMainStoreName + 
-                                                  srcPath.substring(
-                                                        srcPath.indexOf(':'),
-                                                        srcPath.length()
-                                                  );
+                           // Example workflow main store name:
+                           //     mysite--workflow-9161f640-b020-11db-8015-130bf9b5b652
+                           String workflowMainStoreName = sandboxInfo.getMainStoreName();
+                           
+                           // The virtUpdatePath looks just like the srcPath 
+                           // except that it belongs to a the main store of
+                           // the workflow sandbox instead of the sandbox
+                           // that originated the submit.
+                           this.virtUpdatePath =
+                              workflowMainStoreName + 
+                              srcPath.substring(srcPath.indexOf(':'),srcPath.length());
                         }
-
+                        
                         srcPaths.add(srcPath);
                      }
-
+                     
                      final NodeRef workflowPackage =
                         AVMWorkflowUtil.createWorkflowPackage(srcPaths,
-                                                              sandboxInfo,
-                                                              path,
-                                                              avmSubmittedAspect,
-                                                              this.avmSyncService,
-                                                              this.avmService,
-                                                              this.workflowService,
-                                                              this.nodeService);
-
+                              sandboxInfo,
+                              path,
+                              avmSubmittedAspect,
+                              this.avmSyncService,
+                              this.avmService,
+                              this.workflowService,
+                              this.nodeService);
+                     
                      params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
-
-
                      
                      // add submission parameters
                      params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, getComment());
@@ -336,7 +327,7 @@ public class SubmitDialog extends BaseDialogBean
          List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
 
          // flag indicating if virt server update is already implied
-         boolean update_vserver = false;
+         boolean updateVserver = false;
 
          for (ItemWrapper wrapper : items)
          {
@@ -344,21 +335,21 @@ public class SubmitDialog extends BaseDialogBean
             String destPath = stagingPath + wrapper.getPath();
             AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
             diffs.add(diff);
-
+            
             // If nothing has required notifying the virtualization server
             // so far, check to see if destPath forces a notification
             // (e.g.:  it might be a path to a jar file within WEB-INF/lib).
-
-            if  ( ! update_vserver )
+            if (!updateVserver)
             {
-                // Examples of destPath that require virt server notification:
-                //
-                //     mysite:/www/avm_webapps/ROOT/WEB-INF/web.xml
-                //     mysite:/www/avm_webapps/ROOT/WEB-INF/lib/moo.jar
-                
-                update_vserver = VirtServerUtils.requiresUpdateNotification( destPath );
-
-                if ( update_vserver ) { this.virtUpdatePath = destPath; }
+               // Examples of destPath that require virt server notification:
+               //
+               //     mysite:/www/avm_webapps/ROOT/WEB-INF/web.xml
+               //     mysite:/www/avm_webapps/ROOT/WEB-INF/lib/moo.jar
+               updateVserver = VirtServerUtils.requiresUpdateNotification( destPath );
+               if (updateVserver)
+               {
+                  this.virtUpdatePath = destPath;
+               }
             }
          }
          
@@ -372,28 +363,25 @@ public class SubmitDialog extends BaseDialogBean
    }
 
    /**
-   *   Handle notification to the virtualization server 
-   *   (this needs to occur after the sandbox is updated).
-   */
+    * Handle notification to the virtualization server 
+    * (this needs to occur after the sandbox is updated).
+    */
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {     
-       // Force the update because we've already determined
-       // that update_path requires virt server notification.
-      
-       if ( this.virtUpdatePath != null)
-       {
-           // Examples of destPath that require virt server notification:
-           //
-           //     mysite:/www/avm_webapps/ROOT/WEB-INF/web.xml
-           //     mysite:/www/avm_webapps/ROOT/WEB-INF/lib/moo.jar
-
-           AVMConstants.updateVServerWebapp( this.virtUpdatePath, true );
-       }
-       return outcome;
+      // Force the update because we've already determined
+      // that update_path requires virt server notification.
+      if (this.virtUpdatePath != null)
+      {
+         // Examples of destPath that require virt server notification:
+         //
+         //     mysite:/www/avm_webapps/ROOT/WEB-INF/web.xml
+         //     mysite:/www/avm_webapps/ROOT/WEB-INF/lib/moo.jar
+         AVMConstants.updateVServerWebapp(this.virtUpdatePath, true);
+      }
+      return outcome;
    }
 
-   
    /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#getFinishButtonDisabled()
     */

@@ -465,8 +465,6 @@ public final class SandboxFactory
             new PropertyValue(DataTypeDefinition.INT, distance));
    }
 
-
-   
    /**
     * Debug helper method to dump the properties of a store
     *  

@@ -226,7 +226,8 @@ public class CreateWebContentWizard extends BaseContentWizard
       final int step = Application.getWizardManager().getCurrentStep();
       if (step == 2)
       {
-         LOGGER.debug("clearing form instance data");
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("clearing form instance data");
          if (this.formInstanceData != null)
          {
             this.avmService.removeNode(this.formInstanceData.getPath());
@@ -302,16 +303,17 @@ public class CreateWebContentWizard extends BaseContentWizard
       
       // reset all paths and structures to the main store
       this.createdPath = AVMConstants.getCorrespondingPathInMainStore(this.createdPath);
-      LOGGER.debug("reset path " + this.createdPath + " to main store");
-
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("reset path " + this.createdPath + " to main store");
 
       boolean form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null);
       if (form)
       {
          this.formInstanceData = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, this.createdPath));
          this.renditions = this.formInstanceData.getRenditions();
-         LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
-                      " and " + this.renditions.size() + " to main store");
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
+                         " and " + this.renditions.size() + " to main store");
       }
       if (this.startWorkflow)
       {
@@ -367,8 +369,8 @@ public class CreateWebContentWizard extends BaseContentWizard
                      srcPaths.add(AVMConstants.getCorrespondingPath(this.createdPath, sandboxName));
                   }
 
-                  LOGGER.debug("creating workflow package with " + srcPaths.size() + " files");
-
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("creating workflow package with " + srcPaths.size() + " files");
 
                   // Create workflow sandbox for workflow package
                   SandboxInfo sandboxInfo = SandboxFactory.createWorkflowSandbox(storeId);

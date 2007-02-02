@@ -167,6 +167,7 @@ public class AVMBrowseBean implements IContextListener
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
    }
 
+   
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
    

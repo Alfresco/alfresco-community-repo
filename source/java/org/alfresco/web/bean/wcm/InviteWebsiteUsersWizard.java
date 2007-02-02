@@ -196,33 +196,29 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
    }
    
    /**
-   *   Handle notification to the virtualization server 
-   *   (this needs to occur after the sandbox is created).
-   */
+    * Handle notification to the virtualization server 
+    * (this needs to occur after the sandbox is created in the main txn).
+    */
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {     
-       // reload virtualisation server for webapp in this web project
-       if (isStandalone())
-       {
-           for (SandboxInfo sandboxInfo : this.sandboxInfoList)
-           {
-                String newlyInvitedStoreName = 
-                    AVMConstants.buildStagingStoreName(
-                        sandboxInfo.getMainStoreName());
-
-                String path = 
-                    AVMConstants.buildStoreWebappPath(
-                        newlyInvitedStoreName, this.avmBrowseBean.getWebapp());
-
-                AVMConstants.updateVServerWebapp(path, true);
-           }
-       }
-       return outcome;
+      // reload virtualisation server for webapp in this web project
+      if (isStandalone())
+      {
+         for (SandboxInfo sandboxInfo : this.sandboxInfoList)
+         {
+            String newlyInvitedStoreName = AVMConstants.buildStagingStoreName(
+                  sandboxInfo.getMainStoreName());
+            
+            String path = AVMConstants.buildStoreWebappPath(
+                     newlyInvitedStoreName, this.avmBrowseBean.getWebapp());
+            
+            AVMConstants.updateVServerWebapp(path, true);
+         }
+      }
+      return outcome;
    }
-
-
-
+   
    /**
     * Find all nested user authorities contained with an authority
     * 

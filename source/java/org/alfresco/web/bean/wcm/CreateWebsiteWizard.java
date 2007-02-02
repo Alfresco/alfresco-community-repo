@@ -122,6 +122,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /** Data for virtualization server notification  */
    private SandboxInfo sandboxInfo;
    
+   
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -212,27 +213,24 @@ public class CreateWebsiteWizard extends BaseWizardBean
       return outcome;
    }
 
+   /**
+    * @see org.alfresco.web.bean.dialog.BaseDialogBean#doPostCommitProcessing(javax.faces.context.FacesContext, java.lang.String)
+    */
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {
-      // TODO:  ask about isStandalone() 
-      //        in InviteWebsiteUsersWizard
-
-      if ( this.sandboxInfo != null )
+      if (this.sandboxInfo != null)
       {
-          String newStoreName = 
-            AVMConstants.buildStagingStoreName( sandboxInfo.getMainStoreName());
-
-          String path = AVMConstants.buildStoreWebappPath(
-                          newStoreName, "ROOT"
-                        );
-
-          AVMConstants.updateVServerWebapp(path, true);
-       }
-       return outcome;
+         // update the virtualisation server with the default ROOT webapp path
+         // performed after the main txn has committed successfully
+         String newStoreName = AVMConstants.buildStagingStoreName(sandboxInfo.getMainStoreName());
+         
+         String path = AVMConstants.buildStoreWebappPath(newStoreName, WEBAPP_DEFAULT);
+         
+         AVMConstants.updateVServerWebapp(path, true);
+      }
+      return outcome;
    }
-
-
    
    /**
     * Persist the forms, templates, workflows and workflow defaults to the model for this web project

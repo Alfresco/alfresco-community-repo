@@ -761,5 +761,4 @@ public final class AVMConstants
    private final static Pattern SANDBOX_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
                       "/" + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
-   
 }

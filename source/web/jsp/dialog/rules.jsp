@@ -102,7 +102,7 @@
                <tr>
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_7.gif" width="4" height="9"></td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_8.gif)"></td>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_6.gif" width="4" height="9"></td>
+                  <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width="4" height="9"></td>
                </tr>
                
                <%-- infomation panel --%> 

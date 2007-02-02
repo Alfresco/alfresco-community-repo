@@ -132,13 +132,9 @@
                                  <%-- context for current user is setup on entry to user console --%>
                                  <a:actionLink id="change-password" value="#{msg.change_password}" action="dialog:changePassword" image="/images/icons/change_password.gif" rendered="#{NavigationBean.isGuest == false}" />
                               </a:panel>
+                              
                               <div style="padding:4px"></div>
                               
-                              <%--<h:panelGroup id="pref-panel-facets">
-                                 <f:facet name="title">
-                                    <a:actionLink  value="#{msg.modify}" action="" showLink="false" image="/images/icons/Change_details.gif" rendered="#{NavigationBean.isGuest == false}" />
-                                 </f:facet>
-                              </h:panelGroup>--%>
                               <a:panel label="#{msg.general_pref}" id="pref-panel" rendered="#{NavigationBean.isGuest == false}"
                                        border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white">
                                  <table cellspacing=2 cellpadding=2 border=0>
@@ -173,6 +169,19 @@
                                           <h:selectOneMenu id="content-filter-language" value="#{UserPreferencesBean.contentFilterLanguage}" onchange="document.forms['user-console'].submit(); return true;">
                                              <f:selectItems value="#{UserPreferencesBean.contentFilterLanguages}" />
                                           </h:selectOneMenu>
+                                       </td>
+                                    </tr>
+                                 </table>
+                              </a:panel>
+                              
+                              <div style="padding:4px"></div>
+                              
+                              <a:panel label="#{msg.user_management}" id="man-panel" rendered="#{NavigationBean.isGuest == false}"
+                                       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white">
+                                 <table cellspacing=2 cellpadding=2 border=0>
+                                    <tr>
+                                       <td>
+                                          <a:actionLink id="manage-deleted-items" value="#{msg.manage_deleted_items}" action="dialog:manageDeletedItems" image="/images/icons/trashcan.gif" />
                                        </td>
                                     </tr>
                                  </table>

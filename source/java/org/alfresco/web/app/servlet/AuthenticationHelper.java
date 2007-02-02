@@ -156,13 +156,10 @@ public final class AuthenticationHelper
                   
                   // store the User object in the Session - the authentication servlet will then proceed
                   session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
-               
+                  
                   // Set the current locale
                   I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
                   
-                  // remove the session invalidated flag
-                  session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
-
                   // remove the session invalidated flag
                   session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
                   
@@ -220,10 +217,10 @@ public final class AuthenticationHelper
          // Set the current locale
          I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
          
-         /* setup face context */
+         // setup faces context
          FacesHelper.getFacesContext(httpRequest, httpResponse, context);
          
-         if (loginBean != null && (loginBean.getUserPreferencesBean() != null) )
+         if (loginBean != null && (loginBean.getUserPreferencesBean() != null))
          {
             String contentFilterLanguageStr = loginBean.getUserPreferencesBean().getContentFilterLanguage();
             if (contentFilterLanguageStr != null)

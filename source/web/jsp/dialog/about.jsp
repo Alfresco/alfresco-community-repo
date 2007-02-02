@@ -67,7 +67,7 @@
                      <table cellspacing="4" cellpadding="0" width="100%">
                         <tr>
                            <td width=32>
-                              <h:graphicImage id="logo" url="/images/logo/AlfrescoLogo32.gif" width="32" height="32" />
+                              <h:graphicImage id="logo" url="/images/logo/AlfrescoLogo32_bluebg.gif" width="32" height="32" />
                            </td>
                            <td>
                               <div class="mainTitle"><h:outputText value="#{msg.title_about}" /></div>

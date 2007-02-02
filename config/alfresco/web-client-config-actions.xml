@@ -640,7 +640,8 @@
             <action idref="paste_all" />
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
-            <action idref="manage_deleted_items" />
+            <!-- NOTE: now found on the User Console
+            <action idref="manage_deleted_items" />-->
          </action-group>
          
          <!-- Actions Menu for Document Details screen -->

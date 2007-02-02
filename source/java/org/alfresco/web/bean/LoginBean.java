@@ -121,6 +121,7 @@ public class LoginBean
     */
    public void setUsername(String val)
    {
+      if ( val != null ) { val = val.trim(); }
       this.username = val;
    }
 
@@ -191,6 +192,8 @@ public class LoginBean
          throws ValidatorException
    {
       String name = (String) value;
+      name = name.trim();
+
       if (name.length() < 2 || name.length() > 32)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_USERNAME_LENGTH),

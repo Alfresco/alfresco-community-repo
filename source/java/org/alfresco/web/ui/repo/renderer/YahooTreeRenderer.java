@@ -7,6 +7,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.renderer.BaseRenderer;
 import org.alfresco.web.ui.repo.component.UITree;
@@ -173,7 +175,15 @@ public class YahooTreeRenderer extends BaseRenderer
       // iterate through the child nodes and generate them
       if (node.isExpanded() && node.getChildren().size() > 0)
       {
-         for (TreeNode child : node.getChildren())
+         // order the children
+         List<TreeNode> children = node.getChildren();
+         if (children.size() > 1)
+         {
+            QuickSort sorter = new QuickSort(children, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+            sorter.sort();
+         }
+         
+         for (TreeNode child : children)
          {
             generateNode(child, out, currentVarName);
          }

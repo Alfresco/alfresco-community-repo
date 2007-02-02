@@ -26,6 +26,8 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.repo.component.UITree.TreeNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -103,8 +105,7 @@ public class NavigatorPluginBean implements IContextListener
             // get all the child folder objects for the parent
             List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentNodeRef, 
                   ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            
-            StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><nodes>");
+            List<TreeNode> sortedNodes = new ArrayList<TreeNode>();
             for (ChildAssociationRef ref: childRefs)
             {
                NodeRef nodeRef = ref.getChildRef();
@@ -115,8 +116,22 @@ public class NavigatorPluginBean implements IContextListener
                   TreeNode childNode = createTreeNode(nodeRef);
                   parentNode.addChild(childNode);
                   currentNodes.put(childNode.getNodeRef(), childNode);
-                  xml.append(childNode.toXML());
+                  sortedNodes.add(childNode);
                }
+            }
+            
+            // order the tree nodes by the tree label
+            if (sortedNodes.size() > 1)
+            {
+               QuickSort sorter = new QuickSort(sortedNodes, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+               sorter.sort();
+            }
+            
+            // generate the XML representation
+            StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><nodes>");
+            for (TreeNode childNode : sortedNodes)
+            {
+               xml.append(childNode.toXML());
             }
             xml.append("</nodes>");
             

@@ -22,6 +22,8 @@ import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.ajax.NavigatorPluginBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.repo.component.UITree.TreeNode;
@@ -218,6 +220,13 @@ public class UINavigator extends SelfRenderingComponent
       {
          treePanel = false;
          areaTitle = Application.getMessage(context, NavigationBean.MSG_MYALFRESCO);
+      }
+      
+      // order the root nodes by the tree label
+      if (rootNodesForArea != null && rootNodesForArea.size() > 1)
+      {
+         QuickSort sorter = new QuickSort(rootNodesForArea, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
       }
       
       // main container div

@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -109,7 +110,16 @@ public class MLPropertyInterceptor implements MethodInterceptor
     @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
+        String methodName = invocation.getMethod().getName();
+        Object[] args = invocation.getArguments();
+
+        // What locale must be used for filtering
         Locale contentLocale = I18NUtil.getContentLocale();
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Intercepting method " + methodName + " using content filter " + contentLocale);
+        }
+        
         Object ret = null;
         
         // If isMLAware then no treatment is done, just return
@@ -119,7 +129,6 @@ public class MLPropertyInterceptor implements MethodInterceptor
             return invocation.proceed();
         }
         
-        String methodName = invocation.getMethod().getName();
         if (methodName.equals("getProperty"))
         {
             ret = invocation.proceed();
@@ -161,7 +170,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                 }
             }
             ret = convertedProperties;
-            // done
+            // Done
             if (logger.isDebugEnabled())
             {
                 logger.debug(
@@ -172,105 +181,108 @@ public class MLPropertyInterceptor implements MethodInterceptor
         }
         else if (methodName.equals("setProperties"))
         {
-            //get the raw properties and for every multi lingual property, 
-            //take the value transmited as parameter and if type string put the value in
-            //the multilingual property.  If not just transfer property value
-            NodeRef node = (NodeRef)invocation.getArguments()[0];
-            //new properties
-            Map<QName, Serializable> newProperties =(Map<QName, Serializable>)(invocation.getArguments()[1]);
-            //get the raw property values
-            Map<QName, Serializable> previousProperties = directNodeService.getProperties(node);
-            //merge with previous properties only for MLText ones
+            NodeRef nodeRef = (NodeRef) args[0];
+            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[1];
+            // Get the current properties for the node
+            Map<QName, Serializable> currentProperties = directNodeService.getProperties(nodeRef);
+            // Convert all properties
             Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(newProperties.size() * 2);              
             for (Map.Entry<QName, Serializable> entry : newProperties.entrySet())
             {
-                 QName key = entry.getKey();
-                 PropertyDefinition propertyDef = this.dictionaryService.getProperty(key);
-                 if (propertyDef == null)
-                 {
-                     //no type found in the model, just transfer
-                     convertedProperties.put(key,newProperties.get(key));
-                     continue;
-                 }
-                 //if incoming new property is MLText(based on the model) then 
-                 //transfer or merge depending on the incoming concrete type.
-                 //if incoming type is String and model indicates MLText then merge if something else just transfer
-                 if(propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT) && 
-                         newProperties.get(key) instanceof String )
-                 {
-                     //get back previous value it should a MLText or null
-                     
-                     Serializable preVal = previousProperties.get(key);
-                     MLText newVal = new MLText();
-                     if (preVal == null || !(preVal instanceof MLText))
-                     {
-                         //second test is in case of the value was set before in the system without MLText
-                         //create a new MLText and transfer
-                         //if prevval wasn't null save value with as LOCAL.ENGLISH (purely arbitrary) to avoid any 
-                         //information loss
-                         if(preVal!= null)
-                             newVal.addValue(Locale.ENGLISH,(String)preVal);
-                     }
-                     else
-                     {
-                        newVal = (MLText)preVal; 
-                     }
-                     //use alternate locale
-                      newVal.addValue(
-                              contentLocale,
-                              (String)newProperties.get(key));
-                     //transfer
-                     convertedProperties.put(key,newVal);
-                     continue;
-                 }
-                 //normal process, just transfer
-                 convertedProperties.put(key,newProperties.get(key));
-            }//for
-            directNodeService.setProperties(node, convertedProperties);
+                 QName propertyQName = entry.getKey();
+                 Serializable inboundValue = entry.getValue();
+                 // Get the current property value
+                 Serializable currentValue = currentProperties.get(propertyQName);
+                 // Convert the inbound property value
+                 inboundValue = convertInboundProperty(contentLocale, nodeRef, propertyQName, inboundValue, currentValue);
+                 // Put the value into the map
+                 convertedProperties.put(propertyQName, inboundValue);
+            }
+            // Now complete the call by passing the converted properties
+            directNodeService.setProperties(nodeRef, convertedProperties);
+            // Done
         }
         else if (methodName.equals("setProperty"))
         {
             //check if the property is of type MLText
-            QName qPropName = (QName)invocation.getArguments()[1];
-            PropertyDefinition propertyDef = this.dictionaryService.getProperty(qPropName);
-            //if no type definition associated to the name then just proceed
-            if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
-            {
-                
-                //check if property is multi valued or actual set value is MLText
-                // in that case delegate deletate
-                if (propertyDef.isMultiValued() || (invocation.getArguments()[2] instanceof MLText) )
-                {
-                    ret = invocation.proceed();
-                }
-                else
-                {
-                    //this is a multilingual mono valued property
-                    //then get the MLText value and set the linguistic value conrresponding 
-                    //of the preferate language
-                    NodeRef node = (NodeRef)invocation.getArguments()[0];
-                    MLText mlPropertyValue = (MLText)directNodeService.getProperty(node, qPropName);
-                    if (mlPropertyValue == null)
-                    {
-                        mlPropertyValue = new MLText();
-                    }
-                    mlPropertyValue.addValue(
-                            contentLocale,
-                            (String) invocation.getArguments()[2]);
-                    //set the value following according to the current locale
-                    directNodeService.setProperty(node, qPropName, mlPropertyValue);
-                }
-            }
-            else
-            {
-                ret = invocation.proceed();
-            }
+            NodeRef nodeRef = (NodeRef) args[0];
+            QName propertyQName = (QName) args[1];
+            Serializable inboundValue = (Serializable) args[2];
+            // Convert the property
+            inboundValue = convertInboundProperty(contentLocale, nodeRef, propertyQName, inboundValue, null);
+            // Pass this through to the node service
+            directNodeService.setProperty(nodeRef, propertyQName, inboundValue);
+            // Done
         }
         else
         {
             ret = invocation.proceed();
         }
         // done
+        return ret;
+    }
+    
+    /**
+     * 
+     * @param inboundValue      The value that must be set
+     * @param currentValue      The current value of the property or <tt>null</tt> if not known
+     * @return                  Returns a potentially converted property that conforms to the model
+     */
+    private Serializable convertInboundProperty(
+            Locale contentLocale,
+            NodeRef nodeRef,
+            QName propertyQName,
+            Serializable inboundValue,
+            Serializable currentValue)
+    {
+        Serializable ret = null;
+        PropertyDefinition propertyDef = this.dictionaryService.getProperty(propertyQName);
+        //if no type definition associated to the name then just proceed
+        if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+        {
+            // Don't mess with multivalued properties or instances already of type MLText
+            if (propertyDef.isMultiValued() || (inboundValue instanceof MLText) )
+            {
+                ret = inboundValue;
+            }
+            else
+            {
+                // This is a multilingual single-valued property
+                // Get the current value from the node service, if not provided
+                if (currentValue == null)
+                {
+                    currentValue = directNodeService.getProperty(nodeRef, propertyQName);
+                }
+                MLText currentMLValue = null;
+                if (currentValue == null)
+                {
+                    currentMLValue = new MLText();
+                }
+                else
+                {
+                    currentMLValue = DefaultTypeConverter.INSTANCE.convert(MLText.class, currentValue);
+                }
+                // Force the inbound value to be a String (it isn't MLText)
+                String inboundValueStr = DefaultTypeConverter.INSTANCE.convert(String.class, inboundValue);
+                // Add it to the current MLValue
+                currentMLValue.put(contentLocale, inboundValueStr);
+                // Done
+                ret = currentMLValue;
+            }
+        }
+        else            // It is not defined as d:mltext in the dictionary
+        {
+            ret = inboundValue;
+        }
+        // Done
+        if (logger.isDebugEnabled() && ret != inboundValue)
+        {
+            logger.debug("Converted inbound property: \n" +
+                    "   NodeRef:    " + nodeRef + "\n" +
+                    "   Property:   " + propertyQName + "\n" +
+                    "   Before:     " + inboundValue + "\n" +
+                    "   After:      " + ret);
+        }
         return ret;
     }
 }

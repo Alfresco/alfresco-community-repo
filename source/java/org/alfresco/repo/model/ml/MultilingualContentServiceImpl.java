@@ -217,12 +217,6 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             // The aspect is present, so just ensure that the locale is correct
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_LOCALE, locale);
         }
-        //get all the languages already there
-        Map<Locale, NodeRef> existingLanguages = this.getTranslations(mlContainerNodeRef);
-        if (existingLanguages.containsKey(locale))
-        {
-            throw new AlfrescoRuntimeException("Duplicate locale in document pool:" + locale.toString());
-        }
         
         // Do we make use of an existing container?
         if (mlContainerNodeRef == null)
@@ -232,6 +226,13 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         }
         else
         {
+            // Check that the language is not duplicated
+            Map<Locale, NodeRef> existingLanguages = this.getTranslations(mlContainerNodeRef);
+            if (existingLanguages.containsKey(locale))
+            {
+                throw new AlfrescoRuntimeException("Duplicate locale in document pool: " + locale);
+            }
+            
             // Use the existing container
             nodeService.addChild(
                     mlContainerNodeRef,

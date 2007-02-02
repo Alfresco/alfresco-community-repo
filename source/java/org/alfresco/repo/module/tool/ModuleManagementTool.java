@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.service.cmr.module.ModuleInstallState;
-import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.util.GUID;
 import org.apache.log4j.Logger;
 import org.springframework.util.FileCopyUtils;
@@ -62,6 +61,7 @@ public class ModuleManagementTool
     private static final String OPTION_FORCE = "-force";
     private static final String OPTION_PREVIEW = "-preview";
     private static final String OPTION_NOBACKUP = "-nobackup";
+    private static final String OPTION_DIRECTORY = "-directory";
     
     /** Default zip detector */
     public static ZipDetector defaultDetector = new DefaultRaesZipDetector("amp|war");
@@ -108,6 +108,64 @@ public class ModuleManagementTool
     public void setVerbose(boolean verbose)
     {
         this.verbose = verbose;
+    }
+    
+    /**
+     * 
+     * @param directory
+     * @param warFileLocation
+     */
+    public void installModules(String directory, String warFileLocation)
+    {
+        installModules(directory, warFileLocation, false, false, true);
+    }
+    
+    /**
+     * 
+     * @param directoryLocation
+     * @param warFileLocation
+     * @param preview
+     * @param forceInstall
+     * @param backupWAR
+     */
+    public void installModules(String directoryLocation, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR)
+    {
+        java.io.File dir = new java.io.File(directoryLocation);
+        if (dir.exists() == true)
+        {
+            installModules(dir, warFileLocation, preview, forceInstall,backupWAR);
+        }
+        else
+        {
+            throw new ModuleManagementToolException("Invalid directory '" + directoryLocation + "'");
+        }
+    }
+    
+    /**
+     * 
+     * @param dir
+     * @param warFileLocation
+     * @param preview
+     * @param forceInstall
+     * @param backupWAR
+     */
+    private void installModules(java.io.File dir, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR)
+    {
+        java.io.File[] children =  dir.listFiles();
+        if (children != null)
+        {
+            for (java.io.File child : children)
+            {
+                if (child.isFile() == true && child.getName().toLowerCase().endsWith(".amp") == true)
+                {
+                    installModule(child.getPath(), warFileLocation, preview, forceInstall, backupWAR);
+                }
+                else
+                {
+                    installModules(child, warFileLocation, preview, forceInstall, backupWAR);
+                }
+            }
+        }
     }
     
     /**
@@ -534,6 +592,7 @@ public class ModuleManagementTool
                 boolean forceInstall = false;
                 boolean previewInstall = false;
                 boolean backup = true;
+                boolean directory = false;
                 
                 if (args.length > 3)
                 {
@@ -551,16 +610,29 @@ public class ModuleManagementTool
                         else if (OPTION_PREVIEW.equals(option) == true)
                         {
                             previewInstall = true;
+                            manager.setVerbose(true);
                         }
                         else if (OPTION_NOBACKUP.equals(option) == true)
                         {
                             backup = false;
                         }
+                        else if (OPTION_DIRECTORY.equals(option) == true)
+                        {
+                            directory = true;
+                        }
                     }
                 }
                       
-                // Install the module
-                manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                if (directory == false)
+                {
+                    // Install the module
+                    manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                }
+                else
+                {
+                    // Install the modules from the directory
+                    manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                }
             }
             else if (OP_LIST.equals(operation) == true && args.length == 2)
             {
@@ -586,18 +658,18 @@ public class ModuleManagementTool
     {
         System.out.println("Module managment tool available commands:");
         System.out.println("-----------------------------------------------------------\n");        
-        System.out.println("install: Installs a AMP file into an Alfresco WAR file, updates if an older version is already installed.");
-        System.out.println("usage:   install AMPFile WARFile options");
+        System.out.println("install: Installs a AMP file(s) into an Alfresco WAR file, updates if an older version is already installed.");
+        System.out.println("usage:   install <AMPFileLocation> <WARFileLocation> [options]");
         System.out.println("valid options: ");
-        System.out.println("   -verbose  : enable verbose output");
-        System.out.println("   -force    : forces installation of AMP regardless of currently installed module version");
-        System.out.println("   -preview  : previews installation of AMP without modifying WAR file");
-        System.out.println("   -nobackup : indicates that no backup should be made of the WAR\n");
+        System.out.println("   -verbose   : enable verbose output");
+        System.out.println("   -directory : indicates that the amp file location specified is a directory.");
+        System.out.println("                All amp files found in the directory and its sub directories are installed.");
+        System.out.println("   -force     : forces installation of AMP regardless of currently installed module version");
+        System.out.println("   -preview   : previews installation of AMP without modifying WAR file");
+        System.out.println("   -nobackup  : indicates that no backup should be made of the WAR\n");
         System.out.println("-----------------------------------------------------------\n");
         System.out.println("list:  Lists all the modules currently installed in an Alfresco WAR file.");
-        System.out.println("usage: list WARFile\n");
+        System.out.println("usage: list <WARFileLocation>\n");
         System.out.println("-----------------------------------------------------------\n");
-    }
-    
-    
+    }    
 }

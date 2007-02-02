@@ -181,6 +181,31 @@ public class ModuleManagementToolTest extends TestCase
         this.manager.installModule(ampLocation, warLocation, false, true, false);
     }
     
+    public void testInstallFromDir()
+        throws Exception
+    {
+        manager.setVerbose(true);
+        
+        String warLocation = getFileLocation(".war", "module/test.war");
+        String ampLocation = getFileLocation(".amp", "module/test.amp");
+        String ampV2Location = getFileLocation(".amp", "module/test_v2.amp");
+
+        int index = ampV2Location.lastIndexOf(File.separator);
+        System.out.println(index);
+        String directoryLocation = ampV2Location.substring(0, index);
+        
+        System.out.println(warLocation);
+        System.out.println(directoryLocation);
+        try
+        {
+            this.manager.installModules(directoryLocation, warLocation);
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            // ignore since we are expecting this
+        }
+    }
+    
     public void testList()
         throws Exception
     {
@@ -199,6 +224,7 @@ public class ModuleManagementToolTest extends TestCase
     {
         File file = File.createTempFile("moduleManagementToolTest-", extension);        
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(location);
+        assertNotNull(is);
         OutputStream os = new FileOutputStream(file);        
         FileCopyUtils.copy(is, os);        
         return file.getPath();

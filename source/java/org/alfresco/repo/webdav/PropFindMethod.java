@@ -299,19 +299,24 @@ public class PropFindMethod extends WebDAVMethod
                     // Output the child node details
                     for (FileInfo curChildInfo : childNodeInfos)
                     {
-                        // Build the path for the current child node
-                        baseBuild.setLength(curBaseLen);
-
-                        baseBuild.append(curChildInfo.getName());
-
-                        // Output the current child node details
-                        generateResponseForNode(xml, curChildInfo, baseBuild.toString());
-
-                        // If the child is a folder add it to the list of next level nodes
-                        if (nextNodeInfos != null && curChildInfo.isFolder())
-                        {
-                            nextNodeInfos.add(curChildInfo);
-                        }
+                    	// Do not output link nodes
+                    	
+                    	if ( curChildInfo.isLink() == false)
+                    	{
+	                        // Build the path for the current child node
+	                        baseBuild.setLength(curBaseLen);
+	
+	                        baseBuild.append(curChildInfo.getName());
+	
+	                        // Output the current child node details
+	                        generateResponseForNode(xml, curChildInfo, baseBuild.toString());
+	
+	                        // If the child is a folder add it to the list of next level nodes
+	                        if (nextNodeInfos != null && curChildInfo.isFolder())
+	                        {
+	                            nextNodeInfos.add(curChildInfo);
+	                        }
+                    	}
                     }
                 }
 

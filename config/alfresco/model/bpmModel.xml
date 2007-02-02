@@ -260,7 +260,7 @@
                 </property>
 
                 <property name="bpm:packageItemActionGroup">
-                    <default>edit_and_remove_package_item_actions</default>
+                    <default>start_package_item_actions</default>
                 </property>
 
             </overrides>

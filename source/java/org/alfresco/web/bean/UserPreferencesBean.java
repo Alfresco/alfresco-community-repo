@@ -99,7 +99,7 @@ public class UserPreferencesBean
    }
    
    /**
-    * @return current content filter language
+    * @return current content filter language, or <tt>null</tt> if all languages was selected
     */
    public String getContentFilterLanguage()
    {
@@ -116,7 +116,7 @@ public class UserPreferencesBean
               this.contentFilterLanguage = locale.toString();
           }
       }
-      return contentFilterLanguage;
+      return (contentFilterLanguage.equals(MSG_CONTENTALLLANGUAGES)) ? null : contentFilterLanguage;
    }
    
    /**

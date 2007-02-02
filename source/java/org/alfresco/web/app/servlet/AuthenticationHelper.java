@@ -18,7 +18,6 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.Locale;
 
 import javax.portlet.PortletSession;
 import javax.servlet.ServletContext;
@@ -229,8 +228,13 @@ public final class AuthenticationHelper
             String contentFilterLanguageStr = loginBean.getUserPreferencesBean().getContentFilterLanguage();
             if (contentFilterLanguageStr != null)
             {
-               //set the cocale for the method interceptor for MLText properties
-               I18NUtil.setContentLocale(new Locale(contentFilterLanguageStr));
+               // Set the locale for the method interceptor for MLText properties
+               I18NUtil.setContentLocale(I18NUtil.parseLocale(contentFilterLanguageStr));
+            }
+            else
+            {
+               // Nothing has been selected, so remove the content filter
+               I18NUtil.setContentLocale(null);
             }
          }
 

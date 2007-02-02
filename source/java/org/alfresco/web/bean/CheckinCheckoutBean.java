@@ -484,7 +484,8 @@ public class CheckinCheckoutBean
                // if this is a workflow action and there is a task id present we need
                // to also link the working copy to the workflow package so it appears
                // in the resources panel in the manage task dialog
-               if (this.isWorkflowAction && this.workflowTaskId != null)
+               if (this.isWorkflowAction && this.workflowTaskId != null && 
+                   (this.workflowTaskId.equals("null") == false))
                {
                   WorkflowTask task = this.workflowService.getTaskById(this.workflowTaskId);
                   if (task != null)

@@ -200,6 +200,16 @@
             <action idref="remove_package_item" />
          </action-group>
          
+         <action-group id="start_package_item_actions">
+            <action idref="view_content_properties" />
+            <action idref="edit_content_properties" />
+            <action idref="edit_doc_http" />
+            <action idref="edit_doc_webdav" />
+            <action idref="edit_doc_cifs" />
+            <action idref="update_doc" />
+            <action idref="remove_package_item" />
+         </action-group>
+         
          <action-group id="edit_and_remove_package_item_actions">
             <action idref="view_content_properties" />
             <action idref="edit_content_properties" />

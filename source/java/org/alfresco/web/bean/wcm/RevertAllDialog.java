@@ -26,8 +26,8 @@ import java.util.Map;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
+import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 
@@ -52,6 +53,13 @@ public class RevertAllDialog extends BaseDialogBean
    protected AVMSyncService avmSyncService;
    protected ActionService actionService;
    protected NameMatcher nameMatcher;
+
+   // The virtualization server might need to be notified 
+   // because one or more of the files reverted could alter 
+   // the behavior the virtual webapp in the target of the submit.
+
+   private String virtUpdatePath;     
+
    
    /**
     * @param avmBrowseBean    The AVM BrowseBean to set
@@ -99,11 +107,22 @@ public class RevertAllDialog extends BaseDialogBean
       // calcluate the list of differences between the user store and the staging area
       List<AVMDifference> diffs = this.avmSyncService.compare(
             -1, userStore, -1, stagingStore, this.nameMatcher);
+
       List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
+
       for (AVMDifference diff : diffs)
       {
-         versionPaths.add(new Pair<Integer, String>(-1, diff.getSourcePath()));
+         String revertPath =  diff.getSourcePath();
+         versionPaths.add(new Pair<Integer, String>(-1, revertPath) );
+
+         if ( (this.virtUpdatePath == null) &&
+               VirtServerUtils.requiresUpdateNotification(revertPath)
+            )
+         {
+             this.virtUpdatePath = revertPath;
+         }
       }
+
       Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
       args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
       Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
@@ -114,6 +133,22 @@ public class RevertAllDialog extends BaseDialogBean
       FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
       context.addMessage(AVMBrowseBean.FORM_ID + ':' + AVMBrowseBean.COMPONENT_SANDBOXESPANEL, facesMsg);
       
+      return outcome;
+   }
+
+   /**
+    * Handle notification to the virtualization server 
+    * (this needs to occur after the sandbox is updated).
+    */
+   @Override
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {     
+      // Force the update because we've already determined
+      // that update_path requires virt server notification.
+      if (this.virtUpdatePath != null)
+      {
+         AVMConstants.updateVServerWebapp(this.virtUpdatePath, true);
+      }
       return outcome;
    }
    

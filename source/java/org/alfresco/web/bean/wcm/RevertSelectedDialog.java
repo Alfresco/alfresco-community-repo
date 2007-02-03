@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.util.VirtServerUtils;
 
 /**
  * Revert (undo) the selected files in the current user sandbox.
@@ -47,6 +48,14 @@ public class RevertSelectedDialog extends BaseDialogBean
    
    protected AVMBrowseBean avmBrowseBean;
    protected ActionService actionService;
+
+   // The virtualization server might need to be notified 
+   // because one or more of the files reverted could alter 
+   // the behavior the virtual webapp in the target of the submit.
+
+   private String virtUpdatePath;     
+
+
    
    /**
     * @param avmBrowseBean    The AVM BrowseBean to set
@@ -73,10 +82,21 @@ public class RevertSelectedDialog extends BaseDialogBean
    {
       List<AVMNodeDescriptor> selected = this.avmBrowseBean.getSelectedSandboxItems();
       List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
+
+
       for (AVMNodeDescriptor node : selected)
       {
-         versionPaths.add(new Pair<Integer, String>(-1, node.getPath()));
+         String revertPath = node.getPath();
+         versionPaths.add(new Pair<Integer, String>(-1, revertPath ));
+
+         if ( (this.virtUpdatePath == null) &&
+               VirtServerUtils.requiresUpdateNotification(revertPath)
+            )
+         {
+             this.virtUpdatePath = revertPath;
+         }
       }
+
       Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
       args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
       for (AVMNodeDescriptor node : selected)
@@ -92,6 +112,24 @@ public class RevertSelectedDialog extends BaseDialogBean
       
       return outcome;
    }
+
+   /**
+    * Handle notification to the virtualization server 
+    * (this needs to occur after the sandbox is updated).
+    */
+   @Override
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {     
+      // Force the update because we've already determined
+      // that update_path requires virt server notification.
+      if (this.virtUpdatePath != null)
+      {
+         AVMConstants.updateVServerWebapp(this.virtUpdatePath, true);
+      }
+      return outcome;
+   }
+
+
    
    /**
     * @return the confirmation to display to the user

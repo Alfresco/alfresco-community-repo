@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -69,6 +71,8 @@ import org.alfresco.web.ui.wcm.component.UISandboxSnapshots;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.util.VirtServerUtils;
 
 /**
  * Bean backing up the AVM specific browse screens
@@ -155,6 +159,9 @@ public class AVMBrowseBean implements IContextListener
    
    /** AVM service bean reference */
    protected AVMService avmService;
+
+   /** AVM sync service bean reference */
+   protected AVMSyncService avmSyncService;
    
    /** Action service bean reference */
    protected ActionService actionService;
@@ -177,6 +184,14 @@ public class AVMBrowseBean implements IContextListener
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+
+   /**
+    * @param avmSyncService   The AVMSyncService to set.
+    */
+   public void setAvmSyncService(AVMSyncService avmSyncService)
+   {
+      this.avmSyncService = avmSyncService;
    }
    
    /**
@@ -873,6 +888,14 @@ public class AVMBrowseBean implements IContextListener
          
          // commit the transaction
          tx.commit();
+
+         // possibly update webapp after commit
+
+         if ( VirtServerUtils.requiresUpdateNotification( path ) )
+         {
+             AVMConstants.updateVServerWebapp(path, true);
+         }
+
          
          // if we get here, all was well - output friendly status message to the user
          String msg = MessageFormat.format(Application.getMessage(
@@ -905,6 +928,12 @@ public class AVMBrowseBean implements IContextListener
             FacesContext context = FacesContext.getCurrentInstance();
             tx = Repository.getUserTransaction(context, false);
             tx.begin();
+
+            String sandboxPath = AVMConstants.buildSandboxRootPath( sandbox );
+
+            List<AVMDifference> diffs = 
+                this.avmSyncService.compare(
+                   -1,sandboxPath,Integer.valueOf(strVersion),sandboxPath,null);
             
             Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
             args.put(AVMRevertStoreAction.PARAM_VERSION, Integer.valueOf(strVersion));
@@ -913,6 +942,18 @@ public class AVMBrowseBean implements IContextListener
             
             // commit the transaction
             tx.commit();
+
+            // See if any of the files being reverted require
+            // notification of the virt server.
+
+            for (AVMDifference diff : diffs)
+            {
+                if ( VirtServerUtils.requiresUpdateNotification( diff.getSourcePath()) )
+                {
+                    AVMConstants.updateVServerWebapp(diff.getSourcePath() , true);
+                    break;
+                }
+            }
             
             // if we get here, all was well - output friendly status message to the user
             String msg = MessageFormat.format(Application.getMessage(

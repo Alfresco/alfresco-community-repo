@@ -2351,6 +2351,10 @@
          <value>#{AVMService}</value>
       </managed-property>
       <managed-property>
+         <property-name>avmSyncService</property-name>
+         <value>#{AVMSyncService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>navigationBean</property-name>
          <value>#{NavigationBean}</value>
       </managed-property>

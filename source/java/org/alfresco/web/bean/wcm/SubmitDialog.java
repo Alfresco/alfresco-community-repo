@@ -326,9 +326,6 @@ public class SubmitDialog extends BaseDialogBean
          String stagingPath = AVMConstants.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
          List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
 
-         // flag indicating if virt server update is already implied
-         boolean updateVserver = false;
-
          for (ItemWrapper wrapper : items)
          {
             String srcPath = sandboxPath + wrapper.getPath();
@@ -339,17 +336,12 @@ public class SubmitDialog extends BaseDialogBean
             // If nothing has required notifying the virtualization server
             // so far, check to see if destPath forces a notification
             // (e.g.:  it might be a path to a jar file within WEB-INF/lib).
-            if (!updateVserver)
+
+            if ( (this.virtUpdatePath == null) &&
+                  VirtServerUtils.requiresUpdateNotification( destPath )
+               )
             {
-               // Examples of destPath that require virt server notification:
-               //
-               //     mysite:/www/avm_webapps/ROOT/WEB-INF/web.xml
-               //     mysite:/www/avm_webapps/ROOT/WEB-INF/lib/moo.jar
-               updateVserver = VirtServerUtils.requiresUpdateNotification( destPath );
-               if (updateVserver)
-               {
-                  this.virtUpdatePath = destPath;
-               }
+               this.virtUpdatePath = destPath;
             }
          }
          

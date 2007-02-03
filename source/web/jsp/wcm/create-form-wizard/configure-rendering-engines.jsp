@@ -64,8 +64,8 @@
                columns="4" cellpadding="3" cellspacing="3" border="0"
 	       columnClasses="panelGridRequiredImageColumn,panelGridLabelColumn,panelGridValueColumn">
                width="100%">
-    <h:graphicImage id="required_image_rendering_engine_template_file"
-                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+    <h:outputText id="required_image_rendering_engine_template_file"
+                  value="" />
     <h:outputText id="output_text_rendering_engine_template_file"
                   value="#{msg.rendering_engine_template_file}:"/>
     <h:column id="column_rendering_engine_template_file_empty"
@@ -105,22 +105,34 @@
                width="100%">
 
     <h:graphicImage id="required-image-rendering-engine"
-                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+                    value="/images/icons/required_field.gif" 
+                    alt="#{msg.required_field}" 
+                    rendered="#{WizardManager.bean.renderingEngineTemplateFileName != null}"/>
+    <h:outputText id="not-required-rendering-engine" 
+                  value=""
+                  rendered="#{WizardManager.bean.renderingEngineTemplateFileName == null}"/>
     <h:outputText id="rendering-engine-output-text"
                   value="#{msg.rendering_engine}:"/>
     <h:selectOneRadio id="rendering-engine" 
-		      value="#{WizardManager.bean.renderingEngineName}">
+		      value="#{WizardManager.bean.renderingEngineName}"
+                      disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}">
       <f:selectItems id="rendering-engine-choices"
 		     value="#{WizardManager.bean.renderingEngineChoices}"/>
     </h:selectOneRadio>
     <h:column id="rendering-engine-help"/>
 
     <h:graphicImage id="required-image-name"
-                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+                    value="/images/icons/required_field.gif" 
+                    alt="#{msg.required_field}" 
+                    rendered="#{WizardManager.bean.renderingEngineTemplateFileName != null}"/>
+    <h:outputText id="not-required-name" 
+                  value=""
+                  rendered="#{WizardManager.bean.renderingEngineTemplateFileName == null}"/>
     <h:outputText id="name-output-text"
                   value="#{msg.name}:"/>
     <h:inputText id="name" 
 		 value="#{WizardManager.bean.renderingEngineTemplateName}"
+                 disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
                  maxlength="1024" 
 		 size="35"/>
     <h:column id="name-help"/>
@@ -130,6 +142,7 @@
                   value="#{msg.title}:"/>
     <h:inputText id="title" 
 		 value="#{WizardManager.bean.renderingEngineTemplateTitle}"
+                 disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
                  maxlength="1024" 
 		 size="35"/>
     <h:column id="title-help"/>
@@ -139,15 +152,22 @@
                   value="#{msg.description}:"/>
     <h:inputText id="description" 
 		 value="#{WizardManager.bean.renderingEngineTemplateDescription}"
+                 disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
                  maxlength="1024" 
 		 style="width:100%"/>
     <h:column id="description-help"/>
 
     <h:graphicImage id="required-image-mimetype"
-                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+                    value="/images/icons/required_field.gif" 
+                    alt="#{msg.required_field}" 
+                    rendered="#{WizardManager.bean.renderingEngineTemplateFileName != null}"/>
+    <h:outputText id="not-required-mimetype" 
+                  value=""
+                  rendered="#{WizardManager.bean.renderingEngineTemplateFileName == null}"/>
     <h:outputText id="mimetype-output-text"
 		  value="#{msg.mimetype_for_renditions}:"/>
     <h:selectOneMenu id="mimetype"
+                     disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
 		     valueChangeListener="#{WizardManager.bean.mimetypeForRenditionChanged}" 
 		     value="#{WizardManager.bean.mimetypeForRendition}">
       <f:selectItems id="mimetype-choices"
@@ -156,10 +176,16 @@
     <h:column id="mimetype-help"/>
 
     <h:graphicImage id="required-image-output-path-pattern"
-                    value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+                    value="/images/icons/required_field.gif"
+                    rendered="#{WizardManager.bean.renderingEngineTemplateFileName != null}"
+                    alt="#{msg.required_field}" />
+    <h:outputText id="not-required-output-path-patern" 
+                  value=""
+                  rendered="#{WizardManager.bean.renderingEngineTemplateFileName == null}"/>
     <h:outputText id="output-path-pattern-output-text"
                   value="#{msg.output_path_pattern}:"/>
     <h:inputText id="output-path-pattern" 
+                 disabled="#{WizardManager.bean.renderingEngineTemplateFileName == null}"
 		 value="#{WizardManager.bean.outputPathPatternForRendition}"
 		 style="width:100%;"/>
     <h:graphicImage id="graphic_image_output_path_pattern_help"

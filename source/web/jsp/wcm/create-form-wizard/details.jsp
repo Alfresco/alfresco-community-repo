@@ -130,6 +130,7 @@
     <h:column id="no_img_root_element_name"/>
     <h:outputText id="out_root_element_name" value="#{msg.schema_root_element_name}:"/>
     <h:selectOneMenu id="schema-root-element-name" 
+                     disabled="#{WizardManager.bean.schemaFileName == null}"
 		     style="width:100%;"
                      value="#{WizardManager.bean.schemaRootElementName}"
 		     rendered="#{!empty WizardManager.bean.schemaRootElementNameChoices}">
@@ -159,6 +160,7 @@
 		    alt="#{msg.required_field}" />
     <h:outputText id="out_name" value="#{msg.name}:"/>
     <h:inputText id="form-name" 
+                 disabled="#{WizardManager.bean.schemaFileName == null}"
 		 value="#{WizardManager.bean.formName}"
                  maxlength="1024" 
 		 size="35"/>
@@ -167,6 +169,7 @@
     <h:column id="no_img_title"/>
     <h:outputText id="out_title" value="#{msg.title}:"/>
     <h:inputText id="form-title" 
+                 disabled="#{WizardManager.bean.schemaFileName == null}"
 		 value="#{WizardManager.bean.formTitle}" 
                  maxlength="1024" 
 		 size="35"/>
@@ -175,6 +178,7 @@
     <h:column id="no_img_description"/>
     <h:outputText id="out_description" value="#{msg.description}:"/>
     <h:inputText id="form-description" 
+                 disabled="#{WizardManager.bean.schemaFileName == null}"
 		 value="#{WizardManager.bean.formDescription}" 
                  maxlength="1024" 
 		 style="width:100%"/>
@@ -186,6 +190,7 @@
     <h:outputText id="out_form_instance_data_output_path_pattern" 
 		  value="#{msg.output_path_pattern}:"/>
     <h:inputText id="form_instance_data_output_path_pattern" 
+                 disabled="#{WizardManager.bean.schemaFileName == null}"
 		 value="#{WizardManager.bean.outputPathPatternForFormInstanceData}" 
 		 style="width:100%"/>
     <h:graphicImage id="img_form_instance_data_output_path_pattern_help"

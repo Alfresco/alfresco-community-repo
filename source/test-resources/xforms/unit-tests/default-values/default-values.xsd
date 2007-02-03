@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            elementFormDefault="qualified">
   <xs:simpleType name="five_string_values">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="one"/>
       <xs:enumeration value="two"/>
       <xs:enumeration value="three"/>
@@ -11,7 +11,7 @@
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ten_string_values">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="one"/>
       <xs:enumeration value="two"/>
       <xs:enumeration value="three"/>
@@ -27,7 +27,7 @@
   <xs:element name="default-values">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="string" type="xs:string" default="default string value"/>
+        <xs:element name="string" type="xs:normalizedString" default="default string value"/>
         <xs:element name="integer" type="xs:integer" default="3"/>
         <xs:element name="date" type="xs:date" default="1978-08-08"/>
         <xs:element name="radio" type="five_string_values" default="three"/>

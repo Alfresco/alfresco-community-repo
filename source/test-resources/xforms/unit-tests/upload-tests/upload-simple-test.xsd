@@ -4,7 +4,7 @@
   <xs:element name="upload-simple">
     <xs:complexType>
       <xs:sequence>
-	<xs:element name="string_with_default" type="xs:string" default="default value"/>
+	<xs:element name="string_with_default" type="xs:normalizedString" default="default value"/>
 	<xs:element name="file_from_element" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
 	<xs:element name="file_from_element_with_default" type="xs:anyURI" default="/index.jsp"/>
       </xs:sequence>

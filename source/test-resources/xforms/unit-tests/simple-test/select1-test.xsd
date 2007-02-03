@@ -3,7 +3,7 @@
 	   xmlns:alf="http://www.alfresco.org"
 	   elementFormDefault="qualified">
   <xs:simpleType name="ten_string_values">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="one"/>
       <xs:enumeration value="two"/>
       <xs:enumeration value="three"/>

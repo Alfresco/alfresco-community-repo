@@ -3,20 +3,20 @@
            elementFormDefault="qualified">
   <xs:complexType name="multi-input">
     <xs:sequence>
-      <xs:element name="string" type="xs:string"/>
+      <xs:element name="string" type="xs:normalizedString"/>
       <xs:element name="int" type="xs:int"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="repeat-constraints">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="zero-to-one" type="xs:string" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="one-to-one" type="xs:string" minOccurs="1" maxOccurs="1"/>
-        <xs:element name="one-to-inf" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
-        <xs:element name="zero-to-inf" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element name="one-to-five" type="xs:string" minOccurs="1" maxOccurs="5"/>
-        <xs:element name="three-to-five" type="xs:string" minOccurs="3" maxOccurs="5"/>
-        <xs:element name="zero-to-five" type="xs:string" minOccurs="0" maxOccurs="5"/>
+        <xs:element name="zero-to-one" type="xs:normalizedString" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="one-to-one" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="one-to-inf" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="zero-to-inf" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="one-to-five" type="xs:normalizedString" minOccurs="1" maxOccurs="5"/>
+        <xs:element name="three-to-five" type="xs:normalizedString" minOccurs="3" maxOccurs="5"/>
+        <xs:element name="zero-to-five" type="xs:normalizedString" minOccurs="0" maxOccurs="5"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

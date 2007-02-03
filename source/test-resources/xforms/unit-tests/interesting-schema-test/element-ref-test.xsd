@@ -9,7 +9,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:base64Binary">
-          <xs:attribute name="referenced_element_attribute" type="xs:string" use="required"/>
+          <xs:attribute name="referenced_element_attribute" type="xs:normalizedString" use="required"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -17,7 +17,7 @@
 
   <xs:complexType name="complex_type_1">
     <xs:sequence>
-      <xs:element name="string_in_ct" type="xs:string"/>
+      <xs:element name="string_in_ct" type="xs:normalizedString"/>
       <xs:element ref="mynsprefix:referenced_element"/>
     </xs:sequence>
   </xs:complexType>
@@ -25,7 +25,7 @@
   <xs:element name="element-ref-test">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="string" type="xs:string"/>
+        <xs:element name="string" type="xs:normalizedString"/>
         <xs:element name="complex_type_1" type="mynsprefix:complex_type_1"/>
       </xs:sequence>
     </xs:complexType>

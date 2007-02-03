@@ -4,10 +4,10 @@
   <xs:element name="repeat-simple">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="zero-to-one" type="xs:string" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="one-to-one" type="xs:string" minOccurs="1" maxOccurs="1"/>
-        <xs:element name="one-to-inf" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
-        <xs:element name="zero-to-inf" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="zero-to-one" type="xs:normalizedString" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="one-to-one" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="one-to-inf" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="zero-to-inf" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

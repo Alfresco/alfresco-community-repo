@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            elementFormDefault="qualified">
   <xs:simpleType name="attribute-choices" >
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="string1"/>
       <xs:enumeration value="string2"/>
       <xs:enumeration value="string3-is-the-default"/>
@@ -16,31 +16,31 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="element_string_no_default" 
-	            type="xs:string" 
+	            type="xs:normalizedString" 
 	            minOccurs="1" 
 		    maxOccurs="1"/>
         <xs:element name="element_string_with_default" 
-	            type="xs:string" 
+	            type="xs:normalizedString" 
 	            minOccurs="1" 
 		    maxOccurs="1"
 		    default="default string value"/>
       </xs:sequence>
       <xs:attribute name="required_string_no_default"
-                    type="xs:string"
+                    type="xs:normalizedString"
 		    use="required"/>
       <xs:attribute name="optional_string_no_default"
-                    type="xs:string"
+                    type="xs:normalizedString"
 		    use="optional"/>
       <xs:attribute name="required_string_with_default"
-                    type="xs:string"
+                    type="xs:normalizedString"
 		    use="required"
 		    default="default string value"/>
       <xs:attribute name="optional_string_with_default"
-                    type="xs:string"
+                    type="xs:normalizedString"
 		    use="optional"
 		    default="default string value"/>
       <xs:attribute name="fixed_string"
-                    type="xs:string"
+                    type="xs:normalizedString"
 		    use="optional"
 		    fixed="fixed string value"/>
       <xs:attribute name="required_choices_no_default"

@@ -3,7 +3,7 @@
 	   xmlns:alf="http://www.alfresco.org"
 	   elementFormDefault="qualified">
   <xs:simpleType name="five_string_values">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="one">
 	<xs:annotation>
 	  <xs:appinfo>
@@ -42,7 +42,7 @@
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ten_string_values">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="one"/>
       <xs:enumeration value="two"/>
       <xs:enumeration value="three"/>
@@ -69,7 +69,7 @@
   <xs:element name="text_components">
     <xs:complexType>
       <xs:sequence>
-	<xs:element name="required_textfield" type="xs:string" minOccurs="1" maxOccurs="1">
+	<xs:element name="required_textfield" type="xs:normalizedString" minOccurs="1" maxOccurs="1">
 	  <xs:annotation>
 	    <xs:appinfo>
 	      <alf:label>${components-test.required_textfield.label}</alf:label>
@@ -77,7 +77,7 @@
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>
-	<xs:element name="optional_textfield" type="xs:string" minOccurs="0" maxOccurs="1">
+	<xs:element name="optional_textfield" type="xs:normalizedString" minOccurs="0" maxOccurs="1">
 	  <xs:annotation>
 	    <xs:appinfo>
 	      <alf:label>${components-test.optional_textfield.label}</alf:label>
@@ -85,8 +85,28 @@
 	    </xs:appinfo>
 	  </xs:annotation>
 	</xs:element>
-	<xs:element name="prefilled_textfield" type="xs:string" minOccurs="0" maxOccurs="1" default="i am the default value"/>
-	<xs:element name="textarea" type="xs:anyType"/>
+	<xs:element name="prefilled_textfield" type="xs:normalizedString" minOccurs="0" maxOccurs="1" default="i am the default value"/>
+	<xs:element name="plain_textarea" type="xs:string">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>minimal</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
+	<xs:element name="plain_text_with_toggle" type="xs:string">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>compact</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>            
+	<xs:element name="rich_text_editor" type="xs:string">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>full</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -158,7 +178,7 @@
     <xs:complexType>
       <xs:sequence>
 	<xs:element name="file" type="xs:anyURI"/>
-	<xs:element name="repeat" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+	<xs:element name="repeat" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
 	<xs:element name="checkbox_default_true" type="xs:boolean" default="true"/>
 	<xs:element name="checkbox_default_false" type="xs:boolean" default="false"/>
 	<xs:element name="checkbox_no_default" type="xs:boolean"/>

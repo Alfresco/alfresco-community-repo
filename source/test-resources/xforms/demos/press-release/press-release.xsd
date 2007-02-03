@@ -26,7 +26,7 @@ Describes a press release and related assets.
   <xs:include schemaLocation="/media/releases/get_company_footer_choices_simple_type.jsp"/>
 
   <xs:simpleType name="category">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="Product"/>
       <xs:enumeration value="Partnership"/>
       <xs:enumeration value="Company"/>
@@ -39,13 +39,13 @@ Describes a press release and related assets.
   <xs:element name="press_release">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="title" type="xs:string"/>
-        <xs:element name="abstract" type="xs:string"/>
-        <xs:element name="location" type="xs:string"/>
-        <xs:element name="body" type="xs:anyType" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="title" type="xs:normalizedString"/>
+        <xs:element name="abstract" type="xs:normalizedString"/>
+        <xs:element name="location" type="xs:normalizedString"/>
+        <xs:element name="body" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
 	<xs:element name="include_company_footer" type="pr:company_footer_choices" minOccurs="1" maxOccurs="unbounded"/>
 	<xs:element name="include_media_contacts" type="xs:boolean" default="true"/>
-	<xs:element name="keywords" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element name="keywords" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
 	<xs:element name="category" type="pr:category" default="Company"/>
 	<xs:element name="launch_date" type="xs:date"/>
 	<xs:element name="expiration_date" type="xs:date"/>

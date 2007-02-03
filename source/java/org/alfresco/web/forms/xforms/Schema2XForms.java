@@ -555,7 +555,9 @@ public class Schema2XForms
                                                        final ResourceBundle resourceBundle)
    {
       if (annotation == null)
+      {
          return null;
+      }
       // write annotation to empty doc
       final Document doc = XMLUtil.newDocument();
       annotation.writeAnnotation(doc, XSAnnotation.W3C_DOM_DOCUMENT);
@@ -664,7 +666,9 @@ public class Schema2XForms
                   //remove "@" in nodeset
                   String name = nodeset.substring(1);
                   if (name.equals(attributeName))
+                  {
                      bindId = bind.getAttributeNS(null, "id");
+                  }
                }
             }
 
@@ -715,7 +719,6 @@ public class Schema2XForms
                                             ? null
                                             : currentAttributeUse.getConstraintValue());
                defaultInstanceElement.setAttributeNS(this.targetNamespace,
-                                                     // XXXarielb - i probably need the prefix here i.e. "alf:" + attributeName
                                                      attributeName,
                                                      defaultValue);
             }
@@ -1013,13 +1016,17 @@ public class Schema2XForms
       }
       else
       {
+         final SchemaUtil.Occurance o = SchemaUtil.getOccurance(elementDecl);
          //create the bind in case it is a repeat
          LOGGER.debug("Adding empty bind for control " + controlType +
                       " type " + typeName + 
-                      " nodeset " + pathToRoot);
+                      " nodeset " + pathToRoot +
+                      " occurs " + o);
 
          // create the <xforms:bind> element and add it to the model.
-         final Element bindElement = this.createBind(xformsDocument, pathToRoot);
+         final Element bindElement = 
+            this.createBind(xformsDocument, 
+                            pathToRoot + (o.isRepeated() ? "[position() != last()]" : ""));
          final String bindId = bindElement.getAttributeNS(null, "id");
 
          modelSection.appendChild(bindElement);
@@ -1027,7 +1034,7 @@ public class Schema2XForms
                                schema,
                                controlType,
                                null,
-                               SchemaUtil.getOccurance(elementDecl));
+                               o);
       }
       return this.addComplexType(xformsDocument,
                                  modelSection,
@@ -1443,7 +1450,7 @@ public class Schema2XForms
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug("AddRepeatIfNecessary for multiple element for type " +
-                      controlType.getName() + ", maxOccurs=" + o.maximum);
+                      controlType.getName() + ", maxOccurs = " + o.maximum);
       }
 
       final Element repeatSection =
@@ -1688,8 +1695,10 @@ public class Schema2XForms
       else
       {
          formControl = this.createControlForAtomicType(xformsDocument,
+                                                       (XSSimpleTypeDefinition)controlType,
+                                                       owner,
                                                        caption,
-                                                       (XSSimpleTypeDefinition)controlType);
+                                                       resourceBundle);
       }
 
       formControl.setAttributeNS(NamespaceConstants.XFORMS_NS,
@@ -1850,19 +1859,22 @@ public class Schema2XForms
                                final ResourceBundle resourceBundle)
    {
       // add a group node and recurse
-      final Element groupElement =
+      final Element result =
          xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                         NamespaceConstants.XFORMS_PREFIX + ":group");
-      this.setXFormsId(groupElement);
-      groupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                  NamespaceConstants.XFORMS_PREFIX + ":appearance",
-                                  "full");
-
-      //groupElement = (Element) formSection.appendChild(groupElement);
-      formSection.appendChild(groupElement);
-      groupElement.appendChild(this.createLabel(xformsDocument,
-                                                this.createCaption(owner, resourceBundle)));
-      return groupElement;
+      this.setXFormsId(result);
+      final String appearance = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                                   "appearance",
+                                                                   this.getAnnotation(owner),
+                                                                   resourceBundle);
+      result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                            NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                            appearance == null || appearance.length() == 0 ? "full" : appearance);
+      
+      formSection.appendChild(result);
+      result.appendChild(this.createLabel(xformsDocument,
+                                          this.createCaption(owner, resourceBundle)));
+      return result;
    }
 
    public String createCaption(final String text,
@@ -2003,10 +2015,9 @@ public class Schema2XForms
       final Element control = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                                              NamespaceConstants.XFORMS_PREFIX + ":textarea");
       this.setXFormsId(control);
-//      control.setAttributeNS(Schema2XForms.CHIBA_NS,
-//                             Schema2XForms.CHIBA_PREFIX + "height",
-//                             "3");
-
+      control.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                             NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                             "compact");
       control.appendChild(this.createLabel(xformsDocument, caption));
       return control;
    }
@@ -2025,25 +2036,33 @@ public class Schema2XForms
     * @param controlType The XML Schema type for which the form control is to be created.
     * @return The element for the form control.
     */
-   public Element createControlForAtomicType(Document xformsDocument,
-                                             String caption,
-                                             XSSimpleTypeDefinition controlType)
+   public Element createControlForAtomicType(final Document xformsDocument,
+                                             final XSSimpleTypeDefinition controlType,
+                                             final XSObject owner,
+                                             final String caption,
+                                             final ResourceBundle resourceBundle)
    {
-      LOGGER.debug("creating a control for atomic type {name: " + controlType.getName() +
-                   ", numeric: " + controlType.getNumeric() +
-                   ", bounded: " + controlType.getBounded() +
-                   ", finite: " + controlType.getFinite() +
-                   ", ordered: " + controlType.getOrdered() +
-                   ", final: " + controlType.getFinal() +
-                   ", minInc: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE) +
-                   ", maxInc: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE) +
-                   ", minExc: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINEXCLUSIVE) +
-                   ", maxExc: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE) +
-                   ", fractionDigits: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_FRACTIONDIGITS) +
-                   ", builtInTypeName: " + SchemaUtil.getBuiltInTypeName(controlType) +
-                   ", builtInType: " + SchemaUtil.getBuiltInType(controlType) +
-                   "}");
-
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("creating a control for atomic type {name: " + controlType.getName() +
+                      ", numeric: " + controlType.getNumeric() +
+                      ", bounded: " + controlType.getBounded() +
+                      ", finite: " + controlType.getFinite() +
+                      ", ordered: " + controlType.getOrdered() +
+                      ", final: " + controlType.getFinal() +
+                      ", minInc: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MININCLUSIVE) +
+                      ", maxInc: " + controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXINCLUSIVE) +
+                      ", minExc: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINEXCLUSIVE) +
+                      ", maxExc: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXEXCLUSIVE) +
+                      ", fractionDigits: " +  controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_FRACTIONDIGITS) +
+                      ", builtInTypeName: " + SchemaUtil.getBuiltInTypeName(controlType) +
+                      ", builtInType: " + SchemaUtil.getBuiltInType(controlType) +
+                      "}");
+      }
+      String appearance = this.extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                                                             "appearance",
+                                                             this.getAnnotation(owner),
+                                                             resourceBundle);
       Element result = null;
       if ("boolean".equals(controlType.getName()))
       {
@@ -2054,6 +2073,15 @@ public class Schema2XForms
          {
             final Element item = this.createXFormsItem(xformsDocument, v, v);
             result.appendChild(item);
+         }
+      }
+      else if ("string".equals(controlType.getName()))
+      {
+         result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
+                                                 NamespaceConstants.XFORMS_PREFIX + ":textarea");
+         if (appearance == null || appearance.length() == 0)
+         {
+            appearance = "compact";
          }
       }
       else if ("anyURI".equals(controlType.getName()))
@@ -2100,10 +2128,21 @@ public class Schema2XForms
       {
          result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS, 
                                                  NamespaceConstants.XFORMS_PREFIX + ":input");
+         if ((appearance == null || appearance.length() == 0) &&
+             SchemaUtil.getBuiltInType(controlType) == XSConstants.NORMALIZEDSTRING_DT)
+         {
+            appearance = "full";
+         }
       }
       this.setXFormsId(result);
       result.appendChild(this.createLabel(xformsDocument, caption));
 
+      if (appearance != null && appearance.length() != 0)
+      {
+         result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                               NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                               appearance);
+      }
       return result;
    }
 

@@ -17,6 +17,7 @@
 package org.alfresco.web.forms.xforms;
 
 import java.io.*;
+import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.chiba.xml.ns.NamespaceConstants;
 import org.chiba.xml.xforms.exception.XFormsException;
@@ -46,7 +48,7 @@ public class XFormsProcessor
       { "alfresco", NamespaceService.ALFRESCO_URI, NamespaceService.ALFRESCO_PREFIX }
    };
    
-   private final String[] JS_SCRIPTS = 
+   private final static String[] JS_SCRIPTS = 
    {
       "/scripts/tiny_mce/" + (LOGGER.isDebugEnabled() 
                               ? "tiny_mce_src.js" 
@@ -58,6 +60,18 @@ public class XFormsProcessor
       "/scripts/upload_helper.js",
    };
 
+
+   private final static String[] BUNDLE_KEYS =
+   {
+      "validation_provide_values_for_required_fields",
+      "idle",
+      "loading",
+      "add_content",
+      "go_up",
+      "cancel",
+      "upload",
+      "path"
+   };
 
    public XFormsProcessor()
    {
@@ -138,6 +152,17 @@ public class XFormsProcessor
          js.append("alfresco_xforms_constants.").
             append(ns[0].toUpperCase()). 
             append("_PREFIX = '").append(ns[2]).append("';\n");
+      }
+
+      final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+      js.append("alfresco_xforms_constants.resources = {\n");
+      for (String k : BUNDLE_KEYS)
+      {
+         js.append(k).
+            append(": '").
+            append(bundle.getString(k)).
+            append("'").
+            append(k.equals(BUNDLE_KEYS[BUNDLE_KEYS.length - 1]) ? "\n}" : ",\n");
       }
       e.appendChild(result.createTextNode(js.toString()));
 

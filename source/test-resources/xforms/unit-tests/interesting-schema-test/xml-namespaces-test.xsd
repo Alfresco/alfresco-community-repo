@@ -5,19 +5,19 @@
 	   targetNamespace="http://www.alfresco.org/alf">
   <xs:complexType name="multi">
     <xs:sequence>
-      <xs:element name="multi1" type="xs:string"/>
-      <xs:element name="multi2" type="xs:string"/>
+      <xs:element name="multi1" type="xs:normalizedString"/>
+      <xs:element name="multi2" type="xs:normalizedString"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="xml-namespaces-test">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="string_with_default" type="xs:string" default="default string value"/>
-        <xs:element name="string_no_default" type="xs:string"/>
+        <xs:element name="string_with_default" type="xs:normalizedString" default="default string value"/>
+        <xs:element name="string_no_default" type="xs:normalizedString"/>
         <xs:element name="multi" type="alf:multi" minOccurs="2" maxOccurs="3"/>
       </xs:sequence>
-      <xs:attribute name="string_attribute_with_default" type="xs:string" default="default string value"/>
-      <xs:attribute name="string_attribute_no_default" type="xs:string"/>
+      <xs:attribute name="string_attribute_with_default" type="xs:normalizedString" default="default string value"/>
+      <xs:attribute name="string_attribute_no_default" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>

@@ -6,7 +6,7 @@
            targetNamespace="http://mine.org/mynsuri">
 
   <xs:simpleType name="yes_or_no">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="yes"/>
       <xs:enumeration value="no"/>
     </xs:restriction>

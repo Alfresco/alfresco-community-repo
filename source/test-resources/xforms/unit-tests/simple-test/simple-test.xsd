@@ -4,7 +4,7 @@
   <xs:element name="simple">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="string" type="xs:string" default="default string value"/>
+        <xs:element name="string" type="xs:normalizedString" default="default string value"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

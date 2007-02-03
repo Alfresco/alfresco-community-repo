@@ -5,18 +5,18 @@
 
   <xs:complexType name="complex-type">
     <xs:sequence>
-      <xs:element name="fixed_string_element" type="xs:string" minOccurs="1" maxOccurs="1" fixed="fixed value"/>
+      <xs:element name="fixed_string_element" type="xs:normalizedString" minOccurs="1" maxOccurs="1" fixed="fixed value"/>
     </xs:sequence>
-    <xs:attribute name="required_string_attribute" type="xs:string" use="required"/>
+    <xs:attribute name="required_string_attribute" type="xs:normalizedString" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="inheritence-type">
     <xs:complexContent>
       <xs:extension base="complex-type">
 	<xs:sequence>
-	  <xs:element name="additional_required_string_element" type="xs:string" minOccurs="1" maxOccurs="1"/>
+	  <xs:element name="additional_required_string_element" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
 	</xs:sequence>
-	<xs:attribute name="additional_fixed_string_attribute" type="xs:string" use="required" fixed="additional fixed value"/>
+	<xs:attribute name="additional_fixed_string_attribute" type="xs:normalizedString" use="required" fixed="additional fixed value"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

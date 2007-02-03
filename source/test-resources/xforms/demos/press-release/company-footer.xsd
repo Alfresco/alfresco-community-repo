@@ -25,8 +25,8 @@ Describes a press release and related assets.
   <xs:element name="company_footer">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="name" type="xs:string"/>
-        <xs:element name="body" type="xs:anyType" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="name" type="xs:normalizedString"/>
+        <xs:element name="body" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

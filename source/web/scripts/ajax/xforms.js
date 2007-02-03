@@ -609,7 +609,7 @@ dojo.declare("alfresco.xforms.TextField",
                  this.widget.setAttribute("type", "text");
                  this.widget.setAttribute("id", this.id + "-widget");
                  this.widget.setAttribute("value", initial_value);
-                 if (this.xform.getBinding(this.xformsNode).getType() == "string")
+                 if (this.getAppearance() == "full")
                  {
                    this.widget.style.width = "100%";
                  }
@@ -745,8 +745,64 @@ dojo.declare("alfresco.xforms.NumericalRange",
                }
              });
 
-/** The textfield widget which handle xforms widget xf:textarea. */
-dojo.declare("alfresco.xforms.TextArea",
+/** The text area widget handles xforms widget xf:textarea with appearance minimal */
+dojo.declare("alfresco.xforms.PlainTextEditor",
+             alfresco.xforms.Widget,
+             function(xform, xformsNode)
+             {
+             },
+             {
+               /////////////////////////////////////////////////////////////////
+               // overridden methods
+               /////////////////////////////////////////////////////////////////
+               render: function(attach_point)
+               {
+                 attach_point.appendChild(this.domNode);
+                 dojo.html.prependClass(this.domNode, "xformsTextArea");
+                 var initialValue = this.getInitialValue() || "";
+                 this.widget = document.createElement("textarea");
+                 this.domNode.appendChild(this.widget);
+                 this.widget.setAttribute("id", this.id + "-widget");
+                 this.widget.setAttribute("value", initialValue);
+                 if (this.isReadonly())
+                 {
+                   this.widget.setAttribute("readonly", this.isReadonly());
+                 }
+                 this.widget.style.width = "100%";
+                 this.widget.style.height = "100%";
+                 dojo.event.connect(this.widget, "onchange", this, this._textarea_changeHandler);
+               },
+
+               setValue: function(value, forceCommit)
+               {
+                 if (!this.widget)
+                 {
+                   this.setInitialValue(value, forceCommit);
+                 }
+                 else
+                 {
+                   alfresco.xform.PlainTextEditor.superclass.setValue.call(this, value, forceCommit);
+                   this.widget.value = value;
+                 }
+               },
+
+               getValue: function()
+               {
+                 return this.widget.value;
+               },
+
+               /////////////////////////////////////////////////////////////////
+               // DOM event handlers
+               /////////////////////////////////////////////////////////////////
+
+               _textarea_changeHandler: function(event)
+               {
+                 this._commitValueChange();
+               }
+             });
+
+/** The textfield widget which handle xforms widget xf:textarea. with appearance full or compact */
+dojo.declare("alfresco.xforms.RichTextEditor",
              alfresco.xforms.Widget,
              function(xform, xformsNode) 
              {
@@ -823,7 +879,7 @@ dojo.declare("alfresco.xforms.TextArea",
 
                setReadonly: function(readonly)
                {
-                 alfresco.xforms.TextArea.superclass.setReadonly.call(this, readonly);
+                 alfresco.xforms.RichTextEditor.superclass.setReadonly.call(this, readonly);
                  var mce = tinyMCE.getInstanceById(this.id);
                  if (readonly && mce)
                  {
@@ -837,7 +893,7 @@ dojo.declare("alfresco.xforms.TextArea",
 
                _destroy: function()
                {
-                 alfresco.xforms.TextArea.superclass._destroy.call(this);
+                 alfresco.xforms.RichTextEditor.superclass._destroy.call(this);
                  if (!this.isReadonly())
                  {
                    dojo.debug("removing mce control " + this.id);
@@ -3146,7 +3202,9 @@ dojo.declare("alfresco.xforms.XForm",
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":repeat":
                    return new alfresco.xforms.Repeat(this, xformsNode);
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":textarea":
-                   return new alfresco.xforms.TextArea(this, xformsNode);
+                   return (new alfresco.xforms.Widget(this, xformsNode).getAppearance() == "minimal"
+                           ? new alfresco.xforms.PlainTextEditor(this, xformsNode)
+                           : new alfresco.xforms.RichTextEditor(this, xformsNode)); 
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":upload":
                    return new alfresco.xforms.FilePicker(this, xformsNode);
                  case alfresco_xforms_constants.XFORMS_PREFIX + ":range":
@@ -3579,7 +3637,7 @@ dojo.declare("alfresco.xforms.XForm",
                    {
                      this.submitWidget = null;
                      var invalid = this.rootWidget.getWidgetsInvalidForSubmit();
-                     _show_error(document.createTextNode("Please provide values for all required fields."));
+                     _show_error(document.createTextNode(alfresco_xforms_constants.resources["validation_provide_values_for_required_fields"]));
                      var error_list = document.createElement("ul");
                      for (var j = 0; j < invalid.length; j++)
                      {
@@ -3703,10 +3761,11 @@ AjaxHelper._updateLoaderDisplay = function()
 {
   var ajaxLoader = AjaxHelper._getLoaderElement();
   ajaxLoader.innerHTML = (AjaxHelper._requests.length == 0
-                          ? "Idle"
-                          : "Loading" + (AjaxHelper._requests.length > 1
-                                         ? " (" + AjaxHelper._requests.length + ")"
-                                         : "..."));
+                          ? alfresco_xforms_constants.resources["idle"]
+                          : (alfresco_xforms_constants.resources["loading"] + 
+                             (AjaxHelper._requests.length > 1
+                              ? " (" + AjaxHelper._requests.length + ")"
+                              : "...")));
   dojo.debug(ajaxLoader.innerHTML);
   if (/* djConfig.isDebug && */ AjaxHelper._requests.length != 0)
   {
@@ -4182,7 +4241,8 @@ _showPicker: function(data)
   addContentImage.align = "absmiddle";
   addContentImage.setAttribute("src", alfresco_xforms_constants.WEBAPP_CONTEXT + "/images/icons/add.gif");
   addContentLink.appendChild(addContentImage);
-  addContentLink.appendChild(d.createTextNode("Add Content"));
+
+  addContentLink.appendChild(d.createTextNode(alfresco_xforms_constants.resources["add_content"]));
 
   var navigateToParentLink = d.createElement("a");
   headerRightDiv.appendChild(navigateToParentLink);
@@ -4211,7 +4271,7 @@ _showPicker: function(data)
   navigateToParentNodeImage.align = "absmiddle";
   navigateToParentNodeImage.setAttribute("src", alfresco_xforms_constants.WEBAPP_CONTEXT + "/images/icons/up.gif");
   navigateToParentLink.appendChild(navigateToParentNodeImage);
-  navigateToParentLink.appendChild(d.createTextNode("Go up"));
+  navigateToParentLink.appendChild(d.createTextNode(alfresco_xforms_constants.resources["go_up"]));
 
   headerRightDiv.style.position = "absolute";
   headerRightDiv.style.height = headerDiv.style.height;
@@ -4232,7 +4292,8 @@ _showPicker: function(data)
   var cancelButton = d.createElement("input");
   cancelButton.type = "button";
   cancelButton.filePickerWidget = this;
-  cancelButton.value = "Cancel";
+
+  cancelButton.value = alfresco_xforms_constants.resources["cancel"];
   footerDiv.appendChild(cancelButton);
 
   cancelButton.style.margin = ((.5 * footerDiv.offsetHeight) - 
@@ -4396,7 +4457,7 @@ _showAddContent: function(currentPath)
                          dojo.dom.removeChildren(w.addContentDiv);
 
                          var fileName = event.target.value.replace(/.*[\/\\]([^\/\\]+)/, "$1");
-                         w.addContentDiv.appendChild(d.createTextNode("Upload: " + fileName));
+                         w.addContentDiv.appendChild(d.createTextNode(alfresco_xforms_constants.resources["upload"] + ": " + fileName));
                          var img = d.createElement("img");
                          img.setAttribute("src", alfresco_xforms_constants.WEBAPP_CONTEXT + 
                                           "/images/icons/process_animation.gif");
@@ -4506,7 +4567,8 @@ _openParentPathMenu: function(target, path)
   var pathTextDiv = d.createElement("div");
   pathTextDiv.style.fontWeight = "bold";
   pathTextDiv.style.paddingLeft = "5px";
-  pathTextDiv.appendChild(d.createTextNode("Path"));
+
+  pathTextDiv.appendChild(d.createTextNode(alfresco_xforms_constants.resources["path"]));
   this.parentPathMenu.appendChild(pathTextDiv);
   var currentPathNodes = [];
   for (var i = 0; i < parentNodes.length; i++)

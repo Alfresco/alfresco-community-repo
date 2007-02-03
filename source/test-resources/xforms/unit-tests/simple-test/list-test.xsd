@@ -3,7 +3,7 @@
 	   xmlns:alf="http://www.alfresco.org"
 	   elementFormDefault="qualified">
   <xs:simpleType name="four_presidents">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="washington"/>
       <xs:enumeration value="jefferson"/>
       <xs:enumeration value="lincoln"/>
@@ -18,7 +18,7 @@
     <xs:list itemType="four_presidents"/>
   </xs:simpleType>
   <xs:simpleType name="thirteen_colonies">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="massachusetts"/>
       <xs:enumeration value="NH">
         <xs:annotation>

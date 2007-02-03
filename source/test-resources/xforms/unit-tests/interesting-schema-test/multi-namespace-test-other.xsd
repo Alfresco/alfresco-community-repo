@@ -5,7 +5,7 @@
            attributeFormDefault="qualified"
            targetNamespace="http://other.org/othernsuri">
   <xs:simpleType name="type1">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:normalizedString">
       <xs:minLength value="5"/>
       <xs:maxLength value="5"/>
     </xs:restriction>

@@ -189,20 +189,41 @@ public class ClipboardBean
    private boolean performClipboardOperation(ClipboardItem item, int action)
       throws Throwable
    {
+      boolean success = false;
+      
       FacesContext fc = FacesContext.getCurrentInstance();
       
       // test the current JSF view to see if the clipboard item can paste to it
       if (logger.isDebugEnabled())
-         logger.debug("Clipboard destintation View Id: " + fc.getViewRoot().getViewId());
-      if (item.canPasteToViewId(fc.getViewRoot().getViewId()) == false)
+         logger.debug("Clipboard destination View Id: " + fc.getViewRoot().getViewId());
+      if (item.getMode() == ClipboardStatus.CUT)
       {
-         // early exit if we cannot support this view as a paste location
-         if (logger.isDebugEnabled())
-            logger.debug("Clipboard Item: " + item.getNodeRef() + " not suitable for paste to current View Id."); 
-         return false;
+         if (item.canMoveToViewId(fc.getViewRoot().getViewId()) == true)
+         {
+            success = item.paste(fc, fc.getViewRoot().getViewId(), action);
+         }
+         else
+         {
+            // we cannot support this view as a Move paste location
+            if (logger.isDebugEnabled())
+               logger.debug("Clipboard Item: " + item.getNodeRef() + " not suitable for Move paste to current View Id."); 
+         }
+      }
+      else if (item.getMode() == ClipboardStatus.COPY)
+      {
+         if (item.canCopyToViewId(fc.getViewRoot().getViewId()) == true)
+         {
+            success = item.paste(fc, fc.getViewRoot().getViewId(), action);
+         }
+         else
+         {
+            // we cannot support this view as a Copy paste location
+            if (logger.isDebugEnabled())
+               logger.debug("Clipboard Item: " + item.getNodeRef() + " not suitable for Copy paste to current View Id."); 
+         }
       }
       
-      return item.paste(fc, fc.getViewRoot().getViewId(), action);
+      return success;
    }
    
    /**

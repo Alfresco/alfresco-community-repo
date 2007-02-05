@@ -24,9 +24,11 @@ import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
 
@@ -38,6 +40,7 @@ import org.alfresco.web.bean.wcm.AVMBrowseBean;
 public class AVMClipboardItem extends AbstractClipboardItem
 {
    private static final String AVM_PASTE_VIEW_ID = "/jsp/wcm/browse-sandbox.jsp";
+   private static final String WORKSPACE_PASTE_VIEW_ID = "/jsp/browse/browse.jsp";
    
    /**
     * @param ref
@@ -57,11 +60,18 @@ public class AVMClipboardItem extends AbstractClipboardItem
    }
 
    /**
-    * @see org.alfresco.web.bean.clipboard.ClipboardItem#canPasteToViewId(java.lang.String)
+    * @see org.alfresco.web.bean.clipboard.ClipboardItem#canCopyToViewId(java.lang.String)
     */
-   public boolean canPasteToViewId(String viewId)
+   public boolean canCopyToViewId(String viewId)
    {
-      // TODO: add 'workspace' paste view when interstore copy/move is supported
+      return (AVM_PASTE_VIEW_ID.equals(viewId) || WORKSPACE_PASTE_VIEW_ID.equals(viewId));
+   }
+
+   /**
+    * @see org.alfresco.web.bean.clipboard.ClipboardItem#canMoveToViewId(java.lang.String)
+    */
+   public boolean canMoveToViewId(String viewId)
+   {
       return (AVM_PASTE_VIEW_ID.equals(viewId));
    }
 
@@ -173,9 +183,76 @@ public class AVMClipboardItem extends AbstractClipboardItem
          }
          return operationComplete;
       }
+      else if (WORKSPACE_PASTE_VIEW_ID.equals(viewId))
+      {
+         NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
+         NodeRef destRef = new NodeRef(Repository.getStoreRef(), navigator.getCurrentNodeId());
+         
+         CrossRepositoryCopyService crossRepoCopyService = getServiceRegistry().getCrossRepositoryCopyService();
+         
+         // initial name to attempt the copy of the item with
+         String name = getName();
+         
+         boolean operationComplete = false;
+         while (operationComplete == false)
+         {
+            UserTransaction tx = null;
+            try
+            {
+               // attempt each copy/paste in its own transaction
+               tx = Repository.getUserTransaction(fc);
+               tx.begin();
+               if (getMode() == ClipboardStatus.COPY)
+               {
+                  // COPY operation
+                  if (logger.isDebugEnabled())
+                     logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
+                  
+                  // inter-store copy operation
+                  crossRepoCopyService.copy(getNodeRef(), destRef, name);
+                  
+                  // if we get here without an exception, the clipboard copy operation was successful
+                  operationComplete = true;
+               }
+               else
+               {
+                  // this should not occur as the canMoveToViewId() will return false
+                  throw new Exception("Move operation not supported between stores.");
+               }
+            }
+            catch (FileExistsException fileExistsErr)
+            {
+               if (getMode() != ClipboardStatus.COPY)
+               {    
+                   // we should not rename an item when it is being moved - so exit
+                   throw fileExistsErr;
+               }
+            }
+            catch (Throwable e)
+            {
+               // some other type of exception occured - rollback and exit
+               throw e;
+            }
+            finally
+            {
+               // rollback if the operation didn't complete
+               if (operationComplete == false)
+               {
+                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+                  String copyOf = Application.getMessage(fc, MSG_COPY_OF);
+                  name = copyOf + ' ' + name;
+               }
+               else
+               {
+                  // commit the transaction
+                  tx.commit();
+               }
+            }
+         }
+         return operationComplete;
+      }
       else
       {
-         // TODO: support 'workspace' destination view...
          return false;
       }
    }

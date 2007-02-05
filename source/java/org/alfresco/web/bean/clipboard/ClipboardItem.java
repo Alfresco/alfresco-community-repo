@@ -61,9 +61,16 @@ public interface ClipboardItem
    /**
     * @param viewId     JSF View Id to check against
     * 
-    * @return true if the clipboard item can be pasted to the specified JSF view
+    * @return true if the clipboard item can be Copy pasted to the specified JSF view
     */
-   public boolean canPasteToViewId(String viewId);
+   public boolean canCopyToViewId(String viewId);
+   
+   /**
+    * @param viewId     JSF View Id to check against
+    * 
+    * @return true if the clipboard item can be Move pasted to the specified JSF view
+    */
+   public boolean canMoveToViewId(String viewId);
    
    /**
     * @param fc         FacesContext

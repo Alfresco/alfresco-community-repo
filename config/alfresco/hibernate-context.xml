@@ -31,7 +31,7 @@
     </bean>
     <bean id="sessionFactoryBase" abstract="true">
         <property name="schemaUpdate">
-           <value>true</value>
+           <value>false</value>
         </property>
         <property name="mappingResources">
             <list>
@@ -58,7 +58,7 @@
                 <!--       from elsewhere -->
                 <!--  -->
                 <value>org/jbpm/graph/action/Script.hbm.xml</value>
-			    <value>org/jbpm/db/hibernate.queries.hbm.xml</value>
+                <value>org/jbpm/db/hibernate.queries.hbm.xml</value>
                 <value>org/jbpm/graph/def/ProcessDefinition.hbm.xml</value>
                 <value>org/jbpm/graph/def/Node.hbm.xml</value>
                 <value>org/jbpm/graph/def/Transition.hbm.xml</value>

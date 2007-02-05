@@ -6,8 +6,7 @@
 
 	<!-- ID Issuers. -->
 	
-	<bean id="nodeIssuer" class="org.alfresco.repo.avm.Issuer"
-		depends-on="avmDAOs" init-method="init">
+	<bean id="nodeIssuer" class="org.alfresco.repo.avm.Issuer" depends-on="avmDAOs" >
 		<property name="name">
 			<value>node</value>
 		</property>
@@ -16,8 +15,7 @@
 		</property>
 	</bean>
 
-	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer"
-		depends-on="avmDAOs" init-method="init">
+	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer" depends-on="avmDAOs" >
 		<property name="name">
 			<value>layer</value>
 		</property>

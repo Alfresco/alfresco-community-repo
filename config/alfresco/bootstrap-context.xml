@@ -49,6 +49,16 @@
          </list>
       </property>
    </bean>
+   
+   <!-- Bootstrap the AVM -->
+   <bean id="avmBootstrap" class="org.alfresco.repo.avm.AvmBootstrap" >
+      <property name="issuers">
+         <list>
+            <ref bean="nodeIssuer" />
+            <ref bean="layerIssuer" />
+         </list>
+      </property>
+   </bean>
 
 	<!-- Bootstrap Files -->
 

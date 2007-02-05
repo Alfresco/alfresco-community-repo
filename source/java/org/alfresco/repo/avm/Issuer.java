@@ -65,7 +65,7 @@ public class Issuer
     /**
      * After the database is up, get our value.
      */
-    public void init()
+    public void initialize()
     {
         class TxnWork implements TransactionUtil.TransactionWork<Long>
         {

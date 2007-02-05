@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -368,5 +369,13 @@ public class ServiceDescriptorRegistry
     public PersonService getPersonService()
     {
         return (PersonService)getService(PERSON_SERVICE);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getCrossRepositoryCopyService()
+     */
+    public CrossRepositoryCopyService getCrossRepositoryCopyService()
+    {
+        return (CrossRepositoryCopyService)getService(CROSS_REPO_COPY_SERVICE);
     }
 }

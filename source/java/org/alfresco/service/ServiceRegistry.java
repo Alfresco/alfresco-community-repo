@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -94,6 +95,7 @@ public interface ServiceRegistry
     static final QName PERSON_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PersonService");
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
     static final QName AVM_SYNC_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMSyncService");
+    static final QName CROSS_REPO_COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CrossRepositoryCopyService");
     
     /**
      * Get the list of services provided by the Repository
@@ -307,4 +309,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     PersonService getPersonService();
+    
+    /**
+     * Get the cross repository copy service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    CrossRepositoryCopyService getCrossRepositoryCopyService();
 }

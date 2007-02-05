@@ -11,6 +11,14 @@
       <!-- Use Java socket based NetBIOS over TCP/IP and native SMB on linux -->
       <tcpipSMB platforms="linux,solaris,macosx"/>
       <netBIOSSMB platforms="linux,solaris,macosx"/>
+
+	   <!-- Can be mapped to non-privileged ports, then use firewall rules to forward
+		    requests from the standard ports -->
+	  <!-- 	   
+      <tcpipSMB port="1445" platforms="linux,solaris,macosx"/>
+      <netBIOSSMB sessionPort="1139" namePort="1137" datagramPort="1138" platforms="linux,solaris,macosx"/>
+	  -->
+	    
       <hostAnnounce interval="5"/>
 
       <!-- Use Win32 NetBIOS interface on Windows -->
@@ -125,7 +133,7 @@
    </config>
 
    <config evaluator="string-compare" condition="Filesystem Security">
-      <authenticator type="alfresco">
+      <authenticator type="enterprise">
       </authenticator>
 
 <!--

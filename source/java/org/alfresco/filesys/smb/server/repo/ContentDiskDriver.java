@@ -545,8 +545,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         ContentContext ctx = (ContentContext) tree.getContext();
         NodeRef infoParentNodeRef = ctx.getRootNode();
         
-        if ( path == null)
-            path = "";
+        if ( path == null || path.length() == 0)
+            path = FileName.DOS_SEPERATOR_STR;
         
         String infoPath = path;
         
@@ -776,7 +776,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
                 // See if the folder to be searched has a file state, we can avoid having to walk the path
                 
-                if ( paths[0] != null && paths[0].length() > 1)
+                if ( paths[0] != null && paths[0].length() >= 1)
                 {
                     // Find the node ref for the folder being searched
                     

@@ -154,9 +154,9 @@ public class PseudoFileImpl implements PseudoFileInterface
         
         boolean isCIFS = sess instanceof SMBSrvSession;
         
-        // Add the desktop action pseudo files
+        // Add the desktop action pseudo files, except to the root folder
         
-        if ( isCIFS && ctx.numberOfDesktopActions() > 0)
+        if ( isCIFS && ctx.numberOfDesktopActions() > 0 && path.equals(FileName.DOS_SEPERATOR_STR) == false)
         {
             // If the file state is null create a file state for the path
 

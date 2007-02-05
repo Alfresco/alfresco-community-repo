@@ -1167,7 +1167,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
             	
                 // Setup the Acegi authenticated user
                 
-                m_authComponent.setCurrentUser( mapUserNameToPerson(krbDetails.getUserName()));
+                // Set the current user to be authenticated, save the authentication token
+                
+                client.setAuthenticationToken( m_authComponent.setCurrentUser( mapUserNameToPerson(krbDetails.getUserName())));
                 
                 // Store the full user name in the client information, indicate that this is not a guest logon
                 
@@ -1297,7 +1299,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
                 // Setup the Acegi authenticated user
                 
-                m_authComponent.setCurrentUser( mapUserNameToPerson(userName));
+                client.setAuthenticationToken( m_authComponent.setCurrentUser( mapUserNameToPerson(userName)));
                 
                 // Store the full user name in the client information, indicate that this is not a guest logon
                 
@@ -1433,7 +1435,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
                 // Setup the Acegi authenticated user
                 
-                m_authComponent.setCurrentUser( mapUserNameToPerson( client.getUserName()));
+                client.setAuthenticationToken( m_authComponent.setCurrentUser( mapUserNameToPerson( client.getUserName())));
                 
                 // Store the full user name in the client information, indicate that this is not a guest logon
                 
@@ -1548,7 +1550,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
     
                     // Setup the Acegi authenticated user
                     
-                    m_authComponent.setCurrentUser( mapUserNameToPerson( userName));
+                    client.setAuthenticationToken( m_authComponent.setCurrentUser( mapUserNameToPerson( userName)));
                     
                     // Store the full user name in the client information, indicate that this is not a guest logon
                     
@@ -1675,7 +1677,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
     
                     // Setup the Acegi authenticated user
                     
-                    m_authComponent.setCurrentUser( mapUserNameToPerson( client.getUserName()));
+                    client.setAuthenticationToken( m_authComponent.setCurrentUser( mapUserNameToPerson( client.getUserName())));
                     
                     // Store the full user name in the client information, indicate that this is not a guest logon
                     
@@ -1842,7 +1844,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticator implements Ca
 
                 // Setup the Acegi authenticated user
                
-                m_authComponent.setCurrentUser( mapUserNameToPerson( userName));
+                client.setAuthenticationToken( m_authComponent.setCurrentUser( mapUserNameToPerson( userName)));
                
                 // Store the full user name in the client information, indicate that this is not a guest logon
                

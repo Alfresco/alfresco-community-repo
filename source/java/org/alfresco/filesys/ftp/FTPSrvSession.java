@@ -2655,6 +2655,7 @@ public class FTPSrvSession extends SrvSession implements Runnable
             // Session does not have write access to the filesystem
 
             sendFTPResponse(550, "Access denied");
+            return;
         }
         catch (Exception ex)
         {

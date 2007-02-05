@@ -3713,7 +3713,7 @@ AjaxHelper.createRequest = function(target, serverMethod, methodArgs, load, erro
                                    "text/xml");
   result.target = target;
   result.content = methodArgs;
-
+  result.method = "POST";
   result.load = load;
   dojo.event.connect(result, "load", function(type, data, evt)
                      {

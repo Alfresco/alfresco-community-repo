@@ -1966,6 +1966,8 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface {
 		            		
 		            		if ( props.containsKey( AVMContext.PROP_WORKFLOWPREVIEW) || props.containsKey( AVMContext.PROP_AUTHORPREVIEW))
 		            			sandbox = true;
+		            		else
+		            			sandbox = false;
 
 		            		// DEBUG
 		            		

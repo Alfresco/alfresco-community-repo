@@ -63,6 +63,9 @@
          <!-- This value should be one of 'myalfresco', 'userhome', 'companyhome' or 'guesthome' -->
          <initial-location>myalfresco</initial-location>
          
+         <!-- set true allow the Guest user to configure the start location preferences - false by default -->
+         <allow-guest-config>false</allow-guest-config>
+         
          <!-- the URL to the client Help file -->
          <help-url>http://www.alfresco.org/help/webclient</help-url>
          

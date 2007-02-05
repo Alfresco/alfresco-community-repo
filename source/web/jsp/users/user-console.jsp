@@ -135,7 +135,7 @@
                               
                               <div style="padding:4px"></div>
                               
-                              <a:panel label="#{msg.general_pref}" id="pref-panel" rendered="#{NavigationBean.isGuest == false}"
+                              <a:panel label="#{msg.general_pref}" id="pref-panel" rendered="#{NavigationBean.isGuest == false || UserPreferencesBean.allowGuestConfig == true}"
                                        border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white">
                                  <table cellspacing=2 cellpadding=2 border=0>
                                     <tr>

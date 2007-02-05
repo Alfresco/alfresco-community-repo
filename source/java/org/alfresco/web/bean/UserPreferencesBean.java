@@ -239,4 +239,12 @@ public class UserPreferencesBean
       
       return locations.toArray(new SelectItem[locations.size()]);
    }
+   
+   /**
+    * @return true if the Guest user is allowed to configure the user preferences
+    */
+   public boolean getAllowGuestConfig()
+   {
+      return Application.getClientConfig(FacesContext.getCurrentInstance()).getAllowGuestConfig();
+   }
 }

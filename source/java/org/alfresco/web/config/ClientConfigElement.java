@@ -59,6 +59,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private ExpiringValueCache<String> wcmDomain = new ExpiringValueCache(1000*10L);
    private ExpiringValueCache<String> wcmPort = new ExpiringValueCache(1000*10L);
    private String defaultHomeSpacePath = "/app:company_home";
+   private boolean allowGuestConfig = false;
    
    /**
     * Default Constructor
@@ -178,6 +179,11 @@ public class ClientConfigElement extends ConfigElementAdapter
           newElement.getInitialLocation().equals(combinedElement.getInitialLocation()) == false)
       {
          combinedElement.setInitialLocation(newElement.getInitialLocation());
+      }
+      
+      if (newElement.getAllowGuestConfig() != combinedElement.getAllowGuestConfig())
+      {
+         combinedElement.setAllowGuestConfig(newElement.getAllowGuestConfig());
       }
       
       return combinedElement;
@@ -479,5 +485,15 @@ public class ClientConfigElement extends ConfigElementAdapter
          this.wcmPort.put(value);
       }
       return value;
+   }
+   
+   /*package*/ void setAllowGuestConfig(boolean allow)
+   {
+      this.allowGuestConfig = allow;
+   }
+   
+   public boolean getAllowGuestConfig()
+   {
+      return this.allowGuestConfig;
    }
 }

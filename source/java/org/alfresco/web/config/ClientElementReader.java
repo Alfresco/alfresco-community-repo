@@ -43,6 +43,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_AJAX_ENABLED = "ajax-enabled";
    public static final String ELEMENT_INITIALLOCATION = "initial-location";
    public static final String ELEMENT_DEFAULTHOMESPACEPATH = "default-home-space-path";
+   public static final String ELEMENT_GUESTCONFIG = "allow-guest-config";
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -168,6 +169,14 @@ public class ClientElementReader implements ConfigElementReader
          if (defaultHomeSpacePath != null)
          {
             configElement.setDefaultHomeSpacePath(defaultHomeSpacePath.getTextTrim());
+         }
+         
+         // get allow Guest to configure start location preferences
+         Element guestConfigElement = element.element(ELEMENT_GUESTCONFIG);
+         if (guestConfigElement != null)
+         {
+            boolean allow = Boolean.parseBoolean(guestConfigElement.getTextTrim());
+            configElement.setAllowGuestConfig(allow);
          }
       }
       

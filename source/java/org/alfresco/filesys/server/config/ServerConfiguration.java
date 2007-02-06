@@ -823,6 +823,20 @@ public class ServerConfiguration extends AbstractLifecycleBean
                 throw new AlfrescoRuntimeException("CIFS server name must be unique");
         }
 
+        // Check if the host name is longer than 15 characters. NetBIOS only allows a maximum of 16 characters in the
+        // server name with the last character reserved for the service type.
+        
+        if ( hostName.length() > 15)
+        {
+        	// Truncate the CIFS server name
+        	
+        	hostName = hostName.substring(0, 15);
+        	
+        	// Output a warning
+        	
+        	logger.warn("CIFS server name is longer than 15 characters, truncated to " + hostName);
+        }
+        
         // Set the CIFS server name
 
         setServerName(hostName.toUpperCase());

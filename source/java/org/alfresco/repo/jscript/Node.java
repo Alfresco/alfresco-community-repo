@@ -567,14 +567,7 @@ public class Node implements Serializable, Scopeable
     {
         if (displayPath == null)
         {
-            try
-            {
-                displayPath = this.nodeService.getPath(this.nodeRef).toDisplayPath(this.nodeService);
-            }
-            catch (AccessDeniedException err)
-            {
-                displayPath = "";
-            }
+            displayPath = this.nodeService.getPath(this.nodeRef).toDisplayPath(this.nodeService);
         }
         
         return displayPath;
@@ -976,17 +969,10 @@ public class Node implements Serializable, Scopeable
                 this.services.getDictionaryService().isSubClass(qnameType, getType()) == true)
         {
             // Specialise the type of the node
-            try
-            {
-                this.nodeService.setType(this.nodeRef, qnameType);
-                this.type = qnameType;
-                
-                return true;
-            }
-            catch (InvalidNodeRefException err)
-            {
-                // fall through to return fase
-            }
+            this.nodeService.setType(this.nodeRef, qnameType);
+            this.type = qnameType;
+            
+            return true;
         }
         return false;
     }
@@ -1004,23 +990,11 @@ public class Node implements Serializable, Scopeable
     {
         Node node = null;
         
-        try
+        if (name != null && name.length() != 0)
         {
-            if (name != null && name.length() != 0)
-            {
-                FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
-                        ContentModel.TYPE_CONTENT);
-                node = newInstance(fileInfo.getNodeRef(), this.services, this.scope);
-            }
-        }
-        catch (FileExistsException fileErr)
-        {
-            // default of null will be returned
-            // TODO: how to report this kind of exception to the script writer?
-        }
-        catch (AccessDeniedException accessErr)
-        {
-            // default of null will be returned
+            FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
+                    ContentModel.TYPE_CONTENT);
+            node = newInstance(fileInfo.getNodeRef(), this.services, this.scope);
         }
         
         return node;
@@ -1037,23 +1011,11 @@ public class Node implements Serializable, Scopeable
     {
         Node node = null;
         
-        try
+        if (name != null && name.length() != 0)
         {
-            if (name != null && name.length() != 0)
-            {
-                FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
-                        ContentModel.TYPE_FOLDER);
-                node = newInstance(fileInfo.getNodeRef(), this.services, this.scope);
-            }
-        }
-        catch (FileExistsException fileErr)
-        {
-            // default of null will be returned
-            // TODO: how to report this kind of exception to the script writer?
-        }
-        catch (AccessDeniedException accessErr)
-        {
-            // default of null will be returned
+            FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
+                    ContentModel.TYPE_FOLDER);
+            node = newInstance(fileInfo.getNodeRef(), this.services, this.scope);
         }
         
         return node;
@@ -1071,21 +1033,14 @@ public class Node implements Serializable, Scopeable
     {
         Node node = null;
         
-        try
+        if (name != null && name.length() != 0 && type != null && type.length() != 0)
         {
-            if (name != null && name.length() != 0 && type != null && type.length() != 0)
-            {
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-                props.put(ContentModel.PROP_NAME, name);
-                ChildAssociationRef childAssocRef = this.nodeService.createNode(this.nodeRef, ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
-                        createQName(type), props);
-                node = newInstance(childAssocRef.getChildRef(), this.services, this.scope);
-            }
-        }
-        catch (AccessDeniedException accessErr)
-        {
-            // default of null will be returned
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+            props.put(ContentModel.PROP_NAME, name);
+            ChildAssociationRef childAssocRef = this.nodeService.createNode(this.nodeRef, ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
+                    createQName(type), props);
+            node = newInstance(childAssocRef.getChildRef(), this.services, this.scope);
         }
         
         return node;
@@ -1098,22 +1053,13 @@ public class Node implements Serializable, Scopeable
     {
         boolean success = false;
         
-        try
+        if (nodeService.exists(this.nodeRef))
         {
             this.nodeService.deleteNode(this.nodeRef);
-            
-            reset();
-            
             success = true;
         }
-        catch (AccessDeniedException accessErr)
-        {
-            // default of false will be returned
-        }
-        catch (InvalidNodeRefException refErr)
-        {
-            // default of false will be returned
-        }
+        
+        reset();
         
         return success;
     }
@@ -1144,27 +1090,16 @@ public class Node implements Serializable, Scopeable
         
         Node copy = null;
         
-        try
+        if (destination.getNodeRef().getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
         {
-            if (destination.getNodeRef().getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
-            {
-                NodeRef copyRef = this.services.getCopyService().copyAndRename(this.nodeRef, destination.getNodeRef(),
-                        ContentModel.ASSOC_CONTAINS, getPrimaryParentAssoc().getQName(), deepCopy);
-                copy = newInstance(copyRef, this.services, this.scope);
-            }
-            else
-            {
-                // NOTE: the deepCopy flag is not respected for this copy mechanism
-                copy = getCrossRepositoryCopyHelper().copy(this, destination, getName());
-            }
+            NodeRef copyRef = this.services.getCopyService().copyAndRename(this.nodeRef, destination.getNodeRef(),
+                    ContentModel.ASSOC_CONTAINS, getPrimaryParentAssoc().getQName(), deepCopy);
+            copy = newInstance(copyRef, this.services, this.scope);
         }
-        catch (AccessDeniedException accessErr)
+        else
         {
-            // default of null will be returned
-        }
-        catch (InvalidNodeRefException nodeErr)
-        {
-            // default of null will be returned
+            // NOTE: the deepCopy flag is not respected for this copy mechanism
+            copy = getCrossRepositoryCopyHelper().copy(this, destination, getName());
         }
         
         return copy;
@@ -1181,28 +1116,13 @@ public class Node implements Serializable, Scopeable
     {
         ParameterCheck.mandatory("Destination Node", destination);
         
-        boolean success = false;
+        this.primaryParentAssoc = this.nodeService.moveNode(this.nodeRef, destination.getNodeRef(),
+                ContentModel.ASSOC_CONTAINS, getPrimaryParentAssoc().getQName());
         
-        try
-        {
-            this.primaryParentAssoc = this.nodeService.moveNode(this.nodeRef, destination.getNodeRef(),
-                    ContentModel.ASSOC_CONTAINS, getPrimaryParentAssoc().getQName());
-            
-            // reset cached values
-            reset();
-            
-            success = true;
-        }
-        catch (AccessDeniedException accessErr)
-        {
-            // default of false will be returned
-        }
-        catch (InvalidNodeRefException refErr)
-        {
-            // default of false will be returned
-        }
+        // reset cached values
+        reset();
         
-        return success;
+        return true;
     }
     
     /**
@@ -1230,48 +1150,37 @@ public class Node implements Serializable, Scopeable
     {
         ParameterCheck.mandatoryString("Aspect Type", type);
         
-        boolean success = false;
-        
-        try
+        Map<QName, Serializable> aspectProps = null;
+        if (props instanceof ScriptableObject)
         {
-            Map<QName, Serializable> aspectProps = null;
-            if (props instanceof ScriptableObject)
+            ScriptableObject properties = (ScriptableObject) props;
+            
+            // we need to get all the keys to the properties provided
+            // and convert them to a Map of QName to Serializable objects
+            Object[] propIds = properties.getIds();
+            aspectProps = new HashMap<QName, Serializable>(propIds.length);
+            for (int i = 0; i < propIds.length; i++)
             {
-                ScriptableObject properties = (ScriptableObject) props;
+                // work on each key in turn
+                Object propId = propIds[i];
                 
-                // we need to get all the keys to the properties provided
-                // and convert them to a Map of QName to Serializable objects
-                Object[] propIds = properties.getIds();
-                aspectProps = new HashMap<QName, Serializable>(propIds.length);
-                for (int i = 0; i < propIds.length; i++)
+                // we are only interested in keys that are formed of Strings i.e. QName.toString()
+                if (propId instanceof String)
                 {
-                    // work on each key in turn
-                    Object propId = propIds[i];
-                    
-                    // we are only interested in keys that are formed of Strings i.e. QName.toString()
-                    if (propId instanceof String)
-                    {
-                        // get the value out for the specified key - make sure it is Serializable
-                        Object value = properties.get((String) propId, properties);
-                        value = getValueConverter().convertValueForRepo((Serializable) value);
-                        aspectProps.put(createQName((String) propId), (Serializable) value);
-                    }
+                    // get the value out for the specified key - make sure it is Serializable
+                    Object value = properties.get((String) propId, properties);
+                    value = getValueConverter().convertValueForRepo((Serializable) value);
+                    aspectProps.put(createQName((String) propId), (Serializable) value);
                 }
             }
-            QName aspectQName = createQName(type);
-            this.nodeService.addAspect(this.nodeRef, aspectQName, aspectProps);
-            
-            // reset the relevant cached node members
-            reset();
-            
-            success = true;
         }
-        catch (InvalidAspectException aspectErr)
-        {
-            // default of failed will be returned
-        }
+        QName aspectQName = createQName(type);
+        this.nodeService.addAspect(this.nodeRef, aspectQName, aspectProps);
         
-        return success;
+        // reset the relevant cached node members
+        reset();
+        
+        return true;
     }
     
     /**
@@ -1441,15 +1350,8 @@ public class Node implements Serializable, Scopeable
                 Node transformedNode = null;
                 if (contentService.isTransformable(reader, writer))
                 {
-                    try
-                    {
-                        contentService.transform(reader, writer);
-                        transformedNode = newInstance(nodeRef, services, scope);
-                    }
-                    catch (NoTransformerException err)
-                    {
-                        // failed to find a useful transformer - do not return a node instance
-                    }
+                    contentService.transform(reader, writer);
+                    transformedNode = newInstance(nodeRef, services, scope);
                 }
                 return transformedNode;
             }
@@ -1570,19 +1472,11 @@ public class Node implements Serializable, Scopeable
             public Node transform(ContentService contentService, NodeRef nodeRef, ContentReader reader,
                     ContentWriter writer)
             {
-                Node transformedNode = null;
-                try
-                {
-                    Map<String, Object> opts = new HashMap<String, Object>(1);
-                    opts.put(ImageMagickContentTransformer.KEY_OPTIONS, options != null ? options : "");
-                    contentService.getImageTransformer().transform(reader, writer, opts);
-                    transformedNode = newInstance(nodeRef, services, scope);
-                }
-                catch (NoTransformerException err)
-                {
-                    // failed to find a useful transformer - do not return a node instance
-                }
-                return transformedNode;
+                Map<String, Object> opts = new HashMap<String, Object>(1);
+                opts.put(ImageMagickContentTransformer.KEY_OPTIONS, options != null ? options : "");
+                contentService.getImageTransformer().transform(reader, writer, opts);
+
+                return newInstance(nodeRef, services, scope);
             }
         };
         
@@ -1710,8 +1604,8 @@ public class Node implements Serializable, Scopeable
             // TODO: DC: Allow debug output of property values - for now it's disabled as this could potentially
             // follow a large network of nodes. Unfortunately, JBPM issues unprotected debug statements
             // where node.toString is used - will request this is fixed in next release of JBPM.
-            return "Node Type: " + getType() + "\nNode Properties: " + this.getProperties().size() + "\nNode Aspects: "
-            + this.getAspects().toString();
+            return "Node Type: " + getType() + "\nNode Properties: " + this.getProperties().size() +
+                    "\nNode Aspects: " + this.getAspects().toString();
         }
         else
         {

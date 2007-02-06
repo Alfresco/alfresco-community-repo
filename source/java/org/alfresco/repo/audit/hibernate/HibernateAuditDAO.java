@@ -207,7 +207,14 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
         else
         {
-            return o.toString();
+            try
+            {
+               return o.toString();
+            }
+            catch(Throwable t)
+            {
+                return "Throwable in toString implementation for "+o.getClass() + " was "+t.getMessage();
+            }
         }
     }
 

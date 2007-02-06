@@ -361,38 +361,24 @@ public class AVMEditBean
          String mimetype = reader.getMimetype();
          String outcome = null;
          // calculate which editor screen to display
-         if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) ||
-             MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
-             MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype) ||
-             MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
+         if (MimetypeMap.MIMETYPE_XML.equals(mimetype) && 
+             this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
             // make content available to the editing screen
             this.setEditorOutput(reader.getContentString());
             this.setFormProcessorSession(null);
             this.instanceDataDocument = null;
             this.form = null;
-
-            // navigate to appropriate screen
-            outcome = ((MimetypeMap.MIMETYPE_XML.equals(mimetype) && 
-                        this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-                       ? "dialog:editAvmXmlInline"
-                       : "dialog:editAvmTextInline");
-         }
-         else if (MimetypeMap.MIMETYPE_HTML.equals(mimetype))
-         {
-            // make content available to the editing screen
-            setDocumentContent(reader.getContentString());
-            setEditorOutput(null);
             
             // navigate to appropriate screen
-            outcome = "dialog:editAvmHtmlInline";
+            outcome = "dialog:editAvmXmlInline";
          }
          else
          {
             // normal downloadable document
             outcome = "dialog:editAvmFile";
          }
-
+         
          final FacesContext fc = FacesContext.getCurrentInstance();
          fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
       }

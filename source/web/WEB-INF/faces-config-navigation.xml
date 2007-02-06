@@ -905,14 +905,6 @@
          <to-view-id>/jsp/wcm/edit-file.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>editAvmHtmlInline</from-outcome>
-         <to-view-id>/jsp/wcm/edit-html-inline.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editAvmTextInline</from-outcome>
-         <to-view-id>/jsp/wcm/edit-text-inline.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>editAvmXmlInline</from-outcome>
          <to-view-id>/jsp/wcm/edit-xml-inline.jsp</to-view-id>
       </navigation-case>

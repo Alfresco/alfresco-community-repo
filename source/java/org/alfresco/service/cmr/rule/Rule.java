@@ -276,7 +276,7 @@ public class Rule implements Serializable
     @Override
     public int hashCode()
     {
-        return this.nodeRef.hashCode(); 
+        return (this.nodeRef == null) ? 0 : this.nodeRef.hashCode(); 
     }
     
     /**

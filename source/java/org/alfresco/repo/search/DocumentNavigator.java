@@ -222,17 +222,31 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
 
     public String getElementName(Object o)
     {
-        return ISO9075.encode(((ChildAssociationRef) o).getQName().getLocalName());
+        QName qName = ((ChildAssociationRef) o).getQName();
+        if(qName == null)
+        {
+            return "";
+        }
+        return ISO9075.encode(qName.getLocalName());
     }
 
     public String getElementNamespaceUri(Object o)
     {
-        return ((ChildAssociationRef) o).getQName().getNamespaceURI();
+        QName qName = ((ChildAssociationRef) o).getQName();
+        if(qName == null)
+        {
+            return "";
+        }
+        return (qName.getNamespaceURI());
     }
 
     public String getElementQName(Object o)
     {
         QName qName = ((ChildAssociationRef) o).getQName();
+        if(qName == null)
+        {
+            return "";
+        }
         String escapedLocalName = ISO9075.encode(qName.getLocalName());
         if(escapedLocalName == qName.getLocalName())
         {

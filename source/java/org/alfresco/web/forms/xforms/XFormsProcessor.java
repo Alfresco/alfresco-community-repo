@@ -162,7 +162,8 @@ public class XFormsProcessor
             append(": '").
             append(bundle.getString(k)).
             append("'").
-            append(k.equals(BUNDLE_KEYS[BUNDLE_KEYS.length - 1]) ? "\n}" : ",\n");
+            append(k.equals(BUNDLE_KEYS[BUNDLE_KEYS.length - 1]) ? "\n};" : ",").
+            append("\n");
       }
       e.appendChild(result.createTextNode(js.toString()));
 

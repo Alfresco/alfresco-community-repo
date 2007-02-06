@@ -240,6 +240,17 @@ public class Application
    /**
     * Retrieves the configured login page for the application
     * 
+    * @param facesContext The faces context
+    * @return The configured login page or null if the configuration is missing
+    */
+   public static String getLoginPage(FacesContext facesContext)
+   {
+      return getLoginPage(FacesContextUtils.getRequiredWebApplicationContext(facesContext));
+   }
+   
+   /**
+    * Retrieves the configured login page for the application
+    * 
     * @param servletContext The servlet context
     * @return The configured login page or null if the configuration is missing
     */

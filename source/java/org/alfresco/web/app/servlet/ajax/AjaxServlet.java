@@ -2,7 +2,6 @@ package org.alfresco.web.app.servlet.ajax;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletException;
@@ -75,25 +74,21 @@ public class AjaxServlet extends BaseServlet
          AuthenticationStatus status = servletAuthenticate(request, response, false);
          if (status == AuthenticationStatus.Failure)
          {
-            throw new AlfrescoRuntimeException("Access Denied: User not authenticated");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                               "Access Denied: User not authenticated");
+            return;
          }
          
-         uri = uri.substring(request.getContextPath().length());
-         StringTokenizer t = new StringTokenizer(uri, "/");
-         int tokenCount = t.countTokens();
-         if (tokenCount < 3)
+         uri = uri.substring(request.getContextPath().length() + "/".length());
+         final String[] tokens = uri.split("/");
+         if (tokens.length < 3)
          {
             throw new AlfrescoRuntimeException("Servlet URL did not contain all required args: " + uri); 
          }
-         
-         // skip the servlet name
-         t.nextToken();
-         
          // retrieve the command from the URL
-         String commandName = t.nextToken();
-         
+         String commandName = tokens[1];
          // retrieve the binding expression from the URL
-         String expression = t.nextToken();
+         String expression = tokens[2];
          
          // setup the faces context
          FacesContext facesContext = FacesHelper.getFacesContext(request, response, getServletContext());

@@ -3719,11 +3719,18 @@ AjaxHelper.createRequest = function(target, serverMethod, methodArgs, load, erro
                      {
                        AjaxHelper._loadHandler(result);
                      });
-  result.error = error || function(type, e)
+  result.error = error || function(type, e, impl)
     {
       dojo.debug("error [" + type + "] " + e.message);
-      _show_error(document.createTextNode(e.message));
-      AjaxHelper._loadHandler(this);
+      if (impl.status == 401)
+      {
+        document.getElementById("logout").onclick();
+      }
+      else
+      {
+        _show_error(document.createTextNode(e.message));
+        AjaxHelper._loadHandler(this);
+      }
     };
   return result;
 }

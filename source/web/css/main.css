@@ -558,6 +558,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .shelf
 {
+   background-color: #f5f5f5;
    min-width: 220px;
    *width: 100%;
 }

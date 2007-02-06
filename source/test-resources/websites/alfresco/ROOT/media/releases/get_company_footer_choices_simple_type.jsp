@@ -55,7 +55,7 @@ which wants to update the list of available company footers dynamically.
              xmlns:alf="http://www.alfresco.org"
   	     elementFormDefault="qualified">
     <xs:simpleType name="company_footer_choices">
-      <xs:restriction base="xs:string">
+      <xs:restriction base="xs:normalizedString">
 	<!-- call into CompanyFooterBean to retrieve all company footers -->
         <c:forEach items="${pr:getCompanyFooterChoices(pageContext)}" var="companyFooter">
           <jsp:element name="xs:enumeration">

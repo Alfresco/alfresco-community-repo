@@ -90,9 +90,18 @@
         </property>
     </bean>
     
-     <bean id="avmScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.AVM">
+    <bean id="avmScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.AVM">
         <property name="scriptName">
             <value>avm</value>
+        </property>        
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="crossCopyScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.CrossRepositoryCopy">
+        <property name="scriptName">
+            <value>crossRepoCopy</value>
         </property>        
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>

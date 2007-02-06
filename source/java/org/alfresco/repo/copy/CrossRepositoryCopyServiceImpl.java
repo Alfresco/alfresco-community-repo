@@ -20,6 +20,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
@@ -117,24 +118,24 @@ public class CrossRepositoryCopyServiceImpl implements
     {
         StoreRef srcStoreRef = src.getStoreRef();
         StoreRef dstStoreRef = dst.getStoreRef();
-        if (srcStoreRef.getProtocol().equals("avm"))
+        if (srcStoreRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
         {
-            if (dstStoreRef.getProtocol().equals("avm"))
+            if (dstStoreRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
             {
                 copyAVMToAVM(src, dst, name);
             }
-            else
+            else if (dstStoreRef.getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
             {
                 copyAVMToRepo(src, dst, name);
             }
         }
-        else
+        else if (srcStoreRef.getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
         {
-            if (dstStoreRef.getProtocol().equals("avm"))
+            if (dstStoreRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
             {
                 copyRepoToAVM(src, dst, name);
             }
-            else
+            else if (dstStoreRef.getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
             {
                 copyRepoToRepo(src, dst, name);
             }
@@ -277,6 +278,8 @@ public class CrossRepositoryCopyServiceImpl implements
      */
     private void copyRepoToRepo(NodeRef src, NodeRef dst, String name)
     {
+        ChildAssociationRef assocRef = fNodeService.getPrimaryParent(src);
+        fCopyService.copyAndRename(src, dst, ContentModel.ASSOC_CONTAINS, assocRef.getQName(), true);
     }
     
     private void copyData(InputStream in, OutputStream out)

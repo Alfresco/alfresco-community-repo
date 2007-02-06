@@ -19,7 +19,8 @@ package org.alfresco.repo.jscript;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -31,6 +32,7 @@ import org.mozilla.javascript.Scriptable;
 public class AVMNode extends Node
 {
     private String path;
+    private int version;
     
     /**
      * Constructor
@@ -41,8 +43,7 @@ public class AVMNode extends Node
      */
     public AVMNode(NodeRef nodeRef, ServiceRegistry services)
     {
-        super(nodeRef, services);
-        this.path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+        this(nodeRef, services, null);
     }
 
     /**
@@ -56,16 +57,23 @@ public class AVMNode extends Node
     public AVMNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         super(nodeRef, services, scope);
-        this.path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+        Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        this.path = versionPath.getSecond();
+        this.version = versionPath.getFirst();
     }
     
     /**
-     * Factory method
+     * Factory methods
      */
     @Override
     public Node newInstance(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         return new AVMNode(nodeRef, services, scope);
+    }
+    
+    public Node newInstance(String path, int version, ServiceRegistry services, Scriptable scope)
+    {
+        return new AVMNode(AVMNodeConverter.ToNodeRef(version, path), services, scope);
     }
     
     // TODO: changing the 'name' property (either directly using .name or with .properties.name)
@@ -85,6 +93,16 @@ public class AVMNode extends Node
         return getPath();
     }
     
+    public int getVersion()
+    {
+        return this.version;
+    }
+    
+    public int jsGet_version()
+    {
+        return getVersion();
+    }
+    
     /**
      * Copy this Node into a new parent destination.
      * 
@@ -95,14 +113,9 @@ public class AVMNode extends Node
     @Override
     public Node copy(Node destination)
     {
-        Node copy = null;
+        ParameterCheck.mandatory("Destination Node", destination);
         
-        if (destination instanceof AVMNode)
-        {
-            copy = copy(((AVMNode)destination).getPath());
-        }
-        
-        return copy;
+        return getCrossRepositoryCopyHelper().copy(this, destination, getName());
     }
     
     /**
@@ -114,17 +127,12 @@ public class AVMNode extends Node
      */
     public Node copy(String destination)
     {
-        Node copy = null;
+        ParameterCheck.mandatoryString("Destination Path", destination);
         
-        if (destination != null && destination.length() != 0)
-        {
-            this.services.getAVMService().copy(-1, getPath(), destination, getName());
-            copy = newInstance(
-                    AVMNodeConverter.ToNodeRef(-1, destination + '/' + getName()),
-                    this.services, this.scope);
-        }
-        
-        return copy;
+        this.services.getAVMService().copy(this.version, this.path, destination, getName());
+        return newInstance(
+                AVMNodeConverter.ToNodeRef(-1, AVMNodeConverter.ExtendAVMPath(destination, getName())),
+                this.services, this.scope);
     }
     
     /**
@@ -137,6 +145,8 @@ public class AVMNode extends Node
     @Override
     public boolean move(Node destination)
     {
+        ParameterCheck.mandatory("Destination Node", destination);
+        
         boolean success = false;
         
         if (destination instanceof AVMNode)
@@ -156,6 +166,8 @@ public class AVMNode extends Node
      */
     public boolean move(String destination)
     {
+        ParameterCheck.mandatoryString("Destination Path", destination);
+        
         boolean success = false;
         
         if (destination != null && destination.length() != 0)
@@ -164,7 +176,7 @@ public class AVMNode extends Node
             this.services.getAVMService().rename(
                     parent.getPath(), getName(), destination, getName());
             
-            reset(destination + '/' + getName());
+            reset(AVMNodeConverter.ExtendAVMPath(destination, getName()));
             
             success = true;
         }
@@ -181,6 +193,8 @@ public class AVMNode extends Node
      */
     public boolean rename(String name)
     {
+        ParameterCheck.mandatoryString("Destination name", name);
+        
         boolean success = false;
         
         if (name != null && name.length() != 0)
@@ -189,7 +203,7 @@ public class AVMNode extends Node
             this.services.getAVMService().rename(
                     parentPath, getName(), parentPath, name);
             
-            reset(parentPath + '/' + name);
+            reset(AVMNodeConverter.ExtendAVMPath(parentPath, name));
             
             success = true;
         }
@@ -204,14 +218,14 @@ public class AVMNode extends Node
     {
         super.reset();
         this.path = path;
-        this.nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+        this.nodeRef = AVMNodeConverter.ToNodeRef(version, path);
         this.id = nodeRef.getId();
     }
 
     @Override
     public String toString()
     {
-        if (this.services.getAVMService().lookup(-1, this.path) != null)
+        if (this.services.getAVMService().lookup(version, this.path) != null)
         {
             return "AVM Path: " + getPath() + 
                    "\nNode Type: " + getType() + 

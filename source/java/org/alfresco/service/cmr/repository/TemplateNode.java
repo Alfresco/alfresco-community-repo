@@ -581,7 +581,15 @@ public class TemplateNode implements Serializable
             }
             else
             {
-                return "/images/icons/space_small.gif";
+                String icon = (String)getProperties().get("app:icon");
+                if (icon != null)
+                {
+                    return "/images/icons/" + icon + "-16.gif";
+                }
+                else
+                {
+                    return "/images/icons/space_small.gif";
+                }
             }
         }
         else

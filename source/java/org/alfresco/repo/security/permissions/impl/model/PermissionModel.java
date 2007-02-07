@@ -50,7 +50,8 @@ import org.dom4j.io.SAXReader;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * The implementation of the model DAO Reads and stores the top level model information Encapsulates access to this information
+ * The implementation of the model DAO Reads and stores the top level model information Encapsulates access to this
+ * information
  * 
  * @author andyh
  */
@@ -655,16 +656,13 @@ public class PermissionModel implements ModelDAO, InitializingBean
      */
     private synchronized PermissionGroup getBasePermissionGroupOrNull(PermissionGroup pg)
     {
-        if (groupsToBaseGroup.containsKey(pg))
+        PermissionGroup permissionGroup = groupsToBaseGroup.get(pg);
+        if (permissionGroup == null)
         {
-            return groupsToBaseGroup.get(pg);
+            permissionGroup = getBasePermissionGroupOrNullImpl(pg);
+            groupsToBaseGroup.put(pg, permissionGroup);
         }
-        else
-        {
-            PermissionGroup answer = getBasePermissionGroupOrNullImpl(pg);
-            groupsToBaseGroup.put(pg, answer);
-            return answer;
-        }
+        return permissionGroup;
     }
 
     /**
@@ -925,16 +923,16 @@ public class PermissionModel implements ModelDAO, InitializingBean
         {
             for (PermissionGroup pg : ps.getPermissionGroups())
             {
-            	  permissionGroupMap.put(pg, pg);
-            	  permissionReferenceMap.put(pg.toString(), pg);
+                permissionGroupMap.put(pg, pg);
+                permissionReferenceMap.put(pg.toString(), pg);
             }
             for (Permission p : ps.getPermissions())
             {
-            	permissionReferenceMap.put(p.toString(), p);
+                permissionReferenceMap.put(p.toString(), p);
                 permissionMap.put(p, p);
             }
         }
-        
+
         for (PermissionSet ps : permissionSets.values())
         {
             for (PermissionGroup pg : ps.getPermissionGroups())

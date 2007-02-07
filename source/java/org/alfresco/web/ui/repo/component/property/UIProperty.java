@@ -94,8 +94,8 @@ public class UIProperty extends PropertySheetItem
          else
          {
             // warn the user that the property was not found anywhere
-            if (missingPropsLogger.isDebugEnabled())
-               missingPropsLogger.debug("Failed to find property '" + propertyName + "' for node: " + node.getNodeRef().toString());
+            if (missingPropsLogger.isWarnEnabled())
+               missingPropsLogger.warn("Failed to find property '" + propertyName + "' for node: " + node.getNodeRef().toString());
          }
       }
       else

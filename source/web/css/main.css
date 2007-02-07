@@ -417,7 +417,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 .selectedItemsHeader
 {
    padding: 4px;
-   background-color: #c6d8eb;
+   background-color: #ECECEC;
    font-weight: bold;
    text-align: left;
 }

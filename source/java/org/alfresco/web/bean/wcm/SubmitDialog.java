@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
@@ -56,6 +57,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormInstanceDataImpl;
@@ -465,14 +467,17 @@ public class SubmitDialog extends BaseDialogBean
          for (ItemWrapper wrapper : this.submitItems)
          {
             String path = wrapper.getPath();
-            for (int i=0; i<workflowMatchers.size(); i++)
+            // shallow copy the list of matchers so we can remove items while looping
+            List<FormWorkflowWrapper> matchers = new ArrayList<FormWorkflowWrapper>(workflowMatchers);
+            for (int i=0; i<matchers.size(); i++)
             {
+               FormWorkflowWrapper matcher = matchers.get(i);
                // see if the file path matches this workflow path pattern
-               if (workflowMatchers.get(i).matchesPath(path) == true)
+               if (matcher.matchesPath(path) == true)
                {
                   // found a match - remove the workflow from the list of ones to check
-                  this.workflows.add(workflowMatchers.get(i));
-                  workflowMatchers.remove(i);
+                  this.workflows.add(matcher);
+                  workflowMatchers.remove(matcher);
                }
             }
             // if all workflows are matched, there is no need to continue looping
@@ -557,122 +562,137 @@ public class SubmitDialog extends BaseDialogBean
     */
    private void calcluateListItemsAndWorkflows()
    {
-      // TODO: start txn here?
-      List<AVMNodeDescriptor> selected;
-      if (this.avmBrowseBean.getAllItemsAction())
+      UserTransaction tx = null;
+      
+      try
       {
-         String webapp = this.avmBrowseBean.getWebapp();
-         String userStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
-         String stagingStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
-         List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
-         selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
-         for (AVMDifference diff : diffs)
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         List<AVMNodeDescriptor> selected;
+         if (this.avmBrowseBean.getAllItemsAction())
          {
-            AVMNodeDescriptor node = this.avmService.lookup(-1, diff.getSourcePath(), true);
+            String webapp = this.avmBrowseBean.getWebapp();
+            String userStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
+            String stagingStore = AVMConstants.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
+            List<AVMDifference> diffs = this.avmSyncService.compare(-1, userStore, -1, stagingStore, nameMatcher);
+            selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
+            for (AVMDifference diff : diffs)
+            {
+               AVMNodeDescriptor node = this.avmService.lookup(-1, diff.getSourcePath(), true);
+               selected.add(node);
+            }
+         }
+         else if (this.avmBrowseBean.getAvmActionNode() == null)
+         {
+            // multiple items selected
+            selected = this.avmBrowseBean.getSelectedSandboxItems();
+         }
+         else
+         {
+            // single item selected
+            AVMNodeDescriptor node =
+               this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true);
+            selected = new ArrayList<AVMNodeDescriptor>(1);
             selected.add(node);
          }
-      }
-      else if (this.avmBrowseBean.getAvmActionNode() == null)
-      {
-         // multiple items selected
-         selected = this.avmBrowseBean.getSelectedSandboxItems();
-      }
-      else
-      {
-         // single item selected
-         AVMNodeDescriptor node =
-            this.avmService.lookup(-1, this.avmBrowseBean.getAvmActionNode().getPath(), true);
-         selected = new ArrayList<AVMNodeDescriptor>(1);
-         selected.add(node);
-      }
-      if (selected != null)
-      {
-         Set<String> submittedPaths = new HashSet<String>(selected.size());
-         this.submitItems = new ArrayList<ItemWrapper>(selected.size());
-         this.warningItems = new ArrayList<ItemWrapper>(selected.size() >> 1);
-         for (AVMNodeDescriptor node : selected)
+         if (selected != null)
          {
-            if (this.avmService.hasAspect(-1, node.getPath(), AVMSubmittedAspect.ASPECT) == false)
+            Set<String> submittedPaths = new HashSet<String>(selected.size());
+            this.submitItems = new ArrayList<ItemWrapper>(selected.size());
+            this.warningItems = new ArrayList<ItemWrapper>(selected.size() >> 1);
+            for (AVMNodeDescriptor node : selected)
             {
-               NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
-               if (submittedPaths.contains(node.getPath()) == false)
+               if (this.avmService.hasAspect(-1, node.getPath(), AVMSubmittedAspect.ASPECT) == false)
                {
-                  if (node.isDeleted() == false)
+                  NodeRef ref = AVMNodeConverter.ToNodeRef(-1, node.getPath());
+                  if (submittedPaths.contains(node.getPath()) == false)
                   {
-                     // lookup if this item was created via a form - then lookup the workflow defaults
-                     // for that form and store into the list of available workflows
-                     if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+                     if (node.isDeleted() == false)
                      {
-                        NodeRef formInstanceDataRef = ref;
-                        
-                        // check if this is a rendition - as they also have the forminstancedata aspect
-                        if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_RENDITION))
+                        // lookup if this item was created via a form - then lookup the workflow defaults
+                        // for that form and store into the list of available workflows
+                        if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
                         {
-                           // found a generated rendition asset - locate the parent form instance data file
-                           // and use this to find all generated assets that are appropriate
-                           // NOTE: this path value is store relative
-                           String strFormInstance = (String)this.nodeService.getProperty(
-                                 ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
-                           strFormInstance = this.avmBrowseBean.getSandbox() + ':' + strFormInstance;
-                           formInstanceDataRef = AVMNodeConverter.ToNodeRef(-1, strFormInstance);
-                        }
-                        
-                        // add the form instance data file to the list for submission
-                        AVMNodeDescriptor formInstanceNode = this.avmService.lookup(
-                              -1, AVMNodeConverter.ToAVMVersionPath(formInstanceDataRef).getSecond());
-                        if (submittedPaths.contains(formInstanceNode.getPath()) == false)
-                        {
-                           this.submitItems.add(new ItemWrapper(formInstanceNode));
-                           submittedPaths.add(formInstanceNode.getPath());
-                        }
-                        
-                        // locate renditions for this form instance data file and add to list for submission
-                        FormInstanceData formImpl = new FormInstanceDataImpl(formInstanceDataRef);
-                        for (Rendition rendition : formImpl.getRenditions())
-                        {
-                           String renditionPath = rendition.getPath();
-                           if (submittedPaths.contains(renditionPath) == false)
+                           NodeRef formInstanceDataRef = ref;
+                           
+                           // check if this is a rendition - as they also have the forminstancedata aspect
+                           if (this.nodeService.hasAspect(ref, WCMAppModel.ASPECT_RENDITION))
                            {
-                              AVMNodeDescriptor renditionNode = this.avmService.lookup(-1, renditionPath);
-                              this.submitItems.add(new ItemWrapper(renditionNode));
-                              submittedPaths.add(renditionPath);
+                              // found a generated rendition asset - locate the parent form instance data file
+                              // and use this to find all generated assets that are appropriate
+                              // NOTE: this path value is store relative
+                              String strFormInstance = (String)this.nodeService.getProperty(
+                                    ref, WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA);
+                              strFormInstance = this.avmBrowseBean.getSandbox() + ':' + strFormInstance;
+                              formInstanceDataRef = AVMNodeConverter.ToNodeRef(-1, strFormInstance);
+                           }
+                           
+                           // add the form instance data file to the list for submission
+                           AVMNodeDescriptor formInstanceNode = this.avmService.lookup(
+                                 -1, AVMNodeConverter.ToAVMVersionPath(formInstanceDataRef).getSecond());
+                           if (submittedPaths.contains(formInstanceNode.getPath()) == false)
+                           {
+                              this.submitItems.add(new ItemWrapper(formInstanceNode));
+                              submittedPaths.add(formInstanceNode.getPath());
+                           }
+                           
+                           // locate renditions for this form instance data file and add to list for submission
+                           FormInstanceData formImpl = new FormInstanceDataImpl(formInstanceDataRef);
+                           for (Rendition rendition : formImpl.getRenditions())
+                           {
+                              String renditionPath = rendition.getPath();
+                              if (submittedPaths.contains(renditionPath) == false)
+                              {
+                                 AVMNodeDescriptor renditionNode = this.avmService.lookup(-1, renditionPath);
+                                 this.submitItems.add(new ItemWrapper(renditionNode));
+                                 submittedPaths.add(renditionPath);
+                              }
+                           }
+                           
+                           // lookup the associated Form workflow from the parent form property
+                           String formName = (String)this.nodeService.getProperty(
+                                 formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM_NAME);
+                           FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
+                           if (wrapper != null)
+                           {
+                              // found a workflow attached to the form
+                              this.workflows.add(wrapper);
                            }
                         }
-                        
-                        // lookup the associated Form workflow from the parent form property
-                        String formName = (String)this.nodeService.getProperty(
-                              formInstanceDataRef, WCMAppModel.PROP_PARENT_FORM_NAME);
-                        FormWorkflowWrapper wrapper = this.formWorkflowMap.get(formName);
-                        if (wrapper != null)
+                        else
                         {
-                           // found a workflow attached to the form
-                           this.workflows.add(wrapper);
+                           this.submitItems.add(new ItemWrapper(node));
+                           submittedPaths.add(node.getPath());
                         }
                      }
                      else
                      {
+                        // found a deleted node for submit
                         this.submitItems.add(new ItemWrapper(node));
                         submittedPaths.add(node.getPath());
                      }
                   }
-                  else
-                  {
-                     // found a deleted node for submit
-                     this.submitItems.add(new ItemWrapper(node));
-                     submittedPaths.add(node.getPath());
-                  }
+               }
+               else
+               {
+                  this.warningItems.add(new ItemWrapper(node));
                }
             }
-            else
-            {
-               this.warningItems.add(new ItemWrapper(node));
-            }
          }
+         else
+         {
+            this.submitItems = Collections.<ItemWrapper>emptyList();
+            this.warningItems = Collections.<ItemWrapper>emptyList();
+         }
+         
+         tx.commit();
       }
-      else
+      catch (Throwable e)
       {
-         this.submitItems = Collections.<ItemWrapper>emptyList();
-         this.warningItems = Collections.<ItemWrapper>emptyList();
+         // rollback the transaction on error
+         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
       }
    }
    

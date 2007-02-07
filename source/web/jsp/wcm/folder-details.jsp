@@ -99,6 +99,16 @@
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width="4" height="9"></td>
                </tr>
                
+               <%-- Error Messages --%>
+               <tr valign=top>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
+                  <td>
+                     <%-- messages tag to show messages not handled by other specific message tags --%> 
+                     <a:errors message="" infoClass="statusWarningText" errorClass="statusErrorText" />
+                  </td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
+               </tr>
+               
                <%-- Details --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td>
@@ -155,7 +165,6 @@
                                           <%-- properties for the folder --%>
                                           <r:propertySheetGrid id="folder-props" value="#{FolderDetailsBean.folder}" var="folderProps" 
                                                       columns="1" mode="view" labelStyleClass="propertiesLabel" externalConfig="true" />
-                                          <h:messages globalOnly="true" id="props-msgs" styleClass="errorMessage" layout="table" />
                                        </td>
                                     </tr>
                                  </table>

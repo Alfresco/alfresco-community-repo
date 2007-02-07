@@ -16,10 +16,12 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
@@ -135,6 +137,8 @@ public class ClipboardBean
     */
    private void performPasteItems(int index, int action)
    {
+      FacesContext context = FacesContext.getCurrentInstance();
+      
       try
       {
          if (index == -1)
@@ -152,7 +156,12 @@ public class ClipboardBean
                   }
                }
             }
-            // TODO: after a paste all - remove items from the clipboard...? or not. ask linton
+            
+            // if configured to do so clear the clipboard after a paste all
+            if (Application.getClientConfig(context).isPasteAllAndClearEnabled())
+            {
+               this.items.clear();
+            }
          }
          else
          {
@@ -169,12 +178,12 @@ public class ClipboardBean
          }
          
          // refresh UI on success
-         UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+         UIContextService.getInstance(context).notifyBeans();
       }
       catch (Throwable err)
       {
-         Utils.addErrorMessage(Application.getMessage(
-               FacesContext.getCurrentInstance(), MSG_ERROR_PASTE) + err.getMessage(), err);
+         Utils.addErrorMessage(Application.getMessage(context, 
+               MSG_ERROR_PASTE) + err.getMessage(), err);
       }
    }
 
@@ -267,6 +276,16 @@ public class ClipboardBean
          if (foundDuplicate == false)
          {
             items.add(item);
+         }
+         
+         // add a message to inform the user of the clipboard state now if configured
+         FacesContext context = FacesContext.getCurrentInstance();
+         if (Application.getClientConfig(context).isClipboardStatusVisible())
+         {
+            String pattern = Application.getMessage(context, "node_added_clipboard");
+            String msg = MessageFormat.format(pattern, items.size());
+            FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+            context.addMessage(null, facesMsg);
          }
       }
    }

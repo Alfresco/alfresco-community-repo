@@ -117,6 +117,16 @@
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width="4" height="9"></td>
                </tr>
                
+               <%-- Error Messages --%>
+               <tr valign=top>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
+                  <td>
+                     <%-- messages tag to show messages not handled by other specific message tags --%> 
+                     <a:errors message="" infoClass="statusWarningText" errorClass="statusErrorText" />
+                  </td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
+               </tr>
+               
                <%-- Details --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td>
@@ -227,7 +237,6 @@
                                                   action="#{DocumentDetailsBean.applyInlineEditable}"
                                                   rendered="#{DocumentDetailsBean.inlineEditable == false}" />
                                           </r:permissionEvaluator>
-                                          <h:messages id="error1" globalOnly="true" styleClass="errorMessage" layout="table" />
                                           <h:message id="msg1" for="document-props" styleClass="statusMessage" />
                                        </td>
                                     </tr>
@@ -259,7 +268,6 @@
                                                       columns="1" mode="view" labelStyleClass="propertiesLabel" externalConfig="true" />
                                           <h:outputText id="no-inline-msg2" value="<br/>#{msg.not_inline_editable}<br/>"
                                                rendered="#{DocumentDetailsBean.inlineEditable == false}" escape="false" />
-                                          <h:messages id="error2" globalOnly="true" styleClass="errorMessage" layout="table" />
                                           <h:message id="msg2" for="document-props-locked" styleClass="statusMessage" />
                                        </td>
                                     </tr>

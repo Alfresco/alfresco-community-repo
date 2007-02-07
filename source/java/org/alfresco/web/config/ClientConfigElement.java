@@ -56,9 +56,11 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String homeSpacePermission = null;
    private boolean ajaxEnabled = false;
    private String initialLocation = "myalfresco";
-   private ExpiringValueCache<String> wcmDomain = new ExpiringValueCache(1000*10L);
-   private ExpiringValueCache<String> wcmPort = new ExpiringValueCache(1000*10L);
+   private ExpiringValueCache<String> wcmDomain = new ExpiringValueCache<String>(1000*10L);
+   private ExpiringValueCache<String> wcmPort = new ExpiringValueCache<String>(1000*10L);
    private String defaultHomeSpacePath = "/app:company_home";
+   private boolean clipboardStatusVisible = true;
+   private boolean pasteAllAndClear = true;
    private boolean allowGuestConfig = false;
    
    /**
@@ -164,6 +166,16 @@ public class ClientConfigElement extends ConfigElementAdapter
          combinedElement.setShelfVisible(newElement.isShelfVisible());
       }
       
+      if (newElement.isClipboardStatusVisible() != combinedElement.isClipboardStatusVisible())
+      {
+         combinedElement.setClipboardStatusVisible(newElement.isClipboardStatusVisible());
+      }
+      
+      if (newElement.isPasteAllAndClearEnabled() != combinedElement.isPasteAllAndClearEnabled())
+      {
+         combinedElement.setPasteAllAndClearEnabled(newElement.isPasteAllAndClearEnabled());
+      }
+      
       if (newElement.getFromEmailAddress() != null && 
           (newElement.getFromEmailAddress().equals(combinedElement.getFromEmailAddress()) == false))
       {
@@ -219,6 +231,39 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setShelfVisible(boolean shelfVisible)
    {
       this.shelfVisible = shelfVisible;
+   }
+   
+   /**
+    * @return Returns if the clipboard status messages are visible by default.
+    */
+   public boolean isClipboardStatusVisible()
+   {
+      return this.clipboardStatusVisible;
+   }
+
+   /**
+    * @param clipboardStatusVisible True if the clipboard status messages should be visible.
+    */
+   /*package*/ void setClipboardStatusVisible(boolean clipboardStatusVisible)
+   {
+      this.clipboardStatusVisible = clipboardStatusVisible;
+   }
+   
+   /**
+    * @return Returns if the clipboard paste all action should clear the clipboard.
+    */
+   public boolean isPasteAllAndClearEnabled()
+   {
+      return this.pasteAllAndClear;
+   }
+
+   /**
+    * @param pasteAllAndClear Sets whether the paste all action should clear all items
+    *        from the clipboard.
+    */
+   /*package*/ void setPasteAllAndClearEnabled(boolean pasteAllAndClear)
+   {
+      this.pasteAllAndClear = pasteAllAndClear;
    }
 
    /**

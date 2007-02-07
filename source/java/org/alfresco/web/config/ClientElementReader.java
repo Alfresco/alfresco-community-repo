@@ -43,6 +43,8 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_AJAX_ENABLED = "ajax-enabled";
    public static final String ELEMENT_INITIALLOCATION = "initial-location";
    public static final String ELEMENT_DEFAULTHOMESPACEPATH = "default-home-space-path";
+   public static final String ELEMENT_CLIPBOARDSTATUS = "clipboard-status-visible";
+   public static final String ELEMENT_PASTEALLANDCLEAR = "paste-all-and-clear";
    public static final String ELEMENT_GUESTCONFIG = "allow-guest-config";
    
    /**
@@ -169,6 +171,22 @@ public class ClientElementReader implements ConfigElementReader
          if (defaultHomeSpacePath != null)
          {
             configElement.setDefaultHomeSpacePath(defaultHomeSpacePath.getTextTrim());
+         }
+         
+         // get the default visibility of the clipboard status messages
+         Element clipboardStatusVisible = element.element(ELEMENT_CLIPBOARDSTATUS);
+         if (clipboardStatusVisible != null)
+         {
+            configElement.setClipboardStatusVisible(Boolean.parseBoolean(
+                  clipboardStatusVisible.getTextTrim()));
+         }
+         
+         // get the default setting for the paste all action, should it clear the clipboard after?
+         Element pasteAllAndClear = element.element(ELEMENT_PASTEALLANDCLEAR);
+         if (pasteAllAndClear != null)
+         {
+            configElement.setPasteAllAndClearEnabled(Boolean.parseBoolean(
+                  pasteAllAndClear.getTextTrim()));
          }
          
          // get allow Guest to configure start location preferences

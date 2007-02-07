@@ -75,6 +75,11 @@
          
          <!-- the from address to use when sending emails from the client -->
          <from-email-address>alfresco@alfresco.org</from-email-address>
+         
+         <!-- clipboard behaviour i.e. whether to show a status message when an item is added -->
+         <!-- to the clipboard and whether the paste all action also clears the clipboard -->
+         <clipboard-status-visible>true</clipboard-status-visible>
+         <paste-all-and-clear>true</paste-all-and-clear>
       </client>
    </config>
 

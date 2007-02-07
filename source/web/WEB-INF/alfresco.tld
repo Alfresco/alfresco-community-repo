@@ -1471,6 +1471,18 @@
       </attribute>
       
       <attribute>
+         <name>infoClass</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>errorClass</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
          <name>style</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>

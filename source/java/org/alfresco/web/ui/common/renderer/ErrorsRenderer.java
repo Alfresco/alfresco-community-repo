@@ -55,6 +55,8 @@ public class ErrorsRenderer extends BaseRenderer
          ResponseWriter out = context.getResponseWriter();
          String contextPath = context.getExternalContext().getRequestContextPath();
          String styleClass = (String)component.getAttributes().get("styleClass");
+         String errorClass = (String)component.getAttributes().get("errorClass");
+         String infoClass = (String)component.getAttributes().get("infoClass");
          String message = (String)component.getAttributes().get("message");
          
          if (message == null)
@@ -75,27 +77,57 @@ public class ErrorsRenderer extends BaseRenderer
          
          PanelGenerator.generatePanelStart(out, contextPath, "yellowInner", "#ffffcc");
          
-         out.write("\n<div");
+         out.write("\n<div"); 
          if (styleClass != null)
          {
             outputAttribute(out, styleClass, "class");
          }
          out.write(">");
-         out.write("<img src='");
-         out.write(contextPath);
-         out.write("/images/icons/info_icon.gif' alt='Error' align='absmiddle'/>&nbsp;&nbsp;");
-         out.write(Utils.encode(message));
-         out.write("\n<ul style='margin:2px;'>");
          
-         while (messages.hasNext())
+         // if we have a message to display show it next to the info icon
+         if (message.length() > 0)
          {
-            FacesMessage fm = (FacesMessage)messages.next();
-            out.write("<li>");
-            out.write(Utils.encode(fm.getSummary()));
-            out.write("</li>\n");
+            out.write("<img src='");
+            out.write(contextPath);
+            out.write("/images/icons/info_icon.gif' alt='Error' align='absmiddle'/>&nbsp;&nbsp;");
+            out.write(Utils.encode(message));
+            out.write("\n<ul style='margin:2px;'>");
+            
+            while (messages.hasNext())
+            {
+               FacesMessage fm = (FacesMessage)messages.next();
+               out.write("<li");
+               renderMessageAttrs(fm, out, errorClass, infoClass);
+               out.write(">");
+               out.write(Utils.encode(fm.getSummary()));
+               out.write("</li>\n");
+            }
+            
+            out.write("</ul>");
+         }
+         else
+         {
+            // if there is no title message to display use a table to place
+            // the info icon on the left and the list of messages on the right
+            out.write("<table border='0' cellpadding='3' cellspacing='0'><tr><td valign='top'><img src='");
+            out.write(contextPath);
+            out.write("/images/icons/info_icon.gif' alt='Error' />");
+            out.write("</td><td>");
+            
+            while (messages.hasNext())
+            {
+               FacesMessage fm = (FacesMessage)messages.next();
+               out.write("<div style='margin-bottom: 3px;'");
+               renderMessageAttrs(fm, out, errorClass, infoClass);
+               out.write(">");
+               out.write(Utils.encode(fm.getSummary()));
+               out.write("</div>\n");
+            }
+            
+            out.write("</td></tr></table>");
          }
          
-         out.write("</ul></div>\n");
+         out.write("</div>\n");
          
          PanelGenerator.generatePanelEnd(out, contextPath, "yellowInner");
          
@@ -110,5 +142,32 @@ public class ErrorsRenderer extends BaseRenderer
    public boolean getRendersChildren()
    {
       return false;
+   }
+   
+   /**
+    * Renders the attributes for the given FacesMessage.
+    */
+   private void renderMessageAttrs(FacesMessage fm, ResponseWriter out,
+         String errorClass, String infoClass) throws IOException
+   {
+      // use the error class if the message is error level
+      if (errorClass != null && 
+          fm.getSeverity() == FacesMessage.SEVERITY_ERROR ||
+          fm.getSeverity() == FacesMessage.SEVERITY_FATAL)
+      {
+         out.write(" class='");
+         out.write(errorClass);
+         out.write("'");
+      }
+      
+      // use the info class if the message is info level
+      if (infoClass != null && 
+          fm.getSeverity() == FacesMessage.SEVERITY_INFO ||
+          fm.getSeverity() == FacesMessage.SEVERITY_WARN)
+      {
+         out.write(" class='");
+         out.write(infoClass);
+         out.write("'");
+      }
    }
 }

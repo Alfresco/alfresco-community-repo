@@ -2352,6 +2352,7 @@ dojo.declare("alfresco.xforms.Repeat",
              {
                this.repeatControls = [];
                this._selectedIndex = -1;
+               this._locked = false;
              },
              {
                /////////////////////////////////////////////////////////////////
@@ -2727,13 +2728,14 @@ dojo.declare("alfresco.xforms.Repeat",
                {
                  dojo.event.browser.stopEvent(event);
                  var repeat = event.target.repeat;
-                 if (repeat.isInsertRepeatItemEnabled())
+                 if (!repeat._locked && repeat.isInsertRepeatItemEnabled())
                  {
                    var index = repeat.repeatControls.indexOf(event.target.parentNode);
                    var repeatItem = repeat.getChildAt(index);
                    this.setFocusedChild(repeatItem);
                    var trigger = this._getRepeatItemTrigger("insert", { position: "after" });
                    trigger.fire();
+                   repeat._locked = true;
                  }
                },
 
@@ -2747,11 +2749,12 @@ dojo.declare("alfresco.xforms.Repeat",
                  {
                    dojo.event.browser.stopEvent(event);
                    var repeat = event.target.repeat;
-                   if (repeat.isInsertRepeatItemEnabled())
+                   if (!repeat._locked && repeat.isInsertRepeatItemEnabled())
                    {
                      this.setFocusedChild(null);
                      var trigger = this._getRepeatItemTrigger("insert", { position: "before" });
                      trigger.fire();
+                     repeat._locked = true;
                    }
                  }
                },
@@ -2764,13 +2767,14 @@ dojo.declare("alfresco.xforms.Repeat",
                {
                  dojo.event.browser.stopEvent(event);
                  var repeat = event.target.repeat;
-                 if (repeat.isRemoveRepeatItemEnabled())
+                 if (!repeat._locked && repeat.isRemoveRepeatItemEnabled())
                  {
                    var index = repeat.repeatControls.indexOf(event.target.parentNode);
                    var repeatItem = repeat.getChildAt(index);
                    this.setFocusedChild(repeatItem);
                    var trigger = this._getRepeatItemTrigger("delete", {});
                    trigger.fire();
+                   repeat._locked = true;
                  }
                },
 
@@ -2783,11 +2787,12 @@ dojo.declare("alfresco.xforms.Repeat",
                  dojo.event.browser.stopEvent(event);
                  var repeat = event.target.repeat;
                  var index = repeat.repeatControls.indexOf(event.target.parentNode);
-                 if (index != 0 && repeat._children.length != 1)
+                 if (!repeat._locked && index != 0 && repeat._children.length != 1)
                  {
                    var repeatItem = repeat.getChildAt(index);
                    this.setFocusedChild(repeatItem);
                    repeat._swapChildren(index, index - 1);
+                   repeat._locked = true;
                  }
                },
 
@@ -2800,11 +2805,12 @@ dojo.declare("alfresco.xforms.Repeat",
                  dojo.event.browser.stopEvent(event);
                  var repeat = event.target.repeat;
                  var index = repeat.repeatControls.indexOf(event.target.parentNode);
-                 if (index != repeat._children.length - 1 && repeat._children.length != 1)
+                 if (!repeat._locked && index != repeat._children.length - 1 && repeat._children.length != 1)
                  {
                    var repeatItem = repeat.getChildAt(index);
                    this.setFocusedChild(repeatItem);
                    repeat._swapChildren(index, index + 1);
+                   repeat._locked = true;
                  }
                },
 
@@ -2847,6 +2853,7 @@ dojo.declare("alfresco.xforms.Repeat",
                  var w = this.xform.createWidget(clonedPrototype);
                  this._insertChildAt(w, position);
                  this.xform.loadWidgets(w.xformsNode, w);
+                 this._locked = false;
                },
 
                /** Deletes the item at the specified position. */
@@ -2854,6 +2861,7 @@ dojo.declare("alfresco.xforms.Repeat",
                {
                  dojo.debug(this.id + ".handleItemDeleted(" + position + ")");
                  this._removeChildAt(position);
+                 this._locked = false;
                }
              });
 

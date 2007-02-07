@@ -283,7 +283,7 @@ public class XFormsBean
     * Writes the xform out to the http servlet response.  This allows
     * us to use the browser to parse the xform using XMLHttpRequest.
     */
-   public void getXForm() 
+   public synchronized void getXForm() 
       throws IOException,
       XFormsException
    {
@@ -302,7 +302,7 @@ public class XFormsBean
     * @param value the new value
     * @return the list of events that may result through this action
     */
-   public void setXFormsValue() 
+   public synchronized void setXFormsValue() 
       throws XFormsException, IOException
    {
       final FacesContext context = FacesContext.getCurrentInstance();
@@ -357,7 +357,7 @@ public class XFormsBean
     *
     * @param id the id of the control in the host document
     */
-   public void fireAction() 
+   public synchronized void fireAction() 
       throws XFormsException, IOException
    {
       final FacesContext context = FacesContext.getCurrentInstance();
@@ -376,7 +376,7 @@ public class XFormsBean
    /**
     * handles submits and sets the instance data.
     */
-   public void handleAction() 
+   public synchronized void handleAction() 
    {
       LOGGER.debug(this + ".handleAction");
       try
@@ -410,7 +410,7 @@ public class XFormsBean
    /**
     * Swaps model nodes to implement reordering within repeats.
     */
-   public void swapRepeatItems() 
+   public synchronized void swapRepeatItems() 
       throws Exception
    {
       final FacesContext context = FacesContext.getCurrentInstance();
@@ -420,8 +420,17 @@ public class XFormsBean
       final String toItemId = (String)requestParameters.get("toItemId");
       LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      this.swapRepeatItems((RepeatItem)chibaBean.getContainer().lookup(fromItemId), 
-                           (RepeatItem)chibaBean.getContainer().lookup(toItemId));
+      final RepeatItem from = (RepeatItem)chibaBean.getContainer().lookup(fromItemId);
+      if (from == null)
+      {
+         throw new NullPointerException("unable to find source repeat item " + fromItemId);
+      }
+      final RepeatItem to = (RepeatItem)chibaBean.getContainer().lookup(toItemId);
+      if (to == null)
+      {
+         throw new NullPointerException("unable to find destination repeat item " + toItemId);
+      }
+      this.swapRepeatItems(from, to);
 
       final ResponseWriter out = context.getResponseWriter();
       XMLUtil.print(this.getEventLog(), out);

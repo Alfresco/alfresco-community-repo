@@ -486,8 +486,7 @@ public abstract class BaseAssociationEditor extends UIInput
    }
    
    /**
-    * Returns the size of the select control when multiple items
-    * can be selected 
+    * Returns the size of the select control
     * 
     * @return The size of the select control
     */
@@ -502,8 +501,7 @@ public abstract class BaseAssociationEditor extends UIInput
    }
    
    /**
-    * Sets the size of the select control used when multiple items can
-    * be selected 
+    * Sets the size of the select control
     * 
     * @param availableOptionsSize The size
     */
@@ -818,14 +816,11 @@ public abstract class BaseAssociationEditor extends UIInput
       out.write("name='");
       out.write(getClientId(context) + FIELD_AVAILABLE);
       out.write("' size='");
+      out.write(getAvailableOptionsSize());
+      out.write("'");
       if (allowMany)
       {
-         out.write(getAvailableOptionsSize());
-         out.write("' multiple");
-      }
-      else
-      {
-         out.write("1'");
+         out.write(" multiple");
       }
       out.write(">");
       
@@ -834,10 +829,9 @@ public abstract class BaseAssociationEditor extends UIInput
          Node currentNode = (Node)getValue();
          for (NodeRef item : this.availableOptions)
          {
-            // NOTE: only show the items that are not already associated to and don't show the current node
-            if ((this.originalAssocs.containsKey(item.toString()) == false && this.added.containsKey(item.toString()) == false &&
-                item.toString().equals(currentNode.getNodeRef().toString()) == false) || 
-                this.removed.containsKey(item.toString())) 
+            // show all the available options apart from the current node as we don't
+            // want to create recursive associations!!
+            if (item.toString().equals(currentNode.getNodeRef().toString()) == false)
             {
                if (ContentModel.TYPE_PERSON.equals(nodeService.getType(item)))
                {

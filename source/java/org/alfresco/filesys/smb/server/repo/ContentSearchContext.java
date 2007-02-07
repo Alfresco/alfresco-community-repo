@@ -232,6 +232,8 @@ public class ContentSearchContext extends SearchContext
         		
         		info.setFileType( FileType.SymbolicLink);
         	}
+        	else
+        		info.setFileType( FileType.RegularFile);
         	
         	// Indicate that the file information is valid
             

@@ -1892,41 +1892,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         fstate.setNodeRef(renState.getNodeRef());
                         fstate.setFileStatus(FileStateStatus.FileExists);
                     }
-                    else
-                    {
-                        // Get or create a new file state for the old file path
-                        
-                        FileState fstate = ctx.getStateTable().findFileState(oldName, false, true);
-                        
-                        // Make sure the file state is cached for a short while, the file may not be open so the
-                        // file state could be expired
-                        
-                        fstate.setExpiryTime(System.currentTimeMillis() + FileState.RenameTimeout);
-                        
-                        // Indicate that this is a renamed file state, set the node ref of the file that was renamed
-                        
-                        fstate.setFileStatus(FileStateStatus.Renamed);
-                        fstate.setNodeRef(nodeToMoveRef);
-                        
-                        // Get, or create, a file state for the new file path
-                        
-                        FileState newState = ctx.getStateTable().findFileState(newName, false, true);
-                        
-                        newState.setNodeRef(nodeToMoveRef);
-                        newState.setFileStatus(FileStateStatus.FileExists);
-                        
-                        // Link the renamed state to the new state
-                        
-                        fstate.setRenameState(newState);
-                        
-                        // DEBUG
-                        
-                        if ( logger.isDebugEnabled()) 
-                        {
-                            logger.debug("Cached rename state for " + oldName + ", state=" + fstate);
-                            logger.debug("  new name " + newName + ", state=" + newState);
-                        }
-                    }
                 }
                 else
                 {
@@ -1943,9 +1908,53 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 }
             }
             
+            // Move the file/folder, if not relinked to previous version history
+            
             if (!relinked)
             {
+            	// Move the file/folder
+            	
                 cifsHelper.move(nodeToMoveRef, targetFolderRef, name);
+
+                // Check if we renamed a file, if so then cache the rename details for a short period
+                // in case another file renamed to the old name. MS Word uses renames to move a new
+                // version of a document into place so we need to reconnect the version history.
+                
+                if ( !cifsHelper.isDirectory(nodeToMoveRef))
+                {
+	                // Get or create a new file state for the old file path
+	                
+	                FileState fstate = ctx.getStateTable().findFileState(oldName, false, true);
+	                
+	                // Make sure the file state is cached for a short while, the file may not be open so the
+	                // file state could be expired
+	                
+	                fstate.setExpiryTime(System.currentTimeMillis() + FileState.RenameTimeout);
+	                
+	                // Indicate that this is a renamed file state, set the node ref of the file that was renamed
+	                
+	                fstate.setFileStatus(FileStateStatus.Renamed);
+	                fstate.setNodeRef(nodeToMoveRef);
+	                
+	                // Get, or create, a file state for the new file path
+	                
+	                FileState newState = ctx.getStateTable().findFileState(newName, false, true);
+	                
+	                newState.setNodeRef(nodeToMoveRef);
+	                newState.setFileStatus(FileStateStatus.FileExists);
+	                
+	                // Link the renamed state to the new state
+	                
+	                fstate.setRenameState(newState);
+	                
+	                // DEBUG
+	                
+	                if ( logger.isDebugEnabled()) 
+	                {
+	                    logger.debug("Cached rename state for " + oldName + ", state=" + fstate);
+	                    logger.debug("  new name " + newName + ", state=" + newState);
+	                }
+                }
             }
 
             // DEBUG

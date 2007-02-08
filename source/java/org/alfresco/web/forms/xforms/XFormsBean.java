@@ -377,7 +377,7 @@ public class XFormsBean
    /**
     * handles submits and sets the instance data.
     */
-   public synchronized void handleAction() 
+   public void handleAction() 
    {
       LOGGER.debug(this + ".handleAction");
       try

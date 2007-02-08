@@ -315,7 +315,7 @@ public class XFormsBean
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
       if (chibaBean.getContainer().lookup(id) instanceof Upload)
       {
-         chibaBean.updateControlValue(id, null, value, value.getBytes());
+         chibaBean.updateControlValue(id, null, value, value.getBytes("UTF-8"));
       }
       else
       {

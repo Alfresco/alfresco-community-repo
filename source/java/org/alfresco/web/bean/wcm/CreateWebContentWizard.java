@@ -467,7 +467,7 @@ public class CreateWebContentWizard extends BaseContentWizard
       // put the content of the file into the AVM store
       avmService.createFile(path, 
                             fileName, 
-                            new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes()));
+                            new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes("UTF-8")));
       
       // remember the created path
       this.createdPath = AVMNodeConverter.ExtendAVMPath(path, fileName);

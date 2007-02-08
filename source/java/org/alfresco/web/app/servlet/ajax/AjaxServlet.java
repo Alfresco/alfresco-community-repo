@@ -42,32 +42,34 @@ public class AjaxServlet extends BaseServlet
    /**
     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
     */
-   protected void service(HttpServletRequest request, HttpServletResponse response)
+   protected void service(final HttpServletRequest request, 
+                          final HttpServletResponse response)
       throws ServletException, IOException
    {
+      request.setCharacterEncoding("utf-8");
+
       long startTime = 0;
-      
+      String uri = request.getRequestURI();      
+      if (logger.isDebugEnabled())
+      {
+         final String queryString = request.getQueryString();
+         logger.debug("Processing URL: " + uri + 
+                      ((queryString != null && queryString.length() > 0) ? ("?" + queryString) : ""));
+      }
+         
+      // dump the request headers
+      if (headersLogger.isDebugEnabled())
+      {
+         final Enumeration headers = request.getHeaderNames();
+         while (headers.hasMoreElements())
+         {
+            final String name = (String)headers.nextElement();
+            headersLogger.debug(name + ": " + request.getHeader(name));
+         }
+      }
+
       try
       {
-         String uri = request.getRequestURI();
-         
-         if (logger.isDebugEnabled())
-         {
-            String queryString = request.getQueryString();
-            logger.debug("Processing URL: " + uri + 
-                  ((queryString != null && queryString.length() > 0) ? ("?" + queryString) : ""));
-         }
-         
-         // dump the request headers
-         if (headersLogger.isDebugEnabled())
-         {
-            Enumeration headers = request.getHeaderNames();
-            while (headers.hasMoreElements())
-            {
-               String name = (String)headers.nextElement();
-               headersLogger.debug(name + ": " + request.getHeader(name));
-            }
-         }
          
          // Make sure the user is authenticated, if not throw an error to return the 
          // 500 Internal Server Error code back to the client
@@ -86,12 +88,12 @@ public class AjaxServlet extends BaseServlet
             throw new AlfrescoRuntimeException("Servlet URL did not contain all required args: " + uri); 
          }
          // retrieve the command from the URL
-         String commandName = tokens[1];
+         final String commandName = tokens[1];
          // retrieve the binding expression from the URL
-         String expression = tokens[2];
+         final String expression = tokens[2];
          
          // setup the faces context
-         FacesContext facesContext = FacesHelper.getFacesContext(request, response, getServletContext());
+         final FacesContext facesContext = FacesHelper.getFacesContext(request, response, getServletContext());
          
          // start a timer
          if (perfLogger.isDebugEnabled())
@@ -124,8 +126,7 @@ public class AjaxServlet extends BaseServlet
          // measure the time taken
          if (perfLogger.isDebugEnabled())
          {
-            long endTime = System.currentTimeMillis();
-            perfLogger.debug("Time to execute command: " + (endTime - startTime) + "ms");
+            perfLogger.debug("Time to execute command: " + (System.currentTimeMillis() - startTime) + "ms");
          }
       }
    }

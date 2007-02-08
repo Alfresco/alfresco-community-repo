@@ -29,6 +29,7 @@
 //
 // Initiliaze dojo requirements, tinymce, and add a hook to load the xform.
 ////////////////////////////////////////////////////////////////////////////////
+djConfig.bindEncoding = "UTF-8";
 dojo.require("dojo.debug.console");
 dojo.require("dojo.date.common");
 dojo.require("dojo.widget.DebugConsole");
@@ -52,7 +53,7 @@ tinyMCE.init({
   width: -1,
   auto_resize: false,
   force_p_newlines: false,
-  encoding: null,
+  encoding: "UTF-8",
   add_unload_trigger: false,
   add_form_submit_trigger: false,
   theme_advanced_toolbar_location: "top",
@@ -500,8 +501,6 @@ dojo.declare("alfresco.xforms.Widget",
                },
 
                /** 
-                * Returns an array of RepeatIndexDatas corresponding to all enclosing repeats.
-                * The closest repeat will be at index 0.
                 */
                getParentGroups: function(appearance)
                {
@@ -756,6 +755,7 @@ dojo.declare("alfresco.xforms.PlainTextEditor",
                /////////////////////////////////////////////////////////////////
                // overridden methods
                /////////////////////////////////////////////////////////////////
+
                render: function(attach_point)
                {
                  attach_point.appendChild(this.domNode);
@@ -2972,32 +2972,7 @@ dojo.declare("alfresco.xforms.Submit",
                  submit_buttons[i].widget = this;
                  dojo.event.browser.addListener(submit_buttons[i], 
                                                 "onclick", 
-                                                function(event)
-                                                {
-                                                  if (!event.target.widget)
-                                                  {
-                                                    return true;
-                                                  }
-                                                  
-                                                  var xform = event.target.widget.xform;
-                                                  if (xform.submitWidget && xform.submitWidget.done)
-                                                  {
-                                                    dojo.debug("done - doing base click on " + xform.submitWidget.currentButton.id);
-                                                    xform.submitWidget.currentButton = null;
-                                                    xform.submitWidget = null;
-                                                    return true;
-                                                  }
-                                                  else
-                                                  {
-                                                    dojo.debug("triggering submit from handler " + event.target.id);
-                                                    dojo.event.browser.stopEvent(event);
-                                                    _hide_errors();
-                                                    xform.submitWidget = event.target.widget;
-                                                    xform.submitWidget.currentButton = event.target;
-                                                    xform.submitWidget.widget.buttonClick(); 
-                                                    return false;
-                                                  }
-                                                },
+                                                this._submitButton_clickHandler,
                                                 false);
                }
              },
@@ -3012,6 +2987,34 @@ dojo.declare("alfresco.xforms.Submit",
                  this.done = false;
                  _hide_errors();
                  this.fire();
+               },
+
+               /** */
+               _submitButton_clickHandler: function(event)
+               {
+                 if (!event.target.widget)
+                 {
+                   return true;
+                 }
+                                                  
+                 var xform = event.target.widget.xform;
+                 if (xform.submitWidget && xform.submitWidget.done)
+                 {
+                   dojo.debug("done - doing base click on " + xform.submitWidget.currentButton.id);
+                   xform.submitWidget.currentButton = null;
+                   xform.submitWidget = null;
+                   return true;
+                 }
+                 else
+                 {
+                   dojo.debug("triggering submit from handler " + event.target.id);
+                   dojo.event.browser.stopEvent(event);
+                   _hide_errors();
+                   xform.submitWidget = event.target.widget;
+                   xform.submitWidget.currentButton = event.target;
+                   xform.submitWidget.widget.buttonClick(); 
+                   return false;
+                 }
                }
              });
 
@@ -3104,7 +3107,6 @@ dojo.declare("alfresco.xforms.Binding",
                  (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":required")
                   ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":required") == "true()"
                   : null);
-               
                this._type =
                  (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":type")
                   ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":type")
@@ -3748,6 +3750,7 @@ AjaxHelper.createRequest = function(target, serverMethod, methodArgs, load, erro
 AjaxHelper.sendRequest = function(req)
 {
   AjaxHelper._sendHandler(req);
+  req.encoding = "utf-8";
   dojo.io.queueBind(req);
 }
 
@@ -4012,10 +4015,12 @@ FilePickerWidget._upload_completeHandler = function(id, path, fileName, fileType
 // instance methods and properties
 
 FilePickerWidget.prototype = {
+
 getValue: function()
 {
   return this.value;
 },
+
 setValue: function(v)
 {
   this.value = (v == null || v.length == 0 ? null : v);
@@ -4026,6 +4031,7 @@ setValue: function(v)
 
   this.change_callback(this);
 },
+
 setReadonly: function(r)
 {
   this.readonly = r;
@@ -4038,10 +4044,12 @@ setReadonly: function(r)
     this._showSelectedValue();
   }
 },
+
 render: function()
 {
   this._showSelectedValue();
 },
+
 _showStatus: function(text, isError)
 {
   var d = this.node.ownerDocument;
@@ -4069,6 +4077,7 @@ _showStatus: function(text, isError)
   setTimeout("var _status = document.getElementById('" + this.uploadId + 
              "-status'); if (_status && _status) { _status.widget._hideStatus(); }", 5000);
 },
+
 _hideStatus: function()
 {
   if (this.statusDiv)
@@ -4091,6 +4100,7 @@ _hideStatus: function()
     anim.play();
   }
 },
+
 _showSelectedValue: function()
 {
   var d = this.node.ownerDocument;
@@ -4150,6 +4160,7 @@ _navigateToNode: function(path)
   req.content.currentPath = path;
   AjaxHelper.sendRequest(req);
 },
+
 _showPicker: function(data)
 {
   while (this.node.hasChildNodes() &&
@@ -4341,6 +4352,7 @@ _showPicker: function(data)
     this.contentDiv.appendChild(row);
   }
 },
+
 _createRow: function(fileName, webappRelativePath,  isDirectory, fileTypeImage, rowClass)
 {
   var d = this.contentDiv.ownerDocument;
@@ -4417,6 +4429,7 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, fileTypeImage, 
                      });
   return result;
 },
+
 _hideAddContent: function()
 {
   if (this.addContentDiv)
@@ -4426,6 +4439,7 @@ _hideAddContent: function()
     this.addContentDiv = null;
   }
 },
+
 _showAddContent: function(currentPath)
 {
   if (this.addContentDiv)
@@ -4490,6 +4504,7 @@ _showAddContent: function(currentPath)
                                                       w);
                      });
 },
+
 _upload_completeHandler: function(fileName, webappRelativePath, fileTypeImage, error)
 {
   if (error)
@@ -4515,6 +4530,7 @@ _upload_completeHandler: function(fileName, webappRelativePath, fileTypeImage, e
     this.addContentDiv = null;
   }
 },
+
 _closeParentPathMenu: function()
 {
   if (this.parentPathMenu)
@@ -4525,6 +4541,7 @@ _closeParentPathMenu: function()
   }
   this.headerMenuTriggerLink.style.borderStyle = "solid";
 },
+
 _openParentPathMenu: function(target, path)
 {
   var d = target.ownerDocument;

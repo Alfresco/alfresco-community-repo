@@ -116,7 +116,7 @@ public class XMLUtil
       throws SAXException,
       IOException
    {
-      return XMLUtil.parse(new ByteArrayInputStream(source.getBytes()));
+      return XMLUtil.parse(new ByteArrayInputStream(source.getBytes("UTF-8")));
    }
    
    /** utility function for parsing xml */

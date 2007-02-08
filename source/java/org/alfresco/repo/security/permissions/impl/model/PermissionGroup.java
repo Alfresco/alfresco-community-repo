@@ -34,7 +34,7 @@ import org.dom4j.Element;
  * 
  * @author andyh
  */
-public class PermissionGroup extends AbstractPermissionReference implements XMLModelInitialisable
+public final class PermissionGroup extends AbstractPermissionReference implements XMLModelInitialisable
 {
     // XML Constants
     

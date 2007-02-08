@@ -46,7 +46,4 @@ public class PermissionReferenceImpl extends AbstractPermissionReference
     {
         return qName;
     }
-    
-    
-
 }

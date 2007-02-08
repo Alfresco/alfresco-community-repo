@@ -294,10 +294,10 @@ public final class QName implements QNamePattern, Serializable, Cloneable
         }
         if (object instanceof QName)
         {
-            QName other = (QName) object;
+            QName other = (QName)object;
             // namespaceURI and localname are not allowed to be null
-            return (this.namespaceURI.equals(other.namespaceURI) &&
-                    this.localName.equals(other.localName));
+            return (this.localName.equals(other.localName) &&
+                    this.namespaceURI.equals(other.namespaceURI));
         }
         else
         {

@@ -36,8 +36,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,7 +52,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -68,6 +72,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     private static final String MSG_EXECUTING_SCRIPT = "schema.update.msg.executing_script";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
+    private static final String MSG_DUMPING_SCHEMA_CREATE = "schema.update.msg.dumping_schema_create";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
     private static final String ERR_UPDATE_FAILED = "schema.update.err.update_failed";
     private static final String ERR_VALIDATION_FAILED = "schema.update.err.validation_failed";
@@ -91,9 +96,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         applyUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
     }
     
-    public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory) throws BeansException
+    public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
     {
         this.localSessionFactory = localSessionFactory;
+    }
+
+    public LocalSessionFactoryBean getLocalSessionFactory()
+    {
+        return localSessionFactory;
     }
 
     /**
@@ -153,8 +163,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         this.applyUpdateScriptPatches = scriptPatches;
     }
 
-    private void dumpSchemaCreate(Configuration cfg, File schemaOutputFile)
+    /**
+     * Helper method to generate a schema creation SQL script from the given Hibernate
+     * configuration.
+     */
+    public static void dumpSchemaCreate(Configuration cfg, File schemaOutputFile)
     {
+        if (logger.isInfoEnabled())
+        {
+            String msg = I18NUtil.getMessage(MSG_DUMPING_SCHEMA_CREATE, schemaOutputFile);
+            logger.info(msg);
+        }
         // if the file exists, delete it
         if (schemaOutputFile.exists())
         {
@@ -168,7 +187,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         schemaExport.execute(false, false, false, true);
     }
     
-    private SessionFactory getLocalSessionFactory()
+    private SessionFactory getSessionFactory()
     {
         return (SessionFactory) localSessionFactory.getObject();
     }
@@ -576,7 +595,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     protected void onBootstrap(ApplicationEvent event)
     {
         // do everything in a transaction
-        Session session = getLocalSessionFactory().openSession();
+        Session session = getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         try
         {
@@ -623,5 +642,95 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     protected void onShutdown(ApplicationEvent event)
     {
         // NOOP
+    }
+    
+    private static final String DIR_SCHEMAS = "schemas";
+    /**
+     * Dump a set of creation files for all known Hibernate dialects.  These will be
+     * dumped into the default temporary location in a subdirectory named <b>schemas</b>.
+     */
+    public static void main(String[] args)
+    {
+        int exitCode = 0;
+        try
+        {
+            exitCode = dumpDialects(args);
+        }
+        catch (Throwable e)
+        {
+            logger.error("SchemaBootstrap script dump failed", e);
+            exitCode = 1;
+        }
+        // We can exit
+        System.exit(exitCode);
+    }
+    
+    private static int dumpDialects(String[] dialectClassNames)
+    {
+        if (dialectClassNames.length == 0)
+        {
+            System.out.println(
+                    "\n" +
+                    "   ERROR: A list of fully qualified class names is required");
+            return 1;
+        }
+        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+        SchemaBootstrap schemaBootstrap = (SchemaBootstrap) ctx.getBean("schemaBootstrap");
+        LocalSessionFactoryBean localSessionFactoryBean = schemaBootstrap.getLocalSessionFactory();
+        Configuration configuration = localSessionFactoryBean.getConfiguration();
+        
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        DescriptorService descriptorService = serviceRegistry.getDescriptorService();
+        Descriptor descriptor = descriptorService.getServerDescriptor();
+        
+        File tempDir = TempFileProvider.getTempDir();
+        File schemasDir = new File(tempDir, DIR_SCHEMAS);
+        if (!schemasDir.exists())
+        {
+            schemasDir.mkdir();
+        }
+        File dumpDir = new File(schemasDir, descriptor.getVersion());
+        if (!dumpDir.exists())
+        {
+            dumpDir.mkdir();
+        }
+        for (String dialectClassName : dialectClassNames)
+        {
+            Class dialectClazz = null;
+            try
+            {
+                dialectClazz = Class.forName(dialectClassName);
+            }
+            catch (ClassNotFoundException e)
+            {
+                System.out.println(
+                        "\n" +
+                        "   ERROR: Class not found: " + dialectClassName);
+                continue;
+            }
+            if (!Dialect.class.isAssignableFrom(dialectClazz))
+            {
+                System.out.println(
+                        "\n" +
+                        "   ERROR: The class name is not a valid dialect: " + dialectClassName);
+                continue;
+            }
+            dumpDialectScript(configuration, dialectClazz, dumpDir);
+        }
+        // Done
+        return 0;
+    }
+    
+    private static void dumpDialectScript(Configuration configuration, Class dialectClazz, File directory)
+    {
+        // Set the dialect
+        configuration.setProperty("hibernate.dialect", dialectClazz.getName());
+        
+        // First dump the dialect's schema
+        String filename = "default-schema-create-" + dialectClazz.getName() + ".sql";
+        File dumpFile = new File(directory, filename);
+        
+        // Write the file
+        SchemaBootstrap.dumpSchemaCreate(configuration, dumpFile);
     }
 }

@@ -47,6 +47,7 @@
             <sequence>
                <element name="username" nillable="false" type="xsd:string"/>
                <element name="ticket" nillable="false" type="xsd:string"/>
+               <element name="sessionid" nillable="true" type="xsd:string"/>
             </sequence>
          </complexType>
          <element name="AuthenticationResult" type="auth:AuthenticationResult"/>

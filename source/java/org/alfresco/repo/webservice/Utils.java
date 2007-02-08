@@ -26,7 +26,9 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
+import javax.xml.rpc.server.ServletEndpointContext;
 
 import org.alfresco.repo.webservice.axis.QueryConfigHandler;
 import org.alfresco.repo.webservice.types.AssociationDefinition;
@@ -520,13 +522,33 @@ public class Utils
      * @return a UserTransaction
      */
     public static UserTransaction getUserTransaction(MessageContext msgContext)
-    {
+    {   
         // get the service regsistry
         ServiceRegistry svcReg = (ServiceRegistry) getSpringContext(msgContext)
                 .getBean(ServiceRegistry.SERVICE_REGISTRY);
 
         TransactionService transactionService = svcReg.getTransactionService();
         return transactionService.getUserTransaction();
+    }
+    
+    /**
+     * Gets the current http session id
+     * 
+     * @return  the current http session id, null if none found
+     */
+    public static String getSessionId()
+    {
+        String result = null;
+        ServletEndpointContext endpointContext = (ServletEndpointContext)MessageContext.getCurrentContext().getProperty("servletEndpointContext");
+        if (endpointContext != null)
+        {
+            HttpSession session = endpointContext.getHttpSession();
+            if (session != null)
+            {
+                result = session.getId();
+            }
+        }
+        return result;
     }
 
     /**

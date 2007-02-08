@@ -19,6 +19,7 @@ package org.alfresco.repo.webservice.authentication;
 import java.rmi.RemoteException;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.webservice.Utils;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,8 +64,8 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
             {
                 logger.debug("Issued ticket '" + ticket + "' for '" + username + "'");
             }
-
-            return new AuthenticationResult(username, ticket);
+            
+            return new AuthenticationResult(username, ticket, Utils.getSessionId());
         } 
         catch (AuthenticationException ae)
         {

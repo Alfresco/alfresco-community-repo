@@ -12,14 +12,18 @@ public class AuthenticationResult  implements java.io.Serializable {
 
     private java.lang.String ticket;
 
+    private java.lang.String sessionid;
+
     public AuthenticationResult() {
     }
 
     public AuthenticationResult(
            java.lang.String username,
-           java.lang.String ticket) {
+           java.lang.String ticket,
+           java.lang.String sessionid) {
            this.username = username;
            this.ticket = ticket;
+           this.sessionid = sessionid;
     }
 
 
@@ -62,6 +66,26 @@ public class AuthenticationResult  implements java.io.Serializable {
         this.ticket = ticket;
     }
 
+
+    /**
+     * Gets the sessionid value for this AuthenticationResult.
+     * 
+     * @return sessionid
+     */
+    public java.lang.String getSessionid() {
+        return sessionid;
+    }
+
+
+    /**
+     * Sets the sessionid value for this AuthenticationResult.
+     * 
+     * @param sessionid
+     */
+    public void setSessionid(java.lang.String sessionid) {
+        this.sessionid = sessionid;
+    }
+
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof AuthenticationResult)) return false;
@@ -79,7 +103,10 @@ public class AuthenticationResult  implements java.io.Serializable {
               this.username.equals(other.getUsername()))) &&
             ((this.ticket==null && other.getTicket()==null) || 
              (this.ticket!=null &&
-              this.ticket.equals(other.getTicket())));
+              this.ticket.equals(other.getTicket()))) &&
+            ((this.sessionid==null && other.getSessionid()==null) || 
+             (this.sessionid!=null &&
+              this.sessionid.equals(other.getSessionid())));
         __equalsCalc = null;
         return _equals;
     }
@@ -96,6 +123,9 @@ public class AuthenticationResult  implements java.io.Serializable {
         }
         if (getTicket() != null) {
             _hashCode += getTicket().hashCode();
+        }
+        if (getSessionid() != null) {
+            _hashCode += getSessionid().hashCode();
         }
         __hashCodeCalc = false;
         return _hashCode;
@@ -118,6 +148,12 @@ public class AuthenticationResult  implements java.io.Serializable {
         elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/authentication/1.0", "ticket"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("sessionid");
+        elemField.setXmlName(new javax.xml.namespace.QName("http://www.alfresco.org/ws/service/authentication/1.0", "sessionid"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
     }
 

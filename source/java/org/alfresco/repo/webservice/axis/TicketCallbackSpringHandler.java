@@ -41,7 +41,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class TicketCallbackSpringHandler extends BasicHandler
 {
-   private static final Log logger = LogFactory.getLog(TicketCallbackSpringHandler.class);
+   @SuppressWarnings("unused")
+private static final Log logger = LogFactory.getLog(TicketCallbackSpringHandler.class);
    private static final String BEAN_NAME = "ticketCallbackHandler";
    private static final long serialVersionUID = -135125831180499667L;
 

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -55,6 +56,8 @@ import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.ConstantMethodBinding;
@@ -70,6 +73,16 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
+ * Component responsible for rendering the list of user sandboxes for a web project.
+ * <p>
+ * The list of users attached to the supplied Web Project noderef (must be of type
+ * wcm:avmfolder) are iterated and the various AVM services used to provide the list
+ * of modified files for each user in turn. Actions are rendering with appropriate
+ * permission evaluators next to each item. The status of workflows in progress are
+ * also checked against items when building the list of actions.
+ * <p>
+ * Multi-select functionality is provided for specific actions.
+ * 
  * @author Kevin Roast
  */
 public class UIUserSandboxes extends SelfRenderingComponent
@@ -99,7 +112,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String MSG_CONTENT_FORMS = "content_forms";
    private static final String MSG_SIZE = "size";
    private static final String MSG_CREATED = "created_date";
-   private static final String MSG_USERNAME = "username";
+   private static final String MSG_USERNAME = "sandbox_user";
    private static final String MSG_NAME = "name";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_MODIFIED = "modified_date";
@@ -108,6 +121,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String MSG_SELECTED = "selected";
    private static final String MSG_NO_MODIFIED_ITEMS = "sandbox_no_modified_items";
    private static final String MSG_NO_WEB_FORMS = "sandbox_no_web_forms";
+   private static final String MSG_MY_SANDBOX = "sandbox_my_sandbox";
    
    private static final String REQUEST_FORM_REF = "formref";
    private static final String REQUEST_PREVIEW_REF = "prevhref";
@@ -276,18 +290,20 @@ public class UIUserSandboxes extends SelfRenderingComponent
          String storeRoot = (String)nodeService.getProperty(websiteRef, WCMAppModel.PROP_AVMSTORE);
          
          // find out the current user role in the web project
+         List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+            websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          String currentUserName = Application.getCurrentUser(context).getUserName();
-         String currentUserRole = getWebProjectUserRole(currentUserName, nodeService, websiteRef);
+         String currentUserRole = getWebProjectUserRole(nodeService, websiteRef, currentUserName, userInfoRefs);
+         
+         // sort the user list alphabetically and insert the current user at the top of the list 
+         List<UserRoleWrapper> userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userInfoRefs);
          
          // get the list of users who have a sandbox in the website
          int index = 0;
-         List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-               websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : userInfoRefs)
+         for (UserRoleWrapper wrapper : userRoleWrappers)
          {
-            NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+            String username = wrapper.UserName;
+            String userrole = wrapper.UserRole;
             
             // create the lookup value of sandbox index to username 
             this.userToRowLookup.put(index, username);
@@ -328,10 +344,19 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   browseAction.setShowLink(false);
                   Utils.encodeRecursive(context, browseAction);
                   out.write("</td><td width=100%>");
-                  out.write("<b>");
-                  out.write(bundle.getString(MSG_USERNAME));
-                  out.write(":</b>&nbsp;");
-                  out.write(username);
+                  if (wrapper.IsCurrentUser == false)
+                  {
+                     out.write("<b>");
+                     out.write(bundle.getString(MSG_USERNAME));
+                     out.write(":</b>&nbsp;");
+                     out.write(username);
+                  }
+                  else
+                  {
+                     out.write("<b>");
+                     out.write(bundle.getString(MSG_MY_SANDBOX));
+                     out.write("</b>");
+                  }
                   out.write(" (");
                   out.write(bundle.getString(userrole));
                   out.write(")</td><td><nobr>");
@@ -440,16 +465,59 @@ public class UIUserSandboxes extends SelfRenderingComponent
          throw new RuntimeException(err);
       }
    }
+   
+   /**
+    * Build a sorted list of objects representing the users of the website.
+    * <p>
+    * User role data and the current user is also stored. The current user sandbox
+    * is inserted at the top of the list if present. 
+    */
+   private static List<UserRoleWrapper> buildSortedUserRoles(
+         NodeService nodeService, String currentUser, List<ChildAssociationRef> userInfoRefs)
+   {
+      // build a list of wrappers to hold the fields we need for each user and role
+      UserRoleWrapper currentUserWrapper = null;
+      List<UserRoleWrapper> wrappers = new LinkedList<UserRoleWrapper>();
+      for (ChildAssociationRef ref : userInfoRefs)
+      {
+         NodeRef userInfoRef = ref.getChildRef();
+         String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+         String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+         
+         UserRoleWrapper wrapper = new UserRoleWrapper(username, userrole);
+         
+         if (currentUser.equals(username))
+         {
+            wrapper.IsCurrentUser = true;
+            currentUserWrapper = wrapper;
+         }
+         else
+         {
+            wrappers.add(wrapper);
+         }
+      }
+      
+      // sort list by username
+      QuickSort sorter = new QuickSort(wrappers, "UserName", true, IDataContainer.SORT_CASEINSENSITIVE);
+      sorter.sort();
+      
+      // if present, insert the current user to the top of the list
+      if (currentUserWrapper != null)
+      {
+         wrappers.add(0, currentUserWrapper);
+      }
+      
+      return wrappers;
+   }
 
    /**
     * @return the role of this user in the current Web Project, or null for no assigned role
     */
-   private static String getWebProjectUserRole(String currentUser, NodeService nodeService, NodeRef websiteRef)
+   private static String getWebProjectUserRole(
+         NodeService nodeService, NodeRef websiteRef, String currentUser, List<ChildAssociationRef> userInfoRefs)
    {
       String userrole = null;
       
-      List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-            websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
       for (ChildAssociationRef ref : userInfoRefs)
       {
          NodeRef userInfoRef = ref.getChildRef();
@@ -1135,5 +1203,35 @@ public class UIUserSandboxes extends SelfRenderingComponent
       }
       
       return nodes;
+   }
+   
+   
+   // ------------------------------------------------------------------------------
+   // Inner classes
+   
+   /**
+    * Class representing a user of the website and their role.
+    */
+   public static class UserRoleWrapper
+   {
+      UserRoleWrapper(String username, String userrole)
+      {
+         UserName = username;
+         UserRole = userrole;
+      }
+      
+      /**
+       * Public accessor to user by sorting class
+       * 
+       * @return User Name
+       */
+      public String getUserName()
+      {
+         return UserName;
+      }
+      
+      String UserName;
+      String UserRole;
+      boolean IsCurrentUser = false;
    }
 }

@@ -66,7 +66,7 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 
     private QName container;
 
-    private Set<PermissionReference> includedPermissionGroups = new HashSet<PermissionReference>();
+    private Set<PermissionReference> includedPermissionGroups = new HashSet<PermissionReference>(4, 1.0f);
 
     private boolean requiresType;
 

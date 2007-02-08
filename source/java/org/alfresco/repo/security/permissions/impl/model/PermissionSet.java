@@ -45,9 +45,9 @@ public final class PermissionSet implements XMLModelInitialisable
     
     private boolean exposeAll;
     
-    private Set<PermissionGroup> permissionGroups = new LinkedHashSet<PermissionGroup>();
+    private Set<PermissionGroup> permissionGroups = new LinkedHashSet<PermissionGroup>(32, 1.0f);
     
-    private Set<Permission> permissions = new HashSet<Permission>();
+    private Set<Permission> permissions = new HashSet<Permission>(32, 1.0f);
     
     public PermissionSet()
     {

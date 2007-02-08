@@ -53,7 +53,7 @@ public abstract class AbstractPermissionReference implements PermissionReference
     {
         if (hashcode == 0)
         {
-           hashcode = getQName().hashCode() * 37 + getName().hashCode();
+           hashcode = (getName().hashCode() * 1000003) + getQName().hashCode();
         }
         return hashcode;
     }

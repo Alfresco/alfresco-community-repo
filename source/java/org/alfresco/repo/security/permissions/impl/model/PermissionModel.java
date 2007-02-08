@@ -87,20 +87,23 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private String model;
 
+    
+    // Aprrox 6 - default size OK
     private Map<QName, PermissionSet> permissionSets = new HashMap<QName, PermissionSet>();
 
+    // Global permissions - default size OK
     private Set<GlobalPermissionEntry> globalPermissions = new HashSet<GlobalPermissionEntry>();
 
     private AccessStatus defaultPermission;
 
     // Cache granting permissions
-    private HashMap<PermissionReference, Set<PermissionReference>> grantingPermissions = new HashMap<PermissionReference, Set<PermissionReference>>();
+    private HashMap<PermissionReference, Set<PermissionReference>> grantingPermissions = new HashMap<PermissionReference, Set<PermissionReference>>(128, 1.0f);
 
     // Cache grantees
-    private HashMap<PermissionReference, Set<PermissionReference>> granteePermissions = new HashMap<PermissionReference, Set<PermissionReference>>();
+    private HashMap<PermissionReference, Set<PermissionReference>> granteePermissions = new HashMap<PermissionReference, Set<PermissionReference>>(128, 1.0f);
 
     // Cache the mapping of extended groups to the base
-    private HashMap<PermissionGroup, PermissionGroup> groupsToBaseGroup = new HashMap<PermissionGroup, PermissionGroup>();
+    private HashMap<PermissionGroup, PermissionGroup> groupsToBaseGroup = new HashMap<PermissionGroup, PermissionGroup>(128, 1.0f);
 
     private HashMap<String, PermissionReference> uniqueMap;
 
@@ -291,7 +294,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
         LinkedHashSet<PermissionReference> permissions = cache.get(type);
         if (permissions == null)
         {
-            permissions = new LinkedHashSet<PermissionReference>();
+            permissions = new LinkedHashSet<PermissionReference>(128, 1.0f);
             ClassDefinition cd = dictionaryService.getClass(type);
             if (cd != null)
             {
@@ -467,7 +470,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private Set<PermissionReference> getGrantingPermissionsImpl(PermissionReference permissionReference)
     {
         // Query the model
-        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>();
+        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(128, 1.0f);
         permissions.add(permissionReference);
         for (PermissionSet ps : permissionSets.values())
         {
@@ -539,7 +542,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private Set<PermissionReference> getGranteePermissionsImpl(PermissionReference permissionReference)
     {
         // Query the model
-        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>();
+        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(128, 1.0f);
         permissions.add(permissionReference);
         for (PermissionSet ps : permissionSets.values())
         {
@@ -604,7 +607,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private Set<PermissionReference> getAllPermissions()
     {
-        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>();
+        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(128, 1.0f);
         for (PermissionSet ps : permissionSets.values())
         {
             for (PermissionGroup pg : ps.getPermissionGroups())
@@ -914,11 +917,11 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private void buildUniquePermissionMap()
     {
-        Set<String> excluded = new HashSet<String>();
-        uniqueMap = new HashMap<String, PermissionReference>();
-        permissionReferenceMap = new HashMap<String, PermissionReference>();
-        permissionGroupMap = new HashMap<PermissionReference, PermissionGroup>();
-        permissionMap = new HashMap<PermissionReference, Permission>();
+        Set<String> excluded = new HashSet<String>(64, 1.0f);
+        uniqueMap = new HashMap<String, PermissionReference>(128, 1.0f);
+        permissionReferenceMap = new HashMap<String, PermissionReference>(128, 1.0f);
+        permissionGroupMap = new HashMap<PermissionReference, PermissionGroup>(64, 1.0f);
+        permissionMap = new HashMap<PermissionReference, Permission>(32, 1.0f);
         for (PermissionSet ps : permissionSets.values())
         {
             for (PermissionGroup pg : ps.getPermissionGroups())

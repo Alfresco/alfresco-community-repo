@@ -19,6 +19,12 @@
 		<cm:description>${spaces.company_home.description}</cm:description>
 		<cm:contains>
 			<cm:folder view:childName="${spaces.dictionary.childname}">
+            <view:acl view:inherit="false">
+               <view:ace view:access="ALLOWED">
+                  <view:authority>GROUP_EVERYONE</view:authority>
+                  <view:permission>Consumer</view:permission>
+               </view:ace>
+            </view:acl>
 				<app:uifacets/>
 				<cm:name>${spaces.dictionary.name}</cm:name>
 				<app:icon>space-icon-default</app:icon>

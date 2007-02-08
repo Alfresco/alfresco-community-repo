@@ -94,10 +94,10 @@ public class AVMSubmitTransactionListener extends TransactionListenerAdapter
         // Only update staging if necessary
         if ( requiresUpdate != null )
         {
-            vServerRegistry.webappUpdated( requiresUpdate.getDestinationVersion(),
-                                           requiresUpdate.getDestinationPath(),
-                                           true
-                                         );
+            vServerRegistry.updateAllWebapps( requiresUpdate.getDestinationVersion(),
+                                              requiresUpdate.getDestinationPath(),
+                                              true
+                                             );
         }
 
         // Remove virtual weapps from workflow sandbox
@@ -109,7 +109,7 @@ public class AVMSubmitTransactionListener extends TransactionListenerAdapter
             // look at the 1st difference
 
             AVMDifference d = stagingDiffs.iterator().next();
-            vServerRegistry.webappRemoved( d.getSourceVersion(), d.getSourcePath(), true );
+            vServerRegistry.removeAllWebapps( d.getSourceVersion(), d.getSourcePath(), true );
         }
 
 

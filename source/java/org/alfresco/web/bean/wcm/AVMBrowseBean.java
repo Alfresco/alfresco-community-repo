@@ -100,7 +100,7 @@ public class AVMBrowseBean implements IContextListener
    static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
    
    /** Top-level JSF form ID */
-   static final String FORM_ID = "browse-website";
+   static final String FORM_ID = "website";
    
    /** Snapshot date filter selection */
    private String snapshotDateFilter = UISandboxSnapshots.FILTER_DATE_TODAY;

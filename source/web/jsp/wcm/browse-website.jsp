@@ -100,7 +100,6 @@
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td>
-                     <h:message for="sandboxes-panel" styleClass="statusMessage" />
                      <%-- messages tag to show messages not handled by other specific message tags --%> 
                      <a:errors message="" infoClass="statusWarningText" errorClass="statusErrorText" />
                   </td>

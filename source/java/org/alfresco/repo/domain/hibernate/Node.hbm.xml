@@ -156,7 +156,7 @@
             optimistic-lock="true"
             not-null="true"
             unique-key="UIDX_CHILD_NAME" >
-         <column name="parent_node_id" />
+         <column name="parent_node_id" not-null="true" />
       </many-to-one>
       <!-- forward assoc to child node -->
       <many-to-one
@@ -166,7 +166,7 @@
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             optimistic-lock="true"
             not-null="true" >
-         <column name="child_node_id" />
+         <column name="child_node_id" not-null="true"/>
       </many-to-one>
       <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" unique-key="UIDX_CHILD_NAME" />
       <property name="qname" column="qname" type="QName" length="255" not-null="true" />
@@ -192,7 +192,7 @@
                lazy="false"
                fetch="join"
                not-null="true" >
-            <column name="source_node_id" />
+            <column name="source_node_id" not-null="true" />
          </many-to-one>
          <!-- forward assoc to target node -->
          <many-to-one
@@ -201,7 +201,7 @@
                lazy="false"
                fetch="join"
                not-null="true" >
-            <column name="target_node_id" />
+            <column name="target_node_id" not-null="true" />
          </many-to-one>
          <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
       </natural-id>

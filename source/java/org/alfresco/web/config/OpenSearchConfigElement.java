@@ -37,8 +37,10 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
 {
     public static final String CONFIG_ELEMENT_ID = "opensearch";
 
+    private ProxyConfig proxy;
     private Set<EngineConfig> engines = new HashSet<EngineConfig>(8, 10f);
-
+    private Map<String, EngineConfig> enginesByProxy = new HashMap<String, EngineConfig>();
+        
     
     /**
      * Default constructor
@@ -85,16 +87,52 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         {
             combinedElement.addEngine(plugin);
         }
+        
+        // set the proxy configuration
+        ProxyConfig proxyConfig = this.getProxy();
+        if (proxyConfig != null)
+        {
+            combinedElement.setProxy(proxyConfig);
+        }
 
         return combinedElement;
     }
 
+    /**
+     * Sets the proxy configuration
+     * 
+     * @param proxyConfig
+     */
+    /*package*/ void setProxy(ProxyConfig proxyConfig)
+    {
+        this.proxy = proxyConfig;
+    }
+    
+    /**
+     * Gets the proxy configuration
+     * 
+     * @return
+     */
+    public ProxyConfig getProxy()
+    {
+        return this.proxy;
+    }
+    
     /**
      * @return Returns a set of the engines
      */
     public Set<EngineConfig> getEngines()
     {
         return this.engines;
+    }
+    
+    /**
+     * @param proxy  name of engine proxy
+     * @return  associated engine config (or null, if none registered against proxy)
+     */
+    public EngineConfig getEngine(String proxy)
+    {
+       return this.enginesByProxy.get(proxy); 
     }
 
     /**
@@ -105,6 +143,11 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     /*package*/ void addEngine(EngineConfig engineConfig)
     {
         this.engines.add(engineConfig);
+        String proxy = engineConfig.getProxy();
+        if (proxy != null && proxy.length() > 0)
+        {
+            this.enginesByProxy.put(proxy, engineConfig);
+        }
     }
 
 
@@ -117,8 +160,10 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     {
         protected String label;
         protected String labelId;
+        protected String proxy;
         protected Map<String, String> urls = new HashMap<String, String>(8, 10f);
 
+        
         /**
          * Construct
          * 
@@ -134,7 +179,20 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
             this.label = label;
             this.labelId = labelId;
         }
-    
+
+        /**
+         * Construct
+         * 
+         * @param label
+         * @param labelId
+         * @param proxy
+         */
+        public EngineConfig(String label, String labelId, String proxy)
+        {
+            this(label, labelId);
+            this.proxy = proxy;
+        }
+
         /**
          * @return  I18N label id
          */
@@ -151,6 +209,14 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
             return label;
         }
 
+        /**
+         * @return  proxy
+         */
+        public String getProxy()
+        {
+            return proxy;
+        }
+        
         /**
          * Gets the urls supported by this engine
          * 
@@ -171,17 +237,39 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
             this.urls.put(mimetype, uri);
         }
         
+    }
+
+    
+    /**
+     * Inner class representing the configuration of the OpenSearch proxy
+     * 
+     * @author davidc
+     */
+    public static class ProxyConfig
+    {
+        protected String url;
+        
         /**
-         * @see java.lang.Object#toString()
+         * Construct
+         * 
+         * @param url
          */
-        @Override
-        public String toString()
+        public ProxyConfig(String url)
         {
-            StringBuilder buffer = new StringBuilder(super.toString());
-            buffer.append(" {label=").append(this.label);
-            buffer.append(" labelId=").append(this.labelId).append(")");
-            return buffer.toString();
-        }        
+            if (url == null || url.length() == 0)
+            {
+                throw new IllegalArgumentException("'url' must be specified");
+            }
+            this.url = url;
+        }
+
+        /**
+         * @return  url
+         */
+        public String getUrl()
+        {
+            return url;
+        }
     }
     
 }

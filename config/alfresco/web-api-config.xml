@@ -10,18 +10,20 @@
       </element-readers>
    </plug-ins>
    
-   <config>
-      <!-- TODO: host, port?? -->
-   </config>
 
-
-   <!--  -->
+   <!--                                   -->
    <!--  Configuration of Open Search API -->
-   <!--  -->
+   <!--                                   -->
 
    <config evaluator="string-compare" condition="OpenSearch">
       <opensearch>
+      
          <engines>
+         
+            <!--                            -->
+            <!--  Local Alfresco Repository -->
+            <!--                            -->
+         
             <engine label-id="current_repo" label="Alfresco Keyword Search">
                <url type="application/opensearchdescription+xml">
                   /service/search/keywordsearchdescription.xml
@@ -36,7 +38,14 @@
                   /service/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
                </url>
             </engine>
+
          </engines>
+         
+         <proxy>
+            <!--  URL of Search Engine proxy -->
+            <url>/service/search/engine</url>
+         </proxy>
+         
       </opensearch>
    </config>
    

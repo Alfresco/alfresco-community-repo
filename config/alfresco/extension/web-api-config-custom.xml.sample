@@ -1,0 +1,43 @@
+<!--                                                       -->
+<!--  Example configuration of multiple OpenSearch engines -->
+<!--                                                       -->
+
+<alfresco-config>
+
+   <config evaluator="string-compare" condition="OpenSearch">
+      <opensearch>
+      
+         <engines>
+         
+            <!--                                                     -->
+            <!--  Example: Registration of remote Alfresco Server    -->
+            <!--                                                     -->
+
+            <!--  TODO: Find/Replace [host] with server host name    -->
+            <!--  TODO: Find/Replace [port] with server port number  -->
+         
+            <engine label="Remote Alfresco Repository" proxy="remote">
+               <url type="application/atom+xml">
+                  http://[host]:[port]/alfresco/service/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest=true&amp;format=atom
+               </url>
+               <url type="application/rss+xml">
+                  http://[host]:[port]/alfresco/service/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest=true&amp;format=rss
+               </url>
+            </engine>
+            
+            <!--                                                     -->
+            <!--  Example: Registration of Alfresco's Open Talk Blog -->
+            <!--                                                     -->
+
+            <engine label="Alfresco Open Source Talk" proxy="opentalk">
+               <url type="application/rss+xml">
+                  http://blogs.alfresco.com/opentalk/os-query?s={searchTerms}&amp;itemstart={startIndex?}&amp;itempage={startPage?}&amp;itemlimit={count?}
+               </url>
+            </engine>
+            
+         </engines>
+         
+      </opensearch>
+   </config>
+   
+</alfresco-config>

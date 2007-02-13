@@ -92,6 +92,29 @@ public class APIRequest extends HttpServletRequestWrapper
     }
 
     /**
+     * Gets the path extension beyond the path registered for this service
+     * 
+     * e.g.
+     * a) service registered path = /search/engine
+     * b) request path = /search/engine/external
+     * 
+     * => /external
+     * 
+     * @return  extension path
+     */
+    public String getExtensionPath(APIService service)
+    {
+        String servicePath = service.getHttpUri();
+        String extensionPath = getPathInfo();
+        int extIdx = extensionPath.indexOf(servicePath);
+        if (extIdx != -1)
+        {
+            extensionPath = extensionPath.substring(extIdx + servicePath.length() + 1 /* exclude leading / */);
+        }
+        return extensionPath;
+    }
+
+    /**
      * Gets the full request URL
      * 
      * @return  request url e.g. http://localhost:port/alfresco/service/text?searchTerms=dsfsdf

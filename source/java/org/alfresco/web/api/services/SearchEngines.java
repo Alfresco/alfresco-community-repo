@@ -51,6 +51,7 @@ public class SearchEngines extends APIServiceTemplateImpl
 
     // dependencies
     protected ConfigService configService;
+    protected SearchProxy searchProxy;
 
     /**
      * @param configService
@@ -58,6 +59,14 @@ public class SearchEngines extends APIServiceTemplateImpl
     public void setConfigService(ConfigService configService)
     {
         this.configService = configService;
+    }
+
+    /**
+     * @param searchProxy
+     */
+    public void setSearchProxy(SearchProxy searchProxy)
+    {
+        this.searchProxy = searchProxy;
     }
 
     /* (non-Javadoc)
@@ -135,7 +144,7 @@ public class SearchEngines extends APIServiceTemplateImpl
             for (Map.Entry<String, String> engineUrl : engineUrls.entrySet())
             {
                 String type = engineUrl.getKey();
-                String url = engineUrl.getValue();
+                String url = searchProxy.createUrl(engineConfig, type);
                 
                 if ((urlType.equals(URL_ARG_ALL)) ||
                     (urlType.equals(URL_ARG_DESCRIPTION) && type.equals(MimetypeMap.MIMETYPE_OPENSEARCH_DESCRIPTION)) ||

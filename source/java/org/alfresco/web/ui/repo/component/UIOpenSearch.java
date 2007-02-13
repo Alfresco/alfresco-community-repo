@@ -12,6 +12,7 @@ import javax.faces.context.ResponseWriter;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.web.api.services.SearchProxy;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.config.OpenSearchConfigElement;
 import org.alfresco.web.config.OpenSearchConfigElement.EngineConfig;
@@ -28,7 +29,6 @@ import org.springframework.web.jsf.FacesContextUtils;
 public class UIOpenSearch extends SelfRenderingComponent
 {
    protected final static String SCRIPTS_WRITTEN = "_alfOpenSearchScripts";
-   protected final static String ATOM_TYPE = "application/atom+xml";
    protected final static String ENGINE_ID_PREFIX = "eng";
    
    // ------------------------------------------------------------------------------
@@ -205,6 +205,8 @@ public class UIOpenSearch extends SelfRenderingComponent
       // get the web api config service object from spring
       ConfigService cfgSvc = (ConfigService)FacesContextUtils.
             getRequiredWebApplicationContext(context).getBean("web.api.Config");
+      SearchProxy searchProxy = (SearchProxy)FacesContextUtils.
+            getRequiredWebApplicationContext(context).getBean("web.api.SearchProxy");
       if (cfgSvc != null)
       {
          // get the OpenSearch configuration
@@ -229,11 +231,10 @@ public class UIOpenSearch extends SelfRenderingComponent
                }
 
                // locate search engine template url of most appropriate response type
-               Map<String, String> urls = engineCfg.getUrls();
-               String url = urls.get(MimetypeMap.MIMETYPE_ATOM);
+               String url = searchProxy.createUrl(engineCfg, MimetypeMap.MIMETYPE_ATOM);
                if (url == null)
                {
-                  url = urls.get(MimetypeMap.MIMETYPE_RSS);
+                  url = searchProxy.createUrl(engineCfg, MimetypeMap.MIMETYPE_RSS);
                }
                 
                if (url != null)

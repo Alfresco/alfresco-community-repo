@@ -34,7 +34,9 @@ public class FormatRegistry
     private static final Log logger = LogFactory.getLog(FormatRegistry.class);
 
     private Map<String, String> formats;
+    private Map<String, String> mimetypes;
     private Map<String, Map<String, String>> agentFormats;
+    private Map<String, Map<String, String>> agentMimetypes;
     
 
     /**
@@ -43,7 +45,9 @@ public class FormatRegistry
     public FormatRegistry()
     {
         formats = new HashMap<String, String>();
+        mimetypes = new HashMap<String, String>();
         agentFormats = new HashMap<String, Map<String, String>>();
+        agentMimetypes = new HashMap<String, Map<String, String>>();
     }
     
     /**
@@ -56,13 +60,16 @@ public class FormatRegistry
     {
         // retrieve formats list for agent
         Map<String, String> formatsForAgent = formats; 
+        Map<String, String> mimetypesForAgent = mimetypes; 
         if (agent != null)
         {
             formatsForAgent = agentFormats.get(agent);
             if (formatsForAgent == null)
             {
                 formatsForAgent = new HashMap<String, String>();
+                mimetypesForAgent = new HashMap<String, String>();
                 agentFormats.put(agent, formatsForAgent);
+                agentMimetypes.put(agent, mimetypesForAgent);
             }
         }
         
@@ -78,6 +85,7 @@ public class FormatRegistry
             }
             
             formatsForAgent.put(entry.getKey(), entry.getValue());
+            mimetypesForAgent.put(entry.getValue(), entry.getKey());
 
             if (logger.isDebugEnabled())
                 logger.debug("Registered API format '" + entry.getKey() + "' with mime type '" + entry.getValue() + "' (agent: " + agent + ")");
@@ -111,5 +119,33 @@ public class FormatRegistry
 
         return mimetype;
     }
-    
+
+    /**
+     * Gets the format for the specified user agent and mimetype
+     * 
+     * @param agent
+     * @param mimetype
+     * @return  format (or null, if one is not registered)
+     */
+    public String getFormat(String agent, String mimetype)
+    {
+        String format = null;
+        
+        if (agent != null)
+        {
+            Map<String, String> mimetypesForAgent = agentMimetypes.get(agent);
+            if (mimetypesForAgent != null)
+            {
+                format = mimetypesForAgent.get(mimetype);
+            }
+        }
+        
+        if (format == null)
+        {
+            format = mimetypes.get(mimetype);
+        }
+
+        return format;
+    }
+
 }

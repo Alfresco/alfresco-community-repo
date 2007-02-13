@@ -23,6 +23,7 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigException;
 import org.alfresco.config.xml.elementreader.ConfigElementReader;
 import org.alfresco.web.config.OpenSearchConfigElement.EngineConfig;
+import org.alfresco.web.config.OpenSearchConfigElement.ProxyConfig;
 import org.dom4j.Element;
 
 
@@ -37,9 +38,11 @@ public class OpenSearchElementReader implements ConfigElementReader
     public static final String ELEMENT_ENGINES = "engines";
     public static final String ELEMENT_ENGINE = "engine";
     public static final String ELEMENT_URL = "url";
+    public static final String ELEMENT_PROXY = "proxy";
     public static final String ATTR_TYPE = "type";
     public static final String ATTR_LABEL = "label";
     public static final String ATTR_LABEL_ID = "label-id";
+    public static final String ATTR_PROXY = "proxy";
 
     
     /**
@@ -71,7 +74,8 @@ public class OpenSearchElementReader implements ConfigElementReader
                     Element engineElem = engines.next();
                     String label = engineElem.attributeValue(ATTR_LABEL);
                     String labelId = engineElem.attributeValue(ATTR_LABEL_ID);
-                    EngineConfig engineCfg = new EngineConfig(label, labelId);
+                    String proxy = engineElem.attributeValue(ATTR_PROXY);
+                    EngineConfig engineCfg = new EngineConfig(label, labelId, proxy);
                 
                     // construct urls for engine
                     Iterator<Element> urlsConfig = engineElem.elementIterator(ELEMENT_URL);
@@ -85,6 +89,20 @@ public class OpenSearchElementReader implements ConfigElementReader
 
                     // register engine config
                     configElement.addEngine(engineCfg);
+                }
+            }
+            
+            // extract proxy configuration
+            String url = null;
+            Element proxyElem = element.element(ELEMENT_PROXY);
+            if (proxyElem != null)
+            {
+                Element urlElem = proxyElem.element(ELEMENT_URL);
+                if (urlElem != null)
+                {
+                    url = urlElem.getTextTrim();
+                    ProxyConfig proxyCfg = new ProxyConfig(url);
+                    configElement.setProxy(proxyCfg);
                 }
             }
         }

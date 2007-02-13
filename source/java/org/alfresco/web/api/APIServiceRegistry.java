@@ -116,7 +116,7 @@ public class APIServiceRegistry
         // TODO: Replace with more efficient approach
         for (int i = 0; i < services.size(); i++)
         {
-            if (methods.get(i).equals(method) && uris.get(i).equals(uri))
+            if (methods.get(i).equals(method) && uri.startsWith(uris.get(i)))
             {
                 apiService = services.get(i);
                 break;

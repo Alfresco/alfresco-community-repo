@@ -245,6 +245,11 @@
       <servlet-name>apiServlet</servlet-name>
       <servlet-class>org.alfresco.web.api.APIServlet</servlet-class>
    </servlet>
+
+   <servlet>
+      <servlet-name>proxyServlet</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.HTTPProxyServlet</servlet-class>
+   </servlet>
             
    <servlet>
       <servlet-name>workflowDefinitionImageServlet</servlet-name>
@@ -319,6 +324,11 @@
    <servlet-mapping>
       <servlet-name>apiServlet</servlet-name>
       <url-pattern>/service/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>proxyServlet</servlet-name>
+      <url-pattern>/proxy</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>

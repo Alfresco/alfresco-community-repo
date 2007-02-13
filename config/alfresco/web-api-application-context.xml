@@ -11,6 +11,7 @@
       <constructor-arg>
          <list>
             <value>classpath:alfresco/web-api-config.xml</value>
+            <value>classpath:alfresco/extension/web-api-config-custom.xml</value>
          </list>
       </constructor-arg>
    </bean>
@@ -136,8 +137,16 @@
    <bean id="web.api.SearchEngines" class="org.alfresco.web.api.services.SearchEngines" parent="web.api.APITemplateService">
       <property name="httpUri" value="/search/engines" />
       <property name="configService" ref="web.api.Config" />
+      <property name="searchProxy" ref="web.api.SearchProxy" />
    </bean>
 
+   <!--  Alfresco (OpenSearch) Proxy -->
+   <bean id="web.api.SearchProxy" class="org.alfresco.web.api.services.SearchProxy" parent="web.api.APIService">
+      <property name="httpUri" value="/search/engine" />
+      <property name="configService" ref="web.api.Config" />
+      <property name="formatRegistry" ref="web.api.FormatRegistry" />
+   </bean>
+   
    <!--  Alfresco Web Client Keyword Search Description (OpenSearch) -->
    <bean id="web.api.KeywordSearchDescription" class="org.alfresco.web.api.services.KeywordSearchDescription" parent="web.api.APITemplateService">
       <property name="httpUri" value="/search/keywordsearchdescription.xml" />
@@ -148,5 +157,5 @@
       <property name="httpUri" value="/search/keyword" />
       <property name="searchService" ref="SearchService" />
    </bean>
-   
+
 </beans>

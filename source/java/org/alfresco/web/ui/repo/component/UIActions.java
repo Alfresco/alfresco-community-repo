@@ -19,13 +19,16 @@ package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIParameter;
+import javax.faces.component.html.HtmlPanelGroup;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
@@ -34,6 +37,7 @@ import org.alfresco.config.Config;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.ActionsConfigElement;
 import org.alfresco.web.config.ActionsConfigElement.ActionDefinition;
 import org.alfresco.web.config.ActionsConfigElement.ActionGroup;
@@ -71,6 +75,9 @@ public class UIActions extends SelfRenderingComponent
    public static final String COMPONENT_ACTIONEVAL = "org.alfresco.faces.ActionInstanceEvaluator";
    
    public final static Class ACTION_CLASS_ARGS[] = {javax.faces.event.ActionEvent.class};
+   
+   private Set<String> groups = new HashSet<String>(4);
+   private final static String CONTEXTID_DEFAULT = "_default";
 
    /**
     * @see javax.faces.component.UIComponent#getFamily()
@@ -91,6 +98,7 @@ public class UIActions extends SelfRenderingComponent
       this.value = (String)values[1];
       this.showLink = (Boolean)values[2];
       this.verticalSpacing = (Integer)values[3];
+      this.groups = (HashSet<String>)values[4];
    }
    
    /**
@@ -98,14 +106,10 @@ public class UIActions extends SelfRenderingComponent
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[4];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.value;
-      values[2] = this.showLink;
-      values[3] = this.verticalSpacing;
+      Object values[] = new Object[] {
+            super.saveState(context), this.value, this.showLink, this.verticalSpacing, this.groups};
       return (values);
-   }   
+   }
 
    /**
     * @see javax.faces.component.UIComponentBase#encodeBegin(javax.faces.context.FacesContext)
@@ -123,20 +127,44 @@ public class UIActions extends SelfRenderingComponent
       
       // put the context object into the requestMap so it is accessable
       // by any child component value binding expressions
+      Object actionContext = getContext();
       Map requestMap = getFacesContext().getExternalContext().getRequestMap();
-      requestMap.put(ACTION_CONTEXT, getContext());
+      requestMap.put(ACTION_CONTEXT, actionContext);
       
-      if (getChildCount() != 0)
+      String contextId;
+      if (actionContext instanceof Node)
       {
-         if (logger.isDebugEnabled())
-            logger.debug("---already built component tree for actions.");
-         return;
+         contextId = ((Node)actionContext).getType().toString();
+         if (groups.contains(contextId))
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("---already built component tree for actions contextId: " + contextId);
+            return;
+         }
+      }
+      else
+      {
+         contextId = CONTEXTID_DEFAULT;
+         if (groups.contains(contextId))
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("---already built component tree for default actions.");
+            return;
+         }
       }
       
       String groupId = getValue();
       if (groupId != null && groupId.length() != 0)
       {
-         Config config = Application.getConfigService(context).getGlobalConfig();
+         Config config;
+         if (actionContext instanceof Node)
+         {
+            config = Application.getConfigService(context).getConfig(actionContext);
+         }
+         else
+         {
+            config = Application.getConfigService(context).getGlobalConfig();
+         }
          if (config != null)
          {
             // find the Actions specific config element
@@ -150,8 +178,8 @@ public class UIActions extends SelfRenderingComponent
                {
                   // render the action group component tree
                   if (logger.isDebugEnabled())
-                     logger.debug("-constructing ActionGroup: " + groupId);
-                  buildActionGroup(context, actionConfig, actionGroup);
+                     logger.debug("-constructing ActionGroup: " + groupId + " for ContextId: " + contextId);
+                  buildActionGroup(context, actionConfig, actionGroup, contextId);
                }
                else
                {
@@ -193,10 +221,25 @@ public class UIActions extends SelfRenderingComponent
          out.write(">");
       }
       
+      // use the current context Id to find the correct component group to render
+      Map requestMap = getFacesContext().getExternalContext().getRequestMap();
+      Object actionContext = requestMap.get(ACTION_CONTEXT);
+      String contextId = CONTEXTID_DEFAULT;
+      if (actionContext instanceof Node)
+      {
+         contextId = ((Node)actionContext).getType().toString();
+      }
+      
       for (Iterator i=getChildren().iterator(); i.hasNext(); /**/)
       {
          UIComponent child = (UIComponent)i.next();
-         Utils.encodeRecursive(context, child);
+         if (contextId.equals(child.getAttributes().get("contextId")))
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Rendering actions group for contextId: " + contextId);
+            Utils.encodeRecursive(context, child);
+            break;
+         }
       }
       
       if (verticalSpacing != 0)
@@ -224,7 +267,8 @@ public class UIActions extends SelfRenderingComponent
     * @param actionGroup
     */
    @SuppressWarnings("unchecked")
-   private void buildActionGroup(FacesContext context, ActionsConfigElement config, ActionGroup actionGroup)
+   private void buildActionGroup(
+         FacesContext context, ActionsConfigElement config, ActionGroup actionGroup, String contextId)
       throws IOException
    {
       javax.faces.application.Application facesApp = context.getApplication();
@@ -239,6 +283,13 @@ public class UIActions extends SelfRenderingComponent
          showLink = (Boolean)getAttributes().get(ATTR_SHOWLINK);
       }
       
+      // build parent wrapper component
+      HtmlPanelGroup wrapper = (HtmlPanelGroup)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PANELGROUP);
+      wrapper.setId(createUniqueId());
+      wrapper.getAttributes().put("contextId", contextId);
+      this.getChildren().add(wrapper);
+      this.groups.add(contextId);
+      
       // process each ActionDefinition in the order they were defined
       for (String actionId : actionGroup)
       {
@@ -251,7 +302,7 @@ public class UIActions extends SelfRenderingComponent
             throw new AlfrescoRuntimeException("Unable to find configured ActionDefinition Id: " + actionId);
          }
          
-         UIComponent currentParent = this;  
+         UIComponent currentParent = wrapper;  
          
          // build a permissions evaluator component to wrap the actionlink 
          PermissionEvaluator permEval = null;

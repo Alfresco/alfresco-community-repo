@@ -29,6 +29,7 @@ import java.util.Set;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigException;
 import org.alfresco.config.element.ConfigElementAdapter;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Repository;
 
@@ -83,15 +84,26 @@ public class ActionsConfigElement extends ConfigElementAdapter
       combinedElement.actionDefs.putAll(newElement.actionDefs);
       
       // add the existing action groups
-      combinedElement.actionGroups.putAll(this.actionGroups);
+      Map<String, ActionGroup> combinedActionGroups = new HashMap<String, ActionGroup>(this.actionGroups.size());
+      try
+      {
+         for (ActionGroup group : this.actionGroups.values())
+         {
+            combinedActionGroups.put(group.getId(), (ActionGroup)group.clone());
+         }
+      }
+      catch (CloneNotSupportedException e)
+      {
+         throw new AlfrescoRuntimeException("clone() required on ActionGroup class.", e);
+      }
+      combinedElement.actionGroups = combinedActionGroups;
       
       // any new action groups with the same name must be combined
       for (ActionGroup newGroup : newElement.actionGroups.values())
       {
          if (combinedElement.actionGroups.containsKey(newGroup.getId()))
          {
-            // there is already a group with this id, combine it 
-            // with the new one
+            // there is already a group with this id, combine it with the new one
             ActionGroup combinedGroup = combinedElement.actionGroups.get(newGroup.getId());
             if (newGroup.ShowLink != combinedGroup.ShowLink)
             {
@@ -240,7 +252,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
     * 
     * @author Kevin Roast
     */
-   public static class ActionGroup implements Iterable<String>
+   public static class ActionGroup implements Iterable<String>, Cloneable
    {
       public ActionGroup(String id)
       {
@@ -251,6 +263,18 @@ public class ActionsConfigElement extends ConfigElementAdapter
          this.id = id;
       }
       
+      @Override
+      protected Object clone() throws CloneNotSupportedException
+      {
+         ActionGroup clone = new ActionGroup(id);
+         clone.actions = (Set<String>)((LinkedHashSet)actions).clone();
+         clone.hiddenActions = (Set<String>)((HashSet)hiddenActions).clone();
+         clone.ShowLink = ShowLink;
+         clone.Style = Style;
+         clone.StyleClass = StyleClass;
+         return clone;
+      }
+
       public String getId()
       {
          return id;

@@ -364,8 +364,9 @@
          <!-- Actions for the Web Project Details action menu -->
          <action-group id="website_details_actions">
             <show-link>false</show-link>
-            <action idref="cut_node" />
-            <action idref="copy_node" />
+            <!-- TODO: removed until cut/copy supported -->
+            <!-- <action idref="cut_node" />
+                 <action idref="copy_node" />-->
             <action idref="delete_space" />
             <action idref="take_ownership_space" />
             <action idref="edit_website" />
@@ -383,6 +384,20 @@
             <action idref="delete_space" />
          </action-group>
          
+      </actions>
+   </config>
+   
+   <config evaluator="node-type" condition="wca:webfolder">
+      <actions>
+      
+         <!-- Override actions for WCM Website space type in the Browse screen -->
+         <action-group id="space_browse">
+            <show-link>false</show-link>
+            <!-- hide the cut and copy operations for website space -->
+            <action idref="cut_node" hide="true" />
+            <action idref="copy_node" hide="true" />
+         </action-group>
+      
       </actions>
    </config>
 

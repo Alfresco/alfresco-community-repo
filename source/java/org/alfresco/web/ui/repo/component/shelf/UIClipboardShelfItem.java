@@ -35,6 +35,7 @@ import javax.faces.event.FacesEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.clipboard.ClipboardItem;
@@ -154,12 +155,21 @@ public class UIClipboardShelfItem extends UIShelfItem
       if (items.size() != 0)
       {
          DictionaryService dd = Repository.getServiceRegistry(context).getDictionaryService();
+         NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
          
          ResourceBundle bundle = Application.getBundle(context);
          
          for (int i=0; i<items.size(); i++)
          {
             ClipboardItem item = items.get(i);
+            
+            // check that the item has not been deleted since added to the clipboard
+            if (nodeService.exists(item.getNodeRef()) == false)
+            {
+               // remove from clipboard
+               items.remove(i--);
+               continue;
+            }
             
             // start row with cut/copy state icon
             out.write("<tr><td width=16>");

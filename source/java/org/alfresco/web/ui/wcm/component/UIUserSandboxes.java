@@ -99,6 +99,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private static final String ACT_SANDBOX_PREVIEW = "sandbox_preview";
    private static final String ACT_SANDBOX_ICON = "sandbox_icon";
    private static final String ACT_REMOVE_SANDBOX = "sandbox_remove";
+   private static final String ACT_SANDBOX_REFRESH = "sandbox_refresh";
    
    private static final String ACTIONS_FILE = "avm_file_modified";
    private static final String ACTIONS_FOLDER = "avm_folder_modified";
@@ -362,12 +363,14 @@ public class UIUserSandboxes extends SelfRenderingComponent
                   out.write(bundle.getString(userrole));
                   out.write(")</td><td><nobr>");
                   
-                  // direct actions for a sandbox
+                  // Direct actions for a sandbox...
+                  // Browse Sandbox
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif",
                         "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
                   out.write("&nbsp;&nbsp;");
                   
+                  // Preview Website
                   String websiteUrl = AVMConstants.buildWebappUrl(mainStore, getWebapp());
                   Map requestMap = context.getExternalContext().getRequestMap();
                   requestMap.put(REQUEST_PREVIEW_REF, websiteUrl);
@@ -375,18 +378,28 @@ public class UIUserSandboxes extends SelfRenderingComponent
                         context, mainStore, username, ACT_SANDBOX_PREVIEW, "/images/icons/preview_website.gif",
                         null, null, "#{" + REQUEST_PREVIEW_REF + "}", null));
                   requestMap.remove(REQUEST_PREVIEW_REF);
-                  out.write("&nbsp;");
-                  
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif",
-                        "#{AVMBrowseBean.setupAllItemsAction}", "dialog:submitSandboxItems"));
                   out.write("&nbsp;&nbsp;");
                   
+                  // Refresh Sandbox
+                  Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, ACT_SANDBOX_REFRESH, "/images/icons/reset.gif",
+                        "#{AVMBrowseBean.refreshSandbox}", null));
+                  out.write("&nbsp;&nbsp;");
+                  
+                  // Submit All Items
+                  // NOTE: removed for 2.0 final
+                  /*Utils.encodeRecursive(context, aquireAction(
+                        context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif",
+                        "#{AVMBrowseBean.setupAllItemsAction}", "dialog:submitSandboxItems"));
+                  out.write("&nbsp;&nbsp;");*/
+                  
+                  // Revert All Items
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert_all.gif",
                         "#{AVMBrowseBean.setupAllItemsAction}", "dialog:revertAllItems"));
                   out.write("&nbsp;&nbsp;");
                   
+                  // Delete Sandbox
                   if (AVMConstants.ROLE_CONTENT_MANAGER.equals(currentUserRole))
                   {
                      Utils.encodeRecursive(context, aquireAction(
@@ -589,6 +602,24 @@ public class UIUserSandboxes extends SelfRenderingComponent
          // TODO: apply tag style - removed hardcoded
          out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=1 border=0 width=100%>");
          
+         // output multi-select actions for this user
+         out.write("<tr><td colspan=8>");
+         out.write(bundle.getString(MSG_SELECTED));
+         out.write(":&nbsp;&nbsp;");
+         NodeRef userStoreRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(userStore));
+         if (permissionService.hasPermission(userStoreRef, PermissionService.WRITE) == AccessStatus.ALLOWED ||
+             permissionService.hasPermission(userStoreRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED)
+         {
+            Utils.encodeRecursive(fc, aquireAction(
+                  fc, userStore, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
+                  "#{AVMBrowseBean.setupSandboxAction}", "dialog:submitSandboxItems"));
+            out.write("&nbsp;&nbsp;");
+            Utils.encodeRecursive(fc, aquireAction(
+                  fc, userStore, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
+                  "#{AVMBrowseBean.setupSandboxAction}", "dialog:revertSelectedItems"));
+         }
+         out.write("</td></tr>");
+         
          // header row
          out.write("<tr align=left><th>");
          // multi-select checkbox
@@ -744,24 +775,6 @@ public class UIUserSandboxes extends SelfRenderingComponent
             }
             out.write("</td></tr>");
          }
-         
-         // output multi-select actions for this user
-         out.write("<tr><td colspan=8>");
-         out.write(bundle.getString(MSG_SELECTED));
-         out.write(":&nbsp;&nbsp;");
-         NodeRef userStoreRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildSandboxRootPath(userStore));
-         if (permissionService.hasPermission(userStoreRef, PermissionService.WRITE) == AccessStatus.ALLOWED ||
-             permissionService.hasPermission(userStoreRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED)
-         {
-            Utils.encodeRecursive(fc, aquireAction(
-                  fc, userStore, username, ACT_SANDBOX_SUBMITSELECTED, "/images/icons/submit_all.gif",
-                  "#{AVMBrowseBean.setupSandboxAction}", "dialog:submitSandboxItems"));
-            out.write("&nbsp;&nbsp;");
-            Utils.encodeRecursive(fc, aquireAction(
-                  fc, userStore, username, ACT_SANDBOX_REVERTSELECTED, "/images/icons/revert_all.gif",
-                  "#{AVMBrowseBean.setupSandboxAction}", "dialog:revertSelectedItems"));
-         }
-         out.write("</td></tr>");
          
          // end table
          out.write("</table>");

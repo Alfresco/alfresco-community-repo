@@ -130,8 +130,10 @@
                               <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
                               <td align=right>
                                  <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
-                                 &nbsp;&nbsp;
+                                 &nbsp;
                                  <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
+                                 &nbsp;
+                                 <a:actionLink id="actRefresh" rendered="#{AVMBrowseBean.isManagerRole}" value="#{msg.sandbox_refresh}" image="/images/icons/reset.gif" actionListener="#{AVMBrowseBean.refreshSandbox}" />
                                  <%-- Disabled action for GA
                                  <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:snapshotSandbox" />
                                  --%>

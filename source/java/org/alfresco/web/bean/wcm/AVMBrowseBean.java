@@ -863,6 +863,25 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * Refresh Sandbox in the virtualisation server
+    */
+   public void refreshSandbox(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String store = params.get("store");
+      
+      if (store == null)
+      {
+         store = getStagingStore();
+      }
+      
+      // update the specified webapp in the store
+      String webappPath = AVMConstants.buildStoreWebappPath(store, getWebapp());
+      AVMConstants.updateVServerWebapp(webappPath, true);
+   }
+   
+   /**
     * Undo changes to a single node
     */
    public void revertNode(ActionEvent event)

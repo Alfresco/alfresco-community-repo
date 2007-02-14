@@ -35,4 +35,5 @@ function _xforms_getSaveDraftButtons()
 <wcm:formProcessor id="form-data-renderer"
 		   formProcessorSession="#{WizardManager.bean.formProcessorSession}" 
 		   formInstanceData="#{WizardManager.bean.instanceDataDocument}" 
+		   formInstanceDataName="#{WizardManager.bean.fileName}" 
 		   form="#{WizardManager.bean.form}"/>

@@ -30,6 +30,7 @@ public class FormProcessorTag
    extends BaseComponentTag
 {
    private String formInstanceData = null;
+   private String formInstanceDataName = null;
    private String form = null;
    private String formProcessorSession = null;
 
@@ -62,6 +63,12 @@ public class FormProcessorTag
          final ValueBinding vb = app.createValueBinding(this.formInstanceData);
          component.setValueBinding("formInstanceData", vb);
       }
+      if (this.formInstanceDataName != null)
+      {
+         assert isValueReference(this.formInstanceDataName);
+         final ValueBinding vb = app.createValueBinding(this.formInstanceDataName);
+         component.setValueBinding("formInstanceDataName", vb);
+      }
       if (this.form != null)
       {
          assert this.isValueReference(this.form);
@@ -83,6 +90,7 @@ public class FormProcessorTag
    {
       super.release();
       this.formInstanceData = null;
+      this.formInstanceDataName = null;
       this.form = null;
       this.formProcessorSession = null;
    }
@@ -95,6 +103,16 @@ public class FormProcessorTag
    public void setFormInstanceData(final String formInstanceData)
    {
       this.formInstanceData = formInstanceData;
+   }
+
+   /**
+    * Set the form instance data name
+    *
+    * @param formInstanceDataName the form instance data name
+    */
+   public void setFormInstanceDataName(final String formInstanceDataName)
+   {
+      this.formInstanceDataName = formInstanceDataName;
    }
 
    /**

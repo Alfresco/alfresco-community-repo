@@ -112,6 +112,7 @@ function _xforms_getSaveDraftButtons()
                               <wcm:formProcessor id="form-data-renderer"
 						 formProcessorSession="#{AVMEditBean.formProcessorSession}" 
 						 formInstanceData="#{AVMEditBean.instanceDataDocument}"
+						 formInstanceDataName="#{AVMEditBean.formInstanceDataName}"
 						 form="#{AVMEditBean.form}"/>
                                  
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>

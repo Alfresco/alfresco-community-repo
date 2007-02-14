@@ -39,17 +39,27 @@ public interface FormProcessor
    public interface Session
    {
 
+      /** Returns the set of file uploaded during the session. */
       public NodeRef[] getUploadedFiles();
 
+      /** Destroys the session and releases all resources used by it */
       public void destroy();
 
+      /** Returns the form used by the session. */
       public Form getForm();
 
+      /** Returns the current state of the form instance data */
       public Document getFormInstanceData();
+
+      /** Returns the name of the form instance data being modified */
+      public String getFormInstanceDataName();
    }
 
    /////////////////////////////////////////////////////////////////////////////
 
+   /**
+    * Exception for errors encoutered during form processing.
+    */
    public static class ProcessingException
       extends Exception
    {
@@ -76,14 +86,23 @@ public interface FormProcessor
     * Processes a user interface for inputing data into a form.
     *
     * @param formInstanceData provides the xml instance data if available.
+    * @param formInstanceDataName the name of the form instance data being modified.
     * @param form the form to generate for
     * @param out the writer to write the output to.
     */
    public Session process(final Document formInstanceData,
+                          final String formInstanceDataName,
                           final Form form,
                           final Writer out)
       throws ProcessingException;
 
+   /**
+    * Processes a user interface for inputing data into a form.
+    *
+    * @param session the session to use.
+    * @param form the form to generate for
+    * @param out the writer to write the output to.
+    */
    public void process(final Session session,
                        final Writer out)
       throws ProcessingException;

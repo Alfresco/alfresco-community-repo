@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	   xmlns:mine="http://www.alfresco.org/fake/mine"
+	   xmlns:alf="http://www.alfresco.org/alf"
            elementFormDefault="qualified"
-	   targetNamespace="http://www.alfresco.org/fake/mine">
+	   targetNamespace="http://www.alfresco.org/alf">
   <xs:complexType name="multi">
     <xs:sequence>
       <xs:element name="multi1" type="xs:normalizedString"/>
@@ -14,7 +14,7 @@
       <xs:sequence>
         <xs:element name="string_with_default" type="xs:normalizedString" default="default string value"/>
         <xs:element name="string_no_default" type="xs:normalizedString"/>
-        <xs:element name="multi" type="mine:multi" minOccurs="2" maxOccurs="3"/>
+        <xs:element name="multi" type="alf:multi" minOccurs="2" maxOccurs="3"/>
       </xs:sequence>
       <xs:attribute name="string_attribute_with_default" type="xs:normalizedString" default="default string value"/>
       <xs:attribute name="string_attribute_no_default" type="xs:normalizedString"/>

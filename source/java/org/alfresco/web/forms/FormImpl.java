@@ -28,7 +28,6 @@ import java.io.*;
 import java.net.URI;
 import java.util.*;
 import javax.faces.context.FacesContext;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.ServiceRegistry;
@@ -37,7 +36,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -142,8 +140,8 @@ public class FormImpl
                                                   final String parentAVMPath,
                                                   final String webappName)
    {
-      final String outputPathPattern = (FreeMarkerUtil.buildNamespaceDeclaration(formInstanceData) +
-                                        this.getOutputPathPattern());
+      final String outputPathPattern = this.getOutputPathPattern();
+
       final Map<String, Object> root = new HashMap<String, Object>();
       root.put("webapp", webappName);
       root.put("xml", NodeModel.wrap(formInstanceData));
@@ -152,30 +150,9 @@ public class FormImpl
 
       final TemplateService templateService = this.getServiceRegistry().getTemplateService();
 
-      String result = null;
-      try
-      {
-         if (LOGGER.isDebugEnabled())
-         {
-
-            LOGGER.debug("processing " + outputPathPattern + 
-                         " using name " + formInstanceDataName +
-                         " in webapp " + webappName +
-                         " and xml data " + XMLUtil.toString(formInstanceData));
-         }
-         result = templateService.processTemplateString(null, 
-                                                        outputPathPattern, 
-                                                        new SimpleHash(root));
-      }
-      catch (TemplateException te)
-      {
-         LOGGER.error(te.getMessage(), te);
-         throw new AlfrescoRuntimeException("Error processing output path pattern " + outputPathPattern + 
-                                            " for " + formInstanceDataName + 
-                                            " in webapp " + webappName +
-                                            ":\n" + te.getMessage(), 
-                                            te);
-      }
+      String result = templateService.processTemplateString(null, 
+                                                            outputPathPattern, 
+                                                            new SimpleHash(root));
       result = AVMConstants.buildPath(parentAVMPath, 
                                       result,
                                       AVMConstants.PathRelation.SANDBOX_RELATIVE);

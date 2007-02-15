@@ -98,7 +98,6 @@ public class XFormsBean
    {
 
       private final Document formInstanceData;
-      private final String formInstanceDataName;
       private final Form form;
 
       private ChibaBean chibaBean;
@@ -107,12 +106,10 @@ public class XFormsBean
       private final List<XMLEvent> eventLog = new LinkedList<XMLEvent>();
 
       public XFormsSession(final Document formInstanceData,
-                           final String formInstanceDataName,
                            final Form form,
                            final String baseUrl)
       {
          this.formInstanceData = formInstanceData;
-         this.formInstanceDataName = formInstanceDataName;
          this.form = form;
          this.schema2XForms = new Schema2XForms("/ajax/invoke/XFormsBean.handleAction",
                                                 Schema2XForms.SubmitMethod.POST,
@@ -150,11 +147,6 @@ public class XFormsBean
       public Document getFormInstanceData()
       {
          return this.formInstanceData;
-      }
-
-      public String getFormInstanceDataName()
-      {
-         return this.formInstanceDataName;
       }
    }
 
@@ -268,14 +260,12 @@ public class XFormsBean
     * event listeners.
     */
    public XFormsSession createSession(final Document formInstanceData,
-                                      final String formInstanceDataName,
                                       final Form form)
    {
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug("initializing xforms session with form " + form.getName() +
-                      " and instance data " + formInstanceDataName + 
-                      " (" + formInstanceData + ")");
+                      " and instance data " + formInstanceData);
       }
 
       final FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -287,7 +277,7 @@ public class XFormsBean
                               request.getServerName() + ':' + 
                               request.getServerPort() + 
                               request.getContextPath());
-      return this.new XFormsSession(formInstanceData, formInstanceDataName, form, baseUrl);
+      return this.new XFormsSession(formInstanceData, form, baseUrl);
    }
 
    /**

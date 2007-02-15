@@ -39,7 +39,6 @@ public class UIFormProcessor
    private static final Log LOGGER = LogFactory.getLog(UIFormProcessor.class);
 
    private Document formInstanceData = null;
-   private String formInstanceDataName = null;
    private Form form = null;
    private FormProcessor.Session formProcessorSession = null;
    
@@ -60,9 +59,8 @@ public class UIFormProcessor
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
       this.formInstanceData = (Document)values[1];
-      this.formInstanceDataName = (String)values[2];
-      this.form = (Form)values[3];
-      this.formProcessorSession = (FormProcessor.Session)values[4];
+      this.form = (Form)values[2];
+      this.formProcessorSession = (FormProcessor.Session)values[3];
    }
    
    public Object saveState(FacesContext context)
@@ -72,7 +70,6 @@ public class UIFormProcessor
          // standard component attributes are saved by the super class
          super.saveState(context),
          this.formInstanceData,
-         this.formInstanceDataName,
          this.form,
          this.formProcessorSession
       };
@@ -95,7 +92,7 @@ public class UIFormProcessor
       final FormProcessor fp = form.getFormProcessors().get(0);
       final FormProcessor.Session fps = this.getFormProcessorSession();
       final Document fid = this.getFormInstanceData();
-      final String formInstanceDataName = this.getFormInstanceDataName();
+
       try
       {
          if (fps != null && 
@@ -115,7 +112,6 @@ public class UIFormProcessor
             }
             LOGGER.debug("creating a new session for " + fid);
             this.setFormProcessorSession(fp.process(fid,
-                                                    formInstanceDataName,
                                                     form,
                                                     out));
          }
@@ -153,31 +149,6 @@ public class UIFormProcessor
    public void setFormInstanceData(final Document formInstanceData)
    {
       this.formInstanceData = formInstanceData;
-   }
-
-   /**
-    * Returns the form instance data name
-    *
-    * @return The form instance data name
-    */
-   public String getFormInstanceDataName()
-   {
-      final ValueBinding vb = this.getValueBinding("formInstanceDataName");
-      if (vb != null)
-      {
-         this.formInstanceDataName = (String)vb.getValue(getFacesContext());
-      }
-      return this.formInstanceDataName;
-   }
-   
-   /**
-    * Sets the form instance data name
-    *
-    * @param formInstanceDataName The form instance data name.
-    */
-   public void setForm(final String formInstanceDataName)
-   {
-      this.formInstanceDataName = formInstanceDataName;
    }
 
    /**

@@ -1713,7 +1713,7 @@ public class Schema2XForms
       //       e.g. Please provide a valid value for 'Address'. 'Address' is a mandatory decimal field.
       //
       final Element alertElement = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                                  NamespaceConstants.XFORMS_PREFIX + ":alert");
+                                                         NamespaceConstants.XFORMS_PREFIX + ":alert");
       formControl.appendChild(alertElement);
       this.setXFormsId(alertElement);
 
@@ -2447,40 +2447,28 @@ public class Schema2XForms
                                     NamespaceConstants.XFORMS_PREFIX + ":required",
                                     (o.minimum != 0) + "()");
       }
-      else if (controlType instanceof XSComplexTypeDefinition)
-      {
-         // make all complex types not required since it helps with validation - otherwise
-         // chiba seems to expect a nodevalue for the container element
-         bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                    NamespaceConstants.XFORMS_PREFIX + ":required",
-                                    "false()");
-
-      }
 
       //no more minOccurs & maxOccurs element: add a constraint if maxOccurs>1:
       //count(.) <= maxOccurs && count(.) >= minOccurs
-      final String nodeset = bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS,
-                                                        "nodeset");
       String minConstraint = null;
       String maxConstraint = null;
 
       if (o.minimum > 1)
       {
          //if 0 or 1 -> no constraint (managed by "required")
-         minConstraint = "count(../" + nodeset + ") >= " + o.minimum;
+         minConstraint = "count(.) >= " + o.minimum;
+         bindElement.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                    NamespaceService.ALFRESCO_PREFIX + ":minimum",
+                                    String.valueOf(o.minimum));
       }
-      bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                 NamespaceConstants.XFORMS_PREFIX + ":minOccurs",
-                                 String.valueOf(o.minimum));
       if (o.maximum > 1)
       {
          //if 1 or unbounded -> no constraint
-         maxConstraint = "count(../" + nodeset + ") <= " + o.maximum;
+         maxConstraint = "count(.) <= " + o.maximum;
+         bindElement.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                    NamespaceService.ALFRESCO_PREFIX + ":maximum",
+                                    String.valueOf(o.maximum));
       }
-
-      bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                 NamespaceConstants.XFORMS_PREFIX + ":maxOccurs",
-                                 o.isUnbounded() ? "unbounded" : String.valueOf(o.maximum));
 
       final String constraint = (minConstraint != null && maxConstraint != null
                                  ? minConstraint + " and " + maxConstraint

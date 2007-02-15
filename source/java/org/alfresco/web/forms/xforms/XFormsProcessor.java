@@ -79,7 +79,6 @@ public class XFormsProcessor
    }
 
    public Session process(final Document instanceDataDocument,
-                          final String formInstanceDataName,
                           final Form form,
                           final Writer out)
       throws FormProcessor.ProcessingException
@@ -89,7 +88,7 @@ public class XFormsProcessor
       final XFormsBean xforms = (XFormsBean)
          FacesHelper.getManagedBean(fc, "XFormsBean");
       final Session result = 
-         xforms.createSession(instanceDataDocument, formInstanceDataName, form);
+         xforms.createSession(instanceDataDocument, form);
       this.process(result, out);
       return result;
    }
@@ -145,9 +144,6 @@ public class XFormsProcessor
          append("';\n");
       js.append("alfresco_xforms_constants.XFORMS_UI_DIV_ID = '").
          append(xformsUIDivId).
-         append("';\n");
-      js.append("alfresco_xforms_constants.FORM_INSTANCE_DATA_NAME = '").
-         append(session.getFormInstanceDataName()).
          append("';\n");
       for (String[] ns : JS_NAMESPACES)
       {

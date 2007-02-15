@@ -736,7 +736,6 @@ dojo.declare("alfresco.xforms.NumericalRange",
                  
                _hSlider_valueChangedHandler: function(value)
                {
-                 value = Math.round(value * Math.pow(10, this.fractionDigits)) / Math.pow(10, this.fractionDigits);
                  this.currentValueDiv.replaceChild(document.createTextNode("Value: " + value),
                                                    this.currentValueDiv.firstChild);
                  if (!this.widget._isDragInProgress)
@@ -2304,11 +2303,6 @@ dojo.declare("alfresco.xforms.ViewRoot",
                this.focusedRepeat = null;
              },
              {
-
-               /////////////////////////////////////////////////////////////////
-               // overridden methods & properties
-               /////////////////////////////////////////////////////////////////
-
                render: function(attach_point)
                {
                  this.domNode.widget = this;
@@ -2336,14 +2330,6 @@ dojo.declare("alfresco.xforms.ViewRoot",
                  this.domNode.childContainerNode.style.width = "100%";
 
                  return this.domNode;
-               },
-                 
-               /** */
-               getLabel: function()
-               {
-                 var result = alfresco.xforms.ViewRoot.superclass.getLabel.call(this);
-                 result += " " + alfresco_xforms_constants.FORM_INSTANCE_DATA_NAME;
-                 return result;
                }
              });
 
@@ -3129,9 +3115,8 @@ dojo.declare("alfresco.xforms.Binding",
                  (_hasAttribute(this.xformsNode, alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
                   ? this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":constraint")
                   : null);
-               this.maximum = this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":maxOccurs");
-               this.maximum = this.maximum == "unbounded" ? Number.MAX_VALUE : parseInt(this.maximum);
-               this.minimum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.XFORMS_PREFIX + ":minOccurs"));
+               this.maximum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":maximum"));
+               this.minimum = parseInt(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":minimum"));
                this.parent = parent;
                this.widgets = {};
              },

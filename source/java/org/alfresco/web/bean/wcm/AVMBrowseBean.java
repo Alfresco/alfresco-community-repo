@@ -551,10 +551,6 @@ public class AVMBrowseBean implements IContextListener
     */
    public void setAVMActionNodeDescriptor(AVMNodeDescriptor avmRef)
    {
-      if (avmRef == null)
-      {
-         throw new NullPointerException();
-      }
       AVMNode avmNode = new AVMNode(avmRef);
       this.avmNode = avmNode;
    }

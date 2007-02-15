@@ -18,17 +18,11 @@
 package org.alfresco.web.forms;
 
 import freemarker.ext.dom.NodeModel;
-import freemarker.template.SimpleDate;
-import freemarker.template.SimpleHash;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateHashModel;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
+import freemarker.template.*;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.faces.context.FacesContext;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -36,15 +30,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateException;
-import org.alfresco.service.cmr.repository.TemplateNode;
-import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.namespace.*;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.web.app.Application;
@@ -172,40 +158,24 @@ public class RenderingEngineTemplateImpl
       root.put("name", formInstanceDataName.replaceAll("(.+)\\..*", "$1"));
       root.put("extension", 
                sr.getMimetypeService().getExtension(this.getMimetypeForRendition()));
-      Document formInstanceDataDocument = null;
+
       try
       {
-         formInstanceDataDocument = formInstanceData.getDocument();
+         root.put("xml", NodeModel.wrap(formInstanceData.getDocument()));
       }
       catch (Exception e)
       {
          LOGGER.error(e);
-         throw new AlfrescoRuntimeException(e.getMessage(), e);
       }
 
-      root.put("xml", NodeModel.wrap(formInstanceDataDocument));
       root.put("node", new TemplateNode(((FormInstanceDataImpl)formInstanceData).getNodeRef(), sr, null));
       root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
 
       final TemplateService templateService = sr.getTemplateService();
-      final String outputPathPattern = (FreeMarkerUtil.buildNamespaceDeclaration(formInstanceDataDocument) +
-                                        this.getOutputPathPattern());
-      String result = null;
-      try
-      {
-         result = templateService.processTemplateString(null, 
-                                                        outputPathPattern,
-                                                        new SimpleHash(root));
-      }
-      catch (final TemplateException te)
-      {
-         LOGGER.error(te.getMessage(), te);
-         throw new AlfrescoRuntimeException("Error processing output path pattern " + outputPathPattern + 
-                                            " for " + formInstanceDataName + 
-                                            " in webapp " + webappName +
-                                            ":\n" + te.getMessage(), 
-                                            te);
-      }
+      final String outputPathPattern = this.getOutputPathPattern();
+      String result = templateService.processTemplateString(null, 
+                                                            outputPathPattern,
+                                                            new SimpleHash(root));
       final String parentAVMPath = AVMNodeConverter.SplitBase(formInstanceDataAVMPath)[0];
       result = AVMConstants.buildPath(parentAVMPath, 
                                       result,
@@ -392,10 +362,10 @@ public class RenderingEngineTemplateImpl
                       throws IOException,
                       SAXException
                    {
-                      if (arguments.length > 2)
+                      if (arguments.length > 1)
                       {
-                         throw new IllegalArgumentException("expected exactly one or two arguments to " +
-                                                            "parseXMLDocuments.  got " + arguments.length);
+                         throw new IllegalArgumentException("expected zero or one arguments to parseXMLDocuments.  got " +
+                                                            arguments.length);
                       }
                       if (! (arguments[0] instanceof String))
                       {

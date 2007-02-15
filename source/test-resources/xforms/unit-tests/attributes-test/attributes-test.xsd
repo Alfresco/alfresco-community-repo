@@ -43,10 +43,6 @@
                     type="xs:normalizedString"
 		    use="optional"
 		    fixed="fixed string value"/>
-      <xs:attribute name="fixed_required_decimal"
-                    type="xs:decimal"
-		    use="required"
-		    fixed="1.1"/>
       <xs:attribute name="required_choices_no_default"
                     type="attribute-choices"
 		    use="required"/>

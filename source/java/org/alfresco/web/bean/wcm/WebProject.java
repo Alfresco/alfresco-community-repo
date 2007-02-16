@@ -14,50 +14,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
 package org.alfresco.web.bean.wcm;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.forms.*;
-import org.alfresco.web.forms.xforms.XFormsProcessor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.*;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormImpl;
+import org.alfresco.web.forms.FormsService;
+import org.alfresco.web.forms.RenderingEngineTemplate;
+import org.alfresco.web.forms.RenderingEngineTemplateImpl;
 
 /**
  * Provides configured data for a web project.

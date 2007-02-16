@@ -25,6 +25,8 @@
 package org.alfresco.repo.admin.patch;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -94,40 +96,46 @@ public class PatchServiceImpl implements PatchService
         
         try
         {
-        // Diable rules whilst processing the patches
-        this.ruleService.disableRules();
-        try
-        {
-            // construct a map of all known patches by ID
-            Map<String, Patch> allPatchesById = new HashMap<String, Patch>(23);
-            for (Patch patch : patches)
+            // Disable rules whilst processing the patches
+            this.ruleService.disableRules();
+            try
             {
-                allPatchesById.put(patch.getId(), patch);
-            }
-            // construct a list of executed patches by ID
-            Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(23);
-            List<AppliedPatch> appliedPatches = patchDaoService.getAppliedPatches();
-            for (AppliedPatch appliedPatch : appliedPatches)
-            {
-                appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
-            }
-        
-            // go through all the patches and apply them where necessary        
-            for (Patch patch : allPatchesById.values())
-            {
-                // apply the patch
-                success = applyPatchAndDependencies(patch, appliedPatchesById);
-                if (!success)
+                // Sort the patches
+                List<Patch> sortedPatches = new ArrayList<Patch>(patches);
+                Comparator<Patch> comparator = new PatchTargetSchemaComparator();
+                Collections.sort(sortedPatches, comparator);
+    
+                // construct a list of executed patches by ID (also check the date)
+                Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(23);
+                List<AppliedPatch> appliedPatches = patchDaoService.getAppliedPatches();
+                for (AppliedPatch appliedPatch : appliedPatches)
                 {
-                    // we failed to apply a patch or one of its dependencies - terminate
-                    break;
+                    appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
+                    // Update the time of execution if it is null.  This is to deal with
+                    // patches that get executed prior to server startup and need to have
+                    // an execution time assigned
+                    if (appliedPatch.getAppliedOnDate() == null)
+                    {
+                        appliedPatch.setAppliedOnDate(new Date());
+                    }
                 }
-            }        
-        }
-        finally
-        {
-            this.ruleService.enableRules();
-        }
+            
+                // go through all the patches and apply them where necessary        
+                for (Patch patch : sortedPatches)
+                {
+                    // apply the patch
+                    success = applyPatchAndDependencies(patch, appliedPatchesById);
+                    if (!success)
+                    {
+                        // we failed to apply a patch or one of its dependencies - terminate
+                        break;
+                    }
+                }        
+            }
+            finally
+            {
+                this.ruleService.enableRules();
+            }
         }
         catch (Throwable exception)
         {
@@ -305,5 +313,22 @@ public class PatchServiceImpl implements PatchService
         }
         // done
         return (List<PatchInfo>) appliedPatches;
+    }
+
+    /**
+     * Compares patch target schemas.
+     * 
+     * @see Patch#getTargetSchema()
+     * @author Derek Hulley
+     */
+    private static class PatchTargetSchemaComparator implements Comparator<Patch>
+    {
+        public int compare(Patch p1, Patch p2)
+        {
+            Integer i1 = new Integer(p1.getTargetSchema());
+            Integer i2 = new Integer(p2.getTargetSchema());
+            return i1.compareTo(i2);
+        }
+        
     }
 }

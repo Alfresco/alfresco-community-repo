@@ -41,9 +41,9 @@
 			<property name="accessDate" type="long" not-null="true"/>
 		</component>
 		<property name="isRoot" column="is_root" type="boolean"/>
-		<many-to-one name="storeNew" class="AVMStoreImpl" column="store_new_id"/>
+		<many-to-one name="storeNew" class="AVMStoreImpl" column="store_new_id" foreign-key="fk_avm_n_store"/>
 		<!-- ACL -->
-		<many-to-one name="acl" column="acl_id" 
+		<many-to-one name="acl" column="acl_id" foreign-key="fk_avm_n_acl"
 			class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
 		<!-- Deleted nodes -->
 		<subclass name="DeletedNodeImpl"
@@ -114,7 +114,7 @@
 			column="next_version_id" not-null="true"/>
 		<!-- Every AVMStore has a root directory that is the current root directory. -->
 		<many-to-one name="root" class="DirectoryNodeImpl"
-			column="current_root_id" cascade="save-update">
+			column="current_root_id" cascade="save-update" foreign-key="fk_avm_s_root">
 		</many-to-one>
 	</class>
 	<class name="VersionRootImpl" proxy="VersionRoot" table="avm_version_roots">
@@ -123,7 +123,7 @@
 			<generator class="native"></generator>
 		</id>
 		<property name="versionID" type="int" not-null="true"
-			column="version_id" index="version_roots_version_id_index">
+			column="version_id" index="idx_avm_vr_version">
 		</property>
 		<property name="createDate" type="long" not-null="true" column="create_date">
 		</property>
@@ -131,10 +131,10 @@
 			not-null="true">
 		</property>
 		<many-to-one name="avmStore" column="avm_store_id"
-			class="AVMStoreImpl" not-null="true">
+			class="AVMStoreImpl" not-null="true" foreign-key="fk_avm_vr_store">
 		</many-to-one>
 		<many-to-one name="root" class="DirectoryNodeImpl"
-			column="root_id" not-null="true">
+			column="root_id" not-null="true" foreign-key="fk_avm_vr_root">
 		</many-to-one>
 		<property name="tag" type="string" length="255" column="tag"/>
 		<property name="description" type="string" length="4000" column="description"/>
@@ -142,30 +142,29 @@
     <class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries">
         <cache usage="read-write"/>
         <composite-id name="key" class="ChildKey">
-            <key-many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl"/>
+            <key-many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl" foreign-key="fk_avm_ce_parent"/>
             <key-property name="name" column="name" type="string" length="160"/>
         </composite-id>
-        <many-to-one name="child" column="child_id" class="AVMNodeImpl"
-	                 not-null="true"/>
+        <many-to-one name="child" column="child_id" class="AVMNodeImpl" not-null="true" foreign-key="fk_avm_ce_child"/>
     </class>
 	<class name="HistoryLinkImpl" proxy="HistoryLink" table="avm_history_links">
 		<composite-id>
-			<key-many-to-one name="ancestor" class="AVMNodeImpl" column="ancestor"/>
-			<key-many-to-one name="descendent" class="AVMNodeImpl" column="descendent"/>
+			<key-many-to-one name="ancestor" class="AVMNodeImpl" column="ancestor" foreign-key="fk_avm_hl_ancestor"/>
+			<key-many-to-one name="descendent" class="AVMNodeImpl" column="descendent" foreign-key="fk_avm_hl_desc"/>
 		</composite-id>
 	</class>
 	<class name="MergeLinkImpl" proxy="MergeLink" table="avm_merge_links">
 		<composite-id>
-			<key-many-to-one name="mfrom" class="AVMNodeImpl" column="mfrom"/>
-			<key-many-to-one name="mto" class="AVMNodeImpl" column="mto"/>
+			<key-many-to-one name="mfrom" class="AVMNodeImpl" column="mfrom" foreign-key="fk_avm_ml_from"/>
+			<key-many-to-one name="mto" class="AVMNodeImpl" column="mto" foreign-key="fk_avm_ml_to"/>
 		</composite-id>
 	</class>
 	<class name="AVMNodePropertyImpl" proxy="AVMNodeProperty" table="avm_node_properties">
 		<id name="id" column="id" type="long">
 			<generator class="native"/>
 		</id>
-		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
-	    <property name="name" column="qname" type="QName" length="200" index="node_property_name_index"/>
+		<many-to-one name="node" class="AVMNodeImpl" column="node_id" foreign-key="fk_avm_np_node"/>
+	    <property name="name" column="qname" type="QName" length="200" index="idx_avm_np_name"/>
 		<component class="org.alfresco.repo.domain.PropertyValue" name="value">
             <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
             <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
@@ -182,8 +181,8 @@
 		<id name="id" column="id" type="long">
 			<generator class="native"/>
 		</id>
-		<many-to-one name="store" class="AVMStoreImpl" column="avm_store_id"/>
-		<property name="name" column="qname" type="QName" length="200" index="store_property_name_index"/>
+		<many-to-one name="store" class="AVMStoreImpl" column="avm_store_id" foreign-key="fk_avm_sp_store"/>
+		<property name="name" column="qname" type="QName" length="200" index="idx_avm_sp_name"/>
 		<component class="org.alfresco.repo.domain.PropertyValue" name="value">
             <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
             <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
@@ -201,7 +200,7 @@
 		<id name="id" column="id" type="long">
 			<generator class="native"/>
 		</id>
-		<many-to-one name="node" class="AVMNodeImpl" column="node_id"/>
+		<many-to-one name="node" class="AVMNodeImpl" column="node_id" foreign-key="fk_avm_asp_node"/>
 		<property name="name" column="qname" type="QName" length="200"/>
 	</class>
     <query name="ChildEntry.DeleteByParent">

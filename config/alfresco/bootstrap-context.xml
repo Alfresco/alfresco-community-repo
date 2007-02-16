@@ -35,17 +35,23 @@
       </property>
       <property name="postCreateScriptUrls">
          <list>
-            <value>classpath:alfresco/dbscripts/create/1.4/${db.script.dialect}/post-create-indexes.sql</value>
+            <value>classpath:alfresco/dbscripts/create/2.0/${db.script.dialect}/AlfrescoPostCreate-2.0-FKIndexes.sql</value>
          </list>
       </property>
       <property name="validateUpdateScriptPatches">
          <list>
          </list>
       </property>
-      <property name="applyUpdateScriptPatches">
+      <property name="preUpdateScriptPatches">
          <list>
             <ref bean="patch.schemaUpdateScript-V1.4-1" />
             <ref bean="patch.schemaUpdateScript-V1.4-2" />
+         </list>
+      </property>
+      <property name="postUpdateScriptPatches">
+         <list>
+            <ref bean="patch.db-V2.0-ExplicitIndexes" />
+            <ref bean="patch.db-V2.0-AVMFKIndexes" />
          </list>
       </property>
    </bean>

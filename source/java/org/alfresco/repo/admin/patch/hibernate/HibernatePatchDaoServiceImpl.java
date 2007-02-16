@@ -118,7 +118,7 @@ public class HibernatePatchDaoServiceImpl extends HibernateDaoSupport implements
         {
             AppliedPatch appliedPatch = iterator.next();
             Date appliedOnDate = appliedPatch.getAppliedOnDate();
-            if (fromDate.compareTo(appliedOnDate) >= 0 || toDate.compareTo(appliedOnDate) <= 0)
+            if (appliedOnDate != null && fromDate.compareTo(appliedOnDate) >= 0 || toDate.compareTo(appliedOnDate) <= 0)
             {
                 // it is out of range
                 iterator.remove();

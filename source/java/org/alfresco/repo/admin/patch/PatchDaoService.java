@@ -72,11 +72,12 @@ public interface PatchDaoService
     public List<AppliedPatch> getAppliedPatches();
     
     /**
-     * Get a list of all patches applied between the given dates
+     * Get a list of all patches applied between the given dates.
      * 
      * @param from the lower date limit or null to ignore
      * @param to the upper date limit or null to ignore
-     * @return Returns all applied patches
+     * @return Returns applied patches for the date range, but also patches without
+     *      a date
      */
     public List<AppliedPatch> getAppliedPatches(Date from, Date to);
 }

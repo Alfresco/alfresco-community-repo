@@ -1,6 +1,13 @@
 --
--- Add post-creation indexes. (SQL Server Schema 1.4)
+-- Title:      Post-Create Foreign Key indexes
+-- Database:   Generic
+-- Since:      V2.0 Schema 38
+-- Author:     Derek Hulley
 --
+-- Please contact support@alfresco.com if you need assistance with the upgrade.
+--
+
+-- Repository
 CREATE INDEX FKFFF41F9960601995 ON alf_access_control_entry (permission_id);
 CREATE INDEX FKFFF41F99B25A50BF ON alf_access_control_entry (authority_id);
 CREATE INDEX FKFFF41F99B9553F6C ON alf_access_control_entry (acl_id);
@@ -23,8 +30,24 @@ CREATE INDEX FK71C2002B9E57C13D ON alf_node_status (transaction_id);
 CREATE INDEX FKB8761A3A9AE340B7 ON alf_transaction (server_id);
 
 --
--- New audit tables
+-- Audit tables
 --
 CREATE INDEX FKEAD1817484342E39 ON alf_audit_fact (audit_date_id);
 CREATE INDEX FKEAD18174A0F9B8D9 ON alf_audit_fact (audit_source_id);
 CREATE INDEX FKEAD18174F524CFD7 ON alf_audit_fact (audit_conf_id);
+
+-- AVM
+CREATE INDEX fk_avm_asp_node ON avm_aspects (node_id);
+CREATE INDEX fk_avm_ce_child ON avm_child_entries (child_id);
+CREATE INDEX fk_avm_ce_parent ON avm_child_entries (parent_id);
+CREATE INDEX fk_avm_hl_desc ON avm_history_links (descendent);
+CREATE INDEX fk_avm_hl_ancestor ON avm_history_links (ancestor);
+CREATE INDEX fk_avm_ml_from ON avm_merge_links (mfrom);
+CREATE INDEX fk_avm_ml_to ON avm_merge_links (mto);
+CREATE INDEX fk_avm_np_node ON avm_node_properties (node_id);
+CREATE INDEX fk_avm_n_acl ON avm_nodes (acl_id);
+CREATE INDEX fk_avm_n_store ON avm_nodes (store_new_id);
+CREATE INDEX fk_avm_sp_store ON avm_store_properties (avm_store_id);
+CREATE INDEX fk_avm_s_root ON avm_stores (current_root_id);
+CREATE INDEX fk_avm_vr_store ON avm_version_roots (avm_store_id);
+CREATE INDEX fk_avm_vr_root ON avm_version_roots (root_id);

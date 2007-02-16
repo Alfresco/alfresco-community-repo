@@ -622,4 +622,26 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V2.0-ExplicitIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.0-ExplicitIndexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>37</value></property>
+        <property name="targetSchema"><value>38</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.0/${db.script.dialect}/AlfrescoSchemaUpdate-2.0-ExplicitIndexes.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V2.0-AVMFKIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.0-AVMFKIndexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>37</value></property>
+        <property name="targetSchema"><value>38</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.0/${db.script.dialect}/AlfrescoSchemaUpdate-2.0-AVMFKIndexes.sql</value>
+        </property>
+    </bean>
+
 </beans>

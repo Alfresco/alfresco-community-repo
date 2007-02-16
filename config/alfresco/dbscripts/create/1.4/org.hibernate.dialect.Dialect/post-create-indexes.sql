@@ -1,3 +1,0 @@
---
--- Add post-creation indexes. (Generic Schema 1.4)
---

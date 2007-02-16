@@ -13,7 +13,7 @@
 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
@@ -151,24 +151,24 @@ public class FileLock
     public final boolean hasOverlap(long offset, long len)
     {
 
-        // Check if the lock is for the whole file
-
-        if (isWholeFile())
+        //  Check if the lock is for the whole file
+        
+        if ( isWholeFile())
             return true;
+            
+        //  Check if the locks overlap
 
-        // Check if the locks overlap
-
-        long endOff = getOffset() + getLength();
-
+        long endOff = getOffset() + ( getLength() - 1);
+        
         if (getOffset() < offset && endOff < offset)
             return false;
 
-        endOff = offset + len;
-
-        if (getOffset() > endOff)
+        endOff = offset + ( len - 1);
+        
+        if ( getOffset() > endOff)
             return false;
 
-        // Locks overlap
+        //  Locks overlap
 
         return true;
     }

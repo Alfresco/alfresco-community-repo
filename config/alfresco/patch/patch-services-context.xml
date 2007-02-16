@@ -591,5 +591,23 @@
             </props>
         </property>
     </bean>
+	
+	<bean id="patch.userAndPersonUserNamesAsIdentifiers" class="org.alfresco.repo.admin.patch.impl.UserAndPersonTokenisationPatch" parent="basePatch" >
+        <property name="id"><value>patch.userAndPersonUserNamesAsIdentifiers</value></property>
+        <property name="description"><value>patch.userAndPersonUserNamesAsIdentifiers.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>35</value></property>
+        <property name="targetSchema"><value>36</value></property>
+        <!-- bootstrap view -->
+        <property name="userImporterBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+		<property name="spacesImporterBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+		<property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory" />
+        </property>
+    </bean>
 
 </beans>

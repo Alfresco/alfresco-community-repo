@@ -290,6 +290,40 @@ public class LuceneTest2 extends TestCase
         mlText.addValue(new Locale("ru"), "банан");
         mlText.addValue(new Locale("es"), "plátano");
         testProperties.put(QName.createQName(TEST_NAMESPACE, "ml"), mlText);
+        // Any multivalued
+        ArrayList<Serializable> anyValues = new ArrayList<Serializable>();
+        anyValues.add(Integer.valueOf(100));
+        anyValues.add("anyValueAsString");
+        anyValues.add(new UnknownDataType());
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "any-many-ista"), anyValues);
+        // Content multivalued
+        // - note only one the first value is used from the collection
+        // - andit has to go in type d:any as d:content is not allowed to be multivalued
+        
+        ArrayList<Serializable> contentValues = new ArrayList<Serializable>();
+        contentValues.add(new ContentData(null, "text/plain", 0L, "UTF-16"));
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "content-many-ista"), contentValues);
+        
+      
+        
+        // MLText multivalued
+        
+        MLText mlText1 = new MLText();
+        mlText1.addValue(Locale.ENGLISH, "cabbage");
+        mlText1.addValue(Locale.FRENCH, "chou");
+        
+        MLText mlText2 = new MLText();
+        mlText2.addValue(Locale.ENGLISH, "lemur");
+        mlText2.addValue(new Locale("ru"), "лемур");
+        
+        ArrayList<Serializable> mlValues = new ArrayList<Serializable>();
+        mlValues.add(mlText1);
+        mlValues.add(mlText2);
+        
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "mltext-many-ista"), mlValues);
+        
+        // null in multi valued
+        
         ArrayList<Object> testList = new ArrayList<Object>();
         testList.add(null);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "nullList"), testList);
@@ -299,7 +333,14 @@ public class LuceneTest2 extends TestCase
 
         n4 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}four"),
                 testType, testProperties).getChildRef();
+        
 
+        ContentWriter multiWriter = contentService.getWriter(n4, QName.createQName(TEST_NAMESPACE, "content-many-ista"), true);
+        multiWriter.setEncoding( "UTF-16");
+        multiWriter.setMimetype("text/plain");
+        multiWriter.putContent("multicontent");
+
+        
         nodeService.getProperties(n1);
         nodeService.getProperties(n2);
         nodeService.getProperties(n3);
@@ -2427,6 +2468,80 @@ public class LuceneTest2 extends TestCase
         assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "path-ista")));
         results.close();
 
+        // d:any
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"100\"",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"anyValueAsString\"",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
+                + escapeQName(QName.createQName(TEST_NAMESPACE, "any-many-ista")) + ":\"nintc\"",
+                null, null);
+        assertEquals(1, results.length());
+        assertNotNull(results.getRow(0).getValue(QName.createQName(TEST_NAMESPACE, "any-many-ista")));
+        results.close();
+        
+        // multi ml text
+        
+        QName multimlQName = QName.createQName(TEST_NAMESPACE, "mltext-many-ista");
+        
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":лемур");
+        sp.addLocale(new Locale("ru"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":lemur");
+        sp.addLocale(new Locale("en"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":chou");
+        sp.addLocale(new Locale("fr"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":cabbage");
+        sp.addLocale(new Locale("en"));
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        // multivalued content in type d:any
+        // This should not be indexed as we can not know what to do with content here. 
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("@" + LuceneQueryParser.escape(QName.createQName(TEST_NAMESPACE, "content-many-ista").toString()) + ":multicontent");
+        results = searcher.query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
         // locale
         
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
@@ -2615,7 +2730,7 @@ public class LuceneTest2 extends TestCase
 
         // Configuration of TEXT
 
-        SearchParameters sp = new SearchParameters();
+        sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
         sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":\"fox\"");
@@ -4591,5 +4706,15 @@ public class LuceneTest2 extends TestCase
         results.close();
 
         // test.dictionaryService.getType(test.nodeService.getType(test.rootNodeRef)).getDefaultAspects();
+    }
+    
+    public static class UnknownDataType implements Serializable
+    {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -6729690518573349055L;
+        
     }
 }

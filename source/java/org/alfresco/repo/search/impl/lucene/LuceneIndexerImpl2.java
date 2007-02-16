@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.QName;
@@ -97,6 +98,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
 
     public static final String NOT_INDEXED_CONTENT_MISSING = "nicm";
 
+    public static final String NOT_INDEXED_NO_TYPE_CONVERSION = "nintc";
+
     private static Logger s_logger = Logger.getLogger(LuceneIndexerImpl2.class);
 
     /**
@@ -121,8 +124,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
     private long maxAtomicTransformationTime = 20;
 
     /**
-     * A list of all deletions we have made - at merge these deletions need to be made against the main index. TODO:
-     * Consider if this information needs to be persisted for recovery
+     * A list of all deletions we have made - at merge these deletions need to be made against the main index. TODO: Consider if this information needs to be persisted for recovery
      */
     private Set<NodeRef> deletions = new LinkedHashSet<NodeRef>();
 
@@ -141,8 +143,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
     private boolean isModified = false;
 
     /**
-     * Flag to indicte if we are doing an in transactional delta or a batch update to the index. If true, we are just
-     * fixing up non atomically indexed things from one or more other updates.
+     * Flag to indicte if we are doing an in transactional delta or a batch update to the index. If true, we are just fixing up non atomically indexed things from one or more other
+     * updates.
      */
 
     private Boolean isFTSUpdate = null;
@@ -689,8 +691,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
     }
 
     /**
-     * Prepare to commit At the moment this makes sure we have all the locks TODO: This is not doing proper
-     * serialisation against the index as would a data base transaction.
+     * Prepare to commit At the moment this makes sure we have all the locks TODO: This is not doing proper serialisation against the index as would a data base transaction.
      * 
      * @return
      */
@@ -804,8 +805,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
     }
 
     /**
-     * Mark this index for roll back only. This action can not be reversed. It will reject all other work and only allow
-     * roll back.
+     * Mark this index for roll back only. This action can not be reversed. It will reject all other work and only allow roll back.
      */
 
     public void setRollbackOnly()
@@ -1534,7 +1534,17 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         // convert value to String
         for (Serializable serializableValue : DefaultTypeConverter.INSTANCE.getCollection(Serializable.class, value))
         {
-            String strValue =  DefaultTypeConverter.INSTANCE.convert(String.class, serializableValue);
+            String strValue = null;
+            try
+            {
+                strValue = DefaultTypeConverter.INSTANCE.convert(String.class, serializableValue);
+            }
+            catch (TypeConversionException e)
+            {
+                doc.add(new Field(attributeName, NOT_INDEXED_NO_TYPE_CONVERSION, Field.Store.NO,
+                        Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                continue;
+            }
             if (strValue == null)
             {
                 // nothing to index
@@ -1727,6 +1737,12 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     }
                     else if (isText)
                     {
+                        // Temporary special case for uids
+                        if(propertyName.equals(ContentModel.PROP_USER_USERNAME) || propertyName.equals(ContentModel.PROP_USERNAME))
+                        {
+                            doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                        }
+                        
                         // TODO: Use the node locale in preferanced to the system locale
                         Locale locale = null;
 
@@ -1740,10 +1756,17 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         {
                             locale = Locale.getDefault();
                         }
-                        StringBuilder builder = new StringBuilder();
-                        builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
-                        doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
-                                Field.TermVector.NO));
+                        if (tokenise)
+                        {
+                            StringBuilder builder = new StringBuilder();
+                            builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
+                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex,
+                                    Field.TermVector.NO));
+                        }
+                        else
+                        {
+                            doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                        }
                     }
                     else
                     {

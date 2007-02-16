@@ -269,6 +269,38 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
+				<!-- Any -->
+				<property name="test:any-many-ista">
+                    <type>d:any</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<!-- Complex multiples -->
+				<property name="test:content-many-ista">
+                    <type>d:any</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<property name="test:mltext-many-ista">
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
             </properties>
             <mandatory-aspects>
                 <aspect>test:testAspect</aspect>

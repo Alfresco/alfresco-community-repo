@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.LongAnalyser;
@@ -37,9 +38,8 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
 
 /**
- * Analyse properties according to the property definition. The default is to use the standard tokeniser. The tokeniser
- * should not have been called when indexing properties that require no tokenisation. (tokenise should be set to false
- * when adding the field to the document)
+ * Analyse properties according to the property definition. The default is to use the standard tokeniser. The tokeniser should not have been called when indexing properties that
+ * require no tokenisation. (tokenise should be set to false when adding the field to the document)
  * 
  * @author andyh
  */
@@ -47,7 +47,7 @@ import org.apache.lucene.analysis.WhitespaceAnalyzer;
 public class LuceneAnalyser extends Analyzer
 {
     private static Logger s_logger = Logger.getLogger(LuceneAnalyser.class);
-    
+
     // Dictinary service to look up analyser classes by data type and locale.
     private DictionaryService dictionaryService;
 
@@ -156,34 +156,44 @@ public class LuceneAnalyser extends Analyzer
             else
             {
                 QName propertyQName = QName.createQName(fieldName.substring(1));
-                PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-                if (propertyDef != null)
+                // Temporary fix for person and user uids
+
+                if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
+                        || propertyQName.equals(ContentModel.PROP_USERNAME))
                 {
-                    if (propertyDef.isTokenisedInIndex())
+                    analyser = new VerbatimAnalyser(true);
+                }
+                else
+                {
+                    PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                    if (propertyDef != null)
                     {
-                        DataTypeDefinition dataType = propertyDef.getDataType();
-                        if (dataType.getName().equals(DataTypeDefinition.CONTENT))
+                        if (propertyDef.isTokenisedInIndex())
                         {
-                            analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
-                        }
-                        else if (dataType.getName().equals(DataTypeDefinition.TEXT))
-                        {
-                            analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
+                            DataTypeDefinition dataType = propertyDef.getDataType();
+                            if (dataType.getName().equals(DataTypeDefinition.CONTENT))
+                            {
+                                analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
+                            }
+                            else if (dataType.getName().equals(DataTypeDefinition.TEXT))
+                            {
+                                analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
+                            }
+                            else
+                            {
+                                analyser = loadAnalyzer(dataType);
+                            }
                         }
                         else
                         {
-                            analyser = loadAnalyzer(dataType);
+                            analyser = new VerbatimAnalyser();
                         }
                     }
                     else
                     {
-                        analyser = new VerbatimAnalyser();
+                        DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
+                        analyser = loadAnalyzer(dataType);
                     }
-                }
-                else
-                {
-                    DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
-                    analyser = loadAnalyzer(dataType);
                 }
             }
         }
@@ -208,9 +218,9 @@ public class LuceneAnalyser extends Analyzer
         {
             Class<?> clazz = Class.forName(analyserClassName);
             Analyzer analyser = (Analyzer) clazz.newInstance();
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("Loaded "+analyserClassName+" for type "+dataType.getName());
+                s_logger.debug("Loaded " + analyserClassName + " for type " + dataType.getName());
             }
             return analyser;
         }
@@ -232,8 +242,7 @@ public class LuceneAnalyser extends Analyzer
     }
 
     /**
-     * For multilingual fields we separate the tokens for each instance to break phrase queries spanning different
-     * languages etc.
+     * For multilingual fields we separate the tokens for each instance to break phrase queries spanning different languages etc.
      */
     @Override
     public int getPositionIncrementGap(String fieldName)

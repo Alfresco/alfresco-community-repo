@@ -55,7 +55,7 @@
     <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
 
     <bean id="registry"   class="org.springframework.remoting.rmi.RmiRegistryFactoryBean">
-        <property name="port" value="${avm.jmxrmi.port}"/>
+        <property name="port" value="${avm.remote.port}"/>
     </bean>
 
     <!-- MBeanServer Connector (registers itself with custom alfrescoMBeanServer) -->
@@ -65,7 +65,7 @@
 
         <property name="server"      ref="alfrescoMBeanServer"/>
         <property name="objectName"  value="connector:name=rmi"/>
-        <property name="serviceUrl"  value="service:jmx:rmi://localhost/jndi/rmi://localhost:${avm.jmxrmi.port}/alfresco/jmxrmi" />
+        <property name="serviceUrl"  value="service:jmx:rmi://localhost/jndi/rmi://localhost:${avm.remote.port}/alfresco/jmxrmi" />
 
         <property name="environment">
             <map>

@@ -33,6 +33,19 @@ public class ClasspathScriptLocation implements ScriptLocation
 		ParameterCheck.mandatory("Location", location);
 		this.location = location;
 	}
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptLocation#getInputStream()
+     */
+    public InputStream getInputStream()
+    {
+        InputStream stream = getClass().getClassLoader().getResourceAsStream(location);
+        if (stream == null)
+        {
+            throw new AlfrescoRuntimeException("Unable to load classpath resource: " + location);
+        }
+        return stream;
+    }
 
 	/**
 	 * @see org.alfresco.service.cmr.repository.ScriptLocation#getReader()
@@ -83,5 +96,4 @@ public class ClasspathScriptLocation implements ScriptLocation
     {
         return this.location.toString();
     }
-
 }

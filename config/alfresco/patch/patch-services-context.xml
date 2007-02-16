@@ -602,11 +602,23 @@
         <property name="userImporterBootstrap">
             <ref bean="userBootstrap" />
         </property>
-		<property name="spacesImporterBootstrap">
+		  <property name="spacesImporterBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
-		<property name="indexerAndSearcher">
+		  <property name="indexerAndSearcher">
             <ref bean="indexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
+    <bean id="patch.contentFormFolderType" class="org.alfresco.repo.admin.patch.impl.ContentFormTypePatch" parent="basePatch" >
+        <property name="id"><value>patch.contentFormFolderType</value></property>
+        <property name="description"><value>patch.contentFormFolderType.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>36</value></property>
+        <property name="targetSchema"><value>37</value></property>
+        <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
         </property>
     </bean>
 

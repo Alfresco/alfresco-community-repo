@@ -177,6 +177,10 @@
          </mandatory-aspects>
       </type>
 
+      <type name="wca:formfolder">
+         <title>XForms Capture Form Folder</title>
+	      <parent>cm:folder</parent>
+      </type>
 	</types>
 
 	<aspects>

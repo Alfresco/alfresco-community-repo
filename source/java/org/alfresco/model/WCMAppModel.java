@@ -75,6 +75,7 @@ public interface WCMAppModel
     static final QName PROP_OUTPUT_PATH_PATTERN = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "outputpathpattern");
     
     // The XForms data capture form aspect.
+    static final QName TYPE_FORMFOLDER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "formfolder");
     static final QName ASPECT_FORM = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "form");
     static final QName PROP_XML_SCHEMA = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "schema");
     static final QName PROP_XML_SCHEMA_ROOT_ELEMENT_NAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "xmlschemarootelementname");

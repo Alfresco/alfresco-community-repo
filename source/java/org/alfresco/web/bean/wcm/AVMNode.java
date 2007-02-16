@@ -29,7 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.AVMNodeType;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -172,6 +174,24 @@ public class AVMNode extends Node implements Map<String, Object>
    public String getName()
    {
       return this.avmRef.getName();
+   }
+   
+   @Override
+   public QName getType()
+   {
+      if (this.type == null)
+      {
+         if (this.deleted == false)
+         {
+            this.type = getServiceRegistry().getNodeService().getType(this.nodeRef);
+         }
+         else
+         {
+            this.type = avmRef.isDeletedDirectory() ? WCMModel.TYPE_AVM_FOLDER : WCMModel.TYPE_AVM_CONTENT;
+         }
+      }
+      
+      return type;
    }
    
    public final boolean isDirectory()

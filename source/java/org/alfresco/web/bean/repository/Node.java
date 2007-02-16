@@ -285,7 +285,7 @@ public class Node implements Serializable
    /**
     * @return Returns the type.
     */
-   public final QName getType()
+   public QName getType()
    {
       if (this.type == null)
       {

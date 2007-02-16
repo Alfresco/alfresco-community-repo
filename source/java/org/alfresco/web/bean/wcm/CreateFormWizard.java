@@ -229,9 +229,7 @@ public class CreateFormWizard
       throws Exception
    {
       if (LOGGER.isDebugEnabled())
-      {
          LOGGER.debug("creating form " + this.getFormName());
-      }
 
       // get the node ref of the node that will contain the content
       final NodeRef contentFormsNodeRef = FormsService.getInstance().getContentFormsNodeRef();
@@ -239,11 +237,13 @@ public class CreateFormWizard
       final FileInfo folderInfo = 
          this.fileFolderService.create(contentFormsNodeRef,
                                        this.getFormName(),
-                                       ContentModel.TYPE_FOLDER);
-      FileInfo fileInfo = 
+                                       WCMAppModel.TYPE_FORMFOLDER);
+      
+      final FileInfo fileInfo = 
          this.fileFolderService.create(folderInfo.getNodeRef(),
                                        this.getSchemaFileName(),
                                        ContentModel.TYPE_CONTENT);
+      
       // get a writer for the content and put the file
       final ContentWriter writer = this.contentService.getWriter(fileInfo.getNodeRef(),
                                                                  ContentModel.PROP_CONTENT,

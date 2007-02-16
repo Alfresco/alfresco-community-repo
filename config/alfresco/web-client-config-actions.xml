@@ -359,7 +359,7 @@
          <!-- Edit XML content type -->
          <action id="edit_form">
             <permissions>
-               <permission allow="true">Write,CreateChildren</permission>
+               <permission allow="true">Write,AddChildren</permission>
             </permissions>
             <evaluator>org.alfresco.web.action.evaluator.EditFormEvaluator</evaluator>
             <label-id>edit_form</label-id>
@@ -607,7 +607,6 @@
          <action-group id="space_browse">
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
-            <action idref="edit_form"/>
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="details_space" />
@@ -632,7 +631,6 @@
          
          <!-- Actions Menu for More Actions in Browse screen -->
          <action-group id="browse_actions_menu">
-            <action idref="edit_form" />
             <action idref="details_space" />
             <action idref="delete_space" />
             <action idref="cut_node" />

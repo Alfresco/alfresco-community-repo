@@ -400,5 +400,39 @@
       
       </actions>
    </config>
+   
+   <config evaluator="node-type" condition="wca:formfolder">
+      <actions>
+      
+         <!-- Override actions for WCM Form container type in the Browse screen -->
+         <action-group id="space_browse">
+            <show-link>false</show-link>
+            <!-- add the edit form action -->
+            <action idref="edit_form"/>
+            <!-- hide the cut and copy operations for web form -->
+            <action idref="cut_node" hide="true" />
+            <action idref="copy_node" hide="true" />
+         </action-group>
+      
+         <!-- Override actions for current node More Actions menu in Browse screen -->
+         <action-group id="browse_actions_menu">
+            <!-- add the edit form action -->
+            <action idref="edit_form" />
+            <!-- hide the cut and copy operations for web form -->
+            <action idref="cut_node" hide="true" />
+            <action idref="copy_node" hide="true" />
+         </action-group>
+         
+         <!-- Override actions Menu for Space Details screen -->
+         <action-group id="space_details_actions">
+            <!-- add the edit form action -->
+            <action idref="edit_form" />
+            <!-- hide the cut and copy operations for web form -->
+            <action idref="cut_node" hide="true" />
+            <action idref="copy_node" hide="true" />
+         </action-group>
+      
+      </actions>
+   </config>
 
 </alfresco-config>

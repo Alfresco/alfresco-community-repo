@@ -96,7 +96,10 @@ public class UserPreferencesBean
    public void setLanguage(String language)
    {
       this.language = language;
-      Application.setLanguage(FacesContext.getCurrentInstance(), this.language);
+      Application.setLanguage(FacesContext.getCurrentInstance(), language);
+      
+      // Set the current locale in the server
+      I18NUtil.setLocale(I18NUtil.parseLocale(language));
    }
    
    /**

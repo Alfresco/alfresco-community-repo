@@ -175,12 +175,6 @@ public class DeleteSpaceDialog extends BaseDialogBean
          // remove this node from the breadcrumb if required
          this.browseBean.removeSpaceFromBreadcrumb(node);
          
-         // add a message to inform the user that the delete was OK 
-         String statusMsg = MessageFormat.format(
-               Application.getMessage(FacesContext.getCurrentInstance(), "status_space_deleted"), 
-               new Object[]{node.getName()});
-         Utils.addStatusMessage(FacesMessage.SEVERITY_INFO, statusMsg);
-         
          // clear action context
          this.browseBean.setActionSpace(null);
          

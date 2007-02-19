@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Alfresco, Inc.
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
  *
  * Licensed under the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version

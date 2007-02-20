@@ -58,3 +58,9 @@
 #
 #db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
 #db.url=jdbc:sqlserver://localhost;DatabaseName=alfresco
+
+#
+# PostgreSQL connection (requires postgresql-8.2-504.jdbc3.jar or equivalent)
+#
+#db.driver=org.postgresql.Driver
+#db.url=jdbc:postgresql://localhost:5432/alfresco

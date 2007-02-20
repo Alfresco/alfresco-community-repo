@@ -152,15 +152,16 @@ public class ClipboardBean
          if (index == -1)
          {
             // paste all
-            for (int i=0; i<this.items.size(); i++)
+            List<ClipboardItem> toRemove = new ArrayList<ClipboardItem>();
+            for (ClipboardItem item : this.items)
             {
-               ClipboardItem item = this.items.get(i);
                if (performClipboardOperation(item, action) == true)
                {
                   // if cut operation then remove item from the clipboard
                   if (item.getMode() == ClipboardStatus.CUT)
                   {
-                     this.items.remove(i);
+                     // remember which items to remove.
+                     toRemove.add(item);
                   }
                }
             }
@@ -169,6 +170,14 @@ public class ClipboardBean
             if (Application.getClientConfig(context).isPasteAllAndClearEnabled())
             {
                this.items.clear();
+            }
+            else if (toRemove.size() > 0)
+            {
+               // remove the items that were cut above
+               for (ClipboardItem item : toRemove)
+               {
+                  this.items.remove(item);
+               }
             }
          }
          else

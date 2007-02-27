@@ -517,6 +517,16 @@
             <ref bean="contentService" />
         </property>
     </bean>
+    <bean id="patch.versionHistoryPerformance" class="org.alfresco.repo.admin.patch.impl.VersionHistoryPerformancePatch" parent="basePatch" >
+        <property name="id"><value>patch.versionHistoryPerformance</value></property>
+        <property name="description"><value>patch.versionHistoryPerformance.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>24</value></property>
+        <property name="targetSchema"><value>25</value></property>
+        <property name="versionService">
+            <ref bean="VersionService" />
+        </property>
+    </bean>
     <bean id="patch.multilingualBootstrap" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.multilingualBootstrap</value></property>
         <property name="description"><value>patch.multilingualBootstrap.description</value></property>

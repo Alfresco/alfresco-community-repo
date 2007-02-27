@@ -27,22 +27,33 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
 
 /**
  * versionService test class.
@@ -51,7 +62,9 @@ import org.alfresco.service.namespace.QName;
  */
 public class VersionServiceImplTest extends BaseVersionStoreTest
 {
-	private static final String UPDATED_VALUE_1 = "updatedValue1";
+    private static Log logger = LogFactory.getLog(VersionServiceImplTest.class);
+
+    private static final String UPDATED_VALUE_1 = "updatedValue1";
 	private static final String UPDATED_VALUE_2 = "updatedValue2";
 	private static final String UPDATED_VALUE_3 = "updatedValue3";
 	private static final String UPDATED_CONTENT_1 = "updatedContent1";
@@ -718,4 +731,93 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         Object editionCodeArchive = nodeService.getProperty(versionNodeRef, prop);
         assertEquals(editionCodeArchive.getClass(), Integer.class);
     }    
+    public static void main(String ... args)
+    {
+        try
+        {
+            doMain(args);
+            System.exit(1);
+        }
+        catch (Throwable e)
+        {
+            logger.error(e);
+            System.exit(1);
+        }
+    }
+    private static void doMain(String ... args)
+    {
+        if (args.length != 1)
+        {
+            System.out.println("Usage: VersionServiceImplTest fileCount");
+            System.exit(1);
+        }
+        int fileCount = Integer.parseInt(args[0]);
+        
+        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+        final ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        final FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
+        final NodeService nodeService = serviceRegistry.getNodeService();
+        final VersionService versionService = serviceRegistry.getVersionService();
+        final AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        
+        authenticationComponent.setSystemUserAsCurrentUser();
+        // Create a new store
+        StoreRef storeRef = new StoreRef("test", "VersionServiceImplTest.main");
+        if (!nodeService.exists(storeRef))
+        {
+            nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
+        }
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        // Create a folder
+        NodeRef folderNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("test", "versionMain"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        // Now load the folder with the prescribed number of documents
+        int count = 0;
+        long start = System.currentTimeMillis();
+        long lastReport = start;
+        for (int i = 0; i < fileCount; i++)
+        {
+            fileFolderService.create(folderNodeRef, "file-" + i, ContentModel.TYPE_CONTENT);
+            count++;
+            // Report every 10s
+            long now = System.currentTimeMillis();
+            if (now - lastReport > 10000L)
+            {
+                long delta = (now - start);
+                double average = (double) delta / (double) count;
+                System.out.println(
+                        "File Creation: \n" +
+                        "   Count:        " + count + " of " + fileCount + "\n" +
+                        "   Average (ms): " + average);
+                lastReport = now;
+            }
+        }
+        // Get all the children again
+        List<FileInfo> files = fileFolderService.listFiles(folderNodeRef);
+        // Version each one
+        count = 0;
+        start = System.currentTimeMillis();
+        lastReport = start;
+        for (FileInfo fileInfo : files)
+        {
+            NodeRef nodeRef = fileInfo.getNodeRef();
+            versionService.createVersion(nodeRef, null);
+            count++;
+            // Report every 10s
+            long now = System.currentTimeMillis();
+            if (now - lastReport > 10000L)
+            {
+                long delta = (now - start);
+                double average = (double) delta / (double) count;
+                System.out.println(
+                        "Version: \n" +
+                        "   Count:        " + count + " of " + fileCount + "\n" +
+                        "   Average (ms): " + average);
+                lastReport = now;
+            }
+        }
+    }
 }

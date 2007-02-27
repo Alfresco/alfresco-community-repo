@@ -308,17 +308,8 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
         
         if (versionHistoryRef == null)
         {
-            HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
-            props.put(PROP_QNAME_VERSIONED_NODE_ID, nodeRef.getId());
-            
-            // Create a new version history node
-            ChildAssociationRef childAssocRef = this.dbNodeService.createNode(
-                    getRootNode(), 
-					ContentModel.ASSOC_CHILDREN, 
-                    CHILD_QNAME_VERSION_HISTORIES,
-                    TYPE_QNAME_VERSION_HISTORY,
-                    props);
-            versionHistoryRef = childAssocRef.getChildRef();            
+            // Create the version history
+            versionHistoryRef = createVersionHistory(nodeRef);
         }
         else
         {
@@ -386,6 +377,28 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
         
         // Return the data object representing the newly created version
         return version;
+    }
+    
+    /**
+     * Creates a new version history node, applying the root version aspect is required
+     * 
+     * @param nodeRef   the node ref
+     * @return          the version history node reference
+     */
+    private NodeRef createVersionHistory(NodeRef nodeRef)
+    {        
+        HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, nodeRef.getId());
+        props.put(PROP_QNAME_VERSIONED_NODE_ID, nodeRef.getId());
+        
+        // Create a new version history node
+        ChildAssociationRef childAssocRef = this.dbNodeService.createNode(
+                getRootNode(), 
+                CHILD_QNAME_VERSION_HISTORIES, 
+                QName.createQName(VersionModel.NAMESPACE_URI, nodeRef.getId()),
+                TYPE_QNAME_VERSION_HISTORY,
+                props);
+        return childAssocRef.getChildRef(); 
     }
 
     /**
@@ -771,20 +784,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl
      */
     private NodeRef getVersionHistoryNodeRef(NodeRef nodeRef)
     {
-        NodeRef result = null;
-        
-        Collection<ChildAssociationRef> versionHistories = this.dbNodeService.getChildAssocs(getRootNode());
-        for (ChildAssociationRef versionHistory : versionHistories)
-        {
-            String nodeId = (String)this.dbNodeService.getProperty(versionHistory.getChildRef(), VersionModel.PROP_QNAME_VERSIONED_NODE_ID);
-            if (nodeId != null && nodeId.equals(nodeRef.getId()) == true)
-            {
-                result = versionHistory.getChildRef();
-                break;
-            }
-        }
-        
-        return result;
+        return this.dbNodeService.getChildByName(getRootNode(), CHILD_QNAME_VERSION_HISTORIES, nodeRef.getId());
     }
     
     /**

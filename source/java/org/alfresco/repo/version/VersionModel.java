@@ -63,6 +63,9 @@ public interface VersionModel
     public static final String PROP_FROZEN_NODE_STORE_ID = "frozenNodeStoreId";
     public static final String PROP_FROZEN_ASPECTS = "frozenAspects";
     
+    /** The version store root aspect */
+    public static final QName ASPECT_VERSION_STORE_ROOT = QName.createQName(NAMESPACE_URI, "versionStoreRoot");
+    
     /**
      * Version history type
      */

@@ -180,8 +180,11 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                      String oldValue = request.getPreferences().getValue(PREF_ALF_USERNAME, null);
                      if (oldValue == null || oldValue.equals(loginBean.getUsernameInternal()) == false)
                      {
-                        request.getPreferences().setValue(PREF_ALF_USERNAME, loginBean.getUsernameInternal());
-                        request.getPreferences().store();
+                        if (request.getPreferences().isReadOnly(PREF_ALF_USERNAME) == false)
+                        {
+                           request.getPreferences().setValue(PREF_ALF_USERNAME, loginBean.getUsernameInternal());
+                           request.getPreferences().store();
+                        }
                      }
                   }
                   
@@ -303,7 +306,10 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
             if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) != null)
             {
                // remove the username preference value as explicit logout was requested by the user
-               request.getPreferences().reset(PREF_ALF_USERNAME);
+               if (request.getPreferences().isReadOnly(PREF_ALF_USERNAME) == false)
+               {
+                  request.getPreferences().reset(PREF_ALF_USERNAME);
+               }
                session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
             }
             

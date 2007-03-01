@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.search.impl.lucene;
 
@@ -1026,7 +1026,7 @@ public class LuceneTest2 extends TestCase
         tx3.commit();
     }
 
-    public void xtestMTDeleteIssue() throws Exception
+    public void testMTDeleteIssue() throws Exception
     {
         luceneFTS.pause();
         testTX.commit();

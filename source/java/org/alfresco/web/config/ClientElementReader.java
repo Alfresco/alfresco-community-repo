@@ -48,7 +48,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_HOMESPACEPERMISSION = "home-space-permission";
    public static final String ELEMENT_FROMEMAILADDRESS = "from-email-address";
    public static final String ELEMENT_SHELFVISIBLE = "shelf-visible";
-   public static final String ELEMENT_AJAX_ENABLED = "ajax-enabled";
+   public static final String ELEMENT_NODESUMMARY_ENABLED = "node-summary-enabled";
    public static final String ELEMENT_INITIALLOCATION = "initial-location";
    public static final String ELEMENT_DEFAULTHOMESPACEPATH = "default-home-space-path";
    public static final String ELEMENT_CLIPBOARDSTATUS = "clipboard-status-visible";
@@ -161,10 +161,10 @@ public class ClientElementReader implements ConfigElementReader
          }
          
          // get the ajax enabled flag
-         Element ajaxEnabled = element.element(ELEMENT_AJAX_ENABLED);
+         Element ajaxEnabled = element.element(ELEMENT_NODESUMMARY_ENABLED);
          if (ajaxEnabled != null)
          {
-            configElement.setAjaxEnabled(Boolean.parseBoolean(ajaxEnabled.getTextTrim()));
+            configElement.setNodeSummaryEnabled(Boolean.parseBoolean(ajaxEnabled.getTextTrim()));
          }
          
          // get the initial location

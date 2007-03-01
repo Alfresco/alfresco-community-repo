@@ -37,8 +37,6 @@ import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 
 /**
  * JSF component that displays information about a node.
- * <p>
- * The node to show information on 
  * 
  * @author gavinc
  */
@@ -47,6 +45,7 @@ public class UINodeInfo extends SelfRenderingComponent
    protected final static String NODE_INFO_SCRIPTS_WRITTEN = "_alfNodeInfoScripts";
    
    protected Object value = null;
+   
    
    // ------------------------------------------------------------------------------
    // Component Impl 
@@ -82,7 +81,7 @@ public class UINodeInfo extends SelfRenderingComponent
       if (!isRendered()) return;
       
       // if AJAX is disabled don't render anything
-      if (Application.getClientConfig(context).isAjaxEnabled())
+      if (Application.getClientConfig(context).isNodeSummaryEnabled())
       {
          ResponseWriter out = context.getResponseWriter();
          
@@ -116,11 +115,12 @@ public class UINodeInfo extends SelfRenderingComponent
       if (!isRendered()) return;
       
       // if AJAX is disabled don't render anything
-      if (Application.getClientConfig(context).isAjaxEnabled())
+      if (Application.getClientConfig(context).isNodeSummaryEnabled())
       {
          context.getResponseWriter().write("</span>");
       }
    }
+   
    
    // ------------------------------------------------------------------------------
    // Strongly typed component property accessors

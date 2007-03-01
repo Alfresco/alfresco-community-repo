@@ -62,7 +62,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String helpUrl = null;
    private String editLinkType = "http";
    private String homeSpacePermission = null;
-   private boolean ajaxEnabled = false;
+   private boolean nodeSummaryEnabled = true;
    private String initialLocation = "myalfresco";
    private ExpiringValueCache<String> wcmDomain = new ExpiringValueCache<String>(1000*10L);
    private ExpiringValueCache<String> wcmPort = new ExpiringValueCache<String>(1000*10L);
@@ -190,9 +190,9 @@ public class ClientConfigElement extends ConfigElementAdapter
          combinedElement.setFromEmailAddress(newElement.getFromEmailAddress());
       }
       
-      if (newElement.isAjaxEnabled() != combinedElement.isAjaxEnabled())
+      if (newElement.isNodeSummaryEnabled() != combinedElement.isNodeSummaryEnabled())
       {
-         combinedElement.setAjaxEnabled(newElement.isAjaxEnabled());
+         combinedElement.setNodeSummaryEnabled(newElement.isNodeSummaryEnabled());
       }
       
       if (newElement.getInitialLocation() != null &&
@@ -466,19 +466,19 @@ public class ClientConfigElement extends ConfigElementAdapter
    /**
     * @return Returns whether AJAX support is enabled in the client
     */
-   public boolean isAjaxEnabled()
+   public boolean isNodeSummaryEnabled()
    {
-      return this.ajaxEnabled;
+      return this.nodeSummaryEnabled;
    }
    
    /**
     * Sets whether AJAX support is enabled in the client
     * 
-    * @param ajaxEnabled
+    * @param nodeSummaryEnabled
     */
-   /*package*/ void setAjaxEnabled(boolean ajaxEnabled)
+   /*package*/ void setNodeSummaryEnabled(boolean ajaxEnabled)
    {
-      this.ajaxEnabled = ajaxEnabled;
+      this.nodeSummaryEnabled = ajaxEnabled;
    }
    
    /**

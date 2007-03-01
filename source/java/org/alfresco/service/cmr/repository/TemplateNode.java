@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.TransformActionExecuter;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.template.LuceneSearchResultsMap;
 import org.alfresco.repo.template.NamePathResultsMap;
@@ -791,6 +793,64 @@ public class TemplateNode implements Serializable
             ContentReader reader = contentService.getReader(nodeRef, property);
             
             return (reader != null && reader.exists()) ? reader.getContentString() : "";
+        }
+        
+        /**
+         * @return the content stream to the specified maximum length in characters
+         */
+        public String getContent(int length)
+        {
+            ContentService contentService = services.getContentService();
+            ContentReader reader = contentService.getReader(nodeRef, property);
+            
+            return (reader != null && reader.exists()) ? reader.getContentString(length) : "";
+        }
+        
+        /**
+         * @param length      Length of the character stream to return, or -1 for all
+         * 
+         * @return the binary content stream converted to text using any available transformer
+         *         if fails to convert then null will be returned
+         */
+        public String getContentAsText(int length)
+        {
+            String result = null;
+            
+            if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype))
+            {
+                result = getContent(length);
+            }
+            else
+            {
+                // get the content reader
+                ContentService contentService = services.getContentService();
+                ContentReader reader = contentService.getReader(nodeRef, property);
+                
+                // get the writer and set it up for text convert
+                ContentWriter writer = contentService.getWriter(null, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype("text/plain"); 
+                writer.setEncoding(reader.getEncoding());
+                
+                // try and transform the content
+                if (contentService.isTransformable(reader, writer))
+                {
+                    contentService.transform(reader, writer);
+                    
+                    ContentReader resultReader = writer.getReader();
+                    if (resultReader != null && reader.exists())
+                    {
+                       if (length != -1)
+                       {
+                           result = resultReader.getContentString(length);
+                       }
+                       else
+                       {
+                           result = resultReader.getContentString();
+                       }
+                    }
+                }
+            }
+            return result;
         }
         
         /**

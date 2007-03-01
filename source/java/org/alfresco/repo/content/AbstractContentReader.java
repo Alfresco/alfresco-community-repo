@@ -400,10 +400,9 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
             }
             // read it all, if possible
             int count = reader.read(buffer, 0, length);
-            // there may have been fewer characters - create a new string
-            String result = new String(buffer, 0, count);
-            // done
-            return result;
+            
+            // there may have been fewer characters - create a new string as the result
+            return (count != -1 ? new String(buffer, 0, count) : "");
         }
         catch (IOException e)
         {

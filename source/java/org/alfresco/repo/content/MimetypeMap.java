@@ -65,6 +65,7 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_IMAGE_JPEG = "image/jpeg";
     public static final String MIMETYPE_IMAGE_RGB = "image/x-rgb";
     public static final String MIMETYPE_IMAGE_SVG = "image/svg";
+    public static final String MIMETYPE_IMAGE_PNG = "image/png";
     public static final String MIMETYPE_JAVASCRIPT = "application/x-javascript";
     public static final String MIMETYPE_ZIP = "application/zip";
     public static final String MIMETYPE_OPENSEARCH_DESCRIPTION = "application/opensearchdescription+xml";

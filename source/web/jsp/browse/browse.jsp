@@ -280,6 +280,9 @@
                            <a:actionLink id="col1-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
+                           <r:nodeInfo id="col1-info" value="#{r.id}">
+                              <h:graphicImage id="col1-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="15" />
+                           </r:nodeInfo>
                         </a:column>
                         
                         <%-- Primary column for icons view mode --%>
@@ -292,6 +295,9 @@
                            <a:actionLink id="col2-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="header">
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
+                           <r:nodeInfo id="col2-info" value="#{r.id}">
+                              <h:graphicImage id="col2-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="15" />
+                           </r:nodeInfo>
                         </a:column>
                         
                         <%-- Primary column for list view mode --%>
@@ -301,10 +307,11 @@
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
                            </f:facet>
-                           <r:nodeInfo id="col3-act2-nodeinfo" value="#{r.id}">
-                              <a:actionLink id="col3-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
-                                 <f:param name="id" value="#{r.id}" />
-                              </a:actionLink>
+                           <a:actionLink id="col3-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
+                              <f:param name="id" value="#{r.id}" />
+                           </a:actionLink>
+                           <r:nodeInfo id="col3-info" value="#{r.id}">
+                              <h:graphicImage id="col3-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="15" />
                            </r:nodeInfo>
                         </a:column>
                         
@@ -415,6 +422,9 @@
                            </f:facet>
                            <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
                            <r:lockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
+                           <r:nodeInfo id="col10-info" value="#{r.id}">
+                              <h:graphicImage id="col10-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="15" />
+                           </r:nodeInfo>
                         </a:column>
                         
                         <%-- Primary column for icons view mode --%>
@@ -424,6 +434,9 @@
                            </f:facet>
                            <a:actionLink id="col11-act2" value="#{r.name}" href="#{r.url}" target="new" styleClass="header" />
                            <r:lockIcon id="col11-lock" value="#{r.nodeRef}" align="absmiddle" />
+                           <r:nodeInfo id="col11-info" value="#{r.id}">
+                              <h:graphicImage id="col11-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="15" />
+                           </r:nodeInfo>
                         </a:column>
                         
                         <%-- Primary column for list view mode --%>
@@ -433,6 +446,9 @@
                            </f:facet>
                            <a:actionLink id="col12-act2" value="#{r.name}" href="#{r.url}" target="new" styleClass="title" />
                            <r:lockIcon id="col12-lock" value="#{r.nodeRef}" align="absmiddle" />
+                           <r:nodeInfo id="col12-info" value="#{r.id}">
+                              <h:graphicImage id="col12-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="15" />
+                           </r:nodeInfo>
                         </a:column>
                         
                         <%-- Description column for all view modes --%>

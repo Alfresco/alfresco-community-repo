@@ -81,21 +81,17 @@ public class UIOpenSearch extends SelfRenderingComponent
       
       String clientId = this.getId();
       
-      // output the scripts required by the component (checks are 
-      // made to make sure the scripts are only written once)
-      Utils.writeYahooScripts(context, out, null);
-      
       // write out the JavaScript specific to the OpenSearch component,
-      // again, make sure it's only done once
+      // make sure it's only done once
       Object present = context.getExternalContext().getRequestMap().get(SCRIPTS_WRITTEN);
       if (present == null)
       {
          out.write("<link rel=\"stylesheet\" href=\"");
          out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/css/opensearch.css\" type=\"text/css\">\n");         
+         out.write("/css/opensearch.css\" type=\"text/css\">");         
          out.write("<script type=\"text/javascript\" src=\"");
          out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/opensearch.js\"> </script>\n");
+         out.write("/scripts/ajax/opensearch.js\"></script>");
          
          context.getExternalContext().getRequestMap().put(SCRIPTS_WRITTEN, Boolean.TRUE);
       }

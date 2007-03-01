@@ -3120,10 +3120,6 @@
          <property-name>nodeService</property-name>
          <value>#{NodeService}</value>
       </managed-property>
-      <managed-property>
-         <property-name>contentService</property-name>
-         <value>#{ContentService}</value>
-      </managed-property>
    </managed-bean>
    
    <managed-bean>

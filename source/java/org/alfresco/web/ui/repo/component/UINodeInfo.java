@@ -69,10 +69,9 @@ public class UINodeInfo extends SelfRenderingComponent
    @Override
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[8];
-      // standard component attributes are saved by the super class
-      values[0] = super.saveState(context);
-      values[1] = this.value;
+      Object values[] = new Object[] {
+         super.saveState(context),
+         this.value};
       return values;
    }
    
@@ -87,19 +86,15 @@ public class UINodeInfo extends SelfRenderingComponent
       {
          ResponseWriter out = context.getResponseWriter();
          
-         // output the scripts required by the component (checks are 
-         // made to make sure the scripts are only written once)
-         Utils.writeDojoScripts(context, out);
-         
          // write out the JavaScript specific to the NodeInfo component,
-         // again, make sure it's only done once
+         // make sure it's only done once
          Object present = context.getExternalContext().getRequestMap().
             get(NODE_INFO_SCRIPTS_WRITTEN);
          if (present == null)
          {
             out.write("<script type=\"text/javascript\" src=\"");
             out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/scripts/ajax/node-info.js\"> </script>\n");
+            out.write("/scripts/ajax/node-info.js\"></script>");
             
             context.getExternalContext().getRequestMap().put(
                   NODE_INFO_SCRIPTS_WRITTEN, Boolean.TRUE);
@@ -107,12 +102,11 @@ public class UINodeInfo extends SelfRenderingComponent
          
          // wrap the child components in a <span> that has the onmouseover
          // event which kicks off the request for node information
-         String id = (String)this.getValue();
-         out.write("<span onmouseover=\"showNodeInfo('");
-         out.write(Repository.getStoreRef().toString());
-         out.write("/");
-         out.write(id);
-         out.write("', this)\" onmouseout=\"hideNodeInfo()\">");
+         // we key the node info panel by the noderef string of the current node
+         String noderef = Repository.getStoreRef().toString() + '/' + (String)this.getValue();
+         out.write("<span onclick=\"AlfNodeInfoMgr.toggle('");
+         out.write(noderef);
+         out.write("',this);\">");
       }
    }
 

@@ -25,16 +25,22 @@
 package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.repo.template.AbsoluteUrlMethod;
+import org.alfresco.repo.template.CropContentMethod;
+import org.alfresco.repo.template.UrlEncodeMethod;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.web.bean.repository.Node;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TemplateNode;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,7 +53,6 @@ import org.apache.commons.logging.LogFactory;
 public class NodeInfoBean
 {
    private NodeService nodeService;
-   private ContentService contentService;
    
    private static final Log logger = LogFactory.getLog(NodeInfoBean.class);
    
@@ -62,44 +67,17 @@ public class NodeInfoBean
       FacesContext context = FacesContext.getCurrentInstance();
       ResponseWriter out = context.getResponseWriter();
       
-      String nodeRef = (String)context.getExternalContext().getRequestParameterMap().get("noderef");
-      
-      if (nodeRef == null || nodeRef.length() == 0)
+      String strNodeRef = (String)context.getExternalContext().getRequestParameterMap().get("noderef");
+      if (strNodeRef == null || strNodeRef.length() == 0)
       {
          throw new IllegalArgumentException("'noderef' parameter is missing");
       }
       
-      NodeRef repoNode = new NodeRef(nodeRef);
-      
-      if (this.nodeService.exists(repoNode))
+      NodeRef nodeRef = new NodeRef(strNodeRef);
+      if (this.nodeService.exists(nodeRef))
       {
-         // get the client side node representation and its properties
-         Node clientNode = new Node(repoNode);
-         Map props = clientNode.getProperties();
-         
-         // get the content size
-         Object content = props.get(ContentModel.PROP_CONTENT);
-         
-         // start the containing table
-         out.write("<table cellpadding='3' cellspacing='0'>");
-         
-         // write out information about the node as table rows
-         out.write("<tr><td colspan='2' class='mainSubTitle'>Summary</td></tr>");
-         
-         // add debug information to the summary if debug is enabled
-         if (logger.isDebugEnabled())
-         {
-            writeRow(out, "Id:", clientNode.getId());
-            writeRow(out, "Type:", clientNode.getType().toPrefixString());
-         }
-         
-         writeRow(out, "Description:", (String)props.get(ContentModel.PROP_DESCRIPTION));
-         writeRow(out, "Title:", (String)props.get(ContentModel.PROP_TITLE));
-         writeRow(out, "Created:", props.get("created").toString());
-         writeRow(out, "Modified:", props.get("modified").toString());
-         
-         // close the <table> and <div> tags
-         out.write("<table>");
+         Repository.getServiceRegistry(context).getTemplateService().processTemplate(
+               null, "/alfresco/templates/client/summary_panel.ftl", getModel(nodeRef), out);
       }
       else
       {
@@ -107,45 +85,45 @@ public class NodeInfoBean
       }
    }
 
+   
    // ------------------------------------------------------------------------------
    // Bean getters and setters
    
    /**
-    * @param nodeService The NodeService to set.
+    * @param nodeService      The NodeService to set.
     */
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
    }
    
-   public void setContentService(ContentService contentService)
-   {
-      this.contentService = contentService;
-   }
    
    // ------------------------------------------------------------------------------
    // Helper methods
    
-   /**
-    * Writes a table row with the given data
-    * 
-    * @param nameColumn The name of the data item
-    * @param dataColumn The data
-    */
-   protected void writeRow(ResponseWriter out, String nameColumn, String dataColumn)
-      throws IOException
+   private Map<String, Object> getModel(NodeRef nodeRef)
    {
-      out.write("<tr><td>");
-      out.write(nameColumn);
-      out.write("</td><td>");
-      if (dataColumn != null)
-      {
-         out.write(dataColumn);
-      }
-      else
-      {
-         out.write("&nbsp;");
-      }
-      out.write("</td></tr>");
+      FacesContext context = FacesContext.getCurrentInstance();
+      Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+      
+      // create api methods
+      model.put("date", new Date());
+      model.put("cropContent", new CropContentMethod());
+      model.put("absurl", new AbsoluteUrlMethod(context.getExternalContext().getRequestContextPath()));
+      model.put("node", new TemplateNode(
+            nodeRef,
+            Repository.getServiceRegistry(context),
+            this.imageResolver));
+      
+      return model;
    }
+   
+   /** Template Image resolver helper */
+   private TemplateImageResolver imageResolver = new TemplateImageResolver()
+   {
+      public String resolveImagePathForName(String filename, boolean small)
+      {
+         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, small);
+      }
+   };
 }

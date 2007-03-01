@@ -169,8 +169,8 @@ Alfresco.OpenSearchClient.prototype =
       {
          YAHOO.util.Connect.asyncRequest("GET", searchUrl, 
             { 
-               success: Alfresco.processSearchResults,
-               failure: Alfresco.handleSearchError,
+               success: Alfresco.OpenSearchEngine.processSearchResults,
+               failure: Alfresco.OpenSearchEngine.handleSearchError,
                argument: [ose.id, this]
             }, 
             null);
@@ -191,8 +191,8 @@ Alfresco.OpenSearchClient.prototype =
       // execute the query and process the results
       YAHOO.util.Connect.asyncRequest("GET", url, 
          { 
-            success: Alfresco.processShowPageResults,
-            failure: Alfresco.handleSearchError,
+            success: Alfresco.OpenSearchEngine.processShowPageResults,
+            failure: Alfresco.OpenSearchEngine.handleSearchError,
             argument: [engineId, this]
          }, 
          null);
@@ -340,21 +340,21 @@ Alfresco.OpenSearchClient.prototype =
             var elResult = results[x];
             
             // get the title, icon and summary
-            var title = getElementTextByTagName(elResult, "title");
-            var icon = getElementTextByTagName(elResult, "icon");
+            var title = Alfresco.Dom.getElementTextByTagName(elResult, "title");
+            var icon = Alfresco.Dom.getElementTextByTagName(elResult, "icon");
             var summary = null;
             if (isAtom)
             {
-               summary = getElementTextByTagName(elResult, "summary");
+               summary = Alfresco.Dom.getElementTextByTagName(elResult, "summary");
             }
             else
             {
-               summary = getElementTextByTagName(elResult, "description");
+               summary = Alfresco.Dom.getElementTextByTagName(elResult, "description");
             }
             
             // get the link href
             var link = null;
-            var elLink = getElementByTagName(elResult, "link");
+            var elLink = Alfresco.Dom.getElementByTagName(elResult, "link");
             if (elLink != null)
             {
                if (isAtom)
@@ -363,7 +363,7 @@ Alfresco.OpenSearchClient.prototype =
                }
                else
                {
-                  link = getElementText(elLink);
+                  link = Alfresco.Dom.getElementText(elLink);
                }
             }
             
@@ -416,10 +416,10 @@ Alfresco.OpenSearchClient.prototype =
       var startIndex = 0;
       
       // check there are results
-      var elTotalResults = getElementByTagNameNS(feed, _OS_NS_URI, _OS_NS_PREFIX, "totalResults");
+      var elTotalResults = Alfresco.Dom.getElementByTagNameNS(feed, _OS_NS_URI, _OS_NS_PREFIX, "totalResults");
       if (elTotalResults != null)
       {
-         totalResults = getElementText(elTotalResults);
+         totalResults = Alfresco.Dom.getElementText(elTotalResults);
       }
       
       // if there are no results return an empty string
@@ -428,16 +428,16 @@ Alfresco.OpenSearchClient.prototype =
          return "";
       }
       
-      var elStartIndex = getElementByTagNameNS(feed, _OS_NS_URI, _OS_NS_PREFIX, "startIndex");
+      var elStartIndex = Alfresco.Dom.getElementByTagNameNS(feed, _OS_NS_URI, _OS_NS_PREFIX, "startIndex");
       if (elStartIndex != null)
       {
-         startIndex = getElementText(elStartIndex);
+         startIndex = Alfresco.Dom.getElementText(elStartIndex);
       }
       
-      var elItemsPerPage = getElementByTagNameNS(feed, _OS_NS_URI, _OS_NS_PREFIX, "itemsPerPage");
+      var elItemsPerPage = Alfresco.Dom.getElementByTagNameNS(feed, _OS_NS_URI, _OS_NS_PREFIX, "itemsPerPage");
       if (elItemsPerPage != null)
       {
-         pageSize = getElementText(elItemsPerPage);
+         pageSize = Alfresco.Dom.getElementText(elItemsPerPage);
       }
       
       // calculate the number of pages the results span
@@ -587,7 +587,7 @@ Alfresco.OpenSearchClient.prototype =
 /**
  * Processes the XML search results
  */
-Alfresco.processSearchResults = function(ajaxResponse)
+Alfresco.OpenSearchEngine.processSearchResults = function(ajaxResponse)
 {
    try
    {
@@ -599,7 +599,7 @@ Alfresco.processSearchResults = function(ajaxResponse)
       // if the name of the feed element is "rss", get the channel child element
       if (feed.tagName == "rss")
       {
-         feed = getElementByTagName(feed, "channel");
+         feed = Alfresco.Dom.getElementByTagName(feed, "channel");
       }
       
       var resultsDiv = clientInstance.renderSearchResults(engineId, feed);
@@ -628,7 +628,7 @@ Alfresco.processSearchResults = function(ajaxResponse)
  * Processes the search results and updates the postion, result list
  * and paging controls.
  */
-Alfresco.processShowPageResults = function(ajaxResponse)
+Alfresco.OpenSearchEngine.processShowPageResults = function(ajaxResponse)
 {
    try
    {
@@ -640,7 +640,7 @@ Alfresco.processShowPageResults = function(ajaxResponse)
       // if the name of the feed element is "rss", get the channel child element
       if (feed.tagName == "rss")
       {
-         feed = getElementByTagName(feed, "channel");
+         feed = Alfresco.Dom.getElementByTagName(feed, "channel");
       }
    
       // append the results list to the results list div
@@ -668,7 +668,7 @@ Alfresco.processShowPageResults = function(ajaxResponse)
 /**
  * Error handler for Ajax call to search engine
  */
-Alfresco.handleSearchError = function(ajaxResponse)
+Alfresco.OpenSearchEngine.handleSearchError = function(ajaxResponse)
 {
    var engineId = ajaxResponse.argument[0];
    var clientInstance = ajaxResponse.argument[1];

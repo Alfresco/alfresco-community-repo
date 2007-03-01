@@ -96,9 +96,6 @@ public final class Utils
    private static final String DEFAULT_FILE_IMAGE16 = IMAGE_PREFIX16 + "_default" + IMAGE_POSTFIX;
    private static final String DEFAULT_FILE_IMAGE32 = IMAGE_PREFIX32 + "_default" + IMAGE_POSTFIX;
    
-   private static final String DOJO_SCRIPTS_WRITTEN = "_alfDojoScriptsWritten";
-   private static final String YAHOO_SCRIPTS_WRITTEN = "_alfYahooScriptsWritten";
-   
    private static final Map<String, String> s_fileExtensionMap = new HashMap<String, String>(89, 1.0f);
    
    private static Log logger = LogFactory.getLog(Utils.class);
@@ -1290,97 +1287,5 @@ public final class Utils
       }
       
       return description;
-   }
-   
-   /**
-    * Writes the script tags for including dojo support, ensuring they
-    * only get written once per page render.
-    *
-    * @param context Faces context
-    * @param out The response writer
-    */
-   @SuppressWarnings("unchecked")
-   public static void writeDojoScripts(FacesContext context, ResponseWriter out)
-      throws IOException
-   {
-      Object present = context.getExternalContext().getRequestMap().get(DOJO_SCRIPTS_WRITTEN);
-      
-      if (present == null)
-      {
-         // write out the scripts
-//         out.write("<script type=\"text/javascript\">");
-//         out.write("var djConfig = {isDebug: true, debugAtAllCosts: true };");
-//         out.write("</script>\n");
-         
-         out.write("\n<script type=\"text/javascript\" src=\"");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/dojo/dojo.js\"> </script>\n");
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/common.js\"> </script>\n");
-         
-         // set the context path
-         out.write("<script type=\"text/javascript\">\n");
-         out.write("setContextPath('");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("');\n</script>\n");
-         
-         // add marker to request
-         context.getExternalContext().getRequestMap().put(DOJO_SCRIPTS_WRITTEN, Boolean.TRUE);
-      }
-   }
-   
-   /**
-    * Writes the scripts tags for using the Yahoo UI toolkit, ensuring they
-    * only get written once per page render.
-    * <p>
-    * A comma separated list of scripts can also be passed to determine
-    * which components are to be used, again these are only written once per page.
-    * 
-    * @param context Faces context
-    * @param out The response writer
-    * @param scripts Comma separated list of scripts to include, if null the
-    *                base yahoo.js script only is included.
-    */
-   @SuppressWarnings("unchecked")
-   public static void writeYahooScripts(FacesContext context, ResponseWriter out, 
-         String scripts) throws IOException
-   {
-      Object present = context.getExternalContext().getRequestMap().get(YAHOO_SCRIPTS_WRITTEN);
-      
-      if (present == null)
-      {
-         // TODO: use the scripts parameter to determine which scripts to output
-         //       also add an ajax debug flag to the config and output relevant file
-         
-         // base yahoo file
-         out.write("\n<script type=\"text/javascript\" src=\"");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/yahoo/yahoo/yahoo-min.js\"> </script>\n");
-         
-         // io handling (AJAX)
-         out.write("\n<script type=\"text/javascript\" src=\"");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/yahoo/connection/connection-min.js\"> </script>\n");
-         
-         // event handling
-         out.write("\n<script type=\"text/javascript\" src=\"");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/yahoo/event/event-min.js\"> </script>\n");
-         
-         // common alfresco util methods
-         out.write("<script type=\"text/javascript\" src=\"");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/scripts/ajax/common.js\"> </script>\n");
-         
-         // set the context path
-         out.write("<script type=\"text/javascript\">\n");
-         out.write("setContextPath('");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("');\n</script>\n");
-         
-         // add marker to request
-         context.getExternalContext().getRequestMap().put(YAHOO_SCRIPTS_WRITTEN, Boolean.TRUE);
-      }
    }
 }

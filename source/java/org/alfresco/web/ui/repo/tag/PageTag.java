@@ -44,9 +44,9 @@ public class PageTag extends TagSupport
 {
    private static final long serialVersionUID = 8142765393181557228L;
    
-   private final static String SCRIPTS_START = "<script language=\"JavaScript1.2\" src=\"";
-   private final static String SCRIPTS_MENU = "/scripts/menu.js\"></script>\n";
-   private final static String SCRIPTS_WEBDAV = "/scripts/webdav.js\"></script>\n";
+   private final static String SCRIPTS_START = "<script type=\"text/javascript\" src=\"";
+   private final static String SCRIPTS_MENU = "/scripts/menu.js\"></script>";
+   private final static String SCRIPTS_WEBDAV = "/scripts/webdav.js\"></script>";
    private final static String STYLES_START  = "<link rel=\"stylesheet\" href=\"";
    private final static String STYLES_MAIN  = "/css/main.css\" TYPE=\"text/css\">\n";
 
@@ -148,15 +148,62 @@ public class PageTag extends TagSupport
          }
          
          String reqPath = ((HttpServletRequest)pageContext.getRequest()).getContextPath();
-         out.write(SCRIPTS_START);
-         out.write(reqPath);
-         out.write(SCRIPTS_MENU);
-         out.write(SCRIPTS_START);
-         out.write(reqPath);
-         out.write(SCRIPTS_WEBDAV);
+         
+         // CSS style includes
          out.write(STYLES_START);
          out.write(reqPath);
          out.write(STYLES_MAIN);
+         
+         // menu javascript
+         out.write(SCRIPTS_START);
+         out.write(reqPath);
+         out.write(SCRIPTS_MENU);
+         
+         // webdav javascript
+         out.write(SCRIPTS_START);
+         out.write(reqPath);
+         out.write(SCRIPTS_WEBDAV);
+         
+         // base yahoo file
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(reqPath);
+         out.write("/scripts/ajax/yahoo/yahoo/yahoo-min.js\"></script>");
+         
+         // io handling (AJAX)
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(reqPath);
+         out.write("/scripts/ajax/yahoo/connection/connection-min.js\"></script>");
+         
+         // DOM handling
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(reqPath);
+         out.write("/scripts/ajax/yahoo/dom/dom-min.js\"></script>");
+         
+         // event handling
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(reqPath);
+         out.write("/scripts/ajax/yahoo/event/event-min.js\"></script>");
+         
+         // animation
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(reqPath);
+         out.write("/scripts/ajax/yahoo/animation/animation-min.js\"></script>");
+         
+         // drag-drop
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(reqPath);
+         out.write("/scripts/ajax/yahoo/dragdrop/dragdrop-min.js\"></script>");
+         
+         // common Alfresco util methods
+         out.write("<script type=\"text/javascript\" src=\"");
+         out.write(reqPath);
+         out.write("/scripts/ajax/common.js\"></script>");
+         
+         // set the context path used by some Alfresco script objects
+         out.write("<script type=\"text/javascript\">");
+         out.write("setContextPath('");
+         out.write(reqPath);
+         out.write("');</script>\n");
       }
       catch (IOException ioe)
       {

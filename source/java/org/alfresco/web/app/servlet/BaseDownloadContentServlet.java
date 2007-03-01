@@ -41,6 +41,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -260,17 +261,16 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          {
             reader.getContent( res.getOutputStream() );
          }
-         catch (SocketException e)
+         catch (SocketException e1)
          {
-            if (e.getMessage().contains("ClientAbortException"))
-            {
-               // the client cut the connection - our mission was accomplished apart from a little error message
-               logger.error("Client aborted stream read:\n   node: " + nodeRef + "\n   content: " + reader);
-            }
-            else
-            {
-               throw e;
-            }
+            // the client cut the connection - our mission was accomplished apart from a little error message
+            if (logger.isInfoEnabled())
+               logger.info("Client aborted stream read:\n\tnode: " + nodeRef + "\n\tcontent: " + reader);
+         }
+         catch (ContentIOException e2)
+         {
+            if (logger.isInfoEnabled())
+               logger.info("Client aborted stream read:\n\tnode: " + nodeRef + "\n\tcontent: " + reader);
          }
       }
       catch (Throwable err)

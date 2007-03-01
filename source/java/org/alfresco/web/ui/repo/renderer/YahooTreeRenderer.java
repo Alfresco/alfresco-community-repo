@@ -67,27 +67,24 @@ public class YahooTreeRenderer extends BaseRenderer
          ResponseWriter out = context.getResponseWriter();
          String treeContainerId = component.getClientId(context) + "Container";
          
-         // output the scripts required by the component (checks are 
-         // made to make sure the scripts are only written once)
-         Utils.writeYahooScripts(context, out, null);
-         
          // write out the JavaScript specific to the Tree component,
-         // again, make sure it's only done once
+         // make sure it's only done once
          Object present = context.getExternalContext().getRequestMap().
             get(TREE_SCRIPTS_WRITTEN);
          if (present == null)
          {
+            String reqPath = context.getExternalContext().getRequestContextPath();
             out.write("<link rel=\"stylesheet\" href=\"");
-            out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/css/yahoo-tree.css\" type=\"text/css\" />");
+            out.write(reqPath);
+            out.write("/css/yahoo-tree.css\" type=\"text/css\">");
             
             out.write("<script type=\"text/javascript\" src=\"");
-            out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/scripts/ajax/yahoo/treeview/treeview-min.js\"> </script>\n");
+            out.write(reqPath);
+            out.write("/scripts/ajax/yahoo/treeview/treeview-min.js\"></script>");
             
             out.write("<script type=\"text/javascript\" src=\"");
-            out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/scripts/ajax/yahoo-tree.js\"> </script>\n");
+            out.write(reqPath);
+            out.write("/scripts/ajax/yahoo-tree.js\"></script>");
             
             context.getExternalContext().getRequestMap().put(
                   TREE_SCRIPTS_WRITTEN, Boolean.TRUE);

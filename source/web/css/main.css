@@ -475,10 +475,12 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .summaryPopupPanel
 {
-   background-color: #e9f0f4;
-   border: 1px solid #999999;
+   background-image: url(../images/parts/popup_bg.gif);
+   background-repeat: repeat-x;
+   background-color: #ffffff;
+   border: 1px solid #cacfd3;
    padding: 4px;
-   -moz-border-radius: 4px;
+   max-width: 700px;
 }
 
 .userGroupPickerList

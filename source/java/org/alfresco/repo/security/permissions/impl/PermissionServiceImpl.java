@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.security.permissions.impl;
 
@@ -61,23 +61,21 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * The Alfresco implementation of a permissions service against our APIs for the
- * permissions model and permissions persistence.
+ * The Alfresco implementation of a permissions service against our APIs for the permissions model and permissions persistence.
  * 
  * @author andyh
  */
 public class PermissionServiceImpl implements PermissionServiceSPI, InitializingBean
 {
-    
-    static SimplePermissionReference OLD_ALL_PERMISSIONS_REFERENCE = new SimplePermissionReference(
-            QName.createQName("", PermissionService.ALL_PERMISSIONS),
-            PermissionService.ALL_PERMISSIONS);
-    
+
+    static SimplePermissionReference OLD_ALL_PERMISSIONS_REFERENCE = new SimplePermissionReference(QName.createQName(
+            "", PermissionService.ALL_PERMISSIONS), PermissionService.ALL_PERMISSIONS);
+
     private static Log log = LogFactory.getLog(PermissionServiceImpl.class);
-    
+
     /** a transactionally-safe cache to be injected */
     private SimpleCache<Serializable, AccessStatus> accessCache;
-    
+
     /*
      * Access to the model
      */
@@ -107,7 +105,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
      * Access to the authority component
      */
     private AuthorityService authorityService;
-    
+
     /*
      * Dynamic authorities providers
      */
@@ -151,7 +149,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     {
         this.authenticationComponent = authenticationComponent;
     }
-    
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
@@ -177,12 +175,12 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         accessCache.clear();
     }
-    
+
     public void afterPropertiesSet() throws Exception
     {
         if (dictionaryService == null)
@@ -205,9 +203,9 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             throw new IllegalArgumentException("Property 'authenticationComponent' has not been set");
         }
-        if(authorityService == null)
+        if (authorityService == null)
         {
-            throw new IllegalArgumentException("Property 'authorityService' has not been set"); 
+            throw new IllegalArgumentException("Property 'authorityService' has not been set");
         }
         if (accessCache == null)
         {
@@ -217,9 +215,10 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             throw new IllegalArgumentException("Property 'policyComponent' has not been set");
         }
-        
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.TYPE_BASE, new JavaBehaviour(this, "onMoveNode"));
-    
+
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
+                ContentModel.TYPE_BASE, new JavaBehaviour(this, "onMoveNode"));
+
     }
 
     //
@@ -316,12 +315,11 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             return authorityType;
         }
-        
+
         @Override
         public String toString()
         {
-            return accessStatus + " " + this.permission + " - " +
-                   this.authority + " (" + this.authorityType + ")";
+            return accessStatus + " " + this.permission + " - " + this.authority + " (" + this.authorityType + ")";
         }
 
         @Override
@@ -390,36 +388,31 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             return AccessStatus.DENIED;
         }
-        
+
         // Allow permissions for nodes that do not exist
         if (!nodeService.exists(nodeRef))
         {
             return AccessStatus.ALLOWED;
         }
-        
-        
-        
+
         // Get the current authentications
         // Use the smart authentication cache to improve permissions performance
         Authentication auth = authenticationComponent.getCurrentAuthentication();
         Set<String> authorisations = getAuthorisations(auth, nodeRef);
-      
-        Serializable key = generateKey(
-                authorisations,
-                nodeRef,
-                perm);
+
+        Serializable key = generateKey(authorisations, nodeRef, perm, CacheType.HAS_PERMISSION);
         AccessStatus status = accessCache.get(key);
         if (status != null)
         {
             return status;
         }
-        
+
         // If the node does not support the given permission there is no point
         // doing the test
         Set<PermissionReference> available = modelDAO.getAllPermissions(nodeRef);
         available.add(getAllPermissionReference());
         available.add(OLD_ALL_PERMISSIONS_REFERENCE);
-        
+
         if (!(available.contains(perm)))
         {
             accessCache.put(key, AccessStatus.DENIED);
@@ -428,16 +421,15 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         if (authenticationComponent.getCurrentUserName().equals(authenticationComponent.getSystemUserName()))
         {
-            return  AccessStatus.ALLOWED;
+            return AccessStatus.ALLOWED;
         }
-        
+
         //
         // TODO: Dynamic permissions via evaluators
         //
 
         /*
-         * Does the current authentication have the supplied permission on the
-         * given node.
+         * Does the current authentication have the supplied permission on the given node.
          */
 
         QName typeQname = nodeService.getType(nodeRef);
@@ -455,24 +447,28 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                     + perm + "> is " + (result ? "allowed" : "denied") + " for "
                     + authenticationComponent.getCurrentUserName() + " on node " + nodeService.getPath(nodeRef));
         }
-        
+
         status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
         accessCache.put(key, status);
         return status;
     }
-    
+
+    enum CacheType
+    {
+        HAS_PERMISSION, SINGLE_PERMISSION, SINGLE_PERMISSION_GLOBAL;
+    }
+
     /**
-     * Key for a cache object is built from all the known Authorities (which can
-     * change dynamically so they must all be used) the NodeRef ID and the
-     * permission reference itself. This gives a unique key for each permission
-     * test.
+     * Key for a cache object is built from all the known Authorities (which can change dynamically so they must all be used) the NodeRef ID and the permission reference itself.
+     * This gives a unique key for each permission test.
      */
-    static Serializable generateKey(Set<String> auths, NodeRef nodeRef, PermissionReference perm)
+    static Serializable generateKey(Set<String> auths, NodeRef nodeRef, PermissionReference perm, CacheType type)
     {
         LinkedHashSet<Serializable> key = new LinkedHashSet<Serializable>();
         key.add(perm.toString());
-        key.addAll(auths); 
+        key.addAll(auths);
         key.add(nodeRef);
+        key.add(type);
         return key;
     }
 
@@ -575,7 +571,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         permissionsDaoComponent.setInheritParentPermissions(nodeRef, inheritParentPermissions);
         accessCache.clear();
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.security.PermissionService#getInheritParentPermissions(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -584,7 +580,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return permissionsDaoComponent.getInheritParentPermissions(nodeRef);
     }
 
-    
     public PermissionReference getPermissionReference(QName qname, String permissionName)
     {
         return modelDAO.getPermissionReference(qname, permissionName);
@@ -594,7 +589,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     {
         return getPermissionReference(ALL_PERMISSIONS);
     }
-    
+
     public String getPermission(PermissionReference permissionReference)
     {
         if (modelDAO.isUnique(permissionReference))
@@ -642,7 +637,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         permissionsDaoComponent.deletePermissions(recipient);
         accessCache.clear();
     }
-    
+
     //
     // SUPPORT CLASSES
     //
@@ -866,64 +861,114 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         public boolean hasSinglePermission(Set<String> authorisations, NodeRef nodeRef)
         {
+            Serializable key = generateKey(
+                    authorisations,
+                    nodeRef,
+                    this.required, CacheType.SINGLE_PERMISSION_GLOBAL);
+            
+            AccessStatus status = accessCache.get(key);
+            if (status != null)
+            {
+                return status == AccessStatus.ALLOWED;
+            }
+            
             // Check global permission
 
             if (checkGlobalPermissions(authorisations))
             {
+                accessCache.put(key, AccessStatus.ALLOWED);
                 return true;
             }
 
             Set<Pair<String, PermissionReference>> denied = new HashSet<Pair<String, PermissionReference>>();
 
-            // Keep track of permission that are denied
+            return hasSinglePermission(authorisations, nodeRef, denied);
+                 
+        }
+
+        public boolean hasSinglePermission(Set<String> authorisations, NodeRef nodeRef,
+                Set<Pair<String, PermissionReference>> denied)
+        {
+            // Add any denied permission to the denied list - these can not
+            // then
+            // be used to given authentication.
+            // A -> B -> C
+            // If B denies all permissions to any - allowing all permissions
+            // to
+            // andy at node A has no effect
+
+            denied.addAll(getDenied(nodeRef));
+
+            // Cache non denied
+            Serializable key = null;
+            if (denied.size() == 0)
+            {
+                key = generateKey(authorisations, nodeRef, this.required, CacheType.SINGLE_PERMISSION);
+            }
+            if (key != null)
+            {
+                AccessStatus status = accessCache.get(key);
+                if (status != null)
+                {
+                    return status == AccessStatus.ALLOWED;
+                }
+            }
+
+            // If the current node allows the permission we are done
+            // The test includes any parent or ancestor requirements
+            if (checkRequired(authorisations, nodeRef, denied))
+            {
+                if (key != null)
+                {
+                    accessCache.put(key, AccessStatus.ALLOWED);
+                }
+                return true;
+            }
 
             // Permissions are only evaluated up the primary parent chain
             // TODO: Do not ignore non primary permissions
             ChildAssociationRef car = nodeService.getPrimaryParent(nodeRef);
-            // Work up the parent chain evaluating permissions.
-            while (car != null)
+
+            // Build the next element of the evaluation chain
+            if (car.getParentRef() != null)
             {
-                // Add any denied permission to the denied list - these can not
-                // then
-                // be used to given authentication.
-                // A -> B -> C
-                // If B denies all permissions to any - allowing all permissions
-                // to
-                // andy at node A has no effect
-
-                denied.addAll(getDenied(car.getChildRef()));
-
-                // If the current node allows the permission we are done
-                // The test includes any parent or ancestor requirements
-                if (checkRequired(authorisations, car.getChildRef(), denied))
+                NodePermissionEntry nodePermissions = permissionsDaoComponent.getPermissions(nodeRef);
+                if ((nodePermissions == null) || (nodePermissions.inheritPermissions()))
                 {
-                    return true;
-                }
-
-                // Build the next element of the evaluation chain
-                if (car.getParentRef() != null)
-                {
-                    NodePermissionEntry nodePermissions = permissionsDaoComponent.getPermissions(car.getChildRef());
-                    if ((nodePermissions == null) || (nodePermissions.inheritPermissions()))
+                    if(hasSinglePermission(authorisations, car.getParentRef(), denied))
                     {
-                        car = nodeService.getPrimaryParent(car.getParentRef());
+                        if (key != null)
+                        {
+                            accessCache.put(key, AccessStatus.ALLOWED);
+                        }
+                        return true;
                     }
                     else
                     {
-                        car = null;
+                        if (key != null)
+                        {
+                            accessCache.put(key, AccessStatus.DENIED);
+                        }
+                        return false;
                     }
                 }
                 else
                 {
-                    car = null;
+                    if (key != null)
+                    {
+                        accessCache.put(key, AccessStatus.DENIED);
+                    }
+                    return false;
                 }
-
             }
-
-            // TODO: Support meta data permissions on the root node?
-
-            return false;
-
+            else
+            {
+                if (key != null)
+                {
+                    accessCache.put(key, AccessStatus.DENIED);
+                }
+                return false;
+            }
         }
 
         /**
@@ -982,7 +1027,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
                         // All permission excludes all permissions available for
                         // the node.
-                        if (pe.getPermissionReference().equals(getAllPermissionReference()) || pe.getPermissionReference().equals(OLD_ALL_PERMISSIONS_REFERENCE))
+                        if (pe.getPermissionReference().equals(getAllPermissionReference())
+                                || pe.getPermissionReference().equals(OLD_ALL_PERMISSIONS_REFERENCE))
                         {
                             for (PermissionReference deny : modelDAO.getAllPermissions(nodeRef))
                             {
@@ -1072,7 +1118,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             // Default deny
             return false;
         }
-     
+
     }
 
     /**

@@ -20,12 +20,13 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.security.permissions.impl.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -727,19 +728,44 @@ public class PermissionModel implements ModelDAO, InitializingBean
         }
         return pg;
     }
+    
+    static Serializable generateKey(PermissionReference required, QName qName, Set<QName> aspectQNames,
+            RequiredPermission.On on)
+    {
+        LinkedHashSet<Serializable> key = new LinkedHashSet<Serializable>();
+        key.add(required.toString());
+        key.add(qName);
+        key.addAll(aspectQNames);
+        key.add(on.toString());
+        return key;
+    }
+
+
+    private HashMap<Serializable, Set<PermissionReference>> requiredPermissionsCache = new HashMap<Serializable, Set<PermissionReference>>(
+            1024);
 
     public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName,
             Set<QName> aspectQNames, RequiredPermission.On on)
     {
-        PermissionGroup pg = getBasePermissionGroupOrNull(getPermissionGroupOrNull(required));
-        if (pg == null)
+        // Cache lookup as this is static
+
+        Serializable key = generateKey(required, qName, aspectQNames, on);
+
+        Set<PermissionReference> answer = requiredPermissionsCache.get(key);
+        if (answer == null)
         {
-            return getRequirementsForPermission(required, on);
+            PermissionGroup pg = getBasePermissionGroupOrNull(getPermissionGroupOrNull(required));
+            if (pg == null)
+            {
+                answer = getRequirementsForPermission(required, on);
+            }
+            else
+            {
+                answer = getRequirementsForPermissionGroup(pg, on, qName, aspectQNames);
+            }
+            requiredPermissionsCache.put(key, answer);
         }
-        else
-        {
-            return getRequirementsForPermissionGroup(pg, on, qName, aspectQNames);
-        }
+        return answer;
     }
 
     /**

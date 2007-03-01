@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.audit;
 
@@ -36,6 +36,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -188,7 +189,15 @@ public class AuditComponentImpl implements AuditComponent
                     {
                         s_logger.debug("Unannotated service method " + serviceName + "." + methodName);
                     }
-                    throw new RuntimeException("Unannotated service method " + serviceName + "." + methodName);
+                    if (method.getDeclaringClass().isInterface()
+                            && method.getDeclaringClass().isAnnotationPresent(PublicService.class))
+                    {
+                        throw new RuntimeException("Unannotated service method " + serviceName + "." + methodName);
+                    }
+                    else
+                    {
+                        return mi.proceed();
+                    }
                 }
             }
             finally

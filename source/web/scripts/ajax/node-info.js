@@ -99,6 +99,12 @@ Alfresco.NodeInfoPanel.prototype =
    {
       if (this.popupElement == null)
       {
+         var elImg = Alfresco.Dom.getElementByTagName(this.launchElement, "img");
+         if (elImg != null)
+         {
+            elImg.src = getContextPath() + "/images/icons/ajax_anim.gif";
+         }
+         
          YAHOO.util.Connect.asyncRequest(
             "POST",
             getContextPath() + '/ajax/invoke/NodeInfoBean.sendNodeInfo',
@@ -151,6 +157,12 @@ Alfresco.NodeInfoPanel.prototype =
     */
    displayNodeInfo: function()
    {
+      var elImg = Alfresco.Dom.getElementByTagName(this.launchElement, "img");
+      if (elImg != null)
+      {
+         elImg.src = getContextPath() + "/images/icons/popup.gif";
+      }
+      
       if (AlfNodeInfoMgr.displayable(this.nodeRef) == true)
       {
          if (this.popupElement != null && this.visible == false)

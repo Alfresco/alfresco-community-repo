@@ -181,6 +181,10 @@ public class LuceneQueryParser extends QueryParser
                         {
                             query.add(part, Occur.SHOULD);
                         }
+                        else
+                        {
+                            query.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                        }
                     }
                     return query;
                 }
@@ -193,6 +197,10 @@ public class LuceneQueryParser extends QueryParser
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
+                        }
+                        else
+                        {
+                            query.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
                         }
                     }
                     return query;
@@ -418,6 +426,10 @@ public class LuceneQueryParser extends QueryParser
                         {
                             query.add(part, Occur.SHOULD);
                         }
+                        else
+                        {
+                            query.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                        }
                     }
                     return query;
                 }
@@ -430,6 +442,10 @@ public class LuceneQueryParser extends QueryParser
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
+                        }
+                        else
+                        {
+                            query.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
                         }
                     }
                     return query;
@@ -496,6 +512,10 @@ public class LuceneQueryParser extends QueryParser
                     if (part != null)
                     {
                         query.add(part, Occur.SHOULD);
+                    }
+                    else
+                    {
+                        query.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
                     }
                 }
                 return query;
@@ -630,6 +650,10 @@ public class LuceneQueryParser extends QueryParser
                 {
                     query.add(part, Occur.SHOULD);
                 }
+                else
+                {
+                    query.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                }
             }
             return query;
         }
@@ -659,6 +683,10 @@ public class LuceneQueryParser extends QueryParser
                 {
                     query.add(part, Occur.SHOULD);
                 }
+                else
+                {
+                    query.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                }
             }
             return query;
         }
@@ -687,6 +715,10 @@ public class LuceneQueryParser extends QueryParser
                 if (part != null)
                 {
                     query.add(part, Occur.SHOULD);
+                }
+                else
+                {
+                    query.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
                 }
             }
             return query;
@@ -826,6 +858,10 @@ public class LuceneQueryParser extends QueryParser
                 {
                     booleanQuery.add(subQuery, Occur.SHOULD);
                 }
+                else
+                {
+                    booleanQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                }
             }
             return booleanQuery;
         }
@@ -871,6 +907,10 @@ public class LuceneQueryParser extends QueryParser
                             {
                                 subQuery.add(localeQuery, Occur.SHOULD);
                             }
+                            else
+                            {
+                                subQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
+                            }
                         }
                         else
                         {
@@ -878,6 +918,10 @@ public class LuceneQueryParser extends QueryParser
                             if (localeQuery != null)
                             {
                                 subQuery.add(localeQuery, Occur.SHOULD);
+                            }
+                            else
+                            {
+                                subQuery.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.SHOULD);
                             }
                         }
                     }
@@ -887,13 +931,29 @@ public class LuceneQueryParser extends QueryParser
             }
             else
             {
-                return subQueryBuilder.getQuery(expandedFieldName, queryText);
+                Query query = subQueryBuilder.getQuery(expandedFieldName, queryText);
+                if(query != null)
+                {
+                    return query;
+                }
+                else
+                {
+                    return new TermQuery(new Term("NO_TOKENS", "__"));
+                }
             }
 
         }
         else
         {
-            return subQueryBuilder.getQuery(expandedFieldName, queryText);
+            Query query = subQueryBuilder.getQuery(expandedFieldName, queryText);
+            if(query != null)
+            {
+                return query;
+            }
+            else
+            {
+                return new TermQuery(new Term("NO_TOKENS", "__"));
+            }
         }
     }
 

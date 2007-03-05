@@ -6,6 +6,8 @@
 // NOTE: This script requires common.js - which needs to be loaded
 //       prior to this one on the containing HTML page.
 
+var zIndex = 99;
+
 /**
  * Node Info Manager constructor
  */
@@ -137,7 +139,6 @@ Alfresco.NodeInfoPanel.prototype =
       // NOTE: use className for IE
       div.setAttribute("className", "summaryPopupPanel");
       div.style.position = "absolute";
-      div.style.zIndex = 99;
       div.style.display = "none";
       div.style.left = 0;
       div.style.top = 0;
@@ -170,6 +171,7 @@ Alfresco.NodeInfoPanel.prototype =
             // set opacity in browser independant way
             YAHOO.util.Dom.setStyle(this.popupElement, "opacity", 0.0);
             this.popupElement.style.display = "block";
+            this.popupElement.style.zIndex = zIndex++;   // pop to front
             
             Alfresco.Dom.smartAlignElement(this.popupElement, this.launchElement, 700);
             

@@ -16,9 +16,9 @@
          </table>
       </td>
    </tr>
-   <tr>
    
-      <td valign='middle'>
+   <tr>
+      <td valign='middle' align='center'>
          <#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
          <#assign isVideo=node.isDocument && node.mimetype?starts_with("video/")>
          <#if isImage>
@@ -36,7 +36,7 @@
                <tr>
                   <td>
                      <div style="border: thin solid #cccccc; padding:4px">
-                        <a href="${absurl(node.url)}" target="new"><img src="${absurl(node.icon32)}" width=32 height=32 border=0></a>
+                        <a href="${absurl(node.url)}" <#if node.isDocument>target="new"</#if>><img src="${absurl(node.icon32)}" width=32 height=32 border=0></a>
                      </div>
                   </td>
                   <td><img src="${absurl('/images/parts/rightSideShadow42.gif')}" width=6 height=42></td>
@@ -68,19 +68,22 @@
             </#if>
             <#if node.isDocument>
                <tr><td>&nbsp;Size:</td><td>${(node.size / 1000)?string("0.##")} KB</td></tr>
-               <#if !isImage && !isVideo>
-                  <#assign c=cropContent(node.properties.content, 512)>
-                  <#if c?length != 0>
-                     <tr>
-                        <td valign='top'>&nbsp;Preview:</td>
-                        <td>
-                           ${c?html?replace('$', '<br>', 'rm')}<#if (c?length >= 512)>...</#if>
-                        </td>
-                     </tr>
-                  </#if>
-               </#if>
             </#if>
          </table>
       </td>
    </tr>
+   
+   <#if node.isDocument && !isImage && !isVideo>
+      <#assign c=cropContent(node.properties.content, 512)>
+      <#if c?length != 0>
+         <tr>
+            <td colspan='2'>Preview:</td>
+         </tr>
+         <tr>
+            <td colspan='2'>
+               ${c?html?replace('$', '<br>', 'rm')}<#if (c?length >= 512)>...</#if>
+            </td>
+         </tr>
+      </#if>
+   </#if>
 </table>

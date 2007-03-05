@@ -483,6 +483,12 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    max-width: 700px;
 }
 
+.popupImage
+{
+   cursor: pointer;
+   padding-left: 4px;
+}
+
 .userGroupPickerList
 {
    padding: 2px;

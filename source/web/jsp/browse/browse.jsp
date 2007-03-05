@@ -281,7 +281,7 @@
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                            <r:nodeInfo id="col1-info" value="#{r.id}">
-                              <h:graphicImage id="col1-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="16" />
+                              <h:graphicImage id="col1-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>
                         </a:column>
                         
@@ -296,7 +296,7 @@
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                            <r:nodeInfo id="col2-info" value="#{r.id}">
-                              <h:graphicImage id="col2-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="16" />
+                              <h:graphicImage id="col2-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>
                         </a:column>
                         
@@ -311,7 +311,7 @@
                               <f:param name="id" value="#{r.id}" />
                            </a:actionLink>
                            <r:nodeInfo id="col3-info" value="#{r.id}">
-                              <h:graphicImage id="col3-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="16" />
+                              <h:graphicImage id="col3-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>
                         </a:column>
                         
@@ -423,7 +423,7 @@
                            <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
                            <r:lockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
                            <r:nodeInfo id="col10-info" value="#{r.id}">
-                              <h:graphicImage id="col10-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="16" />
+                              <h:graphicImage id="col10-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>
                         </a:column>
                         
@@ -435,7 +435,7 @@
                            <a:actionLink id="col11-act2" value="#{r.name}" href="#{r.url}" target="new" styleClass="header" />
                            <r:lockIcon id="col11-lock" value="#{r.nodeRef}" align="absmiddle" />
                            <r:nodeInfo id="col11-info" value="#{r.id}">
-                              <h:graphicImage id="col11-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="16" />
+                              <h:graphicImage id="col11-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>
                         </a:column>
                         
@@ -447,7 +447,7 @@
                            <a:actionLink id="col12-act2" value="#{r.name}" href="#{r.url}" target="new" styleClass="title" />
                            <r:lockIcon id="col12-lock" value="#{r.nodeRef}" align="absmiddle" />
                            <r:nodeInfo id="col12-info" value="#{r.id}">
-                              <h:graphicImage id="col12-img" url="/images/icons/popup.gif" style='cursor:pointer' width="16" height="16" />
+                              <h:graphicImage id="col12-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
                            </r:nodeInfo>
                         </a:column>
                         

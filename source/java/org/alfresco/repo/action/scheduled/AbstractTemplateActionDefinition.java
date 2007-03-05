@@ -34,17 +34,17 @@ import org.alfresco.service.cmr.repository.TemplateService;
  */
 public abstract class AbstractTemplateActionDefinition implements TemplateActionDefinition
 {
-    /*
+    /**
      * The action service
      */
     public ActionService actionService;
 
-    /*
+    /**
      * The template service
      */
     public TemplateService templateService;
 
-    /*
+    /**
      * The compensating action
      */
     protected TemplateActionDefinition compensatingTemplateActionDefinition;
@@ -60,7 +60,7 @@ public abstract class AbstractTemplateActionDefinition implements TemplateAction
     /**
      * Get the action service.
      * 
-     * @return
+     * @return - the action service.
      */
     public ActionService getActionService()
     {
@@ -80,7 +80,7 @@ public abstract class AbstractTemplateActionDefinition implements TemplateAction
     /**
      * Get the template service.
      * 
-     * @return
+     * @return - the template service
      */
     public TemplateService getTemplateService()
     {
@@ -111,7 +111,7 @@ public abstract class AbstractTemplateActionDefinition implements TemplateAction
     /**
      * Get the template that defines the conpensating action.
      * 
-     * @return
+     * @return - the template action definition.
      */
     public TemplateActionDefinition getCompensatingTemplateCompositeActionDefinition()
     {

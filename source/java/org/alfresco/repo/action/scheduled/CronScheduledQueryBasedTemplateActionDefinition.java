@@ -41,12 +41,12 @@ import org.quartz.Scheduler;
 import org.quartz.Trigger;
 
 /**
- * A scheduled action for which the trigger is defined in the standard cron format and the nodes to which the 
- * action should be run is defined from the nodes selected by query.
+ * A scheduled action for which the trigger is defined in the standard cron format and the nodes to which the action
+ * should be run is defined from the nodes selected by query.
  * 
  * @author Andy Hind
  */
-public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractScheduledAction 
+public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractScheduledAction
 {
     /*
      * The search service.
@@ -59,12 +59,12 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     private TemplateService templateService;
 
     /*
-     * The query language to use 
+     * The query language to use
      */
     private String queryLanguage;
 
     /*
-     * The stores against which the query should run  
+     * The stores against which the query should run
      */
     private List<String> stores;
 
@@ -79,7 +79,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     private String cronExpression;
 
     /*
-     * The name of the job 
+     * The name of the job
      */
     private String jobName;
 
@@ -104,12 +104,13 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     private Scheduler scheduler;
 
     /*
-     * The templateModelFactory 
-     * 
-     * This defines in which template language the query template is defined
+     * The templateModelFactory This defines in which template language the query template is defined
      */
     private TemplateActionModelFactory templateActionModelFactory;
 
+    /**
+     * Default constructore
+     */
     public CronScheduledQueryBasedTemplateActionDefinition()
     {
         super();
@@ -119,41 +120,77 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     // IOC
     //
 
+    /**
+     * Get the search service.
+     * 
+     * @return - the serach service.
+     */
     public SearchService getSearchService()
     {
         return searchService;
     }
 
+    /**
+     * Set the search service.
+     * 
+     * @param searchService
+     */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
 
+    /**
+     * Get the template service.
+     * 
+     * @return - the template service.
+     */
     public TemplateService getTemplateService()
     {
         return templateService;
     }
 
+    /**
+     * Set the template service.
+     * 
+     * @param templateService
+     */
     public void setTemplateService(TemplateService templateService)
     {
         this.templateService = templateService;
     }
 
+    /**
+     * Get the scheduler.
+     * @return - the scheduler.
+     */
     public Scheduler getScheduler()
     {
         return scheduler;
     }
 
+    /**
+     * Set the scheduler.
+     * @param scheduler
+     */
     public void setScheduler(Scheduler scheduler)
     {
         this.scheduler = scheduler;
     }
 
+    /**
+     * Get the template action model factory.
+     * @return - the template action model factory.
+     */
     public TemplateActionModelFactory getTemplateActionModelFactory()
     {
         return templateActionModelFactory;
     }
 
+    /**
+     * Set the template action model factory.
+     * @param templateActionModelFactory
+     */
     public void setTemplateActionModelFactory(TemplateActionModelFactory templateActionModelFactory)
     {
         this.templateActionModelFactory = templateActionModelFactory;
@@ -162,7 +199,10 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     //
     // End of IOC
     //
-
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.action.scheduled.AbstractScheduledAction#getTrigger()
+     */
     @Override
     public Trigger getTrigger()
     {
@@ -170,12 +210,15 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
         {
             return new CronTrigger(getTriggerName(), getTriggerGroup(), getCronExpression());
         }
-        catch (ParseException e)
+        catch (final ParseException e)
         {
             throw new InvalidCronExpression("Invalid chron expression: n" + getCronExpression());
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.action.scheduled.AbstractScheduledAction#getNodes()
+     */
     @Override
     public List<NodeRef> getNodes()
     {
@@ -215,6 +258,9 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
         return nodeRefs;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.action.scheduled.AbstractScheduledAction#getAction(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public Action getAction(NodeRef nodeRef)
     {
@@ -225,82 +271,151 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     //
     // IOC/Getters/Setters for instance variables
     //
-    
+
+    /**
+     * Set the query language
+     * @param queryLanguage 
+     */
     public void setQueryLanguage(String queryLanguage)
     {
         this.queryLanguage = queryLanguage;
     }
 
+    /**
+     * Get the query language.
+     * @return - the query language.
+     */
     public String getQueryLanguage()
     {
         return queryLanguage;
     }
 
+    /**
+     * Set alist of stores to use.
+     * @param stores - the list of stores.
+     */
     public void setStores(List<String> stores)
     {
         this.stores = stores;
     }
 
+    /**
+     * Get the list of stores.
+     * 
+     * @return - the list of stores.
+     */
     public List<String> getStores()
     {
         return stores;
     }
 
+    /**
+     * Set the template for the query.
+     * 
+     * @param queryTemplate
+     */
     public void setQueryTemplate(String queryTemplate)
     {
         this.queryTemplate = queryTemplate;
     }
 
+    /**
+     * Get the template from which to build the query.
+     * @return - the template for the query.
+     */
     public String getQueryTemplate()
     {
         return queryTemplate;
     }
 
+    /**
+     * Set the cron expression - see the wiki for examples.
+     * @param cronExpression
+     */
     public void setCronExpression(String cronExpression)
     {
         this.cronExpression = cronExpression;
     }
 
+
+    /**
+     * Get the cron expression.
+     * @return - the cron expression.
+     */
     public String getCronExpression()
     {
         return cronExpression;
     }
 
+    /**
+     * Set the job name.
+     * @param jobName 
+     */
     public void setJobName(String jobName)
     {
         this.jobName = jobName;
     }
 
+    /**
+     * Get the job name
+     * @return - the job name.
+     * 
+     */
     public String getJobName()
     {
         return jobName;
     }
 
+    /**
+     * Set the job group.
+     * @param jobGroup 
+     */
     public void setJobGroup(String jobGroup)
     {
         this.jobGroup = jobGroup;
     }
 
+    /**
+     * Get the job group.
+     * @return - the job group.
+     */
     public String getJobGroup()
     {
         return jobGroup;
     }
 
+    /** 
+     * Set the trigger name.
+     * @param triggerName 
+     */
     public void setTriggerName(String triggerName)
     {
         this.triggerName = triggerName;
     }
 
+    /**
+     * Get the trigger name
+     * @return - the trigger name.
+     */
     public String getTriggerName()
     {
         return triggerName;
     }
 
+    /**
+     * Set the trigger group.
+     * @param triggerGroup 
+     */
     public void setTriggerGroup(String triggerGroup)
     {
         this.triggerGroup = triggerGroup;
     }
 
+    /**
+     * Get the name of the trigger group.
+     * @return - the trigger group.
+     * 
+     */
     public String getTriggerGroup()
     {
         return this.triggerGroup;
@@ -308,6 +423,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Register with the scheduler.
+     * @throws Exception 
      */
     public void afterPropertiesSet() throws Exception
     {

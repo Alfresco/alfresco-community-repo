@@ -39,21 +39,45 @@ public class ScheduledActionException extends AlfrescoRuntimeException
      */
     private static final long serialVersionUID = -543079391770744598L;
 
+    /**
+     * Exception generated from scheduled actions
+     * 
+     * @param msgId
+     */
     public ScheduledActionException(String msgId)
     {
         super(msgId);
     }
 
+    /**
+     * Exception generated from scheduled actions
+     * 
+     * @param msgId
+     * @param msgParams
+     */
     public ScheduledActionException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
     }
 
+    /**
+     * Exception generated from scheduled actions
+     * 
+     * @param msgId
+     * @param cause
+     */
     public ScheduledActionException(String msgId, Throwable cause)
     {
         super(msgId, cause);
     }
 
+    /**
+     * Exception generated from scheduled actions
+     * 
+     * @param msgId
+     * @param msgParams
+     * @param cause
+     */
     public ScheduledActionException(String msgId, Object[] msgParams, Throwable cause)
     {
         super(msgId, msgParams, cause);

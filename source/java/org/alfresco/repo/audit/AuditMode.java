@@ -43,8 +43,37 @@ import org.alfresco.repo.audit.model.AuditModelException;
  */
 public enum AuditMode
 {
-    ALL, SUCCESS, FAIL, NONE, UNSET;
+    /**
+     * All 
+     */
+    ALL, 
     
+    /**
+     * Only success
+     */
+    SUCCESS, 
+     
+     /**
+      * Only exceptions/failures
+      */
+    FAIL, 
+    
+    /**
+     * Nothing
+     */
+    NONE,
+    
+    /**
+     * Don't know
+     */
+    UNSET;
+    
+    /**
+     * Parse the audit mode from a string
+     * 
+     * @param value
+     * @return - the audit mode.
+     */
     public static AuditMode getAuditMode(String value)
     {
         if(value.equalsIgnoreCase("all"))

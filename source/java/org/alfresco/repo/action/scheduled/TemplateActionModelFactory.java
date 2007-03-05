@@ -37,14 +37,14 @@ public interface TemplateActionModelFactory
     /**
      * Get the name of the template engine for which this factory applies
      * 
-     * @return
+     * @return - the template engine.
      */
     public String getTemplateEngine();
     
     /**
      * Build a model with no default node context.
      * 
-     * @return
+     * @return - the model for the template engine.
      */
     public Object getModel();
     
@@ -52,7 +52,7 @@ public interface TemplateActionModelFactory
      * Build a model with a default node context.
      * 
      * @param nodeRef
-     * @return
+     * @return - the model (with nodeRef as its context).
      */
     public Object getModel(NodeRef nodeRef);
 }

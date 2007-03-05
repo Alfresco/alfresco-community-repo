@@ -69,8 +69,25 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
      */
     public enum TransactionMode
     {
-        ISOLATED_TRANSACTIONS, UNTIL_FIRST_FAILURE, ONE_TRANSACTION;
+        /**
+         * Run Each action in an isolated transaction
+         */
+        ISOLATED_TRANSACTIONS, 
+        /**
+         * Run each action in anisolated transaction, but stop at the first failure
+         */
+        UNTIL_FIRST_FAILURE, 
+        /**
+         * Run in one big transaction. Any failure rolls the whole lot b ack 
+         */
+        ONE_TRANSACTION;
 
+        /**
+         * Generate a mode from a string.
+         * 
+         * @param transactionModeString
+         * @return - the transaction mode.
+         */
         public static TransactionMode getTransactionMode(String transactionModeString)
         {
             TransactionMode transactionMode;
@@ -102,8 +119,21 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
      */
     public enum CompensatingActionMode
     {
-        RUN_COMPENSATING_ACTIONS_ON_FAILURE, IGNORE;
+        /**
+         * If failure occurs run the comensating actions.
+         */
+        RUN_COMPENSATING_ACTIONS_ON_FAILURE, 
+        /**
+         * Ignore compensating actions
+         */
+        IGNORE;
 
+        /**
+         * Parse a string to a compensating action mode - used in reading the config.
+         * 
+         * @param compensatingActionModeString
+         * @return - the compensating action mode.
+         */
         public static CompensatingActionMode getCompensatingActionMode(String compensatingActionModeString)
         {
             CompensatingActionMode compensatingActionMode;
@@ -170,7 +200,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Get the user in whose name to run the action.
      * 
-     * @return
+     * @return - the user as whom to run the action
      */
     public String getRunAsUser()
     {
@@ -189,6 +219,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
     /**
      * Get the template definition.
+     * @return - the template action definition
      */
     public TemplateActionDefinition getTemplateActionDefinition()
     {
@@ -208,7 +239,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Get the actions service.
      * 
-     * @return
+     * @return - the action service
      */
     public ActionService getActionService()
     {
@@ -238,7 +269,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Get the transaction service.
      * 
-     * @return
+     * @return - the transaction service.
      */
     public TransactionService getTransactionService()
     {
@@ -257,6 +288,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
     /**
      * Set the template action that is used to generate the real action for each node.
+     * @param templateActionDefinition 
      */
     public void setTemplateActionDefinition(TemplateActionDefinition templateActionDefinition)
     {
@@ -266,7 +298,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Get the behaviour for compensating actions.
      * 
-     * @return
+     * @return - the compensating action mode.
      */
     public CompensatingActionMode getCompensatingActionModeEnum()
     {
@@ -276,13 +308,19 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Get the transaction mode.
      * 
-     * @return
+     * @return - the transaction mode.
      */
     public TransactionMode getTransactionModeEnum()
     {
         return transactionMode;
     }
 
+    /**
+     * Register with teh scheduler.
+     * 
+     * @param scheduler 
+     * @throws SchedulerException 
+     */
     public void register(Scheduler scheduler) throws SchedulerException
     {
         JobDetail jobDetail = getJobDetail();
@@ -299,14 +337,14 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Get the trigger definition for this job. Used to register with the injected scheduler.
      * 
-     * @return
+     * @return - the trigger definition for this scheduled action.
      */
     public abstract Trigger getTrigger();
 
     /**
      * Get the list of nodes against which this action should run.
      * 
-     * @return
+     * @return - the list of node refs for which to run this action.
      */
     public abstract List<NodeRef> getNodes();
 
@@ -314,14 +352,14 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
      * Generate the actual action for the given node from the action template.
      * 
      * @param nodeRef
-     * @return
+     * @return - the action to execute.
      */
     public abstract Action getAction(NodeRef nodeRef);
 
     /**
      * Get the job detail.
      * 
-     * @return
+     * @return - the job detail.
      */
     private JobDetail getJobDetail()
     {
@@ -344,6 +382,13 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     public static class JobDefinition implements Job
     {
 
+        /**
+         * Execute the job
+         * 
+         * @param ctx 
+         * @throws JobExecutionException 
+         * 
+         */
         public void execute(JobExecutionContext ctx) throws JobExecutionException
         {
             final AbstractScheduledAction abstractScheduledAction = (AbstractScheduledAction) ctx.getJobDetail()
@@ -609,6 +654,8 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
      * Simple class to hold to related objects
      * 
      * @author Andy Hind
+     * @param <FIRST> 
+     * @param <SECOND> 
      */
     public static class Pair<FIRST, SECOND>
     {
@@ -637,7 +684,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
      * Support method to translate exceptions to runtime exceptions.
      * 
      * @param t
-     * @return
+     * @return - the exception as a wrapped RuntimeException.
      */
     private static Object throwRuntimeException(Throwable t)
     {

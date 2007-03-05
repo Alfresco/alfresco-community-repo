@@ -27,32 +27,38 @@ package org.alfresco.repo.audit;
 import org.alfresco.repo.audit.model.TrueFalseUnset;
 import org.aopalliance.intercept.MethodInvocation;
 
+/**
+ * The audit model used to audit method calls.
+ * 
+ * @author andyh
+ */
 public interface MethodAuditModel
 {
     /**
      * Report if audit behaviour can be determined before the method call
      * 
-     * @param auditState,
+     * @param auditMode
      * @param mi
-     * @return
+     * @return - the audit mode
      */
     public AuditMode beforeExecution(AuditMode auditMode, MethodInvocation mi);
 
     /**
      * Report if audit behaviour can be determined after the method call
      * 
-     * @param auditState,
+     * @param auditMode
      * @param mi
-     * @return
+     * @return - the audit mode
      */
     public AuditMode afterExecution(AuditMode auditMode, MethodInvocation mi);
 
     /**
-     * Report if audit behaviour should be invoked on error. It could be we look at the error and filter - this is not supported at the moment.
+     * Report if audit behaviour should be invoked on error. It could be we look at the error and filter - this filter is not
+     * supported at the moment.
      * 
-     * @param auditState,
+     * @param auditMode
      * @param mi
-     * @return
+     * @return - the audit mode
      */
     public AuditMode onError(AuditMode auditMode, MethodInvocation mi);
 
@@ -60,14 +66,14 @@ public interface MethodAuditModel
      * Get the optional parameters that are to be recorded
      * 
      * @param mi
-     * @return
+     * @return - what to record 
      */
     public RecordOptions getAuditRecordOptions(MethodInvocation mi);
-    
+
     /**
-     * Should internal service class be logged.
-     * 
-     * @return
+     * Deteine if internal calls to public service shoud be audited
+     * @param mi
+     * @return - mode
      */
     public TrueFalseUnset getAuditInternalServiceMethods(MethodInvocation mi);
 }

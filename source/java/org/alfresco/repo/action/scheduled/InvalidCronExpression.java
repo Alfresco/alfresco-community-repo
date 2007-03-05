@@ -24,6 +24,12 @@
  */
 package org.alfresco.repo.action.scheduled;
 
+/**
+ * Exception for invalid cron expressions
+ * 
+ * @author andyh
+ *
+ */
 public class InvalidCronExpression extends ScheduledActionException
 {
 
@@ -32,21 +38,44 @@ public class InvalidCronExpression extends ScheduledActionException
      */
     private static final long serialVersionUID = -6618964886875008727L;
 
+    /**
+     * Invalid cron expression
+     * 
+     * @param msgId
+     */
     public InvalidCronExpression(String msgId)
     {
         super(msgId);
     }
 
+    /**
+     * Invalid cron expression
+     * 
+     * @param msgId
+     * @param msgParams
+     */
     public InvalidCronExpression(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
     }
 
+    /**
+     * Invalid cron expression
+     * 
+     * @param msgId
+     * @param cause
+     */
     public InvalidCronExpression(String msgId, Throwable cause)
     {
         super(msgId, cause);
     }
 
+    /**
+     * Invalid cron expression
+     * @param msgId
+     * @param msgParams
+     * @param cause
+     */
     public InvalidCronExpression(String msgId, Object[] msgParams, Throwable cause)
     {
         super(msgId, msgParams, cause);

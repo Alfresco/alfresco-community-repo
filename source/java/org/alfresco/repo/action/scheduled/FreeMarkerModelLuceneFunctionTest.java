@@ -35,7 +35,6 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ISO8601DateFormat;
@@ -55,14 +54,20 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
     private AuthenticationComponent authenticationComponent;
     private ServiceRegistry serviceRegistry;
     private UserTransaction tx;
-    
-    private Date today;
 
+    /**
+     * 
+     *
+     */
     public FreeMarkerModelLuceneFunctionTest()
     {
         super();
     }
 
+    /**
+     * 
+     * @param arg0
+     */
     public FreeMarkerModelLuceneFunctionTest(String arg0)
     {
         super(arg0);
@@ -80,16 +85,6 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
                 .getLocalName());
         tx = transactionService.getUserTransaction();
         tx.begin();
-
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.set(Calendar.HOUR, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        
-        today = cal.getTime();
-        
-        
     }
 
     @Override
@@ -100,6 +95,10 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         super.tearDown();
     }
 
+    /**
+     * Test date formatting
+     *
+     */
     public void testDate()
     {
         String template = "${date?date?string(\"yyyy-MM-dd\")}";
@@ -109,6 +108,10 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         assertEquals(result, SDF2.format(new Date()));
     }
     
+    /**
+     * Test generation of lucene date ranges
+     *
+     */
     public void testLuceneDateRangeFunction()
     {
         GregorianCalendar cal = new GregorianCalendar();
@@ -125,6 +128,10 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
     }
     
+    /**
+     * Test generation of lucene date ranges
+     *
+     */
     public void testLuceneDateRangeFunctionToDate()
     {
         GregorianCalendar cal = new GregorianCalendar();
@@ -141,6 +148,10 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
     }
     
+    /**
+     * Test generation of lucene date ranges
+     *
+     */
     public void testLuceneDateRangeFunctionTodayPlus4()
     {
         GregorianCalendar cal = new GregorianCalendar();
@@ -161,6 +172,10 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         assertEquals(result, "["+isoStartDate+" TO "+isoEndDate+"]");
     }
     
+    /**
+     * Test generation of lucene date ranges
+     *
+     */
     public void testLuceneDateRangeFunctionTodayMinus4()
     {
         GregorianCalendar cal = new GregorianCalendar();
@@ -180,7 +195,10 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         assertEquals(result, "["+isoEndDate+" TO "+isoStartDate+"]");
     }
     
-    
+    /**
+     * Test generation of lucene date ranges
+     *
+     */
     public void testLuceneDateRangeFunctionTodayToday()
     {
         GregorianCalendar cal = new GregorianCalendar();

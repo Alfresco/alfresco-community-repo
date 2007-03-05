@@ -43,6 +43,10 @@ public class CompositeTemplateActionDefinition extends AbstractTemplateActionDef
      */
     private List<TemplateActionDefinition> templateActionDefinitions;
     
+    /**
+     * Default constructor.
+     *
+     */
     public CompositeTemplateActionDefinition()
     {
         super();
@@ -62,7 +66,7 @@ public class CompositeTemplateActionDefinition extends AbstractTemplateActionDef
     /**
      * Get the list of template actions.
      * 
-     * @return
+     * @return - a list of templates for action definitions.
      */
     public List<TemplateActionDefinition> templateActionDefinitions()
     {
@@ -71,6 +75,8 @@ public class CompositeTemplateActionDefinition extends AbstractTemplateActionDef
 
     /**
      * Build the composite action in the context of the given node.
+     * @param nodeRef 
+     * @return - the contextualised action.
      * 
      */
     public Action getAction(NodeRef nodeRef)

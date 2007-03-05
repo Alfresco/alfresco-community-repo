@@ -49,7 +49,7 @@ public interface ScheduledActionDefinition extends InitializingBean
     /**
      * Get the template action definition that is used to build the Action to execute.
      * 
-     * @return
+     * @return - the template action definition.
      */
     public TemplateActionDefinition getTemplateActionDefinition();
 
@@ -71,7 +71,7 @@ public interface ScheduledActionDefinition extends InitializingBean
     /**
      * Get the name of the job - used for job admin
      * 
-     * @return
+     * @return - the job name
      */
     public String getJobName();
 
@@ -84,7 +84,7 @@ public interface ScheduledActionDefinition extends InitializingBean
 
     /**
      * Get the job group - used for job admin
-     * @return
+     * @return - the job group.
      */
     public String getJobGroup();
 
@@ -97,7 +97,7 @@ public interface ScheduledActionDefinition extends InitializingBean
 
     /**
      * Get the trigger name - used for job admin
-     * @return
+     * @return - the trigger name.
      */
     public String getTriggerName();
 
@@ -111,7 +111,7 @@ public interface ScheduledActionDefinition extends InitializingBean
     /**
      * Get the trigger group - used for job admin
      * 
-     * @return
+     * @return - the trigger group.
      */
     public String getTriggerGroup();
 

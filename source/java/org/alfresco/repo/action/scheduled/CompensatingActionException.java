@@ -48,32 +48,63 @@ public class CompensatingActionException extends AlfrescoRuntimeException
 
     List<Pair<Action, NodeRef>> compensatingActions;
 
+    
+    /**
+     * @param msgId
+     */
     public CompensatingActionException(String msgId)
     {
         super(msgId);
     }
 
+    /**
+     * 
+     * @param msgId
+     * @param cause
+     * @param compensatingActions
+     */
     public CompensatingActionException(String msgId, Throwable cause, List<Pair<Action, NodeRef>> compensatingActions)
     {
         super(msgId, cause);
         this.compensatingActions = compensatingActions;
     }
 
+    /**
+     * Get the compensationg actions
+     * 
+     * @return - the compensating actions
+     */
     public List<Pair<Action, NodeRef>> getCompensatingActions()
     {
         return compensatingActions;
     }
 
+    /**
+     * 
+     * @param msgId
+     * @param msgParams
+     */
     public CompensatingActionException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
     }
 
+    /**
+     * 
+     * @param msgId
+     * @param cause
+     */
     public CompensatingActionException(String msgId, Throwable cause)
     {
         super(msgId, cause);
     }
 
+    /**
+     * 
+     * @param msgId
+     * @param msgParams
+     * @param cause
+     */
     public CompensatingActionException(String msgId, Object[] msgParams, Throwable cause)
     {
         super(msgId, msgParams, cause);

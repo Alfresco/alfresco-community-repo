@@ -33,7 +33,6 @@ import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.BeansException;
@@ -87,7 +86,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /**
      * Get the template model factory.
      * 
-     * @return
+     * @return - the template model factory
      */
     public TemplateActionModelFactory getTemplateActionModelFactory()
     {
@@ -107,7 +106,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /**
      * Get the dictionary service.
      * 
-     * @return
+     * @return - the dictionary service.
      */
     public DictionaryService getDictionaryService()
     {
@@ -137,7 +136,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /**
      * Get the name of the action.
      * 
-     * @return
+     * @return - the name of the action.
      */
     public String getActionName()
     {
@@ -159,7 +158,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /**
      * Get the templates that define the parameters for the action.
      * 
-     * @return
+     * @return the templates used to create parameters for the generated action.
      */
     public Map<String, String> getParameterTemplates()
     {

@@ -26,43 +26,57 @@ package org.alfresco.repo.audit;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * The audit model used for application level auditing.
+ * 
+ * @author andyh
+ */
 public interface ApplicationAuditModel
 {
     /**
      * Report if audit behaviour can be determined before the method call
      * 
-     * @param auditState,
-     * @param mi
-     * @return
+     * @param auditMode
+     * @param application
+     * @param description
+     * @param key
+     * @param args
+     * @return - the audit mode
      */
-    public AuditMode beforeExecution(AuditMode auditMode, String application, String description,
-            NodeRef key, Object... args);
+    public AuditMode beforeExecution(AuditMode auditMode, String application, String description, NodeRef key,
+            Object... args);
 
     /**
      * Report if audit behaviour can be determined after the method call
      * 
-     * @param auditState,
-     * @param mi
-     * @return
+     * @param auditMode
+     * @param application
+     * @param description
+     * @param key
+     * @param args
+     * @return - the audit mode
      */
-    public AuditMode afterExecution(AuditMode auditMode, String application,  String description,
-            NodeRef key, Object... args);
+    public AuditMode afterExecution(AuditMode auditMode, String application, String description, NodeRef key,
+            Object... args);
 
     /**
-     * Report if audit behaviour should be invoked on error. It could be we look at the error and filter - this is not supported at the moment.
+     * Report if audit behaviour should be invoked on error. It could be we look at the error and filter - this is not
+     * supported at the moment.
      * 
-     * @param auditState,
-     * @param mi
-     * @return
+     * @param auditMode
+     * @param application
+     * @param description
+     * @param key
+     * @param args
+     * @return - the audit mode
      */
-    public AuditMode onError(AuditMode auditMode, String application,  String description,
-            NodeRef key, Object... args);
+    public AuditMode onError(AuditMode auditMode, String application, String description, NodeRef key, Object... args);
 
-    /**
-     * Get the optional parameters that are to be recorded
-     * 
-     * @param mi
-     * @return
-     */
+   /**
+    * Get the optional parameters that are to be recorded
+    * 
+    * @param application
+    * @return - the audit mode
+    */
     public RecordOptions getAuditRecordOptions(String application);
 }

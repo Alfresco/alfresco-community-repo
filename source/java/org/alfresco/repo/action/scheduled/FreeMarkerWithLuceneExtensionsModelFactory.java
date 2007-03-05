@@ -58,6 +58,9 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
      */
     private ServiceRegistry serviceRegistry;
 
+    /**
+     * Default constructor.
+     */
     public FreeMarkerWithLuceneExtensionsModelFactory()
     {
         super();
@@ -65,6 +68,10 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
 
     // IOC
     
+    /**
+     * Set the service registry
+     * @param serviceRegistry 
+     */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;

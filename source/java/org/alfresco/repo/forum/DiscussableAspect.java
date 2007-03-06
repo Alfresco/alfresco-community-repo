@@ -26,6 +26,7 @@
 package org.alfresco.repo.forum;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -179,7 +180,8 @@ public class DiscussableAspect
                               ContentModel.PROP_VERSION_LABEL);
                         if (labelProp == null)
                         {
-                            topicName = childName + " - " + new Date();
+                        	SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH-mm-ss");
+                            topicName = childName + " - " + dateFormat.format(new Date());
                         }
                         else
                         {

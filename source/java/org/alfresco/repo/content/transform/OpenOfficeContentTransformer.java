@@ -61,6 +61,8 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
     private static Log logger = LogFactory.getLog(OpenOfficeContentTransformer.class);
     
     private OpenOfficeConnection connection;
+    /** Keep track of the initial connection state */
+    private boolean initiallyConnected;
     private OpenOfficeDocumentConverter converter;
     private String documentFormatsConfiguration;
     private DocumentFormatRegistry formatRegistry;
@@ -89,35 +91,34 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
         return connection.isConnected();
     }
 
-    private synchronized void connect()
+    private synchronized boolean connect()
     {
+        boolean success = false;
         if (isConnected())
         {
             // just leave it
+            success = true;
         }
         else
         {
             try
             {
                 connection.connect();
+                success = true;
             }
             catch (ConnectException e)
             {
                 logger.warn(e.getMessage());
             }
         }
+        // Done
+        return success;
     }
 
     @Override
     public void register()
     {
         PropertyCheck.mandatory("OpenOfficeContentTransformer", "connection", connection);
-        
-        // attempt to establish a connection
-        connect();
-        
-        // set up the converter
-        converter = new OpenOfficeDocumentConverter(connection);
         
         // load the document conversion configuration
         if (documentFormatsConfiguration != null)
@@ -139,7 +140,13 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
             formatRegistry = new XmlDocumentFormatRegistry();
         }
         
-        if (isConnected())
+        // attempt to establish a connection
+        initiallyConnected = connect();
+        
+        // set up the converter
+        converter = new OpenOfficeDocumentConverter(connection);
+        
+        if (initiallyConnected)
         {
             // If the server starts with OO running, then it will attempt reconnections.  Otherwise it will
             // just be wasting time trying to see if a connection is available all the time.
@@ -154,7 +161,16 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
     {
         if (!isConnected())
         {
-            return 0.0;
+            if (!initiallyConnected)
+            {
+                // It wasn't there to start with, so we won't bother trying to connect
+                return 0.0;
+            }
+            // The connection may have gone away, so attempt to get it again
+            if (!connect())
+            {
+                return 0.0;
+            }
         }
         
         // there are some conversions that fail, despite the converter believing them possible

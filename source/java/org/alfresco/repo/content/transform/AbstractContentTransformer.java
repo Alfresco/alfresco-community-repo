@@ -231,9 +231,6 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         // begin timing
         long before = System.currentTimeMillis();
         
-        // check the reliability
-        checkReliability(reader, writer);
-        
         // check options map
         if (options == null)
         {
@@ -242,6 +239,10 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         
         try
         {
+            // Check the reliability
+            checkReliability(reader, writer);
+
+            // Transform
             transformInternal(reader, writer, options);
         }
         catch (Throwable e)

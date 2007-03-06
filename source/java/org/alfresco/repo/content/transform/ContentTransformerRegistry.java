@@ -184,6 +184,14 @@ public class ContentTransformerRegistry
         ContentTransformer bestTransformer = null;
         for (ContentTransformer transformer : transformers)
         {
+            // Reliability can be dynamic, i.e. it may have become unreliable
+            double reliability = transformer.getReliability(sourceMimetype, targetMimetype);
+            if (reliability == 0.0)
+            {
+                // It is unreliable now.
+                continue;
+            }
+            
             long transformationTime = transformer.getTransformationTime();
             // is it better?
             if (bestTransformer == null || transformationTime < bestTime)

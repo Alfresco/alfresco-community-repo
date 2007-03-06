@@ -159,10 +159,18 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                         }
                         assignedPooledActors = new String[] {actor};
                     }
+                    else if (eval instanceof String)
+                    {
+                        assignedPooledActors = new String[] {(String)eval};
+                    }
+                    else
+                    {
+                        throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
+                    }
                 }
                 else
                 {
-                    assignedPooledActors[0] = pooledactorValStr;
+                    assignedPooledActors = new String[] {pooledactorValStr};
                 }
             }
         }

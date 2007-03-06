@@ -28,6 +28,7 @@ import java.io.IOException;
 
 import org.alfresco.filesys.locking.FileLock;
 import org.alfresco.filesys.locking.FileLockList;
+import org.alfresco.filesys.server.state.FileState;
 
 /**
  * <p>
@@ -111,6 +112,10 @@ public abstract class NetworkFile
 
     private int m_flags;
 
+    // Associated file state
+    
+    private FileState m_state;
+    
     /**
      * Create a network file object with the specified file identifier.
      * 
@@ -207,6 +212,16 @@ public abstract class NetworkFile
         return (int) (m_fileSize & 0x0FFFFFFFFL);
     }
 
+    /**
+     * Return the associated file state
+     * 
+     * @return FileState
+     */
+    public final FileState getFileState()
+    {
+    	return m_state;
+    }
+    
     /**
      * Return the full name, relative to the share.
      * 
@@ -533,6 +548,16 @@ public abstract class NetworkFile
         m_fileSize = (long) siz;
     }
 
+    /**
+     * Set the associated file state
+     * 
+     * @param state FileState
+     */
+    public final void setFileState( FileState state)
+    {
+    	m_state = state;
+    }
+    
     /**
      * Set the full file name, relative to the share.
      * 

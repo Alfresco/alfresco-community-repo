@@ -666,7 +666,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Map the IPC$ share to the admin pipe type
 
-        if (servType == ShareType.NAMEDPIPE && share.getShareName().compareTo("IPC$") == 0)
+        if (share.getShareName().compareTo("IPC$") == 0)
             servType = ShareType.ADMINPIPE;
 
         // Check if the session is a null session, only allow access to the IPC$ named pipe share
@@ -1194,7 +1194,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
         // Map the IPC$ share to the admin pipe type
 
-        if (servType == ShareType.NAMEDPIPE && shareName.compareTo("IPC$") == 0)
+        if (shareName.compareTo("IPC$") == 0)
             servType = ShareType.ADMINPIPE;
 
         // Check if the session is a null session, only allow access to the IPC$ named pipe share
@@ -2096,7 +2096,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
                     // Return an error status
 
-                    m_sess.sendErrorResponseSMB(SMBStatus.DOSNotLocked, SMBStatus.ErrDos);
+                    m_sess.sendErrorResponseSMB(SMBStatus.NTRangeNotLocked, SMBStatus.DOSNotLocked, SMBStatus.ErrDos);
                     return;
                 }
                 catch (LockConflictException ex)
@@ -2104,9 +2104,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
                     // Return an error status
 
-                    m_sess
-                            .sendErrorResponseSMB(SMBStatus.NTLockNotGranted, SMBStatus.DOSLockConflict,
-                                    SMBStatus.ErrDos);
+                    m_sess.sendErrorResponseSMB(SMBStatus.NTLockNotGranted, SMBStatus.DOSLockConflict, SMBStatus.ErrDos);
                     return;
                 }
                 catch (IOException ex)
@@ -2136,7 +2134,7 @@ public class NTProtocolHandler extends CoreProtocolHandler
 
                 // Return an error status
 
-                m_sess.sendErrorResponseSMB(SMBStatus.DOSNotLocked, SMBStatus.ErrDos);
+                m_sess.sendErrorResponseSMB(SMBStatus.NTRangeNotLocked, SMBStatus.DOSNotLocked, SMBStatus.ErrDos);
                 return;
             }
         }

@@ -50,12 +50,15 @@ import org.alfresco.filesys.server.filesys.FileStatus;
 import org.alfresco.filesys.server.filesys.NetworkFile;
 import org.alfresco.filesys.server.filesys.SearchContext;
 import org.alfresco.filesys.server.filesys.TreeConnection;
+import org.alfresco.filesys.server.locking.FileLockingInterface;
+import org.alfresco.filesys.server.locking.LockManager;
 import org.alfresco.filesys.server.pseudo.MemoryNetworkFile;
 import org.alfresco.filesys.server.pseudo.PseudoFile;
 import org.alfresco.filesys.server.pseudo.PseudoFileInterface;
 import org.alfresco.filesys.server.pseudo.PseudoFileList;
 import org.alfresco.filesys.server.pseudo.PseudoNetworkFile;
 import org.alfresco.filesys.server.state.FileState;
+import org.alfresco.filesys.server.state.FileStateLockManager;
 import org.alfresco.filesys.server.state.FileState.FileStateStatus;
 import org.alfresco.filesys.smb.SharingMode;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
@@ -84,7 +87,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface
+public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface, FileLockingInterface
 {
     // Logging
     
@@ -113,6 +116,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     
     private AuthenticationComponent authComponent;
     private AuthenticationService authService;
+
+	//	Lock manager
+	
+	private static LockManager _lockManager = new FileStateLockManager();
     
     /**
      * Class constructor
@@ -1288,6 +1295,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 fstate.incrementOpenCount();
                 fstate.setNodeRef(nodeRef);
+                
+                // Store the state with the file
+                
+                netFile.setFileState( fstate);
             }
             
             // If the file has been opened for overwrite then truncate the file to zero length, this will
@@ -1414,6 +1425,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     fstate.setFileStatus(FileStateStatus.FileExists);
                     fstate.incrementOpenCount();
                     fstate.setNodeRef(nodeRef);
+                    
+                    // Store the file state with the file
+                    
+                    netFile.setFileState( fstate);
                     
                     // DEBUG
                     
@@ -2367,4 +2382,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Nothing to do
     }
+
+	/**
+	 * Return the lock manager used by this filesystem
+	 * 
+	 * @param sess SrvSession
+	 * @param tree TreeConnection
+	 * @return LockManager
+	 */
+	public LockManager getLockManager(SrvSession sess, TreeConnection tree) {
+		return _lockManager;
+	}
 }

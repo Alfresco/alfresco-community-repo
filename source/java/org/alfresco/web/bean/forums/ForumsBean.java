@@ -1036,7 +1036,7 @@ public class ForumsBean implements IContextListener
       {
          ResponseWriter out = context.getResponseWriter();
          
-         out.write("<tr><td colspan='99' align='right'>");
+         out.write("<tr><td colspan='99' align='center'>");
          for (Iterator i = richList.getChildren().iterator(); i.hasNext(); /**/)
          {
             // output all remaining child components that are not UIColumn

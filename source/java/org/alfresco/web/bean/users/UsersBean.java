@@ -30,12 +30,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -45,7 +47,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -441,7 +442,7 @@ public class UsersBean implements IContextListener
    {
       this.usersRichList.setValue(null);
       
-      if (this.searchCriteria == null || this.searchCriteria.length() == 0)
+      if (this.searchCriteria == null || this.searchCriteria.trim().length() == 0)
       {
          this.users = Collections.<Node>emptyList();
       }
@@ -456,21 +457,30 @@ public class UsersBean implements IContextListener
             tx.begin();
             
             // define the query to find people by their first or last name
-            String search = ISO9075.encode(this.searchCriteria);
-            String query = "( TYPE:\"{http://www.alfresco.org/model/content/1.0}person\") AND " + 
-                           "((@\\{http\\://www.alfresco.org/model/content/1.0\\}firstName:" + search + 
-                           "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}lastName:" + search + 
-                           "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}userName:" + search + 
-                           "*)))";
+            String search = this.searchCriteria.trim();
+            StringBuilder query = new StringBuilder(256);
+            query.append("TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (");
+            for (StringTokenizer t = new StringTokenizer(search, " "); t.hasMoreTokens(); /**/)
+            {
+               String term = QueryParser.escape(t.nextToken());
+               query.append("((@\\{http\\://www.alfresco.org/model/content/1.0\\}firstName:*");
+               query.append(term);
+               query.append("*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}lastName:*");
+               query.append(term);
+               query.append("*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}userName:");
+               query.append(term);
+               query.append("*)) ");   // final space here is important as default OR separator
+            }
+            query.append(")");
             
             if (logger.isDebugEnabled())
-               logger.debug("Query: " + query);
+               logger.debug("Query: " + query.toString());
    
             // define the search parameters
             SearchParameters params = new SearchParameters();
             params.setLanguage(SearchService.LANGUAGE_LUCENE);
             params.addStore(Repository.getStoreRef());
-            params.setQuery(query);
+            params.setQuery(query.toString());
             
             List<NodeRef> people = this.searchService.query(params).getNodeRefs();
             

@@ -34,6 +34,7 @@ Alfresco.OpenSearchClient = function(id)
    this.id = id;
    this.engines = [];
    this.enginesById = [];
+   this.searchInProgress = false;
 }
 
 Alfresco.OpenSearchClient.prototype = 
@@ -43,6 +44,24 @@ Alfresco.OpenSearchClient.prototype =
    engines: null,
    
    enginesById: null,
+   
+   searchInProgress: false,
+   
+   msgNoResults: null,
+   
+   msgOf: null,
+   
+   msgFailedGenerateUrl: null,
+   
+   msgFailedSearch: null,
+   
+   msgFirstPage: null,
+   
+   msgPreviousPage: null,
+   
+   msgNextPage: null,
+   
+   msgLastPage: null,
 
    /**
     * Registers an OpenSearch engine to be called when performing queries
@@ -54,6 +73,70 @@ Alfresco.OpenSearchClient.prototype =
       this.enginesById[id] = se;
    },
 
+   /**
+    * Sets the 'No Results' message
+    */
+   setMsgNoResults: function(msg)
+   {
+      this.msgNoResults = msg;
+   },
+   
+   /**
+    * Sets the 'of' message
+    */
+   setMsgOf: function(msg)
+   {
+      this.msgOf = msg;
+   },
+   
+   /**
+    * Sets the 'Failed to generate url' message
+    */
+   setMsgFailedGenerateUrl: function(msg)
+   {
+      this.msgFailedGenerateUrl = msg;
+   },
+   
+   /**
+    * Sets the 'Failed to retrieve search results' message
+    */
+   setMsgFailedSearch: function(msg)
+   {
+      this.msgFailedSearch = msg;
+   },
+   
+   /**
+    * Sets the 'First Page' message
+    */
+   setMsgFirstPage: function(msg)
+   {
+      this.msgFirstPage = msg;
+   },
+   
+   /**
+    * Sets the 'Previous Page' message
+    */
+   setMsgPreviousPage: function(msg)
+   {
+      this.msgPreviousPage = msg;
+   },
+   
+   /**
+    * Sets the 'Next Page' message
+    */
+   setMsgNextPage: function(msg)
+   {
+      this.msgNextPage = msg;
+   },
+   
+   /**
+    * Sets the 'Last Page' message
+    */
+   setMsgLastPage: function(msg)
+   {
+      this.msgLastPage = msg;
+   },
+   
    /**
     * Handles the key press event, if ENTER is pressed execute the query
     */
@@ -129,8 +212,11 @@ Alfresco.OpenSearchClient.prototype =
       }
       
       // issue the queries if there is enough search criteria
-      if (term != null && term.length > 1)
+      if (this.searchInProgress == false && term != null && term.length > 1)
       {
+         // show that we are executing a search
+         this.searchInProgress = true;
+         
          // remove previous results (if necessary)
          var resultsPanel = document.getElementById(this.id + _RESULTS_DIV_ID_SUFFIX);
          if (resultsPanel != null)
@@ -177,8 +263,9 @@ Alfresco.OpenSearchClient.prototype =
       }
       else
       {
-         handleErrorYahoo("Failed to generate url for search engine '" + ose.label + 
-               "'.\n\nThis is probably caused by missing required parameters, check the template url for the search engine.");
+         // replace the token with the engine label
+         var errorMsg = this.msgFailedGenerateUrl.replace("{0}", ose.label);
+         handleErrorYahoo(errorMsg);
       }
    },
    
@@ -327,7 +414,7 @@ Alfresco.OpenSearchClient.prototype =
       
       if (results == null || results.length == 0)
       {
-         return "<div class='osResultNoMatch'>No results</div>";
+         return "<div class='osResultNoMatch'>" + this.msgNoResults + "</div>";
       }
       else
       {
@@ -498,7 +585,9 @@ Alfresco.OpenSearchClient.prototype =
          sb[sb.length] = firstUrl;
          sb[sb.length] = "&quot;);'><img src='";
          sb[sb.length] = getContextPath();
-         sb[sb.length] = "/images/icons/FirstPage.gif' title='First Page' border='0' /></a>";
+         sb[sb.length] = "/images/icons/FirstPage.gif' title='";
+         sb[sb.length] = this.msgFirstPage;
+         sb[sb.length] = "' border='0' /></a>";
       }
       else
       {
@@ -519,7 +608,9 @@ Alfresco.OpenSearchClient.prototype =
          sb[sb.length] = previousUrl;
          sb[sb.length] = "&quot;);'><img src='";
          sb[sb.length] = getContextPath();
-         sb[sb.length] = "/images/icons/PreviousPage.gif' title='Previous Page' border='0' /></a>";
+         sb[sb.length] = "/images/icons/PreviousPage.gif' title='";
+         sb[sb.length] = this.msgPreviousPage;
+         sb[sb.length] = "' border='0' /></a>";
       }
       else
       {
@@ -532,7 +623,9 @@ Alfresco.OpenSearchClient.prototype =
       sb[sb.length] = startIndex;
       sb[sb.length] = "&nbsp;-&nbsp;";
       sb[sb.length] = endIndex;
-      sb[sb.length] = "&nbsp;of&nbsp;";
+      sb[sb.length] = "&nbsp;";
+      sb[sb.length] = this.msgOf;
+      sb[sb.length] = "&nbsp;";
       sb[sb.length] = totalResults;
       sb[sb.length] = "&nbsp;&nbsp;";
       
@@ -546,7 +639,9 @@ Alfresco.OpenSearchClient.prototype =
          sb[sb.length] = nextUrl;
          sb[sb.length] = "&quot;);'><img src='";
          sb[sb.length] = getContextPath();
-         sb[sb.length] = "/images/icons/NextPage.gif' title='Next Page' border='0' /></a>";
+         sb[sb.length] = "/images/icons/NextPage.gif' title='";
+         sb[sb.length] = this.msgNextPage;
+         sb[sb.length] = "' border='0' /></a>";
       }
       else
       {
@@ -567,7 +662,9 @@ Alfresco.OpenSearchClient.prototype =
          sb[sb.length] = lastUrl;
          sb[sb.length] = "&quot;);'><img src='";
          sb[sb.length] = getContextPath();
-         sb[sb.length] = "/images/icons/LastPage.gif' title='Last Page' border='0' /></a>";
+         sb[sb.length] = "/images/icons/LastPage.gif' title='";
+         sb[sb.length] = this.msgLastPage;
+         sb[sb.length] = "' border='0' /></a>";
       }
       else
       {
@@ -595,6 +692,11 @@ Alfresco.OpenSearchEngine.processSearchResults = function(ajaxResponse)
       var engineId = ajaxResponse.argument[0];
       var clientInstance = ajaxResponse.argument[1];
       var feed = ajaxResponse.responseXML.documentElement;
+
+      // reset the search in progress flag, we do this on the 
+      // first set of results as this is enough time to stop
+      // the double press of the enter key
+      clientInstance.searchInProgress = false;
       
       // if the name of the feed element is "rss", get the channel child element
       if (feed.tagName == "rss")
@@ -674,6 +776,6 @@ Alfresco.OpenSearchEngine.handleSearchError = function(ajaxResponse)
    var clientInstance = ajaxResponse.argument[1];
    var engineLabel = clientInstance.enginesById[engineId].label;
    
-   handleErrorYahoo("Failed to retrieve search results for '" + engineLabel + 
-         "': " + ajaxResponse.status + " " + ajaxResponse.statusText);
+   var errorMsg = clientInstance.msgFailedSearch.replace("{0}", engineLabel);
+   handleErrorYahoo(errorMsg + ": " + ajaxResponse.status + " " + ajaxResponse.statusText);
 }

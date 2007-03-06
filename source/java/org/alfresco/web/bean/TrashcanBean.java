@@ -1184,7 +1184,7 @@ public class TrashcanBean implements IContextListener
          }
          else
          {
-            img = Utils.getFileTypeImage(node.getName(), false);
+            img = Utils.getFileTypeImage(node.getName(), true);
          }
          buf.append("<img width=16 height=16 alt='' src='").append(contextPath).append(img).append("'>");
          buf.append("</td><td>");

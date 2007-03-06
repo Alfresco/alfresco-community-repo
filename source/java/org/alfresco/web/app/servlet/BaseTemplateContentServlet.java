@@ -63,7 +63,7 @@ import org.apache.commons.logging.Log;
  */
 public abstract class BaseTemplateContentServlet extends BaseServlet
 {
-   private static final String MIMETYPE_HTML = "text/html";
+   private static final String MIMETYPE_HTML = "text/html;charset=utf-8";
 
    private static final long serialVersionUID = -4123407921997235977L;
 

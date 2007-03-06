@@ -32,8 +32,10 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Interface for document property extracters.
  * 
  * @author Jesper Steen Møller
+ * @author Derek Hulley
  */
 public interface MetadataExtracter
 {
@@ -70,11 +72,32 @@ public interface MetadataExtracter
      * The source mimetype <b>must</b> be available on the
      * {@link org.alfresco.service.cmr.repository.ContentAccessor#getMimetype()} method
      * of the reader.
+     * <p>
+     * <b>Note:</b> Internally, the extracter may need to perform a mapping of document-specific
+     *              properties to <code>QName</code>.  This is an implementation detail that is
+     *              supported in the default abstract implementations.
      * 
-     * @param reader the source of the content
-     * @param destination the destination of the extraction
-     * @throws ContentIOException if an IO exception occurs
+     * @param reader                the source of the content
+     * @param destination           the map of properties to populate (essentially a return value)
+     * @throws ContentIOException   if a detectable error occurs
+     * 
+     * @see #extract(ContentReader, Map, Map)
      */
     public void extract(ContentReader reader, Map<QName, Serializable> destination) throws ContentIOException;
 
+    /**
+     * 
+     * 
+     * @param reader                the source of the content
+     * @param destination           the map of properties to populate (essentially a return value)
+     * @param propertyMapping       a mapping of internal (document-specific properties) to system
+     *                              properties.
+     * @throws ContentIOException   if a detectable error occurs
+     * 
+     * @see #extract(ContentReader, Map)
+     */
+    public void extract(
+            ContentReader reader,
+            Map<QName, Serializable> destination,
+            Map<String, QName> propertyMapping) throws ContentIOException;
 }

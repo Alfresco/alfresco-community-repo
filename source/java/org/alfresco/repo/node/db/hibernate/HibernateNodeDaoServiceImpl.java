@@ -668,7 +668,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_PRIMARY_CHILD_NODE_STATUSES)
                     .setLong("parentId", parentNode.getId())
-                    .setFlushMode(FlushMode.NEVER);
+                    .setFlushMode(FlushMode.MANUAL);
                 return query.list();
             }
         };
@@ -685,7 +685,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS)
-                    .setFlushMode(FlushMode.NEVER)
+                    .setFlushMode(FlushMode.MANUAL)
                     .setLong("parentId", parentNode.getId());
                 return query.list();
             }
@@ -703,7 +703,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS)
-                    .setFlushMode(FlushMode.NEVER)
+                    .setFlushMode(FlushMode.MANUAL)
                     .setLong("parentId", parentNode.getId());
                 return query.list();
             }
@@ -723,7 +723,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME)
-                    .setFlushMode(FlushMode.NEVER)
+                    .setFlushMode(FlushMode.MANUAL)
                     .setLong("parentId", parentNode.getId())
                     .setParameter("childAssocQName", assocQName);
                 return query.list();
@@ -1188,9 +1188,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.uniqueResult();
             }
         };
-        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        Long count = (Long) getHibernateTemplate().execute(callback);
         // done
-        return count;
+        return count.intValue();
     }
     
     @SuppressWarnings("unchecked")
@@ -1206,9 +1206,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.uniqueResult();
             }
         };
-        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        Long count = (Long) getHibernateTemplate().execute(callback);
         // done
-        return count;
+        return count.intValue();
     }
     
     @SuppressWarnings("unchecked")
@@ -1224,7 +1224,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.uniqueResult();
             }
         };
-        Integer count = (Integer) getHibernateTemplate().execute(callback);
+        Long count = (Long) getHibernateTemplate().execute(callback);
         // done
         return count.intValue();
     }

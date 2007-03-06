@@ -25,12 +25,7 @@
 package org.alfresco.repo.service;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
-import org.alfresco.service.ServiceDescriptor;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -66,8 +61,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 
 /**
@@ -77,33 +70,12 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  * @author David Caruana
  */
 public class ServiceDescriptorRegistry
-    implements BeanFactoryAware, BeanFactoryPostProcessor, ServiceRegistry
+    implements BeanFactoryAware, ServiceRegistry
 {
     // Bean Factory within which the registry lives
     private BeanFactory beanFactory = null;
 
-    // Service Descriptor map
-    private Map<QName, BeanServiceDescriptor> descriptors = new HashMap<QName, BeanServiceDescriptor>();
-
     
-    /* (non-Javadoc)
-     * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
-     */
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException
-    {
-        Map beans = beanFactory.getBeansOfType(ServiceDescriptorMetaData.class);
-        Iterator iter = beans.entrySet().iterator();
-        while (iter.hasNext())
-        {
-            Map.Entry entry = (Map.Entry)iter.next();
-            ServiceDescriptorMetaData metaData = (ServiceDescriptorMetaData)entry.getValue();
-            QName serviceName = QName.createQName(metaData.getNamespace(), (String)entry.getKey());
-            StoreRedirector redirector = (entry.getValue() instanceof StoreRedirector) ? (StoreRedirector)entry.getValue() : null;
-            BeanServiceDescriptor serviceDescriptor = new BeanServiceDescriptor(serviceName, metaData, redirector);
-            descriptors.put(serviceDescriptor.getQualifiedName(), serviceDescriptor);
-        }
-    }
-
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
      */
@@ -117,7 +89,8 @@ public class ServiceDescriptorRegistry
      */
     public Collection<QName> getServices()
     {
-        return Collections.unmodifiableSet(descriptors.keySet());
+        // TODO: Implement
+        throw new UnsupportedOperationException();
     }
 
     /* (non-Javadoc)
@@ -125,15 +98,8 @@ public class ServiceDescriptorRegistry
      */
     public boolean isServiceProvided(QName service)
     {
-        return descriptors.containsKey(service);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getServiceDescriptor(org.alfresco.repo.ref.QName)
-     */
-    public ServiceDescriptor getServiceDescriptor(QName service)
-    {
-        return descriptors.get(service);
+        // TODO: Implement
+        throw new UnsupportedOperationException();
     }
 
     /* (non-Javadoc)

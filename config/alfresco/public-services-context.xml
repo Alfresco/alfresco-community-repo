@@ -4,38 +4,10 @@
 <beans>
     <import resource="classpath:alfresco/public-services-security-context.xml"/>
     
-    <!-- Base Service Descriptor for Alfresco Services -->
-    <bean id="AlfrescoServiceDescriptor" abstract="true" class="org.alfresco.repo.service.ServiceDescriptorAdvisorFactory">
-        <property name="namespace">
-            <value>http://www.alfresco.org</value>
-        </property>
-    </bean>
-    
     <!-- Service Registry -->
     
-    <bean id="ServiceRegistry" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.service.ServiceRegistry</value>
-        </property>
-        <property name="target">
-            <bean class="org.alfresco.repo.service.ServiceDescriptorRegistry"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="ServiceRegistry_descriptor"/>
-            </list>
-        </property>
-    </bean>
-    
-    <bean id="ServiceRegistry_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.ServiceRegistry</value>
-        </property>
-        <property name="description">
-            <value>Repository service registry</value>
-        </property>
-    </bean>
-    
+    <bean id="ServiceRegistry" class="org.alfresco.repo.service.ServiceDescriptorRegistry" />
+        
     <!-- Exception Translation -->
     
     <bean id="exceptionTranslator" class="org.alfresco.repo.security.permissions.impl.ExceptionTranslatorMethodInterceptor"/>
@@ -52,20 +24,10 @@
         <property name="interceptorNames">
             <list>
                 <idref local="exceptionTranslator"/>
-                <idref local="DescriptorService_descriptor"/>
             </list>
         </property>
     </bean>
-    
-    <bean id="DescriptorService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.descriptor.DescriptorService</value>
-        </property>
-        <property name="description">
-            <value>Descriptor service</value>
-        </property>
-    </bean>
-    
+        
     <!-- AuditMethodInterceptor -->
     
     <bean id="AuditMethodInterceptor" class="org.alfresco.repo.audit.AuditMethodInterceptor">
@@ -81,26 +43,6 @@
     <!-- Namespace Service -->
     
     <alias name="namespaceService" alias="NamespaceService"/>
-
-    <bean id="NamespaceService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-    
-    <bean id="NamespaceService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.namespace.NamespaceService</value>
-        </property>
-        <property name="description">
-            <value>Namespace service</value>
-        </property>
-    </bean>
     
     <!-- Transaction Service -->
     
@@ -109,33 +51,12 @@
     <!-- Dictionary Service -->
     
     <alias name="dictionaryService" alias="DictionaryService"/>
-    
-    <bean id="DictionaryService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-    
-    <bean id="DictionaryService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.dictionary.DictionaryService</value>
-        </property>
-        <property name="description">
-            <value>Dictionary Service</value>
-        </property>
-    </bean>
-    
+        
     <!-- Node Service -->
     
     <bean id="NodeService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
-                <value>org.alfresco.service.ServiceDescriptor</value>
                 <value>org.alfresco.service.cmr.repository.NodeService</value>
             </list>
         </property>
@@ -148,7 +69,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="NodeService_security"/>
-                <idref local="NodeService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -167,15 +87,6 @@
         </property>
     </bean>
     
-    <bean id="NodeService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.repository.NodeService</value>
-        </property>
-        <property name="description">
-            <value>Node Service</value>
-        </property>
-    </bean>
-    
     <!-- Content Service -->
     
     <bean id="ContentService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -191,7 +102,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="ContentService_security"/>
-                <idref local="ContentService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -206,28 +116,10 @@
             </props>
         </property>
     </bean>
-    
-    <bean id="ContentService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.repository.ContentService</value>
-        </property>
-        <property name="description">
-            <value>Content Service</value>
-        </property>
-    </bean>
-    
+        
     <!-- Mime Type Service -->
     
     <alias name="mimetypeService" alias="MimetypeService"/>
-    
-    <bean id="MimetypeService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.repository.MimetypeService</value>
-        </property>
-        <property name="description">
-            <value>Mime Type Service</value>
-        </property>
-    </bean>
     
     <!-- Search Service -->
     
@@ -244,7 +136,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="SearchService_security"/>
-                <idref local="SearchService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -257,15 +148,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="SearchService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.search.SearchService</value>
-        </property>
-        <property name="description">
-            <value>Search Service</value>
         </property>
     </bean>
     
@@ -284,7 +166,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="CategoryService_security"/>
-                <idref local="CategoryService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -297,15 +178,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="CategoryService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.search.CategoryService</value>
-        </property>
-        <property name="description">
-            <value>Category Service</value>
         </property>
     </bean>
     
@@ -324,7 +196,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="CopyService_security"/>
-                <idref local="CopyService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -337,15 +208,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="CopyService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.repository.CopyService</value>
-        </property>
-        <property name="description">
-            <value>Copy Service</value>
         </property>
     </bean>
     
@@ -364,7 +226,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="LockService_security"/>
-                <idref local="LockService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -377,15 +238,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="LockService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.lock.LockService</value>
-        </property>
-        <property name="description">
-            <value>Lock Service</value>
         </property>
     </bean>
     
@@ -404,7 +256,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="VersionService_security"/>
-                <idref local="VersionService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -417,15 +268,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="VersionService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.version.VersionService</value>
-        </property>
-        <property name="description">
-            <value>Version Service</value>
         </property>
     </bean>
     
@@ -444,7 +286,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="CheckoutCheckinService_security"/>
-                <idref local="CheckoutCheckinService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -457,15 +298,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="CheckoutCheckinService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.coci.CheckOutCheckInService</value>
-        </property>
-        <property name="description">
-            <value>Version Service</value>
         </property>
     </bean>
     
@@ -484,7 +316,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="RuleService_security"/>
-                <idref local="RuleService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -497,15 +328,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="RuleService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.rule.RuleService</value>
-        </property>
-        <property name="description">
-            <value>Rule Service</value>
         </property>
     </bean>
     
@@ -524,7 +346,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="ImporterService_security"/>
-                <idref local="ImporterService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -539,16 +360,7 @@
             </props>
         </property>
     </bean>
-    
-    <bean id="ImporterService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.view.ImporterService</value>
-        </property>
-        <property name="description">
-            <value>Importer Service</value>
-        </property>
-    </bean>
-    
+        
     <!-- Exporter Service -->
     
     <bean id="ExporterService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -562,7 +374,6 @@
             <list>
                 <idref local="ExporterService_transaction"/>
                 <idref local="AuditMethodInterceptor"/>
-                <idref local="ExporterService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -575,15 +386,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="ExporterService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.view.ExporterService</value>
-        </property>
-        <property name="description">
-            <value>Exporter Service</value>
         </property>
     </bean>
     
@@ -602,7 +404,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="ActionService_security"/>
-                <idref local="ActionService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -615,15 +416,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="ActionService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.action.ActionService</value>
-        </property>
-        <property name="description">
-            <value>Action Service</value>
         </property>
     </bean>
     
@@ -642,7 +434,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="PermissionService_security"/>
-                <idref local="PermissionService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -655,15 +446,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="PermissionService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.security.PermissionService</value>
-        </property>
-        <property name="description">
-            <value>Permission Service</value>
         </property>
     </bean>
     
@@ -682,7 +464,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="AuthorityService_security"/>
-                <idref local="AuthorityService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -695,15 +476,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="AuthorityService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.security.AuthorityService</value>
-        </property>
-        <property name="description">
-            <value>Authority Service</value>
         </property>
     </bean>
     
@@ -722,7 +494,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="OwnableService_security"/>
-                <idref local="OwnableService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -735,15 +506,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="OwnableService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.security.OwnableService</value>
-        </property>
-        <property name="description">
-            <value>OwnableService Service</value>
         </property>
     </bean>
     
@@ -762,7 +524,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="PersonService_security"/>
-                <idref local="PersonService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -775,15 +536,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="PersonService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.security.PersonService</value>
-        </property>
-        <property name="description">
-            <value>PersonService Service</value>
         </property>
     </bean>
     
@@ -802,7 +554,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="AuthenticationService_security"/>
-                <idref local="AuthenticationService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -824,15 +575,6 @@
         </property>
     </bean>
     
-    <bean id="AuthenticationService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.security.AuthenticationService</value>
-        </property>
-        <property name="description">
-            <value>AuthenticationService Service</value>
-        </property>
-    </bean>
-    
     <!-- Template Service -->
     
     <bean id="TemplateService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -848,7 +590,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="TemplateService_security"/>
-                <idref local="TemplateService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -861,15 +602,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="TemplateService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.repository.TemplateService</value>
-        </property>
-        <property name="description">
-            <value>TemplateService Service</value>
         </property>
     </bean>
     
@@ -888,7 +620,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="ScriptService_security"/>
-                <idref local="ScriptService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -901,15 +632,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="ScriptService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.repository.ScriptService</value>
-        </property>
-        <property name="description">
-            <value>ScriptService Service</value>
         </property>
     </bean>
     
@@ -928,7 +650,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="FileFolderService_security"/>
-                <idref bean="FileFolderService_descriptor"/>
                 <idref bean="tempFileMarkerInterceptor"/>
             </list>
         </property>
@@ -946,15 +667,6 @@
                 <prop key="resolve*">${server.transaction.mode.readOnly}</prop>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-     <bean id="FileFolderService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.model.FileFolderService</value>
-        </property>
-        <property name="description">
-            <value>FileFolderService Service</value>
         </property>
     </bean>
     
@@ -1208,7 +920,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                  <idref bean="WorkflowService_security"/>
-                <idref local="WorkflowService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -1223,17 +934,7 @@
             </props>
         </property>
     </bean>
-    
-    <bean id="WorkflowService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.workflow.WorkflowService</value>
-        </property>
-        <property name="description">
-            <value>Workflow Service</value>
-        </property>
-    </bean>
-    
-    
+        
     <!-- Audit Service -->
     
     <bean id="AuditService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1249,7 +950,6 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                  <idref bean="AuditService_security"/>
-                <idref local="AuditService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -1262,15 +962,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="AuditService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.audit.AuditService</value>
-        </property>
-        <property name="description">
-            <value>Audit Service</value>
         </property>
     </bean>
     
@@ -1288,7 +979,6 @@
             <list>
                 <idref local="MultilingualContentService_transaction"/>
                 <idref local="exceptionTranslator"/>
-                <idref local="MultilingualContentService_descriptor"/>
             </list>
         </property>
     </bean>
@@ -1301,15 +991,6 @@
             <props>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
-        </property>
-    </bean>
-    
-    <bean id="MultilingualContentService_descriptor" parent="AlfrescoServiceDescriptor">
-        <property name="interface">
-            <value>org.alfresco.service.cmr.ml.MultilingualContentService</value>
-        </property>
-        <property name="description">
-            <value>Multilingual Content Service</value>
         </property>
     </bean>
     

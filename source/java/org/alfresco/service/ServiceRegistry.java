@@ -122,15 +122,6 @@ public interface ServiceRegistry
     @NotAuditable
     boolean isServiceProvided(QName service);
 
-    /**
-     * Get meta-data about the specified service
-     *
-     * @param service  name of service to retrieve meta data for
-     * @return the service meta data
-     */
-    @NotAuditable
-    ServiceDescriptor getServiceDescriptor(QName service);
-
     /** 
      * Get the specified service.
      *

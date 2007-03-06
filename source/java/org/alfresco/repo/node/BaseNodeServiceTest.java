@@ -406,7 +406,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             .setString(1, nodeRef.getStoreRef().getProtocol())
             .setString(2, nodeRef.getStoreRef().getIdentifier())
             .list();
-        Integer count = (Integer) results.get(0);
+        Long count = (Long) results.get(0);
         return count.intValue();
     }
     

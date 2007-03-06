@@ -182,6 +182,14 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
         }
     }
 
+    public final void extract(
+            ContentReader reader,
+            Map<QName, Serializable> destination,
+            Map<String, QName> propertyMapping) throws ContentIOException
+    {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Override to provide the necessary extraction logic.  Implementations must ensure that the reader
      * is closed before the method exits.

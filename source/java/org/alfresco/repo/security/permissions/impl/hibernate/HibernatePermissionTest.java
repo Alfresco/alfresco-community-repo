@@ -42,7 +42,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.hibernate.ObjectDeletedException;
 
 /**
  * @see org.alfresco.repo.domain.hibernate.PermissionsDaoComponentImpl
@@ -205,23 +204,9 @@ public class HibernatePermissionTest extends BaseSpringTest
         // Check that deletion of the list cascades
         node.setAccessControlList(null);
         getSession().delete(accessControlList);
-        try
-        {
-            getSession().get(DbAccessControlListImpl.class, nodeAclId);
-            fail("Access control list was not deleted");
-        }
-        catch (ObjectDeletedException e)
-        {
-            // expected
-        }
-        try
-        {
-            getSession().get(DbAccessControlEntryImpl.class, aceEntryId);
-            fail("Access control entries were not cascade deleted");
-        }
-        catch (ObjectDeletedException e)
-        {
-            // expected
-        }
+        DbAccessControlEntry deletedAcl = (DbAccessControlEntry) getSession().get(DbAccessControlListImpl.class, nodeAclId);
+        assertNull("Access control list was not deleted", deletedAcl);
+        DbAccessControlEntry deletedAclEntry = (DbAccessControlEntry) getSession().get(DbAccessControlEntryImpl.class, aceEntryId);
+        assertNull("Access control entries were not cascade deleted", deletedAclEntry);
     }
 }

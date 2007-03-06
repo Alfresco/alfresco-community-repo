@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
@@ -53,10 +54,13 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.connection.UserSuppliedConnectionProvider;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
@@ -110,7 +114,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         this.localSessionFactory = localSessionFactory;
     }
-
+    
     public LocalSessionFactoryBean getLocalSessionFactory()
     {
         return localSessionFactory;
@@ -630,6 +634,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             connection.setAutoCommit(false);
             
             Configuration cfg = localSessionFactory.getConfiguration();
+            // Ensure that our static connection provider is used
+            String defaultConnectionProviderFactoryClass = cfg.getProperty(Environment.CONNECTION_PROVIDER);
+            cfg.setProperty(Environment.CONNECTION_PROVIDER, SchemaBootstrapConnectionProvider.class.getName());
+            SchemaBootstrapConnectionProvider.setBootstrapConnection(connection);
+            
             // dump the schema, if required
             if (schemaOuputFilename != null)
             {
@@ -648,6 +657,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             checkSchemaPatchScripts(cfg, session, connection, preUpdateScriptPatches, false);       // check scripts
             checkSchemaPatchScripts(cfg, session, connection, postUpdateScriptPatches, false);      // check scripts
 
+            // Reset the configuration
+            cfg.setProperty(Environment.CONNECTION_PROVIDER, defaultConnectionProviderFactoryClass);
+            
             // all done successfully
             transaction.commit();
         }
@@ -663,12 +675,86 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 throw new AlfrescoRuntimeException(ERR_VALIDATION_FAILED, e);
             }
         }
+        finally
+        {
+            // Remove the connection reference from the threadlocal boostrap
+            SchemaBootstrapConnectionProvider.setBootstrapConnection(null);
+            
+        }
     }
 
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
         // NOOP
+    }
+    
+    /**
+     * This is a workaround for the odd Spring-Hibernate interaction during configuration.
+     * The Hibernate code assumes that schema scripts will be generated during context
+     * initialization.  We want to do it afterwards and have a little more control.  Hence this class.
+     * <p>
+     * The connection that is used will not be closed or manipulated in any way.  This class
+     * merely serves to give the connection to Hibernate.
+     * 
+     * @author Derek Hulley
+     */
+    public static class SchemaBootstrapConnectionProvider extends UserSuppliedConnectionProvider
+    {
+        private static ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<Connection>();
+        
+        public SchemaBootstrapConnectionProvider()
+        {
+        }
+        
+        /**
+         * Set the connection for Hibernate to use for schema generation.
+         */
+        public static void setBootstrapConnection(Connection connection)
+        {
+            threadLocalConnection.set(connection);
+        }
+
+        /**
+         * Unsets the connection.
+         */
+        @Override
+        public void close()
+        {
+            // Leave the connection well alone, just remove it
+            threadLocalConnection.set(null);
+        }
+
+        /**
+         * Does nothing.  The connection was given by a 3rd party and they can close it.
+         */
+        @Override
+        public void closeConnection(Connection conn)
+        {
+        }
+
+        /**
+         * Does nothing.
+         */
+        @Override
+        public void configure(Properties props) throws HibernateException
+        {
+        }
+
+        /**
+         * @see #setBootstrapConnection(Connection)
+         */
+        @Override
+        public Connection getConnection()
+        {
+            return threadLocalConnection.get();
+        }
+
+        @Override
+        public boolean supportsAggressiveRelease()
+        {
+            return false;
+        }
     }
     
     private static final String DIR_SCHEMAS = "schemas";

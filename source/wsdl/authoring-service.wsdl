@@ -15,7 +15,7 @@
    <wsdl:types>
       <schema elementFormDefault="qualified" targetNamespace="http://www.alfresco.org/ws/service/authoring/1.0" xmlns="http://www.w3.org/2001/XMLSchema">
       
-         <xsd:import namespace="http://www.alfresco.org/ws/cml/1.0" schemaLocation="../wsdl/types.xsd"/>
+         <xsd:import namespace="http://www.alfresco.org/ws/model/content/1.0" schemaLocation="../wsdl/types.xsd"/>
          
          <element name="checkout">
             <complexType>
@@ -433,7 +433,8 @@
    </wsdl:portType>
    
    <wsdl:binding name="AuthoringServiceSoapBinding" type="author:AuthoringServiceSoapPort">
-      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>      <wsdl:operation name="checkout">
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdl:operation name="checkout">
          <wsdl:documentation>Checkout a content resource for editing.</wsdl:documentation>
          <wsdlsoap:operation soapAction="http://www.alfresco.org/ws/service/authoring/1.0/checkout"/>
          <wsdl:input>

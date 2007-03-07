@@ -309,24 +309,15 @@ public class CreateWebContentWizard extends BaseContentWizard
          }
       }
       this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
-      
-      // reset all paths and structures to the main store
-      this.createdPath = AVMConstants.getCorrespondingPathInMainStore(this.createdPath);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("reset path " + this.createdPath + " to main store");
 
-      boolean form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null);
-      if (form)
-      {
-         this.formInstanceData = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, this.createdPath));
-         this.renditions = this.formInstanceData.getRenditions();
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
-                         " and " + this.renditions.size() + " to main store");
-      }
       if (this.startWorkflow)
       {
          final WorkflowDefinition wd = this.getForm().getDefaultWorkflow();
+         if (wd == null)
+         {
+            throw new AlfrescoRuntimeException(Application.getMessage(context, "submit_no_workflow_warning"));
+         }
+
          final Map<QName, Serializable> parameters = this.getForm().getDefaultWorkflowParameters();
          
          if (LOGGER.isDebugEnabled())
@@ -334,8 +325,7 @@ public class CreateWebContentWizard extends BaseContentWizard
 
          if (parameters == null)
          {
-            Utils.addErrorMessage(Application.getMessage(context, "submit_workflow_config_error"));
-            return null;
+            throw new AlfrescoRuntimeException(Application.getMessage(context, "submit_workflow_config_error"));
          }
          
          // start the workflow to get access to the start task
@@ -357,7 +347,7 @@ public class CreateWebContentWizard extends BaseContentWizard
                   final List<String> srcPaths = new ArrayList<String>();
                   // construct diffs for selected items for submission
                   final String sandboxName = this.avmBrowseBean.getSandbox();
-                  if (form)
+                  if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
                   {
                      // collect diffs for form data instance and all renditions
                      for (Rendition rendition : this.getRenditions())
@@ -379,10 +369,17 @@ public class CreateWebContentWizard extends BaseContentWizard
                   }
 
                   if (LOGGER.isDebugEnabled())
-                     LOGGER.debug("creating workflow package with " + srcPaths.size() + " files");
+                  {
+                     LOGGER.debug("creating workflow package with " + srcPaths.size() + " files: {");
+                     for (final String srcPath : srcPaths)
+                     {
+                        LOGGER.debug("-- " + srcPath + ",");
+                     }
+                     LOGGER.debug("}");
+                  }
 
                   // Create workflow sandbox for workflow package
-                  SandboxInfo sandboxInfo = SandboxFactory.createWorkflowSandbox(storeId);
+                  final SandboxInfo sandboxInfo = SandboxFactory.createWorkflowSandbox(storeId);
 
                   final NodeRef packageNodeRef = 
                      AVMWorkflowUtil.createWorkflowPackage(srcPaths,
@@ -396,7 +393,10 @@ public class CreateWebContentWizard extends BaseContentWizard
 
                   parameters.put(WorkflowModel.ASSOC_PACKAGE, packageNodeRef);
                   // TODO: capture label and comment?
-                  parameters.put(AVMWorkflowUtil.PROP_LABEL, form ? this.formInstanceData.getName() : this.getFileName());
+                  parameters.put(AVMWorkflowUtil.PROP_LABEL, 
+                                 MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null 
+                                 ? this.formInstanceData.getName() 
+                                 : this.getFileName());
                   parameters.put(AVMWorkflowUtil.PROP_FROM_PATH, AVMConstants.buildStoreRootPath(sandboxName));
                     
                   // update start task with submit parameters
@@ -416,6 +416,25 @@ public class CreateWebContentWizard extends BaseContentWizard
       
       // return the default outcome
       return outcome;
+   }
+
+   @Override
+   protected String doPostCommitProcessing(final FacesContext facesContext, final String outcome)
+   {
+      // reset all paths and structures to the main store
+      this.createdPath = AVMConstants.getCorrespondingPathInMainStore(this.createdPath);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("reset path " + this.createdPath + " to main store");
+
+      if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
+      {
+         this.formInstanceData = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, this.createdPath));
+         this.renditions = this.formInstanceData.getRenditions();
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
+                         " and " + this.renditions.size() + " to main store");
+      }
+      return super.doPostCommitProcessing(facesContext, outcome);
    }
    
    @Override

@@ -82,7 +82,7 @@
             <permissions>
                <permission allow="true">Write</permission>
             </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowDeletedEvaluator</evaluator>
             <label-id>submit</label-id>
             <image>/images/icons/submit.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -97,7 +97,7 @@
             <permissions>
                <permission allow="true">Write</permission>
             </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowDeletedEvaluator</evaluator>
             <label-id>revert</label-id>
             <image>/images/icons/revert.gif</image>
             <action-listener>#{AVMBrowseBean.revertNode}</action-listener>

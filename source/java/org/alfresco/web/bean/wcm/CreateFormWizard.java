@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
@@ -62,6 +63,7 @@ import org.alfresco.web.forms.RenderingEngine;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.RenderingEngineTemplateImpl;
 import org.alfresco.web.forms.XMLUtil;
+import org.alfresco.web.forms.xforms.FormBuilderException;
 import org.alfresco.web.forms.xforms.SchemaUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
@@ -615,7 +617,16 @@ public class CreateFormWizard
          try
          {
             final Document d = XMLUtil.parse(this.getSchemaFile());
-            this.schema = SchemaUtil.parseSchema(d);
+            try
+            {
+               this.schema = SchemaUtil.parseSchema(d, true);
+            }
+            catch (FormBuilderException fbe)
+            {
+               this.schema = SchemaUtil.parseSchema(d, false);
+               LOGGER.warn("non fatal errors encountered parsing schema " + this.getFileName(FILE_SCHEMA) + 
+                           "\n " + fbe.getMessage());
+            }
          }
          catch (Exception e)
          {

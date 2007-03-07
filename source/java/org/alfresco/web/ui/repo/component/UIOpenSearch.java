@@ -115,48 +115,49 @@ public class UIOpenSearch extends SelfRenderingComponent
          out.write("', '");
          out.write(engine.getUrl());
          out.write("');\n");
-         
-         // pass in NLS strings
-         out.write(clientId);
-         out.write(".setMsgNoResults(\"");
-         out.write(Application.getMessage(context, "no_results"));
-         out.write("\");\n");
-         
-         out.write(clientId);
-         out.write(".setMsgOf(\"");
-         out.write(Application.getMessage(context, "of"));
-         out.write("\");\n");
-         
-         out.write(clientId);
-         out.write(".setMsgFailedGenerateUrl(\"");
-         out.write(Application.getMessage(context, "failed_gen_url"));
-         out.write("\");\n");
-         
-         out.write(clientId);
-         out.write(".setMsgFailedSearch(\"");
-         out.write(Application.getMessage(context, "failed_search"));
-         out.write("\");\n");
-         
-         out.write(clientId);
-         out.write(".setMsgFirstPage(\"");
-         out.write(Application.getMessage(context, "first_page"));
-         out.write("\");\n");
-         
-         out.write(clientId);
-         out.write(".setMsgPreviousPage(\"");
-         out.write(Application.getMessage(context, "prev_page"));
-         out.write("\");\n");
-         
-         out.write(clientId);
-         out.write(".setMsgNextPage(\"");
-         out.write(Application.getMessage(context, "next_page"));
-         out.write("\");\n");
-         
-         out.write(clientId);
-         out.write(".setMsgLastPage(\"");
-         out.write(Application.getMessage(context, "last_page"));
-         out.write("\");\n");
       }
+      
+      // pass in NLS strings
+      out.write(clientId);
+      out.write(".setMsgNoResults(\"");
+      out.write(Application.getMessage(context, "no_results"));
+      out.write("\");\n");
+      
+      out.write(clientId);
+      out.write(".setMsgOf(\"");
+      out.write(Application.getMessage(context, "of"));
+      out.write("\");\n");
+      
+      out.write(clientId);
+      out.write(".setMsgFailedGenerateUrl(\"");
+      out.write(Application.getMessage(context, "failed_gen_url"));
+      out.write("\");\n");
+      
+      out.write(clientId);
+      out.write(".setMsgFailedSearch(\"");
+      out.write(Application.getMessage(context, "failed_search"));
+      out.write("\");\n");
+      
+      out.write(clientId);
+      out.write(".setMsgFirstPage(\"");
+      out.write(Application.getMessage(context, "first_page"));
+      out.write("\");\n");
+      
+      out.write(clientId);
+      out.write(".setMsgPreviousPage(\"");
+      out.write(Application.getMessage(context, "prev_page"));
+      out.write("\");\n");
+      
+      out.write(clientId);
+      out.write(".setMsgNextPage(\"");
+      out.write(Application.getMessage(context, "next_page"));
+      out.write("\");\n");
+      
+      out.write(clientId);
+      out.write(".setMsgLastPage(\"");
+      out.write(Application.getMessage(context, "last_page"));
+      out.write("\");\n");
+         
       out.write("</script>\n");
       
       // write out the HTML

@@ -658,12 +658,14 @@ public class ManageTaskDialog extends BaseDialogBean
                                               WCMModel.PROP_AVM_DIR_INDIRECTION);
                final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
                final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
-               LOGGER.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
                for (AVMDifference d : this.avmSyncService.compare(-1, packageAvmPath,
                                                                   -1, stagingAvmPath,
                                                                   null))
                {
-                  LOGGER.debug("got difference " + d);
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("got difference " + d);
                   if (d.getDifferenceCode() == AVMDifference.NEWER ||
                       d.getDifferenceCode() == AVMDifference.CONFLICT)
                   {

@@ -173,8 +173,8 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
         m_nodeService = serviceRegistry.getNodeService();
         m_transactionService = serviceRegistry.getTransactionService();
 
-        m_authService = (AuthenticationService) ctx.getBean("authenticationService");
-        m_authComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        m_authService = (AuthenticationService) ctx.getBean("AuthenticationService");
+        m_authComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
         m_personService = (PersonService) ctx.getBean("personService");
         m_configService = (ConfigService) ctx.getBean("webClientConfigService");
         

@@ -140,18 +140,7 @@ public class AVMNode extends Node implements Map<String, Object>
       this.avmRef = avmRef;
       this.version = -1;      // TODO: always -1 for now...
       this.id = avmRef.getPath();
-   }
-   
-   /**
-    * Constructor
-    * 
-    * @param avmRef     The AVMNodeDescriptor that describes this node
-    * @param deleted    True if the node represents a ghosted deleted node
-    */
-   public AVMNode(AVMNodeDescriptor avmRef, boolean deleted)
-   {
-      this(avmRef);
-      this.deleted = deleted;
+      this.deleted = avmRef.isDeleted();
    }
    
    @Override
@@ -196,12 +185,12 @@ public class AVMNode extends Node implements Map<String, Object>
    
    public final boolean isDirectory()
    {
-      return this.avmRef.isDirectory();
+      return this.avmRef.isDirectory() || this.avmRef.isDeletedDirectory();
    }
    
    public final boolean isFile()
    {
-      return this.avmRef.isFile();
+      return this.avmRef.isFile() || this.avmRef.isDeletedFile();
    }
 
    /**

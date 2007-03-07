@@ -41,7 +41,7 @@ function apply_default_workflow_changed(value)
     <f:selectItem id="sdw-apply-default-workflow-yes-item"
 		  itemLabel="#{msg.yes}" itemValue="true"/>
     <f:selectItem id="sdw-apply-defalt-workflow-no-item"
-		  itemLabel="#{msg.no_not_now}" itemValue="false" value="false"/>
+		  itemLabel="#{msg.no_not_now}" itemValue="false"/>
   </h:selectOneRadio>
   <f:verbatim><div style="margin-top:10px">&nbsp;</div></f:verbatim>
   <h:panelGroup id="sdw-pg-2" style="#{WizardManager.bean.applyDefaultWorkflow?'display:block':'display:none'}">

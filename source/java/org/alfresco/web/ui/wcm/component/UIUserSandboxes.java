@@ -787,7 +787,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
                out.write("</td><td style='color:#aaaaaa'>");
                
                // deleted UI actions for this item
-               uiDeletedActions.setContext(new AVMNode(node, true));
+               uiDeletedActions.setContext(new AVMNode(node));
                Utils.encodeRecursive(fc, uiDeletedActions);
             }
             out.write("</td></tr>");

@@ -135,7 +135,7 @@ public class Schema2XForms
                               final ResourceBundle resourceBundle)
       throws FormBuilderException
    {
-      final XSModel schema = SchemaUtil.parseSchema(schemaDocument);
+      final XSModel schema = SchemaUtil.parseSchema(schemaDocument, true);
       this.typeTree = SchemaUtil.buildTypeTree(schema);
 
       //refCounter = 0;
@@ -278,9 +278,13 @@ public class Schema2XForms
 
       if (importedInstanceDocumentElement != null)
       {
+         this.insertUpdatedNodes(importedInstanceDocumentElement,
+                                 defaultInstanceDocumentElement,
+                                 schemaNamespacesMap);
          this.insertPrototypeNodes(importedInstanceDocumentElement,
                                    defaultInstanceDocumentElement,
                                    schemaNamespacesMap);
+         
       }
 
       this.createSubmitElements(xformsDocument, modelSection, rootGroup);
@@ -301,6 +305,117 @@ public class Schema2XForms
    public void reset()
    {
       this.counter.clear();
+   }
+
+   /**
+    * Inserts nodes that exist in the prototype document that are absent in the imported instance.
+    * This is to handle the case where a schema has been updated since the last time the
+    * imported document was modified.
+    *
+    * @param instanceDocumentElement the user provided instance document
+    * @param prototypeInstanceElement the generated prototype instance document
+    * @param schemaNamespaces the namespaces used by the instance document needed for
+    * initializing the xpath context.
+    */
+   private void insertUpdatedNodes(final Element instanceDocumentElement,
+                                   final Element prototypeDocumentElement,
+                                   final HashMap<String, String> schemaNamespaces)
+   {
+      LOGGER.debug("updating imported instance document");
+      final JXPathContext prototypeContext =
+         JXPathContext.newContext(prototypeDocumentElement);
+      prototypeContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
+                                         NamespaceService.ALFRESCO_URI);
+      final JXPathContext instanceContext =
+         JXPathContext.newContext(instanceDocumentElement);
+      instanceContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
+                                        NamespaceService.ALFRESCO_URI);
+
+      // identify all non prototype elements in the prototypeDocument
+      for (final String prefix : schemaNamespaces.keySet())
+      {
+         prototypeContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
+         instanceContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
+      }
+
+      final Iterator it =
+         prototypeContext.iteratePointers("//*[not(@" + NamespaceService.ALFRESCO_PREFIX +
+                                          ":prototype='true')] | //@*[name()!='" + NamespaceService.ALFRESCO_PREFIX + 
+                                          ":prototype']");
+      while (it.hasNext())
+      {
+         final Pointer p = (Pointer)it.next();
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("evaluating prototype node " + p.asPath() +
+                         " normalized " + p.asPath().replaceAll("\\[\\d+\\]", ""));
+         }
+
+         String path = p.asPath().replaceAll("\\[\\d+\\]", "");
+         if (path.lastIndexOf("/") == 0)
+         {
+            if (instanceContext.selectNodes(path).size() == 0)
+            {
+               LOGGER.debug("copying " + path + " into imported instance");
+               // remove child elements - we want attributes but don't want to
+               // copy any potential prototyp nodes
+               final Node clone = ((Node)p.getNode()).cloneNode(true);
+               if (clone instanceof Attr)
+               {
+                  instanceDocumentElement.setAttributeNode((Attr)clone);
+               }
+               else
+               {
+                  final NodeList children = clone.getChildNodes();
+                  for (int i = 0; i < children.getLength(); i++)
+                  {
+                     if (children.item(i) instanceof Element)
+                     {
+                        clone.removeChild(children.item(i));
+                     }
+                  }
+                  instanceDocumentElement.appendChild(clone);
+               }
+            }
+         }
+         else
+         {
+            // change path /foo/bar into /foo[not(child::bar)]
+            if (path.indexOf("@") >= 0)
+            {
+               path = path.replaceAll("\\/(@.+)$", "[not($1)]");
+            }
+            else
+            {
+               path = path.replaceAll("\\/([^/]+)$", "[not(child::$1)]");
+            }
+            final List<Node> l = (List<Node>)instanceContext.selectNodes(path);
+            LOGGER.debug("appending node " + ((Node)p.getNode()).getNodeName() +
+                         " to the " + l.size() + " selected nodes matching path " + path);
+            for (Node n : l)
+            {
+               // remove child elements - we want attributes but don't want to
+               // copy any potential prototyp nodes
+               final Node clone = ((Node)p.getNode()).cloneNode(true);
+               if (clone instanceof Attr)
+               {
+                  ((Element)n).setAttributeNode((Attr)clone);
+               }
+               else
+               {
+                  final NodeList children = clone.getChildNodes();
+                  for (int i = 0; i < children.getLength(); i++)
+                  {
+                     if (children.item(i) instanceof Element)
+                     {
+                        clone.removeChild(children.item(i));
+                     }
+                  }
+                  n.appendChild(clone);
+               }
+            }
+         }
+      }
    }
 
    /**

@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.web.action.evaluator;
 
@@ -37,10 +37,11 @@ import org.alfresco.web.bean.wcm.AVMConstants;
 
 /**
  * UI Action Evaluator - return true if the node is not part of an in-progress WCM workflow.
+ * No check for deleted items is made in this evaluator. @see WCMWorkflowEvaluator
  * 
  * @author Kevin Roast
  */
-public class WCMWorkflowEvaluator implements ActionEvaluator
+public class WCMWorkflowDeletedEvaluator implements ActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -53,10 +54,9 @@ public class WCMWorkflowEvaluator implements ActionEvaluator
       final int version = p.getFirst();
       final String path = p.getSecond();
       
-      // evaluate to true if we are not deleted and within a workflow store (i.e. list of resources
-      // in the task dialog) or not part of an already in-progress workflow
-      return ((AVMConstants.isWorkflowStore(AVMConstants.getStoreName(path)) ||
-               avmService.hasAspect(version, path, AVMSubmittedAspect.ASPECT) == false) &&
-              avmService.lookup(version, path) != null);
+      // evaluate to true if we are within a workflow store (i.e. list of resources in the task
+      // dialog) or not part of an already in-progress workflow
+      return (AVMConstants.isWorkflowStore(AVMConstants.getStoreName(path)) ||
+              avmService.hasAspect(version, path, AVMSubmittedAspect.ASPECT) == false);
    }
 }

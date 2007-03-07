@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.*;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.*;
-import org.w3c.dom.Document;
+import org.w3c.dom.*;
 
 /**
  * Provides utility functions for xml schema parsing.
@@ -208,7 +208,8 @@ public class SchemaUtil
       return SchemaUtil.DATA_TYPE_TO_NAME.get(type);
    }
 
-   public static XSModel parseSchema(final Document schemaDocument)
+   public static XSModel parseSchema(final Document schemaDocument,
+                                     final boolean failOnError)
       throws FormBuilderException
    {
       try
@@ -222,13 +223,59 @@ public class SchemaUtil
 
          final DOMImplementationLS lsImpl = (DOMImplementationLS)
             registry.getDOMImplementation("XML 1.0 LS 3.0");
+         if (lsImpl == null)
+         {
+            throw new FormBuilderException("unable to create DOMImplementationLS using " + registry);
+         }
          final LSInput in = lsImpl.createLSInput();
          in.setStringData(XMLUtil.toString(schemaDocument));
 
          final XSImplementation xsImpl = (XSImplementation)
             registry.getDOMImplementation("XS-Loader");
          final XSLoader schemaLoader = xsImpl.createXSLoader(null);
+         final DOMConfiguration config = schemaLoader.getConfig();
+         final LinkedList<DOMError> errors = new LinkedList<DOMError>();
+         config.setParameter("error-handler", new DOMErrorHandler()
+         {
+            public boolean handleError(final DOMError domError)
+            {
+               errors.add(domError);
+               return true;
+            }
+         });
+
          final XSModel result = schemaLoader.load(in);
+         if (failOnError && errors.size() != 0)
+         {
+            final HashSet<String> messages = new HashSet<String>();
+            StringBuilder message = null;
+            for (DOMError e : errors)
+            {
+               message = new StringBuilder();
+               final DOMLocator dl = e.getLocation();
+               if (dl != null)
+               {
+                  message.append("at line ").append(dl.getLineNumber())
+                     .append(" column ").append(dl.getColumnNumber());
+                  if (dl.getRelatedNode() != null)
+                  {
+                     message.append(" node ").append(dl.getRelatedNode().getNodeName());
+                  }
+                  message.append(": ").append(e.getMessage());
+               }
+               messages.add(message.toString());
+            }
+            
+            message = new StringBuilder();
+            message.append(messages.size() > 1 ? "errors" : "error").append(" parsing schema: \n");
+            for (final String s : messages)
+            {
+               message.append(s).append("\n");
+            }
+
+            throw new FormBuilderException(message.toString());
+         }
+
          if (result == null)
          {
             throw new FormBuilderException("invalid schema");

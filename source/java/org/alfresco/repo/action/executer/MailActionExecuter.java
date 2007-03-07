@@ -282,6 +282,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         
                         message.setTo(recipients.toArray(new String[recipients.size()]));
                     }
+                    else
+                    {
+                        // No recipiants have been specified
+                        logger.error("No recipiant has been specified for the mail action");
+                    }
                 }
                 
                 // set subject line

@@ -324,6 +324,34 @@
          </properties>
       </aspect>
       
+      <aspect name="test:withAssociations">
+         <title>Aspect with Associations</title>
+         <associations>
+            <child-association name="test:aspect-child-assoc">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <association name="test:aspect-normal-assoc">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
    </aspects>
 
 </model>

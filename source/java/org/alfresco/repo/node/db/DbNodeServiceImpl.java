@@ -605,7 +605,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // remove the aspect, if present
         boolean removed = node.getAspects().remove(aspectTypeQName);
-        // if the aspect was present, remove the associated properties
+        // if the aspect was present, remove the associated properties and associations
         if (removed)
         {
             Map<QName, PropertyValue> nodeProperties = node.getProperties();
@@ -613,6 +613,36 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             for (QName propertyName : propertyDefs.keySet())
             {
                 nodeProperties.remove(propertyName);
+            }
+            
+            // Remove child associations
+            Map<QName, ChildAssociationDefinition> childAssocDefs = aspectDef.getChildAssociations();
+            Collection<ChildAssoc> childAssocs = nodeDaoService.getChildAssocs(node);
+            for (ChildAssoc childAssoc : childAssocs)
+            {
+                // Ignore if the association type is not defined by the aspect
+                QName childAssocQName = childAssoc.getTypeQName();
+                if (!childAssocDefs.containsKey(childAssocQName))
+                {
+                    continue;
+                }
+                // The association is of a type that should be removed
+                nodeDaoService.deleteChildAssoc(childAssoc, true);
+            }
+            
+            // Remove regular associations
+            Map<QName, AssociationDefinition> assocDefs = aspectDef.getAssociations();
+            List<NodeAssoc> nodeAssocs = nodeDaoService.getTargetNodeAssocs(node);
+            for (NodeAssoc nodeAssoc : nodeAssocs)
+            {
+                // Ignore if the association type is not defined by the aspect
+                QName nodeAssocQName = nodeAssoc.getTypeQName();
+                if (!assocDefs.containsKey(nodeAssocQName))
+                {
+                    continue;
+                }
+                // Delete the association
+                nodeDaoService.deleteNodeAssoc(nodeAssoc);
             }
             
             // Invoke policy behaviours

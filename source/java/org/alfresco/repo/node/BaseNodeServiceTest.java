@@ -124,6 +124,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName ASSOC_TYPE_QNAME_TEST_CONTAINS = ContentModel.ASSOC_CONTAINS;
     public static final QName ASSOC_TYPE_QNAME_TEST_NEXT = QName.createQName(NAMESPACE, "next");
     
+    public static final QName ASPECT_WITH_ASSOCIATIONS = QName.createQName(NAMESPACE, "withAssociations");
+    public static final QName ASSOC_ASPECT_CHILD_ASSOC = QName.createQName(NAMESPACE, "aspect-child-assoc");
+    public static final QName ASSOC_ASPECT_NORMAL_ASSOC = QName.createQName(NAMESPACE, "aspect-normal-assoc");
+    
     public static final QName TYPE_QNAME_TEST_MULTIPLE_TESTER = QName.createQName(NAMESPACE, "multiple-tester");
     public static final QName PROP_QNAME_STRING_PROP_SINGLE = QName.createQName(NAMESPACE, "stringprop-single");
     public static final QName PROP_QNAME_STRING_PROP_MULTIPLE = QName.createQName(NAMESPACE, "stringprop-multiple");
@@ -567,7 +571,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "test-container"),
                 ContentModel.TYPE_CONTAINER);
         NodeRef nodeRef = assocRef.getChildRef();
-        // add the content aspect to the node, but don't supply any properties
+        // add the titled aspect to the node, but don't supply any properties
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(20);
         nodeService.addAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED, properties);
 
@@ -602,6 +606,48 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("Aspect properties not removed",
                 propertiesBefore.size(),
                 propertiesAfter.size());
+    }
+    
+    public void testAspectRemoval() throws Exception
+    {
+        // Create a node to add the aspect to
+        NodeRef sourceNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemoval-source"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        // Create a target for the associations
+        NodeRef targetNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemoval-target"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        // Add the aspect to the source
+        nodeService.addAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS, null);
+        // Make the associations
+        nodeService.addChild(
+                sourceNodeRef,
+                targetNodeRef,
+                ASSOC_ASPECT_CHILD_ASSOC,
+                QName.createQName(NAMESPACE, "aspect-child"));
+        nodeService.createAssociation(sourceNodeRef, targetNodeRef, ASSOC_ASPECT_NORMAL_ASSOC);
+        
+        // Check that the correct associations are present
+        assertEquals("Expected exactly one child",
+                1, nodeService.getChildAssocs(sourceNodeRef).size());
+        assertEquals("Expected exactly one target",
+                1, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
+        
+        // Now remove the aspect
+        nodeService.removeAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS);
+        
+        // Check that the associations were removed
+        assertEquals("Expected exactly one child",
+                0, nodeService.getChildAssocs(sourceNodeRef).size());
+        assertEquals("Expected exactly one target",
+                0, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
     }
     
     public void testCreateNodeNoProperties() throws Exception

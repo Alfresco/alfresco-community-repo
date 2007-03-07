@@ -898,6 +898,9 @@ public class CopyServiceImpl implements CopyService
 		// Get the copy details
 		PolicyScope copyDetails = getCopyDetails(sourceNodeRef, destinationNodeRef.getStoreRef(), false);
 		
+        // Remove the name property from the policy scope to prevent duplicate name exceptions
+        copyDetails.removeProperty(ContentModel.PROP_NAME);
+        
 		// Copy over the top of the destination node
 		copyProperties(destinationNodeRef, copyDetails);
 		copyAspects(destinationNodeRef, copyDetails);

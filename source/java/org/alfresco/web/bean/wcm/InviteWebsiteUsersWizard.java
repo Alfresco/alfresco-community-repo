@@ -109,7 +109,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       // create a sandbox for each user appropriately with permissions based on role
       // build a list of managers who will have full permissions on ALL staging areas
       this.managers = new ArrayList<String>(4);
-      Set<String> excludeUsers = new HashSet(4);
+      Set<String> existingUsers = new HashSet(8);
       if (isStandalone() == false)
       {
          // no website created yet - so we need to build the list of managers from the
@@ -168,7 +168,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
             }
             
             // add each existing user to the exclude this - we cannot add them more than once!
-            excludeUsers.add(username);
+            existingUsers.add(username);
          }
       }
       
@@ -176,16 +176,18 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
       // and create an association to a node to represent each invited user
       this.sandboxInfoList = new LinkedList<SandboxInfo>();
 
+      boolean managersUpdateRequired = false;
       for (UserGroupRole userRole : this.userGroupRoles)
       {
          for (String userAuth : findNestedUserAuthorities(userRole.getAuthority()))
          {
-            if (excludeUsers.contains(userAuth) == false)
+            // create the sandbox if the invited user does not already have one
+            if (existingUsers.contains(userAuth) == false)
             {
                SandboxInfo info = SandboxFactory.createUserSandbox(
                      getAvmStore(), this.managers, userAuth, userRole.getRole());
                
-               sandboxInfoList.add(info);
+               this.sandboxInfoList.add(info);
                
                // create an app:webuser instance for each authority and assoc to the website node
                Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
@@ -196,6 +198,27 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
                      WCMAppModel.ASSOC_WEBUSER,
                      WCMAppModel.TYPE_WEBUSER,
                      props);
+               
+               // if this new user is a manager, we'll need to update the manager permissions applied
+               // to each existing user sandbox - to ensure that new managers have access to them
+               managersUpdateRequired |= (AVMConstants.ROLE_CONTENT_MANAGER.equals(userRole.getRole()));
+            }
+         }
+      }
+      
+      if (isStandalone() == true && managersUpdateRequired == true)
+      {
+         // walk existing sandboxes and reapply manager permissions to include any new manager users
+         List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
+            getNode().getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+         for (ChildAssociationRef ref : userInfoRefs)
+         {
+            NodeRef userInfoRef = ref.getChildRef();
+            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            if (existingUsers.contains(username))
+            {
+               // only need to modify the sandboxes we haven't just created
+               SandboxFactory.updateSandboxManagers(getAvmStore(), this.managers, username);
             }
          }
       }
@@ -288,7 +311,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
          buf.append(userRole.getLabel());
          buf.append("<br>");
       }
-      if (foundCurrentUser == false)
+      if (isStandalone() == false && foundCurrentUser == false)
       {
          buf.append(buildLabelForUserAuthorityRole(
                currentUser, AVMConstants.ROLE_CONTENT_MANAGER));

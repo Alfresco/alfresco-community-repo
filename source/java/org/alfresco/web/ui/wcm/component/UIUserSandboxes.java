@@ -60,6 +60,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.WebProject;
@@ -301,13 +302,17 @@ public class UIUserSandboxes extends SelfRenderingComponent
          // find out the current user role in the web project
          List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
             websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-         String currentUserName = Application.getCurrentUser(context).getUserName();
-         String currentUserRole = getWebProjectUserRole(nodeService, websiteRef, currentUserName, userInfoRefs);
+         User currentUser = Application.getCurrentUser(context);
+         String currentUserName = currentUser.getUserName();
+         String currentUserRole = getWebProjectUserRole(nodeService, websiteRef, currentUser, userInfoRefs);
          
          // sort the user list alphabetically and insert the current user at the top of the list 
          List<UserRoleWrapper> userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userInfoRefs);
          
-         // get the list of users who have a sandbox in the website
+         // output a javascript function we need for multi-select functionality
+         out.write(SCRIPT_MULTISELECT);
+         
+         // walk the list of users who have a sandbox in the website
          int index = 0;
          for (UserRoleWrapper wrapper : userRoleWrappers)
          {
@@ -333,9 +338,6 @@ public class UIUserSandboxes extends SelfRenderingComponent
                {
                   if (logger.isDebugEnabled())
                      logger.debug("Building sandbox view for user store: " + mainStore);
-                  
-                  // output a javascript function we need for multi-select functionality
-                  out.write(SCRIPT_MULTISELECT);
                   
                   // for each user sandbox, generate an outer panel table
                   PanelGenerator.generatePanelStart(out,
@@ -535,19 +537,27 @@ public class UIUserSandboxes extends SelfRenderingComponent
     * @return the role of this user in the current Web Project, or null for no assigned role
     */
    private static String getWebProjectUserRole(
-         NodeService nodeService, NodeRef websiteRef, String currentUser, List<ChildAssociationRef> userInfoRefs)
+         NodeService nodeService, NodeRef websiteRef, User currentUser, List<ChildAssociationRef> userInfoRefs)
    {
       String userrole = null;
       
-      for (ChildAssociationRef ref : userInfoRefs)
+      if (currentUser.isAdmin())
       {
-         NodeRef userInfoRef = ref.getChildRef();
-         String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-         String role = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-         if (currentUser.equals(username))
+         // fake the Content Manager role for an admin user
+         userrole = AVMConstants.ROLE_CONTENT_MANAGER;
+      }
+      else
+      {
+         for (ChildAssociationRef ref : userInfoRefs)
          {
-            userrole = role;
-            break;
+            NodeRef userInfoRef = ref.getChildRef();
+            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String role = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+            if (currentUser.getUserName().equals(username))
+            {
+               userrole = role;
+               break;
+            }
          }
       }
       

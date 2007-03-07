@@ -424,6 +424,39 @@ public final class SandboxFactory
    }
    
    /**
+    * Update the permissions for the list of sandbox managers applied to a user sandbox.
+    * <p>
+    * Ensures that all managers in the list have full WRITE access to the specified user stores.
+    * 
+    * @param storeId    The store id of the sandbox to update
+    * @param managers   The list of authorities who have ContentManager role in the web project
+    * @param username   Username of the user sandbox to update
+    */
+   public static void updateSandboxManagers(
+         final String storeId, final List<String> managers, final String username)
+   {
+      final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      final PermissionService permissionService = services.getPermissionService();
+      
+      final String userStoreName    = AVMConstants.buildUserMainStoreName(storeId, username);
+      final String previewStoreName = AVMConstants.buildUserPreviewStoreName(storeId, username);
+      
+      // apply the manager role permission to the user main sandbox for each manager
+      NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(userStoreName));
+      for (String manager : managers)
+      {
+         permissionService.setPermission(dirRef, manager, AVMConstants.ROLE_CONTENT_MANAGER, true);
+      }
+      
+      // apply the manager role permission to the user preview sandbox for each manager
+      dirRef = AVMNodeConverter.ToNodeRef(-1, AVMConstants.buildStoreRootPath(previewStoreName));
+      for (String manager : managers)
+      {
+         permissionService.setPermission(dirRef, manager, AVMConstants.ROLE_CONTENT_MANAGER, true);
+      }
+   }
+   
+   /**
     * Tag a named store with a DNS path meta-data attribute.
     * The DNS meta-data attribute is set to the system path 'store:/www/avm_webapps'
     * 

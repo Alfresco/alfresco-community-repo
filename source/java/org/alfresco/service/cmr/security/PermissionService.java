@@ -212,7 +212,7 @@ public interface PermissionService
      * Delete all permission for the given authority.
      * 
      * @param nodeRef
-     * @param authority
+     * @param authority (if null then this will match all authorities)
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "authority"})
     public void clearPermission(NodeRef nodeRef, String authority);
@@ -220,9 +220,17 @@ public interface PermissionService
     /**
      * Find and delete a access control entry by node, authentication and permission.
      * 
+     * It is possible to delete 
+     * <ol>
+     * <li> a specific permission;
+     * <li> all permissions for an authority (if the permission is null); 
+     * <li> entries for all authorities that have a specific permission (if the authority is null); and 
+     * <li> all permissions set for the node (if both the permission and authority are null).
+     * </ol> 
+     * 
      * @param nodeRef the node that the entry applies to
-     * @param authority the authority recipient
-     * @param permission the entry permission
+     * @param authority the authority recipient (if null then this will match all authorities)
+     * @param permission the entry permission (if null then this will match all permissions)
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "authority", "permission"})
     public void deletePermission(NodeRef nodeRef, String authority, String permission);

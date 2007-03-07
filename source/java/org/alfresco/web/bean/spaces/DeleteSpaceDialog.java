@@ -86,7 +86,12 @@ public class DeleteSpaceDialog extends BaseDialogBean
          
          if (DELETE_ALL.equals(this.deleteMode))
          {
-            this.nodeService.deleteNode(node.getNodeRef());
+            NodeRef nodeRef = node.getNodeRef();
+            if (this.nodeService.exists(nodeRef))
+            {
+               // The node still exists
+               this.nodeService.deleteNode(node.getNodeRef());
+            }
          }
          else
          {

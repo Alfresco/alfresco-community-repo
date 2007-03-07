@@ -416,7 +416,7 @@
          <!-- Manage Space Rules -->
          <action id="manage_space_rules">
             <permissions>
-               <permission allow="true">CreateChildren</permission>
+               <permission allow="true">ChangePermissions</permission>
             </permissions>
             <label-id>manage_rules</label-id>
             <image>/images/icons/rule.gif</image>

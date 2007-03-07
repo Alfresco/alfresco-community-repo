@@ -40,27 +40,27 @@
    
    <%@ include file="admin-title.jsp" %>
    
-   <h:commandLink action="#{AdminNodeBrowseBean.selectStores}">
-       <h:outputText styleClass="mainSubText" value="Refresh view"/>
-   </h:commandLink>
-   
-   <br>
-   <br>
-   <h:outputText styleClass="mainTitle" value="Stores"/>
-   <br>
-   
-   <h:dataTable id="stores" border="1" value="#{AdminNodeBrowseBean.stores}" var="store">
-       <h:column>
-           <f:facet name="header">
-               <h:outputText value="Reference"/>
-           </f:facet>
-           <h:commandLink action="#{AdminNodeBrowseBean.selectStore}">
-               <h:outputText value="#{store}"/>
-           </h:commandLink>
-       </h:column>
-   </h:dataTable>
-
-   <br>
+   <h:form id="searchForm">
+      <h:commandLink action="#{AdminNodeBrowseBean.selectStores}">
+          <h:outputText styleClass="mainSubText" value="Refresh view"/>
+      </h:commandLink>
+      
+      <br>
+      <br>
+      <h:outputText styleClass="mainTitle" value="Stores"/>
+      <br>
+      
+      <h:dataTable id="stores" border="1" value="#{AdminNodeBrowseBean.stores}" var="store">
+          <h:column>
+              <f:facet name="header">
+                  <h:outputText value="Reference"/>
+              </f:facet>
+              <h:commandLink action="#{AdminNodeBrowseBean.selectStore}">
+                  <h:outputText value="#{store}"/>
+              </h:commandLink>
+          </h:column>
+      </h:dataTable>
+   </h:form>
 </f:view>
 
 </r:page>

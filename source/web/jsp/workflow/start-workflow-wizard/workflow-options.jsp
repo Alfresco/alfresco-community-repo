@@ -54,7 +54,7 @@
                         nextButtonId="next-button" />
 </a:panel>
    
-<h:outputText id="padding" styleClass="paddingRow" value="&nbsp;" escape="false" />
+<h:outputText id="padding1" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel id="resources-panel" label="#{msg.resources}"
       border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
@@ -139,7 +139,7 @@
 
 </a:panel>
 
-<h:outputText id="padding" styleClass="paddingRow" value="&nbsp;" escape="false" />
+<h:outputText id="padding2" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
 <a:panel rendered="false" id="workflow-outline" label="#{msg.workflow_outline}" progressive="true" expanded="false" 
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">

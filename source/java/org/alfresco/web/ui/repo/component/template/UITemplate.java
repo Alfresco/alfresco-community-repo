@@ -247,7 +247,7 @@ public class UITemplate extends SelfRenderingComponent
    }
 
    /**
-    * Return the custom data model to bind template against.
+    * Return the custom data model to bind template against. Not cached.
     * 
     * @return Returns the custom data model to bind template against.
     */
@@ -258,14 +258,14 @@ public class UITemplate extends SelfRenderingComponent
          ValueBinding vb = getValueBinding("model");
          if (vb != null)
          {
-            this.model = vb.getValue(getFacesContext());
+            return vb.getValue(getFacesContext());
          }
       }
       return this.model;
    }
    
    /**
-    * @param model The model to set.
+    * @param model   The model to set.
     */
    public void setModel(Object model)
    {

@@ -650,26 +650,17 @@ public class CheckinCheckoutBean
                    MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype) ||
                    MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
                {
-                  // make content available to the editing screen
+                  // make content available to the text editing screen
                   setEditorOutput(reader.getContentString());
                   
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();
                   this.navigator.setupDispatchContext(node);
-                  String outcome;
-                  if (MimetypeMap.MIMETYPE_XML.equals(mimetype))
-                  {
-                     outcome = "dialog:editXmlInline";
-                  }
-                  else
-                  {
-                     outcome = "dialog:editTextInline";
-                  }
-                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
+                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editTextInline");
                }
                else
                {
-                  // make content available to the editing screen
+                  // make content available to the html editing screen
                   setDocumentContent(reader.getContentString());
                   setEditorOutput(null);
                   

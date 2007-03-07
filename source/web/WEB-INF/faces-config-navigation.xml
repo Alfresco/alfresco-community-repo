@@ -133,10 +133,6 @@
          <from-outcome>editTextInline</from-outcome>
          <to-view-id>/jsp/dialog/edit-text-inline.jsp</to-view-id>
       </navigation-case>
-      <navigation-case>
-         <from-outcome>editXmlInline</from-outcome>
-         <to-view-id>/jsp/dialog/edit-xml-inline.jsp</to-view-id>
-      </navigation-case>
    </navigation-rule>
    
    <!-- Browse screen action outcomes -->

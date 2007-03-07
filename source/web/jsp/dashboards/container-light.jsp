@@ -40,7 +40,7 @@
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
 
-   <h:form acceptCharset="UTF-8" id="dashboard">
+   <h:form acceptcharset="UTF-8" id="dashboard">
    
    <table cellspacing="0" cellpadding="0" border="0" width="100%">
       <tr>

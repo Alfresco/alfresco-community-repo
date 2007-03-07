@@ -40,7 +40,7 @@
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    <f:loadBundle basename="alfresco.version" var="version"/>
    
-   <h:form acceptCharset="UTF-8" id="system-information-form">
+   <h:form acceptcharset="UTF-8" id="system-information-form">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">

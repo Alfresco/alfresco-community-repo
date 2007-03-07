@@ -29,6 +29,12 @@
       <param-value>false</param-value>
       <description>This is an EXPERIMENTAL feature, so leave it off for now!</description>
    </context-param>
+   
+   <context-param>
+      <param-name>org.apache.myfaces.SERIALIZE_STATE_IN_SESSION</param-name>
+      <param-value>false</param-value>
+      <description>Stop MyFaces from Serializing the state to the session</description>
+   </context-param>
 
     <!-- TODO: Change this to false for production -->
     <context-param>

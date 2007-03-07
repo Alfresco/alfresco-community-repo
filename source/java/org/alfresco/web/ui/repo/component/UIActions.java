@@ -57,7 +57,7 @@ import org.alfresco.web.ui.repo.component.evaluator.ActionInstanceEvaluator;
 import org.alfresco.web.ui.repo.component.evaluator.PermissionEvaluator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.myfaces.taglib.UIComponentTagUtils;
+import org.apache.myfaces.shared_impl.taglib.UIComponentTagUtils;
 
 /**
  * @author kevinr

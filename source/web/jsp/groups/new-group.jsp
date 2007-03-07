@@ -62,7 +62,7 @@
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="new-group">
+   <h:form acceptcharset="UTF-8" id="new-group">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">

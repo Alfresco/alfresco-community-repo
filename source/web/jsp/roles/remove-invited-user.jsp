@@ -40,7 +40,7 @@
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
    <%-- set the form name here --%>
-   <h:form acceptCharset="UTF-8" id="remove-user">
+   <h:form acceptcharset="UTF-8" id="remove-user">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">

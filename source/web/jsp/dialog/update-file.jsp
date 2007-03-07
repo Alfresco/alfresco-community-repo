@@ -44,7 +44,7 @@
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
    <%-- set the form name here --%>
-   <h:form acceptCharset="UTF-8" id="update-file1">
+   <h:form acceptcharset="UTF-8" id="update-file1">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -147,7 +147,7 @@
                                  <% } %>
                                  </r:uploadForm>
                                  
-                                 <h:form acceptCharset="UTF-8" id="update-file2">
+                                 <h:form acceptcharset="UTF-8" id="update-file2">
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
                            </td>

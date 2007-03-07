@@ -44,7 +44,7 @@
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
    <%-- set the form name here --%>
-   <h:form acceptCharset="UTF-8" id="checkin-file1">
+   <h:form acceptcharset="UTF-8" id="checkin-file1">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -226,7 +226,7 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width="4"></td>
                </tr>
                
-               <h:form acceptCharset="UTF-8" id="checkin-file2">
+               <h:form acceptcharset="UTF-8" id="checkin-file2">
                
                <%-- Error Messages --%>
                <tr valign="top">

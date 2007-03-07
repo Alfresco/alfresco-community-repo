@@ -76,7 +76,7 @@ import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.ui.common.component.UIStatusMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.myfaces.renderkit.html.HtmlFormRendererBase;
+import org.apache.myfaces.shared_impl.renderkit.html.HtmlFormRendererBase;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
@@ -503,7 +503,7 @@ public final class Utils
             
             // weak, but this seems to be the way Sun RI do it...
             //FormRenderer.addNeededHiddenField(context, name);
-            HtmlFormRendererBase.addHiddenCommandParameter(form, name);
+            HtmlFormRendererBase.addHiddenCommandParameter(context, form, name);
          }
       }
       
@@ -520,7 +520,7 @@ public final class Utils
       
       // weak, but this seems to be the way Sun RI do it...
       //FormRenderer.addNeededHiddenField(context, fieldId);
-      HtmlFormRendererBase.addHiddenCommandParameter(form, fieldId);
+      HtmlFormRendererBase.addHiddenCommandParameter(context, form, fieldId);
       
       return buf.toString();
    }

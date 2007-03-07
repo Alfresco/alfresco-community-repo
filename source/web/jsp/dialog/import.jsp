@@ -43,7 +43,7 @@
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="import-form">
+   <h:form acceptcharset="UTF-8" id="import-form">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -134,7 +134,7 @@
                                  </tr>
                                  </r:uploadForm>
                                  
-                                 <h:form acceptCharset="UTF-8" id="import-upload-end">
+                                 <h:form acceptcharset="UTF-8" id="import-upload-end">
                                  <tr><td class="paddingRow"></td></tr>
                                  <%
                                  ImportBean bean = (ImportBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "ImportDialog");

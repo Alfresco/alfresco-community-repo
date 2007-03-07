@@ -78,7 +78,7 @@
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="simple-workflow-action">
+   <h:form acceptcharset="UTF-8" id="simple-workflow-action">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">

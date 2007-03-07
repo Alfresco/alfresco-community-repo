@@ -55,7 +55,7 @@
    <%-- load a bundle of properties I18N strings here --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="loggedOutForm" >
+   <h:form acceptcharset="UTF-8" id="loggedOutForm" >
    
    <table width=100% height=90% align=center>
       <tr width=100% align=center>

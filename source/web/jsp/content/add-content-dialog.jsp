@@ -54,7 +54,7 @@ if (dialog != null && dialog.getFileName() != null)
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptCharset="UTF-8" id="add-content-upload-start">
+   <h:form acceptcharset="UTF-8" id="add-content-upload-start">
    
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
@@ -169,7 +169,7 @@ if (dialog != null && dialog.getFileName() != null)
                                  </r:uploadForm>
                                  <% } %>
                                  
-                                 <h:form acceptCharset="UTF-8" id="add-content-upload-end" onsubmit="return validate();">
+                                 <h:form acceptcharset="UTF-8" id="add-content-upload-end" onsubmit="return validate();">
                                  <% if (fileUploaded) { %>
                                  <tr>
                                     <td colspan="3">

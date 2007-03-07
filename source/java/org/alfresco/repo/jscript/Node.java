@@ -1390,7 +1390,7 @@ public class Node implements Serializable, Scopeable
         {
             // Copy the content node to a new node
             String copyName = TransformActionExecuter.transformName(this.services.getMimetypeService(), getName(),
-                    mimetype);
+                    mimetype, true);
             NodeRef copyNodeRef = this.services.getCopyService().copy(this.nodeRef, destination,
                     ContentModel.ASSOC_CONTAINS,
                     QName.createQName(ContentModel.PROP_CONTENT.getNamespaceURI(), QName.createValidLocalName(copyName)),

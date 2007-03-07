@@ -204,7 +204,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         
         // Calculate the destination name
         String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
-        String newName = transformName(this.mimetypeService, originalName, mimeType);
+        String newName = transformName(this.mimetypeService, originalName, mimeType, true);
         
         // Since we are overwriting we need to figure out whether the destination node exists
         NodeRef copyNodeRef = null;
@@ -260,7 +260,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
             if (originalTitle != null && originalTitle.length() > 0)
             {
-                String newTitle = transformName(this.mimetypeService, originalTitle, mimeType);
+                String newTitle = transformName(this.mimetypeService, originalTitle, mimeType, false);
                 nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, newTitle);
             }
         }
@@ -317,7 +317,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
      * 
      * @return name with new extension as appropriate for the mimetype
      */
-    public static String transformName(MimetypeService mimetypeService, String original, String newMimetype)
+    public static String transformName(MimetypeService mimetypeService, String original, String newMimetype, boolean alwaysAdd)
     {
         // get the current extension
         int dotIndex = original.lastIndexOf('.');
@@ -326,15 +326,23 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         {
             // we found it
             sb.append(original.substring(0, dotIndex));
+            
+            // add the new extension
+            String newExtension = mimetypeService.getExtension(newMimetype);
+            sb.append('.').append(newExtension);
         }
         else
         {
-            // no extension
+            // no extension so dont add a new one
             sb.append(original);
+            
+            if (alwaysAdd == true)
+            {               
+                // add the new extension
+                String newExtension = mimetypeService.getExtension(newMimetype);
+                sb.append('.').append(newExtension);
+            }
         }
-        // add the new extension
-        String newExtension = mimetypeService.getExtension(newMimetype);
-        sb.append('.').append(newExtension);
         // done
         return sb.toString();
     }

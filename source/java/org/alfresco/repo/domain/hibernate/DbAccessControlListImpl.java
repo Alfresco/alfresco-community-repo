@@ -171,6 +171,9 @@ public class DbAccessControlListImpl extends LifecycleAdapter
             // remove from the entry list
             entry.delete();
         }
+        // Fix issues with deleting and adding permissions
+        // See AR-918
+        this.getSession().flush();
         // done
         if (logger.isDebugEnabled())
         {

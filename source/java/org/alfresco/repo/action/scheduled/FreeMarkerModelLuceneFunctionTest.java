@@ -76,7 +76,7 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
     public void setUp() throws Exception
     {
 
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
 
         this.authenticationComponent.setSystemUserAsCurrentUser();

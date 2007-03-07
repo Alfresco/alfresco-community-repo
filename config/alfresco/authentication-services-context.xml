@@ -124,7 +124,7 @@
             <ref bean="ticketComponent" />
         </property>
         <property name="authenticationComponent">
-            <ref bean="authenticationComponentImpl" />
+            <ref bean="authenticationComponent" />
         </property>
     </bean>
 
@@ -147,7 +147,6 @@
         </property>
     </bean>
     
-    <alias name="authenticationComponent" alias="authenticationComponentImpl"/>  <!-- TODO: Remove -->
     <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl">
         <property name="authenticationDao">
             <ref bean="authenticationDao" />
@@ -166,7 +165,7 @@
     <!-- It should never go to the login screen  so this is not required          -->
     
     <!--
-    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl">
+    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl">
         <property name="accept">
             <value>true</value>
         </property>    

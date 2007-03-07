@@ -57,7 +57,7 @@
             <ref bean="permissionsModelDAO" />
         </property>
         <property name="authenticationComponent">
-            <ref bean="authenticationComponentImpl" />
+            <ref bean="authenticationComponent" />
         </property>
         <property name="authorityService">
             <ref bean="authorityService" />

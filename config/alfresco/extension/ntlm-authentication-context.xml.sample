@@ -17,7 +17,7 @@
     <!--   servers          comma delimted list of server addresses or      -->
     <!--                    names                                           -->
        
-    <bean id="authenticationComponentImpl" class="org.alfresco.repo.security.authentication.ntlm.NTLMAuthenticationComponentImpl">
+    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ntlm.NTLMAuthenticationComponentImpl">
         <property name="useLocalServer">
             <value>true</value>
         </property>

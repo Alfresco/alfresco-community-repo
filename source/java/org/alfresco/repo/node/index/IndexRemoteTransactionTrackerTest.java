@@ -75,7 +75,7 @@ public class IndexRemoteTransactionTrackerTest extends TestCase
         searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         contentStore = (ContentStore) ctx.getBean("fileContentStore");
         ftsIndexer = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
 

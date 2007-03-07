@@ -126,7 +126,7 @@ public class AuthenticationTest extends TestCase
         authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
         pubAuthenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
+        authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");

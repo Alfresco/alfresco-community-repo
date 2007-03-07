@@ -69,7 +69,7 @@ public class AuthorityServiceTest extends TestCase
     public void setUp() throws Exception
     {
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
+        authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         pubAuthorityService = (AuthorityService) ctx.getBean("AuthorityService");

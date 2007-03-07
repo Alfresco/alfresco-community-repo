@@ -5,7 +5,7 @@
    
    <bean id="indexRecoveryComponentBase" abstract="true" >
       <property name="authenticationComponent">
-         <ref bean="authenticationComponentImpl" />
+         <ref bean="authenticationComponent" />
       </property>
       <property name="transactionComponent">
          <ref bean="transactionComponent" />

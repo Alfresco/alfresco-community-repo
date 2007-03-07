@@ -96,7 +96,7 @@ public class SearchServiceTest extends TestCase
     public void setUp() throws Exception
     {
         nodeService = (NodeService) ctx.getBean("dbNodeService");
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponentImpl");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("alfDaoImpl");
         pubSearchService = (SearchService) ctx.getBean("SearchService");

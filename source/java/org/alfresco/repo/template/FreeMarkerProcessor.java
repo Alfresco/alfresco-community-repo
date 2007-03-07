@@ -132,6 +132,10 @@ public class FreeMarkerProcessor implements TemplateProcessor
         // rethrow any exception so we can deal with them
         config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         
+        // localized template lookups off by default - as they create strange noderef lookups
+        // such as workspace://SpacesStore/01234_en_GB - causes problems for ns.exists() on DB2
+        config.setLocalizedLookup(false);
+        
         // set default template encoding
         if (defaultEncoding != null)
         {

@@ -185,6 +185,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
+       if (this.licenseService != null)
+       {
+          this.licenseService.shutdown();
+       }
     }
     
     /**
@@ -395,6 +399,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         public LicenseDescriptor getLicense() throws LicenseException
         {
             return null;
+        }
+
+        public void shutdown()
+        {
         }
     }
     

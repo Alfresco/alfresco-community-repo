@@ -54,4 +54,9 @@ public interface LicenseService
     @NotAuditable
     public LicenseDescriptor getLicense() throws LicenseException;
     
+    /**
+     * Informs the service it is being shutdown
+     */
+    @NotAuditable
+    public void shutdown();
 }

@@ -16,7 +16,7 @@
 
    <context-param>
       <param-name>javax.faces.CONFIG_FILES</param-name>
-      <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,/WEB-INF/faces-config-wcm.xml,WEB-INF/faces-config-custom.xml,/WEB-INF/faces-config-enterprise.xml</param-value>
+      <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,/WEB-INF/faces-config-wcm.xml,/WEB-INF/faces-config-custom.xml,/WEB-INF/faces-config-enterprise.xml</param-value>
    </context-param>
 
    <context-param>

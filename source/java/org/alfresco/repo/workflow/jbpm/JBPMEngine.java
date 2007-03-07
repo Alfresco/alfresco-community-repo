@@ -1501,7 +1501,12 @@ public class JBPMEngine extends BPMEngine
                     {
                         throw new WorkflowException("Task owner '" + value + "' is invalid");
                     }
-                    instance.setActorId((String)value);
+                    String actorId = (String)value;
+                    String existingActorId = instance.getActorId();
+                    if (existingActorId == null || !actorId.equals(existingActorId))
+                    {
+                        instance.setActorId((String)value);
+                    }
                     continue;
                 }
             }

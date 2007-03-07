@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:testtaskassign">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="bpm:startTask" swimlane="initiator" />
+        <transition name="" to="assign" />
+    </start-state>
+
+    <swimlane name="assignee">
+        <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+           <actor>#{bpm_assignee}</actor>
+        </assignment>
+    </swimlane>
+
+    <task-node name="assign">
+        <task name="wf:workflowTask" swimlane="assignee">
+           <event type="task-assign">
+              <script>
+                System.out.println("Task assigned: " + executionContext.getTaskInstance().getActorId());
+              </script>
+           </event>
+        </task>
+        <transition name="" to="end" />
+    </task-node>
+
+    <end-state name="end" />
+
+</process-definition>

@@ -24,6 +24,12 @@
  */
 package org.alfresco.repo.webservice.repository;
 
+import java.util.Set;
+
+import org.alfresco.repo.webservice.types.ResultSetRowNode;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
 /**
@@ -96,5 +102,31 @@ public abstract class AbstractQuerySession implements QuerySession
          this.position = -1;
          queryResult.setQuerySession(null);
       }
+   }
+   
+   /**
+    * Create a result set row node object for the provided node reference
+    * 
+    * @param nodeRef        the node reference
+    * @param nodeService    the node service
+    * @return               the result set row node
+    */
+   protected ResultSetRowNode createResultSetRowNode(NodeRef nodeRef, NodeService nodeService)
+   {
+       // Get the type
+       String type = nodeService.getType(nodeRef).toString();
+       
+       // Get the aspects applied to the node
+       Set<QName> aspects = nodeService.getAspects(nodeRef);
+       String[] aspectNames = new String[aspects.size()];
+       int index = 0;
+       for (QName aspect : aspects)
+       {
+           aspectNames[index] = aspect.toString();
+           index ++;
+       }
+       
+       // Create and return the result set row node
+       return new ResultSetRowNode(nodeRef.getId(), type, aspectNames);
    }
 }

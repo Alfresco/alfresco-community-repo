@@ -116,7 +116,7 @@ public class ResultSetQuerySession extends AbstractQuerySession
             {
                ResultSetRow origRow = searchResults.getRow(x);
                NodeRef nodeRef = origRow.getNodeRef();
-               ResultSetRowNode rowNode = new ResultSetRowNode(nodeRef.getId(), nodeService.getType(nodeRef).toString(), null);
+               ResultSetRowNode rowNode = createResultSetRowNode(nodeRef, nodeService);
             
                // get the data for the row and build up the columns structure
                Map<Path, Serializable> values = origRow.getValues();
@@ -131,7 +131,7 @@ public class ResultSetQuerySession extends AbstractQuerySession
                       attributeName = attributeName.substring(1);
                   }
                
-                  columns[col] = Utils.createNamedValue(dictionaryService, QName.createQName(attributeName), values.get(path)); //new NamedValue(attributeName, value);
+                  columns[col] = Utils.createNamedValue(dictionaryService, QName.createQName(attributeName), values.get(path));
                   col++;
                }
                

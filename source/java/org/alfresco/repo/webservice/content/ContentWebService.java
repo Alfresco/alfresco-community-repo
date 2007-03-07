@@ -144,6 +144,12 @@ public class ContentWebService extends AbstractWebService implements
             // Get the file name
             String filename = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             
+            // Filename may not exist if this node isn't a cm:object 
+            if (filename == null) 
+            { 
+              filename = "file.bin"; 
+            }
+            
             // format the URL that can be used to download the content
             String downloadUrl = MessageFormat.format(BROWSER_URL,
                     new Object[] { req.getScheme(), address,

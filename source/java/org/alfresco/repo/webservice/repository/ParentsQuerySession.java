@@ -100,7 +100,7 @@ public class ParentsQuerySession extends AbstractQuerySession
          {
             ChildAssociationRef assoc = parents.get(x);
             NodeRef parentNodeRef = assoc.getParentRef();
-            ResultSetRowNode rowNode = new ResultSetRowNode(parentNodeRef.getId(), nodeService.getType(parentNodeRef).toString(), null);
+            ResultSetRowNode rowNode = createResultSetRowNode(parentNodeRef, nodeService);
             
             // create columns for all the properties of the node
             // get the data for the row and build up the columns structure

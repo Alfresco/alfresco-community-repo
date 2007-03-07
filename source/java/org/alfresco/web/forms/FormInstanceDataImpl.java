@@ -64,6 +64,11 @@ public class FormInstanceDataImpl
       this.nodeRef = nodeRef;
    }
 
+   public FormInstanceDataImpl(final int version, final String avmPath)
+   {
+      this(AVMNodeConverter.ToNodeRef(version, avmPath));
+   }
+
    /** the name of this rendition */
    public String getName()
    {

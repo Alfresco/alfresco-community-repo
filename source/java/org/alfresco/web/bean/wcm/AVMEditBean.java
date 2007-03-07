@@ -290,6 +290,15 @@ public class AVMEditBean
    }
 
    /**
+    * Returns the name of the form instance data for display purposes.
+    */
+   public String getFormInstanceDataName()
+   {
+      final FormInstanceData fid = new FormInstanceDataImpl(-1, this.getAvmNode().getPath());
+      return fid.getName().replaceAll("(.+)\\..*", "$1");
+   }
+
+   /**
     * Returns the form processor session.
     */
    public FormProcessor.Session getFormProcessorSession()
@@ -448,30 +457,7 @@ public class AVMEditBean
          // regenerate form content
          if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            final FormInstanceData fid = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, avmPath))
-            {
-               @Override
-               public Form getForm() { return AVMEditBean.this.getForm(); }
-            };
-
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("regenerating renditions of " + fid);
-
-            for (Rendition rendition : fid.getRenditions())
-            {
-               try
-               {
-                  rendition.regenerate(fid);
-               }
-               catch (Exception e)
-               {
-
-                  Utils.addErrorMessage("error regenerating " + rendition.getName() + 
-                                        " using " + rendition.getRenderingEngineTemplate().getName() + 
-                                        ": " + e.getMessage(),
-                                        e);
-               }
-            }
+            this.regenerateRenditions();
             final NodeRef[] uploadedFiles = this.formProcessorSession.getUploadedFiles();
 
             if (LOGGER.isDebugEnabled())
@@ -534,7 +520,10 @@ public class AVMEditBean
             
             // commit the transaction
             tx.commit();
-
+            if (this.avmService.hasAspect(-1, node.getPath(), WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+            {
+               this.regenerateRenditions();
+            }
             // Possibly notify virt server
             AVMConstants.updateVServerWebapp(node.getPath(), false);
             
@@ -594,5 +583,33 @@ public class AVMEditBean
       // remove the file upload bean from the session
       FacesContext ctx = FacesContext.getCurrentInstance();
       ctx.getExternalContext().getSessionMap().remove(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
+   }
+
+   private void regenerateRenditions()
+   {
+      final String avmPath = this.getAvmNode().getPath();
+      final FormInstanceData fid = new FormInstanceDataImpl(AVMNodeConverter.ToNodeRef(-1, avmPath))
+      {
+         @Override
+         public Form getForm() { return AVMEditBean.this.getForm(); }
+      };
+
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("regenerating renditions of " + fid);
+
+      for (Rendition rendition : fid.getRenditions())
+      {
+         try
+         {
+            rendition.regenerate(fid);
+         }
+         catch (Exception e)
+         {
+            Utils.addErrorMessage("error regenerating " + rendition.getName() + 
+                                  " using " + rendition.getRenderingEngineTemplate().getName() + 
+                                  ": " + e.getMessage(),
+                                  e);
+         }
+      }
    }
 }

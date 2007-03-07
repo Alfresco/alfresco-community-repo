@@ -113,6 +113,13 @@
       </attribute>
 
       <attribute>
+         <name>formInstanceDataName</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The name of the form instance data being modified</description>
+      </attribute>
+
+      <attribute>
          <name>form</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>

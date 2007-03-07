@@ -24,6 +24,7 @@
 </#if>
   <link rel="search" type="application/opensearchdescription+xml" href="${request.servicePath}/search/keywordsearchdescription.xml"/>
 <#list search.results as row>
+<#attempt>
   <entry>
     <title>${row.name}</title>
     <link rel="alternate" href="${absurl(row.url)}"/>
@@ -36,5 +37,7 @@
     </author> 
     <relevance:score>${row.score}</relevance:score>
   </entry>
+<#recover>
+</#attempt>
 </#list>
 </feed>

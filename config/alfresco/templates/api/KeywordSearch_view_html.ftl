@@ -24,7 +24,8 @@
     </table>
     <br>
     <table>
-<#list search.results as row>            
+<#list search.results as row>
+<#attempt>
       <tr>
       <td><img src="${absurl(row.icon16)}"/></td><td><a href="${absurl(row.url)}">${row.name}</a></td>
       </tr>
@@ -34,6 +35,8 @@
       <td>${row.properties.description}</td>
       </tr>
       </#if>
+<#recover>
+</#attempt>
 </#list>
     </table>
     <br>

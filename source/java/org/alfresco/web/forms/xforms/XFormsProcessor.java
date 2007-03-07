@@ -13,16 +13,13 @@
 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package org.alfresco.web.forms.xforms;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
@@ -76,7 +73,8 @@ public class XFormsProcessor
       "go_up",
       "cancel",
       "upload",
-      "path"
+      "path",
+      "eg"
    };
 
    public XFormsProcessor()
@@ -153,6 +151,25 @@ public class XFormsProcessor
          append("';\n");
       js.append("alfresco_xforms_constants.FORM_INSTANCE_DATA_NAME = '").
          append(session.getFormInstanceDataName()).
+         append("';\n");
+      SimpleDateFormat sdf = (SimpleDateFormat)
+         SimpleDateFormat.getDateInstance(DateFormat.SHORT, 
+                                          Application.getLanguage(fc));
+      js.append("alfresco_xforms_constants.DATE_FORMAT = '").
+         append(sdf.toLocalizedPattern()).
+         append("';\n");
+      sdf = (SimpleDateFormat)
+         SimpleDateFormat.getTimeInstance(DateFormat.SHORT, 
+                                          Application.getLanguage(fc));
+      js.append("alfresco_xforms_constants.TIME_FORMAT = '").
+         append(sdf.toLocalizedPattern()).
+         append("';\n");
+      sdf = (SimpleDateFormat)
+         SimpleDateFormat.getDateTimeInstance(DateFormat.SHORT, 
+                                              DateFormat.SHORT, 
+                                              Application.getLanguage(fc));
+      js.append("alfresco_xforms_constants.DATE_TIME_FORMAT = '").
+         append(sdf.toLocalizedPattern()).
          append("';\n");
       for (String[] ns : JS_NAMESPACES)
       {

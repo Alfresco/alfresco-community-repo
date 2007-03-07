@@ -1,17 +1,28 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            elementFormDefault="qualified">
-  <xs:complexType name="repeat-simple">
+  <xs:complexType name="repeat-min1">
     <xs:sequence>
+      <xs:element name="not-repeated" type="xs:normalizedString" minOccurs="1" maxOccurs="1" default="nr"/>
       <xs:element name="one-to-one" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="zero-to-inf" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="one-to-inf" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="repeat-min0">
+    <xs:sequence>
+      <xs:element name="not-repeated" type="xs:normalizedString" minOccurs="1" maxOccurs="1" default="nr"/>
+      <xs:element name="zero-to-one" type="xs:normalizedString" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="zero-to-inf" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="one-to-inf" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="repeat-nested">
     <xs:complexType>
       <xs:sequence>
-	<xs:element name="repeat-simple" type="repeat-simple" minOccurs="0" maxOccurs="unbounded"/>
-	<xs:element name="not-repeated" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="not-repeated" type="xs:normalizedString" minOccurs="1" maxOccurs="1" default="nr"/>
+	<xs:element name="repeat-simple-min-0-min1" type="repeat-min1" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="repeat-simple-min-1-min0" type="repeat-min0" minOccurs="1" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

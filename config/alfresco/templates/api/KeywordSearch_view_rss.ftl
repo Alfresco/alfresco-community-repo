@@ -28,7 +28,8 @@
   <atom:link rel="last" href="${request.servicePath}/search/keyword?q=${search.searchTerms?url}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${request.guest?string("true","")}&amp;format=${request.format}" type="application/atom+xml"/>
 </#if>
   <atom:link rel="search" type="application/opensearchdescription+xml" href="${request.servicePath}/search/keywordsearchdescription.xml"/>
-<#list search.results as row>            
+<#list search.results as row>
+<#attempt>
   <item>
     <title>${row.name}</title>
     <link>${absurl(row.url)}</link>
@@ -36,6 +37,8 @@
     <pubDate>${xmldate(row.properties.modified)}</pubDate>
     <guid isPermaLink="false">${row.id}</guid>
   </item>
+<#recover>
+</#attempt>
 </#list>
 </channel>
 </rss>

@@ -13,14 +13,7 @@
 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.alfresco.web.bean.wcm;
 
@@ -59,6 +52,7 @@ import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormInstanceDataImpl;
 import org.alfresco.web.forms.FormProcessor;
+import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.forms.RenditionImpl;
 import org.alfresco.web.forms.XMLUtil;
@@ -597,16 +591,15 @@ public class AVMEditBean
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("regenerating renditions of " + fid);
 
-      for (Rendition rendition : fid.getRenditions())
+      for (RenderingEngineTemplate ret : this.getForm().getRenderingEngineTemplates())
       {
          try
          {
-            rendition.regenerate(fid);
+            ret.render(fid);
          }
          catch (Exception e)
          {
-            Utils.addErrorMessage("error regenerating " + rendition.getName() + 
-                                  " using " + rendition.getRenderingEngineTemplate().getName() + 
+            Utils.addErrorMessage("error regenerating rendition using " + ret.getName() + 
                                   ": " + e.getMessage(),
                                   e);
          }

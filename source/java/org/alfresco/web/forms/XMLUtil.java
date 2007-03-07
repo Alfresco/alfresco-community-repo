@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -164,6 +165,37 @@ public class XMLUtil
          XMLUtil.documentBuilder = XMLUtil.getDocumentBuilder(true, false);
       }
       return XMLUtil.documentBuilder;
+   }
+
+   /**
+    * FOR DIAGNOSTIC PURPOSES ONLY - incomplete<br/>
+    * Builds a path to the node relative to the to node provided.
+    * @param from the node from which to build the xpath
+    * @param to an ancestor of <tt>from</tt> which will be the root of the path
+    * @return an xpath to <tt>to</tt> rooted at <tt>from</tt>.
+    */
+   public static String buildXPath(final Element from, final Element to)
+   {
+      String result = "";
+      Node tmp = from;
+      do
+      {
+         Node tmp2 = tmp;
+         int position = 1;
+         while (tmp2.getPreviousSibling() != null)
+         {
+            if (tmp2.getNodeName().equals(tmp.getNodeName()))
+            {
+                position++;
+            }
+            tmp2 = tmp2.getPreviousSibling();
+         }
+         String part = tmp.getNodeName() + "[" + position + "]";
+         result = result == null ? "/" + part : "/" + part + result;
+         tmp = tmp.getParentNode();
+      }
+      while (tmp != to.getParentNode() && tmp != null);
+      return result;
    }
 
    public static DocumentBuilder getDocumentBuilder(final boolean namespaceAware,

@@ -34,7 +34,7 @@
             <nobr><h:outputText styleClass="mainTitle" value="#{msg.title_admin_node_browser}"/></nobr>
          </td>
          <td width="100%" align="right">
-            <h:commandButton value="#{msg.close}" action="adminConsole" />
+            <h:commandButton value="#{msg.close}" action="dialog:close" />
          </td>
       </tr>
    </table>

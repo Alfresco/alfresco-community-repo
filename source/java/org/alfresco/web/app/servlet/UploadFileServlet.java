@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
@@ -127,7 +128,8 @@ public class UploadFileServlet extends BaseServlet
                   if (logger.isDebugEnabled())
                   {
                      logger.debug("Temp file: " + tempFile.getAbsolutePath() + 
-				  " created from upload filename: " + filename);
+                                  " size " + tempFile.length() +  
+                                  " bytes created from upload filename: " + filename);
                   }
                }
             }
@@ -152,7 +154,8 @@ public class UploadFileServlet extends BaseServlet
             {
                logger.debug("Sending back javascript response " + returnPage);
             }
-
+            response.setContentType(MimetypeMap.MIMETYPE_HTML);
+            response.setCharacterEncoding("utf-8");
             final PrintWriter out = response.getWriter();
             out.println("<html><body><script type=\"text/javascript\">");
             out.println(returnPage);
@@ -164,7 +167,7 @@ public class UploadFileServlet extends BaseServlet
             // finally redirect
             if (logger.isDebugEnabled())
             {
-               logger.debug("Upload servicing complete, redirecting to: " + returnPage);
+               logger.debug("redirecting to: " + returnPage);
             }
             
             response.sendRedirect(returnPage);
@@ -173,7 +176,12 @@ public class UploadFileServlet extends BaseServlet
       catch (Throwable error)
       {
          Application.handleServletError(getServletContext(), (HttpServletRequest)request,
-               (HttpServletResponse)response, error, logger, returnPage);
+                                        (HttpServletResponse)response, error, logger, returnPage);
+      }
+
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("upload complete");
       }
    }
 }

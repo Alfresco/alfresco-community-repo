@@ -224,3 +224,8 @@
 	line-height: 20px;
 	min-width: 100px;
 }
+
+.xformsGhostText
+{
+        color: grey;
+}

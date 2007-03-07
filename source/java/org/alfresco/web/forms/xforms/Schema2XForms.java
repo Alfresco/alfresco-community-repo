@@ -93,14 +93,15 @@ public class Schema2XForms
    private final Map<String, Long> counter = new HashMap<String, Long>();
    private String targetNamespace;
 
-   // typeTree
-   // each entry is keyed by the type name
-   // value is an ArrayList that contains the XSTypeDefinition's which
-   // are compatible with the specific type. Compatible means that
-   // can be used as a substituted type using xsi:type
-   // In order for it to be compatible, it cannot be abstract, and
-   // it must be derived by extension.
-   // The ArrayList does not contain its own type + has the other types only once
+   /**
+    * each entry is keyed by the type name
+    * value is an ArrayList that contains the XSTypeDefinition's which
+    * are compatible with the specific type. Compatible means that
+    * can be used as a substituted type using xsi:type
+    * In order for it to be compatible, it cannot be abstract, and
+    * it must be derived by extension.
+    * The ArrayList does not contain its own type + has the other types only once
+    */
    private TreeMap<String, TreeSet<XSTypeDefinition>> typeTree;
 
    /**
@@ -159,6 +160,7 @@ public class Schema2XForms
 
       //check if target namespace
       final StringList schemaNamespaces = schema.getNamespaces();
+      final HashMap<String, String> schemaNamespacesMap = new HashMap<String, String>();
       if (schemaNamespaces.getLength() != 0)
       {
          // will return null if no target namespace was specified
@@ -172,12 +174,16 @@ public class Schema2XForms
                continue;
             }
             final String prefix = schemaDocument.lookupPrefix(schemaNamespaces.item(i));
-            LOGGER.debug("adding namespace " + schemaNamespaces.item(i) +
-                         " with prefix " + prefix +
-                         " to xform and default instance element");
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("adding namespace " + schemaNamespaces.item(i) +
+                            " with prefix " + prefix +
+                            " to xform and default instance element");
+            }
             this.addNamespace(xformsDocument.getDocumentElement(),
                               prefix,
                               schemaNamespaces.item(i));
+            schemaNamespacesMap.put(prefix, schemaNamespaces.item(i));
          }
       }
 
@@ -273,7 +279,8 @@ public class Schema2XForms
       if (importedInstanceDocumentElement != null)
       {
          this.insertPrototypeNodes(importedInstanceDocumentElement,
-                                   defaultInstanceDocumentElement);
+                                   defaultInstanceDocumentElement,
+                                   schemaNamespacesMap);
       }
 
       this.createSubmitElements(xformsDocument, modelSection, rootGroup);
@@ -296,8 +303,18 @@ public class Schema2XForms
       this.counter.clear();
    }
 
+   /**
+    * Inserts prototype nodes into the provided instance document by aggregating insertion
+    * points from the generated prototype instance docment.
+    *
+    * @param instanceDocumentElement the user provided instance document
+    * @param prototypeInstanceElement the generated prototype instance document
+    * @param schemaNamespaces the namespaces used by the instance document needed for
+    * initializing the xpath context.
+    */
    private void insertPrototypeNodes(final Element instanceDocumentElement,
-                                     final Element prototypeDocumentElement)
+                                     final Element prototypeDocumentElement,
+                                     final HashMap<String, String> schemaNamespaces)
    {
       final JXPathContext prototypeContext =
          JXPathContext.newContext(prototypeDocumentElement);
@@ -307,15 +324,20 @@ public class Schema2XForms
          JXPathContext.newContext(instanceDocumentElement);
       instanceContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
                                         NamespaceService.ALFRESCO_URI);
+      for (final String prefix : schemaNamespaces.keySet())
+      {
+         prototypeContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
+         instanceContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
+      }
 
       class PrototypeInsertionData
       {
          final Node prototype;
-         final List nodes;
+         final List<Node> nodes;
          final boolean append;
 
          PrototypeInsertionData(final Node prototype,
-                                final List nodes,
+                                final List<Node> nodes,
                                 final boolean append)
          {
             this.prototype = prototype;
@@ -323,54 +345,140 @@ public class Schema2XForms
             this.append = append;
          }
       };
-      final List<PrototypeInsertionData> prototypesToInsert =
-         new LinkedList<PrototypeInsertionData>();
 
+      final HashMap<String, PrototypeInsertionData> prototypesToInsert = 
+         new HashMap<String, PrototypeInsertionData>();
+      // find all prototype nodes
       final Iterator it =
          prototypeContext.iteratePointers("//*[@" + NamespaceService.ALFRESCO_PREFIX +
-                                          ":prototype='true']");
+                                          ":prototype='true'][ancestor::*[not(@" + NamespaceService.ALFRESCO_PREFIX +
+                                          ":prototype)]]");
+
+      // find all relevant insertion points within the instance document
       while (it.hasNext())
       {
          final Pointer p = (Pointer)it.next();
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("evaluating prototype node " + p.asPath());
+         }
          String path = p.asPath().replaceAll("\\[\\d+\\]", "") + "[last()]";
-         LOGGER.debug("evaluating " + path + " against instance document");
-         List l = instanceContext.selectNodes(path);
+         if (prototypesToInsert.containsKey(path))
+         {
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("already checked path " + path + " - ignoring.");
+            }
+            continue;
+         }
+
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("evaluating " + path + " against instance document");
+         }
+
+         List<Node> l = (List<Node>)instanceContext.selectNodes(path);
          if (l.size() != 0)
          {
-            prototypesToInsert.add(new PrototypeInsertionData((Node)p.getNode(),
-                                                              l,
-                                                              false));
+            // this is a 1 to n repeat - add a prototype node to the list of repeat instances
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("path " + path + " evaluated to " + l.size() + " nodes");
+            }
+            prototypesToInsert.put(path, new PrototypeInsertionData((Node)p.getNode(),
+                                                                    l,
+                                                                    false));
          }
-         else
+
+         if (path.lastIndexOf("/") != 0)
          {
-            int index = path.lastIndexOf('/');
-            path = index == 0 ? "/" : path.substring(0, index);
-            l = instanceContext.selectNodes(path);
-            prototypesToInsert.add(new PrototypeInsertionData((Node)p.getNode(),
-                                                              l,
-                                                              true));
+            // this could be a 0 to n repeat - check if there are any relevant parent
+            // insertion points
+            path = path.replaceAll("\\/([^/]+)\\[last\\(\\)\\]$", "[not(child::$1)]");
+
+            l = (List<Node>)instanceContext.selectNodes(path);
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("path " + path + " evaluated to " + l.size() + " nodes");
+            }
+            prototypesToInsert.put(path, new PrototypeInsertionData((Node)p.getNode(),
+                                                                    l,
+                                                                    true));
+         }
+         else 
+         {
+            // this could be a repeat at the root of the document
+            path = path.replaceAll("\\[last\\(\\)\\]$", "");
+            l = (List<Node>)instanceContext.selectNodes(path);
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("path " + path + " evaluated to " + l.size() + " nodes");
+            }
+            if (l.size() == 0)
+            {
+               l.add(instanceDocumentElement);
+               prototypesToInsert.put(path, new PrototypeInsertionData((Node)p.getNode(),
+                                                                       l,
+                                                                       true));
+            }
          }
       }
-      for (PrototypeInsertionData data : prototypesToInsert)
+
+      // apply prototype nodes to all discovered insertion points
+      if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("adding prototype for " + data.prototype.getNodeName() +
-                      " to " + data.nodes.size() + " nodes");
-         for (Object o : data.nodes)
+         LOGGER.debug("instance dcoument before mutation " + 
+                      XMLUtil.toString(instanceDocumentElement, true));
+      }
+      for (Map.Entry<String, PrototypeInsertionData> me : prototypesToInsert.entrySet())
+      {
+         final PrototypeInsertionData data = me.getValue();
+         if (LOGGER.isDebugEnabled())
          {
-            final Node n = (Node)o;
+            LOGGER.debug("adding prototype for " + data.prototype.getNodeName() + 
+                         " from path " + me.getKey() +
+                         " to " + data.nodes.size() + " nodes");
+         }
+
+         for (final Node n : data.nodes)
+         {
             if (data.append)
             {
+               if (LOGGER.isDebugEnabled())
+               {
+                  LOGGER.debug("appending " + data.prototype.getNodeName() +
+                               " to " + XMLUtil.buildXPath((Element)n, instanceDocumentElement));
+               }
                n.appendChild(data.prototype.cloneNode(true));
             }
             else if (n.getNextSibling() != null)
             {
+               if (LOGGER.isDebugEnabled())
+               {
+                  LOGGER.debug("inserting " + data.prototype.getNodeName() +
+                               " into " + XMLUtil.buildXPath((Element)n.getParentNode(), 
+                                                             instanceDocumentElement) +
+                               " before " + XMLUtil.buildXPath((Element)n.getNextSibling(),
+                                                               instanceDocumentElement));
+               }
                n.getParentNode().insertBefore(data.prototype.cloneNode(true),
                                               n.getNextSibling());
             }
             else
             {
+               if (LOGGER.isDebugEnabled())
+               {
+                  LOGGER.debug("appending " + data.prototype.getNodeName() +
+                               " to " + XMLUtil.buildXPath((Element)n.getParentNode(),
+                                                           instanceDocumentElement));
+               }
                n.getParentNode().appendChild(data.prototype.cloneNode(true));
             }
+         }
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("instance dcoument after mutation " + 
+                         XMLUtil.toString(instanceDocumentElement, true));
          }
       }
    }

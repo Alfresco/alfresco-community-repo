@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:alf="http://www.alfresco.org"
+   xmlns:alfdotcom="http://www.eyestreet.com/alfresco" targetNamespace="http://www.eyestreet.com/alfresco"
+   elementFormDefault="qualified">
+   
+   <!-- Include navigation simpleType definition -->
+   <!-- xs:include schemaLocation="/get_nav_simple_type.jsp" / -->
+   
+   <xs:simpleType name="form-method">
+      <xs:restriction base="xs:normalizedString">
+         <xs:enumeration value="get">
+            <xs:annotation>
+               <xs:appinfo>
+                  <alf:label>GET</alf:label>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="post">
+            <xs:annotation>
+               <xs:appinfo>
+                  <alf:label>POST</alf:label>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+
+   <xs:simpleType name="form-element-type">
+      <xs:restriction base="xs:normalizedString">
+         <xs:enumeration value="text">
+            <xs:annotation>
+               <xs:appinfo>
+                  <alf:label>Text</alf:label>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="textarea">
+            <xs:annotation>
+               <xs:appinfo>
+                  <alf:label>Text Area</alf:label>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="checkbox">
+            <xs:annotation>
+               <xs:appinfo>
+                  <alf:label>Checkbox</alf:label>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="select">
+            <xs:annotation>
+               <xs:appinfo>
+                  <alf:label>Selection (Single)</alf:label>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="selectmulti">
+            <xs:annotation>
+               <xs:appinfo>
+                  <alf:label>Selection (Multiple)</alf:label>
+               </xs:appinfo>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+
+   <xs:complexType name="form-element">
+      <xs:sequence>
+         <xs:element name="id" type="xs:normalizedString" />
+         <xs:element name="type" type="alfdotcom:form-element-type" />
+         <xs:element name="label" type="xs:normalizedString" />
+         <xs:element name="description" type="xs:normalizedString" minOccurs="0" />
+         <xs:element name="default-value" type="xs:normalizedString" minOccurs="0" />
+         <xs:element name="select-values" type="xs:normalizedString" minOccurs="0" />
+         <xs:element name="required" type="xs:boolean" />
+      </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="form-element-hidden">
+      <xs:sequence>
+         <xs:element name="id" type="xs:normalizedString" />
+         <xs:element name="value" type="xs:normalizedString" />
+      </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="form-section">
+      <xs:sequence>
+         <xs:element name="section-title" type="xs:normalizedString" minOccurs="0" />
+         <xs:element name="section-text" type="xs:anyType" minOccurs="0" />
+         <xs:element name="form-elements" type="alfdotcom:form-element" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+   </xs:complexType>
+
+   <xs:element name="web-form">
+      <xs:complexType>
+         <xs:sequence>
+            <xs:element name="id" type="xs:normalizedString">
+               <xs:annotation>
+                  <xs:appinfo>
+                     <alf:label>Form ID</alf:label>
+                  </xs:appinfo>
+               </xs:annotation>
+            </xs:element>
+            <xs:element name="title" type="xs:normalizedString" />
+            <xs:element name="description" type="xs:anyType" minOccurs="0" />
+            <xs:element name="action" type="xs:normalizedString" />
+            <xs:element name="method" type="alfdotcom:form-method" default="post" />
+            <xs:element name="submit-text" type="xs:normalizedString" minOccurs="0" />
+            <!-- xs:element name="section" type="alfdotcom:navigation" / -->
+            <xs:element name="enabled" type="xs:boolean" default="true" />
+            <xs:element name="sections" type="alfdotcom:form-section" minOccurs="1" maxOccurs="unbounded" />
+            <xs:element name="hidden-fields" type="alfdotcom:form-element-hidden" minOccurs="0" maxOccurs="unbounded" />
+         </xs:sequence>
+      </xs:complexType>
+   </xs:element>
+</xs:schema>

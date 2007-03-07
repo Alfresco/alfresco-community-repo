@@ -13,14 +13,8 @@
 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing" */
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 ////////////////////////////////////////////////////////////////////////////////
 // XForms user interface
 //
@@ -35,15 +29,17 @@
 //
 // Initiliaze dojo requirements, tinymce, and add a hook to load the xform.
 ////////////////////////////////////////////////////////////////////////////////
+
 djConfig.bindEncoding = "UTF-8";
-dojo.require("dojo.debug.console");
 dojo.require("dojo.date.common");
-dojo.require("dojo.widget.DebugConsole");
-dojo.require("dojo.widget.DatePicker");
-dojo.require("dojo.widget.TimePicker");
-dojo.require("dojo.widget.Button");
-dojo.require("dojo.widget.Slider");
+dojo.require("dojo.debug.console");
+dojo.require("dojo.lang.assert");
 dojo.require("dojo.lfx.html");
+dojo.require("dojo.widget.Button");
+dojo.require("dojo.widget.DatePicker");
+dojo.require("dojo.widget.DebugConsole");
+dojo.require("dojo.widget.Slider");
+dojo.require("dojo.widget.TimePicker");
 dojo.hostenv.writeIncludes();
 
 function _xforms_init()
@@ -332,7 +328,7 @@ dojo.declare("alfresco.xforms.Widget",
                /** Sets the widget's initial value. */
                setInitialValue: function(value, forceCommit)
                {
-                 this.initialValue = 
+                 this._initialValue = 
                    (typeof value == "string" && value.length == 0 ? null : value);
                  if (forceCommit)
                  {
@@ -346,32 +342,35 @@ dojo.declare("alfresco.xforms.Widget",
                 */
                getInitialValue: function()
                {
-                 if (typeof this.initialValue != "undefined")
+                 if (typeof this._initialValue != "undefined")
                  {
-                   return this.initialValue;
+                   return this._initialValue;
                  }
 
                  var xpath = this._getXPathInInstanceDocument();
                  var d = this.xformsNode.ownerDocument;
                  var contextNode = this.xform.getInstance();
                  dojo.debug("locating " + xpath + " in " + contextNode.nodeName);
-                 var result = _evaluateXPath("/" + xpath, 
-                                             this.xform.getInstance(), 
-                                             XPathResult.FIRST_ORDERED_NODE_TYPE);
-                 if (!result)
+                 this._initialValue = _evaluateXPath("/" + xpath, 
+                                                     this.xform.getInstance(), 
+                                                     XPathResult.FIRST_ORDERED_NODE_TYPE);
+                 if (!this._initialValue)
                  {
                    dojo.debug("unable to resolve xpath  /" + xpath + " for " + this.id);
-                   return null;
+                   this._initialValue = null;
                  }
-                 result = (result.nodeType == dojo.dom.ELEMENT_NODE
-                           ? dojo.dom.textContent(result)
-                           : result.nodeValue);
-                 if (typeof result == "string" && result.length == 0)
+                 else
                  {
-                   result = null;
+                   this._initialValue = (this._initialValue.nodeType == dojo.dom.ELEMENT_NODE
+                                         ? dojo.dom.textContent(this._initialValue)
+                                         : this._initialValue.nodeValue);
+                   if (typeof this._initialValue == "string" && this._initialValue.length == 0)
+                   {
+                     this._initialValue = null;
+                   }
+                   dojo.debug("resolved xpath " + xpath + " to " + this._initialValue);
                  }
-                 dojo.debug("resolved xpath " + xpath + " to " + result);
-                 return result;
+                 return this._initialValue;
                },
 
                /** Produces an xpath to the model node within the instance data document. */
@@ -667,7 +666,7 @@ dojo.declare("alfresco.xforms.NumericalRange",
              alfresco.xforms.Widget,
              function(xform, xformsNode) 
              {
-               this.fractionDigits = (this.xformsNode.hasAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":fractionDigits")
+               this.fractionDigits = (_hasAttribute(this.xformsNode, alfresco_xforms_constants.ALFRESCO_PREFIX + ":fractionDigits")
                                       ? Number(this.xformsNode.getAttribute(alfresco_xforms_constants.ALFRESCO_PREFIX + ":fractionDigits"))
                                       : -1);
              },
@@ -742,7 +741,10 @@ dojo.declare("alfresco.xforms.NumericalRange",
                  
                _hSlider_valueChangedHandler: function(value)
                {
-                 value = Math.round(value * Math.pow(10, this.fractionDigits)) / Math.pow(10, this.fractionDigits);
+                 if (this.fractionDigits >= 0)
+                 {
+                   value = Math.round(value * Math.pow(10, this.fractionDigits)) / Math.pow(10, this.fractionDigits);
+                 }
                  this.currentValueDiv.replaceChild(document.createTextNode("Value: " + value),
                                                    this.currentValueDiv.firstChild);
                  if (!this.widget._isDragInProgress)
@@ -987,10 +989,18 @@ dojo.declare("alfresco.xforms.AbstractSelectWidget",
                    var valid = true;
                    if (binding.constraint)
                    {
-                     valid = _evaluateXPath(binding.constraint, value, XPathResult.BOOLEAN_TYPE);
-                     dojo.debug("evaludated constraint " + binding.constraint + 
-                                " on " + dojo.dom.textContent(value) +
-                                " to " + valid);
+                     if (!dojo.render.html.ie)
+                     {
+                       valid = _evaluateXPath(binding.constraint, value, XPathResult.BOOLEAN_TYPE);
+                       dojo.debug("evaludated constraint " + binding.constraint + 
+                                  " on " + dojo.dom.textContent(value) +
+                                  " to " + valid);
+                     }
+                     else 
+                     {
+                       valid = !(dojo.dom.textContent(value) == dojo.dom.textContent(label) && 
+                                 dojo.dom.textContent(value).match(/^\[.+\]$/));
+                     }
                    }
                    result.push({ 
                      id: value.getAttribute("id"), 
@@ -1356,41 +1366,84 @@ dojo.declare("alfresco.xforms.DatePicker",
              alfresco.xforms.Widget,
              function(xform, xformsNode) 
              {
+               this._noValueSet = (alfresco_xforms_constants.resources["eg"] + " " + 
+                                   dojo.date.format(new Date(), 
+                                                    {datePattern: alfresco_xforms_constants.DATE_FORMAT, 
+                                                     selector: 'dateOnly'}));
              },
              {
+               _createPicker: function()
+               {
+                 var datePickerDiv = document.createElement("div");
+                 this.domNode.parentNode.appendChild(datePickerDiv);
+                   
+                 var dp_initial_value = this.getValue() || dojo.date.toRfc3339(new Date());
+                 this.widget.picker = dojo.widget.createWidget("DatePicker", 
+                                                               { 
+                                                                 value: dp_initial_value
+                                                               }, 
+                                                               datePickerDiv);
+                 this.domContainer.style.height = 
+                   Math.max(this.widget.picker.domNode.offsetHeight +
+                            this.widget.offsetHeight +
+                            dojo.html.getMargin(this.domNode.parentNode).height,
+                            20) + "px";
 
+                 dojo.event.connect(this.widget.picker,
+                                    "onValueChanged", 
+                                    this,
+                                    this._datePicker_valueChangedHandler);
+               },
+
+               _destroyPicker: function()
+               {
+                 if (this.widget.picker)
+                 {
+                   this.domNode.parentNode.removeChild(this.widget.picker.domNode);
+                   this.widget.picker = null;
+                   this.domContainer.style.height = 
+                     Math.max(this.widget.offsetHeight +
+                              dojo.html.getMargin(this.domNode.parentNode).height,
+                              20) + "px";
+                 }
+               },
+               
                /////////////////////////////////////////////////////////////////
                // overridden methods
                /////////////////////////////////////////////////////////////////
 
                render: function(attach_point)
                {
-                 var initial_value = this.getInitialValue() || "";
+                 var initial_value = this.getInitialValue();
                  attach_point.appendChild(this.domNode);
                  this.widget = document.createElement("input");
                  this.widget.setAttribute("id", this.id + "-widget");
                  this.widget.setAttribute("type", "text");
-                 this.widget.setAttribute("value", initial_value);
+                 if (initial_value)
+                 {
+                   var jsDate = dojo.date.fromRfc3339(initial_value);
+                   this.widget.setAttribute("value", 
+                                            dojo.date.format(jsDate,
+                                                             {datePattern: alfresco_xforms_constants.DATE_FORMAT, 
+                                                              selector: 'dateOnly'}));
+                 }
+                 else
+                 {
+                   this.widget.setAttribute("value", this._noValueSet);
+                   dojo.html.addClass(this.widget, "xformsGhostText");
+                 }
                  this.domNode.appendChild(this.widget);
+
+                 var expandoImage = document.createElement("img");
+                 expandoImage.setAttribute("src", alfresco_xforms_constants.WEBAPP_CONTEXT + "/images/icons/action.gif");
+                 expandoImage.align = "absmiddle";
+                 expandoImage.style.margin = "0px 5px";
+
+                 this.domNode.appendChild(expandoImage);
+
+                 dojo.event.connect(expandoImage, "onclick", this, this._expando_clickHandler);
                  dojo.event.connect(this.widget, "onfocus", this, this._dateTextBox_focusHandler);
-               
-                 var datePickerDiv = document.createElement("div");
-                 attach_point.appendChild(datePickerDiv);
-               
-                 var dp_initial_value = (initial_value
-                                         ? initial_value
-                                         : dojo.date.toRfc3339(new Date()));
-                 this.widget.picker = dojo.widget.createWidget("DatePicker", 
-                                                               { 
-                                                                 isHidden: true, 
-                                                                 value: dp_initial_value
-                                                               }, 
-                                                               datePickerDiv);
-                 this.widget.picker.hide();
-                 dojo.event.connect(this.widget.picker,
-                                    "onValueChanged", 
-                                    this,
-                                    this._datePicker_valueChangedHandler);
+                 dojo.event.connect(this.widget, "onchange", this, this._dateTextBox_changeHandler);
                },
 
                setValue: function(value, forceCommit)
@@ -1402,16 +1455,29 @@ dojo.declare("alfresco.xforms.DatePicker",
                  else
                  {
                    alfresco.xforms.DatePicker.superclass.setValue.call(this, value, forceCommit);
-                   this.widget.setAttribute("value", value);
-                   this.widget.picker.setDate(value);
+                   var jsDate = dojo.date.fromRfc3339(value);
+                   this.widget.value = dojo.date.format(jsDate,
+                                                        {datePattern: alfresco_xforms_constants.DATE_FORMAT, 
+                                                         selector: 'dateOnly'});
+                   dojo.html.removeClass(this.widget, "xformsGhostText");
                  }
                },
 
                getValue: function()
                {
-                 return (this.widget.value == null || this.widget.value.length == 0
-                         ? null
-                         : this.widget.value);
+                 if (this.widget.value == null || 
+                     this.widget.value.length == 0 ||
+                     this.widget.value == this._noValueSet)
+                 {
+                   return null;
+                 }
+                 else
+                 {
+                   var jsDate = dojo.date.parse(this.widget.value, 
+                                                {datePattern: alfresco_xforms_constants.DATE_FORMAT, 
+                                                 selector: 'dateOnly'});
+                   return dojo.date.toRfc3339(jsDate, "dateOnly");
+                 }
                },
 
                /////////////////////////////////////////////////////////////////
@@ -1420,24 +1486,32 @@ dojo.declare("alfresco.xforms.DatePicker",
 
                _dateTextBox_focusHandler: function(event)
                {
-                 dojo.html.hide(this.widget);
-                 this.widget.picker.show();
-                 this.domContainer.style.height = 
-                   Math.max(this.widget.picker.domNode.offsetHeight +
-                            dojo.html.getMargin(this.domNode.parentNode).height,
-                            20) + "px";
+                 this._destroyPicker();
+               },
+
+               _dateTextBox_changeHandler: function(event)
+               {
+                 this._commitValueChange();
                },
 
                _datePicker_valueChangedHandler: function(date)
                {
-                 this.widget.picker.hide();
-                 dojo.html.show(this.widget);
-                 this.domContainer.style.height = 
-                   Math.max(this.domNode.parentNode.offsetHeight + 
-                            dojo.html.getMargin(this.domNode.parentNode).height, 
-                            20) + "px";
-                 this.widget.value = dojo.date.toRfc3339(date, "dateOnly");
+                 var rfcDate = dojo.date.toRfc3339(date, "dateOnly");
+                 this._destroyPicker();
+                 this.setValue(rfcDate);
                  this._commitValueChange();
+               },
+
+               _expando_clickHandler: function()
+               {
+                 if (this.widget.picker)
+                 {
+                   this._destroyPicker();
+                 }
+                 else
+                 {
+                   this._createPicker();
+                 }
                }
              });
 
@@ -1446,8 +1520,55 @@ dojo.declare("alfresco.xforms.TimePicker",
              alfresco.xforms.Widget,
              function(xform, xformsNode) 
              {
+               this._noValueSet = (alfresco_xforms_constants.resources["eg"] + " " + 
+                                   dojo.date.format(new Date(), 
+                                                    {timePattern: alfresco_xforms_constants.TIME_FORMAT, 
+                                                     selector: "timeOnly"}));
+               this._xformsFormat = "HH:mm:ss";
              },
              {
+               /** */
+               _createPicker: function()
+               {
+                 var timePickerDiv = document.createElement("div");
+                 this.domNode.appendChild(timePickerDiv);
+                 var jsDate = (this.getValue()
+                               ? dojo.date.parse(this.getValue(),
+                                                 {timePattern: this._xformsFormat, 
+                                                  selector: "timeOnly"})
+                               : new Date());
+                 this.widget.picker = dojo.widget.createWidget("TimePicker", 
+                                                               { 
+                                                                 value: jsDate
+                                                               }, 
+                                                               timePickerDiv);
+                 this.widget.picker.anyTimeContainerNode.innerHTML = "";
+
+                 // don't let it float - it screws up layout somehow
+                 this.widget.picker.domNode.style.cssFloat = "none";
+                 this.domContainer.style.height = 
+                   Math.max(this.widget.picker.domNode.offsetHeight +
+                            this.widget.offsetHeight +
+                            dojo.html.getMargin(this.domNode.parentNode).height,
+                            20) + "px";
+                 dojo.event.connect(this.widget.picker,
+                                    "onValueChanged", 
+                                    this,
+                                    this._timePicker_valueChangedHandler);
+               },
+
+               _destroyPicker: function()
+               {
+                 if (this.widget.picker)
+                 {
+                   this.domNode.removeChild(this.widget.picker.domNode);
+                   this.widget.picker = null;
+                   this.domContainer.style.height = 
+                     Math.max(this.widget.offsetHeight +
+                              dojo.html.getMargin(this.domNode.parentNode).height,
+                              20) + "px";
+                 }
+               },
 
                /////////////////////////////////////////////////////////////////
                // overridden methods
@@ -1455,37 +1576,37 @@ dojo.declare("alfresco.xforms.TimePicker",
 
                render: function(attach_point)
                {
-                 var initial_value = this.getInitialValue() || "";
+                 var initial_value = this.getInitialValue();
                
                  attach_point.appendChild(this.domNode);
-                 this.widget = document.createElement("div");
-//                 this.widget.setAttribute("id", this.id + "-widget");
-                 this.domNode.appendChild(this.widget);
-
+                 this.widget = document.createElement("input");
+                 this.widget.setAttribute("id", this.id + "-widget");
+                 this.widget.setAttribute("type", "text");
                  if (initial_value)
                  {
-                   initial_value = initial_value.split(":");
-                   var date = new Date();
-                   date.setHours(initial_value[0]);
-                   date.setMinutes(initial_value[1]);
-                   initial_value = dojo.widget.TimePicker.util.toRfcDateTime(date);
+                   var jsDate = dojo.date.parse(initial_value, {timePattern: this._xformsFormat, selector: "timeOnly"});
+                   this.widget.setAttribute("value",
+                                            dojo.date.format(jsDate,
+                                                             {timePattern: alfresco_xforms_constants.TIME_FORMAT,
+                                                              selector: "timeOnly"}));
                  }
+                 else
+                 {
+                   this.widget.setAttribute("value", this._noValueSet);
+                   dojo.html.addClass(this.widget, "xformsGhostText");
+                 }
+                 this.domNode.appendChild(this.widget);
 
-                 this.widget.picker = dojo.widget.createWidget("TimePicker", 
-                                                               { 
-                                                                 widgetId: this.id + "-widget",
-                                                                 storedTime: initial_value
-                                                               }, 
-                                                               this.widget);
-                 this.widget.picker.anyTimeContainerNode.innerHTML = "";
+                 var expandoImage = document.createElement("img");
+                 expandoImage.setAttribute("src", alfresco_xforms_constants.WEBAPP_CONTEXT + "/images/icons/action.gif");
+                 expandoImage.align = "absmiddle";
+                 expandoImage.style.margin = "0px 5px";
 
-                 // don't let it float - it screws up layout somehow
-                 this.widget.picker.domNode.style.cssFloat = "none";
-                 this.domNode.style.height = dojo.html.getMarginBox(this.widget.picker.domNode).height + "px";
-                 dojo.event.connect(this.widget.picker,
-                                    "onSetTime", 
-                                    this,
-                                    this._timePicker_setTimeHandler);
+                 this.domNode.appendChild(expandoImage);
+
+                 dojo.event.connect(expandoImage, "onclick", this, this._expando_clickHandler);
+                 dojo.event.connect(this.widget, "onfocus", this, this._timeTextBox_focusHandler);
+                 dojo.event.connect(this.widget, "onchange", this, this._timeTextBox_changeHandler);
                },
 
                setValue: function(value, forceCommit)
@@ -1497,22 +1618,263 @@ dojo.declare("alfresco.xforms.TimePicker",
                  else
                  {
                    alfresco.xforms.TimePicker.superclass.setValue.call(this, value, forceCommit);
-                   this.widget.picker.setDateTime(value);
+                   var jsDate = dojo.date.parse(value, {timePattern: this._xformsFormat, selector: "timeOnly"});
+                   this.widget.value = dojo.date.format(jsDate,
+                                                        {timePattern: alfresco_xforms_constants.TIME_FORMAT,
+                                                         selector: "timeOnly"});
+                   dojo.html.removeClass(this.widget, "xformsGhostText");
                  }
                },
 
                getValue: function()
                {
-                 return dojo.date.strftime(this.widget.picker.time, "%H:%M:00");
+                 if (this.widget.value == null ||
+                     this.widget.value.length == 0 ||
+                     this.widget.value == this._noValueSet)
+                 {
+                   return null;
+                 }
+                 else
+                 {
+                   var jsDate = dojo.date.parse(this.widget.value,
+                                                {timePattern: alfresco_xforms_constants.TIME_FORMAT,
+                                                 selector: "timeOnly"});
+                   return dojo.date.format(jsDate, {timePattern: this._xformsFormat, selector: "timeOnly"});
+                 }
                },
 
                /////////////////////////////////////////////////////////////////
                // DOM event handlers
                /////////////////////////////////////////////////////////////////
+               
+               _timeTextBox_focusHandler: function(event)
+               {
+                 this._destroyPicker();
+               },
 
-               _timePicker_setTimeHandler: function(event)
+               _timeTextBox_changeHandler: function(event)
                {
                  this._commitValueChange();
+               },
+
+               _timePicker_valueChangedHandler: function(date)
+               {
+                 var xfDate = dojo.date.format(date, {timePattern: this._xformsFormat, selector: "timeOnly"});
+                 this.setValue(xfDate);
+                 this._commitValueChange();
+               },
+
+               _expando_clickHandler: function()
+               {
+                 if (this.widget.picker)
+                 {
+                   this._destroyPicker();
+                 }
+                 else
+                 {
+                   this._createPicker();
+                 }
+               }
+             });
+
+/** The date time picker widget which handles xforms widget xf:input with type xf:datetime */
+dojo.declare("alfresco.xforms.DateTimePicker",
+             alfresco.xforms.Widget,
+             function(xform, xformsNode) 
+             {
+               this._noValueSet = (alfresco_xforms_constants.resources["eg"] + " " + 
+                                   dojo.date.format(new Date(), 
+                                                    {datePattern: alfresco_xforms_constants.DATE_TIME_FORMAT,
+                                                     selector: "dateOnly"}));
+             },
+             {
+               /** */
+               _createPicker: function()
+               {
+                 this._pickerDiv = document.createElement("div");
+                 this._pickerDiv.style.position = "relative";
+                 this._pickerDiv.style.width = this.widget.offsetWidth + "px";
+                 this.domNode.appendChild(this._pickerDiv);
+
+                 var datePickerDiv = document.createElement("div");
+                 datePickerDiv.style.position = "absolute";
+                 datePickerDiv.style.left = "0px";
+                 datePickerDiv.style.top = "0px";
+                 this._pickerDiv.appendChild(datePickerDiv);
+
+                 var dp_initial_value = this.getValue() || dojo.date.toRfc3339(new Date());
+                 this.widget.datePicker = dojo.widget.createWidget("DatePicker",
+                                                                   {
+                                                                     value: dp_initial_value
+                                                                   },
+                                                                   datePickerDiv);
+                 var timePickerDiv = document.createElement("div");
+                 timePickerDiv.style.position = "absolute";
+                 timePickerDiv.style.right = "0px";
+                 timePickerDiv.style.top = "0px";
+                 this._pickerDiv.appendChild(timePickerDiv);
+
+                 var jsDate = this.getValue() ? dojo.date.fromRfc3339(this.getValue()) : new Date();
+                 this.widget.timePicker = dojo.widget.createWidget("TimePicker", 
+                                                               { 
+                                                                 value: jsDate
+                                                               }, 
+                                                               timePickerDiv);
+                 this.widget.timePicker.anyTimeContainerNode.innerHTML = "";
+
+                 // don't let it float - it screws up layout somehow
+                 this.widget.timePicker.domNode.style.cssFloat = "none";
+                 this._pickerDiv.style.height = Math.max(this.widget.timePicker.domNode.offsetHeight,
+                                                         this.widget.datePicker.domNode.offsetHeight);
+                 this.domContainer.style.height = 
+                   Math.max(this._pickerDiv.offsetHeight +
+                            this.widget.offsetHeight +
+                            dojo.html.getMargin(this.domNode.parentNode).height,
+                            20) + "px";
+                 dojo.event.connect(this.widget.datePicker,
+                                    "onValueChanged", 
+                                    this,
+                                    this._datePicker_valueChangedHandler);
+                 dojo.event.connect(this.widget.timePicker,
+                                    "onValueChanged", 
+                                    this,
+                                    this._timePicker_valueChangedHandler);
+               },
+
+               _destroyPicker: function()
+               {
+                 if (this._pickerDiv)
+                 {
+                   this.domNode.removeChild(this._pickerDiv);
+                   this.widget.datePicker = null;
+                   this.widget.timePicker = null;
+                   this._pickerDiv = null;
+                   this.domContainer.style.height = 
+                     Math.max(this.widget.offsetHeight +
+                              dojo.html.getMargin(this.domNode.parentNode).height,
+                              20) + "px";
+                 }
+               },
+
+               /////////////////////////////////////////////////////////////////
+               // overridden methods
+               /////////////////////////////////////////////////////////////////
+
+               render: function(attach_point)
+               {
+                 var initial_value = this.getInitialValue();
+               
+                 attach_point.appendChild(this.domNode);
+                 this.widget = document.createElement("input");
+                 this.widget.setAttribute("id", this.id + "-widget");
+                 this.widget.setAttribute("type", "text");
+                 if (initial_value)
+                 {
+                   var jsDate = dojo.date.fromRfc3339(initial_value);
+                   this.widget.setAttribute("value",
+                                            dojo.date.format(jsDate,
+                                                             {timePattern: alfresco_xforms_constants.DATE_TIME_FORMAT,
+                                                              selector: "timeOnly"}));
+                 }
+                 else
+                 {
+                   this.widget.setAttribute("value", this._noValueSet);
+                   dojo.html.addClass(this.widget, "xformsGhostText");
+                 }
+                 this.domNode.appendChild(this.widget);
+                 this.widget.style.width = (3 * this.widget.offsetWidth) + "px";
+
+                 var expandoImage = document.createElement("img");
+                 expandoImage.setAttribute("src", alfresco_xforms_constants.WEBAPP_CONTEXT + "/images/icons/action.gif");
+                 expandoImage.align = "absmiddle";
+                 expandoImage.style.margin = "0px 5px";
+
+                 this.domNode.appendChild(expandoImage);
+
+                 dojo.event.connect(expandoImage, "onclick", this, this._expando_clickHandler);
+                 dojo.event.connect(this.widget, "onfocus", this, this._dateTimeTextBox_focusHandler);
+                 dojo.event.connect(this.widget, "onchange", this, this._dateTimeTextBox_changeHandler);
+               },
+
+               setValue: function(value, forceCommit)
+               {
+                 if (!this.widget)
+                 {
+                   this.setInitialValue(value, forceCommit);
+                 }
+                 else
+                 {
+                   alfresco.xforms.DateTimePicker.superclass.setValue.call(this, value, forceCommit);
+                   var jsDate = dojo.date.fromRfc3339(value);
+                   this.widget.value = dojo.date.format(jsDate,
+                                                        {datePattern: alfresco_xforms_constants.DATE_TIME_FORMAT,
+                                                         selector: "dateOnly"});
+                   dojo.html.removeClass(this.widget, "xformsGhostText");
+                 }
+               },
+
+               getValue: function()
+               {
+                 if (this.widget.value == null ||
+                     this.widget.value.length == 0 ||
+                     this.widget.value == this._noValueSet)
+                 {
+                   return null;
+                 }
+                 else
+                 {
+                   var jsDate = dojo.date.parse(this.widget.value,
+                                                {datePattern: alfresco_xforms_constants.DATE_TIME_FORMAT,
+                                                 selector: "dateOnly"});
+                   return dojo.date.toRfc3339(jsDate);
+                 }
+               },
+
+               /////////////////////////////////////////////////////////////////
+               // DOM event handlers
+               /////////////////////////////////////////////////////////////////
+               
+               _dateTimeTextBox_focusHandler: function(event)
+               {
+                 this._destroyPicker();
+               },
+
+               _dateTimeTextBox_changeHandler: function(event)
+               {
+                 this._commitValueChange();
+               },
+
+               _timePicker_valueChangedHandler: function(date)
+               {
+                 var value = this.getValue() ? dojo.date.fromRfc3339(this.getValue()) : new Date();
+                 value.setHours(date.getHours());
+                 value.setMinutes(date.getMinutes());
+                 value = dojo.date.toRfc3339(value);
+                 this.setValue(value);
+                 this._commitValueChange();
+               },
+
+               _datePicker_valueChangedHandler: function(date)
+               {
+                 var value = this.getValue() ? dojo.date.fromRfc3339(this.getValue()) : new Date();
+                 value.setYear(date.getYear());
+                 value.setMonth(date.getMonth());
+                 value.setDate(date.getDate());
+                 value = dojo.date.toRfc3339(value);
+                 this.setValue(value);
+                 this._commitValueChange();
+               },
+
+               _expando_clickHandler: function()
+               {
+                 if (this._pickerDiv)
+                 {
+                   this._destroyPicker();
+                 }
+                 else
+                 {
+                   this._createPicker();
+                 }
                }
              });
 
@@ -3262,6 +3624,7 @@ dojo.declare("alfresco.xforms.XForm",
                    case "gMonthDay":
                      return new alfresco.xforms.MonthDayPicker(this, xformsNode);
                    case "dateTime":
+                     return new alfresco.xforms.DateTimePicker(this, xformsNode);
                    case "yearMonthDuration":
                    case "dayTimeDuration":
                    // number types
@@ -3486,6 +3849,7 @@ dojo.declare("alfresco.xforms.XForm",
                _handleEventLog: function(events)
                {
                  var prototypeClones = [];
+                 var generatedIds = null;
                  for (var i = 0; i < events.childNodes.length; i++)
                  {
                    if (events.childNodes[i].nodeType != dojo.dom.ELEMENT_NODE)
@@ -3592,6 +3956,8 @@ dojo.declare("alfresco.xforms.XForm",
                      dojo.debug("applying id " + xfe.targetId + 
                                 " to " + node.nodeName + "(" + originalId + ")");
                      node.setAttribute("id", xfe.targetId);
+                     generatedIds = generatedIds || new Object();
+                     generatedIds[xfe.targetId] = originalId;
                      if (prototypeClones.length != 1)
                      {
                        var e = _findElementById(prototypeClones[prototypeClones.length - 2], originalId);
@@ -3607,6 +3973,33 @@ dojo.declare("alfresco.xforms.XForm",
                      var position = Number(xfe.properties["position"]) - 1;
                      var originalId = xfe.properties["originalId"];
                      var clone = prototypeClones.pop();
+                     // walk all nodes of the clone and ensure that they have generated ids.
+                     // those that do not are nested repeats that should not be added
+                     dojo.lang.assert(clone.getAttribute("id") in generatedIds,
+                                      "expected clone id " + clone.getAttribute("id") +
+                                      " to be a generated id");
+                     function _removeNonGeneratedChildNodes(node, ids)
+                     {
+                       var child = node.firstChild;
+                       while (child)
+                       {
+                         var next = child.nextSibling;
+                         if (child.nodeType == dojo.dom.ELEMENT_NODE)
+                         {
+                           if (child.getAttribute("id") in ids)
+                           {
+                             _removeNonGeneratedChildNodes(child, ids);
+                           }
+                           else
+                           {
+                             node.removeChild(child);
+                           }
+                         }
+                         child = next;
+                       }
+                     };
+                     _removeNonGeneratedChildNodes(clone, generatedIds);
+
                      if (prototypeClones.length != 0)
                      {
                        dojo.debug("using parentClone " + prototypeClones.peek().getAttribute("id") + 

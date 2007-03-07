@@ -27,6 +27,7 @@ package org.alfresco.web.ui.repo.component.property;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +78,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
       // and place them in a map keyed by the noderef of the child node
       if (this.originalAssocs == null)
       {
-         this.originalAssocs = new HashMap<String, Object>();
+         this.originalAssocs = new LinkedHashMap<String, Object>();
 
          List assocs = (List)node.getAssociations().get(this.associationName);
          if (assocs != null)
@@ -98,7 +99,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
       if (added == null)
       {
          // if there aren't any added associations for 'associationName' create a map and add it
-         added = new HashMap<String, Object>();
+         added = new LinkedHashMap<String, Object>();
          node.getAddedAssociations().put(this.associationName, (Map)added);
       }
       
@@ -107,7 +108,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
       if (removed == null)
       {
          // if there aren't any added associations for 'associationName' create a map and add it
-         removed = new HashMap<String, Object>();
+         removed = new LinkedHashMap<String, Object>();
          node.getRemovedAssociations().put(this.associationName, (Map)removed);
       }
    }

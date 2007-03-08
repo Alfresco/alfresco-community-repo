@@ -168,7 +168,7 @@ public class FileImporterImpl implements FileImporter
             final File file,
             FileFilter filter,
             boolean recurse,
-            final String containerName) throws Exception
+            final String containerName) throws Throwable
     {
         if (containerName != null)
         {

@@ -1,0 +1,7 @@
+<servicedescription>
+  <shortname>Sample Search</shortname>
+  <description>Demonstrate usage of script and template to implement a search</description>
+  <url format="html" template="/sample/simplesearch?q={search}" />
+  <url format="atom" template="/sample/simplesearch?q={search}&amp;format=atom" />
+  <authentication>user</authentication>
+</servicedescription>

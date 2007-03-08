@@ -1,0 +1,5 @@
+<servicedescription>
+  <shortname>Keyword Search Description</shortname>
+  <description>OpenSearch description document for Alfresco Repository keyword search</description>
+  <url format="opensearchdescription" template="/search/keyword/description.xml" />
+</servicedescription>

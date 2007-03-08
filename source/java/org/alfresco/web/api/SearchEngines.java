@@ -22,8 +22,9 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.api.services;
+package org.alfresco.web.api;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -32,9 +33,9 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.web.api.APIRequest;
-import org.alfresco.web.api.APIResponse;
-import org.alfresco.web.api.ScriptedAPIService;
+import org.alfresco.web.api.framework.APIRequest;
+import org.alfresco.web.api.framework.APIResponse;
+import org.alfresco.web.api.framework.ScriptedAPIService;
 import org.alfresco.web.config.OpenSearchConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,7 +77,7 @@ public class SearchEngines extends ScriptedAPIService
     }
 
     @Override
-    protected Map<String, Object> createModel(APIRequest req, APIResponse res, Map<String, Object> model)
+    protected Map<String, Object> executeImpl(APIRequest req, APIResponse res)
     {
         String urlType = req.getParameter("type");
         if (urlType == null || urlType.length() == 0)
@@ -93,6 +94,7 @@ public class SearchEngines extends ScriptedAPIService
         //
 
         Set<UrlTemplate> urls = getUrls(urlType);
+        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         model.put("urltype", urlType);
         model.put("engines", urls);
         return model;

@@ -22,13 +22,14 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.api.services;
+package org.alfresco.web.api;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.web.api.APIRequest;
-import org.alfresco.web.api.APIResponse;
-import org.alfresco.web.api.ScriptedAPIService;
+import org.alfresco.web.api.framework.APIRequest;
+import org.alfresco.web.api.framework.APIResponse;
+import org.alfresco.web.api.framework.ScriptedAPIService;
 
 
 /**
@@ -43,8 +44,9 @@ public class Index extends ScriptedAPIService
      * @see org.alfresco.web.api.services.APIServiceTemplateImpl#createModel(org.alfresco.web.api.APIRequest, org.alfresco.web.api.APIResponse, java.util.Map)
      */
     @Override
-    protected Map<String, Object> createModel(APIRequest req, APIResponse res, Map<String, Object> model)
+    protected Map<String, Object> executeImpl(APIRequest req, APIResponse res)
     {
+        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         model.put("services",  getAPIRegistry().getServices());
         return model;
     }

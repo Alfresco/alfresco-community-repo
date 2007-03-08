@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--  -->   
+   <!--  API Testing -->
+   <!--  -->   
+
+   <bean id="web.api.framework.test" class="org.alfresco.web.api.framework.TestAPIServer">
+      <property name="APIRegistry">
+         <bean id="web.api.framework.testregistry" parent="web.api.framework.registry">
+            <property name="authenticator" ref="web.api.framework.authenticator.trusted" />
+         </bean>
+      </property>
+      <property name="transactionService" ref="transactionComponent" />
+   </bean>
+
+</beans>

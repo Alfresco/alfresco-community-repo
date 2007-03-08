@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.api.services;
+package org.alfresco.web.api;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -40,10 +40,10 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
-import org.alfresco.web.api.APIException;
-import org.alfresco.web.api.APIRequest;
-import org.alfresco.web.api.APIResponse;
-import org.alfresco.web.api.ScriptedAPIService;
+import org.alfresco.web.api.framework.APIException;
+import org.alfresco.web.api.framework.APIRequest;
+import org.alfresco.web.api.framework.APIResponse;
+import org.alfresco.web.api.framework.ScriptedAPIService;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,7 +89,7 @@ public class KeywordSearch extends ScriptedAPIService
      * @see org.alfresco.web.api.services.APIServiceTemplateImpl#createModel(org.alfresco.web.api.APIRequest, org.alfresco.web.api.APIResponse, java.util.Map)
      */
     @Override
-    protected Map<String, Object> createModel(APIRequest req, APIResponse res, Map<String, Object> model)
+    protected Map<String, Object> executeImpl(APIRequest req, APIResponse res)
     {
         //
         // process arguments
@@ -129,12 +129,13 @@ public class KeywordSearch extends ScriptedAPIService
         // execute the search
         //
         
-        SearchResult results = search(searchTerms, startPage, itemsPerPage, locale, req.getParameterMap());
+        SearchResult results = search(searchTerms, startPage, itemsPerPage, locale, req);
         
         //
-        // append to model
+        // create model
         //
         
+        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         model.put("search", results);
         return model;
     }
@@ -142,13 +143,11 @@ public class KeywordSearch extends ScriptedAPIService
     /**
      * Execute the search
      * 
-     * @param searchTerms The search terms
-     * @param startPage The page number to start at
-     * @param itemsPerPage The number of items to show on a page
-     * @param locale The current locale
-     * @return The search result
+     * @param searchTerms
+     * @param startPage
+     * @return
      */
-    private SearchResult search(String searchTerms, int startPage, int itemsPerPage, Locale locale, Map reqParams)
+    private SearchResult search(String searchTerms, int startPage, int itemsPerPage, Locale locale, APIRequest req)
     {
         SearchResult searchResult = null;
         ResultSet results = null;
@@ -158,7 +157,7 @@ public class KeywordSearch extends ScriptedAPIService
             // construct search statement
             String[] terms = searchTerms.split(" "); 
             Map<String, Object> statementModel = new HashMap<String, Object>(7, 1.0f);
-            statementModel.put("args", reqParams);
+            statementModel.put("args", createArgModel(req));
             statementModel.put("terms", terms);
             Writer queryWriter = new StringWriter(1024);
             renderFormatTemplate(QUERY_FORMAT, statementModel, queryWriter);

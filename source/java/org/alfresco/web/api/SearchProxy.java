@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.api.services;
+package org.alfresco.web.api;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,11 +38,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.web.api.APIException;
-import org.alfresco.web.api.APIRequest;
-import org.alfresco.web.api.APIResponse;
-import org.alfresco.web.api.AbstractAPIService;
-import org.alfresco.web.api.FormatRegistry;
+import org.alfresco.web.api.framework.APIException;
+import org.alfresco.web.api.framework.APIRequest;
+import org.alfresco.web.api.framework.APIResponse;
+import org.alfresco.web.api.framework.AbstractAPIService;
+import org.alfresco.web.api.framework.FormatRegistry;
 import org.alfresco.web.app.servlet.HTTPProxy;
 import org.alfresco.web.config.OpenSearchConfigElement;
 import org.alfresco.web.config.OpenSearchConfigElement.EngineConfig;

@@ -249,7 +249,7 @@
       
    <servlet>
       <servlet-name>apiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.api.APIServlet</servlet-class>
+      <servlet-class>org.alfresco.web.api.framework.APIServlet</servlet-class>
    </servlet>
 
    <servlet>

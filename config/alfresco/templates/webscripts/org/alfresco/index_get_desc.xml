@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Web Script Index</shortname>
+  <description>Index of all Web Scripts</description>
+  <url format="html" template="/index" />
+</webscript>

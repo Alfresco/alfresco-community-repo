@@ -1,0 +1,5 @@
+<servicedescription>
+  <shortname>Service Index</shortname>
+  <description>Index of all Web API Services</description>
+  <url format="html" template="/index" />
+</servicedescription>

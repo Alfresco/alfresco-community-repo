@@ -1,0 +1,6 @@
+<servicedescription>
+  <shortname>Search Engines</shortname>
+  <description>Lists "search engines" registered with this Alfresco Repository</description>
+  <url format="html" template="/search/engines?type={type?}" />
+  <url format="atom" template="/search/engines?type={type?}&amp;format=atom" />
+</servicedescription>

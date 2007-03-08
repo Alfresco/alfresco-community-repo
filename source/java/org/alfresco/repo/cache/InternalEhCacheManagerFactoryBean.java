@@ -36,7 +36,9 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.cache.Cache;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.CacheProvider;
+import org.hibernate.cache.EhCache;
 import org.hibernate.cache.EhCacheProvider;
+import org.hibernate.cache.Timestamper;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.util.ResourceUtils;
 
@@ -74,6 +76,8 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
     
     /** keep track of the singleton status to avoid work */
     private static boolean initialized;
+    /** the <code>CacheManager</code> */
+    private static CacheManager cacheManager;
     /** used to ensure that the existing Hibernate logic is maintained */
     private static EhCacheProvider hibernateEhCacheProvider = new EhCacheProvider();
     
@@ -101,13 +105,17 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
             try
             {
                 URL configUrl = ResourceUtils.getURL(CUSTOM_CONFIGURATION_FILE);
-                CacheManager.create(configUrl);
+                InternalEhCacheManagerFactoryBean.cacheManager = new CacheManager(configUrl);
             }
             catch (FileNotFoundException e)
             {
                 // try the alfresco default
                 URL configUrl = ResourceUtils.getURL(DEFAULT_CONFIGURATION_FILE);
-                CacheManager.create(configUrl);   // this file MUST be present
+                if (configUrl == null)
+                {
+                    throw new AlfrescoRuntimeException("Missing default cache config: " + DEFAULT_CONFIGURATION_FILE);
+                }
+                InternalEhCacheManagerFactoryBean.cacheManager = new CacheManager(configUrl);
                 defaultLocation = true;
             }
             // done
@@ -131,17 +139,32 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
      */
     public static CacheManager getInstance()
     {
-        initCacheManager();
-        return CacheManager.getInstance();
+        if (!InternalEhCacheManagerFactoryBean.initialized)
+        {
+            InternalEhCacheManagerFactoryBean.initCacheManager();
+        }
+        return InternalEhCacheManagerFactoryBean.cacheManager;
     }
 
-    /**
-     * @see #hibernateEhCacheProvider
-     */
     public Cache buildCache(String regionName, Properties properties) throws CacheException
     {
-        initCacheManager();
-        return hibernateEhCacheProvider.buildCache(regionName, properties);
+        CacheManager manager = InternalEhCacheManagerFactoryBean.getInstance();
+        try
+        {
+            net.sf.ehcache.Cache cache = manager.getCache(regionName);
+            if (cache == null)
+            {
+                logger.info("Using default cache configuration: " + regionName);
+                manager.addCache(regionName);
+                cache = manager.getCache(regionName);
+                logger.debug("Started EHCache region: " + regionName);
+            }
+            return new EhCache(cache);
+        }
+        catch (net.sf.ehcache.CacheException e)
+        {
+            throw new CacheException(e);
+        }
     }
 
     /**
@@ -149,7 +172,7 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
      */
     public boolean isMinimalPutsEnabledByDefault()
     {
-        return hibernateEhCacheProvider.isMinimalPutsEnabledByDefault();
+        return false;
     }
 
     /**
@@ -157,27 +180,23 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
      */
     public long nextTimestamp()
     {
-        return hibernateEhCacheProvider.nextTimestamp();
+        return Timestamper.next();
     }
 
     /**
      * @see #initCacheManager()
-     * @see #hibernateEhCacheProvider
      */
     public void start(Properties properties) throws CacheException
     {
-        initCacheManager();
-        hibernateEhCacheProvider.start(properties);
+        InternalEhCacheManagerFactoryBean.initCacheManager();
     }
 
     /**
      * @see #initCacheManager()
-     * @see #hibernateEhCacheProvider
      */
     public void stop()
     {
-        initCacheManager();
-        hibernateEhCacheProvider.stop();
+        InternalEhCacheManagerFactoryBean.getInstance().shutdown();
     }
 
     /**
@@ -187,8 +206,7 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
      */
     public Object getObject() throws Exception
     {
-        initCacheManager();
-        return CacheManager.getInstance();
+        return InternalEhCacheManagerFactoryBean.getInstance();
     }
 
     /**

@@ -24,7 +24,6 @@
  */
 package org.alfresco.web.api;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -33,38 +32,60 @@ import org.apache.commons.logging.LogFactory;
 
 
 /**
- * API Service Logger
+ * System Authentication Interceptor
  * 
  * @author davidc
  */
-public class ServiceLogger implements MethodInterceptor
+public class SystemAuthenticator implements MethodInterceptor
 {
     // Logger
-    private static final Log logger = LogFactory.getLog(ServiceLogger.class);
+    private static final Log logger = LogFactory.getLog(SystemAuthenticator.class);
 
+    
     /* (non-Javadoc)
      * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
      */
     public Object invoke(MethodInvocation invocation)
         throws Throwable
     {
+        String currentUser = null;
         Object retVal = null;
-        
-        if (logger.isDebugEnabled())
+
+        try
         {
-            APIService service = (APIService)invocation.getThis();
-            APIDescription description = service.getDescription();
-            String user = AuthenticationUtil.getCurrentUserName();
-            String locale = I18NUtil.getLocale().toString();
-            logger.debug("Invoking service "  + description.getId() + (user == null ? " (unauthenticated)" : " (authenticated as " + user + ")" + " (" + locale + ")"));
-            long start = System.currentTimeMillis();
+            //
+            // Determine if user already authenticated
+            //
+            
+            currentUser = AuthenticationUtil.getCurrentUserName();
+            if (logger.isDebugEnabled())
+                logger.debug("Current authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
+            
+            //
+            // Force system user
+            // 
+
+            if (logger.isDebugEnabled())
+                logger.debug("Authenticating as System");
+            
+            AuthenticationUtil.setSystemUserAsCurrentUser();
+            
+            //
+            // Invoke service
+            //
+            
             retVal = invocation.proceed();
-            long end = System.currentTimeMillis();
-            logger.debug("Service " + description.getId() + " executed in " + (end - start) + "ms");
         }
-        else
+        finally
         {
-            retVal = invocation.proceed();
+            AuthenticationUtil.clearCurrentSecurityContext();
+            if (currentUser != null)
+            {
+                AuthenticationUtil.setCurrentUser(currentUser);
+            }
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Authentication reset: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
         }
 
         return retVal;

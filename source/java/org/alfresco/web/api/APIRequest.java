@@ -37,24 +37,17 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
  */
 public class APIRequest extends HttpServletRequestWrapper
 {
-
-    /**
-     * Enumerartion of HTTP Methods 
-     */
-    public enum HttpMethod
-    {
-        GET;
-        // TODO: Complete list...
-    }
-
+    private APIServiceMatch serviceMatch;
+    
+    
     /**
      * Enumeration of "required" Authentication level
      */
     public enum RequiredAuthentication
     {
-        None,
-        Guest,
-        User
+        none,
+        guest,
+        user
     }
     
     /**
@@ -62,22 +55,22 @@ public class APIRequest extends HttpServletRequestWrapper
      * 
      * @param req
      */
-    /*package*/ APIRequest(HttpServletRequest req)
+    /*package*/ APIRequest(HttpServletRequest req, APIServiceMatch serviceMatch)
     {
         super(req);
+        this.serviceMatch = serviceMatch;
     }
 
     /**
-     * Gets the HTTP Method
+     * Gets the matching API Service for this request
      * 
-     * @return  Http Method
+     * @return  the service match
      */
-    public HttpMethod getHttpMethod()
+    public APIServiceMatch getServiceMatch()
     {
-        String method = getMethod().trim().toUpperCase();
-        return HttpMethod.valueOf(method);
+        return serviceMatch;
     }
-
+    
     /**
      * Gets the Alfresco Context URL
      *  
@@ -109,14 +102,15 @@ public class APIRequest extends HttpServletRequestWrapper
      * 
      * @return  extension path
      */
-    public String getExtensionPath(APIService service)
+    public String getExtensionPath()
     {
-        String servicePath = service.getHttpUri();
+        String servicePath = serviceMatch.getPath();
         String extensionPath = getPathInfo();
         int extIdx = extensionPath.indexOf(servicePath);
         if (extIdx != -1)
         {
-            extensionPath = extensionPath.substring(extIdx + servicePath.length() + 1 /* exclude leading / */);
+            int extLength = (servicePath.endsWith("/") ? servicePath.length() : servicePath.length() + 1);
+            extensionPath = extensionPath.substring(extIdx + extLength);
         }
         return extensionPath;
     }
@@ -172,13 +166,16 @@ public class APIRequest extends HttpServletRequestWrapper
     public String getAgent()
     {
         String userAgent = getHeader("user-agent");
-        if (userAgent.indexOf("Firefox/") != -1)
+        if (userAgent != null)
         {
-            return "Firefox";
-        }
-        else if (userAgent.indexOf("MSIE") != -1)
-        {
-            return "MSIE";
+            if (userAgent.indexOf("Firefox/") != -1)
+            {
+                return "Firefox";
+            }
+            else if (userAgent.indexOf("MSIE") != -1)
+            {
+                return "MSIE";
+            }
         }
         return null;
     }

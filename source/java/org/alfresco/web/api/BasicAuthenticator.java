@@ -67,6 +67,7 @@ public class BasicAuthenticator implements MethodInterceptor
         Object[] args = invocation.getArguments();
         APIRequest request = (APIRequest)args[0];
         APIService service = (APIService)invocation.getThis();
+        APIDescription description = service.getDescription();
 
         try
         {
@@ -87,14 +88,14 @@ public class BasicAuthenticator implements MethodInterceptor
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Service authentication required: " + service.getRequiredAuthentication());
+                logger.debug("Service authentication required: " + description.getRequiredAuthentication());
                 logger.debug("Guest login: " + isGuest);
                 logger.debug("Authorization provided (overrides Guest login): " + (authorization != null && authorization.length() > 0));
             }
             
             // authenticate as guest, if service allows
             if (((authorization == null || authorization.length() == 0) || isGuest)
-                    && service.getRequiredAuthentication().equals(APIRequest.RequiredAuthentication.Guest))
+                    && description.getRequiredAuthentication().equals(APIRequest.RequiredAuthentication.guest))
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Authenticating as Guest");
@@ -133,7 +134,7 @@ public class BasicAuthenticator implements MethodInterceptor
                         // assume username and password passed
                         if (parts[0].equals(AuthenticationUtil.getGuestUserName()))
                         {
-                            if (service.getRequiredAuthentication().equals(APIRequest.RequiredAuthentication.Guest))
+                            if (description.getRequiredAuthentication().equals(APIRequest.RequiredAuthentication.guest))
                             {
                                 authenticationService.authenticateAsGuest();
                                 authorized = true;

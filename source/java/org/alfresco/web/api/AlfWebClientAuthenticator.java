@@ -80,6 +80,7 @@ public class AlfWebClientAuthenticator implements MethodInterceptor, APIContextA
         APIRequest request = (APIRequest)args[0];
         APIResponse response = (APIResponse)args[1];
         APIService service = (APIService)invocation.getThis();
+        APIDescription description = service.getDescription();
         AuthenticationStatus status = null;
 
         try
@@ -102,7 +103,7 @@ public class AlfWebClientAuthenticator implements MethodInterceptor, APIContextA
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Service authentication required: " + service.getRequiredAuthentication());
+                logger.debug("Service authentication required: " + description.getRequiredAuthentication());
                 logger.debug("Guest login: " + isGuest);
                 logger.debug("Ticket provided: " + (ticket != null && ticket.length() > 0));
             }
@@ -116,7 +117,7 @@ public class AlfWebClientAuthenticator implements MethodInterceptor, APIContextA
             }
             else
             {
-                if (isGuest && service.getRequiredAuthentication() == APIRequest.RequiredAuthentication.Guest)
+                if (isGuest && description.getRequiredAuthentication() == APIRequest.RequiredAuthentication.guest)
                 {
                     if (logger.isDebugEnabled())
                         logger.debug("Authenticating as Guest");

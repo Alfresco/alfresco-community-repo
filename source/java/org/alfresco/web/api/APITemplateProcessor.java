@@ -24,9 +24,6 @@
  */
 package org.alfresco.web.api;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.template.QNameAwareObjectWrapper;
 import org.alfresco.util.AbstractLifecycleBean;
@@ -54,7 +51,7 @@ import freemarker.template.TemplateExceptionHandler;
 public class APITemplateProcessor extends FreeMarkerProcessor implements ApplicationContextAware, ApplicationListener
 {
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
-    private Set<TemplateLoader> templateLoaders = new HashSet<TemplateLoader>();
+    private TemplateLoader templateLoader = null;
     private String defaultEncoding;
     private Configuration templateConfig;
 
@@ -77,13 +74,13 @@ public class APITemplateProcessor extends FreeMarkerProcessor implements Applica
     }
 
     /**
-     * Add a Template Loader
+     * Sets the Template Loader
      * 
      * @param templateLoader  template loader
      */
-    public void addTemplateLoader(TemplateLoader templateLoader)
+    public void setTemplateLoader(TemplateLoader templateLoader)
     {
-        templateLoaders.add(templateLoader);
+        this.templateLoader = templateLoader;
     }
 
     /**
@@ -97,10 +94,7 @@ public class APITemplateProcessor extends FreeMarkerProcessor implements Applica
         config.setCacheStorage(new MruCacheStorage(20, 100));
 
         // setup template loaders
-        for (TemplateLoader templateLoader : templateLoaders)
-        {
-            config.setTemplateLoader(templateLoader);
-        }
+        config.setTemplateLoader(templateLoader);
         
         // use our custom object wrapper that can deal with QNameMap objects directly
         config.setObjectWrapper(new QNameAwareObjectWrapper());

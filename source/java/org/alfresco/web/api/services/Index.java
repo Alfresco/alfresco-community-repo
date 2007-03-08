@@ -22,27 +22,31 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.web.api;
+package org.alfresco.web.api.services;
 
-import java.io.IOException;
+import java.util.Map;
+
+import org.alfresco.web.api.APIRequest;
+import org.alfresco.web.api.APIResponse;
+import org.alfresco.web.api.ScriptedAPIService;
+
 
 /**
- * API Service
+ * Retrieves the list of available Web APIs
  * 
  * @author davidc
  */
-public interface APIService
+public class Index extends ScriptedAPIService
 {
-    public APIDescription getDescription();
     
-    /**
-     * Execute service
-     * 
-     * @param req
-     * @param res
-     * @throws IOException
+    /* (non-Javadoc)
+     * @see org.alfresco.web.api.services.APIServiceTemplateImpl#createModel(org.alfresco.web.api.APIRequest, org.alfresco.web.api.APIResponse, java.util.Map)
      */
-    public void execute(APIRequest req, APIResponse res)
-        throws IOException;
+    @Override
+    protected Map<String, Object> createModel(APIRequest req, APIResponse res, Map<String, Object> model)
+    {
+        model.put("services",  getAPIRegistry().getServices());
+        return model;
+    }
 
 }

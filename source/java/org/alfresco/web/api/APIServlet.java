@@ -52,7 +52,7 @@ public class APIServlet extends HttpServlet
     private static final Log logger = LogFactory.getLog(APIServlet.class);
 
     // API Services
-    private APIServiceRegistry apiServiceRegistry;
+    private DeclarativeAPIRegistry apiServiceRegistry;
     
     
     @Override
@@ -63,7 +63,7 @@ public class APIServlet extends HttpServlet
         // Retrieve all web api services and index by http url & http method
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         initContext(context);
-        apiServiceRegistry = new APIServiceRegistry(context);
+//        apiServiceRegistry = new DeclarativeAPIServiceRegistry(context);
     }
 
 
@@ -79,45 +79,45 @@ public class APIServlet extends HttpServlet
      */
     protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
     {
-        long start = System.currentTimeMillis();
-        APIRequest request = new APIRequest(req);
-        APIResponse response = new APIResponse(res);
-
-        try
-        {
-            //
-            // Execute appropriate service
-            //
-            // TODO: Handle errors (with appropriate HTTP error responses) 
-    
-            APIRequest.HttpMethod method = request.getHttpMethod();
-            String uri = request.getPathInfo();
-    
-            if (logger.isDebugEnabled())
-                logger.debug("Processing request ("  + request.getHttpMethod() + ") " + request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : "") + " (agent: " + request.getAgent() + ")");
-            
-            APIService service = apiServiceRegistry.get(method, uri);
-            if (service != null)
-            {
-                // TODO: Wrap in single transaction
-                service.execute(request, response);
-            }
-            else
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("Request does not map to service.");
-    
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                // TODO: add appropriate error detail 
-            }
-        }
-        // TODO: exception handling
-        finally
-        {
-            long end = System.currentTimeMillis();
-            if (logger.isDebugEnabled())
-                logger.debug("Processed request (" + request.getHttpMethod() + ") " + request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : "") + " in " + (end - start) + "ms");
-        }
+//        long start = System.currentTimeMillis();
+//        APIRequest request = new APIRequest(req);
+//        APIResponse response = new APIResponse(res);
+//
+//        try
+//        {
+//            //
+//            // Execute appropriate service
+//            //
+//            // TODO: Handle errors (with appropriate HTTP error responses) 
+//    
+//            APIRequest.HttpMethod method = request.getHttpMethod();
+//            String uri = request.getPathInfo();
+//    
+//            if (logger.isDebugEnabled())
+//                logger.debug("Processing request ("  + request.getHttpMethod() + ") " + request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : "") + " (agent: " + request.getAgent() + ")");
+//            
+//            APIServiceDescription service = apiServiceRegistry.get(method, uri);
+//            if (service != null)
+//            {
+//                // TODO: Wrap in single transaction
+//                service.execute(request, response);
+//            }
+//            else
+//            {
+//                if (logger.isDebugEnabled())
+//                    logger.debug("Request does not map to service.");
+//    
+//                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//                // TODO: add appropriate error detail 
+//            }
+//        }
+//        // TODO: exception handling
+//        finally
+//        {
+//            long end = System.currentTimeMillis();
+//            if (logger.isDebugEnabled())
+//                logger.debug("Processed request (" + request.getHttpMethod() + ") " + request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : "") + " in " + (end - start) + "ms");
+//        }
     }
 
     /**

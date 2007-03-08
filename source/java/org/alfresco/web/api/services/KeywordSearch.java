@@ -43,8 +43,7 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.api.APIException;
 import org.alfresco.web.api.APIRequest;
 import org.alfresco.web.api.APIResponse;
-import org.alfresco.web.api.APIRequest.HttpMethod;
-import org.alfresco.web.api.APIRequest.RequiredAuthentication;
+import org.alfresco.web.api.ScriptedAPIService;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,7 +54,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author davidc
  */
-public class KeywordSearch extends APIServiceTemplateImpl
+public class KeywordSearch extends ScriptedAPIService
 {
     // Logger
     private static final Log logger = LogFactory.getLog(KeywordSearch.class);
@@ -64,7 +63,7 @@ public class KeywordSearch extends APIServiceTemplateImpl
     // TODO: allow configuration of search store
     protected static final StoreRef SEARCH_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final int DEFAULT_ITEMS_PER_PAGE = 10;
-    protected static final String QUERY_TEMPLATE_TYPE = "query";
+    protected static final String QUERY_FORMAT = "query_";
 
     // dependencies
     protected SearchService searchService;
@@ -74,7 +73,7 @@ public class KeywordSearch extends APIServiceTemplateImpl
     {
         public String resolveImagePathForName(String filename, boolean small)
         {
-            return Utils.getFileTypeImage(getAPIContext(), filename, small);
+            return Utils.getFileTypeImage(getAPIRegistry().getContext(), filename, small);
         }
     };
 
@@ -84,38 +83,6 @@ public class KeywordSearch extends APIServiceTemplateImpl
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getRequiredAuthentication()
-     */
-    public RequiredAuthentication getRequiredAuthentication()
-    {
-        return APIRequest.RequiredAuthentication.User;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getHttpMethod()
-     */
-    public HttpMethod getHttpMethod()
-    {
-        return APIRequest.HttpMethod.GET;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getDefaultFormat()
-     */
-    public String getDefaultFormat()
-    {
-        return APIResponse.HTML_FORMAT;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getDescription()
-     */
-    public String getDescription()
-    {
-        return "Issue an Alfresco Web Client keyword search";
     }
 
     /* (non-Javadoc)
@@ -162,7 +129,7 @@ public class KeywordSearch extends APIServiceTemplateImpl
         // execute the search
         //
         
-        SearchResult results = search(searchTerms, startPage, itemsPerPage, locale);
+        SearchResult results = search(searchTerms, startPage, itemsPerPage, locale, req.getParameterMap());
         
         //
         // append to model
@@ -181,7 +148,7 @@ public class KeywordSearch extends APIServiceTemplateImpl
      * @param locale The current locale
      * @return The search result
      */
-    private SearchResult search(String searchTerms, int startPage, int itemsPerPage, Locale locale)
+    private SearchResult search(String searchTerms, int startPage, int itemsPerPage, Locale locale, Map reqParams)
     {
         SearchResult searchResult = null;
         ResultSet results = null;
@@ -191,9 +158,10 @@ public class KeywordSearch extends APIServiceTemplateImpl
             // construct search statement
             String[] terms = searchTerms.split(" "); 
             Map<String, Object> statementModel = new HashMap<String, Object>(7, 1.0f);
+            statementModel.put("args", reqParams);
             statementModel.put("terms", terms);
             Writer queryWriter = new StringWriter(1024);
-            renderTemplate(QUERY_TEMPLATE_TYPE, null, statementModel, queryWriter);
+            renderFormatTemplate(QUERY_FORMAT, statementModel, queryWriter);
             String query = queryWriter.toString();
             
             // execute query
@@ -410,29 +378,6 @@ public class KeywordSearch extends APIServiceTemplateImpl
         {
             return score;
         }
-    }
-        
-        
-    /**
-     * Simple test that can be executed outside of web context
-     */
-    public static void main(String[] args)
-        throws Exception
-    {
-        KeywordSearch service = (KeywordSearch)APIServiceImpl.getMethod("web.api.KeywordSearch");
-        service.test(APIResponse.HTML_FORMAT);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.services.APIServiceImpl#createTestModel()
-     */
-    @Override
-    protected Map<String, Object> createTestModel()
-    {
-        Map<String, Object> model = super.createTestModel();
-        SearchResult result = search("alfresco tutorial", 1, 5, I18NUtil.getLocale());
-        model.put("search", result);
-        return model;
     }
     
 }

@@ -41,9 +41,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.web.api.APIException;
 import org.alfresco.web.api.APIRequest;
 import org.alfresco.web.api.APIResponse;
+import org.alfresco.web.api.AbstractAPIService;
 import org.alfresco.web.api.FormatRegistry;
-import org.alfresco.web.api.APIRequest.HttpMethod;
-import org.alfresco.web.api.APIRequest.RequiredAuthentication;
 import org.alfresco.web.app.servlet.HTTPProxy;
 import org.alfresco.web.config.OpenSearchConfigElement;
 import org.alfresco.web.config.OpenSearchConfigElement.EngineConfig;
@@ -69,7 +68,7 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author davidc
  */
-public class SearchProxy extends APIServiceImpl implements InitializingBean
+public class SearchProxy extends AbstractAPIService implements InitializingBean
 {
     // Logger
     private static final Log logger = LogFactory.getLog(SearchProxy.class);
@@ -97,38 +96,6 @@ public class SearchProxy extends APIServiceImpl implements InitializingBean
     }
         
     /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getRequiredAuthentication()
-     */
-    public RequiredAuthentication getRequiredAuthentication()
-    {
-        return APIRequest.RequiredAuthentication.None;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getHttpMethod()
-     */
-    public HttpMethod getHttpMethod()
-    {
-        return APIRequest.HttpMethod.GET;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getDefaultFormat()
-     */
-    public String getDefaultFormat()
-    {
-        return null;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getDescription()
-     */
-    public String getDescription()
-    {
-        return "Issue an OpenSearch query via Alfresco";
-    }
-    
-    /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception
@@ -153,11 +120,11 @@ public class SearchProxy extends APIServiceImpl implements InitializingBean
     public void execute(APIRequest req, APIResponse res)
         throws IOException
     {
-        String extensionPath = req.getExtensionPath(this);
+        String extensionPath = req.getExtensionPath();
         String[] extensionPaths = extensionPath.split("/");
         if (extensionPaths.length != 2)
         {
-            throw new APIException("OpenSearch engine has not been specified as /<engine>/<format>");
+            throw new APIException("OpenSearch engine has not been specified as /{engine}/{format}");
         }
         
         // retrieve search engine configuration

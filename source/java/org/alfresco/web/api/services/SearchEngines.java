@@ -34,8 +34,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.web.api.APIRequest;
 import org.alfresco.web.api.APIResponse;
-import org.alfresco.web.api.APIRequest.HttpMethod;
-import org.alfresco.web.api.APIRequest.RequiredAuthentication;
+import org.alfresco.web.api.ScriptedAPIService;
 import org.alfresco.web.config.OpenSearchConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,7 +45,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author davidc
  */
-public class SearchEngines extends APIServiceTemplateImpl
+public class SearchEngines extends ScriptedAPIService
 {
     // url argument values
     public static final String URL_ARG_DESCRIPTION = "description";
@@ -76,38 +75,6 @@ public class SearchEngines extends APIServiceTemplateImpl
         this.searchProxy = searchProxy;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getRequiredAuthentication()
-     */
-    public RequiredAuthentication getRequiredAuthentication()
-    {
-        return APIRequest.RequiredAuthentication.None;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getHttpMethod()
-     */
-    public HttpMethod getHttpMethod()
-    {
-        return APIRequest.HttpMethod.GET;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getDefaultFormat()
-     */
-    public String getDefaultFormat()
-    {
-        return APIResponse.HTML_FORMAT;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.APIService#getDescription()
-     */
-    public String getDescription()
-    {
-        return "Retrieve a list of (server-side) registered search engines";
-    }
-    
     @Override
     protected Map<String, Object> createModel(APIRequest req, APIResponse res, Map<String, Object> model)
     {
@@ -233,29 +200,5 @@ public class SearchEngines extends APIServiceTemplateImpl
             return engine;
         }
     }
-    
-        
-    /**
-     * Simple test that can be executed outside of web context
-     */
-    public static void main(String[] args)
-        throws Exception
-    {
-        SearchEngines service = (SearchEngines)APIServiceImpl.getMethod("web.api.SearchEngines");
-        service.test(APIResponse.ATOM_FORMAT);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.web.api.services.APIServiceImpl#createTestModel()
-     */
-    @Override
-    protected Map<String, Object> createTestModel()
-    {
-        Map<String, Object> model = super.createTestModel();
-        Set<UrlTemplate> urls = getUrls(URL_ARG_ALL);
-        model.put("urltype", "template");
-        model.put("engines", urls);
-        return model;
-    }
-
+            
 }

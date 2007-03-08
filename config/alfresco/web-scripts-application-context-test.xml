@@ -7,10 +7,10 @@
    <!--  API Testing -->
    <!--  -->   
 
-   <bean id="web.api.framework.test" class="org.alfresco.web.api.framework.TestAPIServer">
-      <property name="APIRegistry">
-         <bean id="web.api.framework.testregistry" parent="web.api.framework.registry">
-            <property name="authenticator" ref="web.api.framework.authenticator.trusted" />
+   <bean id="webscripts.test" class="org.alfresco.web.scripts.TestWebScriptServer">
+      <property name="registry">
+         <bean parent="webscripts.registry">
+            <property name="authenticator" ref="webscripts.authenticator.trusted" />
          </bean>
       </property>
       <property name="transactionService" ref="transactionComponent" />

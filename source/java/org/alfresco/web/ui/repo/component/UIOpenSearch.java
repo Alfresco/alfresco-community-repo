@@ -36,10 +36,10 @@ import javax.faces.context.ResponseWriter;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.web.api.SearchProxy;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.config.OpenSearchConfigElement;
 import org.alfresco.web.config.OpenSearchConfigElement.EngineConfig;
+import org.alfresco.web.scripts.bean.SearchProxy;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.springframework.web.jsf.FacesContextUtils;
@@ -266,9 +266,9 @@ public class UIOpenSearch extends SelfRenderingComponent
       
       // get the web api config service object from spring
       ConfigService cfgSvc = (ConfigService)FacesContextUtils.
-            getRequiredWebApplicationContext(context).getBean("web.api.framework.config");
+            getRequiredWebApplicationContext(context).getBean("webscripts.config");
       SearchProxy searchProxy = (SearchProxy)FacesContextUtils.
-            getRequiredWebApplicationContext(context).getBean("web.api.org.alfresco.repository.searchproxy_get");
+            getRequiredWebApplicationContext(context).getBean("webscript.org.alfresco.repository.searchproxy_get");
       if (cfgSvc != null)
       {
          // get the OpenSearch configuration

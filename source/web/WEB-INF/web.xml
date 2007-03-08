@@ -63,10 +63,10 @@
    <context-param>
       <param-name>contextConfigLocation</param-name>
       <param-value>
-         classpath:alfresco/web-client-application-context.xml
-         classpath:web-services-application-context.xml
-         classpath:alfresco/web-api-application-context.xml
          classpath:alfresco/application-context.xml 
+         classpath:alfresco/web-client-application-context.xml
+         classpath:alfresco/web-scripts-application-context.xml
+         classpath:web-services-application-context.xml
       </param-value>
       <description>Spring config file locations</description>
    </context-param>
@@ -249,7 +249,7 @@
       
    <servlet>
       <servlet-name>apiServlet</servlet-name>
-      <servlet-class>org.alfresco.web.api.framework.APIServlet</servlet-class>
+      <servlet-class>org.alfresco.web.scripts.WebScriptServlet</servlet-class>
    </servlet>
 
    <servlet>

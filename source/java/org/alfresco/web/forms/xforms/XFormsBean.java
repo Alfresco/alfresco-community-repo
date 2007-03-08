@@ -313,10 +313,6 @@ public class XFormsBean
 
    /**
     * sets the value of a control in the processor.
-    *
-    * @param id the id of the control in the host document
-    * @param value the new value
-    * @return the list of events that may result through this action
     */
    public synchronized void setXFormsValue() 
       throws XFormsException, IOException
@@ -344,10 +340,6 @@ public class XFormsBean
 
    /**
     * sets the value of a control in the processor.
-    *
-    * @param id the id of the control in the host document
-    * @param value the new value
-    * @return the list of events that may result through this action
     */
    public void setRepeatIndeces() 
       throws XFormsException, IOException
@@ -370,8 +362,6 @@ public class XFormsBean
 
    /**
     * fires an action associated with a trigger.
-    *
-    * @param id the id of the control in the host document
     */
    public synchronized void fireAction() 
       throws XFormsException, IOException

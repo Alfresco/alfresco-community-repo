@@ -105,7 +105,6 @@ public interface FormProcessor
     * Processes a user interface for inputing data into a form.
     *
     * @param session the session to use.
-    * @param form the form to generate for
     * @param out the writer to write the output to.
     */
    public void process(final Session session,

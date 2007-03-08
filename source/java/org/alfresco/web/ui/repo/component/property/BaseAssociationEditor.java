@@ -606,7 +606,7 @@ public abstract class BaseAssociationEditor extends UIInput
    /**
     * Sets the select an item message to display in the UI
     * 
-    * @param selectedItemMsg The message
+    * @param selectItemMsg The message
     */
    public void setSelectItemMsg(String selectItemMsg)
    {
@@ -638,7 +638,7 @@ public abstract class BaseAssociationEditor extends UIInput
    /**
     * Sets the select items message to display in the UI
     * 
-    * @param selectedItemsMsg The message
+    * @param selectItemsMsg The message
     */
    public void setSelectItemsMsg(String selectItemsMsg)
    {
@@ -687,7 +687,7 @@ public abstract class BaseAssociationEditor extends UIInput
     * Updates the component and node state to reflect an association being added 
     * 
     * @param node The node we are dealing with
-    * @param childId The noderefs of the children to add
+    * @param toAdd The noderefs of the children to add
     */
    protected abstract void addTarget(Node node, String[] toAdd);
    

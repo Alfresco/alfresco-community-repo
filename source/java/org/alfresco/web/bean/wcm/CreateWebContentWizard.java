@@ -655,7 +655,7 @@ public class CreateWebContentWizard extends BaseContentWizard
    }
    
    /**
-    * @param form Sets the currently selected form
+    * @param formName Sets the currently selected form
     */
    public void setFormName(final String formName)
    {

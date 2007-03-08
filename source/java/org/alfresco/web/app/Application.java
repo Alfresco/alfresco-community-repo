@@ -237,7 +237,7 @@ public class Application
     * Retrieves the configured error page for the application
     * 
     * @param portletContext The portlet context
-    * @return
+    * @return The error page
     */
    public static String getErrorPage(PortletContext portletContext)
    {
@@ -271,7 +271,7 @@ public class Application
     * Retrieves the configured login page for the application
     * 
     * @param portletContext The portlet context
-    * @return
+    * @return The login page
     */
    public static String getLoginPage(PortletContext portletContext)
    {

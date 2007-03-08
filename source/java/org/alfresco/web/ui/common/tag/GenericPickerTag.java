@@ -218,7 +218,7 @@ public class GenericPickerTag extends BaseComponentTag
    /**
     * Set the multiSelect
     *
-    * @param mutliSelect      the multiSelect
+    * @param multiSelect      the multiSelect
     */
    public void setMultiSelect(String multiSelect)
    {

@@ -44,7 +44,7 @@ public class WorkflowConsoleBean
 
     
     /**
-     * @param nodeService  node service
+     * @param workflowInterpreter  workflow interpreter
      */
     public void setWorkflowInterpreter(WorkflowInterpreter workflowInterpreter)
     {
@@ -86,9 +86,9 @@ public class WorkflowConsoleBean
     }
     
     /**
-     * Set the current query
+     * Set the current command
      * 
-     * @param query   query statement
+     * @param command   command
      */
     public void setCommand(String command)
     {
@@ -106,9 +106,9 @@ public class WorkflowConsoleBean
     }
     
     /**
-     * Set the current query
+     * Set the submitted command
      * 
-     * @param query   query statement
+     * @param submittedCommand The submitted command
      */
     public void setSubmittedCommand(String submittedCommand)
     {
@@ -126,9 +126,9 @@ public class WorkflowConsoleBean
     }
     
     /**
-     * Set the current query
+     * Set the duration
      * 
-     * @param query   query statement
+     * @param duration   The duration
      */
     public void setDuration(long duration)
     {

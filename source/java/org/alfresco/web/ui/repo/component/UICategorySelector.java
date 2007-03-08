@@ -85,11 +85,6 @@ public class UICategorySelector extends AbstractItemSelector
       return service;
    }
 
-   /**
-    * Returns the parent id of the current category, or null if the parent has the category root type
-    * 
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getParentNodeId(javax.faces.context.FacesContext)
-    */
    public String getParentNodeId(FacesContext context)
    {
       String id = null;
@@ -111,11 +106,6 @@ public class UICategorySelector extends AbstractItemSelector
       return id;
    }
 
-   /**
-    * Returns the child categories of the current navigation node
-    * 
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getChildrenForNode(javax.faces.context.FacesContext)
-    */
    public Collection<NodeRef> getChildrenForNode(FacesContext context)
    {
       NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.navigationId);
@@ -131,11 +121,6 @@ public class UICategorySelector extends AbstractItemSelector
       return refs;
    }
 
-   /**
-    * Returns the root categories
-    * 
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getRootChildren(javax.faces.context.FacesContext)
-    */
    public Collection<NodeRef> getRootChildren(FacesContext context)
    {
       Collection<ChildAssociationRef> childRefs = getCategoryService(context).getCategories(
@@ -149,9 +134,6 @@ public class UICategorySelector extends AbstractItemSelector
       return refs;
    }
    
-   /**
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getItemIcon()
-    */
    public String getItemIcon(FacesContext context, NodeRef ref)
    {
       return WebResources.IMAGE_CATEGORY;

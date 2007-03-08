@@ -183,7 +183,7 @@ public final class FacesHelper
     * as a default, if this is also not found an AlfrescoRuntimeException is thrown.
     * 
     * @param context FacesContext
-    * @param generator The name of the component generator to retrieve
+    * @param generatorName The name of the component generator to retrieve
     * @return The component generator instance
     */
    public static IComponentGenerator getComponentGenerator(FacesContext context, String generatorName)

@@ -146,7 +146,7 @@ public class MapNode extends Node implements Map<String, Object>
    }
 
    /**
-    * @see java.util.Map#put(K, V)
+    * @see java.util.Map#put(java.lang.Object, java.lang.Object)
     */
    public Object put(String key, Object value)
    {

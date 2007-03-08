@@ -498,7 +498,7 @@ public class CreateFormWizard
    }
 
    /**
-    * @param mimetype The mimetype to set.
+    * @param mimetypeForRendition The mimetype to set.
     */
    public void setMimetypeForRendition(final String mimetypeForRendition)
    {

@@ -167,7 +167,7 @@ public class UserPreferencesBean
     * Helper to return the available language items
     * 
     * @param includeAllLanguages    True to include a marker item for "All Languages"
-    * @return
+    * @return Array of SelectItem objects
     */
    private static SelectItem[] getLanguageItems(boolean includeAllLanguages)
    {

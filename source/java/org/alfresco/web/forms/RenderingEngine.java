@@ -95,10 +95,9 @@ public interface RenderingEngine
    /**
     * Renders the xml data in to a presentation format.
     *
-    * @param formInstanceData the xml content to serialize.
+    * @param model The model
     * @param ret the rendering engine template
-    * @param form the form that collected the xml content.
-    * @param rendition the rendition to serialize to.
+    * @param out The output stream to write to
     */
    public void render(final Map<QName, Object> model,
                       final RenderingEngineTemplate ret,

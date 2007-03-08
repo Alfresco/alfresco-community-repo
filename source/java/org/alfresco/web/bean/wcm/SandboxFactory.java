@@ -315,10 +315,8 @@ public final class SandboxFactory
     * DNS: .dns.<store> = <path-to-webapps-root>
     * Website Name: .website.name = website name
     * 
-    * @param name       The store name to create the sandbox for
-    * @param managers   The list of authorities who have ContentManager role in the website
-    * @param username   Username of the user to create the sandbox for
-    * @param role       Role permission for the user
+    * @param storeId The id of the store to create a sandbox for
+    * @return Information about the sandbox
     */
    public static SandboxInfo createWorkflowSandbox(final String storeId)
    {

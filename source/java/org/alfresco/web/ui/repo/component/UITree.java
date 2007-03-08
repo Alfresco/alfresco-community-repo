@@ -169,7 +169,7 @@ public class UITree extends UIComponentBase
    /**
     * Sets the name of the Javascript function to use for the expanded event
     * 
-    * @param nodeCollapsedCallback The Javascript function to use for the expanded event
+    * @param nodeExpandedCallback The Javascript function to use for the expanded event
     */
    public void setNodeExpandedCallback(String nodeExpandedCallback)
    {
@@ -195,7 +195,7 @@ public class UITree extends UIComponentBase
    /**
     * Sets the name of the Javascript function to use for the node selected event
     * 
-    * @param nodeCollapsedCallback The Javascript function to use for the node selected event
+    * @param nodeSelectedCallback The Javascript function to use for the node selected event
     */
    public void setNodeSelectedCallback(String nodeSelectedCallback)
    {

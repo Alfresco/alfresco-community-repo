@@ -226,7 +226,7 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
    }
    
    /**
-    * @param permissionService   The PersonService to set
+    * @param personService   The PersonService to set
     */
    public void setPersonService(PersonService personService)
    {

@@ -52,29 +52,16 @@ public class UISpaceSelector extends AbstractItemSelector
    // ------------------------------------------------------------------------------
    // Component Impl 
    
-   /**
-    * @see javax.faces.component.UIComponent#getFamily()
-    */
    public String getFamily()
    {
       return "org.alfresco.faces.SpaceSelector";
    }
 
-   /**
-    * 
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getDefaultLabel()
-    */
    public String getDefaultLabel()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "select_space_prompt");
    }
    
-   /**
-    * Returns the parent id of the current space or null if the parent space is an immediate child
-    * of the repository root node or the parent is inaccessable due to permissions.
-    * 
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getParentNodeId(javax.faces.context.FacesContext)
-    */
    public String getParentNodeId(FacesContext context)
    {
       String id = null;
@@ -96,11 +83,6 @@ public class UISpaceSelector extends AbstractItemSelector
       return id;
    }
 
-   /**
-    * Returns the child spaces of the current space
-    * 
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getChildrenForNode(javax.faces.context.FacesContext)
-    */
    public Collection<NodeRef> getChildrenForNode(FacesContext context)
    {
       NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.navigationId);
@@ -123,11 +105,6 @@ public class UISpaceSelector extends AbstractItemSelector
       return spaceKids;
    }
 
-   /**
-    * Returns the children of the initial root space
-    * 
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getRootChildren(javax.faces.context.FacesContext)
-    */
    public Collection<NodeRef> getRootChildren(FacesContext context)
    {
       NodeRef rootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
@@ -147,9 +124,6 @@ public class UISpaceSelector extends AbstractItemSelector
       return roots;
    }
 
-   /**
-    * @see org.alfresco.web.ui.repo.component.AbstractItemSelector#getItemIcon()
-    */
    public String getItemIcon(FacesContext context, NodeRef ref)
    {
       String icon = (String)getNodeService(context).getProperty(ref, ApplicationModel.PROP_ICON);

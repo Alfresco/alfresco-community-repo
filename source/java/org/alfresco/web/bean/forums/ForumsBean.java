@@ -960,26 +960,17 @@ public class ForumsBean implements IContextListener
    {
       public static final String VIEWMODEID = "bubble";
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#getViewModeID()
-       */
       public String getViewModeID()
       {
          return VIEWMODEID;
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListBefore(javax.faces.context.FacesContext, org.alfresco.web.ui.common.component.data.UIColumn[])
-       */
       public void renderListBefore(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {
          // nothing to do
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListRow(javax.faces.context.FacesContext, org.alfresco.web.ui.common.component.data.UIColumn[], java.lang.Object)
-       */
       public void renderListRow(FacesContext context, UIRichList richList, UIColumn[] columns, Object row)
             throws IOException
       {
@@ -1028,9 +1019,6 @@ public class ForumsBean implements IContextListener
          out.write("<tr><td><div style='padding:3px'></div></td></tr>");
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListAfter(javax.faces.context.FacesContext, org.alfresco.web.ui.common.component.data.UIColumn[])
-       */
       public void renderListAfter(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {

@@ -220,7 +220,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
    /**
     * Formats the error message to display if an error occurs during finish processing
     * 
-    * @param The exception
+    * @param exception The exception
     * @return The formatted message
     */
    @Override

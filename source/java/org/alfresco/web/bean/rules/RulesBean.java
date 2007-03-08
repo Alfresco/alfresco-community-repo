@@ -112,7 +112,7 @@ public class RulesBean implements IContextListener
    /**
     * Returns the list of rules to display
     * 
-    * @return
+    * @return List of WrappedRule objects
     */
    public List<WrappedRule> getRules()
    {
@@ -427,7 +427,9 @@ public class RulesBean implements IContextListener
        * Constructs a RuleWrapper object
        * 
        * @param rule The rule we are wrapping
-       * @param ruleNode The node the rules belong to 
+       * @param isLocal Whether the rule is defined locally
+       * @param createdDate Date the rule was created
+       * @param modifiedDate The date the rule was last modified
        */
       public WrappedRule(Rule rule, boolean isLocal, Date createdDate, Date modifiedDate)
       {

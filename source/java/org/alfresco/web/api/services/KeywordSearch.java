@@ -175,9 +175,11 @@ public class KeywordSearch extends APIServiceTemplateImpl
     /**
      * Execute the search
      * 
-     * @param searchTerms
-     * @param startPage
-     * @return
+     * @param searchTerms The search terms
+     * @param startPage The page number to start at
+     * @param itemsPerPage The number of items to show on a page
+     * @param locale The current locale
+     * @return The search result
      */
     private SearchResult search(String searchTerms, int startPage, int itemsPerPage, Locale locale)
     {

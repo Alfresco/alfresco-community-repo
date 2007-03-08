@@ -105,8 +105,6 @@ public class UIBreadcrumb extends UICommand
 
    /**
     * Set the selected path index. This modifies the current path value.
-    * 
-    * @return last selected path index
     */
    public void setSelectedPathIndex(int index)
    {

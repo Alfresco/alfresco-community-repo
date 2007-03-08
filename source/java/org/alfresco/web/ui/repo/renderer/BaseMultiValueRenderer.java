@@ -242,7 +242,7 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
     * @param component The UIComponent
     * @param out Writer to write output to
     * @param nodeService The NodeService
-    * @param key The key of the item
+    * @param index The index of the item
     * @param value The item's value
     * @throws IOException
     */

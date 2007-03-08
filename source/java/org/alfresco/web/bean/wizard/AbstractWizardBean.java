@@ -160,7 +160,7 @@ public abstract class AbstractWizardBean
    /**
     * Deals with the next button being pressed
     * 
-    * @return
+    * @return The outcome for the next step
     */
    public String next()
    {  
@@ -182,7 +182,7 @@ public abstract class AbstractWizardBean
    /**
     * Deals with the back button being pressed
     * 
-    * @return
+    * @return The outcome for the previous step
     */
    public String back()
    {      

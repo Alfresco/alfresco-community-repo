@@ -328,7 +328,7 @@ public class XSLTRenderingEngine
     * Adds the specified parameters to the xsl template as variables within the 
     * alfresco namespace.
     *
-    * @param parameters the variables to place within the xsl template
+    * @param model the variables to place within the xsl template
     * @param xslTemplate the xsl template
     */
    protected void addParameters(final Map<QName, Object> model,

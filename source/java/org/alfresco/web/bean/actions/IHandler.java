@@ -75,7 +75,7 @@ public interface IHandler
     * properties map.
     * 
     * @param props The current properties map
-    * @param repoParams The properties currently in the repository
+    * @param repoProps The properties currently in the repository
     */
    public void prepareForEdit(Map<String, Serializable> props,
                               Map<String, Serializable> repoProps);

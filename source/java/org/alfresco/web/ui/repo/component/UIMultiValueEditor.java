@@ -237,7 +237,7 @@ public class UIMultiValueEditor extends UIInput
    /**
     * Sets the select an item message to display in the UI
     * 
-    * @param selectedItemsMsg The message
+    * @param selectItemMsg The message
     */
    public void setSelectItemMsg(String selectItemMsg)
    {

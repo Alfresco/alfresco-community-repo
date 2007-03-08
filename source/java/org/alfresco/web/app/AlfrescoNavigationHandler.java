@@ -425,8 +425,8 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    /**
     * Processes any dispatching that may need to occur
     * 
-    * @param node The node in the current dispatch context
-    * @param viewId The current view id
+    * @param context Faces context
+    * @param fromAction The from action
     * @param outcome The outcome
     */
    protected void handleDispatch(FacesContext context, String fromAction, String outcome)

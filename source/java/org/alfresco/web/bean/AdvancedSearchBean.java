@@ -253,7 +253,7 @@ public class AdvancedSearchBean
    }
    
    /**
-    * @param lookin   The folder to search in or null for all.
+    * @param lookIn   The folder to search in or null for all.
     */
    public void setLookin(String lookIn)
    {
@@ -388,7 +388,7 @@ public class AdvancedSearchBean
    }
 
    /**
-    * @param createdDateFrom The createdDateFrom to set.
+    * @param createdDate The createdDateFrom to set.
     */
    public void setCreatedDateFrom(Date createdDate)
    {
@@ -420,7 +420,7 @@ public class AdvancedSearchBean
    }
 
    /**
-    * @param modifiedDateFrom The modifiedDateFrom to set.
+    * @param modifiedDate The modifiedDateFrom to set.
     */
    public void setModifiedDateFrom(Date modifiedDate)
    {
@@ -1606,14 +1606,14 @@ public class AdvancedSearchBean
    protected AdvancedSearchConfigElement searchConfigElement = null;
    
    /** Progressive panel UI state */
-   private Map<String, Boolean> panels = new HashMap(5, 1.0f);
+   private Map<String, Boolean> panels = new HashMap<String, Boolean>(5, 1.0f);
    
    /** Saved search properties */
    private String searchName;
    private String searchDescription;
    
    /** custom property names to values */
-   private Map<String, Object> customProperties = new HashMap(5, 1.0f);
+   private Map<String, Object> customProperties = new HashMap<String, Object>(5, 1.0f);
    
    /** lookup of custom property QName string to DataTypeDefinition for the property */
    private Map<String, DataTypeDefinition> customPropertyLookup = null;

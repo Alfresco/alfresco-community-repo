@@ -415,7 +415,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
 
    /**
-    * @param DNS name
+    * @param dnsName DNS name
     */
    public void setDnsName(String dnsName)
    {

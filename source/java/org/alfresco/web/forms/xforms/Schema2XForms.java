@@ -124,7 +124,10 @@ public class Schema2XForms
    /**
     * Generate the XForm based on a user supplied XML Schema.
     *
-    * @param inputURI The document source for the XML Schema.
+    * @param instanceDocument The document source for the XML Schema.
+    * @param schemaDocument Schema document
+    * @param rootElementName Name of the root element
+    * @param resourceBundle Strings to use
     * @return The Document containing the XForm.
     * @throws org.chiba.tools.schemabuilder.FormBuilderException
     *          If an error occurs building the XForm.
@@ -1964,7 +1967,8 @@ public class Schema2XForms
    /**
     * used to get the type name that will be used in the XForms document
     *
-    * @param context     the element which will serve as context for namespaces
+    * @param xformsDocument
+    * @param schema
     * @param controlType the type from which we want the name
     * @return the complete type name (with namespace prefix) of the type in the XForms doc
     */
@@ -2495,11 +2499,13 @@ public class Schema2XForms
     *
     * @param xformsDocument       The XForm document.
     * @param listType    The XML Schema list type for which the form control is to be created.
+    * @param owner
     * @param caption     The caption for the form control. The caller The purpose of providing the caption
     *                    is to permit the implementation to add a <b>[Select1 .... ]</b> message that involves the caption.
     * @param bindElement The bind element for this control. The purpose of providing the bind element
     *                    is to permit the implementation to add a isValid attribute to the bind element that prevents
     *                    the <b>[Select1 .... ]</b> item from being selected.
+    * @param resourceBundle
     * @return The element for the form control.
     */
    public Element createControlForListType(final Document xformsDocument,
@@ -2574,7 +2580,9 @@ public class Schema2XForms
     * annotation/documentation elements and/or extracting the same information from the
     * element/attribute's type annotation/documentation.
     *
-    * @param schemaNode The string value to be reformatted for use as a caption.
+    * @param xformsDocument
+    * @param node
+    * @param resourceBundle
     * @return The xforms:hint element. If a null value is returned a hint is not added.
     */
    public Element createHint(final Document xformsDocument,
@@ -2623,9 +2631,10 @@ public class Schema2XForms
     * the form.
     *
     * @param bindElement The bindElement being processed.
-    * @param controlType XML Schema type of the element/attribute this bind is for.
-    * @param minOccurs   The minimum number of occurences for this element/attribute.
-    * @param maxOccurs   The maximum number of occurences for this element/attribute.
+    * @param schema XML Schema type of the element/attribute this bind is for.
+    * @param controlType
+    * @param owner
+    * @param o
     * @return The bind Element to use in the XForm - bindElement or a replacement.
     */
    public Element startBindElement(final Element bindElement,
@@ -2730,7 +2739,7 @@ public class Schema2XForms
     *
     * @param element
     * @param xformsDocument
-    * @return
+    * @return The element name
     */
    private String getElementName(final XSElementDeclaration element,
                                  final Document xformsDocument)

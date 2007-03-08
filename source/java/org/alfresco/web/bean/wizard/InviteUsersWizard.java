@@ -141,7 +141,7 @@ public abstract class InviteUsersWizard extends BaseWizardBean
    }
    
    /**
-    * @param permissionService   The PermissionService to set.
+    * @param personService   The PersonService to set.
     */
    public void setPersonService(PersonService personService)
    {

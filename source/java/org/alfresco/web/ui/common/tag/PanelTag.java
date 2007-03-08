@@ -217,7 +217,7 @@ public class PanelTag extends HtmlComponentTag
    /**
     * Set the facetsId
     *
-    * @param facets     the facetsId
+    * @param facetsId     the facetsId
     */
    public void setFacetsId(String facetsId)
    {

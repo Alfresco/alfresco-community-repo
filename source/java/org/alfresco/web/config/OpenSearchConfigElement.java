@@ -118,7 +118,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     /**
      * Gets the proxy configuration
      * 
-     * @return
+     * @return The proxy configuration
      */
     public ProxyConfig getProxy()
     {

@@ -507,7 +507,8 @@ public class StartWorkflowWizard extends BaseWizardBean
    
    /**
     * Determines whether there are any workflows to start
-    * @return
+    * 
+    * @return true if there are startable workflows
     */
    public boolean getHasStartableWorkflows()
    {

@@ -204,7 +204,7 @@ public class UserShortcutsBean
    }
    
    /**
-    * @param spaces     List of shortcuts Nodes
+    * @param nodes     List of shortcuts Nodes
     */
    public void setShortcuts(List<Node> nodes)
    {

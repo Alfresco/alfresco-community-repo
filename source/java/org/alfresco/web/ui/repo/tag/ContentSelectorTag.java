@@ -89,7 +89,7 @@ public class ContentSelectorTag extends HtmlComponentTag
    /**
     * Set the multiSelect
     *
-    * @param mutliSelect      the multiSelect
+    * @param multiSelect      the multiSelect
     */
    public void setMultiSelect(String multiSelect)
    {

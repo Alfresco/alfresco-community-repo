@@ -214,7 +214,7 @@ public class ReassignWorkItemDialog extends BaseDialogBean
    }
    
    /**
-    * @param permissionService   The PermissionService to set.
+    * @param personService   The PersonService to set.
     */
    public void setPersonService(PersonService personService)
    {

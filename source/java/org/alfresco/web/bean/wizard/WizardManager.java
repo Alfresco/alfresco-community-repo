@@ -471,8 +471,6 @@ public final class WizardManager
    
    /**
     * Method handler called when the next button of the wizard is pressed
-    * 
-    * @return The outcome
     */
    public void next()
    {
@@ -492,8 +490,6 @@ public final class WizardManager
    
    /**
     * Method handler called when the back button of the wizard is pressed
-    * 
-    * @return The outcome
     */
    public void back()
    {

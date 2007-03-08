@@ -155,7 +155,7 @@ public class GroupsBean implements IContextListener
    }
    
    /**
-    * @param permissionService   The PermissionService to set.
+    * @param personService   The PersonService to set.
     */
    public void setPersonService(PersonService personService)
    {
@@ -277,7 +277,7 @@ public class GroupsBean implements IContextListener
    }
    
    /**
-    * @param actionSpace     Set the Group to be used for the current action screen.
+    * @param group     Set the Group to be used for the current action screen.
     */
    public void setActionGroup(String group)
    {

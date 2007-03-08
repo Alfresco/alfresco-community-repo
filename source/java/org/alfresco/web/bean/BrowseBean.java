@@ -317,9 +317,9 @@ public class BrowseBean implements IContextListener
    /**
     * @param contentRichList The contentRichList to set.
     */
-   public void setContentRichList(UIRichList browseRichList)
+   public void setContentRichList(UIRichList contentRichList)
    {
-      this.contentRichList = browseRichList;
+      this.contentRichList = contentRichList;
       if (this.contentRichList != null)
       {
          this.contentRichList.setInitialSortColumn(
@@ -348,9 +348,9 @@ public class BrowseBean implements IContextListener
    /**
     * @param spacesRichList The spacesRichList to set.
     */
-   public void setSpacesRichList(UIRichList detailsRichList)
+   public void setSpacesRichList(UIRichList spacesRichList)
    {
-      this.spacesRichList = detailsRichList;
+      this.spacesRichList = spacesRichList;
       if (this.spacesRichList != null)
       {
          // set the initial sort column and direction

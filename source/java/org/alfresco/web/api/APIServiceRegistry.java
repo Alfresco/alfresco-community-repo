@@ -51,7 +51,7 @@ public class APIServiceRegistry
     /**
      * Construct list of API Services
      * 
-     * @param context
+     * @param appContext The app context
      */
     public APIServiceRegistry(ApplicationContext appContext)
     {
@@ -112,9 +112,9 @@ public class APIServiceRegistry
     /**
      * Gets an API Service given an HTTP Method and URI
      * 
-     * @param method
-     * @param uri
-     * @return
+     * @param method The method
+     * @param uri The URI
+     * @return The matching service or null if there isn't a match
      */
     public APIService get(APIRequest.HttpMethod method, String uri)
     {

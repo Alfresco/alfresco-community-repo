@@ -390,7 +390,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    /**
     * If positive, this will limit the size of the result set from the search.
     * 
-    * @return
+    * @return The maximum number of results to show
     */
    public int getSearchMaxResults()
    {

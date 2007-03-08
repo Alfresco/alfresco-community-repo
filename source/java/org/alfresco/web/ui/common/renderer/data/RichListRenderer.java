@@ -173,18 +173,11 @@ public class RichListRenderer extends BaseRenderer
    {
       public static final String VIEWMODEID = "details";
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#getViewModeID()
-       */
       public String getViewModeID()
       {
          return VIEWMODEID;
       }
 
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListBefore(javax.faces.context.FacesContext,
-       *      org.alfresco.web.ui.common.component.data.UIColumn[])
-       */
       public void renderListBefore(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {
@@ -228,10 +221,6 @@ public class RichListRenderer extends BaseRenderer
          this.rowIndex = 0;
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListRow(javax.faces.context.FacesContext,
-       *      org.alfresco.web.ui.common.component.data.UIColumn[], java.lang.Object)
-       */
       public void renderListRow(FacesContext context, UIRichList richList, UIColumn[] columns, Object row)
             throws IOException
       {
@@ -311,10 +300,6 @@ public class RichListRenderer extends BaseRenderer
          out.write("</tr>");
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListAfter(javax.faces.context.FacesContext,
-       *      org.alfresco.web.ui.common.component.data.UIColumn[])
-       */
       public void renderListAfter(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {
@@ -352,28 +337,17 @@ public class RichListRenderer extends BaseRenderer
       
       public static final String VIEWMODEID = "list";
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#getViewModeID()
-       */
       public String getViewModeID()
       {
          return VIEWMODEID;
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListBefore(javax.faces.context.FacesContext,
-       *      org.alfresco.web.ui.common.component.data.UIColumn[])
-       */
       public void renderListBefore(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {
          this.rowIndex = 0;
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListRow(javax.faces.context.FacesContext,
-       *      org.alfresco.web.ui.common.component.data.UIColumn[], java.lang.Object)
-       */
       public void renderListRow(FacesContext context, UIRichList richList, UIColumn[] columns, Object row) throws IOException
       {
          ResponseWriter out = context.getResponseWriter();
@@ -512,9 +486,6 @@ public class RichListRenderer extends BaseRenderer
          this.rowIndex++;
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListAfter(javax.faces.context.FacesContext, org.alfresco.web.ui.common.component.data.UIColumn[])
-       */
       public void renderListAfter(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {
@@ -563,17 +534,11 @@ public class RichListRenderer extends BaseRenderer
       
       public static final String VIEWMODEID = "icons";
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#getViewModeID()
-       */
       public String getViewModeID()
       {
          return VIEWMODEID;
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListBefore(javax.faces.context.FacesContext, org.alfresco.web.ui.common.component.data.UIColumn[])
-       */
       public void renderListBefore(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {
@@ -581,9 +546,6 @@ public class RichListRenderer extends BaseRenderer
          this.rowIndex = 0;
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListRow(javax.faces.context.FacesContext, org.alfresco.web.ui.common.component.data.UIColumn[], java.lang.Object)
-       */
       public void renderListRow(FacesContext context, UIRichList richList, UIColumn[] columns, Object row)
             throws IOException
       {
@@ -689,9 +651,6 @@ public class RichListRenderer extends BaseRenderer
          this.rowIndex++;
       }
       
-      /**
-       * @see org.alfresco.web.ui.common.renderer.data.IRichListRenderer#renderListAfter(javax.faces.context.FacesContext, org.alfresco.web.ui.common.component.data.UIColumn[])
-       */
       public void renderListAfter(FacesContext context, UIRichList richList, UIColumn[] columns)
             throws IOException
       {

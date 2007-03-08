@@ -130,7 +130,7 @@ public class TransientMapNode extends TransientNode implements Map<String, Objec
    }
 
    /**
-    * @see java.util.Map#put(K, V)
+    * @see java.util.Map#put(java.lang.Object, java.lang.Object)
     */
    public Object put(String key, Object value)
    {

@@ -24,18 +24,12 @@
  */
 package org.alfresco.web.ui.repo.component.template;
 
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.template.DateCompareMethod;
 import org.alfresco.repo.template.FreeMarkerProcessor;
-import org.alfresco.repo.template.HasAspectMethod;
-import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
@@ -44,7 +38,7 @@ import org.alfresco.web.ui.common.Utils;
 /**
  * Helper class to generate the default template model.
  * <p>
- * See {@link http://www.alfresco.org/mediawiki/index.php/Template_Guide}
+ * See http://www.alfresco.org/mediawiki/index.php/Template_Guide for details
  * 
  * @author Kevin Roast
  */
@@ -66,7 +60,7 @@ public class DefaultModelHelper
     * Uses the default TemplateImageResolver instance to resolve icons - assumes that the client
     * has a valid FacesContext.
     * <p>
-    * See {@link http://www.alfresco.org/mediawiki/index.php/Template_Guide}
+    * See http://www.alfresco.org/mediawiki/index.php/Template_Guide for details
     * 
     * @return Map containing the default model.
     */
@@ -82,7 +76,7 @@ public class DefaultModelHelper
     * Other root level objects such as the current Space or Document are generally
     * added by the appropriate bean responsible for provided access to those nodes. 
     * <p>
-    * See {@link http://www.alfresco.org/mediawiki/index.php/Template_Guide}
+    * See http://www.alfresco.org/mediawiki/index.php/Template_Guide for details
     * 
     * @return Map containing the default model.
     */

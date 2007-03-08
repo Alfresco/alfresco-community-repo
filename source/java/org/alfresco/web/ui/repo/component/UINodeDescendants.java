@@ -145,7 +145,7 @@ public class UINodeDescendants extends UICommand
    }
    
    /**
-    * @param showLink      True to show ellipses "..." if more descendants than maxChildren are found
+    * @param showEllipses      True to show ellipses "..." if more descendants than maxChildren are found
     */
    public void setShowEllipses(boolean showEllipses)
    {

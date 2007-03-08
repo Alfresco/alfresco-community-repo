@@ -216,7 +216,7 @@ public class CategoriesBean implements IContextListener
    }
    
    /**
-    * @param actionSpace     Set the Node to be used for the current category screen action.
+    * @param node     Set the Node to be used for the current category screen action.
     */
    public void setActionCategory(Node node)
    {

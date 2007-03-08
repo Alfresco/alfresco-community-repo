@@ -724,7 +724,10 @@ public abstract class AbstractItemSelector extends UIInput
     * Render a node descendant as a clickable link
     * 
     * @param context    FacesContext
-    * @param childRef   The ChildAssocRef of the child to render an HTML link for
+    * @param id         The id
+    * @param name       The name
+    * @param prefix     The prefix
+    * @param buf        String buffer
     *  
     * @return HTML for a descendant link
     */

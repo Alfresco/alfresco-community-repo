@@ -1,5 +1,0 @@
-<servicedescription>
-  <shortname>Service Index Maintenance</shortname>
-  <description>Maintain index of Web API Services</description>
-  <url format="html" template="/index?reset={reset?}" />
-</servicedescription>

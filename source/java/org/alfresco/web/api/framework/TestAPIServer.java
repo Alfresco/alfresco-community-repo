@@ -299,11 +299,10 @@ public class TestAPIServer
             }
         }
         
-        // set path info
+        // set paths
+        req.setContextPath("/alfresco");
+        req.setServletPath("/service");
         req.setPathInfo(iArgIndex == -1 ? uri : uri.substring(0, iArgIndex));
-
-        // set servlet path
-        req.setServletPath("/alfresco/service");
         
         return req;
     }

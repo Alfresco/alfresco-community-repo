@@ -4,7 +4,7 @@
   <head profile="http://a9.com/-/spec/opensearch/1.1/"> 
     <title>Alfresco Keyword Search: ${search.searchTerms}</title> 
     <link rel="stylesheet" href="/alfresco/css/main.css" TYPE="text/css">
-    <link rel="search" type="application/opensearchdescription+xml" href="${path.serviceContext}/search/keyword/description.xml" title="Alfresco Keyword Search"/>
+    <link rel="search" type="application/opensearchdescription+xml" href="${url.service}/description.xml" title="Alfresco Keyword Search"/>
     <meta name="totalResults" content="${search.totalResults}"/>
     <meta name="startIndex" content="${search.startIndex}"/>
     <meta name="itemsPerPage" content="${search.itemsPerPage}"/>
@@ -12,7 +12,7 @@
   <body>
     <table>
       <tr>
-        <td><img src="/alfresco/images/logo/AlfrescoLogo32.png" alt="Alfresco" /></td>
+        <td><img src="${url.context}/images/logo/AlfrescoLogo32.png" alt="Alfresco" /></td>
         <td><nobr><span class="mainTitle">Alfresco Keyword Search</span></nobr></td>
      </tr>
     </table>
@@ -26,7 +26,7 @@
     <table>
 <#list search.results as row>            
       <tr>
-      <td><img src="${absurl(row.icon16)}"/></td><td><a href="${absurl(row.url)}">${row.name}</a></td>
+      <td><img src="${url.context}${row.icon16}"/></td><td><a href="${url.context}${row.url}">${row.name}</a></td>
       </tr>
       <#if row.properties.description?? == true>
       <tr>
@@ -39,15 +39,15 @@
     <br>
     <table>
       <tr>
-        <td><a href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&p=1&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">first</a></td>
+        <td><a href="${url.service}?q=${search.searchTerms?url}&p=1&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">first</a></td>
 <#if search.startPage &gt; 1>
-        <td><a href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&p=${search.startPage - 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">previous</a></td>
+        <td><a href="${url.service}?q=${search.searchTerms?url}&p=${search.startPage - 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">previous</a></td>
 </#if>
-        <td><a href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&p=${search.startPage}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">${search.startPage}</a></td>
+        <td><a href="${url.service}?q=${search.searchTerms?url}&p=${search.startPage}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">${search.startPage}</a></td>
 <#if search.startPage &lt; search.totalPages>
-        <td><a href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&p=${search.startPage + 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">next</a></td>
+        <td><a href="${url.service}?q=${search.searchTerms?url}&p=${search.startPage + 1}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">next</a></td>
 </#if>
-        <td><a href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&p=${search.totalPages}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">last</a></td>
+        <td><a href="${url.service}?q=${search.searchTerms?url}&p=${search.totalPages}&c=${search.itemsPerPage}&l=${search.localeId}&guest=${guest?string("true","")}">last</a></td>
       </tr>
     </table>
   </body>

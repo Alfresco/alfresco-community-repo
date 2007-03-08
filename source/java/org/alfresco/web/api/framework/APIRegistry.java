@@ -87,4 +87,9 @@ public interface APIRegistry
      * @return  script processor
      */
     public APIScriptProcessor getScriptProcessor();
+    
+    /**
+     * Resets the API Registry
+     */
+    public void reset();
 }

@@ -164,7 +164,7 @@ public class SearchProxy extends AbstractAPIService implements InitializingBean
             logger.debug("Mapping engine '" + engine + "' (mimetype '" + mimetype + "') to url '" + engineUrl + "'");        
         
         // issue request against search engine
-        SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getPath(), engine, engineUrl, res);
+        SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServicePath() + "/" + req.getContextPath(), engine, engineUrl, res);
         proxy.service();
     }
     

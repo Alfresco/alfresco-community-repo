@@ -107,5 +107,13 @@ public class APIScriptProcessor
     {
         return scriptService.executeScript(location, model);        
     }
+
+    /**
+     * Reset script cache
+     */
+    public void resetCache()
+    {
+        // NOOP
+    }
     
 }

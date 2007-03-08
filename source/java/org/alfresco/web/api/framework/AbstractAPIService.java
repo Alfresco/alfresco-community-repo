@@ -218,7 +218,7 @@ public abstract class AbstractAPIService implements APIService
         // add api context
         model.put("args", createArgModel(req));
         model.put("guest", req.isGuest());
-        model.put("path", new PathModel(req));
+        model.put("url", new URLModel(req));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
 
         // add custom model
@@ -265,12 +265,12 @@ public abstract class AbstractAPIService implements APIService
         // add api context
         model.put("args", createArgModel(req));
         model.put("guest", req.isGuest());
-        model.put("path", new PathModel(req));
+        model.put("url", new URLModel(req));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
 
         // add template support
         model.put("xmldate", new ISO8601DateFormatMethod());
-        model.put("absurl", new AbsoluteUrlMethod(req.getPath()));
+        model.put("absurl", new AbsoluteUrlMethod(req.getServerPath()));
         model.put("urlencode", new UrlEncodeMethod());
         model.put("date", new Date());
 

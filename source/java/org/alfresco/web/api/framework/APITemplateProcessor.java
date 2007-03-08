@@ -84,6 +84,17 @@ public class APITemplateProcessor extends FreeMarkerProcessor implements Applica
     }
 
     /**
+     * Reset template cache
+     */
+    public void resetCache()
+    {
+        if (templateConfig != null)
+        {
+            templateConfig.clearTemplateCache();
+        }
+    }
+    
+    /**
      * Initialise FreeMarker Configuration
      */
     protected void initConfig()

@@ -3,12 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head> 
     <title>Alfresco Keyword Search: ${args.q}</title> 
-    <link rel="stylesheet" href="/alfresco/css/main.css" TYPE="text/css">
+    <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
   </head>
   <body>
     <table>
       <tr>
-        <td><img src="/alfresco/images/logo/AlfrescoLogo32.png" alt="Alfresco" /></td>
+        <td><img src="${url.context}/images/logo/AlfrescoLogo32.png" alt="Alfresco" /></td>
         <td><nobr><span class="mainTitle">Alfresco Keyword Search: ${args.q}</span></nobr></td>
      </tr>
     </table>
@@ -16,7 +16,7 @@
     <table>
 <#list resultset as node>            
       <tr>
-      <td><img src="${node.icon16}"/></td><td><a href="${node.url}">${node.name}</a></td>
+      <td><img src="${url.context}${node.icon16}"/></td><td><a href="${url.context}${node.url}">${node.name}</a></td>
       </tr>
       <#if node.properties.description?? == true>
       <tr>

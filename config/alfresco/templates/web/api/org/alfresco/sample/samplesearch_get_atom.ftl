@@ -3,15 +3,15 @@
   <generator version="${server.version}">Alfresco (${server.edition})</generator>
   <title>Alfresco Keyword Search: ${args.q}</title> 
   <updated>${xmldate(date)}</updated>
-  <icon>${absurl("/images/logo/AlfrescoLogo16.ico")}</icon>
+  <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
   <author> 
     <name><#if person??>${person.properties.userName}<#else>unknown</#if></name>
   </author> 
 <#list resultset as node>
   <entry>
     <title>${node.name}</title>
-    <link rel="alternate" href="${node.url}"/>
-    <icon>${node.icon16}</icon>
+    <link rel="alternate" href="${absurl(url.context)}${node.url}"/>
+    <icon>${absurl(url.context)}${node.icon16}</icon>
     <id>urn:uuid:${node.id}</id>
     <updated>${xmldate(node.properties.modified)}</updated>
     <summary>${node.properties.description!""}</summary>

@@ -26,11 +26,11 @@ package org.alfresco.web.api.framework;
 
 
 /**
- * Script / Template Model representing API paths
+ * Script / Template Model representing API Service URLs
  * 
  * @author davidc
  */
-public class PathModel
+public class URLModel
 {
     private APIRequest req;
     
@@ -39,7 +39,7 @@ public class PathModel
      * 
      * @param req
      */
-    /*package*/ PathModel(APIRequest req)
+    URLModel(APIRequest req)
     {
         this.req = req;
     }
@@ -47,13 +47,13 @@ public class PathModel
     /**
      * Gets the Context Path
      * 
-     * e.g. http://localhost:port/alfresco
+     * e.g. /alfresco
      * 
      * @return  context path
      */
     public String getContext()
     {
-        return req.getPath();
+        return req.getContextPath();
     }
 
     public String jsGet_context()
@@ -64,13 +64,13 @@ public class PathModel
     /**
      * Gets the Service Context Path
      * 
-     * e.g. http://localhost:port/alfresco/service
+     * e.g. /alfresco/service
      * 
      * @return  service context path
      */
     public String getServiceContext()
     {
-        return req.getServicePath();
+        return req.getServiceContextPath();
     }
 
     public String jsGet_serviceContext()
@@ -81,18 +81,56 @@ public class PathModel
     /**
      * Gets the Service Path
      * 
-     * e.g. http://localhost:port/alfresco/service/keyword?q=term
+     * e.g. /alfresco/service/search/keyword
      * 
      * @return  service path
      */
     public String getService()
     {
-        return req.getUrl();
+        return req.getServicePath();
     }
-    
+
     public String jsGet_service()
     {
         return getService();
+    }
+
+    /**
+     * Gets the full path
+     * 
+     * e.g. /alfresco/service/search/keyword?q=term
+     * 
+     * @return  service path
+     */
+    public String getFull()
+    {
+        return req.getURL();
+    }
+    
+    public String jsGet_full()
+    {
+        return getFull();
+    }
+
+    /**
+     * Gets the matching service path
+     * 
+     * e.g.
+     * a) service registered path = /search/engine
+     * b) request path = /search/engine/external
+     * 
+     * => /search/engine
+     * 
+     * @return  matching path
+     */
+    public String getMatch()
+    {
+        return getServiceContext() + req.getServiceMatch().getPath();
+    }
+    
+    public String jsGet_match()
+    {
+        return getMatch();
     }
 
     /**

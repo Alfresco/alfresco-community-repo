@@ -27,8 +27,6 @@ package org.alfresco.web.api.framework;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-
 
 /**
  * API Service Request
@@ -64,25 +62,47 @@ public class APIRequest extends HttpServletRequestWrapper
     }
     
     /**
-     * Gets the Alfresco Context URL
+     * Get server portion of the request
+     *
+     * e.g. scheme://host:port
      *  
-     * @return  context url  e.g. http://localhost:port/alfresco
+     * @return  server path
      */
-    public String getPath()
+    public String getServerPath()
     {
-        return getScheme() + "://" + getServerName() + ":" + getServerPort() + getContextPath();
+        return getScheme() + "://" + getServerName() + ":" + getServerPort();
+    }
+    
+    /**
+     * Gets the Alfresco Service Context Path
+     * 
+     * @return  service url  e.g. /alfresco/service
+     */
+    public String getServiceContextPath()
+    {
+        return getContextPath() + getServletPath();
     }
 
     /**
-     * Gets the Alfresco Service URL
+     * Gets the Alfresco Service Path
      * 
-     * @return  service url  e.g. http://localhost:port/alfresco/service
+     * @return  service url  e.g. /alfresco/service/search/keyword
      */
     public String getServicePath()
     {
-        return getPath() + getServletPath();
+        return getServiceContextPath() + getPathInfo();
     }
 
+    /**
+     * Gets the full request URL
+     * 
+     * @return  request url e.g. /alfresco/service/search/keyword?q=term
+     */
+    public String getURL()
+    {
+        return getServicePath() + (getQueryString() != null ? "?" + getQueryString() : "");
+    }
+    
     /**
      * Gets the path extension beyond the path registered for this service
      * 
@@ -105,26 +125,6 @@ public class APIRequest extends HttpServletRequestWrapper
             extensionPath = extensionPath.substring(extIdx + extLength);
         }
         return extensionPath;
-    }
-
-    /**
-     * Gets the full request URL
-     * 
-     * @return  request url e.g. http://localhost:port/alfresco/service/keyword?q=term
-     */
-    public String getUrl()
-    {
-        return getScheme() + "://" + getServerName() + ":" + getServerPort() + getPathInfo() + (getQueryString() != null ? "?" + getQueryString() : "");
-    }
-    
-    /**
-     * Gets the currently authenticated username
-     * 
-     * @return  username
-     */
-    public String getAuthenticatedUsername()
-    {
-        return AuthenticationUtil.getCurrentUserName();
     }
 
     /**

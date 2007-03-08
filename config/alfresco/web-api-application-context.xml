@@ -30,12 +30,24 @@
       <property name="scriptService" ref="ScriptService" />
    </bean>
 
+<!--  TODO: Provide abstract definitions for repo & class path stores -->
+<!--  TODO: Define repo web folder for API templates + appropriate patches -->
+<!--  TODO: Provide repo extension, classpath extension, repo, classpath search order -->
+<!--
+   <bean id="web.api.framework.store.repopath" class="org.alfresco.web.api.framework.RepoPathAPIStore">
+      <property name="transactionService" ref="transactionComponent" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="contentService" ref="contentService" />
+      <property name="searchService" ref="SearchService" />
+      <property name="store"><value>workspace://SpacesStore</value></property>
+      <property name="path"><value>/app:company_home/app:dictionary/cm:WebAPI</value></property>
+   </bean>
+-->
+   
    <bean id="web.api.framework.store.classpath" class="org.alfresco.web.api.framework.ClassPathAPIStore">
       <property name="classPath"><value>alfresco/templates/web/api</value></property>
    </bean>
-
-   <!--  TODO: classpath extension directory -->
-   <!--  TODO: repository paths -->
 
 
    <!--  -->
@@ -155,6 +167,9 @@
 
    <!--  List of available Web APIs -->
    <bean id="web.api.org.alfresco.service.index_get" class="org.alfresco.web.api.Index" parent="web.api.framework.service" />
+
+   <!--  Maintain list of available Web APIs -->
+   <bean id="web.api.org.alfresco.service.index_post" class="org.alfresco.web.api.IndexUpdate" parent="web.api.framework.service" />
 
    <!--  List of registered (OpenSearch) search engines -->
    <bean id="web.api.org.alfresco.repository.searchengines_get" class="org.alfresco.web.api.SearchEngines" parent="web.api.framework.service">

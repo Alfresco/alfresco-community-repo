@@ -3,17 +3,17 @@
   <generator version="${server.version}">Alfresco (${server.edition})</generator>
   <title>Registered Search Engines</title> 
   <updated>${xmldate(date)}</updated>
-  <icon>${path.context}/images/logo/AlfrescoLogo16.ico</icon>
+  <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
   <author> 
     <name><#if person??>${person.properties.userName}<#else>unknown</#if></name>
   </author> 
-  <id>${path.service?xml}</id>
+  <id>${absurl(url.full)?xml}</id>
 <#list engines as engine>
   <entry>
     <title>${engine.label}</title>
-    <link rel="alternate" type="${engine.type}" href="${absurl(engine.url)?xml}" title="${engine.label}"/>
+    <link rel="alternate" type="${engine.type}" href="${absurl(url.context)}${engine.url)?xml}" title="${engine.label}"/>
     <summary><#if engine.urlType == "description">OpenSearch Description<#else>Template URL</#if> - ${engine.type}</summary>
-    <id>${absurl(engine.url)?xml}</id>
+    <id>${absurl(url.context)}${engine.url)?xml}</id>
     <updated>${xmldate(date)}</updated>
   </entry>
 </#list>

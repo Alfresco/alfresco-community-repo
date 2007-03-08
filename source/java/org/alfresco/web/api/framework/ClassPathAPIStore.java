@@ -53,8 +53,8 @@ import freemarker.cache.TemplateLoader;
 public class ClassPathAPIStore implements APIStore, InitializingBean
 {
     PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-    private String classPath;
-    private File fileDir;
+    protected String classPath;
+    protected File fileDir;
 
     
     /**
@@ -124,6 +124,10 @@ public class ClassPathAPIStore implements APIStore, InitializingBean
         throws IOException
     {
         File document = new File(fileDir, documentPath);
+        if (!document.exists())
+        {
+            throw new IOException("Description document " + documentPath + " does not exist.");
+        }
         return new FileInputStream(document);
     }
 
@@ -149,7 +153,7 @@ public class ClassPathAPIStore implements APIStore, InitializingBean
      */
     public ScriptLoader getScriptLoader()
     {
-        return new ClassPathScriptLoader(fileDir);
+        return new ClassPathScriptLoader();
     }        
     
     /**
@@ -159,17 +163,6 @@ public class ClassPathAPIStore implements APIStore, InitializingBean
      */
     private class ClassPathScriptLoader implements ScriptLoader
     {
-        private File classPath;
-       
-        /**
-         * Construct
-         * 
-         * @param classPath
-         */
-        public ClassPathScriptLoader(File classPath)
-        {
-            this.classPath = classPath; 
-        }
 
         /* (non-Javadoc)
          * @see org.alfresco.web.api.ScriptLoader#getScriptLocation(java.lang.String)
@@ -177,7 +170,7 @@ public class ClassPathAPIStore implements APIStore, InitializingBean
         public ScriptLocation getScriptLocation(String path)
         {
             ScriptLocation location = null;
-            File scriptPath = new File(classPath, path);
+            File scriptPath = new File(fileDir, path);
             if (scriptPath.exists())
             {
                 location = new ClassPathScriptLocation(scriptPath);

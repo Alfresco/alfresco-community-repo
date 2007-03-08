@@ -218,7 +218,7 @@ public class DeclarativeAPIRegistry implements APIRegistry, ApplicationContextAw
                     if (logger.isDebugEnabled())
                     {
                         APIService existingService = servicesById.get(id);
-                        logger.debug("Service description document " + existingService.getDescription().getSourceLocation() + " overridden by " + serviceDesc.getSourceLocation());
+                        logger.debug("Service description document " + serviceDesc.getSourceLocation() + " overridden by " + existingService.getDescription().getSourceLocation());
                     }
                     continue;
                 }
@@ -517,6 +517,16 @@ public class DeclarativeAPIRegistry implements APIRegistry, ApplicationContextAw
     public APIScriptProcessor getScriptProcessor()
     {
         return this.stores.getScriptProcessor();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.api.framework.APIRegistry#reset()
+     */
+    public void reset()
+    {
+        getTemplateProcessor().resetCache();
+        getScriptProcessor().resetCache();
+        initServices();
     }
     
 

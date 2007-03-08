@@ -3,7 +3,7 @@
   <generator version="${server.version}">Alfresco (${server.edition})</generator>
   <title>Alfresco Keyword Search: ${search.searchTerms}</title> 
   <updated>${xmldate(date)}</updated>
-  <icon>${absurl("/images/logo/AlfrescoLogo16.ico")}</icon>
+  <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
   <author> 
     <name><#if person??>${person.properties.userName}<#else>unknown</#if></name>
   </author> 
@@ -12,22 +12,22 @@
   <opensearch:startIndex>${search.startIndex}</opensearch:startIndex>
   <opensearch:itemsPerPage>${search.itemsPerPage}</opensearch:itemsPerPage>
   <opensearch:Query role="request" searchTerms="${search.searchTerms}" startPage="${search.startPage}" count="${search.itemsPerPage}" language="${search.localeId}"/>
-  <link rel="alternate" href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=html" type="text/html"/>
-  <link rel="self" href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/>
+  <link rel="alternate" href="${absurl(url.service)}?q=${search.searchTerms?url}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=html" type="text/html"/>
+  <link rel="self" href="${absurl(url.service)}?q=${search.searchTerms?url}&amp;p=${search.startPage}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/>
 <#if search.startPage &gt; 1>
-  <link rel="first" href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&amp;p=1&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/>
-  <link rel="previous" href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/>
+  <link rel="first" href="${absurl(url.service)}?q=${search.searchTerms?url}&amp;p=1&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/>
+  <link rel="previous" href="${absurl(url.service)}?q=${search.searchTerms?url}&amp;p=${search.startPage - 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/>
 </#if>
 <#if search.startPage &lt; search.totalPages>
-  <link rel="next" href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/> 
-  <link rel="last" href="${path.serviceContext}/search/keyword?q=${search.searchTerms?url}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/>
+  <link rel="next" href="${absurl(url.service)}?q=${search.searchTerms?url}&amp;p=${search.startPage + 1}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/> 
+  <link rel="last" href="${absurl(url.service)}?q=${search.searchTerms?url}&amp;p=${search.totalPages}&amp;c=${search.itemsPerPage}&amp;l=${search.localeId}&amp;guest=${guest?string("true","")}&amp;format=atom" type="application/atom+xml"/>
 </#if>
-  <link rel="search" type="application/opensearchdescription+xml" href="${path.serviceContext}/search/keyword/description.xml"/>
+  <link rel="search" type="application/opensearchdescription+xml" href="${absurl(url.service)}/description.xml"/>
 <#list search.results as row>
   <entry>
     <title>${row.name}</title>
-    <link rel="alternate" href="${absurl(row.url)}"/>
-    <icon>${absurl(row.icon16)}</icon>       <#comment>TODO: What's the standard for entry icons?</#comment>
+    <link rel="alternate" href="${absurl(url.context)}${row.url}"/>
+    <icon>${absurl(url.context)}${row.icon16}</icon>       <#comment>TODO: What's the standard for entry icons?</#comment>
     <id>urn:uuid:${row.id}</id>
     <updated>${xmldate(row.properties.modified)}</updated>
     <summary>${row.properties.description!""}</summary>

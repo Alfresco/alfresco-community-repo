@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+  <cm:folder xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:alf="http://www.alfresco.org" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:custom="custom.model" xmlns="" view:childName="cm:webscripts">
+    <view:aspects>
+      <app:uifacets></app:uifacets>
+    </view:aspects>
+    <view:properties>
+      <cm:description>URL addressable Web Services</cm:description>
+      <app:icon>space-icon-default</app:icon>
+      <cm:title>URL addressable Web Services</cm:title>
+      <cm:name>Web Scripts</cm:name>
+    </view:properties>
+    <view:associations>
+      <cm:contains>
+        <cm:content view:childName="cm:readme.html">
+          <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+          </view:aspects>
+          <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>What are Web Scripts and how do you develop them?</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/readme.html|mimetype=text/html|size=1344|encoding=UTF-8|locale=en_US_</cm:content>
+            <cm:title></cm:title>
+            <cm:author></cm:author>
+            <cm:name>readme.html</cm:name>
+          </view:properties>
+          <view:associations></view:associations>
+        </cm:content>
+        <cm:folder view:childName="cm:org">
+          <view:aspects>
+            <app:uifacets></app:uifacets>
+          </view:aspects>
+          <view:properties>
+            <cm:description></cm:description>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title></cm:title>
+            <cm:name>org</cm:name>
+          </view:properties>
+          <view:associations>
+            <cm:contains>
+              <cm:folder view:childName="cm:alfresco">
+                <view:aspects>
+                  <app:uifacets></app:uifacets>
+                </view:aspects>
+                <view:properties>
+                  <cm:description></cm:description>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title></cm:title>
+                  <cm:name>alfresco</cm:name>
+                </view:properties>
+                <view:associations>
+                  <cm:contains>
+                    <cm:folder view:childName="cm:sample">
+                      <view:aspects>
+                        <app:uifacets></app:uifacets>
+                      </view:aspects>
+                      <view:properties>
+                        <cm:description></cm:description>
+                        <app:icon>space-icon-default</app:icon>
+                        <cm:title></cm:title>
+                        <cm:name>sample</cm:name>
+                      </view:properties>
+                      <view:associations>
+                        <cm:contains>
+                          <cm:content view:childName="cm:categorysearch_get.js">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <app:inlineeditable></app:inlineeditable>
+                              <cm:author></cm:author>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch_get.js|mimetype=application/x-javascript|size=121|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>categorysearch_get.js</cm:title>
+                              <cm:author></cm:author>
+                              <cm:name>categorysearch_get.js</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
+                          <cm:content view:childName="cm:categorysearch_get_atom.ftl">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <cm:author></cm:author>
+                              <app:inlineeditable></app:inlineeditable>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch_get_atom.ftl|mimetype=text/plain|size=778|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>categorysearch_get_atom.ftl</cm:title>
+                              <cm:author></cm:author>
+                              <sys:store-protocol>workspace</sys:store-protocol>
+                              <cm:name>categorysearch_get_atom.ftl</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
+                          <cm:content view:childName="cm:categorysearch_get_desc.xml">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <cm:author></cm:author>
+                              <app:inlineeditable></app:inlineeditable>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch_get_desc.xml|mimetype=text/xml|size=375|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>categorysearch_get_desc.xml</cm:title>
+                              <cm:author></cm:author>
+                              <cm:name>categorysearch_get_desc.xml</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
+                          <cm:content view:childName="cm:categorysearch_get_html.ftl">
+                            <view:aspects>
+                              <cm:titled></cm:titled>
+                              <cm:author></cm:author>
+                              <app:inlineeditable></app:inlineeditable>
+                            </view:aspects>
+                            <view:properties>
+                              <app:editInline>true</app:editInline>
+                              <cm:description></cm:description>
+                              <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/categorysearch_get_html.ftl|mimetype=text/plain|size=364|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:title>categorysearch_get_html.ftl</cm:title>
+                              <cm:author></cm:author>
+                              <cm:name>categorysearch_get_html.ftl</cm:name>
+                            </view:properties>
+                            <view:associations></view:associations>
+                          </cm:content>
+                        </cm:contains>
+                      </view:associations>
+                    </cm:folder>
+                  </cm:contains>
+                </view:associations>
+              </cm:folder>
+            </cm:contains>
+          </view:associations>
+        </cm:folder>
+      </cm:contains>
+    </view:associations>
+  </cm:folder>
+</view:view>

@@ -1,0 +1,11 @@
+<project name="repository-jibx-eclipse" default="compile-jibx-eclipse">
+
+   <!-- ********************************** -->
+   <!-- ** Initialisation/Configuration ** -->
+   <!-- ********************************** -->
+
+   <target name="compile-jibx-eclipse">
+      <ant dir="${basedir}/../.." target="compile-repository-jibx" />
+   </target>
+
+</project>

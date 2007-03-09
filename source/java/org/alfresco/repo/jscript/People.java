@@ -33,21 +33,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Scripted People service for describing and executing actions against People & Groups.
  * 
  * @author davidc
  */
-public final class People extends BaseScriptImplementation implements Scopeable
+public final class People extends BaseScopableScriptImplementation
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
     private AuthorityDAO authorityDAO;
-
-    /** Root scope for this object */
-    private Scriptable scope;
 
     /**
      * Set the service registry
@@ -70,14 +66,6 @@ public final class People extends BaseScriptImplementation implements Scopeable
     }
     
     /**
-     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
-     */
-    public void setScope(Scriptable scope)
-    {
-        this.scope = scope;
-    }
-    
-    /**
      * Gets the Person given the username
      * 
      * @param username  the username of the person to get
@@ -90,7 +78,7 @@ public final class People extends BaseScriptImplementation implements Scopeable
         if (personService.personExists(username))
         {
             NodeRef personRef = personService.getPerson(username);
-            person = new Node(personRef, services, scope);
+            person = new Node(personRef, services, getScope());
         }
         return person;
     }
@@ -107,7 +95,7 @@ public final class People extends BaseScriptImplementation implements Scopeable
         NodeRef groupRef = authorityDAO.getAuthorityNodeRefOrNull(groupName);
         if (groupRef != null)
         {
-            group = new Node(groupRef, services, scope);
+            group = new Node(groupRef, services, getScope());
         }
         return group;
     }

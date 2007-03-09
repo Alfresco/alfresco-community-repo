@@ -25,6 +25,7 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Writer;
+import java.util.List;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
@@ -111,4 +112,20 @@ public interface TemplateService
      */
     @Auditable(warn = true, parameters = {"engine"})
     public TemplateProcessor getTemplateProcessor(String engine);
+    
+    /**
+     * Registers a template extension implementation with the Template service
+     * 
+     * @param extension     the template extension implementation
+     */
+    @Auditable(parameters = {"extension"})
+    public void registerExtension(TemplateExtensionImplementation extension);
+    
+    /**
+     * Returns a list of the Template Extension objects configured for this service
+     * 
+     * @return list of the Template Extension objects configured for this service
+     */
+    @Auditable(warn = true, recordReturnedObject = false)
+    public List<TemplateExtensionImplementation> getExtensions();
 }

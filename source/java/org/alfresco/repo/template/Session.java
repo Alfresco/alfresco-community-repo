@@ -32,20 +32,20 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
  * 
  * @author Andy Hind
  */
-public class Session
+public class Session extends BaseTemplateExtensionImplementation
 {
-
     private ServiceRegistry services;
 
-    @SuppressWarnings("unused")
-    private TemplateImageResolver imageResolver;
-
-    public Session(ServiceRegistry services, TemplateImageResolver imageResolver)
+    /**
+     * Sets the service registry
+     * 
+     * @param services  the service registry
+     */
+    public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
-        this.imageResolver = imageResolver;
     }
-
+    
     /**
      * Get the current authentication ticket.
      * 

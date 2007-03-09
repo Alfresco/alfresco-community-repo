@@ -9,6 +9,8 @@
         </property>
     </bean>
     
+    <!-- base config implementation that script extension beans extend from - for auto registration
+         as a global script with the ScriptService -->
     <bean id="baseScriptImplementation" abstract="true" init-method="register">
         <property name="scriptService">
             <ref bean="scriptService"/>
@@ -28,7 +30,7 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
-    </bean>        
+    </bean>
     
     <bean id="actionsScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Actions">
         <property name="scriptName">
@@ -37,7 +39,7 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
-    </bean>    
+    </bean>
 
     <bean id="searchScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Search">
         <property name="scriptName">
@@ -49,7 +51,7 @@
         <property name="storeUrl">
             <value>${spaces.store}</value>
         </property>
-    </bean>     
+    </bean>
 
     <bean id="classificationScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Classification">
         <property name="scriptName">
@@ -61,7 +63,7 @@
         <property name="storeUrl">
             <value>${spaces.store}</value>
         </property>
-    </bean> 
+    </bean>
 
     <bean id="peopleScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.People">
         <property name="scriptName">
@@ -73,7 +75,7 @@
         <property name="authorityDAO">
             <ref bean="authorityDAO"/>
         </property>
-    </bean>    
+    </bean>
 
     <bean id="sessionScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Session">
         <property name="scriptName">
@@ -82,7 +84,7 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
-    </bean> 
+    </bean>
 
     <bean id="scriptBehaviour" abstract="true">
         <property name="serviceRegistry">

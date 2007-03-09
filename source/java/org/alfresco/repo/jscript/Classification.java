@@ -31,18 +31,14 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Support class for finding categories, finding root nodes for categories and creating root categories. 
  * 
  * @author Andy Hind
  */
-public final class Classification  extends BaseScriptImplementation implements Scopeable
+public final class Classification extends BaseScopableScriptImplementation
 {
-    @SuppressWarnings("unused")
-    private Scriptable scope;
-
     private ServiceRegistry services;
 
     private StoreRef storeRef;
@@ -65,14 +61,6 @@ public final class Classification  extends BaseScriptImplementation implements S
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
-    }
-
-    /**
-     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
-     */
-    public void setScope(Scriptable scope)
-    {
-        this.scope = scope;
     }
 
     /**
@@ -137,7 +125,7 @@ public final class Classification  extends BaseScriptImplementation implements S
         int i = 0;
         for (ChildAssociationRef car : cars)
         {
-            categoryNodes[i++] = new CategoryNode(car.getChildRef(), this.services, this.scope);
+            categoryNodes[i++] = new CategoryNode(car.getChildRef(), this.services, getScope());
         }
         return categoryNodes;
     }

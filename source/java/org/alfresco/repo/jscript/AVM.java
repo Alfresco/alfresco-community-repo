@@ -26,22 +26,18 @@ package org.alfresco.repo.jscript;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.ServiceRegistry;
-import org.mozilla.javascript.Scriptable;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 
 /**
  * Helper to access AVM nodes from a script context.
  *  
  * @author Kevin Roast
  */
-public final class AVM extends BaseScriptImplementation implements Scopeable
+public final class AVM extends BaseScopableScriptImplementation
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
-
-    /** Root scope for this object */
-    private Scriptable scope;
 
     /**
      * Set the service registry
@@ -51,14 +47,6 @@ public final class AVM extends BaseScriptImplementation implements Scopeable
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
       this.services = serviceRegistry;
-    }
-    
-    /**
-     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
-     */
-    public void setScope(Scriptable scope)
-    {
-        this.scope = scope;
     }
     
     /**
@@ -77,7 +65,7 @@ public final class AVM extends BaseScriptImplementation implements Scopeable
            AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, rootPath);
            if (nodeDesc != null)
            {
-               rootNode = new AVMNode(AVMNodeConverter.ToNodeRef(-1, rootPath), this.services, this.scope);
+               rootNode = new AVMNode(AVMNodeConverter.ToNodeRef(-1, rootPath), this.services, getScope());
            }
         }
         return rootNode;
@@ -98,7 +86,7 @@ public final class AVM extends BaseScriptImplementation implements Scopeable
             AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, path);
             if (nodeDesc != null)
             {
-                node = new AVMNode(AVMNodeConverter.ToNodeRef(-1, path), this.services, this.scope);
+                node = new AVMNode(AVMNodeConverter.ToNodeRef(-1, path), this.services, getScope());
             }
         }
         return node;

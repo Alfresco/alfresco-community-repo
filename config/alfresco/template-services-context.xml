@@ -2,6 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+
     <bean id="templateService" class="org.alfresco.repo.template.TemplateServiceImpl">
         <!-- A Map of named template engines to class implementations/Spring bean IDs -->
         <!-- The key of each property is the name of the engine - this is the name that is passed in -->
@@ -34,4 +35,58 @@
         </property>
         -->
     </bean>
+    
+    <!-- base config implementation that template extension beans extend from - for auto registration
+         as a global template helper with the TemplateService -->
+    <bean id="baseTemplateImplementation" abstract="true" init-method="register">
+        <property name="templateService">
+            <ref bean="templateService"/>
+        </property>
+    </bean>
+    
+    <bean id="sessionTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.Session">
+        <property name="extensionName">
+            <value>session</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="classificationTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.Classification">
+        <property name="extensionName">
+            <value>classification</value>
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="hasAspectTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.HasAspectMethod">
+        <property name="extensionName">
+            <value>hasAspect</value>
+        </property>
+    </bean>
+    
+    <bean id="messageTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.I18NMessageMethod">
+        <property name="extensionName">
+            <value>message</value>
+        </property>
+    </bean>
+    
+    <bean id="dateCompareTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.DateCompareMethod">
+        <property name="extensionName">
+            <value>dateCompare</value>
+        </property>
+    </bean>
+    
+    <bean id="incrementDateTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.DateIncrementMethod">
+        <property name="extensionName">
+            <value>incrementDate</value>
+        </property>
+    </bean>
+    
 </beans>

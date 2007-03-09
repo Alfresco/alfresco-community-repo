@@ -1550,9 +1550,13 @@ public class Node implements Serializable, Scopeable
     private String processTemplate(String template, NodeRef templateRef, ScriptableObject args)
     {
         // build default model for the template processing
-        Map<String, Object> model = FreeMarkerProcessor.buildDefaultModel(services, ((Node) ((Wrapper) scope.get(
-                "person", scope)).unwrap()).getNodeRef(), ((Node) ((Wrapper) scope.get("companyhome", scope)).unwrap())
-                .getNodeRef(), ((Node) ((Wrapper) scope.get("userhome", scope)).unwrap()).getNodeRef(), templateRef, null);
+        Map<String, Object> model = FreeMarkerProcessor.buildDefaultModel(
+                services,
+                ((Node)((Wrapper)scope.get("person", scope)).unwrap()).getNodeRef(),
+                ((Node)((Wrapper)scope.get("companyhome", scope)).unwrap()).getNodeRef(),
+                ((Node)((Wrapper)scope.get("userhome", scope)).unwrap()).getNodeRef(),
+                templateRef,
+                null);
         
         // add the current node as either the document/space as appropriate
         if (this.getIsDocument())

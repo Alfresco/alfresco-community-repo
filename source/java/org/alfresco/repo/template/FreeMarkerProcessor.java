@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
+import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
@@ -100,7 +101,7 @@ public class FreeMarkerProcessor implements TemplateProcessor
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * Set the default template encoding
      * 
@@ -338,18 +339,13 @@ public class FreeMarkerProcessor implements TemplateProcessor
         // current date/time is useful to have and isn't supplied by FreeMarker by default
         model.put("date", new Date());
         
-        // Session support
-        model.put("session", new Session(services, imageResolver));
-        
-        // Classification support
-        
-        model.put("classification", new Classification(companyHome.getStoreRef(), services, imageResolver));
-        
-        // add custom method objects
-        model.put("hasAspect", new HasAspectMethod());
-        model.put("message", new I18NMessageMethod());
-        model.put("dateCompare", new DateCompareMethod());
-        model.put("incrementDate", new DateIncrementMethod());
+        // add the template extensions to the model
+        // the extensions include custom root helper objects and custom template method objects
+        for (TemplateExtensionImplementation ext : services.getTemplateService().getExtensions())
+        {
+            ext.setTemplateImageResolver(imageResolver);
+            model.put(ext.getExtensionName(), ext);
+        }
         
         return model;
     }

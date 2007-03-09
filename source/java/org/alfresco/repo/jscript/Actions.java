@@ -30,20 +30,16 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Scripted Action service for describing and executing actions against Nodes.
  * 
  * @author davidc
  */
-public final class Actions extends BaseScriptImplementation implements Scopeable
+public final class Actions extends BaseScopableScriptImplementation
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
-
-    /** Root scope for this object */
-    private Scriptable scope;
 
     /**
      * Set the service registry
@@ -53,14 +49,6 @@ public final class Actions extends BaseScriptImplementation implements Scopeable
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
     	this.services = serviceRegistry;
-    }
-
-    /**
-     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
-     */
-    public void setScope(Scriptable scope)
-    {
-        this.scope = scope;
     }
     
     /**
@@ -102,7 +90,7 @@ public final class Actions extends BaseScriptImplementation implements Scopeable
         {
             Action action = actionService.createAction(actionName);
             scriptAction = new ScriptAction(this.services, action, actionDef);
-            scriptAction.setScope(scope);
+            scriptAction.setScope(getScope());
         }
         return scriptAction;
     } 

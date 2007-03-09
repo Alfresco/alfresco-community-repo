@@ -26,11 +26,15 @@ package org.alfresco.repo.template;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.ScriptImplementation;
 import org.alfresco.service.cmr.repository.TemplateException;
+import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.apache.commons.logging.Log;
@@ -40,6 +44,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
+ * Implementation of the TemplateService using Spring configured template engines.
+ * 
  * @author Kevin Roast
  */
 public class TemplateServiceImpl implements TemplateService, ApplicationContextAware
@@ -58,6 +64,10 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
     /** Threadlocal instance for template processor cache */
     private static ThreadLocal<Map<String, TemplateProcessor>> processors = new ThreadLocal<Map<String, TemplateProcessor>>();
     
+    /** List of global template extensions */
+    private List<TemplateExtensionImplementation> globalExtensions = new ArrayList<TemplateExtensionImplementation>(); 
+    
+    
     /**
      * Set the application context
      * 
@@ -68,6 +78,22 @@ public class TemplateServiceImpl implements TemplateService, ApplicationContextA
         this.applicationContext = applicationContext;
     }
     
+    /**
+     * @see org.alfresco.service.cmr.repository.TemplateService#registerExtension(org.alfresco.service.cmr.repository.TemplateExtensionImplementation)
+     */
+    public void registerExtension(TemplateExtensionImplementation extension)
+    {
+        this.globalExtensions.add(extension);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.TemplateService#getExtensions()
+     */
+    public List<TemplateExtensionImplementation> getExtensions()
+    {
+        return this.globalExtensions;
+    }
+
     /**
      * @param defaultTemplateEngine The default Template Engine name to set.
      */

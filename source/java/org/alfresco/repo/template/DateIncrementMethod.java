@@ -34,10 +34,8 @@ import freemarker.template.TemplateNumberModel;
 
 /**
  * @author Roy Wetherall
- * 
- 
  */
-public final class DateIncrementMethod implements TemplateMethodModelEx
+public class DateIncrementMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

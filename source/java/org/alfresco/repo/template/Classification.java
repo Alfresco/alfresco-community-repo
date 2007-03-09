@@ -32,8 +32,6 @@ import org.alfresco.repo.jscript.CategoryTemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
 
@@ -42,19 +40,29 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Andy Hind
  */
-public final class Classification
+public class Classification extends BaseTemplateExtensionImplementation
 {
     private ServiceRegistry services;
-    private TemplateImageResolver imageResolver;
     private StoreRef storeRef;
 
-    public Classification(StoreRef storeRef, ServiceRegistry services,  TemplateImageResolver imageResolver)
+    /**
+     * Sets the service registry
+     * 
+     * @param services  the service registry
+     */
+    public void setServiceRegistry(ServiceRegistry services)
     {
-        this.storeRef = storeRef;
         this.services = services;
-        this.imageResolver = imageResolver;
     }
     
+    /**
+     * @param storeUrl  The store ref url to set.
+     */
+    public void setStoreUrl(String storeUrl)
+    {
+        this.storeRef = new StoreRef(storeUrl);
+    }
+
     /**
      * Find all the category nodes in a given classification.
      * 
@@ -110,7 +118,7 @@ public final class Classification
         ArrayList<CategoryTemplateNode> categoryNodes = new ArrayList<CategoryTemplateNode>(cars.size());
         for (ChildAssociationRef car : cars)
         {
-            categoryNodes.add(new CategoryTemplateNode(car.getChildRef(), this.services, this.imageResolver));
+            categoryNodes.add(new CategoryTemplateNode(car.getChildRef(), this.services, getTemplateImageResolver()));
         }
         return categoryNodes;
     }

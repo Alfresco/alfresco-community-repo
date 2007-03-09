@@ -69,7 +69,7 @@ public class RhinoScriptService implements ScriptService
     private ServiceRegistry services;
     
     /** List of global scripts */
-    private List<ScriptImplementation> globalScripts = new ArrayList<ScriptImplementation>(5); 
+    private List<ScriptImplementation> globalScripts = new ArrayList<ScriptImplementation>(); 
 
     /**
      * Set the Service Registry

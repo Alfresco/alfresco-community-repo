@@ -24,14 +24,11 @@
  */
 package org.alfresco.repo.template;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.service.cmr.repository.TemplateNode;
-import org.alfresco.service.namespace.QName;
 
 import freemarker.ext.beans.BeanModel;
-import freemarker.ext.beans.StringModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateScalarModel;
@@ -44,9 +41,9 @@ import freemarker.template.TemplateScalarModel;
  * Method returns whether a TemplateNode has a particular aspect applied to it. The aspect
  * name can be either the fully qualified QName or the short prefixed name string.
  * <p>
- * Usage: hasAspect(TemplateNode node, String aspect)
+ * Usage: hasAspect(TemplateNode node, String aspect) - 1 on true, 0 on false
  */
-public final class HasAspectMethod implements TemplateMethodModelEx
+public class HasAspectMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

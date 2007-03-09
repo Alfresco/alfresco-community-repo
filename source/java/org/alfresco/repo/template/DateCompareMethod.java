@@ -43,7 +43,7 @@ import freemarker.template.TemplateNumberModel;
  *    dateCompare(dateA, dateB) - 1 if dateA if greater than dateB
  *    dateCompare(dateA, dateB, millis) - 1 if dateA is greater than dateB by at least millis, else 0 
  */
-public final class DateCompareMethod implements TemplateMethodModelEx
+public class DateCompareMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

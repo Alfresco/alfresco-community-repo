@@ -37,11 +37,11 @@ import freemarker.template.TemplateScalarModel;
  * 
  * Custom FreeMarker Template language method.
  * <p>
- * Method an I18N message resolved for the current locale and specified message ID.
+ * Returns an I18N message resolved for the current locale and specified message ID.
  * <p>
  * Usage: message(String id)
  */
-public final class I18NMessageMethod implements TemplateMethodModelEx
+public class I18NMessageMethod extends BaseTemplateExtensionImplementation implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

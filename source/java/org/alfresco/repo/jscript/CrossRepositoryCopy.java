@@ -37,23 +37,12 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Kevin Roast
  */
-public final class CrossRepositoryCopy extends BaseScriptImplementation implements Scopeable
+public final class CrossRepositoryCopy extends BaseScopableScriptImplementation
 {
     public final static String BEAN_NAME = "crossCopyScript";
     
     /** Service registry */
     private ServiceRegistry services;
-    
-    /** Root scope for this object */
-    private Scriptable scope;
-
-    /**
-     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
-     */
-    public void setScope(Scriptable scope)
-    {
-        this.scope = scope;
-    }
     
     /**
      * Set the service registry
@@ -98,7 +87,7 @@ public final class CrossRepositoryCopy extends BaseScriptImplementation implemen
             AVMNodeDescriptor node = this.services.getAVMService().lookup(-1, destPath);
             if (node != null)
             {
-                result = ((AVMNode)dest).newInstance(destPath, -1, this.services, this.scope);
+                result = ((AVMNode)dest).newInstance(destPath, -1, this.services, getScope());
             }
         }
         else if (dest.getNodeRef().getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))

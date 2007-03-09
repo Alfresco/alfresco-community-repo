@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Search component for use by the ScriptService.
@@ -55,16 +54,13 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Kevin Roast
  */
-public final class Search extends BaseScriptImplementation implements Scopeable
+public final class Search extends BaseScopableScriptImplementation
 {
     /** Service registry */
     private ServiceRegistry services;
     
     /** Default store reference */
     private StoreRef storeRef;
-    
-    /** Root scope for this object */
-    private Scriptable scope;
     
     /**
      * Set the default store reference
@@ -84,14 +80,6 @@ public final class Search extends BaseScriptImplementation implements Scopeable
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
-    }
-    
-    /**
-     * @see org.alfresco.repo.jscript.Scopeable#setScope(org.mozilla.javascript.Scriptable)
-     */
-    public void setScope(Scriptable scope)
-    {
-        this.scope = scope;
     }
     
     /**
@@ -251,7 +239,7 @@ public final class Search extends BaseScriptImplementation implements Scopeable
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
-                    set.add(new Node(nodeRef, services, this.scope));
+                    set.add(new Node(nodeRef, services, getScope()));
                 }
             }
         }

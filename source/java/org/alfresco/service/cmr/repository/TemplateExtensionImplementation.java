@@ -22,24 +22,33 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.jscript;
-
-import org.mozilla.javascript.Scriptable;
+package org.alfresco.service.cmr.repository;
 
 /**
- * Interface contract for objects that supporting setting of the global scripting scope.
- * This is used to mark objects that are not themselves natively scriptable (i.e. they are
- * wrapped Java objects) but need to access the global scope for the purposes of JavaScript
- * object creation etc.
+ * Interface to represent a server side template extension implementation
  * 
  * @author Kevin Roast
  */
-public interface Scopeable
+public interface TemplateExtensionImplementation
 {
     /**
-     * Set the Scriptable global scope
+     * Returns the name of the template extension 
      * 
-     * @param script relative global scope
+     * @return the name of the template extension
      */
-    void setScope(Scriptable scope);
+    String getExtensionName();
+    
+    /**
+     * Set the template image resolver for this extension
+     * 
+     * @param resolver      TemplateImageResolver
+     */
+    void setTemplateImageResolver(TemplateImageResolver resolver);
+    
+    /**
+     * Get the template image resolver for this extension
+     * 
+     * @return TemplateImageResolver
+     */
+    TemplateImageResolver getTemplateImageResolver();
 }

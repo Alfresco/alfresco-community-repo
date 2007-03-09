@@ -33,15 +33,16 @@ import java.util.Map;
 import org.alfresco.repo.jscript.Node;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.template.AbsoluteUrlMethod;
-import org.alfresco.repo.template.ISO8601DateFormatMethod;
-import org.alfresco.repo.template.UrlEncodeMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
+import org.alfresco.web.ui.common.Utils;
 
 
 /**
@@ -242,8 +243,17 @@ public abstract class AbstractWebScript implements WebScript
      */
     final protected Map<String, Object> createTemplateModel(WebScriptRequest req, WebScriptResponse res, Map<String, Object> customModel)
     {
-        // create script model
+        // create template model
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+        
+        // create an image resolver
+        TemplateImageResolver imageResolver = new TemplateImageResolver()
+        {
+            public String resolveImagePathForName(String filename, boolean small)
+            {
+                return Utils.getFileTypeImage(getWebScriptRegistry().getContext(), filename, small);
+            }
+        };
         
         // add repository context
         if (getDescription().getRequiredAuthentication() != RequiredAuthentication.none &&
@@ -261,19 +271,25 @@ public abstract class AbstractWebScript implements WebScript
                 model.put("userhome", new TemplateNode(scriptContext.getUserHome(person), serviceRegistry, null));
             }
         }
-
+        
         // add web script context
         model.put("args", createArgModel(req));
         model.put("guest", req.isGuest());
         model.put("url", new URLModel(req));
         model.put("server", new ServerModel(descriptorService.getServerDescriptor()));
-
+        
         // add template support
-        model.put("xmldate", new ISO8601DateFormatMethod());
         model.put("absurl", new AbsoluteUrlMethod(req.getServerPath()));
-        model.put("urlencode", new UrlEncodeMethod());
         model.put("date", new Date());
-
+        
+        // add the template extensions to the model
+        // the extensions include custom root helper objects and custom template method objects
+        for (TemplateExtensionImplementation ext : serviceRegistry.getTemplateService().getExtensions())
+        {
+            ext.setTemplateImageResolver(imageResolver);
+            model.put(ext.getExtensionName(), ext);
+        }
+        
         // add custom model
         if (customModel != null)
         {
@@ -316,5 +332,4 @@ public abstract class AbstractWebScript implements WebScript
     {
         getWebScriptRegistry().getScriptProcessor().executeScript(location, model);
     }
-    
 }

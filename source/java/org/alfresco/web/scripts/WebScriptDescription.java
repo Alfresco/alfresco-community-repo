@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.scripts;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 
 /**
  * Web Script Description
@@ -52,6 +55,21 @@ public interface WebScriptDescription
         requiresnew
     }
     
+    
+    /**
+     * Gets the source document of this web script
+     * 
+     * @return  source document
+     */
+    public InputStream getSourceDocument()
+        throws IOException;
+    
+    /**
+     * Gets the store this web script is located in
+     * 
+     * @return  path to store
+     */
+    public String getSourceStore();
     
     /**
      * Gets the source document location of this service description

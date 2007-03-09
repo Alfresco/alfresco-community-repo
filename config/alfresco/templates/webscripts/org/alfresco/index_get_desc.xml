@@ -1,5 +1,6 @@
 <webscript>
   <shortname>Web Script Index</shortname>
-  <description>Index of all Web Scripts</description>
+  <description>Retrieve an index of all Web Scripts</description>
   <url format="html" template="/index" />
+  <url format="wiki" template="/index?format=wiki" />
 </webscript>

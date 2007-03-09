@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.scripts;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ import java.util.Map;
  */
 public class WebScriptDescriptionImpl implements WebScriptDescription
 {
+    private WebScriptStore sourceStore;
     private String sourceLocation;
     private String id;
     private String shortName;
@@ -45,7 +48,34 @@ public class WebScriptDescriptionImpl implements WebScriptDescription
     private URI[] uris;
     private String defaultFormat;
     private Map<String, URI> uriByFormat;
+
     
+    /**
+     * Sets the source store
+     * 
+     * @param store  source store
+     */
+    public void setSourceStore(WebScriptStore store)
+    {
+        this.sourceStore = store;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptDescription#getSourceDocument()
+     */
+    public InputStream getSourceDocument()
+        throws IOException
+    {
+        return this.sourceStore.getDescriptionDocument(sourceLocation);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptDescription#getSourceStore()
+     */
+    public String getSourceStore()
+    {
+        return this.sourceStore.getBasePath();
+    }
 
     /**
      * Sets the source location

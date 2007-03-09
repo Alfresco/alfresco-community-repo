@@ -183,7 +183,6 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
             if (logger.isDebugEnabled())
                 logger.debug("Locating Web Scripts within " + apiStore.getBasePath());
             
-            String basePath = apiStore.getBasePath();
             String[] serviceDescPaths = apiStore.getDescriptionDocumentPaths();
             for (String serviceDescPath : serviceDescPaths)
             {
@@ -193,7 +192,7 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
                 try
                 {
                     serviceDescIS = apiStore.getDescriptionDocument(serviceDescPath);
-                    serviceDesc = createDescription(basePath, serviceDescPath, serviceDescIS);
+                    serviceDesc = createDescription(apiStore, serviceDescPath, serviceDescIS);
                 }
                 catch(IOException e)
                 {
@@ -219,7 +218,10 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
                     if (logger.isDebugEnabled())
                     {
                         WebScript existingService = webscriptsById.get(id);
-                        logger.debug("Web Script description document " + serviceDesc.getSourceLocation() + " overridden by " + existingService.getDescription().getSourceLocation());
+                        WebScriptDescription existingDesc = existingService.getDescription();
+                        String msg = "Web Script description document " + serviceDesc.getSourceStore() + "/" + serviceDesc.getSourceLocation();
+                        msg += " overridden by " + existingDesc.getSourceStore() + "/" + existingDesc.getSourceLocation();
+                        logger.debug(msg);
                     }
                     continue;
                 }
@@ -319,13 +321,13 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
     /**
      * Create an Web Script Description
      * 
-     * @param basePath
+     * @param store
      * @param serviceDescPath
      * @param serviceDoc
      * 
      * @return  web script service description
      */
-    private WebScriptDescription createDescription(String basePath, String serviceDescPath, InputStream serviceDoc)
+    private WebScriptDescription createDescription(WebScriptStore store, String serviceDescPath, InputStream serviceDoc)
     {
         SAXReader reader = new SAXReader();
         try
@@ -430,7 +432,8 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
             
             // construct service description
             WebScriptDescriptionImpl serviceDesc = new WebScriptDescriptionImpl();
-            serviceDesc.setSourceLocation(basePath + "/" + serviceDescPath);
+            serviceDesc.setSourceStore(store);
+            serviceDesc.setSourceLocation(serviceDescPath);
             serviceDesc.setId(id);
             serviceDesc.setShortName(shortName);
             serviceDesc.setDescription(description);

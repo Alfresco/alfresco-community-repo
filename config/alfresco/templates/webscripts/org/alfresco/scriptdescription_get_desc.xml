@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Web Script Description</shortname>
+  <description>Retrieve description document for identified Web Script</description>
+  <url format="html" template="/description/{serviceId}" />
+</webscript>

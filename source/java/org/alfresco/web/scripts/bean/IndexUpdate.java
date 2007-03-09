@@ -35,7 +35,7 @@ import org.alfresco.web.scripts.WebScriptResponse;
 
 
 /**
- * Retrieves the list of available Web APIs
+ * Retrieves the list of available Web Scripts
  * 
  * @author davidc
  */

@@ -110,11 +110,13 @@
       <property name="formats">
          <props>
             <prop key="html">text/html</prop>
+            <prop key="text">text/plain</prop>
             <prop key="xml">text/xml</prop>
             <prop key="atom">application/atom+xml</prop>
             <prop key="rss">application/rss+xml</prop>
             <prop key="json">application/json</prop>
             <prop key="opensearchdescription">application/opensearchdescription+xml</prop>
+            <prop key="wiki">text/plain</prop>
          </props>
       </property>
    </bean>
@@ -176,6 +178,9 @@
 
    <!--  Maintain list of available Web APIs -->
    <bean id="webscript.org.alfresco.index_post" class="org.alfresco.web.scripts.bean.IndexUpdate" parent="webscript" />
+
+   <!--  Retrieve Web Script Description Document -->
+   <bean id="webscript.org.alfresco.scriptdescription_get" class="org.alfresco.web.scripts.bean.ServiceDescription" parent="webscript" />
 
    <!--  List of registered (OpenSearch) search engines -->
    <bean id="webscript.org.alfresco.repository.searchengines_get" class="org.alfresco.web.scripts.bean.SearchEngines" parent="webscript">

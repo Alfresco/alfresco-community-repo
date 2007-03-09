@@ -93,33 +93,39 @@ Alfresco.NodeInfoPanel.prototype =
    launchElement: null,
    popupElement: null,
    visible: false,
+   loading: false,
    
    /**
     * Makes the AJAX request back to the server to get the node info.
     */
    showNodeInfo: function()
    {
-      if (this.popupElement == null)
+      if (this.loading == false)
       {
-         var elImg = Alfresco.Dom.getElementByTagName(this.launchElement, "img");
-         if (elImg != null)
+         if (this.popupElement == null)
          {
-            elImg.src = getContextPath() + "/images/icons/ajax_anim.gif";
+            this.loading = true;
+            
+            var elImg = Alfresco.Dom.getElementByTagName(this.launchElement, "img");
+            if (elImg != null)
+            {
+               elImg.src = getContextPath() + "/images/icons/ajax_anim.gif";
+            }
+            
+            YAHOO.util.Connect.asyncRequest(
+               "POST",
+               getContextPath() + '/ajax/invoke/NodeInfoBean.sendNodeInfo',
+               { 
+                  success: this.loadNodeInfoHandler,
+                  failure: handleErrorYahoo,    // global error handler
+                  argument: [this.nodeRef, this]
+               }, 
+               "noderef=" + this.nodeRef);
          }
-         
-         YAHOO.util.Connect.asyncRequest(
-            "POST",
-            getContextPath() + '/ajax/invoke/NodeInfoBean.sendNodeInfo',
-            { 
-               success: this.loadNodeInfoHandler,
-               failure: handleErrorYahoo,    // global error handler
-               argument: [this.nodeRef, this]
-            }, 
-            "noderef=" + this.nodeRef);
-      }
-      else
-      {
-         this.displayNodeInfo();
+         else
+         {
+            this.displayNodeInfo();
+         }
       }
    },
    
@@ -148,6 +154,7 @@ Alfresco.NodeInfoPanel.prototype =
       
       // keep track of the div element we created
       panel.popupElement = div;
+      panel.loading = false;
       
       // display the div for the first time
       panel.displayNodeInfo();

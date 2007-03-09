@@ -89,4 +89,16 @@
         </property>
     </bean>
     
+    <bean id="xmlDateTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.ISO8601DateFormatMethod">
+        <property name="extensionName">
+            <value>xmldate</value>
+        </property>
+    </bean>
+    
+    <bean id="urlEncodeTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.ISO8601DateFormatMethod">
+        <property name="extensionName">
+            <value>urlencode</value>
+        </property>
+    </bean>
+    
 </beans>

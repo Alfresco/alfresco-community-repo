@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.QName;
@@ -674,6 +675,16 @@ public class TemplateNode implements Serializable
     public boolean getInheritsPermissions()
     {
         return this.services.getPermissionService().getInheritParentPermissions(this.nodeRef);
+    }
+    
+    /**
+     * @param permission        Permission name to test
+     * 
+     * @return true if the current user is granted the specified permission on the node
+     */
+    public boolean hasPermission(String permission)
+    {
+        return (this.services.getPermissionService().hasPermission(this.nodeRef, permission) == AccessStatus.ALLOWED);
     }
     
         

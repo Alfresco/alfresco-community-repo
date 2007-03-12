@@ -71,6 +71,12 @@
         </property>
     </bean>
     
+    <bean id="hasPermissionTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.HasPermissionMethod">
+        <property name="extensionName">
+            <value>hasPermission</value>
+        </property>
+    </bean>
+    
     <bean id="messageTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.I18NMessageMethod">
         <property name="extensionName">
             <value>message</value>

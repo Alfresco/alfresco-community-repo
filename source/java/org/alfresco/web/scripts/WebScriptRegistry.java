@@ -28,6 +28,8 @@ import java.util.Collection;
 
 import javax.servlet.ServletContext;
 
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
+
 
 /**
  * Web Scripts Registry
@@ -80,6 +82,13 @@ public interface WebScriptRegistry
      * @return  template processor
      */
     public TemplateProcessor getTemplateProcessor();
+    
+    /**
+     * Gets the Template Image Resolver
+     * 
+     * @return  template image resolver
+     */
+    public TemplateImageResolver getTemplateImageResolver();
     
     /**
      * Gets the Script Processor

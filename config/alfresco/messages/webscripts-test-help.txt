@@ -1,0 +1,37 @@
+##
+##  Meta commands 
+## 
+
+ok> help 
+
+    List this help. 
+
+ok> r 
+
+    Repeat last command. 
+
+ok> user [<userName>] 
+
+    Switch to specified <userName>.  If <userName> is omitted, the currently 
+    selected user is shown. 
+
+ok> quit | exit
+
+    Quit this Web Script server.
+
+## 
+##  HTTP Requests
+## 
+
+ok> get <path>
+
+    Issue a HTTP GET request to the Web Script located at <path>.  The response
+    is dumped to the console.
+    
+    <path> URL relative to /alfresco/service
+    
+    e.g. get /blog/category?c=Web20
+    
+## 
+##  end 
+## 

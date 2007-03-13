@@ -33,7 +33,6 @@ import java.util.Map;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -44,7 +43,6 @@ import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
-import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -67,15 +65,6 @@ public class KeywordSearch extends DeclarativeWebScript
 
     // dependencies
     protected SearchService searchService;
-
-    // icon resolver
-    protected TemplateImageResolver iconResolver = new TemplateImageResolver()
-    {
-        public String resolveImagePathForName(String filename, boolean small)
-        {
-            return Utils.getFileTypeImage(getWebScriptRegistry().getContext(), filename, small);
-        }
-    };
 
     /**
      * @param searchService
@@ -364,7 +353,7 @@ public class KeywordSearch extends DeclarativeWebScript
          */
         public SearchTemplateNode(NodeRef nodeRef, float score)
         {
-            super(nodeRef, getServiceRegistry(), iconResolver);
+            super(nodeRef, getServiceRegistry(), getWebScriptRegistry().getTemplateImageResolver());
             this.score = score;
         }
         

@@ -36,9 +36,11 @@ import java.util.TreeMap;
 
 import javax.servlet.ServletContext;
 
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
 import org.alfresco.web.scripts.WebScriptDescription.URI;
+import org.alfresco.web.ui.common.Utils;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +51,7 @@ import org.dom4j.io.SAXReader;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.RegexpMethodPointcutAdvisor;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.ServletContextAware;
@@ -59,7 +62,7 @@ import org.springframework.web.context.ServletContextAware;
  * 
  * @author davidc
  */
-public class DeclarativeWebScriptRegistry implements WebScriptRegistry, ApplicationContextAware, ServletContextAware
+public class DeclarativeWebScriptRegistry implements WebScriptRegistry, ApplicationContextAware, ServletContextAware, InitializingBean
 {
     // Logger
     private static final Log logger = LogFactory.getLog(DeclarativeWebScriptRegistry.class);
@@ -72,6 +75,8 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
     private MethodInterceptor serviceTransaction;
     private FormatRegistry formatRegistry;
     private WebScriptStorage storage;
+    private TemplateImageResolver imageResolver;
+    
     
     // map of web scripts by id
     // NOTE: The map is sorted by id (ascending order)
@@ -161,7 +166,20 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
     {
         this.applicationContext = applicationContext;
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        this.imageResolver = new TemplateImageResolver()
+        {
+            public String resolveImagePathForName(String filename, boolean small)
+            {
+                return Utils.getFileTypeImage(getContext(), filename, small);
+            }
+        };        
+    }
     
     /**
      * Initialise Web Scripts
@@ -516,6 +534,14 @@ public class DeclarativeWebScriptRegistry implements WebScriptRegistry, Applicat
         return this.storage.getTemplateProcessor();
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.WebScriptRegistry#getTemplateImageResolver()
+     */
+    public TemplateImageResolver getTemplateImageResolver()
+    {
+        return this.imageResolver;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptRegistry#getScriptProcessor()
      */

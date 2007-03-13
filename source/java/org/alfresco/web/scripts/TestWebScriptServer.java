@@ -33,11 +33,11 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -64,6 +64,9 @@ public class TestWebScriptServer
     /** Current user */
     private String username = "admin";
     
+    /** I18N Messages */
+    private MessageSource m_messages;    
+    
     
     /**
      * Sets the transaction service
@@ -85,16 +88,27 @@ public class TestWebScriptServer
         this.registry = registry;
     }
     
+    /**
+     * Sets the Messages resource bundle
+     * 
+     * @param messages
+     * @throws IOException
+     */
+    public void setMessages(MessageSource messages)
+        throws IOException
+    {
+        this.m_messages = messages;
+    }
+
     
     /**
      * Initialise the Test Web Script Server
      * 
      * @throws Exception
      */
-    public void init() throws Exception
+    public void init()
     {
         registry.initWebScripts();
-        fIn = new BufferedReader(new InputStreamReader(System.in));
     }
     
     /**
@@ -104,10 +118,7 @@ public class TestWebScriptServer
     {
         try
         {
-            String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml", "classpath:alfresco/web-scripts-application-context-test.xml" };
-            ApplicationContext context = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
-            TestWebScriptServer testServer = (TestWebScriptServer)context.getBean("webscripts.test");
-            testServer.init();
+            TestWebScriptServer testServer = getTestServer();
             testServer.rep();
         }
         catch(Throwable e)
@@ -122,13 +133,54 @@ public class TestWebScriptServer
             System.exit(0);
         }
     }
+
+    /**
+     * Retrieve an instance of the TestWebScriptServer
+     *  
+     * @return  Test Server
+     */
+    public static TestWebScriptServer getTestServer()
+    {
+        String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml", "classpath:alfresco/web-scripts-application-context-test.xml" };
+        ApplicationContext context = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
+        TestWebScriptServer testServer = (TestWebScriptServer)context.getBean("webscripts.test");
+        testServer.init();
+        return testServer;
+    }
+    
+    /**
+     * Submit a Web Script Request
+     * 
+     * @param method  http method
+     * @param uri  web script uri (relative to /alfresco/service)
+     * @return  response
+     * @throws IOException
+     */
+    public MockHttpServletResponse submitRequest(String method, String uri)
+        throws IOException
+    {
+        MockHttpServletRequest req = createRequest("get", uri);
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        
+        WebScriptMatch match = registry.findWebScript(req.getMethod(), uri);
+        if (match == null)
+        {
+            throw new WebScriptException("No service bound to uri '" + uri + "'");
+        }
+    
+        WebScriptRequest apiReq = new WebScriptRequest(req, match);
+        WebScriptResponse apiRes = new WebScriptResponse(res);
+        match.getWebScript().execute(apiReq, apiRes);
+        return res;
+    }
     
     /**
      * A Read-Eval-Print loop.
      */
-    public void rep()
+    /*package*/ void rep()
     {
         // accept commands
+        fIn = new BufferedReader(new InputStreamReader(System.in));
         while (true)
         {
             System.out.print("ok> ");
@@ -160,12 +212,13 @@ public class TestWebScriptServer
      * @param line The unparsed command
      * @return The textual output of the command.
      */
-    public String interpretCommand(final String line)
+    private String interpretCommand(final String line)
         throws IOException
     {
         // execute command in context of currently selected user
         return AuthenticationUtil.runAs(new RunAsWork<String>()
         {
+            @SuppressWarnings("synthetic-access")
             public String doWork() throws Exception
             {
                 return executeCommand(line);
@@ -181,7 +234,7 @@ public class TestWebScriptServer
      * @param line The unparsed command
      * @return The textual output of the command.
      */
-    protected String executeCommand(String line)
+    private String executeCommand(String line)
         throws IOException
     {
         String[] command = line.split(" ");
@@ -210,8 +263,7 @@ public class TestWebScriptServer
         // execute command
         if (command[0].equals("help"))
         {
-            // TODO:
-            String helpFile = I18NUtil.getMessage("test_service.help");
+            String helpFile = m_messages.getMessage("testserver.help", null, null);
             ClassPathResource helpResource = new ClassPathResource(helpFile);
             byte[] helpBytes = new byte[500];
             InputStream helpStream = helpResource.getInputStream();
@@ -247,18 +299,7 @@ public class TestWebScriptServer
             }
 
             String uri = command[1];
-            MockHttpServletRequest req = createRequest("get", uri);
-            MockHttpServletResponse res = new MockHttpServletResponse();
-            
-            WebScriptMatch match = registry.findWebScript(req.getMethod(), uri);
-            if (match == null)
-            {
-                throw new WebScriptException("No service bound to uri '" + uri + "'");
-            }
-
-            WebScriptRequest apiReq = new WebScriptRequest(req, match);
-            WebScriptResponse apiRes = new WebScriptResponse(res);
-            match.getWebScript().execute(apiReq, apiRes);
+            MockHttpServletResponse res = submitRequest("get", uri);
             bout.write(res.getContentAsByteArray());
             out.println();
         }

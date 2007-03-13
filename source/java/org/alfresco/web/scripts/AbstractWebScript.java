@@ -37,12 +37,10 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredTransaction;
-import org.alfresco.web.ui.common.Utils;
 
 
 /**
@@ -63,6 +61,7 @@ public abstract class AbstractWebScript implements WebScript
     // Initialisation
     //
     
+        
     /**
      * @param scriptContext
      */
@@ -246,15 +245,6 @@ public abstract class AbstractWebScript implements WebScript
         // create template model
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         
-        // create an image resolver
-        TemplateImageResolver imageResolver = new TemplateImageResolver()
-        {
-            public String resolveImagePathForName(String filename, boolean small)
-            {
-                return Utils.getFileTypeImage(getWebScriptRegistry().getContext(), filename, small);
-            }
-        };
-        
         // add repository context
         if (getDescription().getRequiredAuthentication() != RequiredAuthentication.none &&
             getDescription().getRequiredTransaction() != RequiredTransaction.none)
@@ -286,7 +276,7 @@ public abstract class AbstractWebScript implements WebScript
         // the extensions include custom root helper objects and custom template method objects
         for (TemplateExtensionImplementation ext : serviceRegistry.getTemplateService().getExtensions())
         {
-            ext.setTemplateImageResolver(imageResolver);
+            ext.setTemplateImageResolver(getWebScriptRegistry().getTemplateImageResolver());
             model.put(ext.getExtensionName(), ext);
         }
         

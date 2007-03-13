@@ -15,6 +15,10 @@ ok> user [<userName>]
     Switch to specified <userName>.  If <userName> is omitted, the currently 
     selected user is shown. 
 
+ok> quit | exit
+
+    Quit this workflow console.
+    
 ok> use
 
     Show current workflow context.

@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -38,6 +39,11 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.util.VirtServerUtils;
@@ -224,8 +230,8 @@ public final class AVMConstants
    }
 
    /**
-    * Returns the corresponding path in the preview store name if this is a path in 
-    * a main store.
+    * Returns the corresponding path in the main store name if this is a path in 
+    * a preview store.
     *
     * @param avmPath an avm path within the main store.
     * 
@@ -624,6 +630,51 @@ public final class AVMConstants
    {
       final Matcher m = SANDBOX_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
       return m.matches() && m.group(1).length() != 0 ? m.group(1) : null;
+   }
+   
+   /**
+    * Returns the NodeRef that represents the given avm path
+    * 
+    * @param absoluteAVMPath The path from which to determine the Web Project
+    * @return The NodeRef representing the Web Project the path is from or null
+    *         if it could not be determined
+    */
+   public static NodeRef getWebProjectNode(final String absoluteAVMPath)
+   {
+      // get services
+      FacesContext fc = FacesContext.getCurrentInstance();
+      SearchService searchService = Repository.getServiceRegistry(fc).getSearchService();
+      
+      // get the store name
+      String storeName = AVMConstants.getStoreName(absoluteAVMPath);
+      String storeId = AVMConstants.getStoreId(storeName);
+      
+      // construct the query
+      String path = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc) + "/*";
+      String query = "PATH:\"/" + path + "\" AND @wca\\:avmstore:\"" + storeId + "\"";
+      
+      NodeRef webProjectNode = null;
+      ResultSet results = null;
+      try
+      {
+         // execute the query
+         results = searchService.query(Repository.getStoreRef(), 
+               SearchService.LANGUAGE_LUCENE, query);
+         
+         if (results.length() == 1)
+         {
+            webProjectNode = results.getNodeRef(0);
+         }
+      }
+      finally
+      {
+         if (results != null)
+         {
+            results.close();
+         }
+      }
+      
+      return webProjectNode;
    }
 
    /**

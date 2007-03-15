@@ -41,11 +41,15 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.WebResources;
 
@@ -80,6 +84,9 @@ public abstract class AbstractItemSelector extends UIInput
    
    /** currently browsing node id */
    protected String navigationId = null;
+   
+   /** current AVM store being browsed */
+   protected String avmStore = null;
    
    /** id of the initially selected item, if value is not set */
    protected String initialSelectionId = null;
@@ -157,6 +164,7 @@ public abstract class AbstractItemSelector extends UIInput
       this.navigationId = (String)values[4];
       this.initialSelectionId = (String)values[5];
       this.disabled = (Boolean)values[6];
+      this.avmStore = (String)values[7];
    }
    
    /**
@@ -164,7 +172,7 @@ public abstract class AbstractItemSelector extends UIInput
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[7];
+      Object values[] = new Object[8];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.label;
@@ -173,6 +181,7 @@ public abstract class AbstractItemSelector extends UIInput
       values[4] = this.navigationId;
       values[5] = this.initialSelectionId;
       values[6] = this.disabled;
+      values[7] = this.avmStore;
       return (values);
    }
    
@@ -219,7 +228,17 @@ public abstract class AbstractItemSelector extends UIInput
          String selection = (String)requestMap.get(getClientId(context) + OPTION);
          if (selection != null && selection.length() != 0)
          {
-            ((EditableValueHolder)this).setSubmittedValue(new NodeRef(Repository.getStoreRef(), selection));
+            if (selection.startsWith("-1;"))
+            {
+               String translatedPath = selection.substring(3);
+               String path = translatedPath.replace(';', '/');
+               String avmPath = this.avmStore + ":/" + path;
+               ((EditableValueHolder)this).setSubmittedValue(AVMNodeConverter.ToNodeRef(-1, avmPath));
+            }
+            else
+            {
+               ((EditableValueHolder)this).setSubmittedValue(new NodeRef(Repository.getStoreRef(), selection));
+            }
          }
       }
    }
@@ -358,7 +377,16 @@ public abstract class AbstractItemSelector extends UIInput
                   }
                   else
                   {
-                     label = Repository.getNameForNode(service, value);
+                     if (value.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                     {
+                        Pair<Integer, String> avmNode = AVMNodeConverter.ToAVMVersionPath(value);
+                        String avmPath = avmNode.getSecond();
+                        label = avmPath.substring(avmPath.indexOf(AVMConstants.DIR_ROOT)+4);
+                     }
+                     else
+                     {
+                        label = Repository.getNameForNode(service, value);
+                     }
                      showValueInHiddenField = true;
                   }
                   
@@ -392,6 +420,12 @@ public abstract class AbstractItemSelector extends UIInput
                   if (value != null)
                   {
                      fieldValue = encodeFieldValues(theMode, value.getId());
+                     
+                     // setup the avmStore if the value represents an avm path
+                     if (value.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                     {
+                        this.avmStore = value.getStoreRef().getIdentifier();
+                     }
                   }
                   else
                   {
@@ -514,10 +548,9 @@ public abstract class AbstractItemSelector extends UIInput
                      buf.append("/></td><td>");
                      
                      // get the name for the child and output as link
-                     NodeRef childNodeRef = new NodeRef(Repository.getStoreRef(), childId);
-                     String name = Repository.getNameForNode(service, childNodeRef);
+                     String name = Repository.getNameForNode(service, childRef);
                      String prefixHtml = null;
-                     String icon = getItemIcon(context, childNodeRef);
+                     String icon = getItemIcon(context, childRef);
                      if (icon != null)
                      {
                         prefixHtml = "<span style='padding-right:4px'>" +
@@ -801,6 +834,7 @@ public abstract class AbstractItemSelector extends UIInput
    /**
     * Class representing the clicking of a breadcrumb element.
     */
+   @SuppressWarnings("serial")
    public static class ItemSelectorEvent extends ActionEvent
    {
       public ItemSelectorEvent(UIComponent component, int mode, String id)

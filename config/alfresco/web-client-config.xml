@@ -329,6 +329,7 @@
          <handler name="check-in" class="org.alfresco.web.bean.actions.handlers.CheckInHandler" />
          <handler name="check-out" class="org.alfresco.web.bean.actions.handlers.CheckOutHandler" />
          <handler name="copy" class="org.alfresco.web.bean.actions.handlers.CopyHandler" />
+         <handler name="copy-to-web-project" class="org.alfresco.web.bean.actions.handlers.CopyToWebProjectHandler" />
          <handler name="import" class="org.alfresco.web.bean.actions.handlers.ImportHandler" />
          <handler name="link-category" class="org.alfresco.web.bean.actions.handlers.LinkCategoryHandler" />
          <handler name="mail" class="org.alfresco.web.bean.actions.handlers.MailHandler" />

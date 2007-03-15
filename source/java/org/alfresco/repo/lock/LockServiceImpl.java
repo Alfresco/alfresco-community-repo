@@ -284,28 +284,17 @@ public class LockServiceImpl implements LockService
         // Check for lock aspect
         checkForLockApsect(nodeRef);
         
-        // Get the current user name
-        //String userName = getUserName();
-
-        //LockStatus lockStatus = getLockStatus(nodeRef, userName);
-        //if (LockStatus.LOCKED.equals(lockStatus) == true)
-       // {
-        //    // Error since the lock can only be released by the lock owner
-        //    throw new UnableToReleaseLockException(nodeRef);
-       // }
-       // else if (LockStatus.LOCK_OWNER.equals(lockStatus) == true)
-       // {
-            this.ignoreNodeRefs.add(nodeRef);
-            try
-            {
-                // Clear the lock owner
-                this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_OWNER, null);
-                this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_TYPE, null);
-            } finally
-            {
-                this.ignoreNodeRefs.remove(nodeRef);
-            }
-        //}
+        this.ignoreNodeRefs.add(nodeRef);
+        try
+        {
+            // Clear the lock owner
+            this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_OWNER, null);
+            this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_TYPE, null);
+        }
+        finally
+        {
+            this.ignoreNodeRefs.remove(nodeRef);
+        }
     }
 
     /**
@@ -361,7 +350,6 @@ public class LockServiceImpl implements LockService
         LockStatus result = LockStatus.NO_LOCK;
 
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE) == true)
-
         {
             // Get the current lock owner
             String currentUserRef = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);

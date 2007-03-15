@@ -314,7 +314,7 @@
       </permissionGroup>
       
       <!-- An editor can read and write to the object; they can not create    -->
-      <!-- new nodes. They can cehck out content into a space to which they have       -->
+      <!-- new nodes. They can check out content into a space to which they have       -->
       <!-- create permission.                                                          -->
       <permissionGroup name="Editor"  expose="true" allowFullControl="false" >
           <includePermissionGroup type="cm:cmobject" permissionGroup="Consumer"/>

@@ -190,12 +190,7 @@ public class Node implements Serializable, Scopeable
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        final Node other = (Node) obj;
-        if (nodeRef == null)
-        {
-            if (other.nodeRef != null) return false;
-        }
-        else if (!nodeRef.equals(other.nodeRef)) return false;
+        if (!nodeRef.equals(((Node)obj).nodeRef)) return false;
         return true;
     }
     

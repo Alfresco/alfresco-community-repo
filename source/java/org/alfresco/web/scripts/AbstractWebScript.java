@@ -37,6 +37,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.WebScriptDescription.RequiredAuthentication;
@@ -245,6 +246,8 @@ public abstract class AbstractWebScript implements WebScript
         // create template model
         Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
         
+        TemplateImageResolver tr = getWebScriptRegistry().getTemplateImageResolver();
+        
         // add repository context
         if (getDescription().getRequiredAuthentication() != RequiredAuthentication.none &&
             getDescription().getRequiredTransaction() != RequiredTransaction.none)
@@ -252,13 +255,13 @@ public abstract class AbstractWebScript implements WebScript
             NodeRef companyHome = scriptContext.getCompanyHome();
             if (companyHome != null)
             {
-                model.put("companyhome", new TemplateNode(scriptContext.getCompanyHome(), serviceRegistry, null));
+                model.put("companyhome", new TemplateNode(scriptContext.getCompanyHome(), serviceRegistry, tr));
             }
             NodeRef person = scriptContext.getPerson();
             if (person != null)
             {
-                model.put("person", new TemplateNode(person, serviceRegistry, null));
-                model.put("userhome", new TemplateNode(scriptContext.getUserHome(person), serviceRegistry, null));
+                model.put("person", new TemplateNode(person, serviceRegistry, tr));
+                model.put("userhome", new TemplateNode(scriptContext.getUserHome(person), serviceRegistry, tr));
             }
         }
         
@@ -276,7 +279,7 @@ public abstract class AbstractWebScript implements WebScript
         // the extensions include custom root helper objects and custom template method objects
         for (TemplateExtensionImplementation ext : serviceRegistry.getTemplateService().getExtensions())
         {
-            ext.setTemplateImageResolver(getWebScriptRegistry().getTemplateImageResolver());
+            ext.setTemplateImageResolver(tr);
             model.put(ext.getExtensionName(), ext);
         }
         

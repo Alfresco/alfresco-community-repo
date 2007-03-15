@@ -28,8 +28,8 @@
                <param name="UIMode" value="none" />
                <param name="URL" value="${absurl(node.url)}" />
                <param name="autoStart" value="true" />
-               <#--<embed width="320" height="240" src="${absurl(node.url)}" bgcolor="#ffffff" border="0" pluginspage="http://windowsmedia.com/download/"></embed>-->
-               <embed type="application/x-mplayer2" pluginspage="http://www.microsoft.com/windows95/downloads/contents/wurecommended/s_wufeatured/mediaplayer/default.asp" src="${absurl(node.url)}" name="MediaPlayer2" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0" height="240" width="320"></embed>
+               <#--<embed type="application/x-mplayer2" pluginspage="http://microsoft.com/windows/mediaplayer/en/download/" src="${absurl(node.url)}" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0" height="240" width="320"></embed>-->
+               <embed width="320" height="240" src="${absurl(node.url)}" border="0" showcontrols="1" showdisplay="0" showstatusbar="0" autosize="1" autoplay="0" autoStart="0"></embed>
             </object>
          <#else>
             <table cellspacing=0 cellpadding=0 border=0>

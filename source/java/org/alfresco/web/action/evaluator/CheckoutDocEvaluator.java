@@ -49,7 +49,7 @@ public class CheckoutDocEvaluator implements ActionEvaluator
             FacesContext.getCurrentInstance()).getDictionaryService();
       
       return dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT) && 
-             ((node.hasPermission(PermissionService.CHECK_OUT) &&
+             ((node.hasPermission(PermissionService.CHECK_OUT) && node.hasPermission(PermissionService.CREATE_CHILDREN) &&
               (node.isLocked() == false &&
                node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)));
    }

@@ -31,8 +31,6 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
@@ -117,9 +115,12 @@ public class UILockIcon extends SelfRenderingComponent
          ref = (NodeRef)val;
          if (nodeService.exists(ref) && nodeService.hasAspect(ref, ContentModel.ASPECT_LOCKABLE) == true)
          {
-            LockStatus lockStatus = getLockService(context).getLockStatus(ref);
-            locked = (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER);
-            lockedOwner = (lockStatus == LockStatus.LOCK_OWNER);
+            String lockerUser = (String)nodeService.getProperty(ref, ContentModel.PROP_LOCK_OWNER);
+            if (lockerUser != null)
+            {
+               locked = true;
+               lockedOwner = (lockerUser.equals(Application.getCurrentUser(context).getUserName()));
+            }
          }
       }
       
@@ -190,24 +191,6 @@ public class UILockIcon extends SelfRenderingComponent
       if (service == null)
       {
          throw new IllegalStateException("Unable to obtain NodeService bean reference.");
-      }
-      
-      return service;
-   }
-   
-   /**
-    * Use Spring JSF integration to return the Lock Service bean instance
-    * 
-    * @param context    FacesContext
-    * 
-    * @return Lock Service bean instance or throws exception if not found
-    */
-   private static LockService getLockService(FacesContext context)
-   {
-      LockService service = Repository.getServiceRegistry(context).getLockService();
-      if (service == null)
-      {
-         throw new IllegalStateException("Unable to obtain LockService bean reference.");
       }
       
       return service;

@@ -29,9 +29,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.component.UIComponent;
+import javax.faces.component.UIOutput;
 import javax.faces.component.UISelectItems;
 import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.DoubleConverter;
+import javax.faces.convert.FloatConverter;
+import javax.faces.convert.IntegerConverter;
+import javax.faces.convert.LongConverter;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
@@ -136,7 +142,31 @@ public class TextFieldGenerator extends BaseComponentGenerator
             List<String> values = constraint.getAllowedValues();
             for (String value : values)
             {
-               items.add(new SelectItem(value, value));
+               Object obj = null;
+               
+               // we need to setup the list with objects of the correct type
+               if (propDef.getDataType().getName().equals(DataTypeDefinition.INT))
+               {
+                  obj = Integer.valueOf(value);
+               }
+               else if (propDef.getDataType().getName().equals(DataTypeDefinition.LONG))
+               {
+                  obj = Long.valueOf(value);
+               }
+               else if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE))
+               {
+                  obj = Double.valueOf(value);
+               }
+               else if (propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT))
+               {
+                  obj = Float.valueOf(value);
+               }
+               else
+               {
+                  obj = value;
+               }
+               
+               items.add(new SelectItem(obj, value));
             }
             
             itemsComponent.setValue(items);
@@ -270,5 +300,53 @@ public class TextFieldGenerator extends BaseComponentGenerator
       }
       
       return lovConstraint;
+   }
+   
+   protected void setupConverter(FacesContext context, 
+         UIPropertySheet propertySheet, PropertySheetItem property, 
+         PropertyDefinition propertyDef, UIComponent component)
+   {
+      // do default processing
+      super.setupConverter(context, propertySheet, property, propertyDef, component);
+      
+      // if there isn't a converter and the property has a list of values constraint
+      // on a number property we need to add the appropriate one.
+      if (propertySheet.inEditMode() && propertyDef != null && 
+          component instanceof UIOutput)
+      {
+         Converter converter = ((UIOutput)component).getConverter();
+         if (converter == null)
+         {
+            ListOfValuesConstraint constraint = getListOfValuesConstraint(context, 
+                     propertySheet, property);
+            if (constraint != null)
+            {
+               String converterId = null;
+               
+               if (propertyDef.getDataType().getName().equals(DataTypeDefinition.INT))
+               {
+                  converterId = IntegerConverter.CONVERTER_ID;
+               }
+               else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.LONG))
+               {
+                  converterId = LongConverter.CONVERTER_ID;
+               }
+               else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE))
+               {
+                  // NOTE: the constant for the double converter is wrong in MyFaces!!
+                  converterId = "javax.faces.Double";
+               }
+               else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.FLOAT))
+               {
+                  converterId = FloatConverter.CONVERTER_ID;
+               }
+               
+               if (converterId != null)
+               {
+                  createAndSetConverter(context, converterId, component);
+               }
+            }
+         }
+      }
    }
 }

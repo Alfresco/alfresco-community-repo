@@ -231,6 +231,15 @@
             <ref bean="CopyService" />
         </property>
     </bean>
+    
+    <bean id="copy-to-web-project" class="org.alfresco.repo.action.executer.CopyToWebProjectActionExecuter" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="crossRepositoryCopyService">
+            <ref bean="CrossRepositoryCopyService" />
+        </property>
+    </bean>
 
     <bean id="move" class="org.alfresco.repo.action.executer.MoveActionExecuter" parent="action-executer">
         <property name="nodeService">

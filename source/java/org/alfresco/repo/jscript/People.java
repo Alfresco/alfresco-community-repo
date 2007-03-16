@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * Scripted People service for describing and executing actions against People & Groups.
@@ -44,6 +45,7 @@ public final class People extends BaseScopableScriptImplementation
     /** Repository Service Registry */
     private ServiceRegistry services;
     private AuthorityDAO authorityDAO;
+    private AuthorityService authorityService;
 
     /**
      * Set the service registry
@@ -66,6 +68,14 @@ public final class People extends BaseScopableScriptImplementation
     }
     
     /**
+     * @param authorityService The authorityService to set.
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    /**
      * Gets the Person given the username
      * 
      * @param username  the username of the person to get
@@ -73,6 +83,7 @@ public final class People extends BaseScopableScriptImplementation
      */
     public Node getPerson(String username)
     {
+        ParameterCheck.mandatoryString("Username", username);
         Node person = null;
         PersonService personService = services.getPersonService();
         if (personService.personExists(username))
@@ -91,6 +102,7 @@ public final class People extends BaseScopableScriptImplementation
      */
     public Node getGroup(String groupName)
     {
+        ParameterCheck.mandatoryString("GroupName", groupName);
         Node group = null;
         NodeRef groupRef = authorityDAO.getAuthorityNodeRefOrNull(groupName);
         if (groupRef != null)
@@ -98,6 +110,114 @@ public final class People extends BaseScopableScriptImplementation
             group = new Node(groupRef, services, getScope());
         }
         return group;
+    }
+    
+    /**
+     * Deletes a group from the system.
+     * 
+     * @param group     The group to delete
+     */
+    public void deleteGroup(Node group)
+    {
+        ParameterCheck.mandatory("Group", group);
+        if (group.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        {
+            String groupName = (String)group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+            authorityService.deleteAuthority(groupName);
+        }
+    }
+    
+    /**
+     * Create a new root level group with the specified unique name
+     * 
+     * @param groupName     The unique group name to create - NOTE: do not prefix with "GROUP_"
+     * 
+     * @return the group reference if successful or null if failed
+     */
+    public Node createGroup(String groupName)
+    {
+        return createGroup(null, groupName);
+    }
+    
+    /**
+     * Create a new group with the specified unique name
+     * 
+     * @param parentGroup   The parent group node - can be null for a root level group
+     * @param groupName     The unique group name to create - NOTE: do not prefix with "GROUP_"
+     * 
+     * @return the group reference if successful or null if failed
+     */
+    public Node createGroup(Node parentGroup, String groupName)
+    {
+        ParameterCheck.mandatoryString("GroupName", groupName);
+        
+        Node group = null;
+        
+        String actualName = services.getAuthorityService().getName(AuthorityType.GROUP, groupName);
+        if (authorityService.authorityExists(groupName) == false)
+        {
+            String parentGroupName = null;
+            if (parentGroup != null)
+            {
+                parentGroupName = (String)parentGroup.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+            }
+            String result = authorityService.createAuthority(AuthorityType.GROUP, parentGroupName, groupName);
+            group = getGroup(result);
+        }
+        
+        return group;
+    }
+    
+    /**
+     * Add an authority (a user or group) to a group container as a new child
+     * 
+     * @param parentGroup   The parent container group
+     * @param authority     The authority (user or group) to add
+     */
+    public void addAuthority(Node parentGroup, Node authority)
+    {
+        ParameterCheck.mandatory("Authority", authority);
+        ParameterCheck.mandatory("ParentGroup", parentGroup);
+        if (parentGroup.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        {
+            String parentGroupName = (String)parentGroup.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+            String authorityName;
+            if (authority.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+            {
+                authorityName = (String)authority.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+            }
+            else
+            {
+                authorityName = (String)authority.getProperties().get(ContentModel.PROP_USERNAME);
+            }
+            authorityService.addAuthority(parentGroupName, authorityName);
+        }
+    }
+    
+    /**
+     * Remove an authority (a user or group) from a group
+     * 
+     * @param parentGroup   The parent container group
+     * @param authority     The authority (user or group) to remove
+     */
+    public void removeAuthority(Node parentGroup, Node authority)
+    {
+        ParameterCheck.mandatory("Authority", authority);
+        ParameterCheck.mandatory("ParentGroup", parentGroup);
+        if (parentGroup.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        {
+            String parentGroupName = (String)parentGroup.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+            String authorityName;
+            if (authority.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+            {
+                authorityName = (String)authority.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+            }
+            else
+            {
+                authorityName = (String)authority.getProperties().get(ContentModel.PROP_USERNAME);
+            }
+            authorityService.removeAuthority(parentGroupName, authorityName);
+        }
     }
     
     /**
@@ -109,6 +229,7 @@ public final class People extends BaseScopableScriptImplementation
      */
     public Node[] getMembers(Node group)
     {
+        ParameterCheck.mandatory("Group", group);
         return getContainedAuthorities(group, AuthorityType.USER, true);
     }
 
@@ -121,6 +242,7 @@ public final class People extends BaseScopableScriptImplementation
      */
     public Node[] getMembers(Node group, boolean recurse)
     {
+        ParameterCheck.mandatory("Group", group);
         return getContainedAuthorities(group, AuthorityType.USER, recurse);
     }
     
@@ -137,7 +259,6 @@ public final class People extends BaseScopableScriptImplementation
         Node[] members = null;
         if (container.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
         {
-            AuthorityService authorityService = services.getAuthorityService();
             String groupName = (String)container.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             Set<String> authorities = authorityService.getContainedAuthorities(type, groupName, !recurse);
             members = new Node[authorities.size()];

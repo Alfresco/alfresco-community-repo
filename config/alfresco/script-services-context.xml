@@ -78,6 +78,9 @@
         <property name="authorityDAO">
             <ref bean="authorityDAO"/>
         </property>
+        <property name="authorityService">
+            <ref bean="AuthorityService"/>
+        </property>
     </bean>
 
     <bean id="sessionScript" parent="baseScriptImplementation" class="org.alfresco.repo.jscript.Session">

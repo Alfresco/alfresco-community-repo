@@ -49,6 +49,7 @@ public class TestModel
         List<String> bootstrapModels = new ArrayList<String>();
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
         bootstrapModels.add("alfresco/model/systemModel.xml");
+        bootstrapModels.add("org/alfresco/repo/security/authentication/userModel.xml");
         bootstrapModels.add("alfresco/model/contentModel.xml");
         bootstrapModels.add("alfresco/model/wcmModel.xml");
         bootstrapModels.add("alfresco/model/applicationModel.xml");

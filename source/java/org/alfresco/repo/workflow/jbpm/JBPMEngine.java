@@ -1503,7 +1503,7 @@ public class JBPMEngine extends BPMEngine
                     }
                     String actorId = (String)value;
                     String existingActorId = instance.getActorId();
-                    if (existingActorId == null || !actorId.equals(existingActorId))
+                    if (existingActorId == null || !existingActorId.equals(actorId))
                     {
                         instance.setActorId((String)value);
                     }

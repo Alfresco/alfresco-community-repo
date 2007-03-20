@@ -7,6 +7,12 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="storePath">
+            <value>${spaces.company_home.childname}</value>
+        </property>
     </bean>
 
     <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.rhinodebugger to DEBUG -->

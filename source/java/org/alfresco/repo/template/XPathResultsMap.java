@@ -51,6 +51,6 @@ public class XPathResultsMap extends BasePathResultsMap
     */
    public Object get(Object key)
    {
-      return getChildrenByXPath(key.toString(), false);
+      return getChildrenByXPath(key.toString(), null, false);
    }
 }

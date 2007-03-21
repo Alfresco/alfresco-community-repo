@@ -31,6 +31,7 @@ import java.util.List;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateNode;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -63,7 +64,7 @@ public abstract class BasePathResultsMap extends BaseTemplateMap
      * 
      * @return List<TemplateNode>
      */
-    protected List<TemplateNode> getChildrenByXPath(String xpath, boolean firstOnly)
+    protected List<TemplateNode> getChildrenByXPath(String xpath, QueryParameterDefinition[] params, boolean firstOnly)
     {
         List<TemplateNode> result = null;
         
@@ -75,7 +76,7 @@ public abstract class BasePathResultsMap extends BaseTemplateMap
             List<NodeRef> nodes = this.services.getSearchService().selectNodes(
                     this.parent.getNodeRef(),
                     xpath,
-                    null,
+                    params,
                     this.services.getNamespaceService(),
                     false);
             

@@ -38,14 +38,13 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -53,13 +52,12 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateNode;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
@@ -67,7 +65,6 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -343,17 +340,30 @@ public class Node implements Serializable, Scopeable
     {
         // convert the name based path to a valid XPath query
         StringBuilder xpath = new StringBuilder(path.length() << 1);
-        for (StringTokenizer t = new StringTokenizer(path, "/"); t.hasMoreTokens(); /**/)
+        StringTokenizer t = new StringTokenizer(path, "/");
+        int count = 0;
+        QueryParameterDefinition[] params = new QueryParameterDefinition[t.countTokens()];
+        DataTypeDefinition ddText =
+            this.services.getDictionaryService().getDataType(DataTypeDefinition.TEXT);
+        NamespaceService ns = this.services.getNamespaceService();
+        while (t.hasMoreTokens())
         {
             if (xpath.length() != 0)
             {
                 xpath.append('/');
             }
-            xpath.append("*[@cm:name='").append(t.nextToken()) // TODO: use QueryParameterDefinition see FileFolderService.search()
-            .append("']");
+            String strCount = Integer.toString(count);
+            xpath.append("*[@cm:name=$cm:name")
+                 .append(strCount)
+                 .append(']');
+            params[count++] = new QueryParameterDefImpl(
+                    QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "name" + strCount, ns),
+                    ddText,
+                    true,
+                    t.nextToken());
         }
         
-        Node[] nodes = getChildrenByXPath(xpath.toString(), true);
+        Node[] nodes = getChildrenByXPath(xpath.toString(), params, true);
         
         return (nodes.length != 0) ? nodes[0] : null;
     }
@@ -369,7 +379,7 @@ public class Node implements Serializable, Scopeable
      */
     public Node[] childrenByXPath(String xpath)
     {
-        return getChildrenByXPath(xpath, false);
+        return getChildrenByXPath(xpath, null, false);
     }
     
     /**
@@ -1676,7 +1686,7 @@ public class Node implements Serializable, Scopeable
      * 
      * @return Node[] can be empty but never null
      */
-    private Node[] getChildrenByXPath(String xpath, boolean firstOnly)
+    private Node[] getChildrenByXPath(String xpath, QueryParameterDefinition[] params, boolean firstOnly)
     {
         Node[] result = null;
         
@@ -1684,7 +1694,7 @@ public class Node implements Serializable, Scopeable
         {
             if (logger.isDebugEnabled()) logger.debug("Executing xpath: " + xpath);
             
-            List<NodeRef> nodes = this.services.getSearchService().selectNodes(this.nodeRef, xpath, null,
+            List<NodeRef> nodes = this.services.getSearchService().selectNodes(this.nodeRef, xpath, params,
                     this.services.getNamespaceService(), false);
             
             // see if we only want the first result

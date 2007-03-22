@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 public class QNameMap<K,V> implements Map, Cloneable
 {
     protected static Log logger = LogFactory.getLog(QNameMap.class);
-    protected Map<String, Object> contents = new HashMap<String, Object>(11, 1.0f);
+    protected Map<String, Object> contents = new HashMap<String, Object>(16, 1.0f);
     protected NamespacePrefixResolver resolver = null;
     
     /**

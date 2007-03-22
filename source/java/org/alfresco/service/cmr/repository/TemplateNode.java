@@ -88,7 +88,13 @@ public class TemplateNode implements Serializable
     /** The children of this node */
     private List<TemplateNode> children = null;
     
-    /** The associations from this node */
+    /** The target associations from this node */
+    private Map<String, List<TemplateNode>> targetAssocs = null;
+    
+    /** The child associations from this node */
+    private Map<String, List<TemplateNode>> childAssocs = null;
+    
+    /** All associations from this node */
     private Map<String, List<TemplateNode>> assocs = null;
     
     /** Cached values */
@@ -225,28 +231,68 @@ public class TemplateNode implements Serializable
     }
     
     /**
-     * @return The associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
+     * @return The child associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
      */
-    public Map<String, List<TemplateNode>> getAssocs()
+    public Map<String, List<TemplateNode>> getChildAssocs()
     {
-        if (this.assocs == null)
+        if (this.childAssocs == null)
         {
-            List<AssociationRef> refs = this.services.getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
-            this.assocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
-            for (AssociationRef ref : refs)
+            List<ChildAssociationRef> refs = this.services.getNodeService().getChildAssocs(this.nodeRef);
+            this.childAssocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            for (ChildAssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
-                List<TemplateNode> nodes = assocs.get(qname);
+                List<TemplateNode> nodes = this.childAssocs.get(qname);
                 if (nodes == null)
                 {
                     // first access for the list for this qname
                     nodes = new ArrayList<TemplateNode>(4);
-                    this.assocs.put(ref.getTypeQName().toString(), nodes);
+                    this.childAssocs.put(ref.getTypeQName().toString(), nodes);
+                }
+                nodes.add( new TemplateNode(ref.getChildRef(), this.services, this.imageResolver) );
+            }
+        }
+        
+        return this.childAssocs;
+    }
+    
+    /**
+     * @return The target associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
+     */
+    public Map<String, List<TemplateNode>> getTargetAssocs()
+    {
+        if (this.targetAssocs == null)
+        {
+            List<AssociationRef> refs = this.services.getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
+            this.targetAssocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            for (AssociationRef ref : refs)
+            {
+                String qname = ref.getTypeQName().toString();
+                List<TemplateNode> nodes = this.targetAssocs.get(qname);
+                if (nodes == null)
+                {
+                    // first access for the list for this qname
+                    nodes = new ArrayList<TemplateNode>(4);
+                    this.targetAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
                 nodes.add( new TemplateNode(ref.getTargetRef(), this.services, this.imageResolver) );
             }
         }
         
+        return this.targetAssocs;
+    }
+    
+    /**
+     * @return All associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
+     */
+    public Map<String, List<TemplateNode>> getAssocs()
+    {
+        if (this.assocs == null)
+        {
+            this.assocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            this.assocs.putAll(getTargetAssocs());
+            this.assocs.putAll(getChildAssocs());
+        }
         return this.assocs;
     }
     

@@ -38,6 +38,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -298,6 +299,9 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
          args.put(name, req.getParameter(name));
       }
       root.put("args", args);
+      
+      // method to allow absolute client urls to be generated
+      root.put("absurl", new AbsoluteUrlMethod(req.getContextPath()));
       
       return root;
    }

@@ -144,14 +144,8 @@ public class LinkPropertiesBean
          NodeRef nodeRef = this.editableNode.getNodeRef();
          Map<String, Object> props = this.editableNode.getProperties();
          
-         // get the name and move the node as necessary
-         //String name = (String)props.get(ContentModel.PROP_NAME);
-         //if (name != null)
-         //{
-         //   fileFolderService.rename(nodeRef, name);
-         //}
-         
          Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
+         
          // we need to put all the properties from the editable bag back into 
          // the format expected by the repository
          
@@ -206,7 +200,10 @@ public class LinkPropertiesBean
          
          // reset any document held by the browse bean as it's just been updated
          // if this is a space link then it doesn't matter anyway
-         this.browseBean.getDocument().reset();
+         if (this.browseBean.getDocument() != null)
+         {
+             this.browseBean.getDocument().reset();
+         }
       }
       catch (InvalidNodeRefException err)
       {

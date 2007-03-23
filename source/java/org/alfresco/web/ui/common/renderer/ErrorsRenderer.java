@@ -108,13 +108,6 @@ public class ErrorsRenderer extends BaseRenderer
                renderMessageAttrs(fm, out, errorClass, infoClass);
                out.write(">");
                out.write(Utils.encode(fm.getSummary()));
-               String detail = fm.getDetail();
-               if (detail != null && detail.length() > 0)
-               {
-                  out.write("&nbsp(");
-                  out.write(Utils.encode(detail));
-                  out.write(")");
-               }
                out.write("</li>\n");
             }
             
@@ -136,13 +129,6 @@ public class ErrorsRenderer extends BaseRenderer
                renderMessageAttrs(fm, out, errorClass, infoClass);
                out.write(">");
                out.write(Utils.encode(fm.getSummary()));
-               String detail = fm.getDetail();
-               if (detail != null && detail.length() > 0)
-               {
-                  out.write("&nbsp(");
-                  out.write(Utils.encode(detail));
-                  out.write(")");
-               }
                out.write("</div>\n");
             }
             

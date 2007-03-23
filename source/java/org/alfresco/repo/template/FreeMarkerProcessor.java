@@ -37,7 +37,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateExtensionImplementation;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.apache.log4j.Logger;
 

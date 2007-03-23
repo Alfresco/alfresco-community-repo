@@ -20,50 +20,37 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.template;
 
-import java.util.List;
+import java.io.Serializable;
 
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
- * Provides functionality to execute a Lucene search for a single node by NodeRef.
- * 
  * @author Kevin Roast
  */
-public class NodeSearchResultsMap extends BaseSearchResultsMap
+public interface TemplateNodeRef extends Serializable
 {
     /**
-     * Constructor
-     * 
-     * @param parent         The parent TemplateNode to execute searches from 
-     * @param services       The ServiceRegistry to use
+     * @return The GUID for the node
      */
-    public NodeSearchResultsMap(TemplateNode parent, ServiceRegistry services)
-    {
-        super(parent, services);
-    }
-
+    public String getId();
+    
     /**
-     * @see org.alfresco.repo.template.BaseTemplateMap#get(java.lang.Object)
+     * @return Returns the NodeRef this Node object represents
      */
-    public Object get(Object key)
-    {
-        TemplateNode result = null;
-        if (key != null)
-        {
-            String ref = "ID:" + LuceneQueryParser.escape(key.toString());
-            
-            List<TemplateNode> results = query(ref);
-            
-            if (results.size() == 1)
-            {
-                result = results.get(0);
-            }
-        }
-        return result;
-    }
+    public NodeRef getNodeRef();
+    
+    /**
+     * @return Returns the type.
+     */
+    public QName getType();
+    
+    /**
+     * @return The display name for the node
+     */
+    public String getName();
 }

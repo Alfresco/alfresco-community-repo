@@ -27,7 +27,6 @@ package org.alfresco.repo.template;
 import java.util.HashMap;
 
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.TemplateNode;
 
 /**
  * An abstract Map class that can be used process the parent Node as part of the get()

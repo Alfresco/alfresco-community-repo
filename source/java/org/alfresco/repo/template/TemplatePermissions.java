@@ -20,50 +20,33 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.template;
 
 import java.util.List;
 
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.service.ServiceRegistry;
-
 /**
- * Provides functionality to execute a Lucene search for a single node by NodeRef.
- * 
  * @author Kevin Roast
  */
-public class NodeSearchResultsMap extends BaseSearchResultsMap
+public interface TemplatePermissions extends TemplateNodeRef
 {
     /**
-     * Constructor
-     * 
-     * @param parent         The parent TemplateNode to execute searches from 
-     * @param services       The ServiceRegistry to use
+     * @return List of permissions applied to this Node.
+     *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example
+     *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
      */
-    public NodeSearchResultsMap(TemplateNode parent, ServiceRegistry services)
-    {
-        super(parent, services);
-    }
-
+    public List<String> getPermissions();
+    
     /**
-     * @see org.alfresco.repo.template.BaseTemplateMap#get(java.lang.Object)
+     * @return true if this node inherits permissions from its parent node, false otherwise.
      */
-    public Object get(Object key)
-    {
-        TemplateNode result = null;
-        if (key != null)
-        {
-            String ref = "ID:" + LuceneQueryParser.escape(key.toString());
-            
-            List<TemplateNode> results = query(ref);
-            
-            if (results.size() == 1)
-            {
-                result = results.get(0);
-            }
-        }
-        return result;
-    }
+    public boolean getInheritsPermissions();
+    
+    /**
+     * @param permission        Permission name to test
+     * 
+     * @return true if the current user is granted the specified permission on the node
+     */
+    public boolean hasPermission(String permission);
 }

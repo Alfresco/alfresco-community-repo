@@ -26,7 +26,6 @@ package org.alfresco.repo.template;
 
 import java.util.List;
 
-import org.alfresco.service.cmr.repository.TemplateNode;
 
 import freemarker.ext.beans.BeanModel;
 import freemarker.template.TemplateMethodModelEx;

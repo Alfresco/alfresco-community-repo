@@ -25,7 +25,6 @@
 package org.alfresco.repo.template;
 
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.TemplateNode;
 
 /**
  * A special Map that executes an XPath against the parent Node as part of the get()

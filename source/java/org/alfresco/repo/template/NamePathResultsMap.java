@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;

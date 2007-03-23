@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -20,50 +20,39 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.template;
 
-import java.util.List;
-
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.service.ServiceRegistry;
 
 /**
- * Provides functionality to execute a Lucene search for a single node by NodeRef.
- * 
  * @author Kevin Roast
  */
-public class NodeSearchResultsMap extends BaseSearchResultsMap
+public interface TemplateContent extends TemplateProperties
 {
     /**
-     * Constructor
-     * 
-     * @param parent         The parent TemplateNode to execute searches from 
-     * @param services       The ServiceRegistry to use
+     * @return the content String for this node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
      */
-    public NodeSearchResultsMap(TemplateNode parent, ServiceRegistry services)
-    {
-        super(parent, services);
-    }
-
+    public String getContent();
+    
     /**
-     * @see org.alfresco.repo.template.BaseTemplateMap#get(java.lang.Object)
+     * @return For a content document, this method returns the URL to the content stream for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method return the URL to browse to the folder in the web-client
      */
-    public Object get(Object key)
-    {
-        TemplateNode result = null;
-        if (key != null)
-        {
-            String ref = "ID:" + LuceneQueryParser.escape(key.toString());
-            
-            List<TemplateNode> results = query(ref);
-            
-            if (results.size() == 1)
-            {
-                result = results.get(0);
-            }
-        }
-        return result;
-    }
+    public String getUrl();
+    
+    /**
+     * @return The mimetype encoding for content attached to the node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public String getMimetype();
+    
+    /**
+     * @return The size in bytes of the content attached to the node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public long getSize();
 }

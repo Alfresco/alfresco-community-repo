@@ -22,18 +22,22 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.service.cmr.repository;
+package org.alfresco.repo.template;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.TemplateNode.TemplateContentData;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
@@ -46,7 +50,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Kevin Roast
  */
-public class VersionHistoryNode implements Serializable
+public class VersionHistoryNode extends BaseContentNode
 {
     private QNameMap<String, Serializable> properties;
     private boolean propsRetrieved = false;
@@ -59,7 +63,7 @@ public class VersionHistoryNode implements Serializable
      * 
      * @param version       Descriptor of the node version information
      */
-    public VersionHistoryNode(Version version, TemplateNode parent)
+    public VersionHistoryNode(Version version, TemplateNode parent, ServiceRegistry services)
     {
         if (version == null)
         {
@@ -69,8 +73,13 @@ public class VersionHistoryNode implements Serializable
         {
             throw new IllegalArgumentException("Parent TemplateNode is mandatory.");
         }
+        if (services == null)
+        {
+            throw new IllegalArgumentException("The ServiceRegistry must be supplied.");
+        }
         this.version = version;
         this.parent = parent;
+        this.services = services;
         this.properties = new QNameMap<String, Serializable>(parent.services.getNamespaceService());
     }
     
@@ -238,26 +247,23 @@ public class VersionHistoryNode implements Serializable
         }
     }
     
+    /**
+     * @see org.alfresco.repo.template.TemplateProperties#getChildren()
+     */
+    public List<TemplateProperties> getChildren()
+    {
+        return null;
+    }
+    
     
     // ------------------------------------------------------------------------------
     // Content API 
     
     /**
-     * @return the content String for this node from the default content property
-     *         (@see ContentModel.PROP_CONTENT)
-     */
-    public String getContent()
-    {
-        TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
-        return content != null ? content.getContent() : "";
-    }
-    
-    /**
-     * @return For a content document, this method returns the URL to the content stream for
+     * @return Returns the URL to the content stream for the frozen state of the node from
      *         the default content property (@see ContentModel.PROP_CONTENT)
-     *         <p>
-     *         For a container node, this method return the URL to browse to the folder in the web-client
      */
+    @Override
     public String getUrl()
     {
         NodeRef nodeRef = this.version.getFrozenStateNodeRef();
@@ -273,25 +279,5 @@ public class VersionHistoryNode implements Serializable
         {
             throw new TemplateException("Failed to encode content URL for node: " + nodeRef, err);
         }
-    }
-    
-    /**
-     * @return The mimetype encoding for content attached to the node from the default content property
-     *         (@see ContentModel.PROP_CONTENT)
-     */
-    public String getMimetype()
-    {
-        TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
-        return (content != null ? content.getMimetype() : null);
-    }
-    
-    /**
-     * @return The size in bytes of the content attached to the node from the default content property
-     *         (@see ContentModel.PROP_CONTENT)
-     */
-    public long getSize()
-    {
-        TemplateContentData content = (TemplateContentData)this.getProperties().get(ContentModel.PROP_CONTENT);
-        return (content != null ? content.getSize() : 0L);
     }
 }

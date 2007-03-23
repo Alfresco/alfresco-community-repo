@@ -33,9 +33,9 @@ import java.util.Map;
 
 import org.alfresco.repo.jscript.Node;
 import org.alfresco.repo.jscript.ScriptableHashMap;
+import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.TemplateException;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;

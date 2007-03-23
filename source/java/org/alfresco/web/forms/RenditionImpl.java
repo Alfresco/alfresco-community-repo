@@ -25,23 +25,16 @@ package org.alfresco.web.forms;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import javax.faces.context.FacesContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateNode;
-import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.ui.common.Utils;

@@ -34,11 +34,11 @@ import javax.faces.context.ResponseWriter;
 
 import org.alfresco.repo.template.AbsoluteUrlMethod;
 import org.alfresco.repo.template.CropContentMethod;
+import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.template.UrlEncodeMethod;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;

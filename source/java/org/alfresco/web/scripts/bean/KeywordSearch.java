@@ -31,9 +31,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateNode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;

@@ -331,20 +331,6 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         return childNodeRef;
     }
-    
-    public NodeRef searchSimple(NodeRef contextNodeRef, String name, QName assocName)
-    {
-        NodeRef childNodeRef = nodeService.getChildByName(contextNodeRef, assocName, name);
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(
-                    "Simple name search results: \n" +
-                    "   parent: " + contextNodeRef + "\n" +
-                    "   name: " + name + "\n" +
-                    "   result: " + childNodeRef);
-        }
-        return childNodeRef;
-    }
 
     /**
      * @see #search(NodeRef, String, boolean, boolean, boolean)
@@ -841,16 +827,7 @@ public class FileFolderServiceImpl implements FileFolderService
         for (int i = 0; i < folderCount; i++)
         {
             String pathElement = pathElements.get(i);
-            NodeRef folderNodeRef;
-            if (i == 0 && rootNodeRef.equals(nodeService.getRootNode(rootNodeRef.getStoreRef())))
-            {
-                // store root nodes use a different assoc name to the immediate children
-                folderNodeRef = searchSimple(parentNodeRef, pathElement, ContentModel.ASSOC_CHILDREN);
-            }
-            else
-            {
-                folderNodeRef = searchSimple(parentNodeRef, pathElement);
-            }
+            NodeRef folderNodeRef = searchSimple(parentNodeRef, pathElement);
             if (folderNodeRef == null)
             {
                 StringBuilder sb = new StringBuilder(128);

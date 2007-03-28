@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
@@ -550,30 +551,6 @@ public class Node implements Serializable, Scopeable
     }
     
     /**
-     * Return true if the user has the specified permission on the node.
-     * <p>
-     * The default permissions are found in <code>org.alfresco.service.cmr.security.PermissionService</code>.
-     * Most commonly used are "Write", "Delete" and "AddChildren".
-     * 
-     * @param permission as found in <code>org.alfresco.service.cmr.security.PermissionService</code>
-     * @return true if the user has the specified permission on the node.
-     */
-    public boolean hasPermission(String permission)
-    {
-        ParameterCheck.mandatory("Permission Name", permission);
-        
-        boolean allowed = false;
-        
-        if (permission != null && permission.length() != 0)
-        {
-            AccessStatus status = this.services.getPermissionService().hasPermission(this.nodeRef, permission);
-            allowed = (AccessStatus.ALLOWED == status);
-        }
-        
-        return allowed;
-    }
-    
-    /**
      * @return Display path to this node
      */
     public String getDisplayPath()
@@ -828,6 +805,54 @@ public class Node implements Serializable, Scopeable
     
     // ------------------------------------------------------------------------------
     // Security API
+    
+    /**
+     * Return true if the user has the specified permission on the node.
+     * <p>
+     * The default permissions are found in <code>org.alfresco.service.cmr.security.PermissionService</code>.
+     * Most commonly used are "Write", "Delete" and "AddChildren".
+     * 
+     * @param permission as found in <code>org.alfresco.service.cmr.security.PermissionService</code>
+     * @return true if the user has the specified permission on the node.
+     */
+    public boolean hasPermission(String permission)
+    {
+        ParameterCheck.mandatory("Permission Name", permission);
+        
+        boolean allowed = false;
+        
+        if (permission != null && permission.length() != 0)
+        {
+            AccessStatus status = this.services.getPermissionService().hasPermission(this.nodeRef, permission);
+            allowed = (AccessStatus.ALLOWED == status);
+        }
+        
+        return allowed;
+    }
+    
+    /**
+     * @return Array of permissions applied to this Node.
+     *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example
+     *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
+     */
+    public String[] getPermissions()
+    {
+        String userName = this.services.getAuthenticationService().getCurrentUserName();
+        Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
+        String[] permissions = new String[acls.size()];
+        int count = 0;
+        for (AccessPermission permission : acls)
+        {
+            StringBuilder buf = new StringBuilder(64);
+            buf.append(permission.getAccessStatus())
+                .append(';')
+                .append(permission.getAuthority())
+                .append(';')
+                .append(permission.getPermission());
+            permissions[count++] = buf.toString();
+        }
+        return permissions;
+    }
     
     /**
      * @return true if the node inherits permissions from the parent node, false otherwise

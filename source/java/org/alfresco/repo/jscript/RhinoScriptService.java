@@ -543,7 +543,7 @@ public class RhinoScriptService implements ScriptService
             // add the global scripts
             for (ScriptImplementation ex : this.globalScripts) 
             {
-            	model.put(ex.getScriptName(), script);
+            	model.put(ex.getScriptName(), ex);
 			}
             
             // insert supplied object model into root of the default scope

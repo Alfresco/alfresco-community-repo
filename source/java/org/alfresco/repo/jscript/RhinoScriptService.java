@@ -453,7 +453,7 @@ public class RhinoScriptService implements ScriptService
             if (resource.startsWith("/"))
             {
                 // resolve from default SpacesStore as cm:name based path
-                // TODO: remove this once FFS correctly allows name path resolving from store root!
+                // we have to assume "/Company Home" as the root for now
                 NodeRef rootNodeRef = this.services.getNodeService().getRootNode(this.storeRef);
                 List<NodeRef> nodes = this.services.getSearchService().selectNodes(
                         rootNodeRef, this.storePath, null, this.services.getNamespaceService(), false);

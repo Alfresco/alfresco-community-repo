@@ -26,6 +26,8 @@ package org.alfresco.repo.template;
 
 
 /**
+ * Contract for Template API objects that support content on the 'cm:content' default property.
+ * 
  * @author Kevin Roast
  */
 public interface TemplateContent extends TemplateProperties

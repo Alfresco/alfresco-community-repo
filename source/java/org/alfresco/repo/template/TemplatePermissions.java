@@ -27,6 +27,8 @@ package org.alfresco.repo.template;
 import java.util.List;
 
 /**
+ * Contract for Template API objects that support permissions.
+ * 
  * @author Kevin Roast
  */
 public interface TemplatePermissions extends TemplateNodeRef

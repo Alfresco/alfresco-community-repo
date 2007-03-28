@@ -32,6 +32,8 @@ import java.util.Set;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Contract for Template API objects that have properties, aspects and children.
+ * 
  * @author Kevin Roast
  */
 public interface TemplateProperties extends TemplateNodeRef

@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
+ * Base class for Template API objects that support permissions.
+ * 
  * @author Kevin Roast
  */
 public abstract class BasePermissionsNode extends BaseContentNode implements TemplatePermissions

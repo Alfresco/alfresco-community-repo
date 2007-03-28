@@ -42,6 +42,8 @@ import org.alfresco.service.namespace.QName;
 import org.springframework.util.StringUtils;
 
 /**
+ * Base class for Template API objects that supply content functionality.
+ * 
  * @author Kevin Roast
  */
 public abstract class BaseContentNode implements TemplateContent

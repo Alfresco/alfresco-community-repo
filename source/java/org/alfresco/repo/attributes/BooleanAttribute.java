@@ -23,43 +23,12 @@
  * http://www.alfresco.com/legal/licensing"
  */
 
-package org.alfresco.service.cmr.attributes;
-
-import java.util.List;
+package org.alfresco.repo.attributes;
 
 /**
- * This provides services for reading, writing, and querying global attributes.
+ * Stub interface for Booleans.
  * @author britt
  */
-public interface AttributeService 
+public interface BooleanAttribute extends Attribute 
 {
-    /**
-     * Get a Global Attribute.
-     * @param path The path of the Attribute. Attribute paths are of the form
-     * {name}({name}|[index])*
-     * @return The value of the attribute or null.
-     */
-    public Object getValue(String path);
-    
-    /**
-     * Set a Global Attribute. Overwrites if it exists.
-     * @param name The name of the Attribute.
-     * @param value The value to set.
-     */
-    public void setValue(String path, Object value);
-    
-    /**
-     * Remove an Attribute.
-     * @param name The name of the Attribute.
-     */
-    public void removeValue(String path);
-
-    /**
-     * Query for a list of attributes which are contained in the container
-     * defined by the given path and meet the query criteria.
-     * @param path
-     * @param query
-     * @return A List of matching attributes.
-     */
-    public List<Object> query(String path, AttrQuery query);
 }

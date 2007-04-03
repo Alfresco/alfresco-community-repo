@@ -20,46 +20,39 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
-package org.alfresco.service.cmr.attributes;
+package org.alfresco.repo.attributes;
 
 import java.util.List;
 
+import org.alfresco.service.cmr.attributes.AttrQuery;
+
 /**
- * This provides services for reading, writing, and querying global attributes.
+ * Interface for persistence operations on attributes.
  * @author britt
  */
-public interface AttributeService 
+public interface AttributeDAO
 {
     /**
-     * Get a Global Attribute.
-     * @param path The path of the Attribute. Attribute paths are of the form
-     * {name}({name}|[index])*
-     * @return The value of the attribute or null.
+     * Save an attribute (recursively).
+     * @param attr The attribute to save.
      */
-    public Object getValue(String path);
+    public void save(Attribute attr);
     
     /**
-     * Set a Global Attribute. Overwrites if it exists.
-     * @param name The name of the Attribute.
-     * @param value The value to set.
+     * Delete an attribute (recursively).
+     * @param attr The attribute to delete.
      */
-    public void setValue(String path, Object value);
+    public void delete(Attribute attr);
     
     /**
-     * Remove an Attribute.
-     * @param name The name of the Attribute.
+     * Find all attributes that match a given path and AttrQuery.
+     * @param path The path, starting from the top to the map in which to
+     * search for matching attributes.
+     * @param query The AttrQuery.
+     * @return A List of Attributes.
      */
-    public void removeValue(String path);
-
-    /**
-     * Query for a list of attributes which are contained in the container
-     * defined by the given path and meet the query criteria.
-     * @param path
-     * @param query
-     * @return A List of matching attributes.
-     */
-    public List<Object> query(String path, AttrQuery query);
+    List<Attribute> find(String path, AttrQuery query);
 }

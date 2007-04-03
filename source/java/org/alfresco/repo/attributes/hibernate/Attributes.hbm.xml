@@ -3,9 +3,9 @@
 
 <!-- Polymorphic, nestable attributes. -->
 <hibernate-mapping package="org.alfresco.repo.attributes">
-    <!-- Value is the base class for metadata values. -->
-    <class table="alf_values" abstract="true"
-           name="ValueImpl" proxy="Value"
+    <!-- Attribute is the base class for metadata Attributes. -->
+    <class table="alf_attributes" abstract="true"
+           name="AttributeImpl" proxy="Attribute"
            optimistic-lock="version"
            lazy="true">
         <cache usage="read-write"/>
@@ -15,77 +15,77 @@
         <discriminator column="type" type="string" length="1"/>
         <version column="version" name="version" type="long"/>
         <!-- A boolean valued attribute -->
-        <subclass name="BooleanValueImpl" proxy="BooleanValue" lazy="true"
+        <subclass name="BooleanAttributeImpl" proxy="BooleanAttribute" lazy="true"
                   discriminator-value="O">
-            <property name="booleanValue" column="bool_value" type="boolean" index="value_bool_index"/>
+            <property name="booleanValue" column="bool_value" type="boolean" index="attribute_bool_index"/>
         </subclass>
         <!-- A byte valued attribute -->
-        <subclass name="ByteValueImpl" proxy="ByteValue" lazy="true"
+        <subclass name="ByteAttributeImpl" proxy="ByteAttribute" lazy="true"
                   discriminator-value="Y">
-            <property name="byteValue" column="byte_value" type="byte" index="value_byte_index"/>
+            <property name="byteValue" column="byte_value" type="byte" index="attribute_byte_index"/>
         </subclass>
         <!-- A short valued attribute -->
-        <subclass name="ShortValueImpl" proxy="ShortValue" lazy="true"
+        <subclass name="ShortAttributeImpl" proxy="ShortAttribute" lazy="true"
                   discriminator-value="H">
-            <property name="shortValue" column="short_value" type="short" index="value_short_index"/>
+            <property name="shortValue" column="short_value" type="short" index="attribute_short_index"/>
         </subclass>        
         <!-- An integer valued attribute. -->
-        <subclass name="IntValueImpl" proxy="IntValue" lazy="true"
+        <subclass name="IntAttributeImpl" proxy="IntAttribute" lazy="true"
                   discriminator-value="I">
-            <property name="intValue" column="int_value" type="int" index="value_int_index"/>
+            <property name="intValue" column="int_value" type="int" index="attribute_int_index"/>
         </subclass>
         <!-- A long valued attribute -->
-        <subclass name="LongValueImpl" proxy="LongValue" lazy="true"
+        <subclass name="LongAttributeImpl" proxy="LongAttribute" lazy="true"
                   discriminator-value="L">
-            <property name="longValue" column="long_value" type="long" index="value_long_index"/>
+            <property name="longValue" column="long_value" type="long" index="attribute_long_index"/>
         </subclass>
         <!-- A float valued attribute -->
-        <subclass name="FloatValueImpl" proxy="FloatValue" lazy="true"
+        <subclass name="FloatAttributeImpl" proxy="FloatAttribute" lazy="true"
                   discriminator-value="F">
-            <property name="floatValue" column="float_value" type="float" index="value_float_index"/>
+            <property name="floatValue" column="float_value" type="float" index="attribute_float_index"/>
         </subclass>        
         <!-- A double valued attribute -->
-        <subclass name="DoubleValueImpl" proxy="DoubleValue" lazy="true"
+        <subclass name="DoubleAttributeImpl" proxy="DoubleAttribute" lazy="true"
                   discriminator-value="D">
-            <property name="doubleValue" column="double_value" type="double" index="value_double_index"/>
+            <property name="doubleValue" column="double_value" type="double" index="attribute_double_index"/>
         </subclass>
         <!-- A string valued attribute -->
-        <subclass name="StringValueImpl" proxy="StringValue" lazy="true"
+        <subclass name="StringAttributeImpl" proxy="StringAttribute" lazy="true"
                   discriminator-value="S">
             <property name="stringValue" column="string_value" type="string"
-                      length="512" index="value_string_index(64)"/>
+                      length="512" index="attribute_string_index(64)"/>
         </subclass>
         <!-- A blob valued attribute -->
-        <subclass name="BlobValueImpl" proxy="BlobValue" lazy="true"
+        <subclass name="BlobAttributeImpl" proxy="BlobAttribute" lazy="true"
                   discriminator-value="B">
             <property name="blobValue" column="blob_value" type="blob"
                       length="8192"/>
         </subclass>
         <!-- A serializable attribute -->
-        <subclass name="SerializableValueImpl" proxy="SerializableValue" lazy="true"
+        <subclass name="SerializableAttributeImpl" proxy="SerializableAttribute" lazy="true"
                   discriminator-value="E">
             <property name="serializableValue" column="serializable_value" lazy="true"
                       length="8192"/>
         </subclass>
-        <!-- A list attribute -->
-        <subclass name="ListValueImpl" proxy="ListValue" lazy="true"
-                  discriminator-value="T">
-            <list name="data" table="alf_list_data" lazy="true" cascade="all">
-                <cache usage="read-write"/>
-                <key column="value_id"/>
-                <index type="int" column="offset"/>
-                <many-to-many class="ValueImpl" column="list_value" lazy="true"/>                
-            </list>
-        </subclass>
         <!-- A map attribute -->
-        <subclass name="MapValueImpl" proxy="MapValue" lazy="true"
+        <subclass name="MapAttributeImpl" proxy="MapAttribute" lazy="true"
                   discriminator-value="M">
-            <map name="data" table="alf_map_data" lazy="true" cascade="all">
-                <cache usage="read-write"/>
-                <key column="value_id"/>
-                <map-key column="map_key" type="string" length="160"/>
-                <many-to-many class="AttributeImpl" column="map_attr" lazy="true"/>
-            </map>
         </subclass>
     </class>
+    <class name="GlobalAttributeEntryImpl" proxy="GlobalAttributeEntry">
+        <cache usage="read-write"/>
+        <id name="name" type="string" length="160"/>
+        <many-to-one class="AttributeImpl" name="attribute" unique="true"/>
+    </class>
+    <class name="MapEntryImpl" proxy="MapEntry" lazy="false">
+        <cache usage="read-write"/>
+        <id name="id" column="id" type="long">
+            <generator class="native"/>
+        </id>
+        <natural-id>
+            <many-to-one class="MapAttributeImpl" name="map" column="map_id"/>
+            <property name="key" type="string" length="160" column="key" index="map_key_index"/>
+        </natural-id>
+        <many-to-one class="AttributeImpl" name="attribute" columne="attribute_id"/>
+    </class>        
 </hibernate-mapping>

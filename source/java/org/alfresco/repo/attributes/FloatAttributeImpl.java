@@ -20,46 +20,49 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
-package org.alfresco.service.cmr.attributes;
-
-import java.util.List;
+package org.alfresco.repo.attributes;
 
 /**
- * This provides services for reading, writing, and querying global attributes.
  * @author britt
+ *
  */
-public interface AttributeService 
+public class FloatAttributeImpl extends AttributeImpl implements FloatAttribute
 {
-    /**
-     * Get a Global Attribute.
-     * @param path The path of the Attribute. Attribute paths are of the form
-     * {name}({name}|[index])*
-     * @return The value of the attribute or null.
-     */
-    public Object getValue(String path);
-    
-    /**
-     * Set a Global Attribute. Overwrites if it exists.
-     * @param name The name of the Attribute.
-     * @param value The value to set.
-     */
-    public void setValue(String path, Object value);
-    
-    /**
-     * Remove an Attribute.
-     * @param name The name of the Attribute.
-     */
-    public void removeValue(String path);
+    private static final long serialVersionUID = 8173803953645298153L;
 
-    /**
-     * Query for a list of attributes which are contained in the container
-     * defined by the given path and meet the query criteria.
-     * @param path
-     * @param query
-     * @return A List of matching attributes.
+    private float fValue;
+    
+    public FloatAttributeImpl(float value)
+    {
+        fValue = value;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#getType()
      */
-    public List<Object> query(String path, AttrQuery query);
+    public Type getType()
+    {
+        return Type.FLOAT;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeImpl#getFloatValue()
+     */
+    @Override
+    public float getFloatValue()
+    {
+        return fValue;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeImpl#setFloatValue(float)
+     */
+    @Override
+    public void setFloatValue(float value)
+    {
+        fValue = value;
+    }
 }

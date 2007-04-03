@@ -25,41 +25,30 @@
 
 package org.alfresco.service.cmr.attributes;
 
-import java.util.List;
+import org.alfresco.repo.attributes.Attribute;
 
 /**
- * This provides services for reading, writing, and querying global attributes.
+ * Query a less than condition.
  * @author britt
  */
-public interface AttributeService 
+public class AttrQueryLT extends AttrQuery 
 {
-    /**
-     * Get a Global Attribute.
-     * @param path The path of the Attribute. Attribute paths are of the form
-     * {name}({name}|[index])*
-     * @return The value of the attribute or null.
-     */
-    public Object getValue(String path);
-    
-    /**
-     * Set a Global Attribute. Overwrites if it exists.
-     * @param name The name of the Attribute.
-     * @param value The value to set.
-     */
-    public void setValue(String path, Object value);
-    
-    /**
-     * Remove an Attribute.
-     * @param name The name of the Attribute.
-     */
-    public void removeValue(String path);
+    private static final long serialVersionUID = -2385160490778425115L;
 
     /**
-     * Query for a list of attributes which are contained in the container
-     * defined by the given path and meet the query criteria.
-     * @param path
-     * @param query
-     * @return A List of matching attributes.
+     * @param value
      */
-    public List<Object> query(String path, AttrQuery query);
+    public AttrQueryLT(Attribute value) 
+    {
+        super(value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
+     */
+    @Override
+    public String getPredicate() 
+    {
+        return "ent." + fAttrName + " < " + getValue();
+    }
 }

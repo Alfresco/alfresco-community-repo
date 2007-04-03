@@ -20,46 +20,49 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
-package org.alfresco.service.cmr.attributes;
-
-import java.util.List;
+package org.alfresco.repo.attributes;
 
 /**
- * This provides services for reading, writing, and querying global attributes.
+ * A short attribute.
  * @author britt
  */
-public interface AttributeService 
+public class ShortAttributeImpl extends AttributeImpl implements ShortAttribute
 {
-    /**
-     * Get a Global Attribute.
-     * @param path The path of the Attribute. Attribute paths are of the form
-     * {name}({name}|[index])*
-     * @return The value of the attribute or null.
-     */
-    public Object getValue(String path);
-    
-    /**
-     * Set a Global Attribute. Overwrites if it exists.
-     * @param name The name of the Attribute.
-     * @param value The value to set.
-     */
-    public void setValue(String path, Object value);
-    
-    /**
-     * Remove an Attribute.
-     * @param name The name of the Attribute.
-     */
-    public void removeValue(String path);
+    private static final long serialVersionUID = 583269625932011762L;
 
-    /**
-     * Query for a list of attributes which are contained in the container
-     * defined by the given path and meet the query criteria.
-     * @param path
-     * @param query
-     * @return A List of matching attributes.
+    private short fValue;
+    
+    public ShortAttributeImpl(short value)
+    {
+        fValue = value;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeImpl#getShortValue()
      */
-    public List<Object> query(String path, AttrQuery query);
+    @Override
+    public short getShortValue()
+    {
+        return fValue;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.AttributeImpl#setShortValue(short)
+     */
+    @Override
+    public void setShortValue(short value)
+    {
+        fValue = value;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.Attribute#getType()
+     */
+    public Type getType()
+    {
+        return Type.SHORT;
+    }
 }

@@ -30,10 +30,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -74,11 +72,6 @@ public class TemplateNode extends BasePermissionsNode
     
     private static Log logger = LogFactory.getLog(TemplateNode.class);
     
-    protected final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
-    
-    /** The children of this node */
-    private List<TemplateProperties> children = null;
-    
     /** The target associations from this node */
     private Map<String, List<TemplateNode>> targetAssocs = null;
     
@@ -94,11 +87,8 @@ public class TemplateNode extends BasePermissionsNode
     private QName type;
     private String path;
     private String id;
-    private Set<QName> aspects = null;
     private QNameMap<String, Serializable> properties;
     private boolean propsRetrieved = false;
-    private String displayPath = null;
-    protected TemplateImageResolver imageResolver = null;
     private TemplateNode parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
     private Boolean isCategory = null;
@@ -200,26 +190,6 @@ public class TemplateNode extends BasePermissionsNode
     // TemplateProperties contract implementation
     
     /**
-     * @return The children of this Node as objects that support the TemplateProperties contract.
-     */
-    public List<TemplateProperties> getChildren()
-    {
-        if (this.children == null)
-        {
-            List<ChildAssociationRef> childRefs = this.services.getNodeService().getChildAssocs(this.nodeRef);
-            this.children = new ArrayList<TemplateProperties>(childRefs.size());
-            for (ChildAssociationRef ref : childRefs)
-            {
-                // create our Node representation from the NodeRef
-                TemplateNode child = new TemplateNode(ref.getChildRef(), this.services, this.imageResolver);
-                this.children.add(child);
-            }
-        }
-        
-        return this.children;
-    }
-    
-    /**
      * @return All the properties known about this node.
      */
     public Map<String, Serializable> getProperties()
@@ -250,50 +220,6 @@ public class TemplateNode extends BasePermissionsNode
         }
         
         return this.properties;
-    }
-    
-    /**
-     * @return The list of aspects applied to this node
-     */
-    public Set<QName> getAspects()
-    {
-        if (this.aspects == null)
-        {
-            this.aspects = this.services.getNodeService().getAspects(this.nodeRef);
-        }
-        
-        return this.aspects;
-    }
-    
-    /**
-     * @param aspect The aspect name to test for
-     * 
-     * @return true if the node has the aspect false otherwise
-     */
-    public boolean hasAspect(String aspect)
-    {
-        if (this.aspects == null)
-        {
-            this.aspects = this.services.getNodeService().getAspects(this.nodeRef);
-        }
-        
-        if (aspect.startsWith(NAMESPACE_BEGIN))
-        {
-            return aspects.contains((QName.createQName(aspect)));
-        }
-        else
-        {
-            boolean found = false;
-            for (QName qname : this.aspects)
-            {
-                if (qname.toPrefixString(this.services.getNamespaceService()).equals(aspect))
-                {
-                    found = true;
-                    break;
-                }
-            }
-            return found;
-        }
     }
     
     
@@ -400,9 +326,9 @@ public class TemplateNode extends BasePermissionsNode
     }
     
     /**
-     * @return the parent node
+     * @return the primary parent node
      */
-    public TemplateNode getParent()
+    public TemplateProperties getParent()
     {
         if (parent == null)
         {
@@ -476,94 +402,6 @@ public class TemplateNode extends BasePermissionsNode
                 logger.debug(err.getMessage(), err);
             
             return null;
-        }
-    }
-    
-    /**
-     * @return Display path to this node - the path built of 'cm:name' attribute values.
-     */
-    public String getDisplayPath()
-    {
-        if (displayPath == null)
-        {
-            try
-            {
-                displayPath = this.services.getNodeService().getPath(this.nodeRef).toDisplayPath(this.services.getNodeService());
-            }
-            catch (AccessDeniedException err)
-            {
-                displayPath = "";
-            }
-        }
-        
-        return displayPath;
-    }
-    
-    /**
-     * @return QName path to this node. This can be used for Lucene PATH: style queries
-     */
-    public String getQnamePath()
-    {
-        return this.services.getNodeService().getPath(this.nodeRef).toPrefixString(this.services.getNamespaceService());
-    }
-    
-    /**
-     * @return the small icon image for this node
-     */
-    public String getIcon16()
-    {
-        if (this.imageResolver != null)
-        {
-            if (getIsDocument())
-            {
-                return this.imageResolver.resolveImagePathForName(getName(), true);
-            }
-            else
-            {
-                String icon = (String)getProperties().get("app:icon");
-                if (icon != null)
-                {
-                    return "/images/icons/" + icon + "-16.gif";
-                }
-                else
-                {
-                    return "/images/icons/space_small.gif";
-                }
-            }
-        }
-        else
-        {
-            return "/images/filetypes/_default.gif";
-        }
-    }
-    
-    /**
-     * @return the large icon image for this node
-     */
-    public String getIcon32()
-    {
-        if (this.imageResolver != null)
-        {
-            if (getIsDocument())
-            {
-                return this.imageResolver.resolveImagePathForName(getName(), false);
-            }
-            else
-            {
-                String icon = (String)getProperties().get("app:icon");
-                if (icon != null)
-                {
-                    return "/images/icons/" + icon + ".gif";
-                }
-                else
-                {
-                    return "/images/icons/space-icon-default.gif";
-                }
-            }
-        }
-        else
-        {
-            return "/images/filetypes32/_default.gif";
         }
     }
     

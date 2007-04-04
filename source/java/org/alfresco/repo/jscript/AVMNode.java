@@ -24,9 +24,12 @@
  */
 package org.alfresco.repo.jscript;
 
+import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
@@ -41,6 +44,9 @@ public class AVMNode extends Node
 {
     private String path;
     private int version;
+    private boolean deleted;
+    private AVMNodeDescriptor avmRef;
+    private QName type;
     
     /**
      * Constructor
@@ -68,6 +74,13 @@ public class AVMNode extends Node
         Pair<Integer, String> versionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         this.path = versionPath.getSecond();
         this.version = versionPath.getFirst();
+        AVMNodeDescriptor descriptor = this.services.getAVMService().lookup(this.version, this.path, true);
+        if (descriptor == null)
+        {
+            throw new IllegalArgumentException("Invalid node specified: " + nodeRef.toString());
+        }
+        this.avmRef = descriptor;
+        this.deleted = descriptor.isDeleted();
     }
     
     /**
@@ -111,6 +124,60 @@ public class AVMNode extends Node
         return getVersion();
     }
     
+    /**
+     * @return QName type of this node
+     */
+    public QName getType()
+    {
+        if (this.type == null)
+        {
+            if (this.deleted == false)
+            {
+                this.type = this.services.getNodeService().getType(this.nodeRef);
+            }
+            else
+            {
+                this.type = avmRef.isDeletedDirectory() ? WCMModel.TYPE_AVM_FOLDER : WCMModel.TYPE_AVM_CONTENT;
+            }
+        }
+        
+        return type;
+    }
+    
+    public String jsGet_type()
+    {
+        return getType().toString();
+    }
+
+    public boolean isDirectory()
+    {
+        return this.avmRef.isDirectory() || this.avmRef.isDeletedDirectory();
+    }
+    
+    public boolean jsGet_isDirectory()
+    {
+        return isDirectory();
+    }
+
+    public boolean isFile()
+    {
+        return this.avmRef.isFile() || this.avmRef.isDeletedFile();
+    }
+    
+    public boolean jsGet_isFile()
+    {
+        return isFile();
+    }
+    
+    /**
+     * @return Helper to return the 'name' property for the node
+     */
+    @Override
+    public String getName()
+    {
+        return this.avmRef.getName();
+    }
+
     /**
      * Copy this Node into a new parent destination.
      * 
@@ -226,8 +293,15 @@ public class AVMNode extends Node
     {
         super.reset();
         this.path = path;
-        this.nodeRef = AVMNodeConverter.ToNodeRef(version, path);
+        this.nodeRef = AVMNodeConverter.ToNodeRef(this.version, path);
         this.id = nodeRef.getId();
+        AVMNodeDescriptor descriptor = this.services.getAVMService().lookup(this.version, path, true);
+        if (descriptor == null)
+        {
+            throw new IllegalArgumentException("Invalid node specified: " + nodeRef.toString());
+        }
+        this.avmRef = descriptor;
+        this.deleted = descriptor.isDeleted();
     }
 
     @Override

@@ -59,4 +59,9 @@ public interface TemplateProperties extends TemplateNodeRef
      * @return The children of this Node as TemplateNode wrappers
      */
     public List<TemplateProperties> getChildren();
+    
+    /**
+     * @return the primary parent of this node 
+     */
+    public TemplateProperties getParent();
 }

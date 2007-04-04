@@ -255,6 +255,14 @@ public class VersionHistoryNode extends BaseContentNode
         return null;
     }
     
+    /**
+     * @see org.alfresco.repo.template.TemplateProperties#getParent()
+     */
+    public TemplateProperties getParent()
+    {
+        return null;
+    }
+    
     
     // ------------------------------------------------------------------------------
     // Content API 

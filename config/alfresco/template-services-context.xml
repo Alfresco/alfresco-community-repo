@@ -44,6 +44,15 @@
         </property>
     </bean>
     
+    <bean id="avmExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.AVM">
+        <property name="extensionName">
+            <value>avm</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
     <bean id="sessionTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.Session">
         <property name="extensionName">
             <value>session</value>

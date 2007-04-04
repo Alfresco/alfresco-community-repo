@@ -20,86 +20,100 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
-package org.alfresco.repo.jscript;
+package org.alfresco.repo.template;
 
 import org.alfresco.config.JNDIConstants;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 
 /**
- * Helper to access AVM nodes from a script context.
- *  
+ * AVM root object access for a template model.
+ * 
  * @author Kevin Roast
  */
-public final class AVM extends BaseScopableScriptImplementation
+public class AVM extends BaseTemplateExtensionImplementation
 {
-    /** Repository Service Registry */
     private ServiceRegistry services;
 
     /**
-     * Set the service registry
+     * Sets the service registry
      * 
-     * @param serviceRegistry the service registry
+     * @param services  the service registry
      */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    public void setServiceRegistry(ServiceRegistry services)
     {
-        this.services = serviceRegistry;
+        this.services = services;
     }
-
+    
     /**
-     * Return an AVM Node representing the public store root folder.
+     * Return an AVM store object for the specified store name
      * 
-     * @param store     Store name to lookup root folder for
+     * @param store         Store name to lookup
      * 
-     * @return AVM Node representing the public store root folder, or null if not found.
+     * @return the AVM store object for the specified store or null if not found
      */
-    public AVMNode lookupStoreRoot(String store)
+    public AVMTemplateStore lookupStore(String store)
     {
-        AVMNode rootNode = null;
+        AVMTemplateStore avmStore = null;
+        AVMStoreDescriptor descriptor = this.services.getAVMService().getStore(store);
+        if (descriptor != null)
+        {
+            avmStore = new AVMTemplateStore(this.services, getTemplateImageResolver(), descriptor);
+        }
+        return avmStore;
+    }
+    
+    /**
+     * Return the root node for a specified AVM store
+     * 
+     * @param store         Store name to find root node for
+     * 
+     * @return the AVM store root node for the specified store or null if not found.
+     */
+    public AVMTemplateNode lookupStoreRoot(String store)
+    {
+        AVMTemplateNode root = null;
         if (store != null && store.length() != 0)
         {
-            String rootPath = store + ':' + getWebappsFolderPath();
-            AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, rootPath);
-            if (nodeDesc != null)
+            AVMTemplateStore avmStore = lookupStore(store);
+            if (avmStore != null)
             {
-                rootNode = new AVMNode(AVMNodeConverter.ToNodeRef(-1, rootPath), this.services, getScope());
+                root = avmStore.getLookupRoot();
             }
         }
-        return rootNode;
+        return root;
     }
-
+    
     /**
-     * Return an AVM Node for the fully qualified path.
+     * Look a node by the absolute path. Path should include the store reference.
      * 
-     * @param path   Fully qualified path to node to lookup
+     * @param path          Absolute path to the node, including store reference.
      * 
-     * @return AVM Node for the fully qualified path, or null if not found.
+     * @return the node if found, null otherwise.
      */
-    public AVMNode lookupNode(String path)
+    public AVMTemplateNode lookupNode(String path)
     {
-        AVMNode node = null;
+        AVMTemplateNode node = null;
         if (path != null && path.length() != 0)
         {
             AVMNodeDescriptor nodeDesc = this.services.getAVMService().lookup(-1, path);
             if (nodeDesc != null)
             {
-                node = new AVMNode(AVMNodeConverter.ToNodeRef(-1, path), this.services, getScope());
+                node = new AVMTemplateNode(path, -1, this.services, getTemplateImageResolver());
             }
         }
         return node;
     }
-
+    
+    /**
+     * @return the path to the webapps folder in a standard web store.
+     */
     public static String getWebappsFolderPath()
     {
         return '/' + JNDIConstants.DIR_DEFAULT_WWW +
                '/' + JNDIConstants.DIR_DEFAULT_APPBASE;
-    }
-
-    public static String jsGet_webappsFolderPath()
-    {
-        return getWebappsFolderPath();
     }
 }

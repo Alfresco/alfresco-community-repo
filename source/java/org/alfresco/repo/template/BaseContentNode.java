@@ -28,16 +28,22 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TemplateException;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
 import org.springframework.util.StringUtils;
 
@@ -52,7 +58,15 @@ public abstract class BaseContentNode implements TemplateContent
     protected final static String CONTENT_PROP_URL    = "/download/direct/{0}/{1}/{2}/{3}?property={4}";
     protected final static String FOLDER_BROWSE_URL   = "/navigate/browse/{0}/{1}/{2}";
     
+    protected final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
+    
+    /** The children of this node */
+    protected List<TemplateProperties> children = null;
+    
     protected ServiceRegistry services = null;
+    protected TemplateImageResolver imageResolver = null;
+    private Set<QName> aspects = null;
+    private String displayPath = null;
     
     private Boolean isDocument = null;
     private Boolean isContainer = null;
@@ -99,6 +113,166 @@ public abstract class BaseContentNode implements TemplateContent
         else
         {
             return "Node no longer exists: " + getNodeRef();
+        }
+    }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Content display API 
+    
+    /**
+     * @return QName path to this node. This can be used for Lucene PATH: style queries
+     */
+    public String getQnamePath()
+    {
+        return this.services.getNodeService().getPath(getNodeRef()).toPrefixString(this.services.getNamespaceService());
+    }
+    
+    /**
+     * @return the small icon image for this node
+     */
+    public String getIcon16()
+    {
+        if (this.imageResolver != null)
+        {
+            if (getIsDocument())
+            {
+                return this.imageResolver.resolveImagePathForName(getName(), true);
+            }
+            else
+            {
+                String icon = (String)getProperties().get("app:icon");
+                if (icon != null)
+                {
+                    return "/images/icons/" + icon + "-16.gif";
+                }
+                else
+                {
+                    return "/images/icons/space_small.gif";
+                }
+            }
+        }
+        else
+        {
+            return "/images/filetypes/_default.gif";
+        }
+    }
+    
+    /**
+     * @return the large icon image for this node
+     */
+    public String getIcon32()
+    {
+        if (this.imageResolver != null)
+        {
+            if (getIsDocument())
+            {
+                return this.imageResolver.resolveImagePathForName(getName(), false);
+            }
+            else
+            {
+                String icon = (String)getProperties().get("app:icon");
+                if (icon != null)
+                {
+                    return "/images/icons/" + icon + ".gif";
+                }
+                else
+                {
+                    return "/images/icons/space-icon-default.gif";
+                }
+            }
+        }
+        else
+        {
+            return "/images/filetypes32/_default.gif";
+        }
+    }
+    
+    /**
+     * @return Display path to this node - the path built of 'cm:name' attribute values.
+     */
+    public String getDisplayPath()
+    {
+        if (displayPath == null)
+        {
+            try
+            {
+                displayPath = this.services.getNodeService().getPath(getNodeRef()).toDisplayPath(this.services.getNodeService());
+            }
+            catch (AccessDeniedException err)
+            {
+                displayPath = "";
+            }
+        }
+        
+        return displayPath;
+    }
+    
+    
+    // ------------------------------------------------------------------------------
+    // TemplateProperties contract impl
+    
+    /**
+     * @return The children of this Node as objects that support the TemplateProperties contract.
+     */
+    public List<TemplateProperties> getChildren()
+    {
+        if (this.children == null)
+        {
+            List<ChildAssociationRef> childRefs = this.services.getNodeService().getChildAssocs(getNodeRef());
+            this.children = new ArrayList<TemplateProperties>(childRefs.size());
+            for (ChildAssociationRef ref : childRefs)
+            {
+                // create our Node representation from the NodeRef
+                TemplateNode child = new TemplateNode(ref.getChildRef(), this.services, this.imageResolver);
+                this.children.add(child);
+            }
+        }
+        
+        return this.children;
+    }
+    
+    /**
+     * @return The list of aspects applied to this node
+     */
+    public Set<QName> getAspects()
+    {
+        if (this.aspects == null)
+        {
+            this.aspects = this.services.getNodeService().getAspects(getNodeRef());
+        }
+        
+        return this.aspects;
+    }
+    
+    /**
+     * @param aspect The aspect name to test for
+     * 
+     * @return true if the node has the aspect false otherwise
+     */
+    public boolean hasAspect(String aspect)
+    {
+        if (this.aspects == null)
+        {
+            this.aspects = this.services.getNodeService().getAspects(getNodeRef());
+        }
+        
+        if (aspect.startsWith(NAMESPACE_BEGIN))
+        {
+            return this.aspects.contains((QName.createQName(aspect)));
+        }
+        else
+        {
+            boolean found = false;
+            for (QName qname : this.aspects)
+            {
+                if (qname.toPrefixString(this.services.getNamespaceService()).equals(aspect))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
         }
     }
     

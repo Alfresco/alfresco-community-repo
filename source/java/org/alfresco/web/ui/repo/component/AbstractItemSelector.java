@@ -530,8 +530,8 @@ public abstract class AbstractItemSelector extends UIInput
                      // render each child found
                      String childId = childRef.getId();
                      buf.append("<tr><td><input type='radio' name='")
-                     .append(clientId).append(OPTION).append("' value='")
-                     .append(childId).append("'");
+                         .append(clientId).append(OPTION).append("' value='")
+                         .append(childId).append("'");
                      if (childId.equals(this.initialSelectionId))
                      {
                         buf.append(" checked");

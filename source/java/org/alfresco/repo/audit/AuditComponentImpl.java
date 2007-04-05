@@ -88,6 +88,10 @@ public class AuditComponentImpl implements AuditComponent
 
     private InetAddress auditHost;
 
+    /**
+     * Default constructor
+     *
+     */
     public AuditComponentImpl()
     {
         super();
@@ -106,26 +110,47 @@ public class AuditComponentImpl implements AuditComponent
      * IOC property setters
      */
 
+    /**
+     * Set the DAO for recording auditable information when no exception occurs.
+     * @param auditDAO 
+     */
     public void setAuditDAO(AuditDAO auditDAO)
     {
         this.auditDAO = auditDAO;
     }
 
+    /**
+     * Set the DAO for recording failed actions - this is done in another transaction.
+     * @param auditFailedDAO
+     */
     public void setAuditFailedDAO(AuditDAO auditFailedDAO)
     {
         this.auditFailedDAO = auditFailedDAO;
     }
 
+    /**
+     * Set the audit configuration.
+     * 
+     * @param auditConfiguration
+     */
     public void setAuditConfiguration(AuditConfiguration auditConfiguration)
     {
         this.auditConfiguration = auditConfiguration;
     }
 
+    /**
+     * Set the helper used to identify public services
+     * @param publicServiceIdentifier
+     */
     public void setPublicServiceIdentifier(PublicServiceIdentifier publicServiceIdentifier)
     {
         this.publicServiceIdentifier = publicServiceIdentifier;
     }
 
+    /** 
+     * Set the audit model.
+     * @param auditModel
+     */
     public void setAuditModel(AuditModel auditModel)
     {
         this.auditModel = auditModel;
@@ -215,7 +240,10 @@ public class AuditComponentImpl implements AuditComponent
     }
 
     /**
-     * Audit a method invocation
+     * Internal audit of a method invocation
+     * @param mi - the method to audit
+     * @return - the return object from the audited method
+     * @throws Throwable - any Throwable that can be thrown by th audtied method.
      */
     public Object auditImpl(MethodInvocation mi) throws Throwable
     {
@@ -256,8 +284,9 @@ public class AuditComponentImpl implements AuditComponent
      * 
      * @param auditMode
      * @param auditInfo
+     * @param mi
      * @param t
-     * @return
+     * @return - the audit mode 
      */
     private AuditMode onError(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi, Throwable t)
     {
@@ -277,7 +306,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param auditInfo
      * @param mi
      * @param returnObject
-     * @return
+     * @return - the audit mode.
      */
     private AuditMode postInvocation(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi, Object returnObject)
     {
@@ -341,7 +370,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param auditMode
      * @param auditInfo
      * @param mi
-     * @return
+     * @return - the audit mode.
      */
     private AuditMode beforeInvocation(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi)
     {

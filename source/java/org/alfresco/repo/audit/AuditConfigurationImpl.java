@@ -38,19 +38,26 @@ public class AuditConfigurationImpl implements InitializingBean, AuditConfigurat
 
     private String config;
     
+    /**
+     * Default constructor
+     *
+     */
     public AuditConfigurationImpl()
     {
         super();
     }
     
+    /**
+     * Set the audit config
+     * 
+     * @param config
+     */
     public void setConfig(String config)
     {
         this.config = config;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.getInputStream#getInputStream()
-     */
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.audit.AuditConfiguration#getInputStream()
      */

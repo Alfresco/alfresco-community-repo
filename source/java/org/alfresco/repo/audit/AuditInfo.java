@@ -169,6 +169,11 @@ public class AuditInfo
         }
     }
     
+    /**
+     * Create the default audit info from the audit configuration.
+     * 
+     * @param auditConfiguration
+     */
     public AuditInfo(AuditConfiguration auditConfiguration)
     {
         super();
@@ -180,121 +185,231 @@ public class AuditInfo
         hostAddress = s_hostAddress;
     }
 
+    /**
+     * Get the name of the audited application.
+     * 
+     * @return - the name of the audited application.
+     */
     public String getAuditApplication()
     {
         return auditApplication;
     }
 
+    /**
+     * Set the name of the audited application.
+     * 
+     * @param auditApplication
+     */
     public void setAuditApplication(String auditApplication)
     {
         this.auditApplication = auditApplication;
     }
 
+    /**
+     * Get the audit configuration.
+     * 
+     * @return - the audit configuration.
+     */
     public AuditConfiguration getAuditConfiguration()
     {
         return auditConfiguration;
     }
 
+    /**
+     * Set the audit configuration.
+     * 
+     * @param auditConfiguration
+     */
     public void setAuditConfiguration(AuditConfiguration auditConfiguration)
     {
         this.auditConfiguration = auditConfiguration;
     }
 
+    /**
+     * Get the name of the audited method - if it makes sense in the uadited context.
+     * 
+     * @return - the name of the audited method or null
+     */
     public String getAuditMethod()
     {
         return auditMethod;
     }
 
+    /**
+     * Set the name of the audited method.
+     * 
+     * @param auditMethod
+     */
     public void setAuditMethod(String auditMethod)
     {
         this.auditMethod = auditMethod;
     }
 
+    /**
+     * Get the audit service.
+     * 
+     * @return - the audit service.
+     */
     public String getAuditService()
     {
         return auditService;
     }
 
+    /**
+     * Set the audit service (IOC)
+     * 
+     * @param auditService
+     */
     public void setAuditService(String auditService)
     {
         this.auditService = auditService;
     }
 
+    
+  /**
+   * Get the address o which the client application is running if available
+   * @return - the address or null.
+   */
     public InetAddress getClientAddress()
     {
         return clientAddress;
     }
 
+    /**
+     * Set the client address that casued the audit.
+     * @param clientAddress
+     */
     public void setClientAddress(InetAddress clientAddress)
     {
         this.clientAddress = clientAddress;
     }
 
+    /**
+     * Get the date for the audit entry/
+     * 
+     * @return - the date for the audit entry.
+     */
     public Date getDate()
     {
         return date;
     }
 
+    /**
+     * Set the date for the audit entry
+     * @param date
+     */
     public void setDate(Date date)
     {
         this.date = date;
     }
 
+    /**
+     * Is this an audit of a failed method invocation?
+     * @return - true if the audited methoed threw any kind of exception.
+     */
     public boolean isFail()
     {
         return fail;
     }
 
+    /**
+     * Set that this is an audit of a failed method invoation.
+     * 
+     * @param fail
+     */
     public void setFail(boolean fail)
     {
         this.fail = fail;
     }
 
+    /**
+     * Could some audit information have been filtered?
+     * If true there may have been some unaudited operations of the same type.
+     *  
+     * @return - true if there were any filter definitions in the audit model; false otherwise.
+     */
     public boolean isFiltered()
     {
         return filtered;
     }
 
+    /**
+     * Set if a filter was present for this audit entry
+     * 
+     * @param filtered
+     */
     public void setFiltered(boolean filtered)
     {
         this.filtered = filtered;
     }
 
+    /**
+     * Get the host address where the repository is running.
+     * @return - the host address.
+     */
     public InetAddress getHostAddress()
     {
         return hostAddress;
     }
 
+    /**
+     * Set the host address where the repository is running.
+     * @param hostAddress
+     */
     public void setHostAddress(InetAddress hostAddress)
     {
         this.hostAddress = hostAddress;
     }
 
+    /**
+     * Get the GUID for the key node ref
+     * @return - the guid part of the node ref
+     */
     public String getKeyGUID()
     {
         return keyGUID;
     }
 
+    /**
+     * Set the GUID for the key node ref in the audited method invoation.
+     * @param keyGUID
+     */
     public void setKeyGUID(String keyGUID)
     {
         this.keyGUID = keyGUID;
     }
 
+    /**
+     * Get the properies of the key node after the method invoation. 
+     * @return - the properties to be stored in the audit trail 
+     */
     public Map<QName, Serializable> getKeyPropertiesAfter()
     {
         return keyPropertiesAfter;
     }
 
+    /**
+     * Set the preperties to be stored in the audit trail for the key node ref after the audited method has been invoked. 
+     * @param keyPropertiesAfter
+     */
     public void setKeyPropertiesAfter(Map<QName, Serializable> keyPropertiesAfter)
     {
         this.keyPropertiesAfter = keyPropertiesAfter;
     }
-
+    
+    /**
+     * Get the properies of the key node before the method invoation. 
+     * @return - the properties to be stored in the audit trail 
+     */
     public Map<QName, Serializable> getKeyPropertiesBefore()
     {
         return keyPropertiesBefore;
     }
 
+    /**
+     * Set the preperties to be stored in the audit trail for the key node ref before the audited method has been invoked. 
+     * @param keyPropertiesAfter
+     */
     public void setKeyPropertiesBefore(Map<QName, Serializable> keyPropertiesBefore)
     {
         this.keyPropertiesBefore = keyPropertiesBefore;

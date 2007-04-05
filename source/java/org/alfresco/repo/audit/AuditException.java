@@ -39,21 +39,45 @@ public class AuditException extends AlfrescoRuntimeException
      */
     private static final long serialVersionUID = -7947190775692164588L;
 
+    /**
+     * Simple message
+     * 
+     * @param msgId
+     */
     public AuditException(String msgId)
     {
         super(msgId);
     }
 
+    /**
+     * I18n message
+     * 
+     * @param msgId
+     * @param msgParams
+     */
     public AuditException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
     }
 
+    /**
+     * Simple message ad nested exception
+     * 
+     * @param msgId
+     * @param cause
+     */
     public AuditException(String msgId, Throwable cause)
     {
         super(msgId, cause);
     }
 
+    /**
+     * I18n message and exception.
+     * 
+     * @param msgId
+     * @param msgParams
+     * @param cause
+     */
     public AuditException(String msgId, Object[] msgParams, Throwable cause)
     {
         super(msgId, msgParams, cause);

@@ -31,9 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * The audit component.
- * 
- * Used by the AuditService and AuditMethodInterceptor to insert audit entries.
+ * The audit component. Used by the AuditService and AuditMethodInterceptor to insert audit entries.
  * 
  * @author Andy Hind
  */
@@ -43,11 +41,12 @@ public interface AuditComponent
      * Audit entry point for method interceptors.
      * 
      * @param methodInvocation
+     * @return - the return onbject from the normal invocation of the audited method.
+     * @throws Throwable
      */
     public Object audit(MethodInvocation methodInvocation) throws Throwable;
 
     /**
-     * 
      * @param source -
      *            a string that represents the application
      * @param description -
@@ -58,14 +57,14 @@ public interface AuditComponent
      *            an arbitrary list of parameters
      */
     public void audit(String source, String description, NodeRef key, Object... args);
-    
+
     /**
      * Get the audit trail for a node.
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef -
+     *            the node ref for which we want the audit trail
+     * @return - a list of AuditInfo objects that represent the audit trail for the given node reference.
      */
     public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
-
 
 }

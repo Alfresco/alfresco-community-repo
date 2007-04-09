@@ -20,35 +20,53 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
 package org.alfresco.service.cmr.attributes;
 
-/**
- * Greater than query.
- * @author britt
- */
-public class AttrQueryGT extends AttrQuery 
-{
-    private static final long serialVersionUID = 3171792743187950462L;
+import java.util.ArrayList;
+import java.util.List;
 
-    /**
-     * @param name
-     */
-    public AttrQueryGT(String name) 
+/**
+ * @author britt
+ *
+ */
+public class AttrOrQuery extends AttrQuery
+{
+    private static final long serialVersionUID = 2295618804175882547L;
+
+    private List<AttrQuery> fSubQueries;
+    
+    public AttrOrQuery(List<AttrQuery> queries)
     {
-        super(name);
+        fSubQueries = queries;
+    }
+    
+    public AttrOrQuery(AttrQuery... queries)
+    {
+        fSubQueries = new ArrayList<AttrQuery>();
+        for (AttrQuery query : queries)
+        {
+            fSubQueries.add(query);
+        }
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
+     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate(int)
      */
     @Override
-    public String getPredicate(AttrQueryHelper helper) 
+    public String getPredicate(AttrQueryHelper helper)
     {
-        String name = ":name" + helper.getNextSuffix();
-        helper.setParameter(name, fValue);
-        return "me.key > " + name;
+        StringBuilder builder = new StringBuilder();
+        builder.append('(');
+        for (int i = 0; i < fSubQueries.size() - 1; i++)
+        {
+            builder.append(fSubQueries.get(i).getPredicate(helper));
+            builder.append(" or ");
+        }
+        builder.append(fSubQueries.get(fSubQueries.size() - 1).getPredicate(helper));
+        builder.append(')');
+        return builder.toString();
     }
 }

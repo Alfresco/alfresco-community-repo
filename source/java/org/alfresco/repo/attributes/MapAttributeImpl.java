@@ -25,9 +25,16 @@
 
 package org.alfresco.repo.attributes;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+
+import org.alfresco.repo.avm.AVMDAOs;
 
 /**
  * @author britt
@@ -53,8 +60,7 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public void clear()
     {
-        // TODO Auto-generated method stub
-        super.clear();
+        AVMDAOs.Instance().fMapEntryDAO.delete(this);
     }
 
     /* (non-Javadoc)
@@ -63,8 +69,13 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public Set<Entry<String, Attribute>> entrySet()
     {
-        // TODO Auto-generated method stub
-        return super.entrySet();
+        List<MapEntry> entries = AVMDAOs.Instance().fMapEntryDAO.get(this);
+        Map<String, Attribute> map = new HashMap<String, Attribute>();
+        for (MapEntry entry : entries)
+        {
+            map.put(entry.getKey(), entry.getAttribute());
+        }
+        return map.entrySet();
     }
 
     /* (non-Javadoc)
@@ -73,8 +84,7 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public Attribute get(String key)
     {
-        // TODO Auto-generated method stub
-        return super.get(key);
+        return AVMDAOs.Instance().fMapEntryDAO.get(this, key).getAttribute();
     }
 
     /* (non-Javadoc)
@@ -83,8 +93,13 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public Set<String> keySet()
     {
-        // TODO Auto-generated method stub
-        return super.keySet();
+        List<MapEntry> entries = AVMDAOs.Instance().fMapEntryDAO.get(this);
+        Set<String> keys = new HashSet<String>();
+        for (MapEntry entry : entries)
+        {
+            keys.add(entry.getKey());
+        }
+        return keys;
     }
 
     /* (non-Javadoc)
@@ -93,8 +108,8 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public void put(String key, Attribute value)
     {
-        // TODO Auto-generated method stub
-        super.put(key, value);
+        MapEntry entry = new MapEntryImpl(this, key, value);
+        AVMDAOs.Instance().fMapEntryDAO.save(entry);
     }
 
     /* (non-Javadoc)
@@ -103,8 +118,11 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public void remove(String key)
     {
-        // TODO Auto-generated method stub
-        super.remove(key);
+        MapEntry entry = AVMDAOs.Instance().fMapEntryDAO.get(this, key);
+        if (entry != null)
+        {
+            AVMDAOs.Instance().fMapEntryDAO.delete(entry);
+        }
     }
 
     /* (non-Javadoc)
@@ -113,7 +131,12 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
     @Override
     public Collection<Attribute> values()
     {
-        // TODO Auto-generated method stub
-        return super.values();
+        List<MapEntry> entries = AVMDAOs.Instance().fMapEntryDAO.get(this);
+        List<Attribute> attrs = new ArrayList<Attribute>();
+        for (MapEntry entry : entries)
+        {
+            attrs.add(entry.getAttribute());
+        }
+        return attrs;
     }
 }

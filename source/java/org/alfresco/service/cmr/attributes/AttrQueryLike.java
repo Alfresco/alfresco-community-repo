@@ -25,8 +25,6 @@
 
 package org.alfresco.service.cmr.attributes;
 
-import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.repo.attributes.AttributeUnsupportedQueryType;
 
 /**
  * A "like" query.
@@ -37,23 +35,21 @@ public class AttrQueryLike extends AttrQuery
     private static final long serialVersionUID = -984397014171296687L;
 
     /**
-     * @param value
+     * @param name
      */
-    public AttrQueryLike(Attribute value) 
+    public AttrQueryLike(String name) 
     {
-        super(value);
+        super(name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
      */
     @Override
-    public String getPredicate() 
+    public String getPredicate(AttrQueryHelper helper) 
     {
-        if (fValue.getType() != Attribute.Type.STRING)
-        {
-            throw new AttributeUnsupportedQueryType(fValue.getType().name());
-        }
-        return "ent." + fAttrName + " like " + getValue();
+        String name = ":name" + helper.getNextSuffix();
+        helper.setParameter(name, fValue);
+        return "me.key like " + name;
     }
 }

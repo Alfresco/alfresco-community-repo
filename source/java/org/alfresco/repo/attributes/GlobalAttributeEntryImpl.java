@@ -20,35 +20,56 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
-package org.alfresco.service.cmr.attributes;
+package org.alfresco.repo.attributes;
 
 /**
- * Greater than query.
  * @author britt
+ *
  */
-public class AttrQueryGT extends AttrQuery 
+public class GlobalAttributeEntryImpl implements GlobalAttributeEntry
 {
-    private static final long serialVersionUID = 3171792743187950462L;
-
-    /**
-     * @param name
-     */
-    public AttrQueryGT(String name) 
+    private String fName;
+    
+    private Attribute fAttribute;
+    
+    public GlobalAttributeEntryImpl(String name, Attribute attr)
     {
-        super(name);
+        fName = name;
+        fAttribute = attr;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.GlobalAttributeEntry#getAttribute()
+     */
+    public Attribute getAttribute()
+    {
+        return fAttribute;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
+    /**
+     * Setter.
      */
-    @Override
-    public String getPredicate(AttrQueryHelper helper) 
+    public void setAttribute(Attribute attr)
     {
-        String name = ":name" + helper.getNextSuffix();
-        helper.setParameter(name, fValue);
-        return "me.key > " + name;
+        fAttribute = attr;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.attributes.GlobalAttributeEntry#getName()
+     */
+    public String getName()
+    {
+        return fName;
+    }
+    
+    /**
+     * Setter.
+     */
+    public void setName(String name)
+    {
+        fName = name;
     }
 }

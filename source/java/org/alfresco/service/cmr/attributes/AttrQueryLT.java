@@ -25,8 +25,6 @@
 
 package org.alfresco.service.cmr.attributes;
 
-import org.alfresco.repo.attributes.Attribute;
-
 /**
  * Query a less than condition.
  * @author britt
@@ -36,19 +34,21 @@ public class AttrQueryLT extends AttrQuery
     private static final long serialVersionUID = -2385160490778425115L;
 
     /**
-     * @param value
+     * @param name
      */
-    public AttrQueryLT(Attribute value) 
+    public AttrQueryLT(String name) 
     {
-        super(value);
+        super(name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
      */
     @Override
-    public String getPredicate() 
+    public String getPredicate(AttrQueryHelper helper) 
     {
-        return "ent." + fAttrName + " < " + getValue();
+        String name = ":name" + helper.getNextSuffix();
+        helper.setParameter(name, fValue);
+        return "me.key < " + name;
     }
 }

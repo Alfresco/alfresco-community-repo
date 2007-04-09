@@ -20,35 +20,53 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
 package org.alfresco.service.cmr.attributes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Greater than query.
+ * And aggregate query.
  * @author britt
  */
-public class AttrQueryGT extends AttrQuery 
+public class AttrAndQuery extends AttrQuery
 {
-    private static final long serialVersionUID = 3171792743187950462L;
+    private static final long serialVersionUID = 5452165715643751502L;
 
-    /**
-     * @param name
-     */
-    public AttrQueryGT(String name) 
+    private List<AttrQuery> fSubQueries;
+    
+    public AttrAndQuery(List<AttrQuery> queries)
     {
-        super(name);
+        fSubQueries = queries;
+    }
+    
+    public AttrAndQuery(AttrQuery... queries)
+    {
+        fSubQueries = new ArrayList<AttrQuery>();
+        for (AttrQuery query : queries)
+        {
+            fSubQueries.add(query);
+        }
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
+     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate(org.alfresco.service.cmr.attributes.AttrQueryHelper)
      */
     @Override
-    public String getPredicate(AttrQueryHelper helper) 
+    public String getPredicate(AttrQueryHelper helper)
     {
-        String name = ":name" + helper.getNextSuffix();
-        helper.setParameter(name, fValue);
-        return "me.key > " + name;
+        StringBuilder builder = new StringBuilder();
+        builder.append('(');
+        for (int i = 0; i < fSubQueries.size() - 1; i++)
+        {
+            builder.append(fSubQueries.get(i).getPredicate(helper));
+            builder.append(" and ");
+        }
+        builder.append(fSubQueries.get(fSubQueries.size() - 1).getPredicate(helper));
+        builder.append(')');
+        return builder.toString();
     }
 }

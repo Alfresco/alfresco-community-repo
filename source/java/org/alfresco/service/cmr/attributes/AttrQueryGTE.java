@@ -25,7 +25,6 @@
 
 package org.alfresco.service.cmr.attributes;
 
-import org.alfresco.repo.attributes.Attribute;
 
 /**
  * Greater than or equals predicate.
@@ -36,19 +35,21 @@ public class AttrQueryGTE extends AttrQuery
     private static final long serialVersionUID = -7957078449719425057L;
 
     /**
-     * @param value
+     * @param name
      */
-    public AttrQueryGTE(Attribute value) 
+    public AttrQueryGTE(String name) 
     {
-        super(value);
+        super(name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
      */
     @Override
-    public String getPredicate() 
+    public String getPredicate(AttrQueryHelper helper) 
     {
-        return "ent." + fAttrName + " >= " + getValue();
+        String name = ":name" + helper.getNextSuffix();
+        helper.setParameter(name, fValue);
+        return "me.key >= " + name;
     }
 }

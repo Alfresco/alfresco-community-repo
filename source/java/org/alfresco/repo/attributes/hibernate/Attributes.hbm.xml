@@ -86,6 +86,6 @@
             <many-to-one class="MapAttributeImpl" name="map" column="map_id"/>
             <property name="key" type="string" length="160" column="key" index="map_key_index"/>
         </natural-id>
-        <many-to-one class="AttributeImpl" name="attribute" columne="attribute_id"/>
+        <many-to-one class="AttributeImpl" name="attribute" column="attribute_id"/>
     </class>        
 </hibernate-mapping>

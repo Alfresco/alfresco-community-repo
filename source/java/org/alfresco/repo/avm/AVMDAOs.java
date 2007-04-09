@@ -3,6 +3,10 @@
  */
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.attributes.AttributeDAO;
+import org.alfresco.repo.attributes.GlobalAttributeEntryDAO;
+import org.alfresco.repo.attributes.MapEntryDAO;
+
 /**
  * This is the (shudder) global context for AVM.  It a rendezvous
  * point for access to needed global instances.
@@ -79,6 +83,12 @@ public class AVMDAOs
      */
     public AVMAspectNameDAO fAVMAspectNameDAO;
     
+    public AttributeDAO fAttributeDAO;
+    
+    public MapEntryDAO fMapEntryDAO;
+    
+    public GlobalAttributeEntryDAO fGlobalAttributeEntryDAO;
+    
     /**
      * @param nodeDAO the fAVMNodeDAO to set
      */
@@ -148,5 +158,20 @@ public class AVMDAOs
     public void setAvmAspectNameDAO(AVMAspectNameDAO avmAspectNameDAO)
     {
         fAVMAspectNameDAO = avmAspectNameDAO;
+    }
+    
+    public void setAttributeDAO(AttributeDAO dao)
+    {
+        fAttributeDAO = dao;
+    }
+    
+    public void setMapEntryDAO(MapEntryDAO dao)
+    {
+        fMapEntryDAO = dao;
+    }
+    
+    public void setGlobalAttributeEntryDAO(GlobalAttributeEntryDAO dao)
+    {
+        fGlobalAttributeEntryDAO = dao;
     }
 }

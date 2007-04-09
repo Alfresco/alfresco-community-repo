@@ -25,9 +25,6 @@
 
 package org.alfresco.service.cmr.attributes;
 
-import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.repo.attributes.AttributeUnsupportedQueryType;
-
 /**
  * The equals predicate.
  * @author britt
@@ -36,17 +33,19 @@ public class AttrQueryEquals extends AttrQuery
 {
     private static final long serialVersionUID = 2180915053803244460L;
 
-    public AttrQueryEquals(Attribute value)
+    public AttrQueryEquals(String name)
     {
-        super(value);
+        super(name);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
      */
     @Override
-    public String getPredicate() 
+    public String getPredicate(AttrQueryHelper helper) 
     {
-        return "ent." + fAttrName + " = " + getValue();
+        String name = ":name" + helper.getNextSuffix();
+        helper.setParameter(name, fValue);
+        return "me.key = " + name;
     }
 }

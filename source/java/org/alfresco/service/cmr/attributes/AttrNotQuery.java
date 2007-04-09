@@ -20,35 +20,36 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
 package org.alfresco.service.cmr.attributes;
 
 /**
- * Greater than query.
+ * The negation of a sub query.
  * @author britt
  */
-public class AttrQueryGT extends AttrQuery 
+public class AttrNotQuery extends AttrQuery
 {
-    private static final long serialVersionUID = 3171792743187950462L;
+    private static final long serialVersionUID = -7798693028454128695L;
 
-    /**
-     * @param name
-     */
-    public AttrQueryGT(String name) 
+    private AttrQuery fSubQuery;
+
+    public AttrNotQuery(AttrQuery sub)
     {
-        super(name);
+        fSubQuery = sub;
     }
-
+    
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
+     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate(org.alfresco.service.cmr.attributes.AttrQueryHelper)
      */
     @Override
-    public String getPredicate(AttrQueryHelper helper) 
+    public String getPredicate(AttrQueryHelper helper)
     {
-        String name = ":name" + helper.getNextSuffix();
-        helper.setParameter(name, fValue);
-        return "me.key > " + name;
+        StringBuilder builder = new StringBuilder();
+        builder.append("(not ");
+        builder.append(fSubQuery.getPredicate(helper));
+        builder.append(')');
+        return builder.toString();
     }
 }

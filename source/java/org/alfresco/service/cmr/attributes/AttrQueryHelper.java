@@ -20,35 +20,37 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
 package org.alfresco.service.cmr.attributes;
 
+import java.util.Map;
+
 /**
- * Greater than query.
+ * An implementation of this is passed into an AttrQuery to aid it
+ * in generating the actual predicate.
  * @author britt
  */
-public class AttrQueryGT extends AttrQuery 
+public interface AttrQueryHelper
 {
-    private static final long serialVersionUID = 3171792743187950462L;
-
     /**
-     * @param name
+     * Get the next integer suffix for named arguments.
+     * @return The next integer suffix.
      */
-    public AttrQueryGT(String name) 
-    {
-        super(name);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
+    public int getNextSuffix();
+    
+    /**
+     * As an AttrQuery is generating the predicate, it
+     * tells this helper about its parameter names and bindings.
+     * @param name The name of the parameter
+     * @param value The binding.
      */
-    @Override
-    public String getPredicate(AttrQueryHelper helper) 
-    {
-        String name = ":name" + helper.getNextSuffix();
-        helper.setParameter(name, fValue);
-        return "me.key > " + name;
-    }
+    public void setParameter(String name, String value);
+    
+    /**
+     * Get the parameter bindings for a generated predicate.
+     * @return The parameter bindings.
+     */
+    public Map<String, String> getParameters();
 }

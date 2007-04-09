@@ -25,8 +25,6 @@
 
 package org.alfresco.service.cmr.attributes;
 
-import org.alfresco.repo.attributes.Attribute;
-
 /**
  * Not equals query.
  * @author britt
@@ -36,19 +34,21 @@ public class AttrQueryNE extends AttrQuery
     private static final long serialVersionUID = 103038173214972590L;
 
     /**
-     * @param value
+     * @param name
      */
-    public AttrQueryNE(Attribute value) 
+    public AttrQueryNE(String name) 
     {
-        super(value);
+        super(name);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
      */
     @Override
-    public String getPredicate() 
+    public String getPredicate(AttrQueryHelper helper) 
     {
-        return "ent." + fAttrName + " <> " + getValue();
+        String name = ":name" + helper.getNextSuffix();
+        helper.setParameter(name, fValue);
+        return "me.key <> " + name;
     }
 }

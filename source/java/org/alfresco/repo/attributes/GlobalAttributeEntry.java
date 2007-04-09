@@ -31,5 +31,13 @@ package org.alfresco.repo.attributes;
  */
 public interface GlobalAttributeEntry
 {
-    // TODO This is a stub and needs to be completed.
+    /**
+     * Get the name of the entry.
+     */
+    public String getName();
+    
+    /**
+     * Get the Attribute.
+     */
+    public Attribute getAttribute();
 }

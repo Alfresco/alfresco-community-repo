@@ -25,8 +25,6 @@
 
 package org.alfresco.service.cmr.attributes;
 
-import org.alfresco.repo.attributes.Attribute;
-
 /**
  * Less than or equal query
  * @author britt
@@ -38,7 +36,7 @@ public class AttrQueryLTE extends AttrQuery
     /**
      * @param value
      */
-    public AttrQueryLTE(Attribute value) 
+    public AttrQueryLTE(String value) 
     {
         super(value);
     }
@@ -47,8 +45,10 @@ public class AttrQueryLTE extends AttrQuery
      * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
      */
     @Override
-    public String getPredicate() 
+    public String getPredicate(AttrQueryHelper helper)
     {
-        return "ent." + fAttrName + " <= " + getValue();
+        String name = ":name" + helper.getNextSuffix();
+        helper.setParameter(name, fValue);
+        return "me.key <= " + name;
     }
 }

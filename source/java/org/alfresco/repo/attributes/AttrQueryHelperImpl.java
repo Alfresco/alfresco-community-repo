@@ -20,35 +20,53 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 
-package org.alfresco.service.cmr.attributes;
+package org.alfresco.repo.attributes;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.service.cmr.attributes.AttrQueryHelper;
 
 /**
- * Greater than query.
+ * Implementation of query helper for building predicates.
  * @author britt
  */
-public class AttrQueryGT extends AttrQuery 
+public class AttrQueryHelperImpl implements AttrQueryHelper
 {
-    private static final long serialVersionUID = 3171792743187950462L;
-
-    /**
-     * @param name
-     */
-    public AttrQueryGT(String name) 
+    private int fSuffix;
+    
+    private Map<String, String> fParameters;
+    
+    public AttrQueryHelperImpl()
     {
-        super(name);
+        fSuffix = 0;
+        fParameters = new HashMap<String, String>();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttrQueryHelper#getNextSuffix()
+     */
+    public int getNextSuffix()
+    {
+        return fSuffix++;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttrQuery#getPredicate()
+     * @see org.alfresco.service.cmr.attributes.AttrQueryHelper#getParameters()
      */
-    @Override
-    public String getPredicate(AttrQueryHelper helper) 
+    public Map<String, String> getParameters()
     {
-        String name = ":name" + helper.getNextSuffix();
-        helper.setParameter(name, fValue);
-        return "me.key > " + name;
+        return fParameters;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.attributes.AttrQueryHelper#setParameter(java.lang.String, java.lang.String)
+     */
+    public void setParameter(String name, String value)
+    {
+        fParameters.put(name, value);
     }
 }

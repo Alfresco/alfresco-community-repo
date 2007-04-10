@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -546,7 +547,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                         // }
                         // Merge
                         // mergeDeltaIntoMain(terms);
-                        setInfo(docs, deletions, false);
+                        setInfo(docs, getDeletions(), false);
                         luceneFullTextSearchIndexer.requiresIndex(store);
                     }
                 }
@@ -674,7 +675,7 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                 }
             }
 
-            setInfo(docs, deletions, true);
+            setInfo(docs, getDeletions(), true);
             // mergeDeltaIntoMain(new LinkedHashSet<Term>());
         }
         catch (IOException e)
@@ -2134,9 +2135,14 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
         this.luceneFullTextSearchIndexer = luceneFullTextSearchIndexer;
     }
 
-    public Set<NodeRef> getDeletions()
+    public Set<String> getDeletions()
     {
-        return Collections.unmodifiableSet(deletions);
+        HashSet<String> deletedRefAsString = new HashSet<String>(deletions.size());
+        for(NodeRef ref : deletions)
+        {
+            deletedRefAsString.add(ref.toString());
+        }
+        return deletedRefAsString;
     }
 
     public boolean getDeleteOnlyNodes()

@@ -49,7 +49,7 @@ public interface LuceneIndexer2 extends IndexerSPI
     
     public String getDeltaId();
     public  void flushPending() throws LuceneIndexException;
-    public Set<NodeRef> getDeletions();
+    public Set<String> getDeletions();
     public boolean getDeleteOnlyNodes();
     
     public <R> R doWithWriteLock(IndexInfo.LockWork <R> lockWork);

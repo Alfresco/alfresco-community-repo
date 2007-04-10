@@ -57,7 +57,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByNodeRefs2;
 import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -814,14 +813,14 @@ public class IndexInfo
      * @return
      * @throws IOException
      */
-    public Set<NodeRef> getDeletions(String id) throws IOException
+    public Set<String> getDeletions(String id) throws IOException
     {
         if (id == null)
         {
             throw new IndexerException("\"null\" is not a valid identifier for a transaction");
         }
         // Check state
-        Set<NodeRef> deletions = new HashSet<NodeRef>();
+        Set<String> deletions = new HashSet<String>();
         File location = new File(indexDirectory, id).getCanonicalFile();
         File file = new File(location, INDEX_INFO_DELETIONS).getCanonicalFile();
         if (!file.exists())
@@ -830,14 +829,14 @@ public class IndexInfo
             {
                 s_logger.debug("No deletions for " + id);
             }
-            return Collections.<NodeRef> emptySet();
+            return Collections.<String> emptySet();
         }
         DataInputStream is = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
         int size = is.readInt();
         for (int i = 0; i < size; i++)
         {
             String ref = is.readUTF();
-            deletions.add(new NodeRef(ref));
+            deletions.add(ref);
         }
         is.close();
         if (s_logger.isDebugEnabled())
@@ -861,7 +860,7 @@ public class IndexInfo
      *            should deletions on apply to nodes (ie not to containers)
      * @throws IOException
      */
-    public void setPreparedState(String id, Set<NodeRef> toDelete, long documents, boolean deleteNodesOnly)
+    public void setPreparedState(String id, Set<String> toDelete, long documents, boolean deleteNodesOnly)
             throws IOException
     {
         if (id == null)
@@ -883,9 +882,9 @@ public class IndexInfo
             DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(location,
                     INDEX_INFO_DELETIONS).getCanonicalFile())));
             os.writeInt(toDelete.size());
-            for (NodeRef ref : toDelete)
+            for (String ref : toDelete)
             {
-                os.writeUTF(ref.toString());
+                os.writeUTF(ref);
             }
             os.flush();
             os.close();
@@ -993,7 +992,7 @@ public class IndexInfo
      * @return
      * @throws IOException
      */
-    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<NodeRef> deletions,
+    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<String> deletions,
             boolean deleteOnlyNodes) throws IOException
     {
         if (id == null)
@@ -2534,17 +2533,17 @@ public class IndexInfo
 
                 for (IndexEntry currentDelete : toDelete.values())
                 {
-                    Set<NodeRef> deletions = getDeletions(currentDelete.getName());
+                    Set<String> deletions = getDeletions(currentDelete.getName());
                     for (String key : readers.keySet())
                     {
                         IndexReader reader = readers.get(key);
-                        for (NodeRef nodeRef : deletions)
+                        for (String stringRef : deletions)
                         {
                             if (currentDelete.isDeletOnlyNodes())
                             {
                                 Searcher searcher = new IndexSearcher(reader);
 
-                                TermQuery query = new TermQuery(new Term("ID", nodeRef.toString()));
+                                TermQuery query = new TermQuery(new Term("ID", stringRef));
                                 Hits hits = searcher.search(query);
                                 if (hits.length() > 0)
                                 {
@@ -2569,7 +2568,7 @@ public class IndexInfo
                                 int deletedCount = 0;
                                 try
                                 {
-                                    deletedCount = reader.deleteDocuments(new Term("ID", nodeRef.toString()));
+                                    deletedCount = reader.deleteDocuments(new Term("ID", stringRef));
                                 }
                                 catch (IOException ioe)
                                 {
@@ -2584,7 +2583,7 @@ public class IndexInfo
                                     if (s_logger.isDebugEnabled())
                                     {
                                         s_logger.debug("Deleted "
-                                                + deletedCount + " from " + key + " for id " + nodeRef.toString()
+                                                + deletedCount + " from " + key + " for id " + stringRef
                                                 + " remaining docs " + reader.numDocs());
                                     }
                                     invalidIndexes.add(key);

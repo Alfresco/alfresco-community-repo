@@ -29,19 +29,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import junit.framework.TestCase;
+
+import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
-
-import junit.framework.TestCase;
 
 public class IndexInfoTest extends TestCase
 {
@@ -84,10 +84,10 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
         System.setProperty("disableLuceneLocks", "true");
 
         // no deletions - create only
-        HashSet<NodeRef> deletions = new HashSet<NodeRef>();
+        HashSet<String> deletions = new HashSet<String>();
         for (int i = 0; i < 0; i++)
         {
-            deletions.add(new NodeRef(new StoreRef("woof", "bingle"), GUID.generate()));
+            deletions.add(new NodeRef(new StoreRef("woof", "bingle"), GUID.generate()).toString());
         }
 
         File tempLocation = TempFileProvider.getTempDir();
@@ -217,7 +217,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             ii.closeDeltaIndexWriter(guid);
  
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, new HashSet<NodeRef>(), 1, false);
+            ii.setPreparedState(guid, new HashSet<String>(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -238,7 +238,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>(), false);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<String>(), false);
             assertEquals(reader.numDocs(), i + 1);
             for (int j = 0; j < CREATE_LIST.length; j++)
             {
@@ -279,8 +279,8 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
         for (int i = 0; i < CREATE_LIST.length; i++)
         {
-            HashSet<NodeRef> deletions = new HashSet<NodeRef>();
-            deletions.add(nodeRefs.get(i));
+            HashSet<String> deletions = new HashSet<String>();
+            deletions.add(nodeRefs.get(i).toString());
 
             IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
             assertEquals(reader.numDocs(), CREATE_LIST.length - i);
@@ -406,7 +406,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, new HashSet<NodeRef>(), 1, false);
+            ii.setPreparedState(guid, new HashSet<String>(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -427,7 +427,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>(), false);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<String>(), false);
             assertEquals(reader.numDocs(), i + 1);
             for (int j = 0; j < CREATE_LIST.length; j++)
             {
@@ -468,8 +468,8 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
         for (int i = 0; i < UPDATE_LIST.length; i++)
         {
-            HashSet<NodeRef> deletions = new HashSet<NodeRef>();
-            deletions.add(nodeRefs.get(i));
+            HashSet<String> deletions = new HashSet<String>();
+            deletions.add(nodeRefs.get(i).toString());
 
             IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
             assertEquals(reader.numDocs(), UPDATE_LIST.length);
@@ -672,7 +672,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
                     ii.closeDeltaIndexWriter(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-                    ii.setPreparedState(guid, new HashSet<NodeRef>(), 1, false);
+                    ii.setPreparedState(guid, new HashSet<String>(), 1, false);
                     ii.getDeletions(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -696,7 +696,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                     }
                     reader.close();
 
-                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<NodeRef>(), false);
+                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<String>(), false);
                     lastDoc = -1;
                     for (int j = 0; j < create.length; j++)
                     {
@@ -739,8 +739,8 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
                 for (int i = 0; i < update.length; i++)
                 {
-                    HashSet<NodeRef> deletions = new HashSet<NodeRef>();
-                    deletions.add(nodeRefs.get(i));
+                    HashSet<String> deletions = new HashSet<String>();
+                    deletions.add(nodeRefs.get(i).toString());
 
                     IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
                   

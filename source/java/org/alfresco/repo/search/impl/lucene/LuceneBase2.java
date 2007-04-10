@@ -246,7 +246,7 @@ public abstract class LuceneBase2
         closeDeltaWriter();
     }
 
-    protected void setInfo(long docs, Set<NodeRef> deletions, boolean deleteNodesOnly) throws IOException
+    protected void setInfo(long docs, Set<String> deletions, boolean deleteNodesOnly) throws IOException
     {
         indexInfo.setPreparedState(deltaId, deletions, docs, deleteNodesOnly);
     }

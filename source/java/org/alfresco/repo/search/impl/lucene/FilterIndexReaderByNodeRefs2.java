@@ -29,7 +29,6 @@ import java.util.BitSet;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
@@ -52,7 +51,7 @@ public class FilterIndexReaderByNodeRefs2 extends FilterIndexReader
     
     private String id;
 
-    public FilterIndexReaderByNodeRefs2(String id, IndexReader reader, Set<NodeRef> deletions, boolean deleteNodesOnly)
+    public FilterIndexReaderByNodeRefs2(String id, IndexReader reader, Set<String> deletions, boolean deleteNodesOnly)
     {
         super(reader);
         this.id = id;
@@ -68,9 +67,9 @@ public class FilterIndexReaderByNodeRefs2 extends FilterIndexReader
         {
             if (!deleteNodesOnly)
             {
-                for (NodeRef nodeRef : deletions)
+                for (String stringRef : deletions)
                 {
-                    TermDocs td = reader.termDocs(new Term("ID", nodeRef.toString()));
+                    TermDocs td = reader.termDocs(new Term("ID", stringRef));
                     while (td.next())
                     {
                         deletedDocuments.set(td.doc(), true);
@@ -81,9 +80,9 @@ public class FilterIndexReaderByNodeRefs2 extends FilterIndexReader
             {
 
                 Searcher searcher = new IndexSearcher(reader);
-                for (NodeRef nodeRef : deletions)
+                for (String stringRef : deletions)
                 {
-                    TermQuery query = new TermQuery(new Term("ID", nodeRef.toString()));
+                    TermQuery query = new TermQuery(new Term("ID", stringRef));
                     Hits hits = searcher.search(query);
                     if (hits.length() > 0)
                     {

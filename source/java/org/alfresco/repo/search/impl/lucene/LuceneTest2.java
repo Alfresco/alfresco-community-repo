@@ -1107,7 +1107,7 @@ public class LuceneTest2 extends TestCase
                     for (int j = 0; j < i; j++)
                     {
                         ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                                QName.createQName("{namespace}test"), testSuperType);
+                                QName.createQName("{namespace}test_" + getName() + "_" + i + "_" +j), testSuperType);
                         refs.add(test);
                     }
 

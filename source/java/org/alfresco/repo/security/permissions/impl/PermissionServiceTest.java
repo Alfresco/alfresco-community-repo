@@ -93,6 +93,27 @@ public class PermissionServiceTest extends AbstractPermissionTest
                 "andy", AccessStatus.ALLOWED);
     }
     
+    public void testDefaultModelPermissions()
+    {
+        runAs("admin");
+
+        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        runAs("andy");
+        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+        
+        runAs("admin");
+
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.CONTRIBUTOR),
+                "andy", AccessStatus.ALLOWED));
+        
+        
+        runAs("andy");
+        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
+
+    }
+    
     public void testSystemUserPermissions()
     {
         AuthenticationUtil.setSystemUserAsCurrentUser();
@@ -1883,6 +1904,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     }
 
+ 
+    
     // TODO: Test permissions on missing nodes
 
 }

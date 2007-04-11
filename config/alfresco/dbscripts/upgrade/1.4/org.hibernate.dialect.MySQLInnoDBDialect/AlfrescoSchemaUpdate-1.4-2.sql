@@ -27,6 +27,8 @@ CREATE TABLE alf_transaction (
   KEY FKB8761A3A9AE340B7 (server_id),
   CONSTRAINT FKB8761A3A9AE340B7 FOREIGN KEY (server_id) REFERENCES alf_server (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+-- add index for perfromance
+create index ug_index_142_1 on alf_transaction (change_txn_id);
 insert into alf_transaction
   (
     server_id, change_txn_id
@@ -41,6 +43,8 @@ UPDATE alf_node_status ns SET ns.transaction_id =
   (
     select t.id from alf_transaction t where t.change_txn_id = ns.change_txn_id
   );
+-- remove index added for performance
+
 ALTER TABLE alf_node_status
   DROP COLUMN change_txn_id,
   ADD CONSTRAINT FK71C2002B9E57C13D FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id),
@@ -48,7 +52,7 @@ ALTER TABLE alf_node_status
 ALTER TABLE alf_node_status
   DROP COLUMN deleted
   ;(optional)
-
+drop index ug_index_142_1 on alf_transaction;
 --
 -- Record script finish
 --

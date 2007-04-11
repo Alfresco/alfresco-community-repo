@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +45,7 @@ public class PatchExecuter extends AbstractLifecycleBean
 {
     private static final String MSG_CHECKING = "patch.executer.checking";
     private static final String MSG_NO_PATCHES_REQUIRED = "patch.executer.no_patches_required";
+    private static final String MSG_SYSTEM_READ_ONLY = "patch.executer.system_readonly";
     private static final String MSG_NOT_EXECUTED = "patch.executer.not_executed";
     private static final String MSG_EXECUTED = "patch.executer.executed";
     private static final String MSG_FAILED = "patch.executer.failed";
@@ -51,6 +53,7 @@ public class PatchExecuter extends AbstractLifecycleBean
     private static Log logger = LogFactory.getLog(PatchExecuter.class);
     
     private PatchService patchService;
+    private TransactionService transactionService;
 
     /**
      * @param patchService the server that actually executes the patches
@@ -59,12 +62,27 @@ public class PatchExecuter extends AbstractLifecycleBean
     {
         this.patchService = patchService;
     }
-    
+
+    /**
+     * @param transactionService provides the system read-only state
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     /**
      * Ensures that all outstanding patches are applied.
      */
     public void applyOutstandingPatches()
     {
+        // Avoid read-only systems
+        if (transactionService.isReadOnly())
+        {
+            logger.warn(I18NUtil.getMessage(MSG_SYSTEM_READ_ONLY));
+            return;
+        }
+        
         logger.info(I18NUtil.getMessage(MSG_CHECKING));
         
         Date before = new Date(System.currentTimeMillis() - 60000L);  // 60 seconds ago

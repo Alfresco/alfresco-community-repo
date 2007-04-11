@@ -97,19 +97,9 @@ public class LuceneCategoryServiceImpl implements CategoryService
         {
             StringBuilder luceneQuery = new StringBuilder(64);
 
-            if (!mode.equals(Mode.ALL))
+            switch(mode)
             {
-                luceneQuery.append(mode.equals(Mode.SUB_CATEGORIES) ? "-" : "").append("PATH:\"");
-                luceneQuery.append(buildXPath(nodeService.getPath(categoryRef))).append("/");
-                if (depth.equals(Depth.ANY))
-                {
-                    luceneQuery.append("/");
-                }
-                luceneQuery.append("member").append("\" ");
-            }
-
-            if (!mode.equals(Mode.MEMBERS))
-            {
+            case ALL:
                 luceneQuery.append("PATH:\"");
                 luceneQuery.append(buildXPath(nodeService.getPath(categoryRef))).append("/");
                 if (depth.equals(Depth.ANY))
@@ -117,6 +107,26 @@ public class LuceneCategoryServiceImpl implements CategoryService
                     luceneQuery.append("/");
                 }
                 luceneQuery.append("*").append("\" ");
+                break;
+            case MEMBERS:
+                luceneQuery.append("PATH:\"");
+                luceneQuery.append(buildXPath(nodeService.getPath(categoryRef))).append("/");
+                if (depth.equals(Depth.ANY))
+                {
+                    luceneQuery.append("/");
+                }
+                luceneQuery.append("member").append("\" ");
+                break;
+            case SUB_CATEGORIES:
+                luceneQuery.append("+PATH:\"");
+                luceneQuery.append(buildXPath(nodeService.getPath(categoryRef))).append("/");
+                if (depth.equals(Depth.ANY))
+                {
+                    luceneQuery.append("/");
+                }
+                luceneQuery.append("*").append("\" ");
+                luceneQuery.append("+TYPE:\"" + ContentModel.TYPE_CATEGORY.toString() + "\"");
+                break;
             }
 
             resultSet = indexerAndSearcher.getSearcher(categoryRef.getStoreRef(), false).query(categoryRef.getStoreRef(), "lucene", luceneQuery.toString(), null, null);

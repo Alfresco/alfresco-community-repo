@@ -82,6 +82,7 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
         {
             IntegrityRecord result = new IntegrityRecord(
                     "Association type does not exist: \n" +
+                    "   Source Node: " + sourceNodeRef + "\n" +
                     "   Source Node Type: " + sourceNodeTypeQName + "\n" +
                     "   Association Type: " + assocTypeQName);
             eventResults.add(result);
@@ -110,6 +111,7 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "The association source type is incorrect: \n" +
+                        "   Source Node: " + sourceNodeRef + "\n" +
                         "   Association: " + assocDef + "\n" +
                         "   Required Source Type: " + sourceDef.getName() + "\n" +
                         "   Actual Source Type: " + sourceNodeTypeQName);
@@ -133,6 +135,7 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "The association source is missing the aspect required for this association: \n" +
+                        "   Source Node: " + sourceNodeRef + "\n" +
                         "   Association: " + assocDef + "\n" +
                         "   Required Source Aspect: " + sourceDef.getName() + "\n" +
                         "   Actual Source Aspects: " + sourceAspects);
@@ -143,6 +146,7 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
         {
             IntegrityRecord result = new IntegrityRecord(
                     "Unknown ClassDefinition subclass on the source definition: \n" +
+                    "   Source Node: " + sourceNodeRef + "\n" +
                     "   Association: " + assocDef + "\n" +
                     "   Source Definition: " + sourceDef.getName());
             eventResults.add(result);

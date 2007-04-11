@@ -101,6 +101,7 @@ public class AssocSourceMultiplicityIntegrityEvent extends AbstractIntegrityEven
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "Association type does not exist: \n" +
+                        "   Target Node: " + targetNodeRef + "\n" +
                         "   Target Node Type: " + targetNodeTypeQName + "\n" +
                         "   Association Type: " + assocTypeQName);
                 eventResults.add(result);
@@ -156,6 +157,7 @@ public class AssocSourceMultiplicityIntegrityEvent extends AbstractIntegrityEven
             String parentOrSourceStr = (assocDef.isChild() ? "parent" : "source");
             IntegrityRecord result = new IntegrityRecord(
                     "The association " + parentOrSourceStr + " multiplicity has been violated: \n" +
+                    "   Target Node: " + targetNodeRef + "\n" +
                     "   Association: " + assocDef + "\n" +
                     "   Required " + parentOrSourceStr + " Multiplicity: " + getMultiplicityString(mandatory, allowMany) + "\n" +
                     "   Actual " + parentOrSourceStr + " Multiplicity: " + actualSize);

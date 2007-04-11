@@ -373,13 +373,14 @@ public class LuceneTest2 extends TestCase
                 getOrderProperties()).getChildRef();
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-16"));
+        properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8"));
         n14 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fourteen"),
                 ContentModel.TYPE_CONTENT, properties).getChildRef();
         // nodeService.addAspect(n14, DictionaryBootstrap.ASPECT_QNAME_CONTENT,
         // properties);
 
         ContentWriter writer = contentService.getWriter(n14, ContentModel.PROP_CONTENT, true);
+        writer.setEncoding("UTF-8");
         // InputStream is =
         // this.getClass().getClassLoader().getResourceAsStream("test.doc");
         // writer.putContent(is);

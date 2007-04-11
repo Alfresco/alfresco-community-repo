@@ -308,9 +308,6 @@
           <!-- owner permissions.                                                      -->
           <includePermissionGroup permissionGroup="Consumer" type="cm:cmobject"/>
           <includePermissionGroup permissionGroup="AddChildren" type="sys:base"/>
-          <!-- Check out requires write permissions so this will not apply to all      -->
-          <!-- documents.                                                              -->
-          <includePermissionGroup type="cm:lockable" permissionGroup="CheckOut"/>
       </permissionGroup>
       
       <!-- An editor can read and write to the object; they can not create    -->

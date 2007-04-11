@@ -55,6 +55,7 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
     {
         QName assocTypeQName = getTypeQName();
         QName assocQName = getQName();
+        NodeRef sourceNodeRef = getNodeRef();
         
         // get the association def
         AssociationDefinition assocDef = getAssocDef(eventResults, assocTypeQName);
@@ -80,7 +81,7 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
         ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
         
         // perform required checks
-        checkAssocQNameRegex(eventResults, childAssocDef, assocQName);
+        checkAssocQNameRegex(eventResults, childAssocDef, assocQName, sourceNodeRef);
     }
 
     /**
@@ -89,7 +90,8 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
     protected void checkAssocQNameRegex(
             List<IntegrityRecord> eventResults,
             ChildAssociationDefinition assocDef,
-            QName assocQName)
+            QName assocQName,
+            NodeRef sourceNodeRef)
     {
         // check the association name
         QName assocRoleQName = assocDef.getTargetRoleName();
@@ -101,6 +103,7 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "The association name does not match the allowed role names: \n" +
+                        "   Source Node: " + sourceNodeRef + "\n" +
                         "   Association: " + assocDef + "\n" +
                         "   Allowed roles: " + rolePattern + "\n" +
                         "   Name assigned: " + assocRoleQName);

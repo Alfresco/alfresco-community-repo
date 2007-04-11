@@ -282,6 +282,9 @@
     <!-- This component ensures that patches get applied on startup -->
 
     <bean id="patchExecuter" class="org.alfresco.repo.admin.patch.PatchExecuter">
+        <property name="transactionService">
+            <ref bean="transactionComponent" />
+        </property>
         <property name="patchService">
             <ref bean="PatchService" />
         </property>

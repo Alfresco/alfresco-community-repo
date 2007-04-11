@@ -664,7 +664,96 @@ public class LuceneCategoryTest2 extends TestCase
         
         tx.rollback();
     }
-    
+
+    public void xtestManyCategories() throws Exception
+    {
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        UserTransaction tx = transactionService.getUserTransaction();
+
+        tx.begin();
+        long start = System.nanoTime();
+        int startCount = categoryService.getRootCategories(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(),
+                ContentModel.ASPECT_GEN_CLASSIFIABLE).size();
+        System.out.println("1 Query complete in "+(System.nanoTime()-start)/1e9f);
+        tx.commit();
+        
+        tx = transactionService.getUserTransaction();
+
+        tx.begin();
+        start = System.nanoTime();
+        startCount = categoryService.getRootCategories(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(),
+                ContentModel.ASPECT_GEN_CLASSIFIABLE).size();
+        System.out.println("2 Query complete in "+(System.nanoTime()-start)/1e9f);
+        tx.commit();
+
+        for (int i = 0; i < 0; i++)
+        {
+            tx = transactionService.getUserTransaction();
+            tx.begin();
+            categoryService.createRootCategory(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, "first" + i);
+            tx.commit();
+        }
+
+        for (int j = 0; j < 10; j++)
+        {
+            tx = transactionService.getUserTransaction();
+            tx.begin();
+            for (int i = 0; i < 1; i++)
+            {
+                NodeRef topref = categoryService.createRootCategory(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(),ContentModel.ASPECT_GEN_CLASSIFIABLE, "third" + (j*100)+ i);
+                for(int k = 0; k < 5; k++)
+                {
+                    NodeRef oneRef = categoryService.createCategory(topref, "child_"+i+"_"+j+"_"+k);
+                    for(int l = 0; l < 5; l++)
+                    {
+                        NodeRef twoRef = categoryService.createCategory(oneRef, "child_"+i+"_"+j+"_"+k+"_"+l);
+                        for(int m = 0; m < 5; m++)
+                        {
+                            NodeRef threeRef = categoryService.createCategory(twoRef, "child_"+i+"_"+j+"_"+k+"_"+l+"_"+m);
+                            for(int n = 0; n < 5; n++)
+                            {
+                                NodeRef fourRef = categoryService.createCategory(threeRef, "child_"+i+"_"+j+"_"+k+"_"+l+"_"+m+"_"+n);
+                                for(int o = 0; o < 5; o++)
+                                {
+                                    NodeRef fiveRef = categoryService.createCategory(fourRef, "child_"+i+"_"+j+"_"+k+"_"+l+"_"+m+"_"+n+"_"+o);
+                                    for(int p = 0; p < 5; p++)
+                                    {
+                                        NodeRef sixRef = categoryService.createCategory(fiveRef, "child_"+i+"_"+j+"_"+k+"_"+l+"_"+m+"_"+n+"_"+o+"_"+p);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            tx.commit();
+        }
+
+        tx = transactionService.getUserTransaction();
+        tx.begin();
+        start = System.nanoTime();
+        assertEquals(startCount + 10, categoryService.getRootCategories(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(),
+                ContentModel.ASPECT_GEN_CLASSIFIABLE).size());
+        System.out.println("3 Query complete in "+(System.nanoTime()-start)/1e9f);
+        tx.commit();
+        
+        tx = transactionService.getUserTransaction();
+        tx.begin();
+        start = System.nanoTime();
+        assertEquals(startCount + 10, categoryService.getRootCategories(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(),
+                ContentModel.ASPECT_GEN_CLASSIFIABLE).size());
+        System.out.println("4 Query complete in "+(System.nanoTime()-start)/1e9f);
+        tx.commit();
+        
+        tx = transactionService.getUserTransaction();
+        tx.begin();
+        start = System.nanoTime();
+        ResultSet set = searcher.query(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(), "lucene", "@"+LuceneQueryParser.escape(ContentModel.ASPECT_GEN_CLASSIFIABLE.toString())+":second*");
+        System.out.println("Query complete in "+(System.nanoTime()-start)/1e9f);
+        tx.commit();
+
+    }
+
     private int getTotalScore(ResultSet results)
     {
         int totalScore = 0;

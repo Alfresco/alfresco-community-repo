@@ -46,6 +46,7 @@
          <list>
             <ref bean="patch.schemaUpdateScript-V1.4-1" />
             <ref bean="patch.schemaUpdateScript-V1.4-2" />
+            <ref bean="patch.db-V1.4-PostgresFKIndexes" />
          </list>
       </property>
       <property name="postUpdateScriptPatches">

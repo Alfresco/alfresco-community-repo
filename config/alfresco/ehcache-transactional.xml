@@ -1,5 +1,6 @@
 <!--
    This configures the cache properties for Alfresco's in-transaction caches.
+   Do not cluster this.
 -->
 <ehcache>
     <diskStore 

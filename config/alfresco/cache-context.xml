@@ -11,6 +11,7 @@
    
    <!-- ==================================================== -->
    <!-- EH Cache Manager to produce in-transaction EH Caches -->
+   <!--     Do not override or cluster                       -->
    <!-- ==================================================== -->
    
    <bean name="transactionalEHCacheManager" class="org.alfresco.repo.cache.EhCacheManagerFactoryBean" >
@@ -39,16 +40,7 @@
                <ref bean="internalEHCacheManager" />
             </property>
             <property name="cacheName">
-               <value>org.alfresco.userToAuthorityCache</value>
-            </property>
-            <property name="maxElementsInMemory">
-               <value>10000</value>  <!-- approx 2MB memory required -->
-            </property>
-            <property name="eternal">
-               <value>true</value>
-            </property>
-            <property name="overflowToDisk">
-               <value>false</value>
+               <value>org.alfresco.cache.userToAuthorityCache</value>
             </property>
          </bean>
       </property>
@@ -84,16 +76,7 @@
                <ref bean="internalEHCacheManager" />
             </property>
             <property name="cacheName">
-               <value>org.alfresco.permissionsAccessCache</value>
-            </property>
-            <property name="maxElementsInMemory">
-               <value>50000</value>  <!-- approx 20MB memory required -->
-            </property>
-            <property name="eternal">
-               <value>true</value>
-            </property>
-            <property name="overflowToDisk">
-               <value>false</value>
+               <value>org.alfresco.cache.permissionsAccessCache</value>
             </property>
          </bean>
       </property>
@@ -130,16 +113,7 @@
                <ref bean="internalEHCacheManager" />
             </property>
             <property name="cacheName">
-               <value>org.alfresco.nodeOwnerCache</value>
-            </property>
-            <property name="maxElementsInMemory">
-               <value>20000</value> <!-- approx 20MB memory required -->
-            </property>
-            <property name="eternal">
-               <value>true</value>
-            </property>
-            <property name="overflowToDisk">
-               <value>false</value>
+               <value>org.alfresco.cache.nodeOwnerCache</value>
             </property>
          </bean>
       </property>
@@ -175,16 +149,7 @@
                <ref bean="internalEHCacheManager" />
             </property>
             <property name="cacheName">
-               <value>org.alfresco.ticketsCache</value>
-            </property>
-            <property name="maxElementsInMemory">
-               <value>1000</value>
-            </property>
-            <property name="eternal">
-               <value>true</value>
-            </property>
-            <property name="overflowToDisk">
-               <value>false</value>
+               <value>org.alfresco.cache.ticketsCache</value>
             </property>
          </bean>
       </property>

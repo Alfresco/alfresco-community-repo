@@ -14,10 +14,6 @@
 <beans>
 
 
-    <!-- Because of the way hibernate works, we need to cache when permissions are not   -->
-    <!-- set.                                                                            -->
-    <import resource="classpath:alfresco/cache-context.xml" />
-
     <!-- ======================= -->
     <!-- Support for permissions -->
     <!-- ========================-->

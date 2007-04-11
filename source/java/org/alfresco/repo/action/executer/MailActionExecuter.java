@@ -34,6 +34,7 @@ import java.util.Set;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.template.DateCompareMethod;
@@ -225,6 +226,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             public void prepare(MimeMessage mimeMessage) throws MessagingException
             {
+                if (logger.isDebugEnabled())
+                {
+                   logger.debug(ruleAction.getParameterValues());
+                }
+                
                 MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
                 
                 // set header encoding if one has been supplied
@@ -332,7 +338,17 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         catch (Throwable e)
         {
             // don't stop the action but let admins know email is not getting sent
-            logger.error("Failed to send email to " + (String)ruleAction.getParameterValue(PARAM_TO), e);
+            String to = (String)ruleAction.getParameterValue(PARAM_TO);
+            if (to == null)
+            {
+               Object obj = ruleAction.getParameterValue(PARAM_TO_MANY);
+               if (obj != null)
+               {
+                  to = obj.toString();
+               }
+            }
+            
+            logger.error("Failed to send email to " + to, e);
         }
     }
 

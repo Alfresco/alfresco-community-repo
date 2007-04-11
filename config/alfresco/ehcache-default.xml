@@ -162,24 +162,25 @@
         overflowToDisk="false"
         />
     <!-- Audit caches -->
-      <cache 
+    <cache 
         name="org.alfresco.repo.audit.hibernate.AuditConfigImpl" 
         maxElementsInMemory="2"
         eternal="true"
         overflowToDisk="false"
         />
-     <cache 
+    <cache 
         name="org.alfresco.repo.audit.hibernate.AuditDateImpl" 
         maxElementsInMemory="2"
         eternal="true"
         overflowToDisk="false"
         />
-     <cache 
+    <cache 
         name="org.alfresco.repo.audit.hibernate.AuditSourceImpl" 
         maxElementsInMemory="2000"
         eternal="true"
         overflowToDisk="false"
         />
+
     <!-- AVM caches -->
      <cache
         name="org.alfresco.repo.avm.AVMNodeImpl" 
@@ -235,4 +236,31 @@
         eternal="true"
         overflowToDisk="false"
         /> 
+
+    <!-- Internally used caches -->     
+    <cache 
+        name="org.alfresco.cache.userToAuthorityCache" 
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
+        name="org.alfresco.cache.permissionsAccessCache" 
+        maxElementsInMemory="50000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
+        name="org.alfresco.cache.nodeOwnerCache" 
+        maxElementsInMemory="20000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
+        name="org.alfresco.cache.ticketsCache" 
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+
 </ehcache>

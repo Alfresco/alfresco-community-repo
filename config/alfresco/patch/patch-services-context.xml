@@ -527,6 +527,22 @@
             <ref bean="VersionService" />
         </property>
     </bean>
+    <bean id="patch.db-V1.4-PostgresFKIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V1.4-PostgresFKIndexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>21</value></property>
+        <property name="fixesToSchema"><value>24</value></property>
+        <property name="targetSchema"><value>25</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/1.4/${db.script.dialect}/AlfrescoSchemaUpdate-1.4-PostgresFKIndexes.sql</value>
+        </property>
+        <!-- dependent on upgrade script 1.4-2 having being run -->
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.schemaUpdateScript-V1.4-2" />
+            </list>
+        </property>
+    </bean>
     <bean id="patch.multilingualBootstrap" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.multilingualBootstrap</value></property>
         <property name="description"><value>patch.multilingualBootstrap.description</value></property>

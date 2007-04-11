@@ -36,6 +36,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.UserTransaction;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
@@ -1042,12 +1044,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathA"),
                 TYPE_QNAME_TEST_MULTIPLE_TESTER).getChildRef();
-        // commit as we will be breaking the transaction in the test
-        setComplete();
-        endTransaction();
-        
-        // each of these tests will be in a new transaction started by the NodeService
-        
         ArrayList<String> values = new ArrayList<String>(1);
         values.add("ABC");
         values.add("DEF");
@@ -1062,14 +1058,25 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.setProperty(nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE, values);
         nodeService.setProperty(nodeRef, undeclaredPropQName, "ABC");
         nodeService.setProperty(nodeRef, undeclaredPropQName, values);
-        // this should fail as we are passing multiple values into a non-any that is multiple=false
+
+        // commit as we will be breaking the transaction in the next test
+        setComplete();
+        endTransaction();
+        
+        UserTransaction txn = transactionService.getUserTransaction();
         try
         {
+            txn.begin();
+            // this should fail as we are passing multiple values into a non-any that is multiple=false
             nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, values);
         }
         catch (DictionaryException e)
         {
             // expected
+        }
+        finally
+        {
+            try { txn.rollback(); } catch (Throwable e) {}
         }
     }
     

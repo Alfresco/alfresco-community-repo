@@ -25,9 +25,11 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +46,7 @@ import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -51,6 +54,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.hibernate.CacheMode;
+import org.hibernate.Session;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.GenericJDBCException;
 
@@ -64,7 +68,6 @@ import org.hibernate.exception.GenericJDBCException;
 public class HibernateNodeTest extends BaseSpringTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/HibernateNodeTest";
-    private static int i = 0;
     
     private Store store;
     private Server server;
@@ -358,6 +361,120 @@ public class HibernateNodeTest extends BaseSpringTest
         catch (Throwable e)
         {
             txn.rollback();
+        }
+    }
+
+    /**
+     * This test demonstrates how entities are effectively rendered useless when the session
+     * is cleared.  The object itself will appear to behave properly, but it is only when
+     * it comes to retrieving the associated values that one discovers that they were not
+     * persisted at all.  Uncomment at <b>UNCOMMENT FOR FAILURE</b> to see the effect in action.
+     */
+    public void testPostCommitClearIssue() throws Exception
+    {
+        // commit the transaction
+        setComplete();
+        endTransaction();
+        // Start a transaction explicitly
+        TransactionService transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
+        UserTransaction txn = transactionService.getUserTransaction();
+        
+        // We need a listener
+        TestPostCommitClearIssueHelper listener = new TestPostCommitClearIssueHelper();
+        try
+        {
+            txn.begin();
+            
+            // Bind the listener
+            AlfrescoTransactionSupport.bindListener(listener);
+            
+            // Bind a list of node IDs into the transaction
+            List<Long> nodeIds = new ArrayList<Long>(100);
+            AlfrescoTransactionSupport.bindResource("node_ids", nodeIds);
+            // Bind the session in, too
+            Session session = getSession();
+            AlfrescoTransactionSupport.bindResource("session", session);
+            
+            // Make a whole lot of nodes with aspects and properties
+            for (int i = 0; i < 100; i++)
+            {
+                // make a node
+                Node node = new NodeImpl();
+                node.setStore(store);
+                node.setUuid(GUID.generate());
+                node.setTypeQName(ContentModel.TYPE_CONTENT);
+                Long nodeId = (Long) getSession().save(node);
+                
+                // Record the ID
+                nodeIds.add(nodeId);
+                
+                // Now flush and clear
+                /* UNCOMMENT FOR FAILURE */
+                /* flushAndClear(); */
+
+                // add some aspects to the node
+                Set<QName> aspects = node.getAspects();
+                aspects.add(ContentModel.ASPECT_AUDITABLE);
+                
+                // add some properties
+                Map<QName, PropertyValue> properties = node.getProperties();
+                properties.put(ContentModel.PROP_NAME, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+            }
+            // Commit the transaction
+            txn.commit();
+        }
+        catch (Throwable e)
+        {
+            try { txn.rollback(); } catch (Throwable ee) {}
+        }
+        // Did the listener find any issues?
+        if (listener.err != null)
+        {
+            fail(listener.err);
+        }
+    }
+    /** Helper class to test entities during transaction wind-down */
+    private class TestPostCommitClearIssueHelper extends TransactionListenerAdapter
+    {
+        public String err = null;
+        @SuppressWarnings("unchecked")
+        @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            // Get the session
+            Session session = (Session) AlfrescoTransactionSupport.getResource("session");
+            // Get the node IDs
+            List<Long> nodeIds = (List<Long>) AlfrescoTransactionSupport.getResource("node_ids");
+            // Check each node for the aspects and properties required
+            int incorrectAspectCount = 0;
+            int incorrectPropertyCount = 0;
+            for (Long nodeId : nodeIds)
+            {
+                Node node = (Node) session.get(NodeImpl.class, nodeId);
+                Set<QName> aspects = node.getAspects();
+                Map<QName, PropertyValue> properties = node.getProperties();
+                if (!aspects.contains(ContentModel.ASPECT_AUDITABLE))
+                {
+                    // Missing the aspect
+                    incorrectAspectCount++;
+                }
+                if (!properties.containsKey(ContentModel.PROP_NAME))
+                {
+                    // Missing property
+                    incorrectPropertyCount++;
+                }
+            }
+            // What is the outcome?
+            if (incorrectAspectCount > 0 || incorrectPropertyCount > 0)
+            {
+                this.err =
+                    "Checked " + nodeIds.size() + " nodes and found: \n" +
+                    "   " + incorrectAspectCount + " missing aspects and \n" +
+                    "   " + incorrectPropertyCount + " missing properties.";
+                
+            }
+            // Force a rollback anyway, just to stop an explosion of data
+            throw new RuntimeException("ROLLBACK");
         }
     }
     

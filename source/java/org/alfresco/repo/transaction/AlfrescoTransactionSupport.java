@@ -72,6 +72,34 @@ public abstract class AlfrescoTransactionSupport
     private static Log logger = LogFactory.getLog(AlfrescoTransactionSupport.class);
     
     /**
+     * @return Returns the system time when the transaction started, or -1 if there is no current transaction.
+     */
+    public static long getTransactionStartTime()
+    {
+        /*
+         * This method can be called outside of a transaction, so we can go direct to the synchronizations.
+         */
+        TransactionSynchronizationImpl txnSynch =
+            (TransactionSynchronizationImpl) TransactionSynchronizationManager.getResource(RESOURCE_KEY_TXN_SYNCH);
+        if (txnSynch == null)
+        {
+            if (TransactionSynchronizationManager.isSynchronizationActive())
+            {
+                // need to lazily register synchronizations
+                return registerSynchronizations().getTransactionStartTime();
+            }
+            else
+            {
+                return -1;   // not in a transaction
+            }
+        }
+        else
+        {
+            return txnSynch.getTransactionStartTime();
+        }
+    }
+    
+    /**
      * Get a unique identifier associated with each transaction of each thread.  Null is returned if
      * no transaction is currently active.
      * 
@@ -428,6 +456,7 @@ public abstract class AlfrescoTransactionSupport
      */
     private static class TransactionSynchronizationImpl extends TransactionSynchronizationAdapter
     {
+        private long txnStartTime;
         private final String txnId;
         private final Set<TransactionalDao> daoServices;
         private final Set<IntegrityChecker> integrityCheckers;
@@ -442,6 +471,7 @@ public abstract class AlfrescoTransactionSupport
          */
         public TransactionSynchronizationImpl(String txnId)
         {
+            this.txnStartTime = System.currentTimeMillis();
             this.txnId = txnId;
             daoServices = new HashSet<TransactionalDao>(3);
             integrityCheckers = new HashSet<IntegrityChecker>(3);
@@ -450,6 +480,11 @@ public abstract class AlfrescoTransactionSupport
             resources = new HashMap<Object, Object>(17);
         }
         
+        public long getTransactionStartTime()
+        {
+            return txnStartTime;
+        }
+
         public String getTransactionId()
         {
             return txnId;

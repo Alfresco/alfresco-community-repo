@@ -65,15 +65,20 @@ public class AlfrescoTransactionSupportTest extends TestCase
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
         assertNull("Thread shouldn't have a txn ID", AlfrescoTransactionSupport.getTransactionId());
+        assertEquals("No transaction start time expected", -1, AlfrescoTransactionSupport.getTransactionStartTime());
         
-        // begine the txn
+        // begin the txn
         txn.begin();
         String txnId = AlfrescoTransactionSupport.getTransactionId();
         assertNotNull("Expected thread to have a txn id", txnId);
+        long txnStartTime = AlfrescoTransactionSupport.getTransactionStartTime();
+        assertTrue("Expected a transaction start time", txnStartTime > 0);
         
-        // check that the txn id doesn't change
+        // check that the txn id and time doesn't change
         String txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
         assertEquals("Transaction ID changed on same thread", txnId, txnIdCheck);
+        long txnStartTimeCheck = AlfrescoTransactionSupport.getTransactionStartTime();
+        assertEquals("Transaction start time changed on same thread", txnStartTime, txnStartTimeCheck);
         
         // begin a new, inner transaction
         {
@@ -81,12 +86,19 @@ public class AlfrescoTransactionSupportTest extends TestCase
             
             String txnIdInner = AlfrescoTransactionSupport.getTransactionId();
             assertEquals("Inner transaction not started, so txn ID should not change", txnId, txnIdInner);
+            long txnStartTimeInner = AlfrescoTransactionSupport.getTransactionStartTime();
+            assertEquals("Inner transaction not started, so txn start time should not change", txnStartTime, txnStartTimeInner);
             
             // begin the nested txn
             txnInner.begin();
             // check the ID for the outer transaction
             txnIdInner = AlfrescoTransactionSupport.getTransactionId();
             assertNotSame("Inner txn ID must be different from outer txn ID", txnIdInner, txnId);
+            // Check the time against the outer transaction
+            txnStartTimeInner = AlfrescoTransactionSupport.getTransactionStartTime();
+            assertTrue(
+                    "Inner transaction start time should be greater or equal (accuracy) to the outer's",
+                    txnStartTime <= txnStartTimeInner);
             
             // rollback the nested txn
             txnInner.rollback();

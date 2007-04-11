@@ -67,25 +67,6 @@
       </property>
    </bean>
 
-   <!-- The raw NodeService, implemented to persist to the database -->
-   <bean id="dbNodeService" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
-      <property name="dictionaryService">
-         <ref bean="dictionaryService" />
-      </property>
-      <property name="nodeDaoService">
-         <ref bean="nodeDaoService" />
-      </property>
-      <property name="policyComponent">
-         <ref bean="policyComponent"/>
-      </property>
-      <property name="storeArchiveMap">
-         <ref bean="storeArchiveMap"/>
-      </property>
-      <property name="avmNodeService">
-         <ref bean="avmNodeService"/>
-      </property>
-   </bean>
-   
    <!-- AVMNodeService -->
    <bean id="avmNodeService" class="org.alfresco.repo.avm.AVMNodeService" init-method="init">
 		<property name="dictionaryService">
@@ -144,6 +125,59 @@
       </property>
       <property name="nodeService">
          <ref bean="nodeService" />
+      </property>
+   </bean>
+
+   <!-- NodeService implemented to persist to Database.  Resource management enabled. -->
+   <bean id="dbNodeService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.repository.NodeService</value>
+      </property>
+      <property name="target">
+         <ref bean="dbNodeServiceImpl" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>sessionSizeResourceInterceptor</value>
+         </list>
+      </property>
+   </bean>
+   <bean id="dbNodeServiceImpl" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="nodeDaoService">
+         <ref bean="nodeDaoService" />
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="storeArchiveMap">
+         <ref bean="storeArchiveMap"/>
+      </property>
+      <property name="avmNodeService">
+         <ref bean="avmNodeService"/>
+      </property>
+   </bean>
+   <bean id="sessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.TransactionResourceInterceptor" >
+      <property name="methodResourceManagers">
+         <list>
+            <ref bean="sessionSizeResourceManager"></ref>
+         </list>
+      </property>
+      <property name="elapsedTimeBeforeActivationMillis">
+         <value>10000</value>
+      </property>
+      <property name="resourceManagerCallFrequencyMillis">
+         <value>5000</value>
+      </property>
+   </bean>
+   <bean id="sessionSizeResourceManager" class="org.alfresco.repo.domain.hibernate.SessionSizeResourceManager">
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
+      <property name="threshold">
+         <value>2000</value>
       </property>
    </bean>
    

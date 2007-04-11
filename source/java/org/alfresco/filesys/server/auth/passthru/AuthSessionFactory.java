@@ -136,10 +136,11 @@ public final class AuthSessionFactory
      * @param pkt SMBPacket to build the negotiate request
      * @param dlct SMB dialects to negotiate
      * @param pid Process id to be used by this new session
+     * @param extSec Enable/disable extended security negotiation
      * @return StringList
      */
 
-    private final static StringList BuildNegotiatePacket(SMBPacket pkt, DialectSelector dlct, int pid)
+    private final static StringList BuildNegotiatePacket(SMBPacket pkt, DialectSelector dlct, int pid, boolean extSec)
     {
 
         // Initialize the SMB packet header fields
@@ -147,14 +148,14 @@ public final class AuthSessionFactory
         pkt.setCommand(PacketType.Negotiate);
         pkt.setProcessId(pid);
 
-        // If the NT dialect is enabled set the Unicode flag in the request flags
+        // If the NT dialect is enabled set the Unicode flag
 
         int flags2 = 0;
         
         if (dlct.hasDialect(Dialect.NT))
             flags2 += SMBPacket.FLG2_UNICODE;
         
-        if ( useExtendedSecurity())
+        if ( useExtendedSecurity() && extSec == true)
             flags2 += SMBPacket.FLG2_EXTENDEDSECURITY;
             
         pkt.setFlags2(flags2);
@@ -486,7 +487,7 @@ public final class AuthSessionFactory
 
         // Build the negotiate SMB dialect packet and exchange with the remote server
 
-        StringList diaList = BuildNegotiatePacket(pkt, selDialect, pid);
+        StringList diaList = BuildNegotiatePacket(pkt, selDialect, pid, shr.hasExtendedSecurityFlags());
         pkt.ExchangeLowLevelSMB(netSession, pkt, true);
 
         // Determine the selected SMB dialect

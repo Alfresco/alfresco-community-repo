@@ -313,6 +313,16 @@ public class SMBSrvSession extends SrvSession implements Runnable
 		m_vcircuits.removeCircuit(uid, this);
 	}
     
+	/**
+	 * Return the count of virtual circuits on this session
+	 * 
+	 * @return int
+	 */
+	public final int getVirtualCircuitCount()
+	{
+		return m_vcircuits != null ? m_vcircuits.getCircuitCount() : 0;
+	}
+	
     /**
 	 * Cleanup any resources owned by this session, close files, searches and
 	 * change notification requests.

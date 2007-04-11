@@ -35,6 +35,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -352,5 +354,30 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 "MLText type not returned direct in Map",
                 mlTextProperty,
                 propertiesDirect.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+    }
+    
+    public void testDuplicatePrimaryParentHandling() throws Exception
+    {
+        Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
+        // get the node to play with
+        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3"));
+        ChildAssociationRef n6pn8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8"));
+        final NodeRef n1Ref = n1pn3Ref.getParentRef();
+        final NodeRef n8Ref = n6pn8Ref.getChildRef();
+        
+        // Add a make n1 a second primary parent of n8
+        Node n1 = nodeDaoService.getNode(n1Ref);
+        Node n8 = nodeDaoService.getNode(n8Ref);
+        ChildAssoc assoc = nodeDaoService.newChildAssoc(
+                n1,
+                n8,
+                true,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NAMESPACE, "n1pn8"));
+        
+        // Now get the node primary parent
+        nodeService.getPrimaryParent(n8Ref);
+        // Get it again
+        nodeService.getPrimaryParent(n8Ref);
     }
 }

@@ -1016,7 +1016,7 @@ public class AuthenticateSession
      */
     public final void doSessionSetup(String userName, byte[] ascPwd, byte[] uniPwd) throws IOException, SMBException
     {
-        doSessionSetup(null, userName, null, ascPwd, uniPwd);
+        doSessionSetup(null, userName, null, ascPwd, uniPwd, 0);
     }
     
     /**
@@ -1029,7 +1029,7 @@ public class AuthenticateSession
     public final void doSessionSetup(Type3NTLMMessage type3Msg) throws IOException, SMBException
     {
         doSessionSetup(type3Msg.getDomain(), type3Msg.getUserName(), type3Msg.getWorkstation(),
-                type3Msg.getLMHash(), type3Msg.getNTLMHash());
+                type3Msg.getLMHash(), type3Msg.getNTLMHash(), 0);
     }
     
     /**
@@ -1040,11 +1040,13 @@ public class AuthenticateSession
      * @param wksName String
      * @param ascPwd ASCII password hash
      * @param uniPwd Unicode password hash
+     * @param vcNum Virtual circuit number
      * @exception IOException If a network error occurs
      * @exception SMBException If a CIFS error occurs
      */
     public final void doSessionSetup(String domain, String userName, String wksName,
-            byte[] ascPwd, byte[] uniPwd) throws IOException, SMBException
+            byte[] ascPwd, byte[] uniPwd, int vcNum)
+    	throws IOException, SMBException
     {
         // Check if we are using extended security
         
@@ -1052,7 +1054,7 @@ public class AuthenticateSession
         {
             // Run the second phase of the extended security session setup
         
-            doExtendedSessionSetupPhase2(domain, userName, wksName, ascPwd, uniPwd);
+            doExtendedSessionSetupPhase2(domain, userName, wksName, ascPwd, uniPwd, vcNum);
             return;
         }
         
@@ -1074,7 +1076,7 @@ public class AuthenticateSession
             pkt.setParameter(1, 0); // offset to next command
             pkt.setParameter(2, DefaultPacketSize);
             pkt.setParameter(3, 1);
-            pkt.setParameter(4, 0); // virtual circuit number
+            pkt.setParameter(4, vcNum);
             pkt.setParameterLong(5, 0); // session key
 
             // Set the share password length(s)
@@ -1121,7 +1123,7 @@ public class AuthenticateSession
                 pkt.packString("?", false);
 
             pkt.packString("Java VM", false);
-            pkt.packString("JLAN", false);
+            pkt.packString("Alfresco CIFS", false);
             
             // Set the packet length
 
@@ -1175,7 +1177,7 @@ public class AuthenticateSession
             clbuf.append("Java VM");
             clbuf.append((char) 0x00);
 
-            clbuf.append("JLAN");
+            clbuf.append("Alfresco CIFS");
             clbuf.append((char) 0x00);
 
             // Copy the remaining data to the SMB packet
@@ -1275,7 +1277,6 @@ public class AuthenticateSession
 
         if (getDialect() == Dialect.NT)
         {
-
             // Read the returned negotiate parameters, for NT dialect the parameters are not aligned
 
             m_pkt.resetParameterPointer();
@@ -1324,7 +1325,7 @@ public class AuthenticateSession
 
             // Set the default flags for subsequent SMB requests
 
-            defFlags2 = SMBPacket.FLG2_LONGFILENAMES + SMBPacket.FLG2_UNICODE + SMBPacket.FLG2_LONGERRORCODE;
+            defFlags2 = SMBPacket.FLG2_LONGFILENAMES + SMBPacket.FLG2_UNICODE + SMBPacket.FLG2_LONGERRORCODE + SMBPacket.FLG2_SECURITYSIG;
             
             if ( isUsingExtendedSecurity())
                 defFlags2 += SMBPacket.FLG2_EXTENDEDSECURITY;
@@ -1485,7 +1486,7 @@ public class AuthenticateSession
         // Pack the OS details
         
         pkt.packString("Java VM", true);
-        pkt.packString("JLAN", true);
+        pkt.packString("Alfresco CIFS", true);
 
         pkt.packString("", true);
             
@@ -1555,11 +1556,12 @@ public class AuthenticateSession
     * @param wksName String
     * @param lmPwd byte[]
     * @param ntlmPwd byte[]
+    * @param vcNum int
     * @exception IOException If a network error occurs
     * @eception SMBException If a CIFS error occurs
     */
    private final void doExtendedSessionSetupPhase2(String domain, String userName, String wksName,
-           byte[] lmPwd, byte[] ntlmPwd) throws IOException, SMBException
+           byte[] lmPwd, byte[] ntlmPwd, int vcNum) throws IOException, SMBException
    {
        // Check if the domain name has been specified, if not then use the domain name from the
        // original connection details or the servers domain name
@@ -1590,7 +1592,7 @@ public class AuthenticateSession
        pkt.setParameter(1, 0);     // offset to next command
        pkt.setParameter(2, DefaultPacketSize);
        pkt.setParameter(3, 1);
-       pkt.setParameter(4, 0);     // virtual circuit number
+       pkt.setParameter(4, vcNum);
        pkt.setParameterLong(5, 0); // session key
 
        // Clear the security blob length and reserved area
@@ -1629,7 +1631,7 @@ public class AuthenticateSession
        // Pack the OS details
        
        pkt.packString("Java VM", true);
-       pkt.packString("JLAN", true);
+       pkt.packString("Alfresco CIFS", true);
 
        pkt.packString("", true);
            
@@ -1645,4 +1647,5 @@ public class AuthenticateSession
 
        setGuest(pkt.getParameter(2) != 0 ? true : false);
    }
+   
 }

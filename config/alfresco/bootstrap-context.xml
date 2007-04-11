@@ -247,6 +247,15 @@
        </property>
     </bean>
     
+    <!-- Perform index recovery before applying any patches -->
+    <!-- rebuild the index if required - before we check that it is there -->
+    
+    <bean id="indexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
+       <property name="indexRecoveryComponent">
+           <ref bean="indexRecoveryComponent"/>
+       </property>
+    </bean>
+    
     <!-- This component checks the interconnection between the metadata, indexes and content -->
     <bean id="configurationChecker" class="org.alfresco.repo.admin.ConfigurationChecker">
        <property name="strict">
@@ -278,7 +287,7 @@
            <ref bean="contentService"/>
        </property>
     </bean>
-
+    
     <!-- This component ensures that patches get applied on startup -->
 
     <bean id="patchExecuter" class="org.alfresco.repo.admin.patch.PatchExecuter">
@@ -328,6 +337,14 @@
         </constructor-arg>
     </bean>
 
+    <!-- Start the quartz scheduler -->
+    
+    <bean id="schedulerStarter" class="org.alfresco.util.SchedulerStarterBean" >
+       <property name="scheduler">
+           <ref bean="schedulerFactory"/>
+       </property>
+    </bean>
+       
 	<!-- Startup Message -->
 
     <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">

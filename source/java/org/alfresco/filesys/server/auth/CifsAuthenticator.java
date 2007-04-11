@@ -495,7 +495,7 @@ public abstract class CifsAuthenticator
 
         // Check if this is a null session logon
 
-        if (user.length() == 0 && domain.length() == 0 && uniPwdLen == 0 && ascPwdLen == 1)
+        if (user.length() == 0 && uniPwdLen == 0 && ascPwdLen <= 1)
             client.setLogonType(ClientInfo.LogonNull);
 
         // Authenticate the user

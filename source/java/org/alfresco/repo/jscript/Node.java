@@ -46,7 +46,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -298,6 +300,24 @@ public class Node implements Serializable, Scopeable
     {
         if (name != null)
         {
+            QName typeQName = getType();
+            if ((services.getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_FOLDER) &&
+                 !services.getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER)) ||
+                 services.getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+            {
+                try
+                {
+                   this.services.getFileFolderService().rename(this.nodeRef, name);
+                }
+                catch (FileExistsException e)
+                {
+                    throw new AlfrescoRuntimeException("Failed to rename node " + nodeRef + " to " + name, e);
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new AlfrescoRuntimeException("Failed to rename node " + nodeRef + " to " + name, e);
+                }
+            }
             this.getProperties().put(ContentModel.PROP_NAME.toString(), name.toString());
         }
     }

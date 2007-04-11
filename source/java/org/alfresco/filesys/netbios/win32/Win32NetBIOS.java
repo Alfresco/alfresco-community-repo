@@ -529,7 +529,7 @@ public class Win32NetBIOS
             String ipAddr = niEnum.nextElement();
             NetworkInterface ni = niList.get(ipAddr);
 
-            if (ni.getDisplayName().equalsIgnoreCase(name))
+            if (ni.getName().equalsIgnoreCase(name))
             {
 
                 // Return the LANA for the network adapters TCP/IP address

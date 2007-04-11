@@ -26,7 +26,7 @@
 <!--
     <cacheManagerPeerListenerFactory
             class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
-            properties="port=40001, socketTimeoutMillis=2000"/>
+            properties="port=40001, socketTimeoutMillis=5000"/>
 -->
 
 <!-- ================================================================= -->
@@ -489,7 +489,7 @@
         name="org.alfresco.cache.ticketsCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="true">
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"

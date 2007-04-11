@@ -260,7 +260,7 @@
         name="org.alfresco.cache.ticketsCache" 
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false"
+        overflowToDisk="true"
         />
 
 </ehcache>

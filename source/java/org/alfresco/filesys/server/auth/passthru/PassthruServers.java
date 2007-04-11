@@ -306,16 +306,16 @@ public class PassthruServers
      */
     public final AuthenticateSession openSession()
     {
-        return openSession( 0);
+        return openSession( false);
     }
     
     /**
      * Open a new session to an authentication server
      * 
-     * @param extFlags int
+     * @param useExtSec boolean
      * @return AuthenticateSession
      */
-    public final AuthenticateSession openSession(int extFlags)
+    public final AuthenticateSession openSession(boolean useExtSec)
     {
         // Get the details of an authentication server to connect to 
 
@@ -331,7 +331,8 @@ public class PassthruServers
         // Open a new authentication session to the server
         
         PCShare authShare = new PCShare(passthruServer.getAddress().getHostAddress(), "IPC$", "", "");
-        authShare.setExtendedSecurityFlags( extFlags);
+        if ( useExtSec == true)
+        	authShare.setExtendedSecurityFlags( SMBPacket.FLG2_EXTENDEDSECURITY);
         
         AuthenticateSession authSess = null;
         

@@ -88,6 +88,7 @@ public class SMBPacket
 
     public static final int FLG2_LONGFILENAMES      = 0x0001;
     public static final int FLG2_EXTENDEDATTRIB     = 0x0002;
+    public static final int FLG2_SECURITYSIG		= 0x0004;
     public static final int FLG2_EXTENDEDSECURITY   = 0x0800;
     public static final int FLG2_READIFEXE          = 0x2000;
     public static final int FLG2_LONGERRORCODE      = 0x4000;
@@ -589,6 +590,16 @@ public class SMBPacket
     }
 
     /**
+     * Get the SMB signing value, as a long value
+     * 
+     * @return long
+     */
+    public final long getSignature()
+    {
+    	return DataPacker.getIntelLong( m_smbbuf, SIGNATURE);
+    }
+    
+   /**
      * Get the tree identifier (TID)
      * 
      * @return Tree identifier (TID)
@@ -1131,6 +1142,16 @@ public class SMBPacket
     }
 
     /**
+     * Set a long error code (NT status code)
+     * 
+     * @param sts int
+     */
+    public final void setLongErrorCode(int lsts)
+    {
+    	DataPacker.putIntelInt(lsts, m_smbbuf, ERRORCODE);
+    }
+    
+   /**
      * Set the SMB flags value.
      * 
      * @param flg SMB flags value.
@@ -1225,6 +1246,38 @@ public class SMBPacket
         DataPacker.putIntelShort(sid, m_smbbuf, SID);
     }
 
+    /**
+     * Set the SMB signing signature
+     * 
+     * @param ival int
+     */
+    public final void setSignature( int ival)
+    {
+    	DataPacker.putIntelInt( ival, m_smbbuf, SIGNATURE);
+    	DataPacker.putZeros( m_smbbuf, SIGNATURE + 4, 4);
+    }
+    
+    /**
+     * Set the SMB signing signature
+     * 
+     * @param lval long
+     */
+    public final void setSignature( long lval)
+    {
+    	DataPacker.putIntelLong( lval, m_smbbuf, SIGNATURE);
+    }
+    
+    /**
+     * Set the SMB signing signature
+     * 
+     * @param byts byte[]
+     * @param offset int
+     */
+    public final void setSignature( byte[] byts, int offset)
+    {
+    	System.arraycopy( byts, offset, m_smbbuf, SIGNATURE, 8);
+    }
+    
     /**
      * Set the tree identifier (TID)
      * 

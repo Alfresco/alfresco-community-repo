@@ -16,6 +16,10 @@
         <property name="schedulerName">
             <value>DefaultScheduler</value>
         </property>
+        <!-- Do not auto start the scheduler - this is done at the end of the bootstrap process -->
+        <property name="autoStartup">
+            <value>false</value>
+        </property>
     </bean>
 
     <!--                 -->
@@ -48,6 +52,8 @@
         </property>
     </bean>
 
+    <!-- This has now been moved into the bootstrap process and is not required here -->
+    <!--
     <bean id="indexRecoveryTrigger" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -73,6 +79,7 @@
             <value>0</value>
         </property>
     </bean>
+    -->
     
     <bean id="tempFileCleanerTrigger" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">

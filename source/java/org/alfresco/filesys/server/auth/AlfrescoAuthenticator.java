@@ -25,6 +25,7 @@
 package org.alfresco.filesys.server.auth;
 
 import java.security.NoSuchAlgorithmException;
+
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.filesys.server.SrvSession;
@@ -32,6 +33,7 @@ import org.alfresco.filesys.server.auth.AuthContext;
 import org.alfresco.filesys.server.auth.CifsAuthenticator;
 import org.alfresco.filesys.server.auth.ClientInfo;
 import org.alfresco.filesys.server.auth.NTLanManAuthContext;
+import org.alfresco.filesys.server.core.SharedDevice;
 import org.alfresco.filesys.smb.server.SMBSrvSession;
 import org.alfresco.filesys.util.HexDump;
 import org.alfresco.repo.security.authentication.NTLMMode;
@@ -191,6 +193,25 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
     }
 
     /**
+     * Authenticate a connection to a share.
+     * 
+     * @param client User/client details from the tree connect request.
+     * @param share Shared device the client wants to connect to.
+     * @param pwd Share password.
+     * @param sess Server session.
+     * @return int Granted file permission level or disallow status if negative. See the
+     *         FilePermission class.
+     */
+    public int authenticateShareConnect(ClientInfo client, SharedDevice share, String sharePwd, SrvSession sess)
+    {
+        // Allow write access
+        //
+        // Main authentication is handled by authenticateUser()
+        
+        return CifsAuthenticator.Writeable;
+    }
+
+    /**
      * Return an authentication context for the new session
      * 
      * @return AuthContext
@@ -278,7 +299,9 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
                 // Generate the local encrypted password using the challenge that was sent to the client
                 
                 byte[] p21 = new byte[21];
-                byte[] md4byts = m_md4Encoder.decodeHash(md4hash);
+                byte[] md4byts = null;
+                
+              	md4byts = m_md4Encoder.decodeHash(md4hash);
                 System.arraycopy(md4byts, 0, p21, 0, 16);
                 
                 // Get the challenge that was sent to the client
@@ -320,6 +343,11 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
                     if ( clientHash[i] != localHash[i])
                         return CifsAuthenticator.AUTH_BADPASSWORD;
                 }
+                
+                // Logging
+                
+                if ( logger.isInfoEnabled())
+                	logger.info( "Logged on user " + client.getUserName() + " (" + sess.getRemoteAddress() + ") using auto-logon shared password");
                 
                 // Set the current user to be authenticated, save the authentication token
                 
@@ -368,6 +396,10 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
     	
     	sess.beginReadTransaction( m_transactionService);
     	
+    	// Default logon status to disallow
+    	
+        int authSts = CifsAuthenticator.AUTH_DISALLOW;
+
         // Get the authentication token for the session
 
         NTLMPassthruToken authToken = (NTLMPassthruToken) sess.getAuthenticationToken();
@@ -377,7 +409,6 @@ public class AlfrescoAuthenticator extends CifsAuthenticator
 
         // Get the appropriate hashed password for the algorithm
         
-        int authSts = CifsAuthenticator.AUTH_DISALLOW;
         byte[] hashedPassword = null;
         
         if ( alg == NTLM1)

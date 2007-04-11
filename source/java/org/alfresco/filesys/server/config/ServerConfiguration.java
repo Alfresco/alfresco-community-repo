@@ -1254,20 +1254,39 @@ public class ServerConfiguration extends AbstractLifecycleBean
             String lanaStr = elem.getAttribute("lana");
             if (lanaStr != null && lanaStr.length() > 0)
             {
-
-                // Validate the LANA number
-
+                //  Check if the LANA has been specified as an IP address or adapter name
+                
                 int lana = -1;
-
-                try
+                
+                if ( IPAddress.isNumericAddress( lanaStr))
                 {
-                    lana = Integer.parseInt(lanaStr);
+                  
+                	//  Convert the IP address to a LANA id
+                  
+                	lana = Win32NetBIOS.getLANAForIPAddress( lanaStr);
+                	if ( lana == -1)
+                		throw new AlfrescoRuntimeException( "Failed to convert IP address " + lanaStr + " to a LANA");
                 }
-                catch (NumberFormatException ex)
-                {
-                    throw new AlfrescoRuntimeException("Invalid win32 NetBIOS LANA specified");
-                }
+                else if ( lanaStr.length() > 1 && Character.isLetter( lanaStr.charAt( 0))) {
 
+                  //  Convert the network adapter to a LANA id
+                  
+                  lana = Win32NetBIOS.getLANAForAdapterName( lanaStr);
+                  if ( lana == -1)
+                    throw new AlfrescoRuntimeException( "Failed to convert network adapter " + lanaStr + " to a LANA");
+                }
+                else {
+                  
+	                try
+	                {
+	                    lana = Integer.parseInt(lanaStr);
+	                }
+	                catch (NumberFormatException ex)
+	                {
+	                    throw new AlfrescoRuntimeException("Invalid win32 NetBIOS LANA specified");
+	                }
+                }
+                
                 // LANA should be in the range 0-255
 
                 if (lana < 0 || lana > 255)
@@ -2265,8 +2284,8 @@ public class ServerConfiguration extends AbstractLifecycleBean
             {
                 // Check if the appropriate authentication component type is configured
                 
-                if ( ntlmMode != NTLMMode.NONE)
-                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator (can only be used with LDAP/JAAS auth component)");
+                if ( ntlmMode == NTLMMode.MD4_PROVIDER)
+                    throw new AlfrescoRuntimeException("Wrong authentication setup for passthru authenticator (cannot be used with Alfresco users)");
                 
                 // Load the passthru authenticator dynamically
                 

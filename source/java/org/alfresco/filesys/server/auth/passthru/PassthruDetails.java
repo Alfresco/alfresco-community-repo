@@ -34,7 +34,6 @@ import org.alfresco.filesys.server.SrvSession;
  */
 class PassthruDetails
 {
-
     // Server session
 
     private SrvSession m_sess;
@@ -43,6 +42,10 @@ class PassthruDetails
 
     private AuthenticateSession m_authSess;
 
+    // Flag to indicate if session should be kept alive
+    
+    private boolean m_keepAlive;
+    
     /**
      * Class constructor
      * 
@@ -53,6 +56,21 @@ class PassthruDetails
     {
         m_sess = sess;
         m_authSess = authSess;
+    }
+
+    /**
+     * Class constructor
+     * 
+     * @param sess SrvSession
+     * @param authSess AuthenticateSession
+     * @param keepAlive boolean
+     */
+    public PassthruDetails(SrvSession sess, AuthenticateSession authSess, boolean keepAlive)
+    {
+        m_sess = sess;
+        m_authSess = authSess;
+        
+        m_keepAlive = keepAlive;
     }
 
     /**
@@ -73,5 +91,15 @@ class PassthruDetails
     public final AuthenticateSession getAuthenticateSession()
     {
         return m_authSess;
+    }
+    
+    /**
+     * Check if the authentication session should be kept alive
+     * 
+     * @return boolean
+     */
+    public final boolean hasKeepAlive()
+    {
+    	return m_keepAlive;
     }
 }

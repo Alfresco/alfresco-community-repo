@@ -900,6 +900,15 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         getSession().flush();
     }
 
+    private Set<NodeRef> warnedDuplicateParents = new HashSet<NodeRef>(3);
+    /**
+     * @inheritDoc
+     * 
+     * This method includes a check for multiple primary parent associations.
+     * The check doesn't fail but will warn (once per instance) of the occurence of
+     * the error.  It is up to the administrator to fix the issue at the moment, but
+     * the server will not stop working.
+     */
     public ChildAssoc getPrimaryParentAssoc(Node node)
     {
         // get the assocs pointing to the node
@@ -914,12 +923,20 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
             else if (primaryAssoc != null)
             {
-                // we have more than one somehow
-                throw new DataIntegrityViolationException(
-                        "Multiple primary associations: \n" +
-                        "   child: " + node + "\n" +
-                        "   first primary assoc: " + primaryAssoc + "\n" +
-                        "   second primary assoc: " + assoc);
+                // We have found one already.
+                synchronized(warnedDuplicateParents)
+                {
+                    NodeRef childNodeRef = node.getNodeRef();
+                    boolean added = warnedDuplicateParents.add(childNodeRef);
+                    if (added)
+                    {
+                        logger.warn(
+                                "Multiple primary associations: \n" +
+                                "   first primary assoc: " + primaryAssoc + "\n" +
+                                "   second primary assoc: " + assoc + "\n" +
+                                "When running in a cluster, check that the caches are properly shared.");
+                    }
+                }
             }
             primaryAssoc = assoc;
             // we keep looping to hunt out data integrity issues
@@ -938,9 +955,21 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
             if (!rootNode.equals(node))
             {
-                // it wasn't the root node
-                throw new DataIntegrityViolationException("Non-root node has no primary parent: \n" +
-                        "   child: " + node);
+                // Reload the node to ensure that it is properly initialized
+                getSession().refresh(node);
+                // Check if it has any parents yet.
+                if (node.getParentAssocs().size() == 0)
+                {
+                    // It wasn't the root node and definitely has no parent
+                    throw new DataIntegrityViolationException(
+                            "Non-root node has no primary parent: \n" +
+                            "   child: " + node);
+                }
+                else
+                {
+                    // Repeat this method with confidence
+                    primaryAssoc = getPrimaryParentAssoc(node);
+                }
             }
         }
         // done

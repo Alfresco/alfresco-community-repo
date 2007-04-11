@@ -3153,6 +3153,17 @@ public class NTProtocolHandler extends CoreProtocolHandler
             return;
         }
         
+        // Check if the search is for an NTFS stream
+        
+        if ( FileName.containsStreamName( srchPath))
+        {
+        	// NTFS streams not supported
+        	
+            m_sess.sendErrorResponseSMB(SMBStatus.NTObjectNotFound, SMBStatus.SRVNonSpecificError,
+                    SMBStatus.ErrSrv);
+            return;
+        }
+        
         // Access the shared device disk interface
 
         SearchContext ctx = null;

@@ -52,6 +52,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.WebResources;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Abstract component to allow the selection of a hierarchical item
@@ -272,79 +273,79 @@ public abstract class AbstractItemSelector extends UIInput
       
       NodeService service = getNodeService(context);
       
-      if (isDisabled())
+      UserTransaction tx = null;
+      try
       {
-         // render a read-only view of the selected category (if any)
-         ResponseWriter out = context.getResponseWriter();
-
-         // see if there is a current value for the category
-         NodeRef nodeRef = (NodeRef)getSubmittedValue();
-         if (nodeRef == null)
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         if (isDisabled())
          {
-            Object val = getValue();
-            if (val instanceof NodeRef) 
+            // render a read-only view of the selected category (if any)
+            ResponseWriter out = context.getResponseWriter();
+   
+            // see if there is a current value for the category
+            NodeRef nodeRef = (NodeRef)getSubmittedValue();
+            if (nodeRef == null)
             {
-               nodeRef = (NodeRef)val;
-            }
-            else if (val instanceof String && ((String)val).length() != 0)
-            {
-               nodeRef = new NodeRef((String)val);
-            }
-            else if (val instanceof List)
-            {
-               // build a comma separated list of node names
-               List nodes = (List)val;
-               StringBuilder buffer = new StringBuilder();
-               for (Object obj : nodes)
+               Object val = getValue();
+               if (val instanceof NodeRef) 
                {
-                  if (buffer.length() != 0)
-                  {
-                     buffer.append(", ");
-                  }
-                  
-                  if (obj instanceof NodeRef)
-                  {
-                     buffer.append(Repository.getNameForNode(service, (NodeRef)obj));
-                  }
-                  else
-                  {
-                     buffer.append(obj.toString());
-                  }
+                  nodeRef = (NodeRef)val;
                }
-               
-               // write out to response
-               out.write(buffer.toString());
+               else if (val instanceof String && ((String)val).length() != 0)
+               {
+                  nodeRef = new NodeRef((String)val);
+               }
+               else if (val instanceof List)
+               {
+                  // build a comma separated list of node names
+                  List nodes = (List)val;
+                  StringBuilder buffer = new StringBuilder();
+                  for (Object obj : nodes)
+                  {
+                     if (buffer.length() != 0)
+                     {
+                        buffer.append(", ");
+                     }
+                     
+                     if (obj instanceof NodeRef)
+                     {
+                        buffer.append(Repository.getNameForNode(service, (NodeRef)obj));
+                     }
+                     else
+                     {
+                        buffer.append(obj.toString());
+                     }
+                  }
+                  
+                  // write out to response
+                  out.write(buffer.toString());
+               }
+            }
+            
+            // if there is a value show it's name
+            if (nodeRef != null)
+            {
+               out.write(Repository.getNameForNode(service, nodeRef));
             }
          }
-         
-         // if there is a value show it's name
-         if (nodeRef != null)
+         else
          {
-            out.write(Repository.getNameForNode(service, nodeRef));
-         }
-      }
-      else
-      {
-         // render an editable control for selecting items
-         String clientId = getClientId(context);
-         
-         StringBuilder buf = new StringBuilder(512);
-         Map attrs = this.getAttributes();
-         boolean showValueInHiddenField = false;
-         NodeRef value = null;
-         
-         switch (this.mode)
-         {
-            case MODE_BEFORE_SELECTION:
-            case MODE_CONFIRM_SELECTION:
-            case MODE_CANCEL_SELECTION:
+            // render an editable control for selecting items
+            String clientId = getClientId(context);
+            
+            StringBuilder buf = new StringBuilder(512);
+            Map attrs = this.getAttributes();
+            boolean showValueInHiddenField = false;
+            NodeRef value = null;
+            
+            switch (this.mode)
             {
-               UserTransaction tx = null;
-               try
+               case MODE_BEFORE_SELECTION:
+               case MODE_CONFIRM_SELECTION:
+               case MODE_CANCEL_SELECTION:
                {
-                  tx = Repository.getUserTransaction(context, true);
-                  tx.begin();
-                  
                   NodeRef submittedValue = (NodeRef)getSubmittedValue();
                   if (submittedValue != null)
                   {
@@ -448,90 +449,76 @@ public abstract class AbstractItemSelector extends UIInput
                   buf.append(">")
                      .append(label)
                      .append("</a></span>");
+                     
+                  break;
+               }
+               
+               case MODE_DRILLDOWN_SELECTION:
+               case MODE_INITIAL_SELECTION:
+               {
+                  // show the picker list
+                  // get the children of the node ref to show
+                  buf.append("<table border=0 cellspacing=1 cellpadding=1");
+                  if (attrs.get("style") != null)
+                  {
+                     buf.append(" style=\"")
+                        .append(attrs.get("style"))
+                        .append('"');
+                  }
+                  if (attrs.get("styleClass") != null)
+                  {
+                     buf.append(" class=")
+                        .append(attrs.get("styleClass"));
+                  }
+                  buf.append(">");
                   
-                  tx.commit();
-               }
-               catch (Throwable err)
-               {
-                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-                  Utils.addErrorMessage(err.getMessage(), err);
-               }
-               
-               break;
-            }
-            
-            case MODE_DRILLDOWN_SELECTION:
-            case MODE_INITIAL_SELECTION:
-            {
-               // show the picker list
-               // get the children of the node ref to show
-               buf.append("<table border=0 cellspacing=1 cellpadding=1");
-               if (attrs.get("style") != null)
-               {
-                  buf.append(" style=\"")
-                     .append(attrs.get("style"))
-                     .append('"');
-               }
-               if (attrs.get("styleClass") != null)
-               {
-                  buf.append(" class=")
-                     .append(attrs.get("styleClass"));
-               }
-               buf.append(">");
-               
-               // if we are setting up the initial selection we need to get the
-               // parent id of the initial selection so the user can actually see
-               // the item when the list is rendered
-               if (this.mode == MODE_INITIAL_SELECTION)
-               {
-                  this.navigationId = getParentNodeId(context);
-               }
-               
-               // render "Go Up" link if not at the root level
-               if (this.navigationId != null)
-               {
-                  // get the id of the parent node of the current navigation node,
-                  // null indicates we are at the root level
-                  String id = getParentNodeId(context);
+                  // if we are setting up the initial selection we need to get the
+                  // parent id of the initial selection so the user can actually see
+                  // the item when the list is rendered
+                  if (this.mode == MODE_INITIAL_SELECTION)
+                  {
+                     this.navigationId = getParentNodeId(context);
+                  }
                   
-                  buf.append("<tr><td></td><td>");
+                  // render "Go Up" link if not at the root level
+                  if (this.navigationId != null)
+                  {
+                     // get the id of the parent node of the current navigation node,
+                     // null indicates we are at the root level
+                     String id = getParentNodeId(context);
+                     
+                     buf.append("<tr><td></td><td>");
+                     
+                     String upImage = Utils.buildImageTag(context, WebResources.IMAGE_GO_UP, null, "absmiddle");
+                     
+                     // render a link to the parent node
+                     renderNodeLink(context, id, Application.getMessage(context, MSG_GO_UP), upImage, buf);
+                     buf.append("</td></tr>");
+                  }
                   
-                  String upImage = Utils.buildImageTag(context, WebResources.IMAGE_GO_UP, null, "absmiddle");
+                  String okButtonId = clientId + OK_BUTTON;
+                  boolean okButtonEnabled = false;
                   
-                  // render a link to the parent node
-                  renderNodeLink(context, id, Application.getMessage(context, MSG_GO_UP), upImage, buf);
-                  buf.append("</td></tr>");
-               }
-               
-               String okButtonId = clientId + OK_BUTTON;
-               boolean okButtonEnabled = false;
-               
-               // display the children of the specified navigation node ID
-               Collection<NodeRef> childRefs;
-               if (this.navigationId != null)
-               {
-                  // get a list of children for the current navigation node
-                  childRefs = getChildrenForNode(context);
-               }
-               else
-               {
-                  // no node set - special case to show the initial root items
-                  childRefs = getRootChildren(context);
-               }
-               
-               UserTransaction tx = null;
-               try
-               {
-                  tx = Repository.getUserTransaction(context, true);
-                  tx.begin();
+                  // display the children of the specified navigation node ID
+                  Collection<NodeRef> childRefs;
+                  if (this.navigationId != null)
+                  {
+                     // get a list of children for the current navigation node
+                     childRefs = getChildrenForNode(context);
+                  }
+                  else
+                  {
+                     // no node set - special case to show the initial root items
+                     childRefs = getRootChildren(context);
+                  }
                   
                   for (NodeRef childRef : childRefs)
                   {
                      // render each child found
                      String childId = childRef.getId();
                      buf.append("<tr><td><input type='radio' name='")
-                         .append(clientId).append(OPTION).append("' value='")
-                         .append(childId).append("'");
+                        .append(clientId).append(OPTION).append("' value='")
+                        .append(childId).append("'");
                      if (childId.equals(this.initialSelectionId))
                      {
                         buf.append(" checked");
@@ -584,32 +571,32 @@ public abstract class AbstractItemSelector extends UIInput
                   
                   buf.append("</table>");
                   
-                  tx.commit();
+                  break;
                }
-               catch (Throwable err)
-               {
-                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-                  throw new RuntimeException(err);
-               }
-               
-               break;
             }
+            
+            // output a hidden field containing the currently selected NodeRef so that JavaScript
+            // can be used to check the state of the component
+            buf.append("<input type='hidden' name='");
+            buf.append(clientId);
+            buf.append("_selected' id='");
+            buf.append(clientId);
+            buf.append("_selected' value='");
+            if (showValueInHiddenField)
+            {
+               buf.append(value);
+            }
+            buf.append("'/>");
+            
+            context.getResponseWriter().write(buf.toString());
          }
          
-         // output a hidden field containing the currently selected NodeRef so that JavaScript
-         // can be used to check the state of the component
-         buf.append("<input type='hidden' name='");
-         buf.append(clientId);
-         buf.append("_selected' id='");
-         buf.append(clientId);
-         buf.append("_selected' value='");
-         if (showValueInHiddenField)
-         {
-            buf.append(value);
-         }
-         buf.append("'/>");
-         
-         context.getResponseWriter().write(buf.toString());
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
    }
    
@@ -804,7 +791,8 @@ public abstract class AbstractItemSelector extends UIInput
     */
    protected static NodeService getNodeService(FacesContext context)
    {
-      NodeService service = Repository.getServiceRegistry(context).getNodeService();
+      NodeService service = (NodeService)FacesContextUtils.getRequiredWebApplicationContext(
+               context).getBean("nodeService");
       if (service == null)
       {
          throw new IllegalStateException("Unable to obtain NodeService bean reference.");

@@ -113,14 +113,14 @@ public final class WizardManager
                "' does not implement the required IWizardBean interface");
       }
       
+      // create the WizardState object
+      this.currentWizardState = new WizardState(config, wizard);
+      
       // initialise the managed bean
       wizard.init(this.paramsToApply);
       
       // reset the current parameters so subsequent wizards don't get them
       this.paramsToApply = null;
-      
-      // create the WizardState object
-      this.currentWizardState = new WizardState(config, wizard);
       
       // setup the first step
       determineCurrentPage();

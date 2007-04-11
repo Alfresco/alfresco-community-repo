@@ -649,6 +649,19 @@ public class UIActions extends SelfRenderingComponent
       this.verticalSpacing = verticalSpacing;
    }
    
+   // ------------------------------------------------------------------------------
+   // Helper methods
+   
+   /**
+    * Resets the component to force a re-initialisation.
+    */
+   public void reset()
+   {
+      // clear any child components and reset the list of groups
+      this.getChildren().clear();
+      this.groups.clear();
+   }
+
    /**
     * @return a unique ID for a JSF component
     */
@@ -656,7 +669,6 @@ public class UIActions extends SelfRenderingComponent
    {
       return "_id_" + Short.toString(++id);
    }
-   
    
    // ------------------------------------------------------------------------------
    // Private data

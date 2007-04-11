@@ -152,7 +152,7 @@ public class UISidebar extends SelfRenderingComponent
          // update the child UIActions component with the correct 
          // action group id and clear it's current children
          UIActions actions = (UIActions)this.getChildren().get(1);
-         actions.getChildren().clear();
+         actions.reset();
          setupActionGroupId(context, actions);
       }
    }

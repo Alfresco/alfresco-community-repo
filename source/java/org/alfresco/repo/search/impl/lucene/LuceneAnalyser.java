@@ -166,7 +166,8 @@ public class LuceneAnalyser extends Analyzer
                 // Temporary fix for person and user uids
 
                 if (propertyQName.equals(ContentModel.PROP_USER_USERNAME)
-                        || propertyQName.equals(ContentModel.PROP_USERNAME))
+                        || propertyQName.equals(ContentModel.PROP_USERNAME)
+                        || propertyQName.equals(ContentModel.PROP_AUTHORITY_NAME))
                 {
                     analyser = new VerbatimAnalyser(true);
                 }

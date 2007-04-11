@@ -1745,8 +1745,8 @@ public class LuceneIndexerImpl2 extends LuceneBase2 implements LuceneIndexer2
                     }
                     else if (isText)
                     {
-                        // Temporary special case for uids
-                        if(propertyName.equals(ContentModel.PROP_USER_USERNAME) || propertyName.equals(ContentModel.PROP_USERNAME))
+                        // Temporary special case for uids and gids
+                        if(propertyName.equals(ContentModel.PROP_USER_USERNAME) || propertyName.equals(ContentModel.PROP_USERNAME) || propertyName.equals(ContentModel.PROP_AUTHORITY_NAME))
                         {
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
                         }

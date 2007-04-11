@@ -669,6 +669,21 @@
             <value>classpath:alfresco/dbscripts/upgrade/2.0/${db.script.dialect}/AlfrescoSchemaUpdate-2.0-AVMFKIndexes.sql</value>
         </property>
     </bean>
+	
+    <bean id="patch.groupNamesAsIdentifiers" class="org.alfresco.repo.admin.patch.impl.GroupTokenisationPatch" parent="basePatch" >
+        <property name="id"><value>patch.groupNamesAsIdentifiers</value></property>
+        <property name="description"><value>patch.groupNamesAsIdentifiers.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>38</value></property>
+        <property name="targetSchema"><value>39</value></property>
+        <!-- bootstrap view -->
+        <property name="userImporterBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory" />
+        </property>
+    </bean>
 
     <bean id="patch.webscripts" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.webscripts</value></property>

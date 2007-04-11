@@ -236,17 +236,9 @@ public class RSSTemplatesFolderPatch extends AbstractPatch
                 true);
             
             // import the content
-            try
-            {
-               authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-               
-               importContent();
-            }
-            finally
-            {
-               authenticationComponent.clearCurrentSecurityContext();
-            }
-            
+           
+            importContent();
+           
             msg = I18NUtil.getMessage(MSG_CREATED, rssFolderNodeRef);
         }
         else

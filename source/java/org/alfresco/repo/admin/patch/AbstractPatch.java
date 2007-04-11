@@ -32,6 +32,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.admin.PatchException;
@@ -263,6 +264,7 @@ public abstract class AbstractPatch implements Patch
     {
         return this.dependsOn;
     }
+    
     /**
      * Set all the dependencies for this patch.  It should not be executed
      * before all the dependencies have been applied.
@@ -334,19 +336,28 @@ public abstract class AbstractPatch implements Patch
         // execute in a transaction
         try
         {
-            TransactionWork<String> patchWork = new TransactionWork<String>()
+            AuthenticationUtil.RunAsWork<String> authorisedPathWork = new AuthenticationUtil.RunAsWork<String>()
             {
                 public String doWork() throws Exception
                 {
-                    // downgrade integrity checking
-                    IntegrityChecker.setWarnInTransaction();
+                    TransactionWork<String> patchWork = new TransactionWork<String>()
+                    {
+                        public String doWork() throws Exception
+                        {
 
-                    String report = applyInternal();
-                    // done
-                    return report;
-                };
+                            // downgrade integrity checking
+                            IntegrityChecker.setWarnInTransaction();
+
+                            String report = applyInternal();
+                            // done
+                            return report;
+                        }
+                    };
+
+                    return TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, patchWork);
+                }
             };
-            String report = TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, patchWork);
+            String report = AuthenticationUtil.runAs(authorisedPathWork, AuthenticationUtil.getSystemUserName());
             // the patch was successfully applied
             applied = true;
             // done

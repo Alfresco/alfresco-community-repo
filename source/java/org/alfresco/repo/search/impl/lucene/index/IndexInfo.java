@@ -66,6 +66,8 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
@@ -442,10 +444,15 @@ public class IndexInfo
                                 long docs = writer.docCount();
                                 writer.close();
 
-                                indexEntries.put(OLD_INDEX, new IndexEntry(IndexType.INDEX, OLD_INDEX, "",
-                                        TransactionStatus.COMMITTED, "", docs, 0, false));
+                                IndexEntry entry = new IndexEntry(IndexType.INDEX, OLD_INDEX, "",
+                                        TransactionStatus.COMMITTED, "", docs, 0, false);
+                                indexEntries.put(OLD_INDEX, entry);
 
                                 writeStatus();
+                                
+                                // The index exists and we should initialise the single reader
+                                registerReferenceCountingIndexReader(entry.getName(),
+                                        buildReferenceCountingIndexReader(entry.getName()));
                             }
                             catch (IOException e)
                             {
@@ -2105,8 +2112,9 @@ public class IndexInfo
      * Helper to print out index information
      * 
      * @param args
+     * @throws Throwable 
      */
-    public static void main(String[] args)
+    public static void main(String[] args) throws Throwable
     {
 
         String indexLocation = args[0];
@@ -2128,6 +2136,46 @@ public class IndexInfo
             {
                 ii.releaseWriteLock();
             }
+            IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
+            TermEnum terms = reader.terms(new Term("@{archiweb.model}instance", ""));
+            while(terms.next() && terms.term().field().equals("@{archiweb.model}instance"))
+            {
+                System.out.println("F = " +terms.term().field() + "     V = "+terms.term().text() + "     F = "+terms.docFreq());
+            }
+            terms.close();
+            long start = System.currentTimeMillis();
+            TermDocs termDocs = reader.termDocs(new Term("@{archiweb.model}instance", "tfl"));
+            while(termDocs.next())
+            {
+                //System.out.println("Doc = " + termDocs.doc());
+                Document doc = reader.document(termDocs.doc());
+                doc.getField("ID");
+                //System.out.println("Ref = "+doc.getField("ID"));
+            }
+            termDocs.close();
+            System.out.println("Time = "+((System.currentTimeMillis() - start)/1000.0f));
+            
+            
+            
+            terms = reader.terms(new Term("TYPE", ""));
+            while(terms.next() && terms.term().field().equals("TYPE"))
+            {
+                System.out.println("F = " +terms.term().field() + "     V = "+terms.term().text() + "     F = "+terms.docFreq());
+            }
+            terms.close();
+            start = System.currentTimeMillis();
+            termDocs = reader.termDocs(new Term("TYPE","{archiweb.model}tfdoc"));
+            while(termDocs.next())
+            {
+                //System.out.println("Doc = " + termDocs.doc());
+                Document doc = reader.document(termDocs.doc());
+                doc.getField("ID");
+                //System.out.println("Ref = "+doc.getField("ID"));
+            }
+            termDocs.close();
+            System.out.println("Time = "+((System.currentTimeMillis() - start)/1000.0f));
+            
+            //+@\{archiweb.model\}instance:TFL* 
         }
     }
 

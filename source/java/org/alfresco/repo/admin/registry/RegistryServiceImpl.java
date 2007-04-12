@@ -25,6 +25,9 @@
 package org.alfresco.repo.admin.registry;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -36,8 +39,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
@@ -256,6 +261,13 @@ public class RegistryServiceImpl implements RegistryService
      */
     public void addValue(RegistryKey key, Serializable value)
     {
+        // Check the namespace being used in the key
+        String namespaceUri = key.getNamespaceUri();
+        if (!namespaceService.getURIs().contains(namespaceUri))
+        {
+            throw new NamespaceException("Unable to add a registry value with an unregistered namespace: " + namespaceUri);
+        }
+        
         // Get the path, with creation support
         Pair<NodeRef, QName> keyPair = getPath(key, true);
         // We know that the node exists, so just set the value
@@ -286,5 +298,36 @@ public class RegistryServiceImpl implements RegistryService
                     "   Value: " + value);
         }
         return value;
+    }
+
+    public Collection<String> getChildElements(RegistryKey key)
+    {
+        // Get the path without creating it
+        Pair<NodeRef, QName> keyPair = getPath(key, false);
+        if (keyPair == null)
+        {
+            // Nothing at that path
+            return Collections.<String>emptyList();
+        }
+        // Use a query to find the children
+        RegexQNamePattern qnamePattern = new RegexQNamePattern(key.getNamespaceUri(), ".*");
+        List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(
+                keyPair.getFirst(),
+                ContentModel.ASSOC_CHILDREN,
+                qnamePattern);
+        // The localname of each one of the child associations represents a path element
+        Collection<String> results = new ArrayList<String>(childAssocRefs.size());
+        for (ChildAssociationRef assocRef : childAssocRefs)
+        {
+            results.add(assocRef.getQName().getLocalName());
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Retrieved child elements from registry: \n" +
+                    "   Key:      " + key + "\n" +
+                    "   Elements: " + results);
+        }
+        return results;
     }
 }

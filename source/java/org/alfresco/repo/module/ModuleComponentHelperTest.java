@@ -215,7 +215,19 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
 
         public ModuleDetails getModule(String moduleId)
         {
-            throw new UnsupportedOperationException();
+            for (int i = 0; i < MODULE_IDS.length; i++)
+            {
+                if (!MODULE_IDS[i].equals(moduleId))
+                {
+                    continue;
+                }
+                new ModuleDetailsImpl(
+                        MODULE_IDS[i],
+                        currentVersion,
+                        "Module-" + i,
+                        "Description-" + i);
+            }
+            return null;
         }
 
         public void startModules()

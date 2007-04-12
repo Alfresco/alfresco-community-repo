@@ -25,6 +25,7 @@
 package org.alfresco.repo.admin.registry;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * Interface for service providing access to key-value pairs for storage
@@ -49,4 +50,17 @@ public interface RegistryService
      * @see #addValue(String, Serializable)
      */
     Serializable getValue(RegistryKey key);
+    
+    /**
+     * Fetches all child elements for the given path.  So for a registry key <b>key=/a/b/ignored</b>, the
+     * results of <code>getChildElements(key)</b> would be <code>b</code>.  The key's last path
+     * element represents the key's property name, and can therefore be any value without affecting
+     * the outcome of the call.
+     * 
+     * @param key           the registry key with the path.  The last element in the path
+     *                      will be ignored, and can be any acceptable property localname.
+     * @return              Returns all child elements (not values) for the given key, ignoring
+     *                      the last element in the key.
+     */
+    Collection<String> getChildElements(RegistryKey key);
 }

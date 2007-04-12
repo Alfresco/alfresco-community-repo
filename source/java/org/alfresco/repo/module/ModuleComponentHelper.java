@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.module;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ public class ModuleComponentHelper
     private static final String REGISTRY_PROPERTY_CURRENT_VERSION = "currentVersion";
     private static final String REGISTRY_PATH_COMPONENTS = "components";
     private static final String REGISTRY_PROPERTY_EXECUTION_DATE = "executionDate";
+    private static final String REGISTRY_PROPERTY_DUMMY = "dummy";
     
     private static final String MSG_FOUND_MODULES = "module.msg.found_modules";
     private static final String MSG_STARTING = "module.msg.starting";
@@ -71,6 +73,7 @@ public class ModuleComponentHelper
     private static final String MSG_UPGRADING = "module.msg.upgrading";
     private static final String ERR_NO_DOWNGRADE = "module.err.downgrading_not_supported";
     private static final String ERR_COMPONENT_ALREADY_REGISTERED = "module.err.component_already_registered";
+    private static final String MSG_MISSING = "module.msg.missing";
     
     private static Log logger = LogFactory.getLog(ModuleComponentHelper.class);
     private static Log loggerService = LogFactory.getLog(ModuleServiceImpl.class);
@@ -205,16 +208,59 @@ public class ModuleComponentHelper
                 };
                 TransactionUtil.executeInNonPropagatingUserTransaction(transactionService, startModuleWork);
             }
-            // Done
+            // We have finished executing any components
             if (logger.isDebugEnabled())
             {
                 logger.debug("Executed " + executedComponents.size() + " components");
             }
-        }
-        finally
-        {
+            
+            // Check for missing modules.
+            checkForMissingModules();
+
             // Restore the original authentication
             authenticationComponent.setCurrentAuthentication(authentication);
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException("Failed to start modules", e);
+        }
+    }
+    
+    /**
+     * Checks to see if there are any modules registered as installed that aren't in the
+     * list of modules taken from the WAR.
+     * <p>
+     * Currently, the behaviour specified is that a warning is generated only.
+     */
+    private void checkForMissingModules()
+    {
+        // Get the IDs of all modules from the registry
+        RegistryKey moduleKeyAllIds = new RegistryKey(
+                ModuleComponentHelper.URI_MODULES_1_0,
+                REGISTRY_PATH_MODULES, REGISTRY_PROPERTY_DUMMY);
+        Collection<String> moduleIds = registryService.getChildElements(moduleKeyAllIds);
+        
+        // Check that each module is present in the distribution
+        for (String moduleId : moduleIds)
+        {
+            ModuleDetails moduleDetails = moduleService.getModule(moduleId);
+            if (moduleDetails != null)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Installed module found in distribution: " + moduleId);
+                }
+            }
+            else
+            {
+                // Get the specifics of the missing module
+                RegistryKey moduleKeyCurrentVersion = new RegistryKey(
+                        ModuleComponentHelper.URI_MODULES_1_0,
+                        REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION);
+                VersionNumber versionCurrent = (VersionNumber) registryService.getValue(moduleKeyCurrentVersion);
+                // The module is missing, so warn
+                loggerService.warn(I18NUtil.getMessage(MSG_MISSING, moduleId, versionCurrent));
+            }
         }
     }
     

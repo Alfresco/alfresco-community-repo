@@ -11,6 +11,8 @@
 
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <namespace uri="http://www.alfresco.org/system/registry/1.0" prefix="reg" />
+      <namespace uri="http://www.alfresco.org/system/modules/1.0" prefix="module" />
    </namespaces>
 
    <types>

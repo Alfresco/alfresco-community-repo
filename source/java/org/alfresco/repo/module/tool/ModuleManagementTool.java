@@ -313,6 +313,13 @@ public class ModuleManagementTool
 
                 // Update the zip file's
                 File.update(); 
+                
+                // Set the modified date
+                java.io.File warFile = new java.io.File(warFileLocation);
+                if (warFile.exists())
+                {
+                    warFile.setLastModified(System.currentTimeMillis());
+                }
             }               
         }
         catch (ZipWarningException ignore) 

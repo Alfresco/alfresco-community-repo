@@ -314,8 +314,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // create the node instance
         Node childNode = nodeDaoService.newNode(store, newId, nodeTypeQName);
         
-        // get the parent node
+        // Get the parent node
         Node parentNode = getNodeNotNull(parentRef);
+        // Create the association
+        ChildAssoc childAssoc = nodeDaoService.newChildAssoc(
+                parentNode,
+                childNode,
+                true,
+                assocTypeQName,
+                assocQName);
         
         // Set the default property values
         addDefaultPropertyValues(nodeTypeDef, properties);
@@ -331,13 +338,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             propertiesAfter = setPropertiesImpl(childNode, properties);
         }        
 
-        // create the association
-        ChildAssoc childAssoc = nodeDaoService.newChildAssoc(
-                parentNode,
-                childNode,
-                true,
-                assocTypeQName,
-                assocQName);
+        // Ensure child uniqueness
         setChildUniqueName(childNode);         // ensure uniqueness
         ChildAssociationRef childAssocRef = childAssoc.getChildAssocRef();
         
@@ -1069,7 +1070,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Node node = getNodeNotNull(nodeRef);
         // get the assocs pointing to it
-        Collection<ChildAssoc> parentAssocs = node.getParentAssocs();
+        Collection<ChildAssoc> parentAssocs = nodeDaoService.getParentAssocs(node);
         // list of results
         Collection<NodeRef> results = new ArrayList<NodeRef>(parentAssocs.size());
         for (ChildAssoc assoc : parentAssocs)
@@ -1089,7 +1090,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Node node = getNodeNotNull(nodeRef);
         // get the assocs pointing to it
-        Collection<ChildAssoc> parentAssocs = node.getParentAssocs();
+        Collection<ChildAssoc> parentAssocs = nodeDaoService.getParentAssocs(node);
         // shortcut if there are no assocs
         if (parentAssocs.size() == 0)
         {
@@ -1319,7 +1320,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         NodeRef currentNodeRef = currentNode.getNodeRef();
         // get the parent associations of the given node
-        Collection<ChildAssoc> parentAssocs = currentNode.getParentAssocs();
+        Collection<ChildAssoc> parentAssocs = nodeDaoService.getParentAssocs(currentNode);
         // does the node have parents
         boolean hasParents = parentAssocs.size() > 0;
         // does the current node have a root aspect?
@@ -1651,7 +1652,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // parent associations
         ArrayList<ChildAssociationRef> archivedParentAssocRefs = new ArrayList<ChildAssociationRef>(5);
-        for (ChildAssoc assoc : node.getParentAssocs())
+        for (ChildAssoc assoc : nodeDaoService.getParentAssocs(node))
         {
             Long relatedNodeId = assoc.getParent().getId();
             if (nodeStatusesById.containsKey(relatedNodeId))
@@ -1952,7 +1953,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             useName = (String) nameValue.getValue(DataTypeDefinition.TEXT);
         }
         // get all the parent assocs
-        Collection<ChildAssoc> parentAssocs = childNode.getParentAssocs();
+        Collection<ChildAssoc> parentAssocs = nodeDaoService.getParentAssocs(childNode);
         for (ChildAssoc assoc : parentAssocs)
         {
             QName assocTypeQName = assoc.getTypeQName();

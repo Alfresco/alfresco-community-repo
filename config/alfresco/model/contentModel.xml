@@ -19,6 +19,7 @@
          <parameter name="expression"><value><![CDATA[(.*[\"\*\\\>\<\?\/\:\|\xA3\xAC\%\&\+\;]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)]]></value></parameter>
          <parameter name="requiresMatch"><value>false</value></parameter>
       </constraint>
+	  <constraint name="cm:userNameConstraint" type="org.alfresco.repo.dictionary.constraint.UserNameConstraint" />
    </constraints>
    
    <types>
@@ -147,6 +148,9 @@
             <property name="cm:userName">
                <type>d:text</type>
                <mandatory>true</mandatory>
+			   <constraints>
+                  <constraint ref="cm:userNameConstraint" />
+               </constraints>
             </property>
             <property name="cm:homeFolder">
                <type>d:noderef</type>

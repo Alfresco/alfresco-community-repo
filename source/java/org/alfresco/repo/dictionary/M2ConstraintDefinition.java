@@ -46,40 +46,48 @@ import org.springframework.beans.PropertyAccessException;
  * 
  * @author Derek Hulley
  */
-/*package*/ class M2ConstraintDefinition implements ConstraintDefinition
+/* package */class M2ConstraintDefinition implements ConstraintDefinition
 {
     public static final String ERR_CYCLIC_REF = "d_dictionary.constraint.err.cyclic_ref";
+
     public static final String ERR_TYPE_AND_REF = "d_dictionary.constraint.err.type_and_ref";
+
     public static final String ERR_TYPE_OR_REF = "d_dictionary.constraint.err.type_or_ref";
+
     public static final String ERR_REF_NOT_FOUND = "d_dictionary.constraint.err.ref_not_found";
+
     public static final String ERR_ANON_NEEDS_PROPERTY = "d_dictionary.constraint.err.anon_needs_property";
+
     public static final String ERR_INVALID_TYPE = "d_dictionary.constraint.err.invalid_type";
+
     public static final String ERR_SIMPLE_AND_LIST = "d_dictionary.constraint.err.property_simple_and_list";
+
     public static final String ERR_CONSTRUCT_FAILURE = "d_dictionary.constraint.err.construct_failure";
+
     public static final String ERR_PROPERTY_MISMATCH = "d_dictionary.constraint.err.property_mismatch";
 
     private static int anonPropCount = 0;
-    
+
     private ModelDefinition model;
+
     private NamespacePrefixResolver prefixResolver;
+
     private M2Constraint m2Constraint;
+
     private QName name;
+
     private Constraint constraint;
+
     private boolean resolving;
-    
-    /*package*/ M2ConstraintDefinition(
-            M2PropertyDefinition m2PropertyDef,
-            M2Constraint m2Constraint,
+
+    /* package */M2ConstraintDefinition(M2PropertyDefinition m2PropertyDef, M2Constraint m2Constraint,
             NamespacePrefixResolver prefixResolver)
     {
         this(m2PropertyDef.getModel(), m2PropertyDef, m2Constraint, prefixResolver);
     }
-    
-    /*package*/ M2ConstraintDefinition(
-            ModelDefinition modelDefinition,
-            M2PropertyDefinition m2PropertyDef,
-            M2Constraint m2Constraint,
-            NamespacePrefixResolver prefixResolver)
+
+    /* package */M2ConstraintDefinition(ModelDefinition modelDefinition, M2PropertyDefinition m2PropertyDef,
+            M2Constraint m2Constraint, NamespacePrefixResolver prefixResolver)
     {
         this.model = modelDefinition;
         this.m2Constraint = m2Constraint;
@@ -103,8 +111,8 @@ import org.springframework.beans.PropertyAccessException;
             this.name = QName.createQName(m2Constraint.getName(), prefixResolver);
         }
     }
-    
-    /*package*/ synchronized void resolveDependencies(ModelQuery query)
+
+    /* package */synchronized void resolveDependencies(ModelQuery query)
     {
         if (resolving)
         {
@@ -121,7 +129,7 @@ import org.springframework.beans.PropertyAccessException;
             resolving = false;
         }
     }
-    
+
     private synchronized void resolveInternal(ModelQuery query)
     {
         if (constraint != null)
@@ -187,39 +195,43 @@ import org.springframework.beans.PropertyAccessException;
             // property setters
             BeanWrapper beanWrapper = new BeanWrapperImpl(constraint);
             List<M2NamedValue> constraintNamedValues = m2Constraint.getParameters();
-            for (M2NamedValue namedValue : constraintNamedValues)
+            
+            if (constraintNamedValues != null)
             {
-                Object value = null;
-                if (namedValue.getSimpleValue() != null && namedValue.getListValue() != null)
+                for (M2NamedValue namedValue : constraintNamedValues)
                 {
-                    throw new DictionaryException(ERR_SIMPLE_AND_LIST, shortName, namedValue.getName());
-                }
-                else if (namedValue.getSimpleValue() != null)
-                {
-                    value = namedValue.getSimpleValue();
-                }
-                else if (namedValue.getListValue() != null)
-                {
-                    value = namedValue.getListValue();
-                }
-                try
-                {
-                    beanWrapper.setPropertyValue(namedValue.getName(), value);
-                }
-                catch (PropertyAccessException e)
-                {
-                    throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
-                }
-                catch (InvalidPropertyException e)
-                {
-                    throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
+                    Object value = null;
+                    if (namedValue.getSimpleValue() != null && namedValue.getListValue() != null)
+                    {
+                        throw new DictionaryException(ERR_SIMPLE_AND_LIST, shortName, namedValue.getName());
+                    }
+                    else if (namedValue.getSimpleValue() != null)
+                    {
+                        value = namedValue.getSimpleValue();
+                    }
+                    else if (namedValue.getListValue() != null)
+                    {
+                        value = namedValue.getListValue();
+                    }
+                    try
+                    {
+                        beanWrapper.setPropertyValue(namedValue.getName(), value);
+                    }
+                    catch (PropertyAccessException e)
+                    {
+                        throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
+                    }
+                    catch (InvalidPropertyException e)
+                    {
+                        throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
+                    }
                 }
             }
             // now initialize
             constraint.initialize();
         }
     }
-    
+
     /**
      * @see #getName()
      */
@@ -228,7 +240,7 @@ import org.springframework.beans.PropertyAccessException;
     {
         return getName().toString();
     }
-    
+
     public ModelDefinition getModel()
     {
         return model;
@@ -243,7 +255,7 @@ import org.springframework.beans.PropertyAccessException;
     {
         return constraint;
     }
-    
+
     /**
      * Well-known constraint types
      */

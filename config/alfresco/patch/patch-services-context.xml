@@ -684,6 +684,24 @@
             <ref bean="indexerAndSearcherFactory" />
         </property>
     </bean>
+	
+	<bean id="patch.invalidUserPersonAndGroup" class="org.alfresco.repo.admin.patch.impl.InvalidUserPersonAndGroupPatch" parent="basePatch" >
+        <property name="id"><value>patch.invalidUserPersonAndGroup</value></property>
+        <property name="description"><value>patch.invalidUserPersonAndGroup.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>39</value></property>
+        <property name="targetSchema"><value>40</value></property>
+        <!-- bootstrap view -->
+        <property name="userImporterBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+		<property name="spacesImporterBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+		<property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
 
     <bean id="patch.webscripts" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.webscripts</value></property>

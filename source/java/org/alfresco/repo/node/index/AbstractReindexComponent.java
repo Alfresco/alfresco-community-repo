@@ -68,7 +68,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     private static Log logger = LogFactory.getLog(AbstractReindexComponent.class);
     
     /** kept to notify the thread that it should quit */
-    private static VmShutdownListener vmShutdownListener = new VmShutdownListener("MissingContentReindexComponent");
+    private static VmShutdownListener vmShutdownListener = new VmShutdownListener("IndexRecovery");
     
     private AuthenticationComponent authenticationComponent;
     /** provides transactions to atomically index each missed transaction */

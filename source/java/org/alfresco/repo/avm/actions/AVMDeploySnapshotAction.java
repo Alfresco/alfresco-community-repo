@@ -195,19 +195,21 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
       DeploymentReport report = null;
       try
       {
+         String host = targetServer;
          int port = defaultRmiPort;
          
          // check whether there is a port number present, if so, use it
          int idx = targetServer.indexOf(":");
          if (idx != -1)
          {
+            host = targetServer.substring(0, idx);
             String strPort = targetServer.substring(idx+1);
             port = Integer.parseInt(strPort);
          }
          
          // TODO: we need to capture username/password for the remote server at some
-         //       point, for now we use the admin/admin account, need to externalise this too!
-         report = this.deployService.deployDifference(version, path, targetServer, port, 
+         //       point, for now we use the configured username/password for all servers
+         report = this.deployService.deployDifference(version, path, host, port, 
                   remoteUsername, remotePassword, targetPath, true, false, false, callback);
       }
       catch (Throwable err)
@@ -247,8 +249,7 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
       }
       
       // create the deployment report node
-      createDeploymentReportNode(report, (String)action.getParameterValue(PARAM_TARGET_SERVER), 
-               version, websiteRef, startDate, deployError);
+      createDeploymentReportNode(report, targetServer, version, websiteRef, startDate, deployError);
    }
 
    /**

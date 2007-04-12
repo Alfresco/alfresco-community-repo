@@ -14,6 +14,10 @@
       <namespace uri="http://www.alfresco.org/model/user/1.0" prefix="usr"/>
    </namespaces>
 
+	<constraints>
+	  <constraint name="usr:userNameConstraint" type="org.alfresco.repo.dictionary.constraint.UserNameConstraint" />
+      <constraint name="usr:authorityNameConstraint" type="org.alfresco.repo.dictionary.constraint.AuthorityNameConstraint" />
+   </constraints>
    
    <types>
       
@@ -30,6 +34,9 @@
 			<!-- This is so you can not break person lookup -->
             <property name="usr:username">
                <type>d:text</type>
+			   <constraints>
+                  <constraint ref="usr:userNameConstraint" />
+               </constraints>
             </property>
             <property name="usr:password">
                <type>d:text</type>
@@ -66,6 +73,9 @@
 			<!-- This is so you can not break group lookup -->
             <property name="usr:authorityName">
                <type>d:text</type>
+			   <constraints>
+                  <constraint ref="usr:authorityNameConstraint" />
+               </constraints>
             </property>
             <property name="usr:members">
                <type>d:text</type>

@@ -900,6 +900,49 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         getSession().flush();
     }
 
+    /**
+     * @inheritDoc
+     * 
+     * This method includes a check to ensure that the <b>parentAssocs</b> cache
+     * isn't incorrectly empty.
+     */
+    public Collection<ChildAssoc> getParentAssocs(Node node)
+    {
+        Collection<ChildAssoc> parentAssocs = node.getParentAssocs();
+        if (parentAssocs.size() == 0)
+        {
+            // the only condition where this is allowed is if the given node is a root node
+            Store store = node.getStore();
+            Node rootNode = store.getRootNode();
+            if (rootNode == null)
+            {
+                // a store without a root node - the entire store is hosed
+                throw new DataIntegrityViolationException("Store has no root node: \n" +
+                        "   store: " + store);
+            }
+            if (!rootNode.equals(node))
+            {
+                // Reload the node to ensure that it is properly initialized
+                getSession().refresh(node);
+                // Check if it has any parents yet.
+                if (node.getParentAssocs().size() == 0)
+                {
+                    // It wasn't the root node and definitely has no parent
+                    throw new DataIntegrityViolationException(
+                            "Non-root node has no primary parent: \n" +
+                            "   child: " + node);
+                }
+                else
+                {
+                    // Repeat this method with confidence
+                    return getParentAssocs(node);
+                }
+            }
+        }
+        // Done
+        return parentAssocs;
+    }
+
     private Set<NodeRef> warnedDuplicateParents = new HashSet<NodeRef>(3);
     /**
      * @inheritDoc

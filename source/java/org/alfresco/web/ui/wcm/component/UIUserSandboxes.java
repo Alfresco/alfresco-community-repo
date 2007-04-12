@@ -58,6 +58,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
@@ -1001,7 +1002,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private UIActionLink findAction(String name, String store)
    {
       UIActionLink action = null;
-      String actionId = name + '_' + store;
+      String actionId = name + '_' + FacesHelper.makeLegalId(store);
       if (logger.isDebugEnabled())
          logger.debug("Finding action Id: " + actionId);
       for (UIComponent component : (List<UIComponent>)getChildren())
@@ -1038,7 +1039,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
       javax.faces.application.Application facesApp = fc.getApplication();
       UIActionLink control = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
       
-      String id = name + '_' + store;
+      String id = name + '_' + FacesHelper.makeLegalId(store);
       if (logger.isDebugEnabled())
          logger.debug("...creating action Id: " + id);
       control.setRendererType(UIActions.RENDERER_ACTIONLINK);

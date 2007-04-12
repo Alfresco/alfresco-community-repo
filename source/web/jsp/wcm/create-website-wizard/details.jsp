@@ -162,7 +162,7 @@
          <f:verbatim>
          <div id="deploy-to-help" class="summary infoText statusInfoText" style="display: none; padding: 5px; width: 220px;">
          </f:verbatim>
-            <h:outputText id="deploy-top-help-text" value="#{WizardManager.bean.deployToHelp}" />
+            <h:outputText id="deploy-top-help-text" value="#{WizardManager.bean.deployToHelp}" escape="false" />
          <f:verbatim>
          </div>
       </td>

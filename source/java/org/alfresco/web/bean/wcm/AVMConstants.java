@@ -820,7 +820,9 @@ public final class AVMConstants
     */
    public static NodeRef getWebProjectNodeFromPath(final String absoluteAVMPath)
    {
-      return getWebProjectNodeFromStore(AVMConstants.getStoreName(absoluteAVMPath));
+      String storeName = AVMConstants.getStoreName(absoluteAVMPath);
+      String storeId = AVMConstants.getStoreId(storeName);
+      return getWebProjectNodeFromStore(storeId);
    }
    
    /**

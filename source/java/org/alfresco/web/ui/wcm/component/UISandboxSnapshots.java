@@ -225,8 +225,19 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             versions = avmService.getStoreVersions(sandbox, fromDate, toDate);
          }
          
+         // determine whether the deploy action should be shown
+         boolean showDeployAction = false;
+         NodeRef webProjectRef = AVMConstants.getWebProjectNodeFromStore(sandbox);
+         NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+         List<String> deployToServers = (List<String>)nodeService.getProperty(webProjectRef, 
+               WCMAppModel.PROP_DEPLOYTO);
+         if (deployToServers != null && deployToServers.size() > 0)
+         {
+            showDeployAction = true;
+         }
+         
          // determine the deployment status for the website
-         determineDeploymentStatus(context, sandbox);
+         determineDeploymentStatus(context, webProjectRef, sandbox, nodeService);
          
          Map requestMap = context.getExternalContext().getRequestMap();
          for (int i=versions.size() - 1; i >= 0; i--) // reverse order
@@ -274,27 +285,31 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                }
                requestMap.put(REQUEST_SNAPVERSION, Integer.toString(item.getVersionID()));
                Utils.encodeRecursive(context, action);
-               out.write("&nbsp;&nbsp;");
                
-               // deploy action
-               action = findAction(ACT_SNAPSHOT_DEPLOY, sandbox);
-               if (action == null)
+               // deploy action (if there are deployto servers specified)
+               if (showDeployAction)
                {
-                  Map<String, String> params = new HashMap<String, String>(2, 1.0f);
-                  params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
-                  action = createAction(context, sandbox, ACT_SNAPSHOT_DEPLOY, "/images/icons/deploy.gif",
-                        "#{DialogManager.setupParameters}", "dialog:deploySnapshot", null, params);
+                  out.write("&nbsp;&nbsp;");
+                  action = findAction(ACT_SNAPSHOT_DEPLOY, sandbox);
+                  if (action == null)
+                  {
+                     Map<String, String> params = new HashMap<String, String>(2, 1.0f);
+                     params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
+                     action = createAction(context, sandbox, ACT_SNAPSHOT_DEPLOY, "/images/icons/deploy.gif",
+                           "#{DialogManager.setupParameters}", "dialog:deploySnapshot", null, params);
+                  }
+                  
+                  Utils.encodeRecursive(context, action);
                }
                
-               Utils.encodeRecursive(context, action);
-               requestMap.remove(REQUEST_SNAPVERSION);
-               //out.write("&nbsp;");
-               
                // TODO: restore once preview of a store by version is implemented in vserver
+               //out.write("&nbsp;&nbsp;");
                /*Utils.encodeRecursive(context, aquireAction(
                         context, sandbox, ACT_SNAPSHOT_PREVIEW, null,
                         null, null));
                out.write("&nbsp;");*/
+               
+               requestMap.remove(REQUEST_SNAPVERSION);
                
                out.write("</nobr></td></tr>");
             }
@@ -463,11 +478,10 @@ public class UISandboxSnapshots extends SelfRenderingComponent
       return control;
    }
    
-   private void determineDeploymentStatus(FacesContext context, String sandbox)
+   private void determineDeploymentStatus(FacesContext context, NodeRef webProjectRef, 
+         String sandbox, NodeService nodeService)
    {
       // work out what status to show against which snapshot
-      NodeRef webProjectRef = AVMConstants.getWebProjectNodeFromStore(sandbox);
-      NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
       List<String> selectedServers = (List<String>)nodeService.getProperty(webProjectRef, 
                WCMAppModel.PROP_SELECTEDDEPLOYTO);
       Integer ver = (Integer)nodeService.getProperty(webProjectRef, 

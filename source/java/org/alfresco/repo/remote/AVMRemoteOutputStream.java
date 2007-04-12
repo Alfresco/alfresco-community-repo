@@ -33,15 +33,19 @@ public class AVMRemoteOutputStream extends OutputStream
     
     private String fHandle;
     
+    private ClientTicketHolder fTicketHolder;
+    
     /**
      * Create a new one.
      * @param handle The handle returned from an AVMRemote call.
      * @param remote The AVMRemote instance.
      */
-    public AVMRemoteOutputStream(String handle, AVMRemoteTransport remote)
+    public AVMRemoteOutputStream(String handle, AVMRemoteTransport remote,
+                                 ClientTicketHolder ticketHolder)
     {
         fAVMRemote = remote;
         fHandle = handle;
+        fTicketHolder = ticketHolder;
     }
     
     /**
@@ -66,7 +70,7 @@ public class AVMRemoteOutputStream extends OutputStream
     {
         try
         {
-            fAVMRemote.closeOutputHandle(ClientTicketHolder.GetTicket(), fHandle);
+            fAVMRemote.closeOutputHandle(fTicketHolder.getTicket(), fHandle);
         }
         catch (Exception e)
         {
@@ -88,13 +92,13 @@ public class AVMRemoteOutputStream extends OutputStream
         {
             if (off == 0)
             {
-                fAVMRemote.writeOutput(ClientTicketHolder.GetTicket(), fHandle, b, len);
+                fAVMRemote.writeOutput(fTicketHolder.getTicket(), fHandle, b, len);
             }
             else
             {
                 byte [] buff = new byte[len];
                 System.arraycopy(b, off, buff, 0, len);
-                fAVMRemote.writeOutput(ClientTicketHolder.GetTicket(), fHandle, buff, len);
+                fAVMRemote.writeOutput(fTicketHolder.getTicket(), fHandle, buff, len);
             }
         }
         catch (Exception e)

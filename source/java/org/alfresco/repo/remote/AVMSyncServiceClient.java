@@ -22,6 +22,11 @@ public class AVMSyncServiceClient implements AVMSyncService
     private AVMSyncServiceTransport fTransport;
     
     /**
+     * The ticket holder.
+     */
+    private ClientTicketHolder fTicketHolder;
+    
+    /**
      * Default constructor.
      */
     public AVMSyncServiceClient()
@@ -36,13 +41,22 @@ public class AVMSyncServiceClient implements AVMSyncService
         fTransport = transport;
     }
     
+    /**
+     * Setter.
+     * @param ticketHolder To set.
+     */
+    public void setClientTicketHolder(ClientTicketHolder ticketHolder)
+    {
+        fTicketHolder = ticketHolder;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avmsync.AVMSyncService#compare(int, java.lang.String, int, java.lang.String)
      */
     public List<AVMDifference> compare(int srcVersion, String srcPath,
             int dstVersion, String dstPath, NameMatcher excluder) 
     {
-        return fTransport.compare(ClientTicketHolder.GetTicket(), srcVersion, srcPath, dstVersion, dstPath, excluder);
+        return fTransport.compare(fTicketHolder.getTicket(), srcVersion, srcPath, dstVersion, dstPath, excluder);
     }
 
     /* (non-Javadoc)
@@ -50,7 +64,7 @@ public class AVMSyncServiceClient implements AVMSyncService
      */
     public void flatten(String layerPath, String underlyingPath) 
     {
-        fTransport.flatten(ClientTicketHolder.GetTicket(), layerPath, underlyingPath);
+        fTransport.flatten(fTicketHolder.getTicket(), layerPath, underlyingPath);
     }
 
     /* (non-Javadoc)
@@ -58,7 +72,7 @@ public class AVMSyncServiceClient implements AVMSyncService
      */
     public void resetLayer(String layerPath) 
     {
-        fTransport.resetLayer(ClientTicketHolder.GetTicket(), layerPath);
+        fTransport.resetLayer(fTicketHolder.getTicket(), layerPath);
     }
 
     /* (non-Javadoc)
@@ -69,6 +83,6 @@ public class AVMSyncServiceClient implements AVMSyncService
                        boolean ignoreOlder, boolean overrideConflicts,
                        boolean overrideOlder, String tag, String description) 
     {
-        fTransport.update(ClientTicketHolder.GetTicket(), diffList, excluder, ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder, tag, description);
+        fTransport.update(fTicketHolder.getTicket(), diffList, excluder, ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder, tag, description);
     }
 }

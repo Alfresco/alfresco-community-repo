@@ -496,4 +496,12 @@ public class AVMRemoteLocal implements AVMRemote
     {
         return fService.getAPath(desc);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#setGuid(java.lang.String, java.lang.String)
+     */
+    public void setGuid(String path, String guid) 
+    {
+        fService.setGuid(path, guid);
+    }
 }

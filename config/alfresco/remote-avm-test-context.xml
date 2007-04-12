@@ -6,7 +6,7 @@
     <!-- Remote authentication service. -->
     <bean id="authenticationService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
         <property name="serviceUrl">
-            <value>rmi://localhost:1313/authentication</value>
+            <value>rmi://localhost:50500/authentication</value>
         </property>
         <property name="serviceInterface">
             <value>org.alfresco.service.cmr.security.AuthenticationService</value>
@@ -16,17 +16,23 @@
         </property>
     </bean>
 
+    <!-- Client Ticket Holder Bean. -->
+    <bean id="clientTicketHolder" class="org.alfresco.repo.remote.ClientTicketHolderGlobal"/>
+
 	<!-- Remote interface for AVM. -->
 	<bean id="avmRemote" class="org.alfresco.repo.remote.AVMRemoteImpl">
 	    <property name="avmRemoteTransport">
 	        <ref bean="avmRemoteTransport"/>
+	    </property>
+	    <property name="clientTicketHolder">
+	        <ref bean="clientTicketHolder"/>
 	    </property>
 	</bean>
 
 	<!-- RMI Proxy bean for avmRemoteTransport -->
 	<bean id="avmRemoteTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
 		<property name="serviceUrl">
-			<value>rmi://localhost:1313/avm</value>
+			<value>rmi://localhost:50500/avm</value>
 		</property>
 		<property name="serviceInterface">
 			<value>org.alfresco.service.cmr.remote.AVMRemoteTransport</value>
@@ -40,11 +46,14 @@
 	    <property name="avmSyncServiceTransport">
 	    	<ref bean="avmSyncServiceTransport"/>
 	    </property>
+	    <property name="clientTicketHolder">
+	        <ref bean="clientTicketHolder"/>
+	    </property>
 	</bean>
 
     <bean id="avmSyncServiceTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
         <property name="serviceUrl">
-            <value>rmi://localhost:1313/avmsync</value>
+            <value>rmi://localhost:50500/avmsync</value>
         </property>
         <property name="serviceInterface">
             <value>org.alfresco.service.cmr.remote.AVMSyncServiceTransport</value>

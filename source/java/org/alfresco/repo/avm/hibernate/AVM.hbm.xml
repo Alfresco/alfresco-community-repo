@@ -32,6 +32,7 @@
 			 won't cause violations in the db during saves. -->
 		<property name="versionID" type="int" column="version_id"
 			not-null="true"/>
+	    <property name="guid" type="string" length="36" column="guid" not-null="true"/>
 		<component name="basicAttributes" class="BasicAttributesImpl">
 			<property name="creator" type="string" not-null="true"/>
 			<property name="owner" type="string" not-null="true"/>

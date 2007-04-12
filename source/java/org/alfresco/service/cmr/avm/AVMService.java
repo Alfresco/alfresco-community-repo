@@ -1209,4 +1209,12 @@ public interface AVMService
      * @throws            AVMNotFoundException
      */
     public void revert(String path, AVMNodeDescriptor toRevertTo);
+    
+    /**
+     * Set the GUID on a node. The GUID of a node uniquely identifies 
+     * the state of a node, i.e. its content, metadata, and aspects.
+     * @param path The path to the node.
+     * @param guid The GUID to set.
+     */
+    public void setGuid(String path, String guid);
 }

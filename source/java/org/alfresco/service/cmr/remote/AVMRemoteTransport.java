@@ -480,4 +480,12 @@ public interface AVMRemoteTransport
      * @return version and path.
      */
     public Pair<Integer, String> getAPath(String ticket, AVMNodeDescriptor desc);
+    
+    /**
+     * Set the GUID on a node.
+     * @param ticket The authentication ticket.
+     * @param path The path to the node.
+     * @param guid The GUID to set.
+     */
+    public void setGuid(String ticket, String path, String guid);
 }

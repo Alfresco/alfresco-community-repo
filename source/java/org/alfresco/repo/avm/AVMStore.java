@@ -470,4 +470,11 @@ public interface AVMStore
      * @param toRevertTo The descriptor of the version to revert to.
      */
     public void revert(String path, String name, AVMNodeDescriptor toRevertTo);
+    
+    /**
+     * Set the GUID on a node.
+     * @param path
+     * @param guid
+     */
+    public void setGuid(String path, String guid);
 }

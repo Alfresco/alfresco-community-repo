@@ -193,7 +193,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         else
         {
-            throw new InvalidStoreRefException("Not Found.", storeRef);
+            throw new InvalidStoreRefException(storeName +":/" + " not found.", storeRef);
         }
     }
 
@@ -297,7 +297,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMNotFoundException e)
         {
-            throw new InvalidNodeRefException("Not Found.", parentRef);
+            throw new InvalidNodeRefException(avmPath + " not found.", parentRef);
         }
         catch (AVMExistsException e)
         {
@@ -480,7 +480,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 avmVersionPath.getSecond());
         if (desc == null)
         {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
+            throw new InvalidNodeRefException(avmVersionPath.getSecond() + " not found.", nodeRef);
         }
         if (desc.isPlainDirectory())
         {
@@ -794,7 +794,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMNotFoundException e)
         {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
+            throw new InvalidNodeRefException(avmVersionPath.getSecond() +" not found.", nodeRef);
         }
     }
     
@@ -821,7 +821,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                                                      childVersionPath.getSecond());
         if (child == null)
         {
-            throw new InvalidNodeRefException("Not Found.", childRef);
+            throw new InvalidNodeRefException(childVersionPath.getSecond() + " not found.", childRef);
         }
         Pair<Integer, String> parentVersionPath = AVMNodeConverter.ToAVMVersionPath(parentRef);
         if (parentVersionPath.getFirst() >= 0)
@@ -870,7 +870,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         String [] childPathBase = AVMNodeConverter.SplitBase(childPath);
         if (childPathBase[0] == null || !childPathBase[0].equals(parentPath))
         {
-            throw new InvalidNodeRefException("Not a child.", childRef);
+            throw new InvalidNodeRefException(childPath + " not a child of " + parentPath, childRef);
         }
         try
         {
@@ -887,7 +887,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMNotFoundException e)
         {
-            throw new InvalidNodeRefException("Not found.", childRef);
+            throw new InvalidNodeRefException(childPathBase[1] + " not found in " + childPathBase[0], 
+                                              childRef);
         }
     }
 
@@ -944,7 +945,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMNotFoundException e)
         {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
+            throw new InvalidNodeRefException(avmVersionPath.getSecond() + " not found.", nodeRef);
         }
         Map<QName, Serializable> result = new HashMap<QName, Serializable>();
         for (QName qName : props.keySet())
@@ -1017,7 +1018,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMNotFoundException e)
         {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
+            throw new InvalidNodeRefException(avmVersionPath.getSecond() + " not found.", nodeRef);
         }
     }
     
@@ -1052,7 +1053,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                                                     avmVersionPath.getSecond());
         if (desc == null)
         {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
+            throw new InvalidNodeRefException(avmVersionPath.getSecond() + " not found.", nodeRef);
         }
         if (qName.equals(ContentModel.PROP_CREATED))
         {
@@ -1153,7 +1154,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                         AVMNodeDescriptor desc = fAVMService.lookup(-1, avmVersionPath.getSecond());
                         if (desc == null)
                         {
-                            throw new InvalidNodeRefException("Not Found.", nodeRef);
+                            throw new InvalidNodeRefException(avmVersionPath.getSecond() + " not found.", nodeRef);
                         }
                         if (desc.isPlainFile())
                         {
@@ -1171,7 +1172,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMNotFoundException e)
         {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
+            throw new InvalidNodeRefException(avmVersionPath.getSecond() + " not found.", nodeRef);
         }
     }
     
@@ -1256,7 +1257,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMNotFoundException e)
         {
-            throw new InvalidNodeRefException("Not Found.", nodeRef);
+            throw new InvalidNodeRefException(avmVersionPath.getSecond() + " not found.", nodeRef);
         }
     }
     

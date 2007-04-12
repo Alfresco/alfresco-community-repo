@@ -21,6 +21,11 @@ public class RepoRemoteInputStream extends InputStream
     private RepoRemoteTransport fRepoRemote;
     
     /**
+     * The ticket holder.
+     */
+    private ClientTicketHolder fTicketHolder;
+    
+    /**
      * The handle to the input stream.
      */
     private String fHandle;
@@ -30,10 +35,12 @@ public class RepoRemoteInputStream extends InputStream
      * @param handle The handle returned by getInputStream();
      * @param remote The AVMRemote instance.
      */
-    public RepoRemoteInputStream(String handle, RepoRemoteTransport remote)
+    public RepoRemoteInputStream(String handle, RepoRemoteTransport remote,
+                                 ClientTicketHolder ticketHolder)
     {
         fHandle = handle;
         fRepoRemote = remote;
+        fTicketHolder = ticketHolder;
     }
     
     /**
@@ -45,7 +52,7 @@ public class RepoRemoteInputStream extends InputStream
     {
         try
         {
-            byte [] buff = fRepoRemote.readInput(ClientTicketHolder.GetTicket(), fHandle, 1);
+            byte [] buff = fRepoRemote.readInput(fTicketHolder.getTicket(), fHandle, 1);
             if (buff.length == 0)
             {
                 return -1;
@@ -70,7 +77,7 @@ public class RepoRemoteInputStream extends InputStream
     {
         try
         {
-            byte [] buff = fRepoRemote.readInput(ClientTicketHolder.GetTicket(), fHandle, len);
+            byte [] buff = fRepoRemote.readInput(fTicketHolder.getTicket(), fHandle, len);
             if (buff.length == 0)
             {
                 return -1;
@@ -92,7 +99,7 @@ public class RepoRemoteInputStream extends InputStream
     {
         try
         {
-            fRepoRemote.closeInputHandle(ClientTicketHolder.GetTicket(), fHandle);
+            fRepoRemote.closeInputHandle(fTicketHolder.getTicket(), fHandle);
         }
         catch (Exception e)
         {

@@ -19,15 +19,19 @@ public class RepoRemoteOutputStream extends OutputStream
     
     private String fHandle;
     
+    private ClientTicketHolder fTicketHolder;
+    
     /**
      * Create a new one.
      * @param handle The handle returned from an RepoRemoteTransport call.
      * @param remote The AVMRemote instance.
      */
-    public RepoRemoteOutputStream(String handle, RepoRemoteTransport remote)
+    public RepoRemoteOutputStream(String handle, RepoRemoteTransport remote,
+                                  ClientTicketHolder ticketHolder)
     {
         fRepoRemote = remote;
         fHandle = handle;
+        fTicketHolder = ticketHolder;
     }
     
     /**
@@ -52,7 +56,7 @@ public class RepoRemoteOutputStream extends OutputStream
     {
         try
         {
-            fRepoRemote.closeOutputHandle(ClientTicketHolder.GetTicket(), fHandle);
+            fRepoRemote.closeOutputHandle(fTicketHolder.getTicket(), fHandle);
         }
         catch (Exception e)
         {
@@ -74,13 +78,13 @@ public class RepoRemoteOutputStream extends OutputStream
         {
             if (off == 0)
             {
-                fRepoRemote.writeOutput(ClientTicketHolder.GetTicket(), fHandle, b, len);
+                fRepoRemote.writeOutput(fTicketHolder.getTicket(), fHandle, b, len);
             }
             else
             {
                 byte [] buff = new byte[len];
                 System.arraycopy(b, off, buff, 0, len);
-                fRepoRemote.writeOutput(ClientTicketHolder.GetTicket(), fHandle, buff, len);
+                fRepoRemote.writeOutput(fTicketHolder.getTicket(), fHandle, buff, len);
             }
         }
         catch (Exception e)

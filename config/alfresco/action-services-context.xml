@@ -483,6 +483,22 @@
     	    <value>false</value>
     	</property>
     </bean>
+    
+    <bean id="avm-deploy-snapshot" class="org.alfresco.repo.avm.actions.AVMDeploySnapshotAction" parent="action-executer">
+    	<property name="deploymentService">
+    	    <ref bean="DeploymentService"/>
+    	</property>
+      <property name="contentService">
+          <ref bean="ContentService"/>
+      </property>
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+    	<property name="publicAction">
+    	    <value>false</value>
+    	</property>
+    </bean>
+    
     <!-- Scheduled action helper beans -->
     
     <!-- Base template action definition -->

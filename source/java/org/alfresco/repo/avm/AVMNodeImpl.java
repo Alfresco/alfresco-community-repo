@@ -33,6 +33,7 @@ import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMReadOnlyException;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 
 /**
  * Base class for all repository file system like objects.
@@ -78,6 +79,11 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
     private AVMStore fStoreNew;
     
     /**
+     * The GUID for this version.
+     */
+    private String fGUID;
+    
+    /**
      * Default constructor.
      */
     protected AVMNodeImpl()
@@ -109,6 +115,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
                                                    time,
                                                    time);
         fStoreNew = store;
+        fGUID = GUID.generate();
     }
     
     /**
@@ -514,5 +521,21 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         {
             throw new AVMReadOnlyException("Write Operation on R/O Node.");
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNode#getGuid()
+     */
+    public String getGuid() 
+    {
+        return fGUID;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNode#setGuid(java.lang.String)
+     */
+    public void setGuid(String guid) 
+    {
+        fGUID = guid;
     }
 }

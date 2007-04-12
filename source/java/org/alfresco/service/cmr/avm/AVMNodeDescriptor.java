@@ -125,6 +125,11 @@ public class AVMNodeDescriptor implements Serializable
     private int fDeletedType;
     
     /**
+     * The GUID for the node.
+     */
+    private String fGuid;
+    
+    /**
      * Make one up.
      * @param path The looked up path.
      * @param type The type of the node.
@@ -136,6 +141,7 @@ public class AVMNodeDescriptor implements Serializable
      * @param accessDate The access date.
      * @param id The object id.
      * @param versionID The version id.
+     * @param guid The GUID.
      * @param indirection The indirection.
      * @param isPrimary Whether this is a primary indirection.
      * @param layerID The layer id.
@@ -152,6 +158,7 @@ public class AVMNodeDescriptor implements Serializable
                              long modDate,
                              long accessDate,
                              long id,
+                             String guid,
                              int versionID,
                              String indirection,
                              boolean isPrimary,
@@ -170,6 +177,7 @@ public class AVMNodeDescriptor implements Serializable
         fModDate = modDate;
         fAccessDate = accessDate;
         fID = id;
+        fGuid = guid;
         fVersionID = versionID;
         fIndirection = indirection;
         fIsPrimary = isPrimary;
@@ -484,5 +492,13 @@ public class AVMNodeDescriptor implements Serializable
         return fType == AVMNodeType.DELETED_NODE &&
                (fDeletedType == AVMNodeType.LAYERED_FILE ||
                 fDeletedType == AVMNodeType.PLAIN_FILE);
+    }
+    
+    /**
+     * Get the GUID for the node.
+     */
+    public String getGuid()
+    {
+        return fGuid;
     }
 }

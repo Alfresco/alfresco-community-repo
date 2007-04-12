@@ -32,6 +32,20 @@
                <title>Default Webapp</title>
                <type>d:text</type>
             </property>
+            <property name="wca:deployto">
+               <title>Deploy To</title>
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="wca:selecteddeployto">
+               <title>Servers Selected For Deployment</title>
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+            <property name="wca:selecteddeployversion">
+               <title>Snapshot Version Selected For Deployment</title>
+               <type>d:int</type>
+            </property>
          </properties>
          <associations>
             <child-association name="wca:webuser">
@@ -63,6 +77,17 @@
                </source>
                <target>
                   <class>wca:webworkflowdefaults</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="wca:deploymentreport">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:deploymentreport</class>
                   <mandatory>false</mandatory>
                   <many>true</many>
                </target>
@@ -180,6 +205,42 @@
       <type name="wca:formfolder">
          <title>XForms Capture Form Folder</title>
 	      <parent>cm:folder</parent>
+      </type>
+      
+      <type name="wca:deploymentreport">
+         <title>Website Deployment Report</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="wca:deployserver">
+               <title>Server Deployed To</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:deployversion">
+               <title>Snapshot Version Deployed</title>
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:deploystarttime">
+               <title>Time Deploy Started</title>
+               <type>d:datetime</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:deployendtime">
+               <title>Time Deploy Finished</title>
+               <type>d:datetime</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="wca:deploysuccessful">
+               <title>Deployment Successful</title>
+               <type>d:boolean</type>
+               <default>false</default>
+            </property>
+            <property name="wca:deployfailedreason">
+               <title>Failure Reason</title>
+               <type>d:text</type>
+            </property>
+         </properties>
       </type>
 	</types>
 

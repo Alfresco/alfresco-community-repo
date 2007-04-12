@@ -1458,4 +1458,17 @@ public class AVMServiceImpl implements AVMService
         AlfrescoTransactionSupport.bindListener(fTransactionListener);
         fAVMRepository.revert(baseName[0], baseName[1], toRevertTo);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#setGuid(java.lang.String, java.lang.String)
+     */
+    public void setGuid(String path, String guid) 
+    {
+        if (path == null || guid == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        AlfrescoTransactionSupport.bindListener(fTransactionListener);
+        fAVMRepository.setGuid(path, guid);
+    }
 }

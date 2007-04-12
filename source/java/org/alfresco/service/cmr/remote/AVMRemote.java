@@ -468,4 +468,11 @@ public interface AVMRemote
      * @throws AVMNotFoundException
      */
     public Pair<Integer, String> getAPath(AVMNodeDescriptor desc);
+    
+    /**
+     * Set the GUID of a node.
+     * @param path The path to the node.
+     * @param guid The GUID.
+     */
+    public void setGuid(String path, String guid);
 }

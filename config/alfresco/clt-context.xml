@@ -2,6 +2,9 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+    <!-- Client Ticket Holder -->
+    <bean id="clientTicketHolder" class="org.alfresco.repo.remote.ClientTicketHolderGlobal"/>
+
     <!-- Remote AVM interface -->
     <bean id="avmRemote" class="org.alfresco.repo.remote.AVMRemoteImpl">
         <property name="avmRemoteTransport">
@@ -11,7 +14,7 @@
     
     <bean id="avmRemoteTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
         <property name="serviceUrl">
-            <value>rmi://localhost:1313/avm</value>
+            <value>rmi://localhost:50500/avm</value>
         </property>
         <property name="serviceInterface">
             <value>org.alfresco.service.cmr.remote.AVMRemoteTransport</value>
@@ -29,7 +32,7 @@
 
     <bean id="avmSyncServiceTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
         <property name="serviceUrl">
-            <value>rmi://localhost:1313/avmsync</value>
+            <value>rmi://localhost:50500/avmsync</value>
         </property>
         <property name="serviceInterface">
             <value>org.alfresco.service.cmr.remote.AVMSyncServiceTransport</value>
@@ -41,7 +44,7 @@
     
     <bean id="authenticationService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
         <property name="serviceUrl">
-            <value>rmi://localhost:1313/authentication</value>
+            <value>rmi://localhost:50500/authentication</value>
         </property>
         <property name="serviceInterface">
             <value>org.alfresco.service.cmr.security.AuthenticationService</value>
@@ -53,7 +56,7 @@
     
     <bean id="repoRemoteTransport" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
         <property name="serviceUrl">
-            <value>rmi://localhost:1313/repo</value>
+            <value>rmi://localhost:50500/repo</value>
         </property>
         <property name="serviceInterface">
             <value>org.alfresco.service.cmr.remote.RepoRemoteTransport</value>

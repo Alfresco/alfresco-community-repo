@@ -60,6 +60,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
+import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -82,6 +84,73 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    /**
+     * Test Deployment.
+     */
+    public void testDeployment()
+    {
+        try
+        {
+            DeploymentService depService = (DeploymentService)fContext.getBean("DeploymentService");
+            setupBasicTree();
+            TestDeploymentCallback callback = new TestDeploymentCallback();
+            fService.createStore("target");
+            DeploymentReport report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, callback);
+            System.out.println(report);
+            assertEquals(fService.lookup(-1, "main:/a/b/c/foo").getGuid(),
+                    fService.lookup(-1, "target:/a/b/c/foo").getGuid());
+            assertEquals(fService.lookup(-1, "main:/a/b/c/bar").getGuid(),
+                    fService.lookup(-1, "target:/a/b/c/bar").getGuid());
+            fService.createFile("main:/a/b", "biz").close();
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, true, callback);
+            System.out.println(report);
+            System.out.println(recursiveList("target", -1, true));
+            assertNull(fService.lookup(-1, "target:/a/b/biz"));
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, callback);
+            System.out.println(report);
+            assertEquals(fService.lookup(-1, "main:/a/b/biz").getGuid(),
+                         fService.lookup(-1, "target:/a/b/biz").getGuid());
+            fService.removeNode("main:/a/b/c/foo");
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, true, false, callback);
+            System.out.println(report);
+            assertNotNull(fService.lookup(-1, "target:/a/b/c/foo"));
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, callback);
+            System.out.println(report);
+            assertNull(fService.lookup(-1, "target:/a/b/c/foo"));
+            fService.removeNode("main:/a/b/c/bar");
+            fService.createDirectory("main:/a/b/c", "bar");
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", false, false, false, callback);
+            System.out.println(report);
+            depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target2:/wiggly/diggly", true, false, false, callback);
+            System.out.println(report);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
+    /**
+     * Test of GUIDs on AVM Nodes.
+     */
+    public void testGuids()
+    {
+        try
+        {
+            setupBasicTree();
+            System.out.println(fService.lookup(-1, "main:/a/b/c/foo").getGuid());
+            String guid = GUID.generate();
+            fService.setGuid("main:/a/b/c/foo", guid);
+            assertEquals(guid, fService.lookup(-1, "main:/a/b/c/foo").getGuid());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
     /**
      * Test the revert to version action.
      */

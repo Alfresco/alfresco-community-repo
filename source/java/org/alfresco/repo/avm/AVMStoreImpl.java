@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 
 /**
  * A Repository contains a current root directory and a list of
@@ -948,6 +949,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         node.setProperty(name, value);
+        node.setGuid(GUID.generate());
     }
     
     /**
@@ -964,6 +966,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         node.setProperties(properties);
+        node.setGuid(GUID.generate());
     }
     
     /**
@@ -1014,6 +1017,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
+        node.setGuid(GUID.generate());
         node.deleteProperty(name);
     }
     
@@ -1029,6 +1033,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
+        node.setGuid(GUID.generate());
         node.deleteProperties();
     }
 
@@ -1137,6 +1142,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMWrongTypeException("File Expected.");
         }
         node.updateModTime();
+        node.setGuid(GUID.generate());
         return ((FileNode)node).getContentData(lPath);
     }
 
@@ -1174,6 +1180,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         node.copyMetaDataFrom(from);
+        node.setGuid(GUID.generate());
     }
 
     /**
@@ -1197,6 +1204,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             new AVMAspectNameImpl();
         newName.setNode(node);
         newName.setName(aspectName);
+        node.setGuid(GUID.generate());
         AVMDAOs.Instance().fAVMAspectNameDAO.save(newName);
     }
     
@@ -1245,6 +1253,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             AVMDAOs.Instance().fAVMNodePropertyDAO.delete(node, name);
         }
+        node.setGuid(GUID.generate());
     }
     
     /**
@@ -1279,6 +1288,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMNode node = lPath.getCurrentNode();
         node.setAcl(acl);
+        node.setGuid(GUID.generate());
     }
     
     /**
@@ -1354,5 +1364,19 @@ public class AVMStoreImpl implements AVMStore, Serializable
         AVMDAOs.Instance().fAVMAspectNameDAO.save(aspect);
         PropertyValue value = new PropertyValue(null, toRevertTo.getId());
         toLink.setProperty(WCMModel.PROP_REVERTED_ID, value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMStore#setGuid(java.lang.String, java.lang.String)
+     */
+    public void setGuid(String path, String guid) 
+    {
+        Lookup lPath = lookup(-1, path, true, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path not found: " + path);
+        }
+        AVMNode node = lPath.getCurrentNode();
+        node.setGuid(guid);
     }
 }

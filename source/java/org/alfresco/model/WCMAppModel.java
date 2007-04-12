@@ -36,9 +36,13 @@ public interface WCMAppModel
     static final QName TYPE_AVMWEBFOLDER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webfolder");
     static final QName PROP_AVMSTORE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "avmstore");
     static final QName PROP_DEFAULTWEBAPP = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "defaultwebapp");
+    static final QName PROP_DEPLOYTO = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployto");
+    static final QName PROP_SELECTEDDEPLOYTO = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "selecteddeployto");
+    static final QName PROP_SELECTEDDEPLOYVERSION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "selecteddeployversion");
     static final QName ASSOC_WEBUSER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webuser");
     static final QName ASSOC_WEBFORM = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webform");
     static final QName ASSOC_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webworkflowdefaults");
+    static final QName ASSOC_DEPLOYMENTREPORT = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentreport");
     
     // AVM web user reference
     static final QName TYPE_WEBUSER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webuser");
@@ -62,6 +66,15 @@ public interface WCMAppModel
     
     // AVM web workflow defaults
     static final QName TYPE_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webworkflowdefaults");
+    
+    // AVM website deployment report
+    static final QName TYPE_DEPLOYMENTREPORT = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentreport");
+    static final QName PROP_DEPLOYSERVER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserver");
+    static final QName PROP_DEPLOYVERSION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployversion");
+    static final QName PROP_DEPLOYSUCCESSFUL = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploysuccessful");
+    static final QName PROP_DEPLOYFAILEDREASON = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployfailedreason");
+    static final QName PROP_DEPLOYSTARTTIME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploystarttime");
+    static final QName PROP_DEPLOYENDTIME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployendtime");
     
     // AVM webapp aspect
     static final QName ASPECT_WEBAPP = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webapp");

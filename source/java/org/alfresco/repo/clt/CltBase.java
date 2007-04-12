@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.remote.ClientTicketHolder;
+import org.alfresco.repo.remote.ClientTicketHolderGlobal;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.remote.RepoRemote;
@@ -71,7 +72,7 @@ public abstract class CltBase
         fAuthenticationService = (AuthenticationService)fContext.getBean("authenticationService");
         fAuthenticationService.authenticate(System.getenv("ALFUSER"), System.getenv("ALFPASSWORD").toCharArray());
         String ticket = fAuthenticationService.getCurrentTicket();
-        ClientTicketHolder.SetTicket(ticket);
+        ((ClientTicketHolder)fContext.getBean("clientTicketHolder")).setTicket(ticket);
     }
     
     /**

@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.alfresco.repo.remote.ClientTicketHolder;
+import org.alfresco.repo.remote.ClientTicketHolderGlobal;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -72,7 +73,7 @@ public class AVMTestRemote extends TestCase
         fAuthService = (AuthenticationService)fContext.getBean("authenticationService");
         fAuthService.authenticate("admin", "admin".toCharArray());
         String ticket = fAuthService.getCurrentTicket();
-        ClientTicketHolder.SetTicket(ticket);
+        ((ClientTicketHolder)fContext.getBean("clientTicketHolder")).setTicket(ticket);
     }
 
     @Override

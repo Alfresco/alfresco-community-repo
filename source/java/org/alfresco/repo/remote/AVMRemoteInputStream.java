@@ -40,6 +40,11 @@ public class AVMRemoteInputStream extends InputStream
     private AVMRemoteTransport fAVMRemote;
     
     /**
+     * The client ticket holder.
+     */
+    private ClientTicketHolder fTicketHolder;
+    
+    /**
      * The handle to the input stream.
      */
     private String fHandle;
@@ -49,10 +54,12 @@ public class AVMRemoteInputStream extends InputStream
      * @param handle The handle returned by getInputStream();
      * @param remote The AVMRemote instance.
      */
-    public AVMRemoteInputStream(String handle, AVMRemoteTransport remote)
+    public AVMRemoteInputStream(String handle, AVMRemoteTransport remote, 
+                                ClientTicketHolder ticketHolder)
     {
         fHandle = handle;
         fAVMRemote = remote;
+        fTicketHolder = ticketHolder;
     }
     
     /**
@@ -64,7 +71,7 @@ public class AVMRemoteInputStream extends InputStream
     {
         try
         {
-            byte [] buff = fAVMRemote.readInput(ClientTicketHolder.GetTicket(), fHandle, 1);
+            byte [] buff = fAVMRemote.readInput(fTicketHolder.getTicket(), fHandle, 1);
             if (buff.length == 0)
             {
                 return -1;
@@ -89,7 +96,7 @@ public class AVMRemoteInputStream extends InputStream
     {
         try
         {
-            byte [] buff = fAVMRemote.readInput(ClientTicketHolder.GetTicket(), fHandle, len);
+            byte [] buff = fAVMRemote.readInput(fTicketHolder.getTicket(), fHandle, len);
             if (buff.length == 0)
             {
                 return -1;
@@ -111,7 +118,7 @@ public class AVMRemoteInputStream extends InputStream
     {
         try
         {
-            fAVMRemote.closeInputHandle(ClientTicketHolder.GetTicket(), fHandle);
+            fAVMRemote.closeInputHandle(fTicketHolder.getTicket(), fHandle);
         }
         catch (Exception e)
         {

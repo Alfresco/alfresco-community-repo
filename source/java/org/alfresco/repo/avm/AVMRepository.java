@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.log4j.Logger;
 
@@ -2436,6 +2437,31 @@ public class AVMRepository
             }
             fLookupCache.onWrite(pathParts[0]);
             store.revert(pathParts[1], name, toRevertTo);
+        }
+        finally
+        {
+            fLookupCount.set(null);
+        }
+    }
+    
+    /**
+     * Set the GUID on a node.
+     * @param path
+     * @param guid
+     */
+    public void setGuid(String path, String guid)
+    {
+        fLookupCount.set(1);
+        try
+        {
+            String [] pathParts = SplitPath(path);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            if (store == null)
+            {
+                throw new AVMNotFoundException("Store not found:" + pathParts[0]);
+            }
+            fLookupCache.onWrite(pathParts[0]);
+            store.setGuid(pathParts[1], guid);
         }
         finally
         {

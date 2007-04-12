@@ -22,6 +22,11 @@ public class ReauthenticatingAdvice implements MethodInterceptor
     private AuthenticationService fAuthService;
     
     /**
+     * The ticket holder.
+     */
+    private ClientTicketHolder fTicketHolder;
+    
+    /**
      * The user name.
      */
     private String fUser;
@@ -52,6 +57,14 @@ public class ReauthenticatingAdvice implements MethodInterceptor
         fAuthService = service;
     }
 
+    /**
+     * Setter.
+     */
+    public void setClientTicketHolder(ClientTicketHolder ticketHolder)
+    {
+        fTicketHolder = ticketHolder;
+    }
+    
     /**
      * Setter.
      */
@@ -104,7 +117,7 @@ public class ReauthenticatingAdvice implements MethodInterceptor
                     // Reauthenticate.
                     fAuthService.authenticate(fUser, fPassword.toCharArray());
                     String ticket = fAuthService.getCurrentTicket();
-                    ClientTicketHolder.SetTicket(ticket);
+                    fTicketHolder.setTicket(ticket);
                     // Modify the ticket argument.
                     mi.getArguments()[0] = ticket;
                 }

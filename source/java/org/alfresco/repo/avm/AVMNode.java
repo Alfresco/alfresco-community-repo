@@ -215,4 +215,16 @@ public interface AVMNode
      * @param other The other node.
      */
     public void copyMetaDataFrom(AVMNode other);
+    
+    /**
+     * Get the GUID associated with this version.
+     * @return The GUID.
+     */
+    public String getGuid();
+    
+    /**
+     * Set the GUID associated with this version.
+     * @param guid
+     */
+    public void setGuid(String guid);
 }

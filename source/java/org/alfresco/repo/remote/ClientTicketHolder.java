@@ -1,32 +1,18 @@
-/**
- * 
- */
 package org.alfresco.repo.remote;
 
 /**
- * Remote client utility to hold an authentication ticket.
+ * Interface for Authentication ticket caching.
  * @author britt
  */
-public class ClientTicketHolder 
+public interface ClientTicketHolder 
 {
-    /**
-     * Thread local tickets.
-     */
-    private static String fTicket;
-    
     /**
      * Set the ticket.
      */
-    public static void SetTicket(String ticket)
-    {
-        fTicket = ticket;
-    }
+    public void setTicket(String ticket);
     
     /**
      * Get the ticket.
      */
-    public static String GetTicket()
-    {
-        return fTicket;
-    }
+    public String getTicket();
 }

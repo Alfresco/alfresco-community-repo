@@ -32,6 +32,11 @@ public class AVMRemoteImpl implements AVMRemote
     private AVMRemoteTransport fTransport;
 
     /**
+     * The client ticket holder.
+     */
+    private ClientTicketHolder fTicketHolder;
+
+    /**
      * Default constructor.
      */
     public AVMRemoteImpl()
@@ -46,12 +51,17 @@ public class AVMRemoteImpl implements AVMRemote
         fTransport = transport;
     }
     
+    public void setClientTicketHolder(ClientTicketHolder ticketHolder)
+    {
+        fTicketHolder = ticketHolder;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMRemote#createAVMStore(java.lang.String)
      */
     public void createStore(String name) 
     {
-        fTransport.createStore(ClientTicketHolder.GetTicket(), name);   
+        fTransport.createStore(fTicketHolder.getTicket(), name);   
     }
 
     /* (non-Javadoc)
@@ -60,7 +70,7 @@ public class AVMRemoteImpl implements AVMRemote
     public void createBranch(int version, String srcPath, String dstPath,
             String name) 
     {
-        fTransport.createBranch(ClientTicketHolder.GetTicket(), version,
+        fTransport.createBranch(fTicketHolder.getTicket(), version,
                                 srcPath, dstPath, name);
     }
 
@@ -69,7 +79,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void createDirectory(String path, String name)
     {
-        fTransport.createDirectory(ClientTicketHolder.GetTicket(), path, name);
+        fTransport.createDirectory(fTicketHolder.getTicket(), path, name);
     }
 
     /* (non-Javadoc)
@@ -77,7 +87,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public OutputStream createFile(String path, String name) 
     {
-        return new AVMRemoteOutputStream(fTransport.createFile(ClientTicketHolder.GetTicket(), path, name), fTransport);
+        return new AVMRemoteOutputStream(fTransport.createFile(fTicketHolder.getTicket(), path, name), fTransport, fTicketHolder);
     }
 
     /* (non-Javadoc)
@@ -86,7 +96,7 @@ public class AVMRemoteImpl implements AVMRemote
     public void createLayeredDirectory(String targetPath, String parent,
             String name) 
     {
-        fTransport.createLayeredDirectory(ClientTicketHolder.GetTicket(), targetPath, parent, name);
+        fTransport.createLayeredDirectory(fTicketHolder.getTicket(), targetPath, parent, name);
     }
 
     /* (non-Javadoc)
@@ -94,7 +104,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void createLayeredFile(String targetPath, String parent, String name) 
     {
-        fTransport.createLayeredFile(ClientTicketHolder.GetTicket(), targetPath, parent, name);
+        fTransport.createLayeredFile(fTicketHolder.getTicket(), targetPath, parent, name);
     }
 
     /* (non-Javadoc)
@@ -102,7 +112,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public int createSnapshot(String store, String label, String comment) 
     {
-        return fTransport.createSnapshot(ClientTicketHolder.GetTicket(), store, label, comment);
+        return fTransport.createSnapshot(fTicketHolder.getTicket(), store, label, comment);
     }
 
     /* (non-Javadoc)
@@ -110,7 +120,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void deleteNodeProperties(String path) 
     {
-        fTransport.deleteNodeProperties(ClientTicketHolder.GetTicket(), path);
+        fTransport.deleteNodeProperties(fTicketHolder.getTicket(), path);
     }
 
     /* (non-Javadoc)
@@ -118,7 +128,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void deleteNodeProperty(String path, QName name) 
     {
-        fTransport.deleteNodeProperty(ClientTicketHolder.GetTicket(), path, name);
+        fTransport.deleteNodeProperty(fTicketHolder.getTicket(), path, name);
     }
 
     /* (non-Javadoc)
@@ -126,7 +136,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void deleteStoreProperty(String store, QName name) 
     {
-        fTransport.deleteStoreProperty(ClientTicketHolder.GetTicket(), store, name);
+        fTransport.deleteStoreProperty(fTicketHolder.getTicket(), store, name);
     }
 
     /* (non-Javadoc)
@@ -134,7 +144,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public AVMStoreDescriptor getStore(String name) 
     {
-        return fTransport.getStore(ClientTicketHolder.GetTicket(), name);
+        return fTransport.getStore(fTicketHolder.getTicket(), name);
     }
 
     /* (non-Javadoc)
@@ -142,7 +152,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public AVMNodeDescriptor getStoreRoot(int version, String name) 
     {
-        return fTransport.getStoreRoot(ClientTicketHolder.GetTicket(), version, name);
+        return fTransport.getStoreRoot(fTicketHolder.getTicket(), version, name);
     }
 
     /* (non-Javadoc)
@@ -150,7 +160,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public List<VersionDescriptor> getStoreVersions(String name) 
     {
-        return fTransport.getStoreVersions(ClientTicketHolder.GetTicket(), name);
+        return fTransport.getStoreVersions(fTicketHolder.getTicket(), name);
     }
 
     /* (non-Javadoc)
@@ -159,7 +169,7 @@ public class AVMRemoteImpl implements AVMRemote
     public List<VersionDescriptor> getStoreVersions(String name, Date from,
             Date to) 
     {
-        return fTransport.getStoreVersions(ClientTicketHolder.GetTicket(), name);
+        return fTransport.getStoreVersions(fTicketHolder.getTicket(), name);
     }
 
     /* (non-Javadoc)
@@ -167,7 +177,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public List<AVMStoreDescriptor> getStores() 
     {
-        return fTransport.getStores(ClientTicketHolder.GetTicket());
+        return fTransport.getStores(fTicketHolder.getTicket());
     }
 
     /* (non-Javadoc)
@@ -176,7 +186,7 @@ public class AVMRemoteImpl implements AVMRemote
     public AVMNodeDescriptor getCommonAncestor(AVMNodeDescriptor left,
             AVMNodeDescriptor right)
     {
-        return fTransport.getCommonAncestor(ClientTicketHolder.GetTicket(), left, right);
+        return fTransport.getCommonAncestor(fTicketHolder.getTicket(), left, right);
     }
 
     /* (non-Javadoc)
@@ -184,7 +194,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public List<String> getDeleted(int version, String path) 
     {
-        return fTransport.getDeleted(ClientTicketHolder.GetTicket(), version, path);
+        return fTransport.getDeleted(fTicketHolder.getTicket(), version, path);
     }
 
     /* (non-Javadoc)
@@ -193,7 +203,7 @@ public class AVMRemoteImpl implements AVMRemote
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(
             int version, String path) 
     {
-        return fTransport.getDirectoryListing(ClientTicketHolder.GetTicket(), version, path);
+        return fTransport.getDirectoryListing(fTicketHolder.getTicket(), version, path);
     }
 
     /* (non-Javadoc)
@@ -202,7 +212,7 @@ public class AVMRemoteImpl implements AVMRemote
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(
             AVMNodeDescriptor dir)
     {
-        return fTransport.getDirectoryListing(ClientTicketHolder.GetTicket(), dir);
+        return fTransport.getDirectoryListing(fTicketHolder.getTicket(), dir);
     }
 
     /* (non-Javadoc)
@@ -211,7 +221,7 @@ public class AVMRemoteImpl implements AVMRemote
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListingDirect(
             int version, String path) 
     {
-        return fTransport.getDirectoryListing(ClientTicketHolder.GetTicket(), version, path);
+        return fTransport.getDirectoryListing(fTicketHolder.getTicket(), version, path);
     }
 
     /* (non-Javadoc)
@@ -219,8 +229,8 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public InputStream getFileInputStream(int version, String path) 
     {
-        return new AVMRemoteInputStream(fTransport.getInputHandle(ClientTicketHolder.GetTicket(), version, path),
-                                        fTransport);
+        return new AVMRemoteInputStream(fTransport.getInputHandle(fTicketHolder.getTicket(), version, path),
+                                        fTransport, fTicketHolder);
     }
 
     /* (non-Javadoc)
@@ -228,8 +238,8 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public InputStream getFileInputStream(AVMNodeDescriptor desc)
     {
-        return new AVMRemoteInputStream(fTransport.getInputHandle(ClientTicketHolder.GetTicket(), desc),
-                                        fTransport);
+        return new AVMRemoteInputStream(fTransport.getInputHandle(fTicketHolder.getTicket(), desc),
+                                        fTransport, fTicketHolder);
     }
 
     /* (non-Javadoc)
@@ -237,8 +247,8 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public OutputStream getFileOutputStream(String path)
     {
-        return new AVMRemoteOutputStream(fTransport.getOutputHandle(ClientTicketHolder.GetTicket(), path),
-                                         fTransport);
+        return new AVMRemoteOutputStream(fTransport.getOutputHandle(fTicketHolder.getTicket(), path),
+                                         fTransport, fTicketHolder);
     }
 
     /* (non-Javadoc)
@@ -246,7 +256,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public List<AVMNodeDescriptor> getHistory(AVMNodeDescriptor desc, int count) 
     {
-        return fTransport.getHistory(ClientTicketHolder.GetTicket(), desc, count);
+        return fTransport.getHistory(fTicketHolder.getTicket(), desc, count);
     }
 
     /* (non-Javadoc)
@@ -254,7 +264,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public String getIndirectionPath(int version, String path) 
     {
-        return fTransport.getIndirectionPath(ClientTicketHolder.GetTicket(), version, path);
+        return fTransport.getIndirectionPath(fTicketHolder.getTicket(), version, path);
     }
 
     /* (non-Javadoc)
@@ -262,7 +272,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public int getLatestSnapshotID(String storeName) 
     {
-        return fTransport.getLatestSnapshotID(ClientTicketHolder.GetTicket(), storeName);
+        return fTransport.getLatestSnapshotID(fTicketHolder.getTicket(), storeName);
     }
 
     /* (non-Javadoc)
@@ -270,7 +280,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public int getNextVersionID(String storeName) 
     {
-        return fTransport.getNextVersionID(ClientTicketHolder.GetTicket(), storeName);
+        return fTransport.getNextVersionID(fTicketHolder.getTicket(), storeName);
     }
 
     /* (non-Javadoc)
@@ -278,7 +288,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public LayeringDescriptor getLayeringInfo(int version, String path) 
     {
-        return fTransport.getLayeringInfo(ClientTicketHolder.GetTicket(), version, path);
+        return fTransport.getLayeringInfo(fTicketHolder.getTicket(), version, path);
     }
 
     /* (non-Javadoc)
@@ -286,7 +296,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public Map<QName, PropertyValue> getNodeProperties(int version, String path) 
     {
-        return fTransport.getNodeProperties(ClientTicketHolder.GetTicket(), version, path);
+        return fTransport.getNodeProperties(fTicketHolder.getTicket(), version, path);
     }
 
     /* (non-Javadoc)
@@ -294,7 +304,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public PropertyValue getNodeProperty(int version, String path, QName name) 
     {
-        return fTransport.getNodeProperty(ClientTicketHolder.GetTicket(), version, path, name);
+        return fTransport.getNodeProperty(fTicketHolder.getTicket(), version, path, name);
     }
 
     /* (non-Javadoc)
@@ -302,7 +312,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public Map<QName, PropertyValue> getStoreProperties(String store) 
     {
-        return fTransport.getStoreProperties(ClientTicketHolder.GetTicket(), store);
+        return fTransport.getStoreProperties(fTicketHolder.getTicket(), store);
     }
 
     /* (non-Javadoc)
@@ -310,7 +320,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public PropertyValue getStoreProperty(String store, QName name) 
     {
-        return fTransport.getStoreProperty(ClientTicketHolder.GetTicket(), store, name);
+        return fTransport.getStoreProperty(fTicketHolder.getTicket(), store, name);
     }
 
     /* (non-Javadoc)
@@ -318,7 +328,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public AVMNodeDescriptor lookup(int version, String path) 
     {
-        return fTransport.lookup(ClientTicketHolder.GetTicket(), version, path);
+        return fTransport.lookup(fTicketHolder.getTicket(), version, path);
     }
 
     /* (non-Javadoc)
@@ -326,7 +336,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public AVMNodeDescriptor lookup(AVMNodeDescriptor dir, String name) 
     {
-        return fTransport.lookup(ClientTicketHolder.GetTicket(), dir, name);
+        return fTransport.lookup(fTicketHolder.getTicket(), dir, name);
     }
 
     /* (non-Javadoc)
@@ -334,7 +344,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void makePrimary(String path) 
     {
-        fTransport.makePrimary(ClientTicketHolder.GetTicket(), path);
+        fTransport.makePrimary(fTicketHolder.getTicket(), path);
     }
 
     /* (non-Javadoc)
@@ -342,7 +352,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void purgeStore(String name) 
     {
-        fTransport.purgeStore(ClientTicketHolder.GetTicket(), name);
+        fTransport.purgeStore(fTicketHolder.getTicket(), name);
     }
 
     /* (non-Javadoc)
@@ -350,7 +360,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void purgeVersion(int version, String name) 
     {
-        fTransport.purgeVersion(ClientTicketHolder.GetTicket(), version, name);
+        fTransport.purgeVersion(fTicketHolder.getTicket(), version, name);
     }
 
     /* (non-Javadoc)
@@ -359,7 +369,7 @@ public class AVMRemoteImpl implements AVMRemote
     public Map<QName, PropertyValue> queryStorePropertyKey(String store,
             QName keyPattern) 
     {
-        return fTransport.queryStorePropertyKey(ClientTicketHolder.GetTicket(), store, keyPattern);
+        return fTransport.queryStorePropertyKey(fTicketHolder.getTicket(), store, keyPattern);
     }
 
     /* (non-Javadoc)
@@ -368,7 +378,7 @@ public class AVMRemoteImpl implements AVMRemote
     public Map<String, Map<QName, PropertyValue>> queryStoresPropertyKey(
             QName keyPattern) 
     {
-        return fTransport.queryStoresPropertyKey(ClientTicketHolder.GetTicket(), keyPattern);
+        return fTransport.queryStoresPropertyKey(fTicketHolder.getTicket(), keyPattern);
     }
 
     /* (non-Javadoc)
@@ -376,7 +386,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void removeNode(String parent, String name) 
     {
-        fTransport.removeNode(ClientTicketHolder.GetTicket(), parent, name);
+        fTransport.removeNode(fTicketHolder.getTicket(), parent, name);
     }
 
     /* (non-Javadoc)
@@ -385,7 +395,7 @@ public class AVMRemoteImpl implements AVMRemote
     public void rename(String srcParent, String srcName, String dstParent,
             String dstName) 
     {
-        fTransport.rename(ClientTicketHolder.GetTicket(), srcParent, srcName, dstParent, dstName);
+        fTransport.rename(fTicketHolder.getTicket(), srcParent, srcName, dstParent, dstName);
     }
 
     /* (non-Javadoc)
@@ -393,7 +403,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void retargetLayeredDirectory(String path, String target) 
     {
-        fTransport.retargetLayeredDirectory(ClientTicketHolder.GetTicket(), path, target);
+        fTransport.retargetLayeredDirectory(fTicketHolder.getTicket(), path, target);
     }
 
     /* (non-Javadoc)
@@ -402,7 +412,7 @@ public class AVMRemoteImpl implements AVMRemote
     public void setNodeProperties(String path,
             Map<QName, PropertyValue> properties) 
     {
-        fTransport.setNodeProperties(ClientTicketHolder.GetTicket(), path, properties);
+        fTransport.setNodeProperties(fTicketHolder.getTicket(), path, properties);
     }
 
     /* (non-Javadoc)
@@ -410,7 +420,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void setNodeProperty(String path, QName name, PropertyValue value) 
     {
-        fTransport.setNodeProperty(ClientTicketHolder.GetTicket(), path, name, value);
+        fTransport.setNodeProperty(fTicketHolder.getTicket(), path, name, value);
     }
 
     /* (non-Javadoc)
@@ -418,7 +428,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void setOpacity(String path, boolean opacity) 
     {
-        fTransport.setOpacity(ClientTicketHolder.GetTicket(), path, opacity);
+        fTransport.setOpacity(fTicketHolder.getTicket(), path, opacity);
     }
 
     /* (non-Javadoc)
@@ -426,7 +436,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void setStoreProperties(String store, Map<QName, PropertyValue> props) 
     {
-        fTransport.setStoreProperties(ClientTicketHolder.GetTicket(), store, props);
+        fTransport.setStoreProperties(fTicketHolder.getTicket(), store, props);
     }
 
     /* (non-Javadoc)
@@ -434,7 +444,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void setStoreProperty(String store, QName name, PropertyValue value) 
     {
-        fTransport.setStoreProperty(ClientTicketHolder.GetTicket(), store, name, value);
+        fTransport.setStoreProperty(fTicketHolder.getTicket(), store, name, value);
     }
 
     /* (non-Javadoc)
@@ -442,7 +452,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void uncover(String dirPath, String name) 
     {
-        fTransport.uncover(ClientTicketHolder.GetTicket(), dirPath, name);
+        fTransport.uncover(fTicketHolder.getTicket(), dirPath, name);
     }
 
     /* (non-Javadoc)
@@ -450,7 +460,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void renameStore(String sourceName, String destName) 
     {
-        fTransport.renameStore(ClientTicketHolder.GetTicket(), sourceName, destName);
+        fTransport.renameStore(fTicketHolder.getTicket(), sourceName, destName);
     }
 
     /* (non-Javadoc)
@@ -458,7 +468,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void addAspect(String path, QName aspectName) 
     {
-        fTransport.addAspect(ClientTicketHolder.GetTicket(), path, aspectName);
+        fTransport.addAspect(fTicketHolder.getTicket(), path, aspectName);
     }
 
     /* (non-Javadoc)
@@ -466,7 +476,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public List<QName> getAspects(int version, String path) 
     {
-        return fTransport.getAspects(ClientTicketHolder.GetTicket(), version, path);
+        return fTransport.getAspects(fTicketHolder.getTicket(), version, path);
     }
 
     /* (non-Javadoc)
@@ -474,7 +484,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public boolean hasAspect(int version, String path, QName aspectName) 
     {
-        return fTransport.hasAspect(ClientTicketHolder.GetTicket(), version, path, aspectName);
+        return fTransport.hasAspect(fTicketHolder.getTicket(), version, path, aspectName);
     }
 
     /* (non-Javadoc)
@@ -482,7 +492,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void removeAspect(String path, QName aspectName) 
     {
-        fTransport.removeAspect(ClientTicketHolder.GetTicket(), path, aspectName);
+        fTransport.removeAspect(fTicketHolder.getTicket(), path, aspectName);
     }
 
     /* (non-Javadoc)
@@ -490,7 +500,7 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public void revert(String path, AVMNodeDescriptor toRevertTo) 
     {
-        fTransport.revert(ClientTicketHolder.GetTicket(), path, toRevertTo);
+        fTransport.revert(fTicketHolder.getTicket(), path, toRevertTo);
     }
 
     /* (non-Javadoc)
@@ -498,6 +508,14 @@ public class AVMRemoteImpl implements AVMRemote
      */
     public Pair<Integer, String> getAPath(AVMNodeDescriptor desc) 
     {
-        return fTransport.getAPath(ClientTicketHolder.GetTicket(), desc);
+        return fTransport.getAPath(fTicketHolder.getTicket(), desc);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.remote.AVMRemote#setGuid(java.lang.String, java.lang.String)
+     */
+    public void setGuid(String path, String guid) 
+    {
+        fTransport.setGuid(fTicketHolder.getTicket(), path, guid);
     }
 }

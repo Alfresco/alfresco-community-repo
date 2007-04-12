@@ -767,6 +767,7 @@
                 <value>getAspects</value>
                 <value>hasAspect</value>
                 <value>getAPath</value>
+                <value>getGuid</value>
             </list>
         </property>
     </bean>
@@ -813,6 +814,7 @@
                 <value>renameStore</value>
                 <value>getSystemStore</value>
                 <value>revert</value>
+                <value>setGuid</value>
             </list>
         </property>
     </bean>
@@ -888,22 +890,41 @@
         </property>
     </bean>
 
-	<!--
-    <bean id="AVMSyncService" class="org.springframework.aop.framework.ProxyFactoryBean">
-	    <property name="proxyInterfaces">
-            <value>org.alfresco.service.cmr.avmsync.AVMSyncService</value>
+	 <!-- Deployment Service. -->
+	
+	 <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl">
+        <property name="avmService">
+            <ref bean="avmService"/>
         </property>
-        <property name="target">
-            <ref bean="avmSyncService"/>
+	 </bean>
+
+    <bean id="deploymentServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
         </property>
-        <property name="interceptorNames">
+        <property name="mappedNames">
             <list>
-                <idref local="AVMSyncService_transaction"/>
-                <idref local="AVMSyncService_descriptor"/>
+            	<value>deployDifference</value>
+            	<value>deployDifferenceFS</value>
             </list>
         </property>
     </bean>
-    -->
+
+    <bean id="DeploymentService" class="org.springframework.aop.framework.ProxyFactoryBean">
+	    <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.avm.deploy.DeploymentService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>deploymentService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>deploymentServiceReadTxnAdvisor</value>
+            </list>
+        </property>
+    </bean>
     
     <!-- Workflow Service -->
     

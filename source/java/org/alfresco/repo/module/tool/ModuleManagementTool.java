@@ -24,16 +24,18 @@
  */
 package org.alfresco.repo.module.tool;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.service.cmr.module.ModuleInstallState;
-import org.alfresco.util.GUID;
-import org.apache.log4j.Logger;
-import org.springframework.util.FileCopyUtils;
+import org.doomdark.uuid.UUIDGenerator;
 
 import de.schlichtherle.io.DefaultRaesZipDetector;
 import de.schlichtherle.io.File;
@@ -52,9 +54,6 @@ import de.schlichtherle.io.ZipWarningException;
  */
 public class ModuleManagementTool
 {
-    /** Logger */
-    public static Logger logger = Logger.getLogger("org.alfresco.repo.extension.ModuleManagementTool");
-    
     /** Location of the default mapping properties file */
     private static final String DEFAULT_FILE_MAPPING_PROPERTIES = "org/alfresco/repo/module/tool/default-file-mapping.properties";
     
@@ -230,7 +229,7 @@ public class ModuleManagementTool
                     }
                     String backupLocation = warFileLocation + "-" + System.currentTimeMillis() + ".bak";
                     java.io.File backup = new java.io.File(backupLocation);
-                    FileCopyUtils.copy(warFile, backup);
+                    copyFile(warFile, backup);
                           
                     outputMessage("WAR has been backed up to '" + backupLocation + "'");
                 }
@@ -429,7 +428,7 @@ public class ModuleManagementTool
                     else
                     {
                         // Backup file about to be updated
-                        backupLocation = BACKUP_DIR + "/" + GUID.generate() + ".bin";
+                        backupLocation = BACKUP_DIR + "/" + generateGuid() + ".bin";
                         if (preview == false)
                         {
                             File backupFile = new File(warFileLocation + backupLocation, defaultDetector);
@@ -575,10 +574,6 @@ public class ModuleManagementTool
         {
             System.out.println(message);
         }
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug(message);
-        }
     }
     
     /**
@@ -656,6 +651,45 @@ public class ModuleManagementTool
         else
         {
             outputUsage();
+        }
+    }
+
+    /**
+     * Generates a GUID, avoiding undesired imports.
+     */
+    private static String generateGuid()
+    {
+        return UUIDGenerator.getInstance().generateTimeBasedUUID().toString();
+    }
+    
+    /**
+     * Code borrowed directly from the Springframework FileCopyUtils.
+     */
+    private static void copyFile(java.io.File in, java.io.File out) throws IOException
+    {
+        InputStream is = new BufferedInputStream(new FileInputStream(in));
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(out));
+        try
+        {
+            int byteCount = 0;
+            byte[] buffer = new byte[4096];
+            int bytesRead = -1;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+                byteCount += bytesRead;
+            }
+            os.flush();
+        }
+        finally
+        {
+            if (is != null)
+            {
+                try { is.close(); } catch (Throwable e) { e.printStackTrace(); }
+            }
+            if (os != null)
+            {
+                try { os.close(); } catch (Throwable e) { e.printStackTrace(); }
+            }
         }
     }
     

@@ -94,37 +94,35 @@ public class SchemaUtil
 
    ////////////////////////////////////////////////////////////////////////////
 
-   private final static Comparator TYPE_EXTENSION_SORTER = new Comparator() 
+   private final static Comparator<XSTypeDefinition> TYPE_EXTENSION_SORTER = 
+      new Comparator<XSTypeDefinition>() 
    {
-      public int compare(Object obj1, Object obj2) 
+      public int compare(final XSTypeDefinition type1, final XSTypeDefinition type2) 
       {
-         if (obj1 == null && obj2 != null)
-            return -1;
-         else if (obj1 != null && obj2 == null)
-            return 1;
-         else if (obj1 == obj2 || (obj1 == null && obj2 == null))
-            return 0;
+         int result = 0;
+         if (type1 == null && type2 != null)
+         {
+            result = -1;
+         }
+         else if (type1 != null && type2 == null)
+         {
+            result = 1;
+         }
+         else if (type1 == type2 || (type1 == null && type2 == null))
+         {
+            result = 0;
+         }
          else 
          {
-            try
-            {
-               final XSTypeDefinition type1 = (XSTypeDefinition) obj1;
-               final XSTypeDefinition type2 = (XSTypeDefinition) obj2;
-               return (type1.derivedFromType(type2, XSConstants.DERIVATION_EXTENSION)
-                       ? 1
-                       : (type2.derivedFromType(type1, XSConstants.DERIVATION_EXTENSION)
-                          ? -1
-                          : 0));
-            }
-            catch (ClassCastException ex) 
-            {
-               String s = "ClassCastException in typeExtensionSorter: one of the types is not a type !";
-               s = s + "\n obj1 class = " + obj1.getClass().getName() + ", toString=" + obj1.toString();
-               s = s + "\n obj2 class = " + obj2.getClass().getName() + ", toString=" + obj2.toString();
-               SchemaUtil.LOGGER.error(s, ex);
-               return 0;
-            }
+            result = (type1.derivedFromType(type2, XSConstants.DERIVATION_EXTENSION)
+                      ? 1
+                      : (type2.derivedFromType(type1, XSConstants.DERIVATION_EXTENSION)
+                         ? -1
+                         : type1.getName().compareTo(type2.getName())));
          }
+         if (LOGGER.isDebugEnabled() && false)
+            LOGGER.debug("compare(" + type1 + ", " + type2 + ") = " + result);
+         return result;
       }
    };
 
@@ -301,36 +299,47 @@ public class SchemaUtil
                                      final TreeMap<String, TreeSet<XSTypeDefinition>> typeTree) 
    {
       if (type == null) 
+      {
          return;
-
+      }
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("buildTypeTree(" + type.getName() + ", " + descendents.size() + " descendents)");
       if (descendents.size() > 0) 
       {
-         //TreeSet compatibleTypes = (TreeSet) typeTree.get(type.getName());
          TreeSet<XSTypeDefinition> compatibleTypes = typeTree.get(type.getName());
 	    
          if (compatibleTypes == null) 
          {
-            //compatibleTypes = new TreeSet(descendents);
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("no compatible types found for " + type.getName() + ", creating a new set");
             compatibleTypes = new TreeSet<XSTypeDefinition>(TYPE_EXTENSION_SORTER);
             typeTree.put(type.getName(), compatibleTypes);
          }
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("adding " + descendents.size() + " descendents to " + type.getName());
          compatibleTypes.addAll(descendents);
       }
 
       final XSTypeDefinition parentType = type.getBaseType();
-	
       if (parentType == null ||
           type.getTypeCategory() != parentType.getTypeCategory()) 
       {
          return;
       }
-      if (type != parentType && 
-          (parentType.getName() == null || !parentType.getName().equals("anyType"))) 
+
+      if (type != parentType && parentType.getName() != null && !parentType.getName().equals("anyType")) 
       {
-	    
-         //TreeSet newDescendents=new TreeSet(descendents);
-         final TreeSet<XSTypeDefinition> newDescendents = 
-            new TreeSet<XSTypeDefinition>(TYPE_EXTENSION_SORTER);
+         TreeSet<XSTypeDefinition> newDescendents = typeTree.get(parentType.getName());
+         if (newDescendents == null)
+         {
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("type tree doesn't contain " + parentType.getName() +
+                            ", creating a new descendant set");
+            newDescendents = new TreeSet<XSTypeDefinition>(TYPE_EXTENSION_SORTER);
+         }
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("adding " + descendents.size() + " descendants to existing " + newDescendents.size() +
+                         " descendants of " + parentType.getName());
          newDescendents.addAll(descendents);
          
          //extension (we only add it to "newDescendants" because we don't want
@@ -341,7 +350,13 @@ public class SchemaUtil
             if (complexType.getDerivationMethod() == XSConstants.DERIVATION_EXTENSION && 
                 !complexType.getAbstract() && 
                 !descendents.contains(type)) 
+            {
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("adding " + type.getName() + 
+                               " to existing " + newDescendents.size() + 
+                               " descendents of " + parentType.getName());
                newDescendents.add(type);
+            }
          }
 
          //note: extensions are impossible on simpleTypes !
@@ -354,7 +369,8 @@ public class SchemaUtil
    {
       final TreeMap<String, TreeSet<XSTypeDefinition>> result = new
          TreeMap<String, TreeSet<XSTypeDefinition>>();
-      LOGGER.debug("buildTypeTree " + schema);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("buildTypeTree " + schema);
       // build the type tree for complex types
       final XSNamedMap types = schema.getComponents(XSConstants.TYPE_DEFINITION);
       for (int i = 0; i < types.getLength(); i++) 

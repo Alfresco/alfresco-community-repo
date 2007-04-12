@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -228,9 +229,6 @@ public class XSLTRenderingEngine
 
    private static final Log LOGGER = LogFactory.getLog(XSLTRenderingEngine.class);
 
-   public static final QName PROP_URI_RESOLVER_BASE_URI = 
-      QName.createQName(NamespaceService.ALFRESCO_URI, "xslt_resolver_base_uri");
-
    public XSLTRenderingEngine() { }
 
    public String getName() { return "XSLT"; }
@@ -401,13 +399,83 @@ public class XSLTRenderingEngine
       this.addScripts(model, xslTemplate);
       this.addParameters(model, xslTemplate);
 
+      final LinkedList<TransformerException> errors = new LinkedList<TransformerException>();
+      final ErrorListener errorListener = new ErrorListener()
+      {
+         public void error(final TransformerException te)
+            throws TransformerException
+         {
+            LOGGER.debug("error " + te.getMessageAndLocation());
+            errors.add(te);
+         }
+
+         public void fatalError(final TransformerException te)
+            throws TransformerException
+         {
+            LOGGER.debug("fatalError " + te.getMessageAndLocation());
+            throw te;
+         }
+
+         public void warning(final TransformerException te)
+            throws TransformerException
+         {
+            LOGGER.debug("warning " + te.getMessageAndLocation());
+            errors.add(te);
+         }
+      };
+
+      // create a uri resolver to resolve document() calls to the virtualized
+      // web application
+      final URIResolver uriResolver = new URIResolver()
+      {
+         public Source resolve(final String href, String base)
+            throws TransformerException
+         {
+            LOGGER.debug("request to resolve href " + href +
+                         " using base " + base);
+            final RenderingEngine.TemplateResourceResolver trr = (RenderingEngine.TemplateResourceResolver)
+               model.get(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER);
+
+            InputStream in = null;
+            try
+            {
+               in = trr.resolve(href);
+            }
+            catch (Exception e)
+            {
+               throw new TransformerException("unable to load " + href, e);
+            }
+
+            if (in == null)
+            {
+               throw new TransformerException("unable to resolve href " + href);
+            }
+
+            try
+            {
+               final Document d = XMLUtil.parse(in);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("loaded " + XMLUtil.toString(d));
+               return new DOMSource(d);
+            }
+            catch (Exception e)
+            {
+               throw new TransformerException("unable to load " + href, e);
+            }
+         }
+      };
+
       Source xmlSource = this.getXMLSource(model);
 
       Transformer t = null;
       try 
       {
          final TransformerFactory tf = TransformerFactory.newInstance();
+         tf.setErrorListener(errorListener);
+         tf.setURIResolver(uriResolver);
          t = tf.newTransformer(new DOMSource(xslTemplate));
+         t.setErrorListener(errorListener);
+         t.setURIResolver(uriResolver);
          t.setParameter("versionParam", "2.0");
       }
       catch (TransformerConfigurationException tce)
@@ -415,47 +483,6 @@ public class XSLTRenderingEngine
          LOGGER.error(tce);
          throw new RenderingEngine.RenderingException(tce);
       }
-
-      // create a uri resolver to resolve document() calls to the virtualized
-      // web application
-      t.setURIResolver(new URIResolver()
-      {
-         public Source resolve(final String href, String base)
-            throws TransformerException
-         {
-            LOGGER.debug("request to resolve href " + href +
-                         " using base " + base);
-            if (model.containsKey(PROP_URI_RESOLVER_BASE_URI))
-            {
-               base = (String)model.get(PROP_URI_RESOLVER_BASE_URI);
-               LOGGER.debug("overriding base with " + base);
-            }
-               
-            URI uri = null;
-            try
-            {
-               uri = new URI(base + href);
-            }
-            catch (URISyntaxException e)
-            {
-               throw new TransformerException("unable to create uri " + base + href, 
-                                              e);
-            }
-            try
-            {
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("loading " + uri);
-               final Document d = XMLUtil.parse(uri.toURL().openStream());
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("loaded " + XMLUtil.toString(d));
-               return new DOMSource(d);
-            }
-            catch (Exception e)
-            {
-               throw new TransformerException("unable to load " + uri, e);
-            }
-         }
-      });
 
       try
       {
@@ -470,6 +497,16 @@ public class XSLTRenderingEngine
       {
          LOGGER.error("unexpected error " + e);
          throw new RenderingEngine.RenderingException(e);
+      }
+
+      if (errors.size() != 0)
+      {
+         final StringBuilder msg = new StringBuilder("errors encountered during transformation: \n");
+         for (TransformerException te : errors)
+         {
+            msg.append(te.getMessageAndLocation()).append("\n"); 
+         }
+         throw new RenderingEngine.RenderingException(msg.toString());
       }
    }
 }

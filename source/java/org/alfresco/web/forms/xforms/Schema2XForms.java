@@ -299,6 +299,7 @@ public class Schema2XForms
                                       "' element of the '" + this.targetNamespace + "' XML Schema.");
       xformsDocument.getDocumentElement().insertBefore(comment,
                                                        xformsDocument.getDocumentElement().getFirstChild());
+      xformsDocument.normalizeDocument();
       return xformsDocument;
    }
 
@@ -565,7 +566,7 @@ public class Schema2XForms
                if (LOGGER.isDebugEnabled())
                {
                   LOGGER.debug("appending " + data.prototype.getNodeName() +
-                               " to " + XMLUtil.buildXPath((Element)n, instanceDocumentElement));
+                               " to " + XMLUtil.buildXPath(n, instanceDocumentElement));
                }
                n.appendChild(data.prototype.cloneNode(true));
             }
@@ -574,9 +575,9 @@ public class Schema2XForms
                if (LOGGER.isDebugEnabled())
                {
                   LOGGER.debug("inserting " + data.prototype.getNodeName() +
-                               " into " + XMLUtil.buildXPath((Element)n.getParentNode(), 
+                               " into " + XMLUtil.buildXPath(n.getParentNode(), 
                                                              instanceDocumentElement) +
-                               " before " + XMLUtil.buildXPath((Element)n.getNextSibling(),
+                               " before " + XMLUtil.buildXPath(n.getNextSibling(),
                                                                instanceDocumentElement));
                }
                n.getParentNode().insertBefore(data.prototype.cloneNode(true),
@@ -587,7 +588,7 @@ public class Schema2XForms
                if (LOGGER.isDebugEnabled())
                {
                   LOGGER.debug("appending " + data.prototype.getNodeName() +
-                               " to " + XMLUtil.buildXPath((Element)n.getParentNode(),
+                               " to " + XMLUtil.buildXPath(n.getParentNode(),
                                                            instanceDocumentElement));
                }
                n.getParentNode().appendChild(data.prototype.cloneNode(true));
@@ -731,15 +732,6 @@ public class Schema2XForms
          }
       }
 
-
-      // sort the enums values and then add them as choices
-      //
-      // TODO: Should really put the default value (if any) at the top of the list.
-      //
-      /*List sortedList = choiceValues.subList(0, choiceValues.size());
-        Collections.sort(sortedList);
-        Iterator iterator = sortedList.iterator();*/
-      // -> no, already sorted
       final Map<String, Element> result = new HashMap<String, Element>();
       for (XSTypeDefinition type : choiceValues)
       {
@@ -774,7 +766,7 @@ public class Schema2XForms
          formSection.appendChild(this.createTrigger(xformsDocument,
                                                     null,
                                                     typeBindId,
-                                                    "toggle to case " + caseId,
+                                                    textValue,
                                                     toggle,
                                                     setValue));
       }
@@ -1294,17 +1286,11 @@ public class Schema2XForms
    {
       // look for compatible types
       final XSTypeDefinition controlType = elementDecl.getTypeDefinition();
-      defaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
-                                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":type",
-                                            controlType.getName());
-      defaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
-                                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil",
-                                            "true");
 
       //get possible values
       final List<XSTypeDefinition> enumValues = new LinkedList<XSTypeDefinition>();
       //add the type (if not abstract)
-      if (!((XSComplexTypeDefinition) controlType).getAbstract())
+      if (!((XSComplexTypeDefinition)controlType).getAbstract())
       {
          enumValues.add(controlType);
       }
@@ -1337,30 +1323,45 @@ public class Schema2XForms
       switchElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
                                    NamespaceConstants.XFORMS_PREFIX + ":bind",
                                    bindId);
+      switchElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                   NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                                   "full");
 
       formSection.appendChild(switchElement);
 
-      final Element firstCaseElement = caseTypes.get(controlType.getName());
-      switchElement.appendChild(firstCaseElement);
-      final Element firstGroupElement = this.addComplexType(xformsDocument,
-                                                            modelSection,
-                                                            defaultInstanceElement,
-                                                            firstCaseElement,
-                                                            schema,
-                                                            (XSComplexTypeDefinition)controlType,
-                                                            elementDecl,
-                                                            pathToRoot,
-                                                            true,
-                                                            false,
-                                                            resourceBundle);
-      firstGroupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                       NamespaceConstants.XFORMS_PREFIX + ":appearance",
-                                       "");
+      if (!((XSComplexTypeDefinition)controlType).getAbstract())
+      {
+         final Element firstCaseElement = caseTypes.get(controlType.getName());
+         switchElement.appendChild(firstCaseElement);
+         final Element firstGroupElement = this.addComplexType(xformsDocument,
+                                                               modelSection,
+                                                               defaultInstanceElement,
+                                                               firstCaseElement,
+                                                               schema,
+                                                               (XSComplexTypeDefinition)controlType,
+                                                               elementDecl,
+                                                               pathToRoot,
+                                                               true,
+                                                               false,
+                                                               resourceBundle);
+         firstGroupElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                                          NamespaceConstants.XFORMS_PREFIX + ":appearance",
+                                          "");
+      }
+
+      defaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
+                                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":type",
+                                            (((XSComplexTypeDefinition)controlType).getAbstract()
+                                             ? compatibleTypes.first().getName()
+                                             : controlType.getName()));
+      defaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
+                                            NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil",
+                                            "true");
 
       /////////////// add sub types //////////////
       // add each compatible type within
       // a case statement
-      for (XSTypeDefinition type : compatibleTypes)
+      for (final XSTypeDefinition type : compatibleTypes)
       {
          final String compatibleTypeName = type.getName();
 
@@ -1552,7 +1553,7 @@ public class Schema2XForms
                      bindId = bind.getAttributeNS(null, "id");
                   }
                }
-
+               LOGGER.debug("found bindId " + bindId + " for element " + element.getName());
                //find the control
                Element control = null;
                if (bindId != null)
@@ -1570,12 +1571,24 @@ public class Schema2XForms
                   {
                      control = (Element) pointer.getNode();
                   }
+                  else
+                  {
+                     LOGGER.debug("unable to resolve pointer " + pointer.asPath());
+                  }
                }
 
                //copy it
                if (control == null)
                {
                   LOGGER.warn("Corresponding control not found");
+                  this.addElementToGroup(xformsDocument,
+                                         modelSection,
+                                         defaultInstanceElement,
+                                         repeatSection,
+                                         schema,
+                                         element,
+                                         pathToRoot,
+                                         resourceBundle);
                }
                else
                {
@@ -1588,64 +1601,14 @@ public class Schema2XForms
             }
             else
             {
-               //add it normally
-               final String elementName = this.getElementName(element, xformsDocument);
-               final String path = (pathToRoot.length() == 0
-                                    ? elementName
-                                    : pathToRoot + "/" + elementName);
-
-               final Element newDefaultInstanceElement = xformsDocument.createElement(elementName);
-               if (element.getConstraintType() != XSConstants.VC_NONE)
-               {
-                  Node value = xformsDocument.createTextNode(element.getConstraintValue());
-                  newDefaultInstanceElement.appendChild(value);
-               }
-
-               this.addElement(xformsDocument,
-                               modelSection,
-                               newDefaultInstanceElement,
-                               repeatSection,
-                               schema,
-                               element,
-                               path,
-                               resourceBundle);
-
-               final SchemaUtil.Occurance elementOccurs = SchemaUtil.getOccurance(element);
-               LOGGER.debug("adding " + (elementOccurs.maximum == 1
-                                         ? 1
-                                         : elementOccurs.minimum + 1) +
-                            " default instance element for " + elementName +
-                            " at path " + path);
-               // update the default instance
-               if (elementOccurs.isRepeated())
-               {
-                  LOGGER.debug("adding " + (elementOccurs.minimum + 1) +
-                               " default instance elements for " + elementName +
-                               " at path " + path);
-                  for (int i = 0; i < elementOccurs.minimum + 1; i++)
-                  {
-                     final Element e = (Element)newDefaultInstanceElement.cloneNode(true);
-                     if (i == elementOccurs.minimum)
-                     {
-                        e.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                         NamespaceService.ALFRESCO_PREFIX + ":prototype",
-                                         "true");
-                     }
-                     defaultInstanceElement.appendChild(e);
-                  }
-               }
-               else
-               {
-                  LOGGER.debug("adding one default instance element for " + elementName +
-                               " at path " + path);
-                  if (elementOccurs.minimum == 0)
-                  {
-                     newDefaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
-                                                              NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil",
-                                                              "true");
-                  }
-                  defaultInstanceElement.appendChild(newDefaultInstanceElement);
-               }
+               this.addElementToGroup(xformsDocument,
+                                      modelSection,
+                                      defaultInstanceElement,
+                                      repeatSection,
+                                      schema,
+                                      element,
+                                      pathToRoot,
+                                      resourceBundle);
             }
          }
          else
@@ -1659,6 +1622,76 @@ public class Schema2XForms
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug("--- end of addGroup from owner=" + owner.getName());
+      }
+   }
+ 
+   private void addElementToGroup(final Document xformsDocument,
+                                  final Element modelSection,
+                                  final Element defaultInstanceElement,
+                                  final Element formSection,
+                                  final XSModel schema,
+                                  final XSElementDeclaration element,
+                                  final String pathToRoot,
+                                  final ResourceBundle resourceBundle)
+      throws FormBuilderException   
+   {
+      //add it normally
+      final String elementName = this.getElementName(element, xformsDocument);
+      final String path = (pathToRoot.length() == 0
+                           ? elementName
+                           : pathToRoot + "/" + elementName);
+
+      final Element newDefaultInstanceElement = xformsDocument.createElement(elementName);
+      if (element.getConstraintType() != XSConstants.VC_NONE)
+      {
+         Node value = xformsDocument.createTextNode(element.getConstraintValue());
+         newDefaultInstanceElement.appendChild(value);
+      }
+
+      this.addElement(xformsDocument,
+                      modelSection,
+                      newDefaultInstanceElement,
+                      formSection,
+                      schema,
+                      element,
+                      path,
+                      resourceBundle);
+
+      final SchemaUtil.Occurance elementOccurs = SchemaUtil.getOccurance(element);
+      LOGGER.debug("adding " + (elementOccurs.maximum == 1
+                                ? 1
+                                : elementOccurs.minimum + 1) +
+                   " default instance element for " + elementName +
+                   " at path " + path);
+      // update the default instance
+      if (elementOccurs.isRepeated())
+      {
+         LOGGER.debug("adding " + (elementOccurs.minimum + 1) +
+                      " default instance elements for " + elementName +
+                      " at path " + path);
+         for (int i = 0; i < elementOccurs.minimum + 1; i++)
+         {
+            final Element e = (Element)newDefaultInstanceElement.cloneNode(true);
+            if (i == elementOccurs.minimum)
+            {
+               e.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                NamespaceService.ALFRESCO_PREFIX + ":prototype",
+                                "true");
+            }
+            defaultInstanceElement.appendChild(e);
+         }
+      }
+      else
+      {
+         LOGGER.debug("adding one default instance element for " + elementName +
+                      " at path " + path);
+         if (elementOccurs.minimum == 0)
+         {
+            newDefaultInstanceElement.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
+                                                     NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil",
+                                                     "true");
+         }
+         defaultInstanceElement.appendChild(newDefaultInstanceElement);
       }
    }
 
@@ -2366,6 +2399,15 @@ public class Schema2XForms
          {
             appearance = "full";
          }
+         if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH) ||
+             controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_LENGTH))
+         {
+            result.setAttributeNS(NamespaceService.ALFRESCO_URI,
+                                  NamespaceService.ALFRESCO_PREFIX + ":maxLength",
+                                  (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH)
+                                   ? controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH) 
+                                   : controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH)));
+         }
       }
       this.setXFormsId(result);
       result.appendChild(this.createLabel(xformsDocument, caption));
@@ -2946,6 +2988,9 @@ public class Schema2XForms
                             (this.submitMethod != null
                              ? this.submitMethod
                              : Schema2XForms.SubmitMethod.POST).toString());
+      result.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                            NamespaceConstants.XFORMS_PREFIX + ":encoding",
+                            "UTF-8");
       return result;
    }
 

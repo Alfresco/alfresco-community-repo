@@ -414,7 +414,8 @@ public class CreateFormWizard
       case 1:
       {
          return (this.getSchemaFileName() == null || 
-                 this.getSchemaFileName().length() == 0);
+                 this.getSchemaFileName().length() == 0 ||
+                 this.getSchemaRootElementNameChoices().size() == 0);
       }
       default:
       {

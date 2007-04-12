@@ -133,16 +133,28 @@
                         <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "lbgrey", "white"); %>
                         <table cellspacing=2 cellpadding=2 border=0 width=100%>
                            <tr>
-                              <td align=left width=32><a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" /></td>
+                              <td align=left width=32>
+                              	<a:actionLink image="/images/icons/sandbox_large.gif" showLink="false" value="#{msg.staging_sandbox}" 
+                              	              actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
+                              </td>
                               <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
                               <td align=right>
-                                 <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
+                                 <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" 
+                                               actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />
                                  &nbsp;
-                                 <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
+                                 <a:actionLink id="actPreview" value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" 
+                                               href="#{AVMBrowseBean.stagingPreviewUrl}" target="new" />
                                  &nbsp;
-                                 <a:actionLink id="actRefresh" rendered="#{AVMBrowseBean.isManagerRole}" value="#{msg.sandbox_refresh}" image="/images/icons/reset.gif" actionListener="#{AVMBrowseBean.refreshSandbox}" />
+                                 <a:actionLink id="actRefresh" rendered="#{AVMBrowseBean.isManagerRole}" value="#{msg.sandbox_refresh}" 
+                                               actionListener="#{AVMBrowseBean.refreshSandbox}" image="/images/icons/reset.gif" />
+                                 &nbsp;
+                                 <a:actionLink id="actViewDeployReport" rendered="#{AVMBrowseBean.hasDeployBeenAttempted}" value="#{msg.deployment_report_action}" 
+                                               actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:viewDeploymentReport"
+                                               image="/images/icons/deployment_report.gif"  />
+                                 
                                  <%-- Disabled action for GA
-                                 <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:snapshotSandbox" />
+                                 <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" 
+                                               actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:snapshotSandbox" />
                                  --%>
                               </td>
                            </tr>

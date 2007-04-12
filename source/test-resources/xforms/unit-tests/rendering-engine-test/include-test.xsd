@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:documentation>
+      This form demonstrates methods of including templates from templates.  To set up configure the form like this:
+      configure include-test.xsl and include-test.ftl as the rendering engine templates for the form.
+      upload include-test-data-dictionary.* into the data dictionary folder created for the form (e.g. Data Dictionary/Web Forms/include-test
+      upload include-test-webapp.* into the root of your webapp directory within the web project.
+
+      When the rendering template gets executed, it should be able to include all auxilliary xsls and ftls.
+    </xs:documentation>
+  </xs:annotation>
+  <xs:element name="include-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="in-template" type="xs:normalizedString" default="in template"/>
+        <xs:element name="in-data-dictionary" type="xs:normalizedString" default="in data dictionary"/>
+        <xs:element name="in-webapp" type="xs:normalizedString" default="in webapp"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

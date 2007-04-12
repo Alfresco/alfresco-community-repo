@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="process-unit">
+        <xs:complexType >
+            <xs:sequence>
+                <xs:element name="name" type="xs:normalizedString"/>
+                <xs:element name="introduction" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                <xs:element type="xs:anyURI" name="workflow-diagram"/>
+                <xs:element name="goal" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="objectives" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="approach" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="supporting-process-units" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
+

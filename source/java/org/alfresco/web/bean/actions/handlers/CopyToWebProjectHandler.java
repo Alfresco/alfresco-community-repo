@@ -98,7 +98,7 @@ public class CopyToWebProjectHandler extends BaseActionHandler
          folder = avmPath.substring(avmPath.indexOf(AVMConstants.DIR_ROOT)+4);
          
          // get the destination web project name
-         NodeRef webProjectNode = AVMConstants.getWebProjectNode(avmPath);
+         NodeRef webProjectNode = AVMConstants.getWebProjectNodeFromPath(avmPath);
          webProject = Repository.getNameForNode(
                   Repository.getServiceRegistry(context).getNodeService(), webProjectNode);
       }

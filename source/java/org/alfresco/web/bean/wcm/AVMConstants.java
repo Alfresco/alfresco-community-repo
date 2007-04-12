@@ -25,7 +25,6 @@
 package org.alfresco.web.bean.wcm;
 
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -33,19 +32,19 @@ import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.config.ConfigElement;
+import org.alfresco.config.ConfigService;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -277,6 +276,175 @@ public final class AVMConstants
    }
    
    /**
+    * Returns the username to connect as on the remote machine being deployed to
+    * <p>
+    * This value is read from the &lt;wcm&gt; config section in
+    * web-client-config-wcm.xml
+    * </p>
+    * 
+    * @return Username for remote machine
+    */
+   public static String getRemoteDeploymentUsername()
+   {
+      String username = "admin";
+      
+      ConfigElement deploymentConfig = getDeploymentConfig();
+      if (deploymentConfig != null)
+      {
+         ConfigElement elem = deploymentConfig.getChild("remote-username");
+         if (elem != null)
+         {
+            username = elem.getValue();
+         }
+      }
+      
+      return username;
+   }
+   
+   /**
+    * Returns the password to use on the remote machine being deployed to
+    * <p>
+    * This value is read from the &lt;wcm&gt; config section in
+    * web-client-config-wcm.xml
+    * </p>
+    * 
+    * @return Password for remote machine
+    */
+   public static String getRemoteDeploymentPassword()
+   {
+      String password = "admin";
+      
+      ConfigElement deploymentConfig = getDeploymentConfig();
+      if (deploymentConfig != null)
+      {
+         ConfigElement elem = deploymentConfig.getChild("remote-password");
+         if (elem != null)
+         {
+            password = elem.getValue();
+         }
+      }
+      
+      return password;
+   }
+   
+   /**
+    * Returns the number of seconds between each call back to the server to
+    * obtain the latest status of an in progress deployment.
+    * <p>
+    * This value is read from the &lt;wcm&gt; config section in
+    * web-client-config-wcm.xml
+    * </p>
+    * 
+    * @return Number of seconds between each call to the server (in seconds).
+    *         The default is 5.
+    */
+   public static int getRemoteDeploymentPollingFrequency()
+   {
+      int pollFreq = 5;
+      
+      ConfigElement deploymentConfig = getDeploymentConfig();
+      if (deploymentConfig != null)
+      {
+         ConfigElement elem = deploymentConfig.getChild("progress-polling-frequency");
+         if (elem != null)
+         {
+            try
+            {
+               int value = Integer.parseInt(elem.getValue());
+               if (value > 0)
+               {
+                  pollFreq = value;
+               }
+            }
+            catch (NumberFormatException nfe)
+            {
+               // do nothing, just use the default
+            }
+         }
+      }
+      
+      return pollFreq;
+   }
+   
+   /**
+    * Returns the default RMI registry port to use when one is not supplied
+    * for target deployment servers.
+    * <p>
+    * This value is read from the &lt;wcm&gt; config section in
+    * web-client-config-wcm.xml
+    * </p>
+    * 
+    * @return The remote RMI registry port to use for deployments.
+    *         The default is 50500.
+    */
+   public static int getRemoteRMIRegistryPort()
+   {
+      int rmiPort = 50500;
+      
+      ConfigElement deploymentConfig = getDeploymentConfig();
+      if (deploymentConfig != null)
+      {
+         ConfigElement elem = deploymentConfig.getChild("remote-rmi-port");
+         if (elem != null)
+         {
+            try
+            {
+               int value = Integer.parseInt(elem.getValue());
+               if (value > 0)
+               {
+                  rmiPort = value;
+               }
+            }
+            catch (NumberFormatException nfe)
+            {
+               // do nothing, just use the default
+            }
+         }
+      }
+      
+      return rmiPort;
+   }
+   
+   /**
+    * Returns the delay (in seconds) to apply to the start of a deployment
+    * operation (mainly for demo and testing purposes).
+    * <p>
+    * This value is read from the &lt;wcm&gt; config section in
+    * web-client-config-wcm.xml
+    * </p>
+    * 
+    * @return The delay to use at the start of a deployment.
+    *         The default is 30.
+    */
+   public static int getRemoteDeploymentDelay()
+   {
+      int delay = 30;
+      
+      ConfigElement deploymentConfig = getDeploymentConfig();
+      if (deploymentConfig != null)
+      {
+         ConfigElement elem = deploymentConfig.getChild("delay");
+         if (elem != null)
+         {
+            try
+            {
+               int value = Integer.parseInt(elem.getValue());
+               if (value > 0)
+               {
+                  delay = value;
+               }
+            }
+            catch (NumberFormatException nfe)
+            {
+               // do nothing, just use the default
+            }
+         }
+      }
+      
+      return delay;
+   }
+   
+   /**
     * Returns the main staging store name for the specified store id.
     * 
     * @param storeId store id to build staging store name for
@@ -435,8 +603,17 @@ public final class AVMConstants
                                   config.getWCMPort());
    }
    
-   public static String buildWebappUrl(final String store, 
-                                          final String webapp)
+   public static String buildWebappUrl(final String avmPath)
+   {
+      if (avmPath == null || avmPath.length() == 0)
+      {
+         throw new IllegalArgumentException("AVM path is mandatory.");
+      }
+      return AVMConstants.buildWebappUrl(AVMConstants.getStoreName(avmPath),
+                                         AVMConstants.getWebapp(avmPath));
+   }
+
+   public static String buildWebappUrl(final String store, final String webapp)
    {
       if (webapp == null || webapp.length() == 0)
       {
@@ -485,9 +662,11 @@ public final class AVMConstants
       {
          throw new IllegalArgumentException("Asset path is mandatory.");
       }
-      if (assetPath.startsWith('/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
+      if (assetPath.startsWith('/' + JNDIConstants.DIR_DEFAULT_WWW + 
+                               '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
       {
-         assetPath = assetPath.substring(('/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE).length());
+         assetPath = assetPath.substring(('/' + JNDIConstants.DIR_DEFAULT_WWW + 
+                                          '/' + JNDIConstants.DIR_DEFAULT_APPBASE).length());
       }
       if (assetPath.startsWith('/' + DIR_ROOT))
       {
@@ -639,19 +818,27 @@ public final class AVMConstants
     * @return The NodeRef representing the Web Project the path is from or null
     *         if it could not be determined
     */
-   public static NodeRef getWebProjectNode(final String absoluteAVMPath)
+   public static NodeRef getWebProjectNodeFromPath(final String absoluteAVMPath)
+   {
+      return getWebProjectNodeFromStore(AVMConstants.getStoreName(absoluteAVMPath));
+   }
+   
+   /**
+    * Returns the NodeRef that represents the given avm store
+    * 
+    * @param storeName The store name from which to determine the Web Project
+    * @return The NodeRef representing the Web Project the store is from or null
+    *         if it could not be determined
+    */
+   public static NodeRef getWebProjectNodeFromStore(final String storeName)
    {
       // get services
       FacesContext fc = FacesContext.getCurrentInstance();
       SearchService searchService = Repository.getServiceRegistry(fc).getSearchService();
       
-      // get the store name
-      String storeName = AVMConstants.getStoreName(absoluteAVMPath);
-      String storeId = AVMConstants.getStoreId(storeName);
-      
       // construct the query
       String path = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc) + "/*";
-      String query = "PATH:\"/" + path + "\" AND @wca\\:avmstore:\"" + storeId + "\"";
+      String query = "PATH:\"/" + path + "\" AND @wca\\:avmstore:\"" + storeName + "\"";
       
       NodeRef webProjectNode = null;
       ResultSet results = null;
@@ -725,16 +912,15 @@ public final class AVMConstants
    {
       if (force || VirtServerUtils.requiresUpdateNotification(path))
       {
-         VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
-
-         int webappIndex = path.indexOf( '/', 
-                                         path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
-                                                      JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
+         final int webappIndex = path.indexOf('/', 
+                                              path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
+                                              JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
 
          if (webappIndex != -1)
          {
             path = path.substring(0, webappIndex);
          }
+         final VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
          vServerRegistry.updateAllWebapps(-1, path, true);
       }
    }
@@ -749,15 +935,15 @@ public final class AVMConstants
    {
       if (force || VirtServerUtils.requiresUpdateNotification(path))
       {
-         VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
-            
-         int webappIndex = path.indexOf( '/', path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
-                                                           JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
+         final int webappIndex = path.indexOf('/', 
+                                              path.indexOf(JNDIConstants.DIR_DEFAULT_APPBASE) + 
+                                              JNDIConstants.DIR_DEFAULT_APPBASE.length() + 1);
 
          if (webappIndex != -1)
          {
             path = path.substring(0, webappIndex);
          }
+         final VirtServerRegistry vServerRegistry = AVMConstants.getVirtServerRegistry();
          vServerRegistry.removeAllWebapps(-1, path, true);
       }
    }
@@ -769,6 +955,20 @@ public final class AVMConstants
       return (VirtServerRegistry)ac.getBean(BEAN_VIRT_SERVER_REGISTRY);
    }
    
+   private static ConfigElement getDeploymentConfig()
+   {
+      if (deploymentConfig == null)
+      {
+         ConfigService cfgService = Application.getConfigService(FacesContext.getCurrentInstance());
+         ConfigElement wcmCfg = cfgService.getGlobalConfig().getConfigElement("wcm");
+         if (wcmCfg != null)
+         {
+            deploymentConfig = wcmCfg.getChild("deployment");
+         }
+      }
+      
+      return deploymentConfig;
+   }
    
    // Component Separator.
    private static final String STORE_SEPARATOR = "--";
@@ -820,4 +1020,6 @@ public final class AVMConstants
    private final static Pattern SANDBOX_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
                       "/" + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
+   
+   private static ConfigElement deploymentConfig = null; 
 }

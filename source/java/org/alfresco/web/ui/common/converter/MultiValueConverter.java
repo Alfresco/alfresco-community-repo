@@ -57,7 +57,7 @@ public class MultiValueConverter implements Converter
       StringTokenizer tokenizer = new StringTokenizer(value, ",");
       while (tokenizer.hasMoreTokens())
       {
-         items.add(tokenizer.nextToken());
+         items.add(tokenizer.nextToken().trim());
       }
       
       return items;

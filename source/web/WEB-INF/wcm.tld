@@ -147,4 +147,89 @@
       </attribute>
    </tag>
    
+   <tag>
+      <name>deploymentReports</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.DeploymentReportsTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Deployment Reports</display-name>
+      <description>Renders the latest deployment reports for a web project</description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The sandbox to show the list of snapshots for</description>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>deployWebsite</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.DeployWebsiteTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Deploy Website</display-name>
+      <description>Renders a list of servers to deploy to or show deployment progress for</description>
+      
+      <attribute>
+         <name>website</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The NodeRef of the website to deploy or being deployed</description>
+      </attribute>
+      
+      <attribute>
+         <name>snapshotVersion</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The version of the snapshot to deploy or being deployed</description>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The list of servers to deploy to</description>
+      </attribute>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Flag to determine whether component should be rendered</description>
+      </attribute>
+      
+      <attribute>
+         <name>monitor</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Whether the component is monitoring a deployment</description>
+      </attribute>
+      
+      <attribute>
+         <name>monitorIds</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>List of deployment monitor ids to look for</description>
+      </attribute>
+   </tag>
+   
 </taglib>

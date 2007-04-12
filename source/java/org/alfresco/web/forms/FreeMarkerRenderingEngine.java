@@ -23,6 +23,7 @@
 package org.alfresco.web.forms;
 
 import freemarker.ext.dom.NodeModel;
+import freemarker.cache.TemplateLoader;
 import freemarker.template.*;
 import java.io.*;
 import java.util.*;
@@ -76,7 +77,37 @@ public class FreeMarkerRenderingEngine
 
       final Configuration cfg = new Configuration();
       cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+      cfg.setTemplateLoader(new TemplateLoader()
+      {
+         public void closeTemplateSource(final Object templateSource)
+            throws IOException
+         {
+            ((InputStream)templateSource).close();
+         }
+         
+         public Object findTemplateSource(final String name)
+            throws IOException
+         {
+            LOGGER.debug("request to load template " + name);
 
+            final RenderingEngine.TemplateResourceResolver trr = (RenderingEngine.TemplateResourceResolver)
+               model.get(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER);
+
+            return trr.resolve(name);
+         }
+
+         public long getLastModified(final Object templateSource)
+         {
+            // no caching for now...
+            return System.currentTimeMillis();
+         }
+         
+         public Reader getReader(final Object templateSource, final String encoding)
+            throws IOException
+         {
+            return new InputStreamReader((InputStream)templateSource);
+         }
+      });
       final Template t = new Template("freemarker_template", 
                                       new InputStreamReader(ret.getInputStream()),
                                       cfg);
@@ -138,6 +169,10 @@ public class FreeMarkerRenderingEngine
                                                   ". converted " + entry.getValue().getClass().getName() +
                                                   " to " + m.getClass().getName() + ".");
             }
+         }
+         else if (qn.equals(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER))
+         {
+            continue;
          }
          else
          {

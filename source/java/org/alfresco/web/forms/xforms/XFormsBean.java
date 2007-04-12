@@ -402,7 +402,7 @@ public class XFormsBean
          this.xformsSession.schema2XForms.removePrototypeNodes(documentElement);
          documentElement = (Element)instanceData.importNode(documentElement, true);
          instanceData.appendChild(documentElement);
-
+         instanceData.normalizeDocument();
          final ResponseWriter out = context.getResponseWriter();
          XMLUtil.print(instanceData, out, false);
          out.close();

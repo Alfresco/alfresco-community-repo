@@ -1345,6 +1345,16 @@
          Allows the BooleanLabelConverter to be used on a page
       </description>
    </tag>
+   
+   <tag>
+      <name>convertMultiValue</name>
+      <tag-class>org.alfresco.web.ui.common.tag.MultiValueConverterTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <description>
+         Allows the MulitValueConverter to be used on a page
+      </description>
+   </tag>
 
    <tag>
       <name>dynamicDescription</name>

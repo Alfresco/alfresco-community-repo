@@ -25,6 +25,7 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 <%@ page import="org.alfresco.web.bean.wcm.CreateFormWizard" %>
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 <f:verbatim>
 <script type="text/javascript" 
 	src="<%=request.getContextPath()%>/scripts/validation.js">
@@ -143,9 +144,18 @@
       <f:selectItems id="schema-root-element-name-choices"
 		     value="#{WizardManager.bean.schemaRootElementNameChoices}"/>
     </h:selectOneMenu>
-    <h:outputText id="schema-root-element-name-no-choices" 
-		  rendered="#{empty WizardManager.bean.schemaRootElementNameChoices}"
+    <h:outputText id="schema-root-element-name-no-schema" 
+		  rendered="#{empty WizardManager.bean.schemaRootElementNameChoices && empty WizardManager.bean.schemaFileName}"
 		  value="#{msg.create_form_form_details_no_schema_selected}"/>
+    <h:panelGroup id="schema-root-element-name-no-choices" 
+                  rendered="#{empty WizardManager.bean.schemaRootElementNameChoices && !empty WizardManager.bean.schemaFileName}">
+      <f:verbatim><% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %></f:verbatim>
+      <h:panelGrid columns="2" cellpadding="0" cellpadding="0">
+        <h:graphicImage url="/images/icons/warning.gif" style="padding-top:2px;padding-right:4px" width="16" height="16"/>
+        <h:outputText styleClass="mainSubText" value="#{msg.create_form_form_details_no_elements_in_schema}"/>
+      </h:panelGrid>
+      <f:verbatim><% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %></f:verbatim>
+    </h:panelGroup>
     <%-- we need to include this invisible image in order to get the column to size correctly --%>
     <h:graphicImage id="invisible_img_schema_root_element_name_choices_help"
 		    value="/images/icons/Help_icon.gif" style="cursor:help; visibility: hidden;"/>

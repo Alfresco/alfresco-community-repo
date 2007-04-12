@@ -26,6 +26,7 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,10 +41,16 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.Utils;
@@ -61,6 +68,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
 {
    private static final String ACT_SNAPSHOT_PREVIEW = "snapshot_preview";
    private static final String ACT_SNAPSHOT_REVERT = "snapshot_revert";
+   private static final String ACT_SNAPSHOT_DEPLOY = "snapshot_deploy";
    
    private static final String REQUEST_SNAPVERSION = "_snapVer";
 
@@ -72,14 +80,14 @@ public class UISandboxSnapshots extends SelfRenderingComponent
    public static final String FILTER_DATE_WEEK   = "week";
    public static final String FILTER_DATE_MONTH  = "month";
    
-   private static final String COMPONENT_ACTIONS = "org.alfresco.faces.Actions";
-   
    private static final String MSG_LABEL = "name";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_DATE = "date";
    private static final String MSG_USERNAME = "username";
    private static final String MSG_VERSION = "version";
+   private static final String MSG_STATUS = "status";
    private static final String MSG_ACTIONS = "actions";
+   private static final String MSG_LIVE = "live";
    
    /** sandbox to show snapshots for */
    private String value;
@@ -87,6 +95,9 @@ public class UISandboxSnapshots extends SelfRenderingComponent
    /** date filter to use when listing snapshots */
    private String dateFilter;
    
+   /** The snapshot version deployed and the state of that deployment */
+   private int deployAttemptVersion = -1;
+   private String deployStatus;
    
    // ------------------------------------------------------------------------------
    // Component implementation
@@ -174,6 +185,8 @@ public class UISandboxSnapshots extends SelfRenderingComponent
          out.write("</th><th>");
          out.write(bundle.getString(MSG_VERSION));
          out.write("</th><th>");
+         out.write(bundle.getString(MSG_STATUS));
+         out.write("</th><th>");
          out.write(bundle.getString(MSG_ACTIONS));
          out.write("</th></tr>");
          
@@ -211,6 +224,10 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             }
             versions = avmService.getStoreVersions(sandbox, fromDate, toDate);
          }
+         
+         // determine the deployment status for the website
+         determineDeploymentStatus(context, sandbox);
+         
          Map requestMap = context.getExternalContext().getRequestMap();
          for (int i=versions.size() - 1; i >= 0; i--) // reverse order
          {
@@ -219,6 +236,8 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             // only display snapshots with a valid tag - others are system generated snapshots
             if (item.getTag() != null && item.getVersionID() != 0)
             {
+               int version = item.getVersionID();
+               
                out.write("<tr><td>");
                out.write(item.getTag());
                out.write("</td><td>");
@@ -228,20 +247,45 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                out.write("</td><td>");
                out.write(item.getCreator());
                out.write("</td><td>");
-               out.write(Integer.toString(item.getVersionID()));
+               out.write(Integer.toString(version));
+               out.write("</td><td>");
+               if (version == this.deployAttemptVersion && this.deployStatus != null)
+               {
+                  out.write(this.deployStatus);
+               }
+               else
+               {
+                  out.write("&nbsp;");
+               }
                out.write("</td><td><nobr>");
-               // actions for the item
+               
+               // create actions for the item
+               
+               // revert action
                UIActionLink action = findAction(ACT_SNAPSHOT_REVERT, sandbox);
                if (action == null)
                {
                   Map<String, String> params = new HashMap<String, String>(2, 1.0f);
                   params.put("sandbox", sandbox);
                   params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
-                  action = createAction(context, sandbox, ACT_SNAPSHOT_REVERT, null,
+                  action = createAction(context, sandbox, ACT_SNAPSHOT_REVERT, "/images/icons/revert.gif",
                         "#{AVMBrowseBean.revertSnapshot}", null, null, params);
                   
                }
                requestMap.put(REQUEST_SNAPVERSION, Integer.toString(item.getVersionID()));
+               Utils.encodeRecursive(context, action);
+               out.write("&nbsp;&nbsp;");
+               
+               // deploy action
+               action = findAction(ACT_SNAPSHOT_DEPLOY, sandbox);
+               if (action == null)
+               {
+                  Map<String, String> params = new HashMap<String, String>(2, 1.0f);
+                  params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
+                  action = createAction(context, sandbox, ACT_SNAPSHOT_DEPLOY, "/images/icons/deploy.gif",
+                        "#{DialogManager.setupParameters}", "dialog:deploySnapshot", null, params);
+               }
+               
                Utils.encodeRecursive(context, action);
                requestMap.remove(REQUEST_SNAPVERSION);
                //out.write("&nbsp;");
@@ -417,6 +461,91 @@ public class UISandboxSnapshots extends SelfRenderingComponent
       this.getChildren().add(control);
       
       return control;
+   }
+   
+   private void determineDeploymentStatus(FacesContext context, String sandbox)
+   {
+      // work out what status to show against which snapshot
+      NodeRef webProjectRef = AVMConstants.getWebProjectNodeFromStore(sandbox);
+      NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+      List<String> selectedServers = (List<String>)nodeService.getProperty(webProjectRef, 
+               WCMAppModel.PROP_SELECTEDDEPLOYTO);
+      Integer ver = (Integer)nodeService.getProperty(webProjectRef, 
+               WCMAppModel.PROP_SELECTEDDEPLOYVERSION);               
+      if (ver != null)
+      {
+         this.deployAttemptVersion = ver.intValue();
+      }
+               
+      if (selectedServers != null && selectedServers.size() > 0)
+      {
+         // if the 'selecteddeployto' property is set a deployment has been attempted
+         List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
+                  webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTREPORT, RegexQNamePattern.MATCH_ALL);
+         
+         List<String> deployedServers = new ArrayList<String>();
+         
+         boolean oneOrMoreFailed = false;
+         boolean allFailed = true;
+         for (ChildAssociationRef ref : deployReportRefs)
+         {
+            NodeRef report = ref.getChildRef();
+
+            // get the name of the server and the deploy outcome
+            String serverName = (String)nodeService.getProperty(report, 
+                     WCMAppModel.PROP_DEPLOYSERVER);
+            Boolean successful = (Boolean)nodeService.getProperty(report, 
+                     WCMAppModel.PROP_DEPLOYSUCCESSFUL);
+            
+            deployedServers.add(serverName);
+            if (successful != null)
+            {
+               if (successful.booleanValue())
+               {
+                  allFailed = false;
+               }
+               else
+               {
+                  oneOrMoreFailed = true;
+               }
+            }
+         }
+         
+         // now we have a list of servers that were deployed see if all
+         // the selected servers have a report, if not it means a deployment
+         // is in progress. If all servers reports are present then 
+         // determine the status by the outcomes of from all the reports.
+         boolean allPresent = true;
+         for (String selectedServer : selectedServers)
+         {
+            if (deployedServers.contains(selectedServer) == false)
+            {
+               allPresent = false;
+               break;
+            }
+         }
+         
+         if (allPresent)
+         {
+            // get the right status string
+            if (allFailed)
+            {
+               this.deployStatus = Application.getMessage(context, "deploy_status_failed");
+            }
+            else if (oneOrMoreFailed)
+            {
+               this.deployStatus = Application.getMessage(context, "deploy_status_partial");
+            }
+            else
+            {
+               this.deployStatus = Application.getMessage(context, "deploy_status_live");
+            }
+         }
+         else
+         {
+            this.deployStatus = Application.getMessage(context, "deploy_status_in_progress");
+         }
+      }
    }
    
    private AVMService getAVMService(FacesContext fc)

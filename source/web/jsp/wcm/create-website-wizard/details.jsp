@@ -79,6 +79,12 @@
          return true;
       }
    }
+   
+   function toggleDeployToHelp()
+   {
+      var d = document.getElementById('deploy-to-help');
+      d.style.display = d.style.display == 'block' ? 'none' : 'block';
+   }
 </script>
 
 <table cellpadding="3" cellspacing="2" border="0" width="100%">
@@ -136,6 +142,29 @@
          </f:verbatim>
          <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="45" maxlength="256" disabled="true" />
          <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td></td>
+      <td valign="top">
+         </f:verbatim>
+         <h:outputText value="#{msg.website_deployto}:"/>
+         <f:verbatim>
+      </td>
+      <td width="85%">
+         </f:verbatim>
+         <h:inputText id="server" value="#{WizardManager.bean.deployTo}" size="45" maxlength="256">
+            <a:convertMultiValue />
+         </h:inputText>
+         <h:graphicImage id="deploy-to-help-img"
+		    value="/images/icons/Help_icon.gif" style="cursor:help; padding-left: 4px; vertical-align: -4px;"
+		    onclick="javascript:toggleDeployToHelp()" />
+         <f:verbatim>
+         <div id="deploy-to-help" class="summary infoText statusInfoText" style="display: none; padding: 5px; width: 220px;">
+         </f:verbatim>
+            <h:outputText id="deploy-top-help-text" value="#{WizardManager.bean.deployToHelp}" />
+         <f:verbatim>
+         </div>
       </td>
    </tr>
    <tr>

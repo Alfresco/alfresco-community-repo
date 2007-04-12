@@ -112,6 +112,7 @@ public final class Utils
     * 
     * @param string     the String to convert
     */
+   //XXXarielb perhaps use org.springframework.web.util.HtmlUtils instead?
    public static String encode(String string)
    {
       if (string == null)

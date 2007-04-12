@@ -20,7 +20,7 @@
       <tr><td><tt style="font-weight:bold;">webapp</td></tt><td>The name of the webapp in which the form instance data is being created.  Typically, if specifying an absolute output path pattern, the path will begin with the webapp folder (i.e. <tt>/&#36;{webapp}/...</tt>)</td></tr>
       <tr><td><tt style="font-weight:bold;">extension</td></tt><td>The default extension associated with the mime-type configured for the rendering engine template.  This variable is only available for rendition ouput path patterns.</td></tr>
       <tr><td><tt style="font-weight:bold;">xml</td></tt><td>The xml instance data collected by the form.</td></tr>
-      <tr><td><tt style="font-weight:bold;">node</td></tt><td>The form instance data node.</td></tr>
+      <tr><td><tt style="font-weight:bold;">node</td></tt><td>The form instance data node.  This variable is only available for rendition ouput path patterns.</td></tr>
       <tr><td><tt style="font-weight:bold;">date</td></tt><td>The current date at which the form instance data is being saved.  Refer to the <a style="color:blue;" href="http://freemarker.sourceforge.net/docs/ref_builtins_date.htm">FreeMarker date reference</a> for more information.</td></tr>
    </tbody>
 </table>

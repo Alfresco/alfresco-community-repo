@@ -885,6 +885,10 @@
    <navigation-rule>
       <from-view-id>/jsp/*</from-view-id>
       <navigation-case>
+         <from-outcome>browseWebsite</from-outcome>
+         <to-view-id>/jsp/wcm/browse-website.jsp</to-view-id>
+      </navigation-case>
+      <navigation-case>
          <from-outcome>browseSandbox</from-outcome>
          <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
       </navigation-case>

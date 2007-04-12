@@ -138,7 +138,7 @@
   <xs:element name="date_and_time_components">
     <xs:complexType>
       <xs:sequence>
-	<xs:element name="date_and_time" type="xs:datetime"/>
+	<xs:element name="date_and_time" type="xs:dateTime"/>
 	<xs:element name="date" type="xs:date"/>
 	<xs:element name="time" type="xs:time"/>
 	<xs:element name="day" type="xs:gDay"/>

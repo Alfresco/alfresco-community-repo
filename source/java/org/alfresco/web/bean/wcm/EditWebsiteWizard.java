@@ -67,6 +67,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       {
          throw new IllegalArgumentException("Edit Web Project wizard requires action node context.");
       }
+      
       loadWebProjectModel(websiteRef);
    }
    
@@ -78,11 +79,13 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
    private void loadWebProjectModel(NodeRef nodeRef)
    {
       // simple properties
-      this.name = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-      this.title = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
-      this.description = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION);
-      this.dnsName = (String)this.nodeService.getProperty(nodeRef, WCMAppModel.PROP_AVMSTORE);
-      this.webapp = (String)this.nodeService.getProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP);
+      Map<QName, Serializable> props = this.nodeService.getProperties(nodeRef);
+      this.name = (String)props.get(ContentModel.PROP_NAME);
+      this.title = (String)props.get(ContentModel.PROP_TITLE);
+      this.description = (String)props.get(ContentModel.PROP_DESCRIPTION);
+      this.dnsName = (String)props.get(WCMAppModel.PROP_AVMSTORE);
+      this.webapp = (String)props.get(WCMAppModel.PROP_DEFAULTWEBAPP);
+      this.deployTo = (List<String>)props.get(WCMAppModel.PROP_DEPLOYTO);
       
       // load the form templates
       List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
@@ -121,7 +124,6 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
             }
             
             // the templates attached to the form
-            List<RenderingEngineTemplate> engineTemplates = formImpl.getRenderingEngineTemplates();
             List<ChildAssociationRef> templateRefs = this.nodeService.getChildAssocs(
                formRef, WCMAppModel.ASSOC_WEBFORMTEMPLATE, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef tChildRef : templateRefs)
@@ -178,6 +180,7 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, this.name);
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, this.title);
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
+      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEPLOYTO, (Serializable)this.deployTo);
       
       // clear the existing settings for forms, template and workflows - then the existing methods
       // can be used to apply the modified and previous settings from scratch

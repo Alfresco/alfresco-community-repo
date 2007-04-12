@@ -25,9 +25,12 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.web.bean.wcm.AVMBrowseBean;
+import org.alfresco.web.bean.wcm.AVMConstants;
 import org.alfresco.web.forms.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.util.JavaScriptUtils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -59,7 +62,9 @@ public class XFormsProcessor
       "/scripts/ajax/dojo/" + (LOGGER.isDebugEnabled() 
                                ? "dojo.js.uncompressed.js" 
                                : "dojo.js"),
+      "/scripts/ajax/ajax_helper.js",
       "/scripts/ajax/xforms.js",
+      "/scripts/ajax/file_picker_widget.js",
       "/scripts/upload_helper.js",
    };
 
@@ -108,6 +113,8 @@ public class XFormsProcessor
       //make the XFormsBean available for this session
       final XFormsBean xforms = (XFormsBean)
          FacesHelper.getManagedBean(fc, "XFormsBean");
+      final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)
+         FacesHelper.getManagedBean(fc, "AVMBrowseBean");
       try
       {
          xforms.setXFormsSession((XFormsBean.XFormsSession)session);
@@ -142,52 +149,68 @@ public class XFormsProcessor
       e = result.createElement("script");
       e.setAttribute("type", "text/javascript");
       final StringBuilder js = new StringBuilder("\ndjConfig = {isDebug:" + LOGGER.isDebugEnabled() + "};\n");
-      js.append("var alfresco_xforms_constants = {};\n");
-      js.append("alfresco_xforms_constants.WEBAPP_CONTEXT = '").
-         append(contextPath).
+      final String[] jsNamespacesObjects = { "alfresco", "alfresco.constants", "alfresco.xforms", "alfresco.xforms.constants" };
+      for (final String jsNamespace : jsNamespacesObjects)
+      {
+         js.append(jsNamespace).
+            append(" = typeof ").
+            append(jsNamespace).
+            append(" == 'undefined' ? {} : ").
+            append(jsNamespace).
+            append(";\n");
+      }
+      js.append("alfresco.constants.WEBAPP_CONTEXT = '").
+         append(JavaScriptUtils.javaScriptEscape(contextPath)).
          append("';\n");
-      js.append("alfresco_xforms_constants.XFORMS_UI_DIV_ID = '").
+      js.append("alfresco.constants.AVM_WEBAPP_CONTEXT = '").
+         append(JavaScriptUtils.javaScriptEscape(avmBrowseBean.getWebapp())).
+         append("';\n");
+      js.append("alfresco.constants.AVM_WEBAPP_URL = '").
+         append(JavaScriptUtils.javaScriptEscape(AVMConstants.buildWebappUrl(AVMConstants.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox()), 
+                                                                             avmBrowseBean.getWebapp()))).
+         append("';\n");
+      js.append("alfresco.xforms.constants.XFORMS_UI_DIV_ID = '").
          append(xformsUIDivId).
          append("';\n");
-      js.append("alfresco_xforms_constants.FORM_INSTANCE_DATA_NAME = '").
-         append(session.getFormInstanceDataName()).
+      js.append("alfresco.xforms.constants.FORM_INSTANCE_DATA_NAME = '").
+         append(JavaScriptUtils.javaScriptEscape(session.getFormInstanceDataName())).
          append("';\n");
       SimpleDateFormat sdf = (SimpleDateFormat)
          SimpleDateFormat.getDateInstance(DateFormat.SHORT, 
                                           Application.getLanguage(fc));
-      js.append("alfresco_xforms_constants.DATE_FORMAT = '").
+      js.append("alfresco.xforms.constants.DATE_FORMAT = '").
          append(sdf.toLocalizedPattern()).
          append("';\n");
       sdf = (SimpleDateFormat)
          SimpleDateFormat.getTimeInstance(DateFormat.SHORT, 
                                           Application.getLanguage(fc));
-      js.append("alfresco_xforms_constants.TIME_FORMAT = '").
+      js.append("alfresco.xforms.constants.TIME_FORMAT = '").
          append(sdf.toLocalizedPattern()).
          append("';\n");
       sdf = (SimpleDateFormat)
          SimpleDateFormat.getDateTimeInstance(DateFormat.SHORT, 
                                               DateFormat.SHORT, 
                                               Application.getLanguage(fc));
-      js.append("alfresco_xforms_constants.DATE_TIME_FORMAT = '").
+      js.append("alfresco.xforms.constants.DATE_TIME_FORMAT = '").
          append(sdf.toLocalizedPattern()).
          append("';\n");
       for (String[] ns : JS_NAMESPACES)
       {
-         js.append("alfresco_xforms_constants.").
+         js.append("alfresco.xforms.constants.").
             append(ns[0].toUpperCase()).
             append("_NS = '").append(ns[1]).append("';\n");
-         js.append("alfresco_xforms_constants.").
+         js.append("alfresco.xforms.constants.").
             append(ns[0].toUpperCase()). 
             append("_PREFIX = '").append(ns[2]).append("';\n");
       }
 
       final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      js.append("alfresco_xforms_constants.resources = {\n");
+      js.append("alfresco.xforms.constants.resources = {\n");
       for (String k : BUNDLE_KEYS)
       {
          js.append(k).
             append(": '").
-            append(bundle.getString(k)).
+            append(JavaScriptUtils.javaScriptEscape(bundle.getString(k))).
             append("'").
             append(k.equals(BUNDLE_KEYS[BUNDLE_KEYS.length - 1]) ? "\n};" : ",").
             append("\n");

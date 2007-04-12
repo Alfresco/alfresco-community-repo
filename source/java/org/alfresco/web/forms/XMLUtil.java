@@ -38,10 +38,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 /**
@@ -76,7 +73,9 @@ public class XMLUtil
          final TransformerFactory tf = TransformerFactory.newInstance();
          final Transformer t = tf.newTransformer();
          t.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
-         
+         t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+         t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+         t.setOutputProperty(OutputKeys.METHOD, "xml");
          if (LOGGER.isDebugEnabled())
          {
             LOGGER.debug("writing out a document for " + 
@@ -151,7 +150,6 @@ public class XMLUtil
       IOException
    {
       final DocumentBuilder db = XMLUtil.getDocumentBuilder();
-      
       final Document result = db.parse(source);
       source.close();
       return result;
@@ -174,24 +172,44 @@ public class XMLUtil
     * @param to an ancestor of <tt>from</tt> which will be the root of the path
     * @return an xpath to <tt>to</tt> rooted at <tt>from</tt>.
     */
-   public static String buildXPath(final Element from, final Element to)
+   public static String buildXPath(final Node from, final Element to)
    {
       String result = "";
       Node tmp = from;
       do
       {
-         Node tmp2 = tmp;
-         int position = 1;
-         while (tmp2.getPreviousSibling() != null)
+         if (tmp instanceof Attr)
          {
-            if (tmp2.getNodeName().equals(tmp.getNodeName()))
-            {
-                position++;
-            }
-            tmp2 = tmp2.getPreviousSibling();
+            assert result.length() == 0;
+            result = "@" + tmp.getNodeName();
          }
-         String part = tmp.getNodeName() + "[" + position + "]";
-         result = result == null ? "/" + part : "/" + part + result;
+         else if (tmp instanceof Element)
+         {
+            Node tmp2 = tmp;
+            int position = 1;
+            while (tmp2.getPreviousSibling() != null)
+            {
+               if (tmp2.getNodeName().equals(tmp.getNodeName()))
+               {
+                  position++;
+               }
+               tmp2 = tmp2.getPreviousSibling();
+            }
+            String part = tmp.getNodeName() + "[" + position + "]";
+            result = "/" + part + result;
+         }
+         else if (tmp instanceof Text)
+         {
+            assert result.length() == 0;
+            result = "/text()";
+         }
+         else
+         {
+            if (LOGGER.isDebugEnabled())
+            {
+               throw new IllegalArgumentException("unsupported node type " + tmp);
+            }
+         }
          tmp = tmp.getParentNode();
       }
       while (tmp != to.getParentNode() && tmp != null);

@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified" >
+  <xs:simpleType name="name-prefix">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="Mr"/>
+      <xs:enumeration value="Mrs"/>
+      <xs:enumeration value="Dr"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="us-state">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="CN"/>
+      <xs:enumeration value="DE"/>
+      <xs:enumeration value="GA"/>
+      <xs:enumeration value="MA"/>
+      <xs:enumeration value="MD"/>
+      <xs:enumeration value="NC"/>
+      <xs:enumeration value="NH"/>
+      <xs:enumeration value="NJ"/>
+      <xs:enumeration value="NY"/>
+      <xs:enumeration value="PA"/>
+      <xs:enumeration value="RI"/>
+      <xs:enumeration value="SC"/>
+      <xs:enumeration value="VA"/>
+      <xs:enumeration value="VT"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="canadian-province">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="Alberta"/>
+      <xs:enumeration value="BC">
+        <xs:annotation><xs:appinfo>
+            <alf:label>Britsh Columbia</alf:label>
+        </xs:appinfo></xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="NB">
+        <xs:annotation><xs:appinfo>
+            <alf:label>New Brunswick</alf:label>
+        </xs:appinfo></xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="NF">
+        <xs:annotation><xs:appinfo>
+            <alf:label>New Foundland</alf:label>
+        </xs:appinfo></xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Ontario"/>
+      <xs:enumeration value="Quebec"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="abstract-address" abstract="true">
+    <xs:sequence>
+      <xs:element name="street" type="xs:normalizedString"/>
+      <xs:element name="city" type="xs:normalizedString"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="us-address" abstract="false">
+    <xs:complexContent>
+      <xs:extension base="abstract-address">
+        <xs:sequence>
+	  <xs:element name="state" type="us-state"/>
+	  <xs:element name="zip">
+            <xs:simpleType>
+              <xs:restriction base="xs:normalizedString">
+                <xs:maxLength value="5"/> 
+                <xs:pattern value="[0-9][0-9][0-9][0-9][0-9]"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="canadian-address" abstract="false">
+    <xs:complexContent>
+      <xs:extension base="abstract-address">
+        <xs:sequence>
+	  <xs:element name="province" type="canadian-province"/>
+	  <xs:element name="postal-code" type="xs:normalizedString"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="uk-address" abstract="false">
+    <xs:complexContent>
+      <xs:extension base="abstract-address">
+	<xs:attribute name="postal-code" type="xs:normalizedString" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="user-registration">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="name">
+          <xs:complexType>
+            <xs:attribute name="prefix" type="name-prefix" use="required">
+              <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="first" type="xs:normalizedString" use="required"/>
+            <xs:attribute name="last" type="xs:normalizedString" use="required"/>
+          </xs:complexType>
+        </xs:element>
+	<xs:element name="picture" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="email" type="xs:normalizedString" minOccurs="1" maxOccurs="1"/>
+	<xs:element name="address" type="abstract-address" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

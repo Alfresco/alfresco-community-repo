@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -75,10 +76,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateWebsiteWizard extends BaseWizardBean
 {
-   private static final String MSG_DESCRIPTION = "description";
-   private static final String MSG_NAME = "name";
    private static final String MSG_USERROLES = "create_website_summary_users";
-   private static final String MSG_NONE = "workflow_not_set";
    
    private static final String COMPONENT_FORMLIST = "form-list";
    private static final String COMPONENT_WORKFLOWLIST = "workflow-list";
@@ -96,6 +94,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected String name;
    protected String description;
    protected String webapp = WEBAPP_DEFAULT;
+   protected List<String> deployTo;
    
    protected String websitesFolderId = null;
    
@@ -145,6 +144,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.dnsName = null;
       this.title = null;
       this.description = null;
+      this.deployTo = null;
       this.formsDataModel = null;
       this.forms = new ArrayList<FormWrapper>(8);
       this.workflowsDataModel = null;
@@ -186,6 +186,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // set the default webapp name for the project
       String webapp = (this.webapp != null && this.webapp.length() != 0) ? this.webapp : WEBAPP_DEFAULT;
       this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, webapp);
+      
+      // set the list of servers to deploy to
+      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEPLOYTO, (Serializable)this.deployTo);
       
       // call a delegate wizard bean to provide invite user functionality
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
@@ -469,10 +472,39 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       this.webapp = webapp;
    }
+   
+   /**
+    * @return The comma separated list of servers to deploy to
+    */
+   public List<String> getDeployTo()
+   {
+      return this.deployTo;
+   }
 
+   /**
+    * @param deployTo The comma separated list of servers to deploy to
+    */
+   public void setDeployTo(List<String> deployTo)
+   {
+      this.deployTo = deployTo;
+   }
+
+   /**
+    * @return the deploy to help text that gets displayed if the user
+    * clicks the Help icon
+    */
+   public String getDeployToHelp()
+   {
+      String pattern = Application.getMessage(FacesContext.getCurrentInstance(), 
+               "deploy_to_help");
+      String defaultPort = Integer.toString(AVMConstants.getRemoteRMIRegistryPort());
+      return MessageFormat.format(pattern, new Object[] {defaultPort});
+   }
+   
    /**
     * @return summary text for the wizard
     */
+   @SuppressWarnings("unchecked")
    public String getSummary()
    {
       FacesContext fc = FacesContext.getCurrentInstance();
@@ -506,6 +538,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * @return the invited users for the project - as UserWrapper instances
     */
+   @SuppressWarnings("unchecked")
    public List<UserWrapper> getInvitedUsers()
    {
       final FacesContext fc = FacesContext.getCurrentInstance();

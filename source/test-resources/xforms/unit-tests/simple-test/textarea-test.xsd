@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+           elementFormDefault="qualified">
+  <xs:element name="textarea-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="plain_text" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>minimal</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="rich_text_anyType" type="xs:anyType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="rich_text_stringType" type="xs:string" minOccurs="0" maxOccurs="1" default="ф">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>full</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="repeating-textarea" type="xs:anyType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="plain_text_attribute" type="xs:string" use="required">
+        <xs:annotation>
+          <xs:appinfo>
+            <alf:appearance>minimal</alf:appearance>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="rich_text_stringType_attribute" type="xs:string" use="optional" default="ф">
+        <xs:annotation>
+          <xs:appinfo>
+            <alf:appearance>full</alf:appearance>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:attribute>
+      <!-- xs:attribute name="rich_text_anyType_attribute" type="xs:anyType" use="required"/ --> 
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

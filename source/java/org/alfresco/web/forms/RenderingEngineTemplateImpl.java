@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -81,6 +83,18 @@ public class RenderingEngineTemplateImpl
    implements RenderingEngineTemplate
 {
    private static final Log LOGGER = LogFactory.getLog(RenderingEngineTemplateImpl.class);
+
+   private static final DynamicNamespacePrefixResolver namespacePrefixResolver = 
+      new DynamicNamespacePrefixResolver();
+   static
+   {
+      RenderingEngineTemplateImpl.namespacePrefixResolver.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
+                                                                            NamespaceService.ALFRESCO_URI);
+   }
+
+   static final QName PROP_RESOURCE_RESOLVER = QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                                                 "resource_resolver",
+                                                                 namespacePrefixResolver);
 
    private final NodeRef nodeRef;
    private final NodeRef renditionPropertiesNodeRef;
@@ -324,7 +338,7 @@ public class RenderingEngineTemplateImpl
       avmService.setNodeProperties(rendition.getPath(), props);
    }
 
-   /**
+  /**
     * Builds the model to pass to the rendering engine.
     */
    protected Map<QName, Object> buildModel(final FormInstanceData formInstanceData,
@@ -332,23 +346,60 @@ public class RenderingEngineTemplateImpl
       throws IOException,
       SAXException
    {
-      final DynamicNamespacePrefixResolver namespacePrefixResolver = 
-         new DynamicNamespacePrefixResolver();
-      namespacePrefixResolver.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
-                                                NamespaceService.ALFRESCO_URI);
-
       final String formInstanceDataAvmPath = formInstanceData.getPath();
       final String renditionAvmPath = rendition.getPath();
       final String parentPath = AVMNodeConverter.SplitBase(formInstanceDataAvmPath)[0];
       final String sandboxUrl = AVMConstants.buildStoreUrl(formInstanceDataAvmPath);
+      final String webappUrl = AVMConstants.buildWebappUrl(formInstanceDataAvmPath);
       final HashMap<QName, Object> model = new HashMap<QName, Object>();
       // add simple scalar parameters
       model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
                                   "avm_sandbox_url",
                                   namespacePrefixResolver), 
                 sandboxUrl);
-      model.put(XSLTRenderingEngine.PROP_URI_RESOLVER_BASE_URI,
-                sandboxUrl);
+      model.put(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER,
+                new RenderingEngine.TemplateResourceResolver()
+                {
+                   public InputStream resolve(final String name)
+                   {
+                      final NodeService nodeService = 
+                         RenderingEngineTemplateImpl.this.getServiceRegistry().getNodeService();
+                      final NodeRef parentNodeRef = 
+                         nodeService.getPrimaryParent(RenderingEngineTemplateImpl.this.getNodeRef()).getParentRef();
+                      LOGGER.debug("request to resolve resource " + name +
+                                   " webapp url is " + webappUrl +
+                                   " and data dictionary workspace is " + parentNodeRef);
+                      final NodeRef result = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, name);
+                      if (result != null)
+                      {
+                         final ContentService contentService = 
+                            RenderingEngineTemplateImpl.this.getServiceRegistry().getContentService();
+                         try
+                         {
+                            LOGGER.debug("found " + name + " in data dictonary: " + result);
+                            return contentService.getReader(result, ContentModel.PROP_CONTENT).getContentInputStream();
+                         }
+                         catch (Exception e)
+                         {
+                            LOGGER.debug(e);
+                         }
+                      }
+
+                      URI uri = null;
+                      try
+                      {
+                         uri = new URI(webappUrl + (name.charAt(0) == '/' ? name : '/' + name));
+                         if (LOGGER.isDebugEnabled())
+                            LOGGER.debug("loading " + uri);
+                         return uri.toURL().openStream();
+                      }
+                      catch (Exception e)
+                      {
+                         LOGGER.debug(e);
+                         return null;
+                      }
+                   }
+                });
       model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
                                   "form_instance_data_file_name",
                                   namespacePrefixResolver),

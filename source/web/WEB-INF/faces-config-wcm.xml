@@ -24,6 +24,15 @@
       <component-class>org.alfresco.web.ui.wcm.component.UIFormProcessor</component-class>
    </component>
    
+   <component>
+      <component-type>org.alfresco.faces.DeploymentReports</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIDeploymentReports</component-class>
+   </component>
+   
+   <component>
+      <component-type>org.alfresco.faces.DeployWebsite</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIDeployWebsite</component-class>
+   </component>
    
    <!-- ==================== CONVERTERS ==================== -->
    

@@ -41,6 +41,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
@@ -49,13 +50,17 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
+import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -67,7 +72,6 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wizard.WizardManager;
-import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -80,8 +84,6 @@ import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.alfresco.util.VirtServerUtils;
-
 /**
  * Bean backing up the AVM specific browse screens
  * 
@@ -93,6 +95,9 @@ public class AVMBrowseBean implements IContextListener
    
    private static final Log LOGGER = LogFactory.getLog(AVMBrowseBean.class);
    
+   private static final String REQUEST_BEEN_DEPLOYED_KEY = "_alfBeenDeployedEvaluated";
+   private static final String REQUEST_BEEN_DEPLOYED_RESULT = "_alfBeenDeployedResult";
+   
    private static final String MSG_REVERT_SUCCESS = "revert_success";
    private static final String MSG_REVERT_SANDBOX = "revert_sandbox_success";
    private static final String MSG_SANDBOXTITLE = "sandbox_title";
@@ -100,9 +105,9 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_CREATED_ON = "store_created_on";
    private static final String MSG_CREATED_BY = "store_created_by";
    private static final String MSG_WORKING_USERS = "store_working_users";
-   private static final String MSG_SUBMIT_SUCCESS = "submit_success";
-   private static final String MSG_SUBMITALL_SUCCESS = "submitall_success";
-   private static final String MSG_SUBMITSELECTED_SUCCESS = "submitselected_success";
+//   private static final String MSG_SUBMIT_SUCCESS = "submit_success";
+//   private static final String MSG_SUBMITALL_SUCCESS = "submitall_success";
+//   private static final String MSG_SUBMITSELECTED_SUCCESS = "submitselected_success";
 
    /** Component id the status messages are tied too */
    static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
@@ -134,6 +139,9 @@ public class AVMBrowseBean implements IContextListener
    
    /** flag to indicate that all items in the sandbox are involved in the current action */
    private boolean allItemsAction = false;
+   
+   /** list of the deployment monitor ids currently executing */
+   private List<String> deploymentMonitorIds = new ArrayList<String>();
    
    /* component references */
    private UIRichList foldersRichList;
@@ -430,6 +438,22 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @return Returns the list of deployment monitor ids currently executing
+    */
+   public List<String> getDeploymentMonitorIds()
+   {
+      return this.deploymentMonitorIds;
+   }
+
+   /**
+    * @param deploymentMonitorIds Sets the list of deployment monitor ids
+    */
+   public void setDeploymentMonitorIds(List<String> deploymentMonitorIds)
+   {
+      this.deploymentMonitorIds = deploymentMonitorIds;
+   }
+
+   /**
     * @return list of available root webapp folders for this Web project
     */
    public List<SelectItem> getWebapps()
@@ -640,6 +664,39 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @return true if the website has had a deployment attempt
+    */
+   @SuppressWarnings("unchecked")
+   public boolean getHasDeployBeenAttempted()
+   {
+      // NOTE: This method is called a lot as it is referenced as a value binding
+      //       expression in a 'rendered' attribute, we therefore cache the result
+      //       on a per request basis
+      
+      List<ChildAssociationRef> deployReportRefs = null;
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      Map request = context.getExternalContext().getRequestMap();
+      if (request.get(REQUEST_BEEN_DEPLOYED_KEY) == null)
+      {
+         // see if there are any deployment reports for the site
+         NodeRef webProjectRef = this.getWebsite().getNodeRef();
+         deployReportRefs = this.nodeService.getChildAssocs(webProjectRef, 
+                  WCMAppModel.ASSOC_DEPLOYMENTREPORT, RegexQNamePattern.MATCH_ALL);
+         
+         // add a placeholder object in the request so we don't evaluate this again for this request
+         request.put(REQUEST_BEEN_DEPLOYED_KEY, Boolean.TRUE);
+         request.put(REQUEST_BEEN_DEPLOYED_RESULT, deployReportRefs);
+      }
+      else
+      {
+         deployReportRefs = (List<ChildAssociationRef>)request.get(REQUEST_BEEN_DEPLOYED_RESULT);
+      }
+      
+      return (deployReportRefs != null && deployReportRefs.size() > 0);
+   }
+   
+   /**
     * @return Map of avm node objects representing the folders with the current website space
     */
    public List<Map> getFolders()
@@ -674,8 +731,6 @@ public class AVMBrowseBean implements IContextListener
          FacesContext context = FacesContext.getCurrentInstance();
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
-         
-         int rootPathIndex = AVMConstants.buildSandboxRootPath(getSandbox()).length();
          
          Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(-1, getCurrentPath());
          this.files = new ArrayList<Map>(nodes.size());
@@ -1006,8 +1061,6 @@ public class AVMBrowseBean implements IContextListener
     */
    public void createFormContent(ActionEvent event)
    {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      
       // setup the correct sandbox for the create action
       setupSandboxAction(event);
       
@@ -1106,6 +1159,7 @@ public class AVMBrowseBean implements IContextListener
    /**
     * Class to handle breadcrumb interaction for AVM page
     */
+   @SuppressWarnings("serial")
    private class AVMBreadcrumbHandler implements IBreadcrumbHandler
    {
       private String path;
@@ -1115,6 +1169,7 @@ public class AVMBrowseBean implements IContextListener
          this.path = path;
       }
       
+      @SuppressWarnings("unchecked")
       public String navigationOutcome(UIBreadcrumb breadcrumb)
       {
          setCurrentPath(path);

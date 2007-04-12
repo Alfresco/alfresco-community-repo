@@ -2917,6 +2917,61 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <description>
+         The bean that backs up the Deploy Snapshot Dialog
+      </description>
+      <managed-bean-name>DeploySnapshotDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.DeploySnapshotDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>actionService</property-name>
+         <value>#{ActionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Monitor Deployment Dialog
+      </description>
+      <managed-bean-name>MonitorDeploymentDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.MonitorDeploymentDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the View Deployment Report Dialog
+      </description>
+      <managed-bean-name>ViewDeploymentReportDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.ViewDeploymentReportDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+   
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>
       <description>
@@ -3162,5 +3217,14 @@
          <property-name>schema2XFormsProperties</property-name>
          <value>#{Schema2XFormsProperties}</value>
       </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Bean that returns deployment progress status
+      </description>
+      <managed-bean-name>DeploymentProgressBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.DeploymentProgressBean</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
 </faces-config>

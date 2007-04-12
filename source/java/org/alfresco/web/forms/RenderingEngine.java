@@ -24,6 +24,7 @@ package org.alfresco.web.forms;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -68,6 +69,15 @@ public interface RenderingEngine
    {
       public Object exec(final Object[] arguments)
          throws Exception;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+
+   public interface TemplateResourceResolver
+      extends Serializable
+   {
+      public InputStream resolve(final String resourceName)
+         throws IOException;
    }
 
    /////////////////////////////////////////////////////////////////////////////

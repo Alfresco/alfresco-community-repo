@@ -141,9 +141,9 @@ Alfresco.NodeInfoPanel.prototype =
       
       // setup the div with the correct appearance
       div.innerHTML = response.responseText;
-      div.setAttribute("class", "summaryPopupPanel");
+      div.setAttribute("class", "summaryDropShadow");
       // NOTE: use className for IE
-      div.setAttribute("className", "summaryPopupPanel");
+      div.setAttribute("className", "summaryDropShadow");
       div.style.position = "absolute";
       div.style.display = "none";
       div.style.left = 0;

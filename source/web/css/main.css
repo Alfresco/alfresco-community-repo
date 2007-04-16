@@ -486,9 +486,10 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    background-image: url(../images/parts/popup_bg.gif);
    background-repeat: repeat-x;
    background-color: #ffffff;
-   border: 1px solid #cacfd3;
+   border: 1px solid #a9b2b9;
    padding: 4px;
    max-width: 700px;
+   margin: 0px 0px 0px 0px;
 }
 
 .popupImage
@@ -665,4 +666,14 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    font-size: 14px; 
    font-weight: bold; 
    padding-bottom: 2px;
+}
+
+.summaryDropShadow 
+{
+   background: url(../images/parts/drop_shadow_alpha.png) no-repeat bottom right !important;
+   background-color: transparent;
+   padding: 0px 11px 11px 0px;
+   
+   _background: url(../images/parts/spacer.gif) no-repeat bottom right !important;
+   _padding: 0px 10px 10px 0px;
 }

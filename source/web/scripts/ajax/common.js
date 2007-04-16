@@ -235,23 +235,25 @@ function getContextPath()
             if (elWidth > maxwidth) elWidth = maxwidth;
          }
          var docWidth = YAHOO.util.Dom.getDocumentWidth();
-         if (pos[0] + elWidth < docWidth)
+         //log(" Element X:" + pos[0] + " doc width:" + YAHOO.util.Dom.getDocumentWidth());
+         if (pos[0] + 20 + elWidth < docWidth)
          {
-            el.style.left = pos[0];
+            el.style.left = (pos[0] + 20) + "px";
          }
          else
          {
-            el.style.left = pos[0] - ((pos[0] + elWidth) - docWidth);
+            //log(" Shifting X coord left - overflow");
+            el.style.left = (pos[0] + 20 - ((pos[0] + elWidth) - docWidth)) + "px";
          }
          //log(" Element Y:" + pos[1] + " doc height:" + YAHOO.util.Dom.getDocumentHeight());
-         if (pos[1] + 16 + elHeight < YAHOO.util.Dom.getDocumentHeight())
+         if (pos[1] - 12 + elHeight < YAHOO.util.Dom.getDocumentHeight())
          {
-            el.style.top = pos[1] + 12;
+            el.style.top = (pos[1] + 12) + "px";
          }
          else
          {
-            //log(" ***Changing position - will overflow");
-            el.style.top = pos[1] - elHeight - 4;
+            //log(" Shifting Y coord up - overflow");
+            el.style.top = (pos[1] - elHeight - 4) + "px";
          }
       }
    };

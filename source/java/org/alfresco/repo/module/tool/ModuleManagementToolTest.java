@@ -80,13 +80,14 @@ public class ModuleManagementToolTest extends TestCase
         files.add("/images/test.jpg");
         files.add("/jsp/test.jsp");
         files.add("/css/test.css");
+        files.add("/extra.txt");
         checkForFileExistance(warLocation, files);   
         
         // Check the intstalled files
         InstalledFiles installed0 = new InstalledFiles(warLocation, "test");
         installed0.load();
         assertNotNull(installed0);
-        assertEquals(7, installed0.getAdds().size());
+        assertEquals(8, installed0.getAdds().size());
         assertEquals(1, installed0.getMkdirs().size());
         assertEquals(1, installed0.getUpdates().size());
         String backup = null;
@@ -132,6 +133,7 @@ public class ModuleManagementToolTest extends TestCase
         List<String> files3 = new ArrayList<String>(2);
         files3.add("/scripts/test.js");
         files3.add("/jsp/test.jsp");
+        files3.add("/extra.txt");
         files3.add(backup);
         checkForFileNonExistance(warLocation, files3);
         

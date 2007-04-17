@@ -8,7 +8,7 @@
     <view:properties>
       <app:editInline>true</app:editInline>
       <cm:description>Displays useful information about the current document</cm:description>
-      <cm:content>contentUrl=classpath:alfresco/templates/content/examples/doc_info.ftl|mimetype=text/plain|size=1884|encoding=UTF-8</cm:content>
+      <cm:content>contentUrl=classpath:alfresco/templates/content/examples/doc_info.ftl|mimetype=text/plain|size=2227|encoding=UTF-8</cm:content>
       <cm:title>doc_info.ftl</cm:title>
       <cm:name>doc_info.ftl</cm:name>
     </view:properties>

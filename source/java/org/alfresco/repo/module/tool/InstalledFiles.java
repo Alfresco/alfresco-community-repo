@@ -56,7 +56,7 @@ public class InstalledFiles
      */
     public void load()
     {
-        File file = new File(getFileLocation(), ModuleManagementTool.defaultDetector);        
+        File file = new File(getFileLocation(), ModuleManagementTool.DETECTOR_AMP_AND_WAR);        
         if (file.exists() == true)
         {
             try
@@ -108,7 +108,7 @@ public class InstalledFiles
     {
         try
         {
-            File file = new File(getFileLocation(), ModuleManagementTool.defaultDetector);
+            File file = new File(getFileLocation(), ModuleManagementTool.DETECTOR_AMP_AND_WAR);
             if (file.exists() == false)
             {
                 file.createNewFile();               

@@ -56,6 +56,13 @@ public class ModuleManagementTool
 {
     /** Location of the default mapping properties file */
     private static final String DEFAULT_FILE_MAPPING_PROPERTIES = "org/alfresco/repo/module/tool/default-file-mapping.properties";
+    /** Location of the AMP-specific mappings file */
+    private static final String FILE_MAPPING_PROPERTIES = "file-mapping.properties";
+    /**
+     * The property to add to a custom {@link #FILE_MAPPING_PROPERTIES file-mapping.properties} to inherit the default values.
+     * The default is <code>true</code>.
+     */
+    private static final String PROP_INHERIT_DEFAULT = "inherit.default";
     
     /** Standard directories found in the alfresco war */
     public static final String MODULE_DIR = "/WEB-INF/classes/alfresco/module";
@@ -71,10 +78,10 @@ public class ModuleManagementTool
     private static final String OPTION_DIRECTORY = "-directory";
     
     /** Default zip detector */
-    public static ZipDetector defaultDetector = new DefaultRaesZipDetector("amp|war");
+    public static final ZipDetector DETECTOR_AMP_AND_WAR = new DefaultRaesZipDetector("amp|war");
     
     /** File mapping properties */
-    private Properties fileMappingProperties;
+    private Properties defaultFileMappingProperties;
     
     /** Indicates the current verbose setting */
     private boolean verbose = false;
@@ -85,11 +92,11 @@ public class ModuleManagementTool
     public ModuleManagementTool()
     {
         // Load the default file mapping properties
-        this.fileMappingProperties = new Properties();
+        this.defaultFileMappingProperties = new Properties();
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(DEFAULT_FILE_MAPPING_PROPERTIES);
         try
         {
-            this.fileMappingProperties.load(is);
+            this.defaultFileMappingProperties.load(is);
         }
         catch (IOException exception)
         {
@@ -208,12 +215,12 @@ public class ModuleManagementTool
             if (preview == false)
             {
                 // Make sure the module and backup directory exisits in the WAR file
-                File moduleDir = new File(warFileLocation + MODULE_DIR, defaultDetector);
+                File moduleDir = new File(warFileLocation + MODULE_DIR, DETECTOR_AMP_AND_WAR);
                 if (moduleDir.exists() == false)
                 {
                     moduleDir.mkdir();
                 }
-                File backUpDir = new File(warFileLocation + BACKUP_DIR, defaultDetector);
+                File backUpDir = new File(warFileLocation + BACKUP_DIR, DETECTOR_AMP_AND_WAR);
                 if (backUpDir.exists() == false)
                 {
                     backUpDir.mkdir();
@@ -252,11 +259,11 @@ public class ModuleManagementTool
                     if (forceInstall == true)
                     {
                         // Warn of forced install
-                        outputMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced reguarless of exiting versions present.");
+                        outputMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of exiting versions present.");
                     }
                     
                     // Trying to update the extension, old files need to cleaned before we proceed
-                    outputMessage("Clearing out files relating to version '" + installedModuleDetails.getVersionNumber().toString() + "' of module '" + installedModuleDetails.getId() + "'");
+                    outputMessage("Clearing out files relating to version '" + installedModuleDetails.getVersionNumber() + "' of module '" + installedModuleDetails.getId() + "'");
                     cleanWAR(warFileLocation, installedModuleDetails.getId(), preview);
                 }
                 else if (compareValue == 0)
@@ -274,29 +281,47 @@ public class ModuleManagementTool
                 
             }
             
-            // TODO check for any additional file mapping propeties supplied in the AEP file
+            // Check if a custom mapping file has been defined
+            Properties fileMappingProperties = null;
+            Properties customFileMappingProperties = getCustomFileMappings(ampFileLocation);
+            if (customFileMappingProperties == null)
+            {
+                fileMappingProperties = defaultFileMappingProperties;
+            }
+            else
+            {
+                fileMappingProperties = new Properties();
+                // A custom mapping file was present.  Check if it must inherit the default mappings.
+                String inheritDefaultStr = customFileMappingProperties.getProperty(PROP_INHERIT_DEFAULT, "true");
+                if (inheritDefaultStr.equalsIgnoreCase("true"))
+                {
+                    fileMappingProperties.putAll(defaultFileMappingProperties);
+                }
+                fileMappingProperties.putAll(customFileMappingProperties);
+                fileMappingProperties.remove(PROP_INHERIT_DEFAULT);
+            }
             
             // Copy the files from the AEP file into the WAR file
-            outputMessage("Adding files relating to version '" + installingModuleDetails.getVersionNumber().toString() + "' of module '" + installingModuleDetails.getId() + "'");
+            outputMessage("Adding files relating to version '" + installingModuleDetails.getVersionNumber() + "' of module '" + installingModuleDetails.getId() + "'");
             InstalledFiles installedFiles = new InstalledFiles(warFileLocation, installingModuleDetails.getId());
-            for (Map.Entry<Object, Object> entry : this.fileMappingProperties.entrySet())
+            for (Map.Entry<Object, Object> entry : fileMappingProperties.entrySet())
             {
                 // Run throught the files one by one figuring out what we are going to do during the copy
                 copyToWar(ampFileLocation, warFileLocation, (String)entry.getKey(), (String)entry.getValue(), installedFiles, preview);
                 
                 if (preview == false)
                 {
-                    // Get a reference to the source folder (if it isn't present dont do anything
-                    File source = new File(ampFileLocation + "/" + entry.getKey(), defaultDetector);
+                    // Get a reference to the source folder (if it isn't present don't do anything)
+                    File source = new File(ampFileLocation + "/" + entry.getKey(), DETECTOR_AMP_AND_WAR);
                     if (source != null && source.list() != null)
                     {
                         // Get a reference to the destination folder
-                        File destination = new File(warFileLocation + "/" + entry.getValue(), defaultDetector);
+                        File destination = new File(warFileLocation + "/" + entry.getValue(), DETECTOR_AMP_AND_WAR);
                         if (destination == null)
                         {
                             throw new ModuleManagementToolException("The destination folder '" + entry.getValue() + "' as specified in mapping properties does not exist in the war");
                         }
-                        // Do the bulk copy since this is quicker than copying file's one by one
+                        // Do the bulk copy since this is quicker than copying files one by one
                         destination.copyAllFrom(source);             
                     }
                 }
@@ -311,7 +336,7 @@ public class ModuleManagementTool
                 installingModuleDetails.setInstallState(ModuleInstallState.INSTALLED);
                 installingModuleDetails.save(warFileLocation, installingModuleDetails.getId());
 
-                // Update the zip file's
+                // Update the zip files
                 File.update(); 
                 
                 // Set the modified date
@@ -337,6 +362,38 @@ public class ModuleManagementTool
         {
             throw new ModuleManagementToolException("An IO error was encountered during deployment of the AEP into the WAR", exception);
         }       
+    }
+    
+    /**
+     * @return Returns the custom file mapping properties or null if they weren't overwritten
+     */
+    private Properties getCustomFileMappings(String ampFileLocation)
+    {
+        File file = new File(ampFileLocation + "/" + FILE_MAPPING_PROPERTIES, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
+        if (!file.exists())
+        {
+            // Nothing there
+            return null;
+        }
+        Properties mappingProperties = new Properties();
+        InputStream is = null;
+        try
+        {
+            is = new BufferedInputStream(new FileInputStream(file));
+            mappingProperties.load(is);
+        }
+        catch (IOException exception)
+        {
+            throw new ModuleManagementToolException("Unable to load default extension file mapping properties.", exception);
+        }
+        finally
+        {
+            if (is != null)
+            {
+                try { is.close(); } catch (Throwable e ) {}
+            }
+        }
+        return mappingProperties;
     }
     
     /**
@@ -366,8 +423,8 @@ public class ModuleManagementTool
             if (preview == false)
             {
                 // Recover updated file and delete backups
-                File modified = new File(warFileLocation + update.getKey(), defaultDetector);
-                File backup = new File(warFileLocation + update.getValue(), defaultDetector);
+                File modified = new File(warFileLocation + update.getKey(), DETECTOR_AMP_AND_WAR);
+                File backup = new File(warFileLocation + update.getValue(), DETECTOR_AMP_AND_WAR);
                 modified.copyFrom(backup);
                 backup.delete();
             }
@@ -385,7 +442,7 @@ public class ModuleManagementTool
      */
     private void removeFile(String warLocation, String filePath, boolean preview)
     {
-        File removeFile = new File(warLocation + filePath, defaultDetector);
+        File removeFile = new File(warLocation + filePath, DETECTOR_AMP_AND_WAR);
         if (removeFile.exists() == true)
         {
             outputMessage("Removing file '" + filePath + "' from war", true);
@@ -415,7 +472,7 @@ public class ModuleManagementTool
         throws IOException
     {
         String sourceLocation = ampFileLocation + sourceDir;               
-        File ampConfig = new File(sourceLocation, defaultDetector);
+        File ampConfig = new File(sourceLocation, DETECTOR_AMP_AND_WAR);
         
         java.io.File[] files = ampConfig.listFiles();  
         if (files != null)
@@ -423,7 +480,7 @@ public class ModuleManagementTool
             for (java.io.File sourceChild : files)
             {
                 String destinationFileLocation = warFileLocation + destinationDir + "/" + sourceChild.getName();
-                File destinationChild = new File(destinationFileLocation, defaultDetector);
+                File destinationChild = new File(destinationFileLocation, DETECTOR_AMP_AND_WAR);
                 if (sourceChild.isFile() == true)
                 {
                     String backupLocation = null;
@@ -438,7 +495,7 @@ public class ModuleManagementTool
                         backupLocation = BACKUP_DIR + "/" + generateGuid() + ".bin";
                         if (preview == false)
                         {
-                            File backupFile = new File(warFileLocation + backupLocation, defaultDetector);
+                            File backupFile = new File(warFileLocation + backupLocation, DETECTOR_AMP_AND_WAR);
                             backupFile.copyFrom(destinationChild);
                         }
                     }
@@ -510,7 +567,7 @@ public class ModuleManagementTool
         this.verbose = true;
         try
         {
-            File moduleDir = new File(warLocation + MODULE_DIR, defaultDetector);
+            File moduleDir = new File(warLocation + MODULE_DIR, DETECTOR_AMP_AND_WAR);
             if (moduleDir.exists() == false)
             {
                 outputMessage("No modules are installed in this WAR file");
@@ -523,7 +580,7 @@ public class ModuleManagementTool
                 {
                     if (dir.isDirectory() == true)
                     {
-                        File moduleProperties = new File(dir.getPath() + "/module.properties", defaultDetector);
+                        File moduleProperties = new File(dir.getPath() + "/module.properties", DETECTOR_AMP_AND_WAR);
                         if (moduleProperties.exists() == true)
                         {
                             try

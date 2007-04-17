@@ -64,7 +64,7 @@ public class ModuleDetailsHelper extends ModuleDetailsImpl
         ModuleDetailsHelper result = null;
         try
         {
-            File file = new File(location, ModuleManagementTool.defaultDetector);
+            File file = new File(location, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
             if (file.exists() == true)
             {
                 result = new ModuleDetailsHelper(new FileInputStream(file));
@@ -86,7 +86,7 @@ public class ModuleDetailsHelper extends ModuleDetailsImpl
      */
     public static ModuleDetailsHelper create(String warLocation, String moduleId)
     {
-        return ModuleDetailsHelper.create(ModuleDetailsHelper.getFileLocation(warLocation, moduleId));
+        return ModuleDetailsHelper.create(ModuleDetailsHelper.getModulePropertiesFileLocation(warLocation, moduleId));
     }
     
     /**
@@ -96,7 +96,7 @@ public class ModuleDetailsHelper extends ModuleDetailsImpl
      * @param moduleId      the module id
      * @return              the file location
      */
-    private static String getFileLocation(String warLocation, String moduleId)
+    private static String getModulePropertiesFileLocation(String warLocation, String moduleId)
     {
         return warLocation + ModuleManagementTool.MODULE_DIR + "/" + moduleId + "/" + "module.properties";
     }
@@ -111,7 +111,7 @@ public class ModuleDetailsHelper extends ModuleDetailsImpl
     {
         try
         {
-            File file = new File(getFileLocation(warLocation, moduleId), ModuleManagementTool.defaultDetector);
+            File file = new File(getModulePropertiesFileLocation(warLocation, moduleId), ModuleManagementTool.DETECTOR_AMP_AND_WAR);
             if (file.exists() == false)
             {
                 file.createNewFile();               

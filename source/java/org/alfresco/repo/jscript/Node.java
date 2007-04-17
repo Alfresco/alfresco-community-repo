@@ -68,6 +68,7 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -404,7 +405,7 @@ public class Node implements Serializable, Scopeable
     }
     
     /**
-     * Return the associations for this Node. As a Map of assoc name to an Array of Nodes.
+     * Return the target associations from this Node. As a Map of assoc name to an Array of Nodes.
      * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
      * associative array access. This means associations of this node can be access thus:
      * <code>node.assocs["translations"][0]</code>
@@ -988,7 +989,7 @@ public class Node implements Serializable, Scopeable
     // Create and Modify API
     
     /**
-     * Persist the properties of this Node.
+     * Persist the modified properties of this Node.
      */
     public void save()
     {
@@ -1046,16 +1047,11 @@ public class Node implements Serializable, Scopeable
      */
     public Node createFile(String name)
     {
-        Node node = null;
+        ParameterCheck.mandatoryString("Node Name", name);
         
-        if (name != null && name.length() != 0)
-        {
-            FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
-                    ContentModel.TYPE_CONTENT);
-            node = newInstance(fileInfo.getNodeRef(), this.services, this.scope);
-        }
-        
-        return node;
+        FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
+                ContentModel.TYPE_CONTENT);
+        return newInstance(fileInfo.getNodeRef(), this.services, this.scope);
     }
     
     /**
@@ -1067,41 +1063,122 @@ public class Node implements Serializable, Scopeable
      */
     public Node createFolder(String name)
     {
-        Node node = null;
+        ParameterCheck.mandatoryString("Node Name", name);
         
-        if (name != null && name.length() != 0)
-        {
-            FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
-                    ContentModel.TYPE_FOLDER);
-            node = newInstance(fileInfo.getNodeRef(), this.services, this.scope);
-        }
-        
-        return node;
+        FileInfo fileInfo = this.services.getFileFolderService().create(this.nodeRef, name,
+                ContentModel.TYPE_FOLDER);
+        return newInstance(fileInfo.getNodeRef(), this.services, this.scope);
     }
     
     /**
      * Create a new Node of the specified type as a child of this node.
      * 
-     * @param name Name of the node to create
-     * @param type QName type (can either be fully qualified or short form such as 'cm:content')
+     * @param name Name of the node to create (can be null for a node without a 'cm:name' property)
+     * @param type QName type (fully qualified or short form such as 'cm:content')
      * 
      * @return Newly created Node or null if failed to create.
      */
     public Node createNode(String name, String type)
     {
-        Node node = null;
+        return createNode(name, type, null, ContentModel.ASSOC_CONTAINS.toString());
+    }
+    
+    /**
+     * Create a new Node of the specified type as a child of this node.
+     * 
+     * @param name Name of the node to create (can be null for a node without a 'cm:name' property)
+     * @param type QName type (fully qualified or short form such as 'cm:content')
+     * @param assocName QName of the child association (fully qualified or short form e.g. 'cm:contains')
+     * 
+     * @return Newly created Node or null if failed to create.
+     */
+    public Node createNode(String name, String type, String assocName)
+    {
+        return createNode(name, type, null, assocName);
+    }
+    
+    /**
+     * Create a new Node of the specified type as a child of this node.
+     * 
+     * @param name Name of the node to create (can be null for a node without a 'cm:name' property)
+     * @param type QName type (fully qualified or short form such as 'cm:content')
+     * @param properties Associative array of the default properties for the node.
+     * 
+     * @return Newly created Node or null if failed to create.
+     */
+    public Node createNode(String name, String type, Object properties)
+    {
+        return createNode(name, type, properties, ContentModel.ASSOC_CONTAINS.toString());
+    }
+    
+    /**
+     * Create a new Node of the specified type as a child of this node.
+     * 
+     * @param name Name of the node to create (can be null for a node without a 'cm:name' property)
+     * @param type QName type (fully qualified or short form such as 'cm:content')
+     * @param properties Associative array of the default properties for the node.
+     * @param assocName QName of the child association (fully qualified or short form e.g. 'cm:contains')
+     * 
+     * @return Newly created Node or null if failed to create.
+     */
+    public Node createNode(String name, String type, Object properties, String assocName)
+    {
+        ParameterCheck.mandatoryString("Node Type", type);
+        ParameterCheck.mandatoryString("Association Name", assocName);
         
-        if (name != null && name.length() != 0 && type != null && type.length() != 0)
+        Map<QName, Serializable> props = null;
+        
+        if (properties instanceof ScriptableObject)
         {
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-            props.put(ContentModel.PROP_NAME, name);
-            ChildAssociationRef childAssocRef = this.nodeService.createNode(this.nodeRef, ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
-                    createQName(type), props);
-            node = newInstance(childAssocRef.getChildRef(), this.services, this.scope);
+            props = new HashMap<QName, Serializable>(4, 1.0f);
+            extractScriptableProperties((ScriptableObject)properties, props);
         }
         
-        return node;
+        if (name != null)
+        {
+            if (props == null) props = new HashMap<QName, Serializable>(1, 1.0f);
+            props.put(ContentModel.PROP_NAME, name);
+        }
+        else
+        {
+            // set name for the assoc local name
+            name = GUID.generate();
+        }
+        
+        ChildAssociationRef childAssocRef = this.nodeService.createNode(
+                this.nodeRef, createQName(assocName),
+                QName.createQName(NamespaceService.ALFRESCO_URI, QName.createValidLocalName(name)),
+                createQName(type), props);
+        
+        return newInstance(childAssocRef.getChildRef(), this.services, this.scope);
+    }
+    
+    /**
+     * Create an association between this node and the specified target node.
+     * 
+     * @param target        Destination node for the association
+     * @param assocType     Association type qname (short form or fully qualified)
+     */
+    public void createAssociation(Node target, String assocType)
+    {
+        ParameterCheck.mandatory("Target", target);
+        ParameterCheck.mandatoryString("Association Type Name", assocType);
+        
+        this.nodeService.createAssociation(this.nodeRef, target.nodeRef, createQName(assocType));
+    }
+    
+    /**
+     * Remove an association between this node and the specified target node.
+     * 
+     * @param target        Destination node on the end of the association
+     * @param assocType     Association type qname (short form or fully qualified)
+     */
+    public void removeAssociation(Node target, String assocType)
+    {
+        ParameterCheck.mandatory("Target", target);
+        ParameterCheck.mandatoryString("Association Type Name", assocType);
+        
+        this.nodeService.removeAssociation(this.nodeRef, target.nodeRef, createQName(assocType));
     }
     
     /**
@@ -1211,26 +1288,8 @@ public class Node implements Serializable, Scopeable
         Map<QName, Serializable> aspectProps = null;
         if (props instanceof ScriptableObject)
         {
-            ScriptableObject properties = (ScriptableObject) props;
-            
-            // we need to get all the keys to the properties provided
-            // and convert them to a Map of QName to Serializable objects
-            Object[] propIds = properties.getIds();
-            aspectProps = new HashMap<QName, Serializable>(propIds.length);
-            for (int i = 0; i < propIds.length; i++)
-            {
-                // work on each key in turn
-                Object propId = propIds[i];
-                
-                // we are only interested in keys that are formed of Strings i.e. QName.toString()
-                if (propId instanceof String)
-                {
-                    // get the value out for the specified key - make sure it is Serializable
-                    Object value = properties.get((String) propId, properties);
-                    value = getValueConverter().convertValueForRepo((Serializable) value);
-                    aspectProps.put(createQName((String) propId), (Serializable) value);
-                }
-            }
+            aspectProps = new HashMap<QName, Serializable>(4, 1.0f);
+            extractScriptableProperties((ScriptableObject)props, aspectProps);
         }
         QName aspectQName = createQName(type);
         this.nodeService.addAspect(this.nodeRef, aspectQName, aspectProps);
@@ -1239,6 +1298,37 @@ public class Node implements Serializable, Scopeable
         reset();
         
         return true;
+    }
+
+    /**
+     * Extract a map of properties from a scriptable object (generally an associative array)
+     * 
+     * @param scriptable    The scriptable object to extract name/value pairs from.
+     * @param map           The map to add the converted name/value pairs to.
+     */
+    private void extractScriptableProperties(ScriptableObject scriptable, Map<QName, Serializable> map)
+    {
+        // we need to get all the keys to the properties provided
+        // and convert them to a Map of QName to Serializable objects
+        Object[] propIds = scriptable.getIds();
+        for (int i = 0; i < propIds.length; i++)
+        {
+            // work on each key in turn
+            Object propId = propIds[i];
+            
+            // we are only interested in keys that are formed of Strings i.e. QName.toString()
+            if (propId instanceof String)
+            {
+                // get the value out for the specified key - it must be Serializable
+                String key = (String)propId;
+                Object value = scriptable.get(key, scriptable);
+                if (value instanceof Serializable)
+                {
+                    value = getValueConverter().convertValueForRepo((Serializable)value);
+                    map.put(createQName(key), (Serializable)value);
+                }
+            }
+        }
     }
     
     /**
@@ -1566,7 +1656,7 @@ public class Node implements Serializable, Scopeable
     public String processTemplate(Node template, Object args)
     {
         ParameterCheck.mandatory("Template Node", template);
-        return processTemplate(template.getContent(), null, (ScriptableObject) args);
+        return processTemplate(template.getContent(), null, (ScriptableObject)args);
     }
     
     /**
@@ -1594,7 +1684,7 @@ public class Node implements Serializable, Scopeable
     public String processTemplate(String template, Object args)
     {
         ParameterCheck.mandatoryString("Template", template);
-        return processTemplate(template, null, (ScriptableObject) args);
+        return processTemplate(template, null, (ScriptableObject)args);
     }
     
     private String processTemplate(String template, NodeRef templateRef, ScriptableObject args)
@@ -1636,7 +1726,7 @@ public class Node implements Serializable, Scopeable
                 {
                     // get the value out for the specified key - make sure it is Serializable
                     Object value = args.get((String) propId, args);
-                    value = getValueConverter().convertValueForRepo((Serializable) value);
+                    value = getValueConverter().convertValueForRepo((Serializable)value);
                     if (value != null)
                     {
                         templateArgs.put((String) propId, value.toString());

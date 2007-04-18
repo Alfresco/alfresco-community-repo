@@ -114,8 +114,11 @@ public class Node implements Serializable, Scopeable
     /** The aspects applied to this node */
     private Set<QName> aspects = null;
     
-    /** The associations from this node */
+    /** The target associations for this node */
     private ScriptableQNameMap<String, Node[]> assocs = null;
+    
+    /** The child associations for this node */
+    private ScriptableQNameMap<String, Node[]> childAssocs = null;
     
     /** The children of this node */
     private Node[] children = null;
@@ -410,7 +413,7 @@ public class Node implements Serializable, Scopeable
      * associative array access. This means associations of this node can be access thus:
      * <code>node.assocs["translations"][0]</code>
      * 
-     * @return associations as a Map of assoc name to an Array of Nodes.
+     * @return target associations as a Map of assoc name to an Array of Nodes.
      */
     @SuppressWarnings("unchecked")
     public Map<String, Node[]> getAssocs()
@@ -448,6 +451,52 @@ public class Node implements Serializable, Scopeable
     public Map<String, Node[]> jsGet_assocs()
     {
         return getAssocs();
+    }
+    
+    /**
+     * Return the child associations from this Node. As a Map of assoc name to an Array of Nodes.
+     * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
+     * associative array access. This means associations of this node can be access thus:
+     * <code>node.childAssocs["contains"][0]</code>
+     * 
+     * @return child associations as a Map of assoc name to an Array of Nodes.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Node[]> getChildAssocs()
+    {
+        if (this.childAssocs == null)
+        {
+            // this Map implements the Scriptable interface for native JS syntax property access
+            this.childAssocs = new ScriptableQNameMap<String, Node[]>(this.services.getNamespaceService());
+            
+            List<ChildAssociationRef> refs = this.nodeService.getChildAssocs(nodeRef);
+            for (ChildAssociationRef ref : refs)
+            {
+                String qname = ref.getTypeQName().toString();
+                Node[] nodes = (Node[]) this.childAssocs.get(qname);
+                if (nodes == null)
+                {
+                    // first access for the list for this qname
+                    nodes = new Node[1];
+                }
+                else
+                {
+                    Node[] newNodes = new Node[nodes.length + 1];
+                    System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
+                    nodes = newNodes;
+                }
+                nodes[nodes.length - 1] = newInstance(ref.getChildRef(), this.services, this.scope);
+                
+                this.childAssocs.put(ref.getTypeQName().toString(), nodes);
+            }
+        }
+        
+        return this.childAssocs;
+    }
+    
+    public Map<String, Node[]> jsGet_childAssocs()
+    {
+        return getChildAssocs();
     }
     
     /**
@@ -1796,6 +1845,7 @@ public class Node implements Serializable, Scopeable
         this.properties = null;
         this.aspects = null;
         this.assocs = null;
+        this.childAssocs = null;
         this.children = null;
         this.displayPath = null;
         this.isDocument = null;

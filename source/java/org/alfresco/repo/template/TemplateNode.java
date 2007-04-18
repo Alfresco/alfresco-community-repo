@@ -72,8 +72,11 @@ public class TemplateNode extends BasePermissionsNode
     
     private static Log logger = LogFactory.getLog(TemplateNode.class);
     
-    /** All associations from this node */
+    /** Target associations from this node */
     private Map<String, List<TemplateNode>> assocs = null;
+    
+    /** The child associations from this node */
+    private Map<String, List<TemplateNode>> childAssocs = null;
     
     /** Cached values */
     protected NodeRef nodeRef;
@@ -244,6 +247,32 @@ public class TemplateNode extends BasePermissionsNode
         }
         
         return this.assocs;
+    }
+    
+    /**
+     * @return The child associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
+     */
+    public Map<String, List<TemplateNode>> getChildAssocs()
+    {
+        if (this.childAssocs == null)
+        {
+            List<ChildAssociationRef> refs = this.services.getNodeService().getChildAssocs(this.nodeRef);
+            this.childAssocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            for (ChildAssociationRef ref : refs)
+            {
+                String qname = ref.getTypeQName().toString();
+                List<TemplateNode> nodes = this.childAssocs.get(qname);
+                if (nodes == null)
+                {
+                    // first access for the list for this qname
+                    nodes = new ArrayList<TemplateNode>(4);
+                    this.childAssocs.put(ref.getTypeQName().toString(), nodes);
+                }
+                nodes.add( new TemplateNode(ref.getChildRef(), this.services, this.imageResolver) );
+            }
+        }
+        
+        return this.childAssocs;
     }
     
     /**
